@@ -1,0 +1,21 @@
+services:
+  postgres:
+    container_name: "postgres-${BUILD_TAG}"
+    image: postgres:16-alpine
+    # Configure non-durable storage for CI
+    # https://www.postgresql.org/docs/9.1/non-durability.html
+    command: [ "-c", "fsync=off", "-c", "synchronous_commit=off", "-c", "full_page_writes=off" ]
+    environment:
+      POSTGRES_PASSWORD: postgres
+      PGPORT: "${DATABASE_PORT}"
+    networks:
+      - jenkins
+    volumes:
+      - type: tmpfs
+        target: /var/lib/postgresql/data
+      - /var/run/docker.sock:/var/run/docker.sock
+
+networks:
+  jenkins:
+    name: jenkins
+    external: true
