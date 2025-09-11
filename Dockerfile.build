@@ -1,0 +1,5 @@
+FROM node:20-alpine
+
+RUN npm install -g pnpm
+RUN apk add --update docker docker-cli-compose openrc
+RUN rc-update add docker boot

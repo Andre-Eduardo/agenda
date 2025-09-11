@@ -1,0 +1,30 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "CommonJS",
+    "skipLibCheck": true,
+    "resolveJsonModule": true,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    /* Type Checking */
+    "strict": true,
+    "strictNullChecks": true,
+    "noImplicitAny": true,
+    "noUnusedParameters": true,
+    "strictBindCallApply": true,
+    "allowSyntheticDefaultImports": true,
+    "forceConsistentCasingInFileNames": true,
+    "noFallthroughCasesInSwitch": true,
+    /* Emit */
+    "noEmit": true,
+    "declaration": true,
+    "removeComments": false,
+    "sourceMap": true,
+    "baseUrl": ".",
+    "paths": {
+      "@agenda/*": [
+        "packages/*/src"
+      ]
+    }
+  }
+}
