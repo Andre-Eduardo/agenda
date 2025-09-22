@@ -15,7 +15,6 @@ model Event {
   payload   Json     @db.JsonB
   userIp    String   @map("user_ip") @db.Inet
   userId    String?  @map("user_id") @db.Uuid
-  companyId String?  @map("company_id") @db.Uuid
   timestamp DateTime
 
   @@map("event")
@@ -127,8 +126,8 @@ model Appointment {
 
 model Record {
   id             String       @id(map: "record_pk") @db.Uuid
-  patient        Patient      @relation(fields: [patientId], references: [id])
   patientId      String       @map("patient_id") @db.Uuid
+  patient        Patient      @relation(fields: [patientId], references: [id])
   professional   Professional @relation(fields: [professionalId], references: [id])
   professionalId String       @map("professional_id") @db.Uuid
   description    String
@@ -141,8 +140,8 @@ model Record {
 
 model File {
   id          String   @id(map: "file_pk") @db.Uuid
-  record      Record   @relation(fields: [recordId], references: [id])
   recordId    String   @map("record_id") @db.Uuid
+  record      Record   @relation(fields: [recordId], references: [id])
   fileName    String
   url         String
   description String
