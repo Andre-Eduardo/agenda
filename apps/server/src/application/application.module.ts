@@ -12,6 +12,10 @@ import {ExceptionLoggerInterceptor, RequestLoggerMiddleware} from './@shared/log
 import {ZodValidationPipe} from './@shared/validation';
 import {AuthModule} from './auth/auth.module';
 import {EventModule} from './event/event.module';
+import {ProfessionalModule} from './professional/professional.module';
+import {PatientModule} from './patient/patient.module';
+import {AppointmentModule} from './appointment/appointment.module';
+import {RecordModule} from './record/record.module';
 
 
 import {UserModule} from './user/user.module';
@@ -72,6 +76,10 @@ const guards: Provider[] = [
         EventModule,
         AuthModule,
         UserModule,
+        ProfessionalModule,
+        PatientModule,
+        AppointmentModule,
+        RecordModule,
     ],
     providers: [...exceptionFilters, ...pipes, ...interceptors, ...guards],
 })

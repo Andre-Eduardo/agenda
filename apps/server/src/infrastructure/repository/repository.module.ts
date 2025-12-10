@@ -29,6 +29,10 @@ import {StockRepository} from '../../domain/stock/stock.repository';
 import {SupplierRepository} from '../../domain/supplier/supplier.repository';
 import {TransactionRepository} from '../../domain/transaction/transaction.repository';
 import {UserRepository} from '../../domain/user/user.repository';
+import {ProfessionalRepository} from '../../domain/professional/professional.repository';
+import {PatientRepository} from '../../domain/patient/patient.repository';
+import {AppointmentRepository} from '../../domain/appointment/appointment.repository';
+import {RecordRepository} from '../../domain/record/record.repository';
 import {AccountPrismaRepository} from './account.prisma.repository';
 import {AuditPrismaRepository} from './audit.prisma.repository';
 import {BlockadePrismaRepository} from './blockade.prisma.repository';
@@ -57,9 +61,13 @@ import {SalePrismaRepository} from './sale.prisma.repository';
 import {ServiceCategoryPrismaRepository} from './service-category.prisma.repository';
 import {ServicePrismaRepository} from './service.prisma.repository';
 import {StockPrismaRepository} from './stock.prisma.repository';
-import {SupplierPrismaRepository} from './supplier.prisma.repository';
 import {TransactionPrismaRepository} from './transaction.prisma.repository';
 import {UserPrismaRepository} from './user.prisma.repository';
+import {ProfessionalPrismaRepository} from './professional.prisma.repository';
+import {PatientPrismaRepository} from './patient.prisma.repository';
+import {AppointmentPrismaRepository} from './appointment.prisma.repository';
+import {RecordPrismaRepository} from './record.prisma.repository';
+import {MapperModule} from '../mappers';
 
 const repositories: Provider[] = [
     {
@@ -182,10 +190,26 @@ const repositories: Provider[] = [
         provide: AuditRepository,
         useClass: AuditPrismaRepository,
     },
+    {
+        provide: ProfessionalRepository,
+        useClass: ProfessionalPrismaRepository,
+    },
+    {
+        provide: PatientRepository,
+        useClass: PatientPrismaRepository,
+    },
+    {
+        provide: AppointmentRepository,
+        useClass: AppointmentPrismaRepository,
+    },
+    {
+        provide: RecordRepository,
+        useClass: RecordPrismaRepository,
+    },
 ];
 
 @Module({
-    imports: [],
+    imports: [MapperModule],
     providers: [PrismaService, ...repositories],
     exports: repositories,
 })
