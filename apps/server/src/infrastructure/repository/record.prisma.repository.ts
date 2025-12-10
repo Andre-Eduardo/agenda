@@ -1,12 +1,11 @@
 import {Injectable} from '@nestjs/common';
 import * as PrismaClient from '@prisma/client';
-import {PatientId} from '../../domain/patient/entities';
-import {ProfessionalId} from '../../domain/professional/entities';
-import {File, FileId} from '../../domain/record/entities/file.entity';
 import {Record, RecordId} from '../../domain/record/entities/record.entity';
 import {RecordRepository} from '../../domain/record/record.repository';
+import {RecordMapper} from '../mappers/record.mapper';
 import {PrismaService} from './prisma';
 import {PrismaRepository} from './prisma.repository';
+import { PrismaProvider } from './prisma/prisma.provider';
 
 // Define a type that includes the relation
 type RecordWithFiles = PrismaClient.Record & {
@@ -15,25 +14,11 @@ type RecordWithFiles = PrismaClient.Record & {
 
 @Injectable()
 export class RecordPrismaRepository extends PrismaRepository implements RecordRepository {
-    constructor(private readonly prisma: PrismaService) {
-        super();
-    }
-
-    private static normalize(record: RecordWithFiles): Record {
-        return new Record({
-            ...record,
-            id: RecordId.from(record.id),
-            patientId: PatientId.from(record.patientId),
-            professionalId: ProfessionalId.from(record.professionalId),
-            files: record.files.map(
-                (file) =>
-                    new File({
-                        ...file,
-                        id: FileId.from(file.id),
-                        recordId: RecordId.from(file.recordId),
-                    }),
-            ),
-        });
+    constructor(
+        readonly prismaProvider: PrismaProvider,
+        private readonly mapper: RecordMapper,
+    ) {
+        super(prismaProvider);
     }
 
     async findById(id: RecordId): Promise<Record | null> {
@@ -46,7 +31,7 @@ export class RecordPrismaRepository extends PrismaRepository implements RecordRe
             },
         });
 
-        return record === null ? null : RecordPrismaRepository.normalize(record);
+        return record === null ? null : this.mapper.toDomain(record);
     }
 
     async delete(id: RecordId): Promise<void> {

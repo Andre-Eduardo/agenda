@@ -2,7 +2,7 @@ import {Injectable} from '@nestjs/common';
 import {Prisma} from '@prisma/client';
 import {Email} from '../../domain/@shared/value-objects';
 import {GlobalRole} from '../../domain/auth';
-import {CompanyId} from '../../domain/company/entities';
+import {ProfessionalId} from '../../domain/professional/entities';
 import {PersonId} from '../../domain/person/entities';
 import {User, UserId} from '../../domain/user/entities';
 import {DuplicateEmailException, DuplicateUsernameException} from '../../domain/user/user.exceptions';
@@ -10,10 +10,11 @@ import {UserRepository} from '../../domain/user/user.repository';
 import {ObfuscatedPassword, Username} from '../../domain/user/value-objects';
 import {PrismaService} from './prisma';
 import {PrismaRepository} from './prisma.repository';
+import { PrismaProvider } from './prisma/prisma.provider';
 
 const userSelect = Prisma.validator<Prisma.UserDefaultArgs>()({
     include: {
-        companies: true,
+        professionals: true,
     },
 });
 
@@ -21,8 +22,10 @@ export type UserModel = Prisma.UserGetPayload<typeof userSelect>;
 
 @Injectable()
 export class UserPrismaRepository extends PrismaRepository implements UserRepository {
-    constructor(private readonly prisma: PrismaService) {
-        super();
+    constructor(
+        readonly prismaProvider: PrismaProvider,
+    ) {
+        super(prismaProvider);
     }
 
     private static normalize(user: UserModel): User {
@@ -32,26 +35,24 @@ export class UserPrismaRepository extends PrismaRepository implements UserReposi
             username: Username.create(user.username),
             email: user.email === null ? null : Email.create(user.email),
             password: ObfuscatedPassword.decode(user.password),
+            professionals: user.professionals.map((professional) => ProfessionalId.from(professional.id)),
+            name: user.name,
             globalRole: GlobalRole[user.globalRole],
-            companies: user.companies.map((company) => CompanyId.from(company.companyId)),
         });
     }
 
-    private static denormalize(user: User): UserModel {
+    private static denormalize(user: User): Omit<UserModel, 'professionals'> & {professionals: Array<{id: string}>} {
         return {
             id: user.id.toString(),
             username: user.username.toString(),
             email: user.email?.toString() ?? null,
             password: user.password.encode(),
-            firstName: user.firstName,
-            lastName: user.lastName,
+            name: user.name,
+            phone: null,
             globalRole: user.globalRole,
-            companies: user.companies.map((companyId) => ({
-                companyId: companyId.toString(),
-                userId: user.id.toString(),
-            })),
             createdAt: user.createdAt,
             updatedAt: user.updatedAt,
+            professionals: user.professionals.map((professionalId) => ({id: professionalId.toString()})),
         };
     }
 
@@ -91,9 +92,9 @@ export class UserPrismaRepository extends PrismaRepository implements UserReposi
     async findByEmployeeId(employeeId: PersonId): Promise<User | null> {
         const user = await this.prisma.user.findFirst({
             where: {
-                employees: {
+                professionals: {
                     some: {
-                        id: employeeId.toString(),
+                        personId: employeeId.toString(),
                     },
                 },
             },
@@ -103,9 +104,10 @@ export class UserPrismaRepository extends PrismaRepository implements UserReposi
         return user === null ? null : UserPrismaRepository.normalize(user);
     }
 
+
     async save(user: User): Promise<void> {
-        const {companies, ...userModel} = UserPrismaRepository.denormalize(user);
-        const companyModels = companies.map((company) => ({companyId: company.companyId}));
+        const {professionals, ...userModel} = UserPrismaRepository.denormalize(user);
+        const professionalIds = user.professionals.map((id) => ({id: id.toString()}));
 
         try {
             await this.prisma.user.upsert({
@@ -114,26 +116,18 @@ export class UserPrismaRepository extends PrismaRepository implements UserReposi
                 },
                 create: {
                     ...userModel,
-                    companies: {
-                        createMany: {
-                            data: companyModels,
-                        },
+                    professionals: {
+                        connect: professionalIds,
                     },
                 },
                 update: {
                     ...userModel,
-                    companies: {
-                        deleteMany: {
-                            userId: userModel.id,
-                            NOT: companyModels,
-                        },
-                        createMany: {
-                            data: companyModels,
-                            skipDuplicates: true,
-                        },
+                    professionals: {
+                        set: professionalIds,
                     },
                 },
             });
+
         } catch (e) {
             if (this.checkUniqueViolation(e, 'username')) {
                 throw new DuplicateUsernameException('Duplicate username.');

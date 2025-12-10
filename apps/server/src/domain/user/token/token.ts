@@ -1,4 +1,4 @@
-import type {CompanyId} from '../../company/entities';
+import { ProfessionalId } from '@domain/professional/entities';
 import type {UserId} from '../entities';
 
 export enum TokenScope {
@@ -9,7 +9,7 @@ export enum TokenScope {
 
 export type TokenData = {
     readonly userId: UserId;
-    readonly companies: CompanyId[];
+    readonly professionalId: ProfessionalId | null;
     readonly issueTime: Date;
     readonly expirationTime: Date;
     readonly scope: readonly TokenScope[];
@@ -19,7 +19,7 @@ export type TokenData = {
 export abstract class Token implements TokenData {
     readonly userId: UserId;
 
-    readonly companies: CompanyId[];
+    readonly professionalId: ProfessionalId | null;
 
     readonly issueTime: Date;
 
@@ -31,7 +31,7 @@ export abstract class Token implements TokenData {
 
     protected constructor(metadata: TokenData) {
         this.userId = metadata.userId;
-        this.companies = metadata.companies;
+        this.professionalId = metadata.professionalId;
         this.issueTime = metadata.issueTime;
         this.expirationTime = metadata.expirationTime;
         this.scope = metadata.scope;
@@ -41,7 +41,7 @@ export abstract class Token implements TokenData {
     toJSON(): TokenData {
         return {
             userId: this.userId,
-            companies: this.companies,
+            professionalId: this.professionalId,
             issueTime: this.issueTime,
             expirationTime: this.expirationTime,
             scope: this.scope,
@@ -62,9 +62,9 @@ export type TokenOptions = {
      */
     scope?: TokenScope[];
     /**
-     * The companies that the token will have access to.
+     * The professional that the token will have access to.
      */
-    companies?: CompanyId[];
+    professionalId?: ProfessionalId;
     /**
      * Additional metadata to include in the token.
      */

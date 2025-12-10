@@ -2,22 +2,19 @@ import {Injectable} from '@nestjs/common';
 import * as PrismaClient from '@prisma/client';
 import {Patient, PatientId} from '../../domain/patient/entities';
 import {PatientRepository} from '../../domain/patient/patient.repository';
-import {PrismaService} from './prisma';
+import {PatientMapper} from '../mappers/patient.mapper';
 import {PrismaRepository} from './prisma.repository';
+import { PrismaProvider } from './prisma/prisma.provider';
 
 export type PatientModel = PrismaClient.Patient;
 
 @Injectable()
 export class PatientPrismaRepository extends PrismaRepository implements PatientRepository {
-    constructor(private readonly prisma: PrismaService) {
-        super();
-    }
-
-    private static normalize(patient: PatientModel): Patient {
-        return new Patient({
-            ...patient,
-            id: PatientId.from(patient.id),
-        });
+    constructor(
+        readonly prismaProvider: PrismaProvider, 
+        private readonly mapper: PatientMapper,
+    ) {
+        super(prismaProvider);
     }
 
     async findById(id: PatientId): Promise<Patient | null> {
@@ -27,7 +24,7 @@ export class PatientPrismaRepository extends PrismaRepository implements Patient
             },
         });
 
-        return patient === null ? null : PatientPrismaRepository.normalize(patient);
+        return patient === null ? null : this.mapper.toDomain(patient);
     }
 
     async delete(id: PatientId): Promise<void> {

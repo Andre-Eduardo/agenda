@@ -1,42 +1,73 @@
-import {AggregateRoot, type AllEntityProps, type EntityJson, type EntityProps} from '../../@shared/entity';
-import {EntityId} from '../../@shared/entity/id';
-import {PersonId} from '../../person/entities';
+import { ProfessionalId } from '@domain/professional/entities';
+import {AggregateRoot, type AllEntityProps, type EntityJson, type EntityProps, type CreateEntity} from '../../@shared/entity';
+import {Person, PersonId, PersonType} from '../../person/entities';
+import {PatientCreatedEvent, PatientChangedEvent, PatientDeletedEvent} from '../events';
 
 export type PatientProps = EntityProps<Patient>;
+export type CreatePatient = CreateEntity<Patient>;
 export type UpdatePatient = Partial<PatientProps>;
 
-export class Patient extends AggregateRoot<PatientId> {
-    // In the future, patient-specific fields (like medical history summary) can be added here.
-    // Currently, it links to Person via ID.
+export class Patient extends Person{
+    professionalId: ProfessionalId | null;
 
     constructor(props: AllEntityProps<Patient>) {
         super(props);
-        // Initialize potential props here
+        this.professionalId = props.professionalId ?? null;
+        this.validate();
+    }
+
+    static create(props: CreatePatient): Patient {
+        const now = new Date();
+
+        const patient = new Patient({
+            ...props,
+            id: PersonId.generate(),
+            name: props.name,
+            documentId: props.documentId,
+            phone: props.phone ?? null,
+            gender: props.gender ?? null,
+            createdAt: now,
+            updatedAt: now,
+            personType: PersonType.PATIENT,
+            professionalId: props.professionalId ?? null,
+        });
+
+        patient.addEvent(new PatientCreatedEvent({patient, timestamp: now}));
+
+        return patient;
+    }
+
+    delete(): void {
+        this.addEvent(new PatientDeletedEvent({patient: this}));
+    }
+
+    change(props: UpdatePatient): void {
+        const oldState = new Patient(this);
+        
+        // No current props to update, but structure is here for future expansion
+        // if (props.someField !== undefined) { this.someField = props.someField; }
+
+        this.validate();
+
+        this.addEvent(new PatientChangedEvent({oldState, newState: this}));
+    }
+
+    validate(): void {
+        // Add validation logic if needed
     }
 
     toJSON(): EntityJson<Patient> {
         return {
             id: this.id.toJSON(),
+            professionalId: this.professionalId?.toJSON() ?? null,
+            name: this.name,
+            documentId: this.documentId.toJSON(),
+            phone: this.phone?.toJSON() ?? null,
+            gender: this.gender ?? null,
+            personType: this.personType,
             createdAt: this.createdAt.toJSON(),
             updatedAt: this.updatedAt.toJSON(),
         };
     }
-
-    protected change(props: UpdatePatient): void {
-        // Handle updates here
-    }
-
-    protected validate(): void {
-        // Add validation logic if needed
-    }
 }
 
-export class PatientId extends EntityId<'PatientId'> {
-    static from(value: string): PatientId {
-        return new PatientId(value);
-    }
-
-    static generate(): PatientId {
-        return new PatientId();
-    }
-}

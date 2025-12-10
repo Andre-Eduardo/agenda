@@ -1,9 +1,8 @@
-
-import {Patient, PatientId} from './entities';
+import { PersonId } from '@domain/person/entities';
+import {Patient, } from './entities';
 
 export interface PatientRepository {
-    findById(id: PatientId): Promise<Patient | null>;
-    delete(id: PatientId): Promise<void>;
+    findById(id: PersonId): Promise<Patient | null>;
+    delete(id: PersonId): Promise<void>;
 }
-
 export abstract class PatientRepository {}

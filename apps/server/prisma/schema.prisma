@@ -9,17 +9,6 @@ datasource db {
   extensions = [citext]
 }
 
-model Event {
-  id        Int      @id @default(autoincrement())
-  type      String
-  payload   Json     @db.JsonB
-  userIp    String   @map("user_ip") @db.Inet
-  userId    String?  @map("user_id") @db.Uuid
-  timestamp DateTime
-
-  @@map("event")
-}
-
 model User {
   id         String     @id(map: "user_pk") @db.Uuid
   username   String     @unique @db.Citext()
@@ -67,69 +56,98 @@ enum PersonType {
 }
 
 model Person {
-  id            String         @id(map: "person_pk") @db.Uuid
-  name          String
-  documentId    String         @map("document_id")
-  phone         String?
-  gender        Gender?
-  personType    PersonType     @map("person_type")
-  createdAt     DateTime       @map("created_at")
-  updatedAt     DateTime       @map("updated_at")
-  professionals Professional[]
-  patients      Patient[]
+  id           String        @id(map: "person_pk") @db.Uuid
+  name         String
+  documentId   String        @map("document_id")
+  phone        String?
+  gender       Gender?
+  personType   PersonType    @map("person_type")
+  createdAt    DateTime      @map("created_at")
+  updatedAt    DateTime      @map("updated_at")
+  professional Professional?
+  patients     Patient[]
 
   @@unique([documentId], name: "person_document_id_key")
   @@map("person")
 }
 
+// 🔑 Professional com config 1:1 (igual Company)
 model Professional {
-  id                String        @id(map: "professional_pk") @db.Uuid
-  person            Person        @relation(fields: [id], references: [id], onDelete: Cascade)
-  allowSystemAccess Boolean       @map("allow_system_access")
-  userId            String?       @map("user_id") @db.Uuid
-  user              User?         @relation(fields: [userId], references: [id])
-  specialty         String?
-  createdAt         DateTime      @map("created_at")
-  updatedAt         DateTime      @map("updated_at")
-  appointments      Appointment[]
-  records           Record[]
+  id        String             @id(map: "professional_pk") @db.Uuid
+  personId  String             @unique @map("person_id") @db.Uuid
+  person    Person             @relation(fields: [personId], references: [id])
+  configId  String             @unique(map: "professional_config_id_key") @map("config_id") @db.Uuid
+  config    ProfessionalConfig @relation(references: [id], fields: [configId])
+  userId    String             @map("user_id") @db.Uuid
+  user      User               @relation(fields: [userId], references: [id])
+  specialty String?
+  createdAt DateTime           @map("created_at")
+  updatedAt DateTime           @map("updated_at")
+
+  appointments Appointment[]
+  records      Record[]
+  patients     Patient[]
 
   @@map("professional")
 }
 
-model Patient {
-  id           String        @id(map: "patient_pk") @db.Uuid
-  person       Person        @relation(fields: [id], references: [id], onDelete: Cascade)
-  records      Record[]
-  createdAt    DateTime      @map("created_at")
-  updatedAt    DateTime      @map("updated_at")
-  appointments Appointment[]
+model ProfessionalConfig {
+  id        String   @id(map: "professional_config_pk") @db.Uuid
+  color     String?
+  createdAt DateTime @map("created_at")
+  updatedAt DateTime @map("updated_at")
 
+  professional Professional?
+
+  @@map("professional_config")
+}
+
+model Patient {
+  id             String        @id(map: "patient_pk") @db.Uuid
+  person         Person        @relation(fields: [id], references: [id], onDelete: Cascade)
+  documentId     String        @map("document_id") @db.Citext()
+  createdAt      DateTime      @map("created_at")
+  updatedAt      DateTime      @map("updated_at")
+  appointments   Appointment[]
+  records        Record[]
+  professional   Professional? @relation(fields: [professionalId], references: [id])
+  professionalId String?       @db.Uuid
+
+  @@unique([documentId], name: "patient_document_id_key")
   @@map("patient")
 }
 
+enum AppointmentStatus {
+  SCHEDULED
+  CANCELLED
+  COMPLETED
+
+  @@map("appointment_status")
+}
+
 model Appointment {
-  id             String       @id(map: "appointment_pk") @db.Uuid
-  patientId      String       @map("patient_id") @db.Uuid
-  patient        Patient      @relation(fields: [patientId], references: [id], onDelete: Cascade)
-  professionalId String       @map("professional_id") @db.Uuid
-  professional   Professional @relation(fields: [professionalId], references: [id], onDelete: Cascade)
-  date           DateTime     @map("date")
-  canceledAt     DateTime?    @map("canceled_at")
-  canceledReason String?      @map("canceled_reason")
+  id             String            @id(map: "appointment_pk") @db.Uuid
+  professionalId String            @map("professional_id") @db.Uuid
+  professional   Professional      @relation(fields: [professionalId], references: [id], onDelete: Cascade)
+  patientId      String            @map("patient_id") @db.Uuid
+  patient        Patient           @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  date           DateTime          @map("date")
+  status         AppointmentStatus @map("status")
+  canceledAt     DateTime?         @map("canceled_at")
+  canceledReason String?           @map("canceled_reason")
   note           String?
-  createdAt      DateTime     @map("created_at")
-  updatedAt      DateTime     @map("updated_at")
+  createdAt      DateTime          @map("created_at")
+  updatedAt      DateTime          @map("updated_at")
 
   @@map("appointment")
 }
 
 model Record {
   id             String       @id(map: "record_pk") @db.Uuid
+  professionalId String       @map("professional_id") @db.Uuid
+  professional   Professional @relation(fields: [professionalId], references: [id], onDelete: Cascade)
   patientId      String       @map("patient_id") @db.Uuid
   patient        Patient      @relation(fields: [patientId], references: [id])
-  professional   Professional @relation(fields: [professionalId], references: [id])
-  professionalId String       @map("professional_id") @db.Uuid
   description    String
   files          File[]
   createdAt      DateTime     @map("created_at")
@@ -149,4 +167,16 @@ model File {
   updatedAt   DateTime @map("updated_at")
 
   @@map("file")
+}
+
+model Event {
+  id             Int      @id @default(autoincrement())
+  type           String
+  payload        Json     @db.JsonB
+  userIp         String   @map("user_ip") @db.Inet
+  userId         String?  @map("user_id") @db.Uuid
+  professionalId String?  @map("professional_id") @db.Uuid
+  timestamp      DateTime
+
+  @@map("event")
 }

@@ -17,7 +17,7 @@ export class JsonWebTokenProvider implements TokenProvider<JsonWebToken> {
         return JsonWebToken.signed(
             {
                 userId,
-                companies: options?.companies ?? [],
+                professionalId: options?.professionalId ?? null,
                 scope: options?.scope ?? [],
                 issueTime: now,
                 expirationTime: new Date(now.getTime() + (options?.expiration ?? this.expiration) * 1000),

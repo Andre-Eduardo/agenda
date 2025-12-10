@@ -5,16 +5,17 @@ import {ProfessionalRepository} from '../../domain/professional/professional.rep
 import {ProfessionalMapper} from '../mappers/professional.mapper';
 import {PrismaService} from './prisma';
 import {PrismaRepository} from './prisma.repository';
+import { PrismaProvider } from './prisma/prisma.provider';
 
 export type ProfessionalModel = PrismaClient.Professional;
 
 @Injectable()
 export class ProfessionalPrismaRepository extends PrismaRepository implements ProfessionalRepository {
     constructor(
-        private readonly prisma: PrismaService,
+        readonly prismaProvider: PrismaProvider,
         private readonly mapper: ProfessionalMapper,
     ) {
-        super();
+        super(prismaProvider);
     }
 
     async findById(id: ProfessionalId): Promise<Professional | null> {

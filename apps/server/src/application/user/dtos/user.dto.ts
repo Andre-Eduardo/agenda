@@ -17,22 +17,16 @@ export class UserDto extends EntityDto {
     email: string | null;
 
     @ApiProperty({
-        description: 'The first name of the user',
+        description: 'The name of the user',
         example: 'John',
     })
-    firstName: string;
+    name!: string;
 
-    @ApiProperty({
-        description: 'The last name of the user',
-        example: 'Doe',
-    })
-    lastName: string | null;
 
     constructor(user: User) {
         super(user);
         this.username = user.username.toString();
         this.email = user.email?.toString() ?? null;
-        this.firstName = user.firstName;
-        this.lastName = user.lastName;
+        this.name = user.name;
     }
 }

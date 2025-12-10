@@ -2,14 +2,15 @@ import {Injectable} from '@nestjs/common';
 import PrismaClient, {Prisma} from '@prisma/client';
 import type {MaybeAuthenticatedActor} from '../../domain/@shared/actor';
 import {PaginatedList, Pagination} from '../../domain/@shared/repository';
-import {CompanyId} from '../../domain/company/entities';
-import {CompanyDomainEvent} from '../../domain/company/events';
+import {ProfessionalId} from '../../domain/professional/entities';
 import {DomainEvent, Event} from '../../domain/event';
 import {EventRepository, EventSearchFilter, EventSortOptions} from '../../domain/event/event.repository';
 import {EventType} from '../../domain/event/event.type';
 import type {EventModel as EventDomainModel, EventPayloadMap} from '../../domain/event/models/event.model';
 import {PrismaService} from './prisma';
 import {PrismaRepository} from './prisma.repository';
+import { PrismaProvider } from './prisma/prisma.provider';
+import { EventMapper } from '../mappers';
 
 export type EventDbModel = PrismaClient.Event;
 
@@ -17,8 +18,11 @@ export type EventModel = Override<Omit<EventDbModel, 'id'>, {payload: NonNullabl
 
 @Injectable()
 export class EventPrismaRepository extends PrismaRepository implements EventRepository {
-    constructor(private readonly prisma: PrismaService) {
-        super();
+    constructor(
+        readonly prismaProvider: PrismaProvider,
+        readonly mapper: EventMapper
+    ) {
+        super(prismaProvider);
     }
 
     private static normalize<T extends EventType>(event: EventDbModel): EventDomainModel<T> {
@@ -32,17 +36,22 @@ export class EventPrismaRepository extends PrismaRepository implements EventRepo
 
     private static denormalize(event: Event<DomainEvent, MaybeAuthenticatedActor>): EventModel {
         const {actor, payload: domainEvent} = event;
-        const {type, timestamp, companyId, ...payload} =
-            domainEvent instanceof CompanyDomainEvent
-                ? domainEvent
-                : (domainEvent as DomainEvent & {companyId: undefined});
+        // Attempt to extract professionalId if present in event properties
+        const professionalId = (domainEvent as any).professionalId;
+        const {type, timestamp, ...payload} = domainEvent;
+
+        // Remove professionalId from payload if we stored it separately? 
+        // Or keep it. For now, we extract it for the column.
+        if ((payload as any).professionalId) {
+             delete (payload as any).professionalId;
+        }
 
         return {
             type,
             payload: JSON.parse(JSON.stringify(payload)) as EventModel['payload'],
             userIp: actor.ip,
             userId: actor.userId?.toString() ?? null,
-            companyId: companyId?.toJSON() ?? null,
+            professionalId: professionalId?.toString() ?? null,
             timestamp,
         };
     }
@@ -56,12 +65,12 @@ export class EventPrismaRepository extends PrismaRepository implements EventRepo
     }
 
     async search<T extends EventType>(
-        companyId: CompanyId,
+        professionalId: ProfessionalId,
         pagination: Pagination<EventSortOptions>,
         filter: EventSearchFilter<T> = {}
     ): Promise<PaginatedList<EventDomainModel<T>>> {
         const where: Prisma.EventWhereInput = {
-            companyId: companyId.toString(),
+            professionalId: professionalId.toString(),
             type: {
                 in: filter.type,
             },
@@ -70,21 +79,14 @@ export class EventPrismaRepository extends PrismaRepository implements EventRepo
         const [events, totalCount] = await Promise.all([
             this.prisma.event.findMany({
                 where,
-                ...(pagination.cursor && {
-                    cursor: {
-                        id: parseInt(pagination.cursor, 10),
-                    },
-                }),
-                take: pagination.limit + 1,
-                orderBy: this.normalizeSort(pagination.sort, {id: 'asc'}),
+                ...this.normalizePagination(pagination, {id: 'asc'}),
             }),
             this.prisma.event.count({where}),
         ]);
 
         return {
-            data: events.slice(0, pagination.limit).map((event) => EventPrismaRepository.normalize(event)),
+            data: events.map((event) => this.mapper.toDomain(event)),
             totalCount,
-            nextCursor: events.length > pagination.limit ? events[events.length - 1].id.toString() : null,
         };
     }
 }

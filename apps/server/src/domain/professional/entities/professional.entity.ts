@@ -1,60 +1,98 @@
-import {AggregateRoot, type AllEntityProps, type EntityJson, type EntityProps} from '../../@shared/entity';
+import {AggregateRoot, type AllEntityProps, type EntityJson, type EntityProps, type CreateEntity} from '../../@shared/entity';
 import {EntityId} from '../../@shared/entity/id';
-import {PersonId} from '../../person/entities';
+import {Person, PersonId, PersonType} from '../../person/entities';
 import {UserId} from '../../user/entities/user.entity';
+import {ProfessionalConfigId} from './professional-config';
+import {ProfessionalCreatedEvent, ProfessionalChangedEvent, ProfessionalDeletedEvent} from '../events';
 
 export type ProfessionalProps = EntityProps<Professional>;
+export type CreateProfessional = CreateEntity<Professional>;
 export type UpdateProfessional = Partial<ProfessionalProps>;
 
-export class Professional extends AggregateRoot<ProfessionalId> {
-    personId: PersonId;
+export class Professional extends Person {
+    configId: ProfessionalConfigId;
     userId: UserId | null;
-    allowSystemAccess: boolean;
-    specialty: string | null;
+    specialty: string;
 
     constructor(props: AllEntityProps<Professional>) {
         super(props);
-        this.personId = props.personId;
+        this.configId = props.configId;
         this.userId = props.userId ?? null;
-        this.allowSystemAccess = props.allowSystemAccess;
-        this.specialty = props.specialty ?? null;
+        this.specialty = props.specialty;
+        this.validate();
+    }
+
+    static create(props: CreateProfessional): Professional {
+        const now = new Date();
+
+        const professional = new Professional({
+            ...props,   
+            id: ProfessionalId.generate(),
+            name: props.name,
+            documentId: props.documentId,
+            phone: props.phone ?? null,
+            gender: props.gender ?? null,
+            personType: PersonType.PROFESSIONAL,
+            configId: props.configId,
+            userId: props.userId ?? null,
+            specialty: props.specialty,
+            createdAt: now,
+            updatedAt: now,
+        });
+
+        professional.addEvent(new ProfessionalCreatedEvent({professional, timestamp: now}));
+
+        return professional;
+    }
+
+    delete(): void {
+        this.addEvent(new ProfessionalDeletedEvent({professional: this}));
+    }
+
+    change(props: UpdateProfessional): void {
+        const oldState = new Professional(this);
+
+        if (props.userId !== undefined) {
+            this.userId = props.userId;
+        }
+      
+        if (props.specialty !== undefined) {
+            this.specialty = props.specialty;
+        }
+
+        this.validate();
+
+        this.addEvent(new ProfessionalChangedEvent({oldState, newState: this}));
+    }
+
+
+    validate(): void {
+        // Add validation logic if needed
     }
 
     toJSON(): EntityJson<Professional> {
         return {
             id: this.id.toJSON(),
-            personId: this.personId.toJSON(),
+            name: this.name,
+            documentId: this.documentId.toJSON(),
+            phone: this.phone?.toJSON() ?? null,
+            gender: this.gender ?? null,
+            personType: this.personType,
+            configId: this.configId.toJSON(),
             userId: this.userId?.toJSON() ?? null,
-            allowSystemAccess: this.allowSystemAccess,
             specialty: this.specialty,
             createdAt: this.createdAt.toJSON(),
             updatedAt: this.updatedAt.toJSON(),
         };
     }
-
-    protected change(props: UpdateProfessional): void {
-        if (props.userId !== undefined) {
-            this.userId = props.userId;
-        }
-        if (props.allowSystemAccess !== undefined) {
-            this.allowSystemAccess = props.allowSystemAccess;
-        }
-        if (props.specialty !== undefined) {
-            this.specialty = props.specialty;
-        }
-    }
-
-    protected validate(): void {
-        // Add validation logic if needed
-    }
 }
 
-export class ProfessionalId extends EntityId<'ProfessionalId'> {
-    static from(value: string): ProfessionalId {
-        return new ProfessionalId(value);
+export class ProfessionalId extends PersonId {
+    static from(value: string): PersonId {
+        return new PersonId(value);
     }
 
-    static generate(): ProfessionalId {
-        return new ProfessionalId();
+    static generate(): PersonId {
+        return new PersonId();
     }
 }

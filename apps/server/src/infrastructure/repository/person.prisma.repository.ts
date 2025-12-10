@@ -5,16 +5,17 @@ import {PersonRepository} from '../../domain/person/person.repository';
 import {PersonMapper} from '../mappers/person.mapper';
 import {PrismaService} from './prisma';
 import {PrismaRepository} from './prisma.repository';
+import { PrismaProvider } from './prisma/prisma.provider';
 
 export type PersonModel = PrismaClient.Person;
 
 @Injectable()
 export class PersonPrismaRepository extends PrismaRepository implements PersonRepository {
     constructor(
-        private readonly prisma: PrismaService,
+        readonly prismaProvider: PrismaProvider,
         private readonly mapper: PersonMapper,
     ) {
-        super();
+        super(prismaProvider);
     }
 
     async findById(id: PersonId): Promise<Person | null> {

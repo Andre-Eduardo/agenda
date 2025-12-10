@@ -1,3 +1,5 @@
+/* istanbul ignore file */
+
 import {ApiHideProperty, ApiProperty} from '@nestjs/swagger';
 
 export class PaginatedDto<T> {
@@ -6,12 +8,6 @@ export class PaginatedDto<T> {
         example: 100,
     })
     totalCount!: number;
-
-    @ApiProperty({
-        description: 'The cursor for the next page',
-        format: 'uuid',
-    })
-    nextCursor!: string | null;
 
     @ApiHideProperty()
     data!: T[];

@@ -1,14 +1,16 @@
-import {AggregateRoot, type AllEntityProps, type EntityJson, type EntityProps} from '../../@shared/entity';
+import {AggregateRoot, type AllEntityProps, type EntityJson, type EntityProps, type CreateEntity} from '../../@shared/entity';
 import {EntityId} from '../../@shared/entity/id';
-import {PatientId} from '../../patient/entities';
 import {ProfessionalId} from '../../professional/entities';
 import {File} from './file.entity';
+import {RecordCreatedEvent, RecordChangedEvent, RecordDeletedEvent} from '../events';
+import { PersonId } from '@domain/person/entities';
 
 export type RecordProps = EntityProps<Record>;
+export type CreateRecord = CreateEntity<Record>;
 export type UpdateRecord = Partial<RecordProps>;
 
 export class Record extends AggregateRoot<RecordId> {
-    patientId: PatientId;
+    patientId: PersonId;
     professionalId: ProfessionalId;
     description: string;
     files: File[];
@@ -19,6 +21,46 @@ export class Record extends AggregateRoot<RecordId> {
         this.professionalId = props.professionalId;
         this.description = props.description;
         this.files = props.files;
+        this.validate();
+    }
+
+    static create(props: CreateRecord): Record {
+        const now = new Date();
+
+        const record = new Record({
+            ...props,
+            id: RecordId.generate(),
+            patientId: props.patientId,
+            professionalId: props.professionalId,
+            description: props.description,
+            files: props.files,
+            createdAt: now,
+            updatedAt: now,
+        });
+
+        record.addEvent(new RecordCreatedEvent({record, timestamp: now}));
+
+        return record;
+    }
+
+    delete(): void {
+        this.addEvent(new RecordDeletedEvent({record: this}));
+    }
+
+    change(props: UpdateRecord): void {
+        const oldState = new Record(this);
+
+        if (props.description !== undefined) {
+            this.description = props.description;
+        }
+
+        this.validate();
+
+        this.addEvent(new RecordChangedEvent({oldState, newState: this}));
+    }
+
+    validate(): void {
+        // Validation
     }
 
     toJSON(): EntityJson<Record> {
@@ -31,16 +73,6 @@ export class Record extends AggregateRoot<RecordId> {
             createdAt: this.createdAt.toJSON(),
             updatedAt: this.updatedAt.toJSON(),
         };
-    }
-
-    protected change(props: UpdateRecord): void {
-        if (props.description !== undefined) {
-            this.description = props.description;
-        }
-    }
-
-    protected validate(): void {
-        // Validation
     }
 }
 

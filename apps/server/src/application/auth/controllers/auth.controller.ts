@@ -41,12 +41,12 @@ export class AuthController {
         @Body() payload: SignInDto,
         @Res({passthrough: true}) response: Response
     ): Promise<void> {
-        const {token, companyId} = await this.signInService.execute({actor, payload});
+        const {token, professionalId} = await this.signInService.execute({actor, payload});
 
         response.actions.setToken(token);
 
-        if (companyId !== undefined) {
-            response.actions.setCompany(companyId);
+        if (professionalId !== undefined) {
+            response.actions.setProfessional(professionalId);
         }
     }
 

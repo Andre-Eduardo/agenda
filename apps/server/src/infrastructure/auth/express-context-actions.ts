@@ -1,12 +1,12 @@
 import type {CookieOptions, Response} from 'express';
-import type {CompanyId} from '../../domain/company/entities';
+import type {ProfessionalId} from '../../domain/professional/entities';
 import type {Token} from '../../domain/user/token';
 
 export class ExpressContextActions {
     public constructor(
         private readonly response: Response,
         private readonly authCookie: string,
-        private readonly companyCookie: string,
+        private readonly professionalCookie: string,
         private readonly cookieOptions: CookieOptions
     ) {}
 
@@ -25,18 +25,18 @@ export class ExpressContextActions {
         this.response.cookie(this.authCookie, token.toString(), cookieOptions);
     }
 
-    public setCompany(companyId: CompanyId | null): void {
+    public setProfessional(professionalId: ProfessionalId | null): void {
         const cookieOptions: CookieOptions = {
             ...this.cookieOptions,
-            maxAge: companyId === null ? undefined : 7 * 24 * 3600 * 1000, // 1 week
+            maxAge: professionalId === null ? undefined : 7 * 24 * 3600 * 1000, // 1 week
         };
 
-        if (companyId === null) {
-            this.response.clearCookie(this.companyCookie, cookieOptions);
+        if (professionalId === null) {
+            this.response.clearCookie(this.professionalCookie, cookieOptions);
 
             return;
         }
 
-        this.response.cookie(this.companyCookie, companyId.toString(), cookieOptions);
+        this.response.cookie(this.professionalCookie, professionalId.toString(), cookieOptions);
     }
 }

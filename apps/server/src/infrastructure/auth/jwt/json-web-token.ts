@@ -1,10 +1,10 @@
 import type {JwtPayload} from 'jsonwebtoken';
 import * as jwt from 'jsonwebtoken';
 import {z} from 'zod';
-import {CompanyId} from '../../../domain/company/entities';
 import {UserId} from '../../../domain/user/entities';
 import type {TokenData} from '../../../domain/user/token';
 import {Token, TokenScope} from '../../../domain/user/token';
+import { ProfessionalId } from '@domain/professional/entities';
 
 type JsonWebTokenOptions = {
     data: TokenData;
@@ -30,7 +30,7 @@ export class JsonWebToken extends Token {
             aud: z.literal(this.AUDIENCE),
             scope: z.array(z.nativeEnum(TokenScope)),
             sub: z.string().uuid(),
-            companies: z.array(z.string().uuid()),
+            professionalId: z.string().uuid().nullable(),
             metadata: z.record(z.string(), z.union([z.string(), z.number(), z.boolean()])).optional(),
         })
         .strict();
@@ -63,7 +63,7 @@ export class JsonWebToken extends Token {
             expirationTime: new Date(payload.exp * 1000),
             issueTime: new Date(payload.iat * 1000),
             userId: UserId.from(payload.sub),
-            companies: payload.companies.map((id) => CompanyId.from(id)),
+            professionalId: payload.professionalId ? ProfessionalId.from(payload.professionalId) : null,
             scope: payload.scope,
             metadata: payload.metadata,
         };
@@ -86,7 +86,7 @@ export class JsonWebToken extends Token {
             aud: JsonWebToken.AUDIENCE,
             scope: [...data.scope],
             sub: data.userId.toString(),
-            companies: data.companies.map((id) => id.toString()),
+            professionalId: data.professionalId?.toString() ?? null,
             metadata: data.metadata,
         } satisfies z.infer<typeof this.CLAIM_VALIDATION>;
     }
