@@ -1,10 +1,10 @@
-import {Injectable} from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import * as PrismaClient from '@prisma/client';
-import {Professional, ProfessionalId} from '../../domain/professional/entities';
-import {ProfessionalRepository} from '../../domain/professional/professional.repository';
-import {ProfessionalMapper} from '../mappers/professional.mapper';
-import {PrismaService} from './prisma';
-import {PrismaRepository} from './prisma.repository';
+import { Professional, ProfessionalId } from '../../domain/professional/entities';
+import { ProfessionalRepository } from '../../domain/professional/professional.repository';
+import { ProfessionalMapper } from '../mappers/professional.mapper';
+import { PrismaService } from './prisma';
+import { PrismaRepository } from './prisma.repository';
 import { PrismaProvider } from './prisma/prisma.provider';
 
 export type ProfessionalModel = PrismaClient.Professional;
@@ -22,6 +22,9 @@ export class ProfessionalPrismaRepository extends PrismaRepository implements Pr
         const professional = await this.prisma.professional.findUnique({
             where: {
                 id: id.toString(),
+            },
+            include: {
+                person: true,
             },
         });
 

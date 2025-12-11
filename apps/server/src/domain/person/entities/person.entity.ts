@@ -1,7 +1,7 @@
-import {AggregateRoot, type AllEntityProps, type EntityJson, type EntityProps} from '../../@shared/entity';
-import {EntityId} from '../../@shared/entity/id';
-import {InvalidInputException} from '../../@shared/exceptions';
-import type {DocumentId, Phone} from '../../@shared/value-objects';
+import { AggregateRoot, type AllEntityProps, type EntityJson, type EntityProps } from '../../@shared/entity';
+import { EntityId } from '../../@shared/entity/id';
+import { InvalidInputException } from '../../@shared/exceptions';
+import type { DocumentId, Phone } from '../../@shared/value-objects';
 
 export type PersonProps = EntityProps<Person>;
 export type UpdatePerson = Partial<PersonProps>;
@@ -19,7 +19,7 @@ export class Person extends AggregateRoot<PersonId> {
     name: string;
     documentId: DocumentId;
     phone: Phone | null;
-    gender?: Gender | null;
+    gender: Gender | null;
     personType: PersonType;
     constructor(props: AllEntityProps<Person>) {
         super(props);
