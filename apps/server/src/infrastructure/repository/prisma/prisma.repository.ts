@@ -1,15 +1,15 @@
-import type {MaybeAuthenticatedActor} from '../../../domain/@shared/actor'; 
+import {Injectable} from '@nestjs/common';
+import PrismaClient, {Prisma} from '@prisma/client';
+import type {MaybeAuthenticatedActor} from '../../../domain/@shared/actor';
 import {PaginatedList, Pagination} from '../../../domain/@shared/repository';
 import {DomainEvent, Event} from '../../../domain/event';
 import {EventRepository, EventSearchFilter, EventSortOptions} from '../../../domain/event/event.repository';
 import {EventType} from '../../../domain/event/event.type';
-import {Injectable} from '@nestjs/common';
-import PrismaClient, {Prisma} from '@prisma/client';
 import type {EventModel as EventDomainModel} from '../../../domain/event/models/event.model';
+import {ProfessionalId} from '../../../domain/professional/entities';
 import {EventMapper} from '../../mappers';
-import {PrismaProvider} from './prisma.provider';
 import {PrismaRepository} from '../prisma.repository';
-import { ProfessionalId } from '../../../domain/professional/entities';
+import {PrismaProvider} from './prisma.provider';
 
 export type EventDbModel = PrismaClient.Event;
 

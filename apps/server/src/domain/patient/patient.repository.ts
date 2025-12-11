@@ -1,5 +1,5 @@
-import { PersonId } from '@domain/person/entities';
-import {Patient, } from './entities';
+import type {PersonId} from '@domain/person/entities';
+import type {Patient} from './entities';
 
 export interface PatientRepository {
     findById(id: PersonId): Promise<Patient | null>;

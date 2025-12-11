@@ -1,4 +1,4 @@
-import type {CompanyId} from '../../company/entities';
+import type {ProfessionalId} from '../../professional/entities';
 import type {UserId} from '../../user/entities';
 import type {UserRepository} from '../../user/user.repository';
 import {GlobalRole} from '../global-role';
@@ -16,7 +16,7 @@ export class GlobalAuthorizer extends Authorizer {
         super();
     }
 
-    async getPermissions(_: CompanyId | null, userId: UserId): Promise<Set<Permission>> {
+    async getPermissions(_: ProfessionalId | null, userId: UserId): Promise<Set<Permission>> {
         const user = await this.userRepository.findById(userId);
 
         if (user === null) {

@@ -1,4 +1,4 @@
-import { ProfessionalId } from '@domain/professional/entities';
+import type {ProfessionalId} from '@domain/professional/entities';
 import type {UserId} from '../entities';
 
 export enum TokenScope {
@@ -9,6 +9,7 @@ export enum TokenScope {
 
 export type TokenData = {
     readonly userId: UserId;
+    readonly professionals: ProfessionalId[];
     readonly professionalId: ProfessionalId | null;
     readonly issueTime: Date;
     readonly expirationTime: Date;
@@ -18,6 +19,8 @@ export type TokenData = {
 
 export abstract class Token implements TokenData {
     readonly userId: UserId;
+
+    readonly professionals: ProfessionalId[];
 
     readonly professionalId: ProfessionalId | null;
 
@@ -31,6 +34,7 @@ export abstract class Token implements TokenData {
 
     protected constructor(metadata: TokenData) {
         this.userId = metadata.userId;
+        this.professionals = metadata.professionals;
         this.professionalId = metadata.professionalId;
         this.issueTime = metadata.issueTime;
         this.expirationTime = metadata.expirationTime;
@@ -41,6 +45,7 @@ export abstract class Token implements TokenData {
     toJSON(): TokenData {
         return {
             userId: this.userId,
+            professionals: this.professionals,
             professionalId: this.professionalId,
             issueTime: this.issueTime,
             expirationTime: this.expirationTime,
@@ -65,6 +70,10 @@ export type TokenOptions = {
      * The professional that the token will have access to.
      */
     professionalId?: ProfessionalId;
+    /**
+     * The professionals that the token will have access to.
+     */
+    professionals?: ProfessionalId[];
     /**
      * Additional metadata to include in the token.
      */

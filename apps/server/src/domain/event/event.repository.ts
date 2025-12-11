@@ -1,6 +1,6 @@
 import type {MaybeAuthenticatedActor} from '../@shared/actor';
 import type {PaginatedList, Pagination} from '../@shared/repository';
-import { ProfessionalId } from '../professional/entities';
+import type {ProfessionalId} from '../professional/entities';
 import type {DomainEvent, Event} from './event';
 import type {EventType} from './event.type';
 import type {EventModel} from './models/event.model';

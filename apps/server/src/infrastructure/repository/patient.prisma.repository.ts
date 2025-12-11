@@ -3,16 +3,16 @@ import * as PrismaClient from '@prisma/client';
 import {Patient, PatientId} from '../../domain/patient/entities';
 import {PatientRepository} from '../../domain/patient/patient.repository';
 import {PatientMapper} from '../mappers/patient.mapper';
+import {PrismaProvider} from './prisma/prisma.provider';
 import {PrismaRepository} from './prisma.repository';
-import { PrismaProvider } from './prisma/prisma.provider';
 
 export type PatientModel = PrismaClient.Patient;
 
 @Injectable()
 export class PatientPrismaRepository extends PrismaRepository implements PatientRepository {
     constructor(
-        readonly prismaProvider: PrismaProvider, 
-        private readonly mapper: PatientMapper,
+        readonly prismaProvider: PrismaProvider,
+        private readonly mapper: PatientMapper
     ) {
         super(prismaProvider);
     }
@@ -21,6 +21,9 @@ export class PatientPrismaRepository extends PrismaRepository implements Patient
         const patient = await this.prisma.patient.findUnique({
             where: {
                 id: id.toString(),
+            },
+            include: {
+                person: true,
             },
         });
 

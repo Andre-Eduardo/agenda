@@ -1,24 +1,28 @@
-import { Injectable } from '@nestjs/common';
-import { ProfessionalDto } from '../../application/professional/dtos/professional.dto';
-import { Gender, PersonId, PersonType } from '../../domain/person/entities';
-import { Professional, ProfessionalConfigId, ProfessionalId } from '../../domain/professional/entities';
-import { UserId } from '../../domain/user/entities/user.entity';
-import { MapperWithDto } from './mapper';
-import { DocumentId, Phone } from '@domain/@shared/value-objects';
-import PrismaClient, { Prisma } from '@prisma/client';
+import {DocumentId, Phone} from '@domain/@shared/value-objects';
+import {Injectable} from '@nestjs/common';
+import PrismaClient, {Prisma} from '@prisma/client';
+import {ProfessionalDto} from '../../application/professional/dtos/professional.dto';
+import {Gender, PersonType} from '../../domain/person/entities';
+import {Professional, ProfessionalConfigId, ProfessionalId} from '../../domain/professional/entities';
+import {UserId} from '../../domain/user/entities/user.entity';
+import {MapperWithDto} from './mapper';
 
-const ProfessionalWithPerson = Prisma.validator<Prisma.ProfessionalDefaultArgs>()(
-    {
-        include: {
-            person: true,
-        },
-    }
-);
+const ProfessionalWithPerson = Prisma.validator<Prisma.ProfessionalDefaultArgs>()({
+    include: {
+        person: true,
+    },
+});
+
 export type ProfessionalReadModel = Prisma.ProfessionalGetPayload<typeof ProfessionalWithPerson>;
 export type ProfessionalWriteModel = PrismaClient.Professional;
 
 @Injectable()
-export class ProfessionalMapper extends MapperWithDto<Professional, ProfessionalReadModel, ProfessionalDto, ProfessionalWriteModel> {
+export class ProfessionalMapper extends MapperWithDto<
+    Professional,
+    ProfessionalReadModel,
+    ProfessionalDto,
+    ProfessionalWriteModel
+> {
     toDomain(model: ProfessionalReadModel): Professional {
         return new Professional({
             ...model,

@@ -1,7 +1,13 @@
-import {AggregateRoot, type AllEntityProps, type EntityJson, type EntityProps, type CreateEntity} from '../../@shared/entity';
+import {
+    AggregateRoot,
+    type AllEntityProps,
+    type EntityJson,
+    type EntityProps,
+    type CreateEntity,
+} from '../../@shared/entity';
 import {EntityId} from '../../@shared/entity/id';
-import {PatientId} from '../../patient/entities';
-import {ProfessionalId} from '../../professional/entities';
+import type {PatientId} from '../../patient/entities';
+import type {ProfessionalId} from '../../professional/entities';
 import {AppointmentCreatedEvent, AppointmentChangedEvent, AppointmentDeletedEvent} from '../events';
 
 export type AppointmentProps = EntityProps<Appointment>;
@@ -31,7 +37,7 @@ export class Appointment extends AggregateRoot<AppointmentId> {
         this.canceledAt = props.canceledAt ?? null;
         this.canceledReason = props.canceledReason ?? null;
         this.note = props.note ?? null;
-        this.status = props.status ?? AppointmentStatus.SCHEDULED; 
+        this.status = props.status ?? AppointmentStatus.SCHEDULED;
         this.validate();
     }
 
@@ -65,21 +71,23 @@ export class Appointment extends AggregateRoot<AppointmentId> {
         if (props.date !== undefined) {
             this.date = props.date;
         }
+
         if (props.canceledAt !== undefined) {
             this.canceledAt = props.canceledAt;
         }
+
         if (props.canceledReason !== undefined) {
             this.canceledReason = props.canceledReason;
         }
+
         if (props.note !== undefined) {
             this.note = props.note;
         }
-        
+
         this.validate();
 
         this.addEvent(new AppointmentChangedEvent({oldState, newState: this}));
     }
-
 
     validate(): void {
         // Validation logic

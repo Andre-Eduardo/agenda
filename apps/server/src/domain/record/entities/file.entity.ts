@@ -1,6 +1,6 @@
 import {Entity, type AllEntityProps, type EntityJson, type EntityProps} from '../../@shared/entity';
 import {EntityId} from '../../@shared/entity/id';
-import {RecordId} from './record.entity';
+import type {RecordId} from './record.entity';
 
 export type FileProps = EntityProps<File>;
 export type UpdateFile = Partial<FileProps>;
@@ -35,9 +35,11 @@ export class File extends Entity<FileId> {
         if (props.fileName !== undefined) {
             this.fileName = props.fileName;
         }
+
         if (props.url !== undefined) {
             this.url = props.url;
         }
+
         if (props.description !== undefined) {
             this.description = props.description;
         }

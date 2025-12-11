@@ -1,11 +1,12 @@
-import {ProfessionalDto} from '../dtos/professional.dto';
+import {Injectable} from '@nestjs/common';
+import {ProfessionalRepository} from '../../../domain/professional/professional.repository';
 import {ProfessionalMapper} from '../../../infrastructure/mappers/professional.mapper';
 
 @Injectable()
 export class ProfessionalService {
     constructor(
         private readonly repository: ProfessionalRepository,
-        private readonly mapper: ProfessionalMapper,
+        private readonly mapper: ProfessionalMapper
     ) {}
 
     // Example method demonstrating DTO usage

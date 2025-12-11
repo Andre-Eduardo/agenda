@@ -1,11 +1,10 @@
 import {Injectable} from '@nestjs/common';
 import * as PrismaClient from '@prisma/client';
-import {Appointment, AppointmentId} from '../../domain/appointment/entities';
 import {AppointmentRepository} from '../../domain/appointment/appointment.repository';
+import {Appointment, AppointmentId} from '../../domain/appointment/entities';
 import {AppointmentMapper} from '../mappers/appointment.mapper';
-import {PrismaService} from './prisma';
+import {PrismaProvider} from './prisma/prisma.provider';
 import {PrismaRepository} from './prisma.repository';
-import { PrismaProvider } from './prisma/prisma.provider';
 
 export type AppointmentModel = PrismaClient.Appointment;
 
@@ -13,7 +12,7 @@ export type AppointmentModel = PrismaClient.Appointment;
 export class AppointmentPrismaRepository extends PrismaRepository implements AppointmentRepository {
     constructor(
         readonly prismaProvider: PrismaProvider,
-        private readonly mapper: AppointmentMapper,
+        private readonly mapper: AppointmentMapper
     ) {
         super(prismaProvider);
     }

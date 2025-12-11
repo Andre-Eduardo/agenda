@@ -1,9 +1,15 @@
-import {AggregateRoot, type AllEntityProps, type EntityJson, type EntityProps, type CreateEntity} from '../../@shared/entity';
+import type {PersonId} from '@domain/person/entities';
+import {
+    AggregateRoot,
+    type AllEntityProps,
+    type EntityJson,
+    type EntityProps,
+    type CreateEntity,
+} from '../../@shared/entity';
 import {EntityId} from '../../@shared/entity/id';
-import {ProfessionalId} from '../../professional/entities';
-import {File} from './file.entity';
+import type {ProfessionalId} from '../../professional/entities';
 import {RecordCreatedEvent, RecordChangedEvent, RecordDeletedEvent} from '../events';
-import { PersonId } from '@domain/person/entities';
+import type {File} from './file.entity';
 
 export type RecordProps = EntityProps<Record>;
 export type CreateRecord = CreateEntity<Record>;
@@ -69,7 +75,7 @@ export class Record extends AggregateRoot<RecordId> {
             patientId: this.patientId.toJSON(),
             professionalId: this.professionalId.toJSON(),
             description: this.description,
-            files: this.files.map(f => f.toJSON()),
+            files: this.files.map((f) => f.toJSON()),
             createdAt: this.createdAt.toJSON(),
             updatedAt: this.updatedAt.toJSON(),
         };

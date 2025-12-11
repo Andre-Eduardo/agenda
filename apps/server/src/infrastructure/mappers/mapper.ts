@@ -1,5 +1,5 @@
-import type { PaginatedDto } from '../../application/@shared/dto';
-import type { PaginatedList } from '../../domain/@shared/repository';
+import type {PaginatedDto} from '../../application/@shared/dto';
+import type {PaginatedList} from '../../domain/@shared/repository';
 
 abstract class BaseMapper<E, ReadModel, WriteModel = ReadModel> {
     toDomainList(models: ReadModel[]): E[] {
@@ -11,7 +11,11 @@ abstract class BaseMapper<E, ReadModel, WriteModel = ReadModel> {
     abstract toPersistence(entity: E): WriteModel;
 }
 
-export abstract class MapperWithDto<E, ReadModel, D, WriteModel = ReadModel> extends BaseMapper<E, ReadModel, WriteModel> {
+export abstract class MapperWithDto<E, ReadModel, D, WriteModel = ReadModel> extends BaseMapper<
+    E,
+    ReadModel,
+    WriteModel
+> {
     toDtoList(entities: E[]): D[] {
         return entities.map((entity) => this.toDto(entity));
     }
@@ -26,4 +30,8 @@ export abstract class MapperWithDto<E, ReadModel, D, WriteModel = ReadModel> ext
     abstract toDto(entity: E, ...args: never[]): D;
 }
 
-export abstract class MapperWithoutDto<E, ReadModel, WriteModel = ReadModel> extends BaseMapper<E, ReadModel, WriteModel> { }
+export abstract class MapperWithoutDto<E, ReadModel, WriteModel = ReadModel> extends BaseMapper<
+    E,
+    ReadModel,
+    WriteModel
+> {}

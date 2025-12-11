@@ -4,24 +4,24 @@ import {Request} from 'express';
 import {AccessDeniedException, AccessDeniedReason, UnauthenticatedException} from '../../../domain/@shared/exceptions';
 import {Permission} from '../../../domain/auth';
 import {Authorizer} from '../../../domain/auth/authorizer';
-import {CompanyId} from '../../../domain/company/entities';
+import {ProfessionalId} from '../../../domain/professional/entities';
 import {Token, TokenProvider, TokenScope} from '../../../domain/user/token';
 import {AUTHORIZE_KEY} from './authorize.decorator';
-import {BYPASS_COMPANY} from './bypass-company.decorator';
+import {BYPASS_PROFESSIONAL} from './bypass-professional.decorator';
 import {IS_PUBLIC_KEY} from './public.decorator';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
     constructor(
         private readonly authCookie: string,
-        private readonly companyCookie: string,
+        private readonly professionalCookie: string,
         private readonly tokenProvider: TokenProvider,
         private readonly authorizer: Authorizer,
         private readonly reflector: Reflector
     ) {}
 
     async canActivate(context: ExecutionContext): Promise<boolean> {
-        const isPublic = this.reflector.getAllAndOverride<boolean | undefined>(IS_PUBLIC_KEY, [
+        const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [
             context.getHandler(),
             context.getClass(),
         ]);
@@ -45,15 +45,18 @@ export class AuthGuard implements CanActivate {
             throw new UnauthenticatedException('Invalid token.');
         }
 
-        const company = this.getCompanyFromRequest(request);
-        const shouldBypassCompany = this.reflector.getAllAndOverride<boolean>(BYPASS_COMPANY, [
+        const professionalId = this.getProfessionalFromRequest(request);
+        const shouldBypassProfessional = this.reflector.getAllAndOverride<boolean>(BYPASS_PROFESSIONAL, [
             context.getHandler(),
             context.getClass(),
         ]);
 
-        if (!shouldBypassCompany && (company === null || !token.companies.some((id) => id.equals(company)))) {
+        if (
+            !shouldBypassProfessional &&
+            (professionalId === null || !token.professionals.some((id) => id.equals(professionalId)))
+        ) {
             throw new AccessDeniedException(
-                'Token does not have access to the requested company.',
+                'Token does not have access to the requested professional.',
                 AccessDeniedReason.NOT_ALLOWED
             );
         }
@@ -70,7 +73,7 @@ export class AuthGuard implements CanActivate {
         }
 
         for (const permission of permissions) {
-            if (await this.authorizer.validate(company, token.userId, permission)) {
+            if (await this.authorizer.validate(professionalId, token.userId, permission)) {
                 return true;
             }
         }
@@ -96,14 +99,15 @@ export class AuthGuard implements CanActivate {
         }
     }
 
-    private getCompanyFromRequest(request: Request): CompanyId | null {
+    private getProfessionalFromRequest(request: Request): ProfessionalId | null {
+        // Keeping 'companyCookie' name for now if it's injected config key, but logic uses ProfessionalId
         const signedCookies = request.signedCookies as Record<string, string> | undefined;
-        const cookie = signedCookies?.[this.companyCookie];
+        const cookie = signedCookies?.[this.professionalCookie];
 
         if (!cookie) {
             return null;
         }
 
-        return CompanyId.from(cookie);
+        return ProfessionalId.from(cookie);
     }
 }

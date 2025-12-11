@@ -18,14 +18,15 @@ export class RecordMapper extends MapperWithoutDto<Record, RecordModel> {
             id: RecordId.from(model.id),
             patientId: PatientId.from(model.patientId),
             professionalId: ProfessionalId.from(model.professionalId),
-            files: model.files?.map(
-                (file) =>
-                    new File({
-                        ...file,
-                        id: FileId.from(file.id),
-                        recordId: RecordId.from(file.recordId),
-                    }),
-            ) ?? [],
+            files:
+                model.files?.map(
+                    (file) =>
+                        new File({
+                            ...file,
+                            id: FileId.from(file.id),
+                            recordId: RecordId.from(file.recordId),
+                        })
+                ) ?? [],
         });
     }
 
@@ -38,7 +39,7 @@ export class RecordMapper extends MapperWithoutDto<Record, RecordModel> {
             createdAt: entity.createdAt,
             updatedAt: entity.updatedAt,
             // Files are usually handled separately or via nested writes, but for the model return:
-            files: entity.files.map(file => ({
+            files: entity.files.map((file) => ({
                 id: file.id.toString(),
                 recordId: file.recordId.toString(),
                 fileName: file.fileName,

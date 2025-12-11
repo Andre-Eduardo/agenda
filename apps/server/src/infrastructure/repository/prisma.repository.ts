@@ -1,9 +1,6 @@
-import type {Entity} from '../../domain/@shared/entity';
-import type {Identifier} from '../../domain/@shared/entity/id/identifier.base';
-import type {Pagination} from '../../domain/@shared/repository';
-import {Propagation} from '../../domain/@shared/repository';
-import {Prisma} from '@prisma/client';  
+import {Prisma} from '@prisma/client';
 import type {PrismaClient} from '@prisma/client';
+import type {Pagination} from '../../domain/@shared/repository';
 import type {PrismaProvider} from './prisma/prisma.provider';
 import type {PrismaService} from './prisma/prisma.service';
 import type {PrismaViolation} from './prisma/prisma.violations';

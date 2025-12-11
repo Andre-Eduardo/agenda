@@ -61,4 +61,3 @@ export class ProfessionalConfigId extends EntityId<'ProfessionalConfigId'> {
         return new ProfessionalConfigId();
     }
 }
-

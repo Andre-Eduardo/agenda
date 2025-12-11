@@ -1,11 +1,10 @@
-import { Injectable } from '@nestjs/common';
+import {Injectable} from '@nestjs/common';
 import * as PrismaClient from '@prisma/client';
-import { Professional, ProfessionalId } from '../../domain/professional/entities';
-import { ProfessionalRepository } from '../../domain/professional/professional.repository';
-import { ProfessionalMapper } from '../mappers/professional.mapper';
-import { PrismaService } from './prisma';
-import { PrismaRepository } from './prisma.repository';
-import { PrismaProvider } from './prisma/prisma.provider';
+import {Professional, ProfessionalId} from '../../domain/professional/entities';
+import {ProfessionalRepository} from '../../domain/professional/professional.repository';
+import {ProfessionalMapper} from '../mappers/professional.mapper';
+import {PrismaProvider} from './prisma/prisma.provider';
+import {PrismaRepository} from './prisma.repository';
 
 export type ProfessionalModel = PrismaClient.Professional;
 
@@ -13,7 +12,7 @@ export type ProfessionalModel = PrismaClient.Professional;
 export class ProfessionalPrismaRepository extends PrismaRepository implements ProfessionalRepository {
     constructor(
         readonly prismaProvider: PrismaProvider,
-        private readonly mapper: ProfessionalMapper,
+        private readonly mapper: ProfessionalMapper
     ) {
         super(prismaProvider);
     }

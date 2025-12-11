@@ -6,15 +6,15 @@ import {PersonRepository} from '../../../domain/person/person.repository';
 import {ProfessionalRepository} from '../../../domain/professional/professional.repository';
 import {RecordRepository} from '../../../domain/record/record.repository';
 import {UserRepository} from '../../../domain/user/user.repository';
+import {MapperModule} from '../../mappers';
 import {AppointmentPrismaRepository} from '../appointment.prisma.repository';
 import {EventPrismaRepository} from '../event.prisma.repository';
 import {PatientPrismaRepository} from '../patient.prisma.repository';
 import {PersonPrismaRepository} from '../person.prisma.repository';
-import {PrismaService} from '.';
 import {ProfessionalPrismaRepository} from '../professional.prisma.repository';
 import {RecordPrismaRepository} from '../record.prisma.repository';
 import {UserPrismaRepository} from '../user.prisma.repository';
-import {MapperModule} from '../../mappers';
+import {PrismaService} from '.';
 
 const repositories: Provider[] = [
     {

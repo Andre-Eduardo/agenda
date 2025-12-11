@@ -5,13 +5,7 @@ import {EventModule} from './event';
 import {LoggerModule} from './logger';
 import {RepositoryModule} from './repository';
 
-const sharedModules = [
-    AuthModule,
-    ConfigModule,
-    EventModule,
-    LoggerModule.register(),
-    RepositoryModule,
-];
+const sharedModules = [AuthModule, ConfigModule, EventModule, LoggerModule.register(), RepositoryModule];
 
 @Module({
     imports: sharedModules,

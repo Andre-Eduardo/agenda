@@ -2,15 +2,14 @@ import {Injectable} from '@nestjs/common';
 import {Prisma} from '@prisma/client';
 import {Email} from '../../domain/@shared/value-objects';
 import {GlobalRole} from '../../domain/auth';
-import {ProfessionalId} from '../../domain/professional/entities';
 import {PersonId} from '../../domain/person/entities';
+import {ProfessionalId} from '../../domain/professional/entities';
 import {User, UserId} from '../../domain/user/entities';
 import {DuplicateEmailException, DuplicateUsernameException} from '../../domain/user/user.exceptions';
 import {UserRepository} from '../../domain/user/user.repository';
 import {ObfuscatedPassword, Username} from '../../domain/user/value-objects';
-import {PrismaService} from './prisma';
+import {PrismaProvider} from './prisma/prisma.provider';
 import {PrismaRepository} from './prisma.repository';
-import { PrismaProvider } from './prisma/prisma.provider';
 
 const userSelect = Prisma.validator<Prisma.UserDefaultArgs>()({
     include: {
@@ -22,9 +21,7 @@ export type UserModel = Prisma.UserGetPayload<typeof userSelect>;
 
 @Injectable()
 export class UserPrismaRepository extends PrismaRepository implements UserRepository {
-    constructor(
-        readonly prismaProvider: PrismaProvider,
-    ) {
+    constructor(readonly prismaProvider: PrismaProvider) {
         super(prismaProvider);
     }
 
@@ -104,7 +101,6 @@ export class UserPrismaRepository extends PrismaRepository implements UserReposi
         return user === null ? null : UserPrismaRepository.normalize(user);
     }
 
-
     async save(user: User): Promise<void> {
         const {professionals, ...userModel} = UserPrismaRepository.denormalize(user);
         const professionalIds = user.professionals.map((id) => ({id: id.toString()}));
@@ -127,7 +123,6 @@ export class UserPrismaRepository extends PrismaRepository implements UserReposi
                     },
                 },
             });
-
         } catch (e) {
             if (this.checkUniqueViolation(e, 'username')) {
                 throw new DuplicateUsernameException('Duplicate username.');

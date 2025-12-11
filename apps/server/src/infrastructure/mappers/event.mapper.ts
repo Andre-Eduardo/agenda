@@ -1,11 +1,11 @@
+import {Injectable} from '@nestjs/common';
+import PrismaClient, {Prisma} from '@prisma/client';
 import type {MaybeAuthenticatedActor} from '../../domain/@shared/actor';
 import type {DomainEvent, Event} from '../../domain/event';
 import type {EventType} from '../../domain/event/event.type';
-import {Injectable} from '@nestjs/common';
-import PrismaClient, {Prisma} from '@prisma/client';
 import type {EventModel as EventDomainModel, EventPayloadMap} from '../../domain/event/models/event.model';
+import {ProfessionalDomainEvent} from '../../domain/professional/events';
 import {MapperWithoutDto} from './mapper';
-import { ProfessionalDomainEvent } from '../../domain/professional/events';
 
 export type EventDbModel = PrismaClient.Event;
 

@@ -22,7 +22,6 @@ export class UserDto extends EntityDto {
     })
     name!: string;
 
-
     constructor(user: User) {
         super(user);
         this.username = user.username.toString();

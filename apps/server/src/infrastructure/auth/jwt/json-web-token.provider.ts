@@ -1,7 +1,15 @@
 import {Injectable} from '@nestjs/common';
+
+// Step 202 showed import * as jwt from 'jsonwebtoken'.
+// Step 205 showed update to use @nestjs/jwt JwtService?
+// The error in Step 226 "Cannot find module '@nestjs/jwt'" suggests I introduced a dependency that might not be there or configured.
+// I should stick to original design if possible, or ensure @nestjs/jwt is okay.
+// Package.json (step 135) DOES NOT list @nestjs/jwt. It has `jsonwebtoken`.
+// So I should use `jsonwebtoken`.
+
 import * as jwt from 'jsonwebtoken';
-import type {UserId} from '../../../domain/user/entities';
-import type {Token, TokenProvider, TokenOptions} from '../../../domain/user/token';
+import {UserId} from '../../../domain/user/entities';
+import {TokenOptions, TokenProvider} from '../../../domain/user/token';
 import {JsonWebToken} from './json-web-token';
 
 @Injectable()
@@ -11,23 +19,24 @@ export class JsonWebTokenProvider implements TokenProvider<JsonWebToken> {
         private readonly secret: string | Buffer
     ) {}
 
-    issue(userId: UserId, options?: TokenOptions): JsonWebToken {
+    issue(userId: UserId, options: TokenOptions = {}): JsonWebToken {
         const now = new Date();
 
         return JsonWebToken.signed(
             {
                 userId,
-                professionalId: options?.professionalId ?? null,
-                scope: options?.scope ?? [],
+                professionalId: options.professionalId ?? null,
+                professionals: options.professionals ?? [],
+                scope: options.scope ?? [],
                 issueTime: now,
-                expirationTime: new Date(now.getTime() + (options?.expiration ?? this.expiration) * 1000),
-                metadata: options?.metadata,
+                expirationTime: new Date(now.getTime() + (options.expiration ?? this.expiration) * 1000),
+                metadata: options.metadata,
             },
             this.secret
         );
     }
 
-    validate(token: Token): boolean {
+    validate(token: JsonWebToken): boolean {
         if (!(token instanceof JsonWebToken)) {
             return false;
         }

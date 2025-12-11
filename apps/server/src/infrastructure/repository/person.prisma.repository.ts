@@ -3,9 +3,8 @@ import * as PrismaClient from '@prisma/client';
 import {Person, PersonId} from '../../domain/person/entities';
 import {PersonRepository} from '../../domain/person/person.repository';
 import {PersonMapper} from '../mappers/person.mapper';
-import {PrismaService} from './prisma';
+import {PrismaProvider} from './prisma/prisma.provider';
 import {PrismaRepository} from './prisma.repository';
-import { PrismaProvider } from './prisma/prisma.provider';
 
 export type PersonModel = PrismaClient.Person;
 
@@ -13,7 +12,7 @@ export type PersonModel = PrismaClient.Person;
 export class PersonPrismaRepository extends PrismaRepository implements PersonRepository {
     constructor(
         readonly prismaProvider: PrismaProvider,
-        private readonly mapper: PersonMapper,
+        private readonly mapper: PersonMapper
     ) {
         super(prismaProvider);
     }

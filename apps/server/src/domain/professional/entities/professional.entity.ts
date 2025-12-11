@@ -1,9 +1,8 @@
-import {AggregateRoot, type AllEntityProps, type EntityJson, type EntityProps, type CreateEntity} from '../../@shared/entity';
-import {EntityId} from '../../@shared/entity/id';
+import {type AllEntityProps, type EntityJson, type EntityProps, type CreateEntity} from '../../@shared/entity';
 import {Person, PersonId, PersonType} from '../../person/entities';
-import {UserId} from '../../user/entities/user.entity';
-import {ProfessionalConfigId} from './professional-config';
+import type {UserId} from '../../user/entities/user.entity';
 import {ProfessionalCreatedEvent, ProfessionalChangedEvent, ProfessionalDeletedEvent} from '../events';
+import type {ProfessionalConfigId} from './professional-config';
 
 export type ProfessionalProps = EntityProps<Professional>;
 export type CreateProfessional = CreateEntity<Professional>;
@@ -26,7 +25,7 @@ export class Professional extends Person {
         const now = new Date();
 
         const professional = new Professional({
-            ...props,   
+            ...props,
             id: ProfessionalId.generate(),
             name: props.name,
             documentId: props.documentId,
@@ -55,7 +54,7 @@ export class Professional extends Person {
         if (props.userId !== undefined) {
             this.userId = props.userId;
         }
-      
+
         if (props.specialty !== undefined) {
             this.specialty = props.specialty;
         }
@@ -64,7 +63,6 @@ export class Professional extends Person {
 
         this.addEvent(new ProfessionalChangedEvent({oldState, newState: this}));
     }
-
 
     validate(): void {
         // Add validation logic if needed

@@ -1,7 +1,7 @@
-import { AggregateRoot, type AllEntityProps, type EntityJson, type EntityProps } from '../../@shared/entity';
-import { EntityId } from '../../@shared/entity/id';
-import { InvalidInputException } from '../../@shared/exceptions';
-import type { DocumentId, Phone } from '../../@shared/value-objects';
+import {AggregateRoot, type AllEntityProps, type EntityJson, type EntityProps} from '../../@shared/entity';
+import {EntityId} from '../../@shared/entity/id';
+import {InvalidInputException} from '../../@shared/exceptions';
+import type {DocumentId, Phone} from '../../@shared/value-objects';
 
 export type PersonProps = EntityProps<Person>;
 export type UpdatePerson = Partial<PersonProps>;
@@ -21,6 +21,7 @@ export class Person extends AggregateRoot<PersonId> {
     phone: Phone | null;
     gender: Gender | null;
     personType: PersonType;
+
     constructor(props: AllEntityProps<Person>) {
         super(props);
 
@@ -55,7 +56,6 @@ export class Person extends AggregateRoot<PersonId> {
             this.documentId = props.documentId;
         }
 
-
         if (props.phone !== undefined) {
             this.phone = props.phone;
         }
@@ -74,7 +74,12 @@ export class Person extends AggregateRoot<PersonId> {
         }
 
         if (fields.length === 0 || fields.includes('gender')) {
-            if (this.gender !== null && this.gender !== Gender.MALE && this.gender !== Gender.FEMALE && this.gender !== Gender.OTHER) {
+            if (
+                this.gender !== null &&
+                this.gender !== Gender.MALE &&
+                this.gender !== Gender.FEMALE &&
+                this.gender !== Gender.OTHER
+            ) {
                 throw new InvalidInputException('Invalid gender.');
             }
         }

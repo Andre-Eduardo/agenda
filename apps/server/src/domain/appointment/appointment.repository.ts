@@ -1,4 +1,4 @@
-import {Appointment, AppointmentId} from './entities';
+import type {Appointment, AppointmentId} from './entities';
 
 export interface AppointmentRepository {
     findById(id: AppointmentId): Promise<Appointment | null>;

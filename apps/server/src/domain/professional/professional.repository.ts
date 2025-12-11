@@ -1,5 +1,4 @@
-
-import {Professional, ProfessionalId} from './entities';
+import type {Professional, ProfessionalId} from './entities';
 
 export interface ProfessionalRepository {
     findById(id: ProfessionalId): Promise<Professional | null>;

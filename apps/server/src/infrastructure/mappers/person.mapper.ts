@@ -1,8 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import {Injectable} from '@nestjs/common';
 import * as PrismaClient from '@prisma/client';
-import { DocumentId, Phone } from '../../domain/@shared/value-objects';
-import { Person, PersonId, Gender } from '../../domain/person/entities';
-import { MapperWithoutDto } from './mapper';
+import {DocumentId, Phone} from '../../domain/@shared/value-objects';
+import {Person, PersonId, Gender} from '../../domain/person/entities';
+import {MapperWithoutDto} from './mapper';
 
 export type PersonModel = PrismaClient.Person;
 

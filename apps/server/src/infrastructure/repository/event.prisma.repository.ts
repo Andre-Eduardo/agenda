@@ -2,15 +2,14 @@ import {Injectable} from '@nestjs/common';
 import PrismaClient, {Prisma} from '@prisma/client';
 import type {MaybeAuthenticatedActor} from '../../domain/@shared/actor';
 import {PaginatedList, Pagination} from '../../domain/@shared/repository';
-import {ProfessionalId} from '../../domain/professional/entities';
 import {DomainEvent, Event} from '../../domain/event';
 import {EventRepository, EventSearchFilter, EventSortOptions} from '../../domain/event/event.repository';
 import {EventType} from '../../domain/event/event.type';
 import type {EventModel as EventDomainModel, EventPayloadMap} from '../../domain/event/models/event.model';
-import {PrismaService} from './prisma';
+import {ProfessionalId} from '../../domain/professional/entities';
+import {EventMapper} from '../mappers';
+import {PrismaProvider} from './prisma/prisma.provider';
 import {PrismaRepository} from './prisma.repository';
-import { PrismaProvider } from './prisma/prisma.provider';
-import { EventMapper } from '../mappers';
 
 export type EventDbModel = PrismaClient.Event;
 
@@ -37,13 +36,13 @@ export class EventPrismaRepository extends PrismaRepository implements EventRepo
     private static denormalize(event: Event<DomainEvent, MaybeAuthenticatedActor>): EventModel {
         const {actor, payload: domainEvent} = event;
         // Attempt to extract professionalId if present in event properties
-        const professionalId = (domainEvent as any).professionalId;
+        const {professionalId} = domainEvent as any;
         const {type, timestamp, ...payload} = domainEvent;
 
-        // Remove professionalId from payload if we stored it separately? 
+        // Remove professionalId from payload if we stored it separately?
         // Or keep it. For now, we extract it for the column.
         if ((payload as any).professionalId) {
-             delete (payload as any).professionalId;
+            delete (payload as any).professionalId;
         }
 
         return {

@@ -24,6 +24,11 @@ const config: Config = {
             lines: 100,
         },
     },
+    moduleNameMapper: {
+        '^@domain/(.*)$': '<rootDir>/src/domain/$1',
+        '^@application/(.*)$': '<rootDir>/src/application/$1',
+        '^@infrastructure/(.*)$': '<rootDir>/src/infrastructure/$1',
+    },
     testMatch: ['<rootDir>/src/**/__tests__/*.test.ts'],
     transform: {
         '^.+\\.ts$': [

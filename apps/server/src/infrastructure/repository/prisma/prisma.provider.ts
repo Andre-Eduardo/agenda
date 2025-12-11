@@ -2,8 +2,8 @@ import {randomUUID} from 'crypto';
 import {Injectable} from '@nestjs/common';
 import {Prisma} from '@prisma/client';
 import {ClsService} from 'nestjs-cls';
+import {AtomicExecutor, Propagation} from '../../../domain/@shared/repository';
 import {PrismaService} from './prisma.service';
-import { AtomicExecutor, Propagation } from '../../../domain/@shared/repository';
 
 export type ProviderState = {
     txContext?: {

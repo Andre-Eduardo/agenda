@@ -1,4 +1,4 @@
-import type {CompanyId} from '../../company/entities';
+import type {ProfessionalId} from '../../professional/entities';
 import type {UserId} from '../../user/entities';
 import type {Permission} from '../permission';
 import {Authorizer} from './authorizer';
@@ -11,9 +11,9 @@ export class MultiAuthorizer extends Authorizer {
         this.authorizers = authorizers;
     }
 
-    async getPermissions(companyId: CompanyId | null, userId: UserId): Promise<Set<Permission>> {
+    async getPermissions(professionalId: ProfessionalId | null, userId: UserId): Promise<Set<Permission>> {
         const results = await Promise.all(
-            this.authorizers.map((authorizer) => authorizer.getPermissions(companyId, userId))
+            this.authorizers.map((authorizer) => authorizer.getPermissions(professionalId, userId))
         );
 
         return results.reduce((permissions, result) => {

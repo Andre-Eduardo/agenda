@@ -1,4 +1,4 @@
-import { ProfessionalId } from '@domain/professional/entities';
+import type {ProfessionalId} from '@domain/professional/entities';
 import type {UserId} from '../../user/entities';
 import type {Permission} from '../permission';
 

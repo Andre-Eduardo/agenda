@@ -4,7 +4,7 @@ import {Actor, UnauthenticatedActor} from '../../../domain/@shared/actor';
 import {UserPermission} from '../../../domain/auth';
 import {UserId} from '../../../domain/user/entities';
 import {Authorize, Public} from '../../@shared/auth';
-import {BypassCompany} from '../../@shared/auth/bypass-company.decorator';
+import {BypassProfessional} from '../../@shared/auth/bypass-professional.decorator';
 import {RequestActor} from '../../@shared/auth/request-actor.decorator';
 import {ApiOperation} from '../../@shared/openapi/decorators';
 import {entityIdParam} from '../../@shared/openapi/params';
@@ -27,7 +27,7 @@ import {
     UpdateUserService,
 } from '../services';
 
-@BypassCompany()
+@BypassProfessional()
 @ApiTags('User')
 @Controller('user')
 export class UserController {

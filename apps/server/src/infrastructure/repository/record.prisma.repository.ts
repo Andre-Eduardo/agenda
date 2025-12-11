@@ -3,9 +3,8 @@ import * as PrismaClient from '@prisma/client';
 import {Record, RecordId} from '../../domain/record/entities/record.entity';
 import {RecordRepository} from '../../domain/record/record.repository';
 import {RecordMapper} from '../mappers/record.mapper';
-import {PrismaService} from './prisma';
+import {PrismaProvider} from './prisma/prisma.provider';
 import {PrismaRepository} from './prisma.repository';
-import { PrismaProvider } from './prisma/prisma.provider';
 
 // Define a type that includes the relation
 type RecordWithFiles = PrismaClient.Record & {
@@ -16,7 +15,7 @@ type RecordWithFiles = PrismaClient.Record & {
 export class RecordPrismaRepository extends PrismaRepository implements RecordRepository {
     constructor(
         readonly prismaProvider: PrismaProvider,
-        private readonly mapper: RecordMapper,
+        private readonly mapper: RecordMapper
     ) {
         super(prismaProvider);
     }

@@ -1,6 +1,6 @@
 import {Email} from '../../../@shared/value-objects';
 import {GlobalRole} from '../../../auth';
-import {CompanyId} from '../../../company/entities';
+import {ProfessionalId} from '../../professional/entities';
 import {ObfuscatedPassword, Username} from '../../value-objects';
 import {User, UserId} from '../user.entity';
 
@@ -14,12 +14,12 @@ export function fakeUser(payload: Partial<User> = {}): User {
         username: Username.create('john_doe'),
         email: Email.create('john_doe@example.com'),
         password: ObfuscatedPassword.decode(encodedPassword),
-        firstName: 'John',
-        lastName: 'Doe',
-        globalRole: GlobalRole.NONE,
-        companies: [CompanyId.generate()],
+        name: 'John Doe',
+        professionals: [ProfessionalId.generate()],
         createdAt: new Date(1000),
         updatedAt: new Date(1000),
         ...payload,
+        globalRole: payload.globalRole ?? GlobalRole.NONE,
     });
 }
+

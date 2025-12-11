@@ -1,6 +1,6 @@
 import {MiddlewareConsumer, Module, NestModule, Provider} from '@nestjs/common';
 import {APP_FILTER, APP_GUARD, APP_INTERCEPTOR, APP_PIPE, Reflector} from '@nestjs/core';
-import { GlobalAuthorizer, MultiAuthorizer} from '../domain/auth/authorizer';
+import {GlobalAuthorizer, MultiAuthorizer} from '../domain/auth/authorizer';
 import {TokenProvider} from '../domain/user/token';
 import {UserRepository} from '../domain/user/user.repository';
 import {EnvConfigService} from '../infrastructure/config';
@@ -10,14 +10,12 @@ import {RequestContextMiddleware} from './@shared/auth/context';
 import {ApiExceptionFilter, HttpExceptionFilter, ZodExceptionFilter} from './@shared/exception/filter';
 import {ExceptionLoggerInterceptor, RequestLoggerMiddleware} from './@shared/logger/handlers';
 import {ZodValidationPipe} from './@shared/validation';
+import {AppointmentModule} from './appointment/appointment.module';
 import {AuthModule} from './auth/auth.module';
 import {EventModule} from './event/event.module';
-import {ProfessionalModule} from './professional/professional.module';
 import {PatientModule} from './patient/patient.module';
-import {AppointmentModule} from './appointment/appointment.module';
+import {ProfessionalModule} from './professional/professional.module';
 import {RecordModule} from './record/record.module';
-
-
 import {UserModule} from './user/user.module';
 
 const exceptionFilters: Provider[] = [
@@ -52,18 +50,12 @@ const interceptors: Provider[] = [
 const guards: Provider[] = [
     {
         provide: APP_GUARD,
-        useFactory: (
-            configService: EnvConfigService,
-            tokenProvider: TokenProvider,
-            userRepository: UserRepository,
-        ) =>
+        useFactory: (configService: EnvConfigService, tokenProvider: TokenProvider, userRepository: UserRepository) =>
             new AuthGuard(
                 configService.auth.cookieName,
                 configService.company.cookieName,
                 tokenProvider,
-                new MultiAuthorizer(
-                    new GlobalAuthorizer(userRepository)
-                ),
+                new MultiAuthorizer(new GlobalAuthorizer(userRepository)),
                 new Reflector()
             ),
         inject: [EnvConfigService, TokenProvider, UserRepository],

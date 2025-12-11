@@ -9,7 +9,7 @@ import {OpenApiGeneratorV3, OpenAPIRegistry} from '@asteasolutions/zod-to-openap
 import type {SchemaObject as OpenApiSchema} from '@asteasolutions/zod-to-openapi/dist/types';
 import type {ApiPropertyOptions} from '@nestjs/swagger';
 import type {SchemasObject} from '@nestjs/swagger/dist/interfaces/open-api-spec.interface';
-import type {AnyZodObject} from 'zod/lib/types';
+import type {AnyZodObject} from 'zod';
 
 type SchemaObjectForMetadataFactory = ApiPropertyOptions & {
     'x-param-object'?: boolean;

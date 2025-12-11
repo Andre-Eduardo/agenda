@@ -1,4 +1,4 @@
-import {Record, RecordId} from './entities';
+import type {Record, RecordId} from './entities';
 
 export interface RecordRepository {
     findById(id: RecordId): Promise<Record | null>;

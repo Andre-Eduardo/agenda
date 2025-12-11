@@ -1,8 +1,8 @@
 module.exports = {
     root: true,
     extends: [
-        'plugin:@my-lint/typescript',
-        'plugin:@my-lint/test',
+        'plugin:@ecxus/typescript',
+        'plugin:@ecxus/test',
     ],
     ignorePatterns: [
         'jest.config.ts',

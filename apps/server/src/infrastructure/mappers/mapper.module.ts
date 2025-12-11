@@ -7,19 +7,7 @@ import {RecordMapper} from './record.mapper';
 
 @Global()
 @Module({
-    providers: [
-        PersonMapper,
-        ProfessionalMapper,
-        PatientMapper,
-        RecordMapper,
-        AppointmentMapper,
-    ],
-    exports: [
-        PersonMapper,
-        ProfessionalMapper,
-        PatientMapper,
-        RecordMapper,
-        AppointmentMapper,
-    ],
+    providers: [PersonMapper, ProfessionalMapper, PatientMapper, RecordMapper, AppointmentMapper],
+    exports: [PersonMapper, ProfessionalMapper, PatientMapper, RecordMapper, AppointmentMapper],
 })
 export class MapperModule {}
