@@ -5,6 +5,7 @@ import {ConfigModule} from './config';
 import {EventModule} from './event';
 import {LoggerModule} from './logger';
 import {RepositoryModule} from './repository';
+import {StorageModule} from './storage/storage.module';
 
 const sharedModules = [
     ClsModule.forRoot({global: true}),
@@ -13,6 +14,7 @@ const sharedModules = [
     EventModule,
     LoggerModule.register(),
     RepositoryModule,
+    StorageModule,
 ];
 
 @Module({

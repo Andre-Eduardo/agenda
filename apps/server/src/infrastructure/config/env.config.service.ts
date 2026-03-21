@@ -2,10 +2,13 @@ import * as process from 'process';
 import {Injectable} from '@nestjs/common';
 import {ConfigService} from '@nestjs/config';
 import {z} from 'zod';
+import {FileStorageType} from '@domain/file/entities';
+import {getLocalIPAddress} from '@infrastructure/network';
 
 export enum Env {
     DEVELOPMENT = 'development',
     PRODUCTION = 'production',
+    TEST = 'test',
 }
 
 const envConfig = z.object({
@@ -19,12 +22,31 @@ const envConfig = z.object({
     auth: z.object({
         cookieName: z.string().default('session.token'),
         token: z.object({
-            expiration: z.coerce.number().default(24 * 3600), // 1 day
+            expiration: z.coerce.number().default(24 * 3600), // 1 day in seconds
             secret: z.string().default('super-secret'),
         }),
     }),
     company: z.object({
         cookieName: z.string().default('current.company'),
+    }),
+    storage: z.object({
+        type: z.nativeEnum(FileStorageType).default(FileStorageType.LOCAL),
+        uploadFileMaxSize: z.coerce.number().default(5 * 1024 * 1024), // 5MB
+        localUploadDir: z.string().default('./uploads'),
+        publicBaseUrl: z.string(),
+        s3: z
+            .object({
+                bucket: z.string().optional(),
+                region: z.string().optional(),
+                accessKeyId: z.string().optional(),
+                secretAccessKey: z.string().optional(),
+            })
+            .default({}),
+    }),
+    mqtt: z.object({
+        brokerUrl: z.string().optional(),
+        username: z.string().optional(),
+        password: z.string().optional(),
     }),
 });
 
@@ -58,12 +80,24 @@ export class EnvConfigService {
         return this.configService.getOrThrow('company', {infer: true});
     }
 
+    get storage(): EnvConfig['storage'] {
+        return this.configService.getOrThrow('storage', {infer: true});
+    }
+
+    get mqtt(): EnvConfig['mqtt'] {
+        return this.configService.getOrThrow('mqtt', {infer: true});
+    }
+
     get isProd(): boolean {
         return this.env === Env.PRODUCTION;
     }
 
     get isDev(): boolean {
         return this.env === Env.DEVELOPMENT;
+    }
+
+    get isTest(): boolean {
+        return this.env === Env.TEST;
     }
 
     static load(): EnvConfig {
@@ -81,6 +115,24 @@ export class EnvConfigService {
             },
             company: {
                 cookieName: process.env.COMPANY_COOKIE_NAME,
+            },
+            storage: {
+                type: process.env.STORAGE_TYPE,
+                localUploadDir: process.env.LOCAL_UPLOAD_DIR,
+                uploadFileMaxSize: process.env.UPLOAD_FILE_MAX_SIZE,
+                publicBaseUrl:
+                    process.env.PUBLIC_BASE_URL ?? `http://${getLocalIPAddress()}:${process.env.PORT ?? 3000}`,
+                s3: {
+                    bucket: process.env.STORAGE_S3_BUCKET,
+                    region: process.env.STORAGE_S3_REGION,
+                    accessKeyId: process.env.STORAGE_S3_ACCESS_KEY_ID,
+                    secretAccessKey: process.env.STORAGE_S3_SECRET_ACCESS_KEY,
+                },
+            },
+            mqtt: {
+                brokerUrl: process.env.MQTT_BROKER_URL,
+                username: process.env.MQTT_USERNAME,
+                password: process.env.MQTT_PASSWORD,
             },
         } satisfies EnvParse);
     }

@@ -2,7 +2,7 @@ import {Injectable} from '@nestjs/common';
 import {Professional, ProfessionalConfig} from '../../../domain/professional/entities';
 import {ProfessionalRepository} from '../../../domain/professional/professional.repository';
 import {PersonRepository} from '../../../domain/person/person.repository';
-import {PersonProfile} from '../../../domain/person/entities';
+import {PersonProfile, PersonType} from '../../../domain/person/entities';
 import {EventDispatcher} from '../../../domain/event';
 import {PrismaProvider} from '../../../infrastructure/repository/prisma/prisma.provider';
 import {ApplicationService, Command} from '../../@shared/application.service';
@@ -25,7 +25,7 @@ export class CreateProfessionalService implements ApplicationService<CreateProfe
             documentId: payload.documentId,
             phone: payload.phone ?? null,
             gender: payload.gender ?? null,
-            personType: payload.personType,
+            personType: payload.personType ?? PersonType.NATURAL,
             profiles: new Set([PersonProfile.PROFESSIONAL]),
             specialty: payload.specialty,
             configId: config.id,

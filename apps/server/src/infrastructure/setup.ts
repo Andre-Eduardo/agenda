@@ -1,6 +1,7 @@
 import * as fs from 'node:fs';
 import type {INestApplication} from '@nestjs/common';
 import {VersioningType} from '@nestjs/common';
+import type {NestExpressApplication} from '@nestjs/platform-express';
 import type {OpenAPIObject} from '@nestjs/swagger';
 import {DocumentBuilder, SwaggerModule} from '@nestjs/swagger';
 import * as compression from 'compression';
@@ -13,7 +14,9 @@ export type SetupAppResult = {
     docsPath: string;
 };
 
-export function setupApp(app: INestApplication): SetupAppResult {
+export function setupApp(app: NestExpressApplication): SetupAppResult {
+    process.env.TZ = 'UTC';
+
     const globalPrefix = 'api';
 
     app.setGlobalPrefix(globalPrefix);
@@ -36,8 +39,14 @@ export function setupApp(app: INestApplication): SetupAppResult {
     app.use(helmet());
     app.use(compression());
     app.use(cookieParser(configService.cookieSecret));
+    app.set('query parser', 'extended');
 
-    app.enableCors();
+    if (configService.isDev || configService.isTest) {
+        app.enableCors({
+            origin: true,
+            credentials: true,
+        });
+    }
 
     return {
         port,

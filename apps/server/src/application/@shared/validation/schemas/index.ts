@@ -1,3 +1,4 @@
+export * from './datetime.schema';
 export * from './document-id.schema';
 export * from './email.schema';
 export * from './entity-id.schema';

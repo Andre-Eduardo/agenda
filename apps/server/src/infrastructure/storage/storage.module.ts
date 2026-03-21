@@ -1,0 +1,23 @@
+import {Module} from '@nestjs/common';
+import {FileStorage} from '../../domain/@shared/storage/file-storage';
+import {FileStorageType} from '../../domain/file/entities';
+import {EnvConfigService} from '../config';
+import {LocalFileStorage} from './local-file.storage';
+import {S3FileStorage} from './s3-file.storage';
+
+@Module({
+    providers: [
+        {
+            provide: FileStorage,
+            useFactory: (config: EnvConfigService) => {
+                if (config.storage.type === FileStorageType.S3) {
+                    return new S3FileStorage(config);
+                }
+                return new LocalFileStorage(config);
+            },
+            inject: [EnvConfigService],
+        },
+    ],
+    exports: [FileStorage],
+})
+export class StorageModule {}

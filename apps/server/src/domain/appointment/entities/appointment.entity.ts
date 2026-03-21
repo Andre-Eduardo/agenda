@@ -11,7 +11,7 @@ import type {ProfessionalId} from '../../professional/entities';
 import {AppointmentCreatedEvent, AppointmentChangedEvent, AppointmentDeletedEvent} from '../events';
 
 export type AppointmentProps = EntityProps<Appointment>;
-export type CreateAppointment = CreateEntity<Appointment>;
+export type CreateAppointment = Omit<CreateEntity<Appointment>, 'status'> & {status?: AppointmentStatus};
 export type UpdateAppointment = Partial<AppointmentProps>;
 
 export enum AppointmentStatus {

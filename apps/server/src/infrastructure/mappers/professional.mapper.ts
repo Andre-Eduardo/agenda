@@ -56,12 +56,6 @@ export class ProfessionalMapper extends MapperWithDto<
     }
 
     toDto(entity: Professional): ProfessionalDto {
-        return {
-            id: entity.id.toString(),
-            specialty: entity.specialty,
-            configId: entity.configId.toString(),
-            createdAt: entity.createdAt,
-            updatedAt: entity.updatedAt,
-        };
+        return new ProfessionalDto(entity);
     }
 }

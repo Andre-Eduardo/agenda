@@ -1,6 +1,7 @@
 import {Module, Provider} from '@nestjs/common';
 import {AppointmentRepository} from '../../../domain/appointment/appointment.repository';
 import {EventRepository} from '../../../domain/event/event.repository';
+import {UploadFileRepository} from '../../../domain/file/upload-file.repository';
 import {PatientRepository} from '../../../domain/patient/patient.repository';
 import {PersonRepository} from '../../../domain/person/person.repository';
 import {ProfessionalRepository} from '../../../domain/professional/professional.repository';
@@ -13,6 +14,7 @@ import {PatientPrismaRepository} from '../patient.prisma.repository';
 import {PersonPrismaRepository} from '../person.prisma.repository';
 import {ProfessionalPrismaRepository} from '../professional.prisma.repository';
 import {RecordPrismaRepository} from '../record.prisma.repository';
+import {UploadFilePrismaRepository} from '../upload-file.prisma.repository';
 import {UserPrismaRepository} from '../user.prisma.repository';
 import {PrismaService} from '.';
 import {PrismaProvider} from './prisma.provider';
@@ -45,6 +47,10 @@ const repositories: Provider[] = [
     {
         provide: RecordRepository,
         useClass: RecordPrismaRepository,
+    },
+    {
+        provide: UploadFileRepository,
+        useClass: UploadFilePrismaRepository,
     },
 ];
 

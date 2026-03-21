@@ -16,6 +16,7 @@ import {EventModule} from './event/event.module';
 import {PatientModule} from './patient/patient.module';
 import {ProfessionalModule} from './professional/professional.module';
 import {RecordModule} from './record/record.module';
+import {UploadModule} from './upload/upload.module';
 import {UserModule} from './user/user.module';
 
 const exceptionFilters: Provider[] = [
@@ -72,6 +73,7 @@ const guards: Provider[] = [
         PatientModule,
         AppointmentModule,
         RecordModule,
+        UploadModule,
     ],
     providers: [...exceptionFilters, ...pipes, ...interceptors, ...guards],
 })

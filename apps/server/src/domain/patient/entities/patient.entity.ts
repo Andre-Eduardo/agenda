@@ -1,4 +1,3 @@
-import {EntityId} from '@domain/@shared/entity/id';
 import type {ProfessionalId} from '@domain/professional/entities';
 import {type AllEntityProps, type EntityJson, type EntityProps, type CreateEntity} from '../../@shared/entity';
 import {Person, PersonId, PersonType} from '../../person/entities';
@@ -75,12 +74,12 @@ export class Patient extends Person {
     }
 }
 
-export class PatientId extends EntityId<'PersonId'> {
+export class PatientId extends PersonId {
     static from(value: string): PatientId {
-        return new PersonId(value);
+        return new PatientId(value);
     }
 
     static generate(): PatientId {
-        return new PersonId();
+        return new PatientId();
     }
 }

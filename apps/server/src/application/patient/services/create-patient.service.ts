@@ -1,6 +1,7 @@
 import {Injectable} from '@nestjs/common';
 import {Patient} from '../../../domain/patient/entities';
 import {PatientRepository} from '../../../domain/patient/patient.repository';
+import {PersonProfile, PersonType} from '../../../domain/person/entities';
 import {PersonRepository} from '../../../domain/person/person.repository';
 import {EventDispatcher} from '../../../domain/event';
 import {ApplicationService, Command} from '../../@shared/application.service';
@@ -15,7 +16,14 @@ export class CreatePatientService implements ApplicationService<CreatePatientDto
     ) {}
 
     async execute({actor, payload}: Command<CreatePatientDto>): Promise<PatientDto> {
-        const patient = Patient.create(payload);
+        const patient = Patient.create({
+            ...payload,
+            phone: payload.phone ?? null,
+            gender: payload.gender ?? null,
+            personType: payload.personType ?? PersonType.NATURAL,
+            profiles: new Set([PersonProfile.PATIENT]),
+            professionalId: payload.professionalId ?? null,
+        });
 
         await this.personRepository.save(patient as any);
         await this.patientRepository.save(patient);

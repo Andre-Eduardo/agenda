@@ -177,6 +177,30 @@ model File {
   @@map("file")
 }
 
+enum FilePromotionStatus {
+  PENDING
+  IN_PROGRESS
+  FAILED
+  READY
+
+  @@map("file_promotion_status")
+}
+
+model UploadFile {
+  id                String              @id @db.Uuid
+  tempPath          String              @map("temp_path")
+  finalPath         String?             @map("final_path")
+  status            FilePromotionStatus @default(PENDING) @map("status")
+  promotionAttempts Int                 @default(0) @map("promotion_attempts")
+  mimeType          String              @map("mime_type")
+  size              Int
+  checksum          String?
+  createdAt         DateTime            @map("created_at")
+  updatedAt         DateTime            @map("updated_at")
+
+  @@map("upload_file")
+}
+
 model Event {
   id             Int      @id @default(autoincrement())
   type           String

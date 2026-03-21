@@ -1,6 +1,7 @@
 import type {Type} from '@nestjs/common';
 import {applyDecorators} from '@nestjs/common';
 import {
+    ApiConsumes,
     ApiExtraModels,
     ApiOperation as NestApiOperation,
     ApiParam,
@@ -22,13 +23,15 @@ type ApiOperationOptions = Override<
     {
         parameters?: ApiParamOptions[];
         queries?: ApiQueryOptions[];
+        consumes?: string[];
         responses?: ApiResponseOptions[];
     }
 >;
 
 export const ApiOperation = (options: ApiOperationOptions) => {
-    const {parameters, queries, responses, ...otherOptions} = options;
+    const {parameters, queries, consumes, responses, ...otherOptions} = options;
 
+    const apiConsumes = consumes ? [ApiConsumes(...consumes)] : [];
     const apiParams = parameters?.map((parameter) => ApiParam(parameter)) ?? [];
     const apiQueries = queries?.map((query) => ApiQuery(query)) ?? [];
     const apiResponses = responses?.map((response) => ApiResponse(response)) ?? [];
@@ -36,6 +39,7 @@ export const ApiOperation = (options: ApiOperationOptions) => {
     return applyDecorators(
         ApiExtraModels(ApiProblem),
         NestApiOperation(otherOptions),
+        ...apiConsumes,
         ...apiParams,
         ...apiQueries,
         ...apiResponses,
@@ -61,9 +65,10 @@ type ApiPaginatedOperationOptions = Override<
 
 export const ApiPaginatedOperation = (options: ApiPaginatedOperationOptions) => {
     const {responses, ...otherOptions} = options;
+    const responseModels = responses?.map(({model}) => model) ?? [];
 
     return applyDecorators(
-        ApiExtraModels(PaginatedDto),
+        ApiExtraModels(PaginatedDto, ...responseModels),
         ApiOperation({
             ...otherOptions,
             queries: [

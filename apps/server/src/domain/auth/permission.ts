@@ -43,6 +43,11 @@ export enum PersonPermission {
     DELETE = 'person:delete',
 }
 
+export enum UploadPermission {
+    PREPARE = 'upload:prepare',
+    UPLOAD = 'upload:upload',
+}
+
 const PERMISSIONS = [
     ...Object.values(UserPermission),
     ...Object.values(ProfessionalPermission),
@@ -50,6 +55,7 @@ const PERMISSIONS = [
     ...Object.values(AppointmentPermission),
     ...Object.values(RecordPermission),
     ...Object.values(PersonPermission),
+    ...Object.values(UploadPermission),
 ];
 
 export type Permission = (typeof PERMISSIONS)[number];
