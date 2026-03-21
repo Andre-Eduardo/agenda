@@ -42,6 +42,7 @@ export class Record extends AggregateRoot<RecordId> {
             files: props.files,
             createdAt: now,
             updatedAt: now,
+            deletedAt: null,
         });
 
         record.addEvent(new RecordCreatedEvent({record, timestamp: now}));
@@ -78,6 +79,7 @@ export class Record extends AggregateRoot<RecordId> {
             files: this.files.map((f) => f.toJSON()),
             createdAt: this.createdAt.toJSON(),
             updatedAt: this.updatedAt.toJSON(),
+            deletedAt: this.deletedAt?.toJSON() ?? null,
         };
     }
 }

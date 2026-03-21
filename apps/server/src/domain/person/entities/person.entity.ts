@@ -9,6 +9,10 @@ import {PersonDeletedEvent} from '../events';
 export type PersonProps = EntityProps<Person>;
 export type UpdatePerson = Partial<PersonProps>;
 
+export enum PersonType {
+    NATURAL = 'NATURAL',
+    LEGAL = 'LEGAL',
+}
 export enum Gender {
     MALE = 'MALE',
     FEMALE = 'FEMALE',
@@ -24,6 +28,7 @@ export class Person extends AggregateRoot<PersonId> {
     phone: Phone | null;
     gender: Gender | null;
     profiles: Set<PersonProfile>;
+    personType: PersonType;
     constructor(props: AllEntityProps<Person>) {
         super(props);
 
@@ -32,6 +37,7 @@ export class Person extends AggregateRoot<PersonId> {
         this.phone = props.phone ?? null;
         this.gender = props.gender ?? null;
         this.profiles = props.profiles;
+        this.personType = props.personType ?? PersonType.NATURAL;
         this.validate();
     }
 
@@ -78,6 +84,7 @@ export class Person extends AggregateRoot<PersonId> {
             gender: this.gender ?? null,
             documentId: this.documentId.toJSON(),
             phone: this.phone?.toJSON() ?? null,
+            personType: this.personType,
             createdAt: this.createdAt.toJSON(),
             updatedAt: this.updatedAt.toJSON(),
             deletedAt: this.deletedAt?.toJSON() ?? null,

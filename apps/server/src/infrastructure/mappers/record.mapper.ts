@@ -25,6 +25,7 @@ export class RecordMapper extends MapperWithoutDto<Record, RecordModel> {
                             ...file,
                             id: FileId.from(file.id),
                             recordId: RecordId.from(file.recordId),
+                            deletedAt: file.deletedAt ?? null,
                         })
                 ) ?? [],
         });
@@ -38,6 +39,7 @@ export class RecordMapper extends MapperWithoutDto<Record, RecordModel> {
             description: entity.description,
             createdAt: entity.createdAt,
             updatedAt: entity.updatedAt,
+            deletedAt: entity.deletedAt ?? null,
             // Files are usually handled separately or via nested writes, but for the model return:
             files: entity.files.map((file) => ({
                 id: file.id.toString(),
@@ -47,6 +49,7 @@ export class RecordMapper extends MapperWithoutDto<Record, RecordModel> {
                 description: file.description,
                 createdAt: file.createdAt,
                 updatedAt: file.updatedAt,
+                deletedAt: file.deletedAt ?? null,
             })),
         };
     }

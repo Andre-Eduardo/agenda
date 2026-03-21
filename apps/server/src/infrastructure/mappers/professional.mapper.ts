@@ -2,7 +2,7 @@ import {DocumentId, Phone} from '@domain/@shared/value-objects';
 import {Injectable} from '@nestjs/common';
 import PrismaClient, {Prisma} from '@prisma/client';
 import {ProfessionalDto} from '../../application/professional/dtos/professional.dto';
-import {Gender, PersonType} from '../../domain/person/entities';
+import {Gender, PersonType, PersonProfile} from '../../domain/person/entities';
 import {Professional, ProfessionalConfigId, ProfessionalId} from '../../domain/professional/entities';
 import {UserId} from '../../domain/user/entities/user.entity';
 import {MapperWithDto} from './mapper';
@@ -31,7 +31,9 @@ export class ProfessionalMapper extends MapperWithDto<
             name: model.person.name,
             phone: model.person.phone ? Phone.create(model.person.phone) : null,
             gender: model.person.gender as Gender | null,
-            personType: PersonType.PROFESSIONAL,
+            personType: model.person.personType as unknown as PersonType,
+            profiles: new Set([PersonProfile.PROFESSIONAL]),
+            deletedAt: model.deletedAt ?? null,
             createdAt: model.createdAt,
             updatedAt: model.updatedAt,
             configId: ProfessionalConfigId.from(model.configId),
@@ -49,6 +51,7 @@ export class ProfessionalMapper extends MapperWithDto<
             specialty: entity.specialty,
             createdAt: entity.createdAt,
             updatedAt: entity.updatedAt,
+            deletedAt: entity.deletedAt ?? null,
         };
     }
 

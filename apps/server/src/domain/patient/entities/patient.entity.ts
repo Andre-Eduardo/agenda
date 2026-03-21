@@ -29,7 +29,8 @@ export class Patient extends Person {
             gender: props.gender ?? null,
             createdAt: now,
             updatedAt: now,
-            personType: PersonType.PATIENT,
+            deletedAt: null,
+            personType: props.personType ?? PersonType.NATURAL,
             professionalId: props.professionalId ?? null,
         });
 
@@ -65,9 +66,11 @@ export class Patient extends Person {
             documentId: this.documentId.toJSON(),
             phone: this.phone?.toJSON() ?? null,
             gender: this.gender ?? null,
+            profiles: Array.from(this.profiles),
             personType: this.personType,
             createdAt: this.createdAt.toJSON(),
             updatedAt: this.updatedAt.toJSON(),
+            deletedAt: this.deletedAt?.toJSON() ?? null,
         };
     }
 }

@@ -1,9 +1,23 @@
 import {Module} from '@nestjs/common';
+import {InfrastructureModule} from '../../infrastructure/infrastructure.module';
 import {PatientController} from './controllers/patient.controller';
-import {PatientService} from './services/patient.service';
+import {
+    CreatePatientService,
+    DeletePatientService,
+    GetPatientService,
+    SearchPatientsService,
+    UpdatePatientService,
+} from './services';
 
 @Module({
+    imports: [InfrastructureModule],
     controllers: [PatientController],
-    providers: [PatientService],
+    providers: [
+        CreatePatientService,
+        GetPatientService,
+        SearchPatientsService,
+        UpdatePatientService,
+        DeletePatientService,
+    ],
 })
 export class PatientModule {}

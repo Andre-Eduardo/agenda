@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(grep \"from ''../../@shared/dto''\" \"e:/agenda/apps/server/src/application/@shared/dto/index.ts\")"
+    ]
+  }
+}

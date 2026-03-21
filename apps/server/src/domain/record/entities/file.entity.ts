@@ -28,6 +28,7 @@ export class File extends Entity<FileId> {
             description: this.description,
             createdAt: this.createdAt.toJSON(),
             updatedAt: this.updatedAt.toJSON(),
+            deletedAt: this.deletedAt?.toJSON() ?? null,
         };
     }
 

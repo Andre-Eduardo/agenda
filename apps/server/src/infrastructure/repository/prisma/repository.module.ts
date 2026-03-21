@@ -15,6 +15,7 @@ import {ProfessionalPrismaRepository} from '../professional.prisma.repository';
 import {RecordPrismaRepository} from '../record.prisma.repository';
 import {UserPrismaRepository} from '../user.prisma.repository';
 import {PrismaService} from '.';
+import {PrismaProvider} from './prisma.provider';
 
 const repositories: Provider[] = [
     {
@@ -49,7 +50,7 @@ const repositories: Provider[] = [
 
 @Module({
     imports: [MapperModule],
-    providers: [PrismaService, ...repositories],
-    exports: repositories,
+    providers: [PrismaService, PrismaProvider, ...repositories],
+    exports: [PrismaProvider, ...repositories],
 })
 export class RepositoryModule {}

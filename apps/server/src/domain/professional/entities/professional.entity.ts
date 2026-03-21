@@ -31,12 +31,13 @@ export class Professional extends Person {
             documentId: props.documentId,
             phone: props.phone ?? null,
             gender: props.gender ?? null,
-            personType: PersonType.PROFESSIONAL,
+            personType: props.personType ?? PersonType.NATURAL,
             configId: props.configId,
             userId: props.userId ?? null,
             specialty: props.specialty,
             createdAt: now,
             updatedAt: now,
+            deletedAt: null,
         });
 
         professional.addEvent(new ProfessionalCreatedEvent({professional, timestamp: now}));
@@ -75,12 +76,14 @@ export class Professional extends Person {
             documentId: this.documentId.toJSON(),
             phone: this.phone?.toJSON() ?? null,
             gender: this.gender ?? null,
+            profiles: Array.from(this.profiles),
             personType: this.personType,
             configId: this.configId.toJSON(),
             userId: this.userId?.toJSON() ?? null,
             specialty: this.specialty,
             createdAt: this.createdAt.toJSON(),
             updatedAt: this.updatedAt.toJSON(),
+            deletedAt: this.deletedAt?.toJSON() ?? null,
         };
     }
 }

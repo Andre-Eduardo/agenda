@@ -56,6 +56,7 @@ export class User extends AggregateRoot<UserId> {
             professionals: [],
             createdAt: now,
             updatedAt: now,
+            deletedAt: null,
         });
 
         user.addEvent(new UserSignedUpEvent({user, timestamp: now}));
@@ -77,6 +78,7 @@ export class User extends AggregateRoot<UserId> {
             professionals: [],
             createdAt: now,
             updatedAt: now,
+            deletedAt: null,
         });
 
         user.addEvent(new UserCreatedEvent({user, timestamp: now}));
@@ -155,6 +157,7 @@ export class User extends AggregateRoot<UserId> {
             professionals: this.professionals.map((professionalId) => professionalId.toJSON()),
             createdAt: this.createdAt.toJSON(),
             updatedAt: this.updatedAt.toJSON(),
+            deletedAt: this.deletedAt?.toJSON() ?? null,
         };
     }
 

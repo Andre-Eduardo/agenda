@@ -24,6 +24,7 @@ export class ProfessionalConfig extends Entity<ProfessionalConfigId> {
             color: props.color ?? null,
             createdAt: now,
             updatedAt: now,
+            deletedAt: null,
         });
 
         return config;
@@ -48,6 +49,7 @@ export class ProfessionalConfig extends Entity<ProfessionalConfigId> {
             color: this.color,
             createdAt: this.createdAt.toJSON(),
             updatedAt: this.updatedAt.toJSON(),
+            deletedAt: this.deletedAt?.toJSON() ?? null,
         };
     }
 }

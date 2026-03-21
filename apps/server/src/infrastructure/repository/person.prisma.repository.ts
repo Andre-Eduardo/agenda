@@ -1,7 +1,8 @@
 import {Injectable} from '@nestjs/common';
 import * as PrismaClient from '@prisma/client';
 import {Person, PersonId} from '../../domain/person/entities';
-import {PersonRepository} from '../../domain/person/person.repository';
+import {PersonRepository, PersonSearchFilter, PersonSortOptions} from '../../domain/person/person.repository';
+import {PaginatedList, Pagination} from '../../domain/@shared/repository';
 import {PersonMapper} from '../mappers/person.mapper';
 import {PrismaProvider} from './prisma/prisma.provider';
 import {PrismaRepository} from './prisma.repository';
@@ -35,13 +36,37 @@ export class PersonPrismaRepository extends PrismaRepository implements PersonRe
         });
     }
     async search(
-        _pagination: any,
-        _filter?: any
-    ): Promise<any> {
-        throw new Error('Method not implemented.');
+        pagination: Pagination<PersonSortOptions>,
+        filter: PersonSearchFilter = {}
+    ): Promise<PaginatedList<Person>> {
+        const where: PrismaClient.Prisma.PersonWhereInput = {
+            id: filter.ids ? {in: filter.ids.map((id) => id.toString())} : undefined,
+            name: filter.name ? {contains: filter.name, mode: 'insensitive'} : undefined,
+            documentId: filter.documentId ? {contains: filter.documentId} : undefined,
+            phone: filter.phone ? {contains: filter.phone.toString()} : undefined,
+            gender: filter.gender ? filter.gender : undefined,
+        };
+
+        const [data, totalCount] = await Promise.all([
+            this.prisma.person.findMany({
+                where,
+                ...this.normalizePagination(pagination, {createdAt: 'desc'}),
+            }),
+            this.prisma.person.count({where}),
+        ]);
+
+        return {
+            data: data.map((item) => this.mapper.toDomain(item)),
+            totalCount,
+        };
     }
 
-    async save(_person: Person): Promise<void> {
-        throw new Error('Method not implemented.');
+    async save(person: Person): Promise<void> {
+        const data = this.mapper.toPersistence(person);
+        await this.prisma.person.upsert({
+            where: {id: data.id},
+            create: data,
+            update: data,
+        });
     }
 }

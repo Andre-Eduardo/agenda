@@ -19,17 +19,12 @@
     "start:dev:full": "pnpm run start:database && pnpm run start:dev",
     "start:prod": "node dist/main",
     "openapi:generate": "nest start --entryFile generate-openapi",
-    "prisma:seed": "pnpm prisma db seed",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate deploy",
     "prisma:migrate:create": "node scripts/create-migration.mjs",
     "prisma:migrate:reset": "prisma migrate reset",
     "prepare-env": "node scripts/create-env.mjs",
     "postinstall": "pnpm prisma:generate"
-  },
-  "prisma": {
-    "schema": "prisma",
-    "seed": "cross-env TZ=UTC ts-node -r tsconfig-paths/register --transpile-only prisma/seed.ts"
   },
   "dependencies": {
     "@asteasolutions/zod-to-openapi": "^7.3.0",

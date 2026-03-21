@@ -54,6 +54,7 @@ export class Appointment extends AggregateRoot<AppointmentId> {
             canceledAt: props.canceledAt ?? null,
             createdAt: now,
             updatedAt: now,
+            deletedAt: null,
         });
 
         appointment.addEvent(new AppointmentCreatedEvent({appointment, timestamp: now}));
@@ -105,6 +106,7 @@ export class Appointment extends AggregateRoot<AppointmentId> {
             status: this.status,
             createdAt: this.createdAt.toJSON(),
             updatedAt: this.updatedAt.toJSON(),
+            deletedAt: this.deletedAt?.toJSON() ?? null,
         };
     }
 }

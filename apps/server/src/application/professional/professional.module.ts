@@ -1,11 +1,23 @@
-import {MapperModule} from '@infrastructure/mappers/mapper.module';
 import {Module} from '@nestjs/common';
+import {InfrastructureModule} from '../../infrastructure/infrastructure.module';
 import {ProfessionalController} from './controllers/professional.controller';
-import {ProfessionalService} from './services/professional.service';
+import {
+    CreateProfessionalService,
+    DeleteProfessionalService,
+    GetProfessionalService,
+    SearchProfessionalsService,
+    UpdateProfessionalService,
+} from './services';
 
 @Module({
-    imports: [MapperModule],
+    imports: [InfrastructureModule],
     controllers: [ProfessionalController],
-    providers: [ProfessionalService],
+    providers: [
+        CreateProfessionalService,
+        GetProfessionalService,
+        SearchProfessionalsService,
+        UpdateProfessionalService,
+        DeleteProfessionalService,
+    ],
 })
 export class ProfessionalModule {}

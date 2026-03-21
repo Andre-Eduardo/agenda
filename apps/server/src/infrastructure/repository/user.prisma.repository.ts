@@ -6,7 +6,8 @@ import {PersonId} from '../../domain/person/entities';
 import {ProfessionalId} from '../../domain/professional/entities';
 import {User, UserId} from '../../domain/user/entities';
 import {DuplicateEmailException, DuplicateUsernameException} from '../../domain/user/user.exceptions';
-import {UserRepository} from '../../domain/user/user.repository';
+import {UserRepository, UserSearchFilter, UserSortOptions} from '../../domain/user/user.repository';
+import {PaginatedList, Pagination} from '../../domain/@shared/repository';
 import {ObfuscatedPassword, Username} from '../../domain/user/value-objects';
 import {PrismaProvider} from './prisma/prisma.provider';
 import {PrismaRepository} from './prisma.repository';
@@ -35,6 +36,9 @@ export class UserPrismaRepository extends PrismaRepository implements UserReposi
             professionals: user.professionals.map((professional) => ProfessionalId.from(professional.id)),
             name: user.name,
             globalRole: GlobalRole[user.globalRole],
+            createdAt: user.createdAt,
+            updatedAt: user.updatedAt,
+            deletedAt: user.deletedAt,
         });
     }
 
@@ -49,6 +53,7 @@ export class UserPrismaRepository extends PrismaRepository implements UserReposi
             globalRole: user.globalRole,
             createdAt: user.createdAt,
             updatedAt: user.updatedAt,
+            deletedAt: user.deletedAt ?? null,
             professionals: user.professionals.map((professionalId) => ({id: professionalId.toString()})),
         };
     }
@@ -137,10 +142,33 @@ export class UserPrismaRepository extends PrismaRepository implements UserReposi
     }
 
     async search(
-        _pagination: any,
-        _filter?: any
-    ): Promise<any> {
-        throw new Error('Method not implemented.');
+        pagination: Pagination<UserSortOptions>,
+        filter: UserSearchFilter = {}
+    ): Promise<PaginatedList<User>> {
+        const where: Prisma.UserWhereInput = {
+            id: filter.ids ? {in: filter.ids.map((id) => id.toString())} : undefined,
+            OR: filter.term
+                ? [
+                      {name: {contains: filter.term, mode: 'insensitive'}},
+                      {username: {contains: filter.term, mode: 'insensitive'}},
+                      {email: {contains: filter.term, mode: 'insensitive'}},
+                  ]
+                : undefined,
+        };
+
+        const [data, totalCount] = await Promise.all([
+            this.prisma.user.findMany({
+                where,
+                ...userSelect,
+                ...this.normalizePagination(pagination, {createdAt: 'desc'}),
+            }),
+            this.prisma.user.count({where}),
+        ]);
+
+        return {
+            data: data.map((item) => UserPrismaRepository.normalize(item)),
+            totalCount,
+        };
     }
 
     async delete(id: UserId): Promise<void> {

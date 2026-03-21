@@ -1,9 +1,23 @@
 import {Module} from '@nestjs/common';
+import {InfrastructureModule} from '../../infrastructure/infrastructure.module';
 import {AppointmentController} from './controllers/appointment.controller';
-import {AppointmentService} from './services/appointment.service';
+import {
+    CreateAppointmentService,
+    DeleteAppointmentService,
+    GetAppointmentService,
+    SearchAppointmentsService,
+    UpdateAppointmentService,
+} from './services';
 
 @Module({
+    imports: [InfrastructureModule],
     controllers: [AppointmentController],
-    providers: [AppointmentService],
+    providers: [
+        CreateAppointmentService,
+        GetAppointmentService,
+        SearchAppointmentsService,
+        UpdateAppointmentService,
+        DeleteAppointmentService,
+    ],
 })
 export class AppointmentModule {}

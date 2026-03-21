@@ -17,6 +17,8 @@ export class PersonMapper extends MapperWithoutDto<Person, PersonModel> {
             gender: model.gender as Gender | null,
             phone: model.phone === null ? null : Phone.create(model.phone),
             personType: model.personType as any,
+            profiles: new Set(),
+            deletedAt: model.deletedAt ?? null,
         });
     }
 
@@ -29,6 +31,7 @@ export class PersonMapper extends MapperWithoutDto<Person, PersonModel> {
             gender: entity.gender as any,
             createdAt: entity.createdAt,
             updatedAt: entity.updatedAt,
+            deletedAt: entity.deletedAt ?? null,
         } as unknown as PersonModel;
     }
 }
