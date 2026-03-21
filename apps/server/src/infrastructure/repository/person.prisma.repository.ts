@@ -34,4 +34,14 @@ export class PersonPrismaRepository extends PrismaRepository implements PersonRe
             },
         });
     }
+    async search(
+        _pagination: any,
+        _filter?: any
+    ): Promise<any> {
+        throw new Error('Method not implemented.');
+    }
+
+    async save(_person: Person): Promise<void> {
+        throw new Error('Method not implemented.');
+    }
 }

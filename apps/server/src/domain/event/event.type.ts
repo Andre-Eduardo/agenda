@@ -4,8 +4,9 @@ import {patientEvents} from '../patient/events';
 import {professionalEvents} from '../professional/events';
 import {recordEvents} from '../record/events';
 import {userEvents} from '../user/events';
+import {personEvents} from '../person/events';
 
-export const eventTypes = [userEvents, professionalEvents, appointmentEvents, recordEvents, patientEvents];
+export const eventTypes = [userEvents, professionalEvents, appointmentEvents, recordEvents, patientEvents, personEvents];
 
 export type DomainEventType = TupleToUnion<TupleToUnion<typeof eventTypes>>;
 

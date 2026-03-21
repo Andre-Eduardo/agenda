@@ -1,7 +1,10 @@
+import { UserId } from '@domain/user/entities';
 import {AggregateRoot, type AllEntityProps, type EntityJson, type EntityProps} from '../../@shared/entity';
 import {EntityId} from '../../@shared/entity/id';
 import {InvalidInputException} from '../../@shared/exceptions';
 import type {DocumentId, Phone} from '../../@shared/value-objects';
+import {PersonDeletedEvent} from '../events';
+
 
 export type PersonProps = EntityProps<Person>;
 export type UpdatePerson = Partial<PersonProps>;
@@ -11,7 +14,7 @@ export enum Gender {
     FEMALE = 'FEMALE',
     OTHER = 'OTHER',
 }
-export enum PersonType {
+export enum PersonProfile {
     PATIENT = 'PATIENT',
     PROFESSIONAL = 'PROFESSIONAL',
 }
@@ -20,8 +23,7 @@ export class Person extends AggregateRoot<PersonId> {
     documentId: DocumentId;
     phone: Phone | null;
     gender: Gender | null;
-    personType: PersonType;
-
+    profiles: Set<PersonProfile>;
     constructor(props: AllEntityProps<Person>) {
         super(props);
 
@@ -29,27 +31,20 @@ export class Person extends AggregateRoot<PersonId> {
         this.documentId = props.documentId;
         this.phone = props.phone ?? null;
         this.gender = props.gender ?? null;
-        this.personType = props.personType;
+        this.profiles = props.profiles;
         this.validate();
     }
 
-    toJSON(): EntityJson<Person> {
-        return {
-            id: this.id.toJSON(),
-            personType: this.personType,
-            name: this.name,
-            gender: this.gender ?? null,
-            documentId: this.documentId.toJSON(),
-            phone: this.phone?.toJSON() ?? null,
-            createdAt: this.createdAt.toJSON(),
-            updatedAt: this.updatedAt.toJSON(),
-        };
-    }
+
 
     protected change(props: UpdatePerson): void {
         if (props.name !== undefined) {
             this.name = props.name;
             this.validate('name');
+        }
+
+        if (props.profiles !== undefined) {
+            this.profiles = props.profiles;
         }
 
         if (props.documentId !== undefined) {
@@ -66,10 +61,38 @@ export class Person extends AggregateRoot<PersonId> {
         }
     }
 
+    
+    delete(): void {
+        super.delete();
+        this.profiles.clear();
+
+        this.addEvent(new PersonDeletedEvent({person: this, timestamp: this.deletedAt ?? undefined}));
+    }
+
+
+    toJSON(): EntityJson<Person> {
+        return {
+            id: this.id.toJSON(),
+            profiles: Array.from(this.profiles),
+            name: this.name,
+            gender: this.gender ?? null,
+            documentId: this.documentId.toJSON(),
+            phone: this.phone?.toJSON() ?? null,
+            createdAt: this.createdAt.toJSON(),
+            updatedAt: this.updatedAt.toJSON(),
+            deletedAt: this.deletedAt?.toJSON() ?? null,
+        };
+    }
+
     protected validate(...fields: Array<keyof PersonProps>): void {
         if (fields.length === 0 || fields.includes('name')) {
             if (this.name.length < 1) {
                 throw new InvalidInputException('Person name must be at least 1 character long.');
+            }
+        }
+                if (fields.length === 0 || fields.includes('profiles')) {
+            if (this.profiles.size === 0) {
+                throw new InvalidInputException("Person must have at least one profile.");
             }
         }
 

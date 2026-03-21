@@ -34,4 +34,14 @@ export class AppointmentPrismaRepository extends PrismaRepository implements App
             },
         });
     }
+    async search(
+        _pagination: any,
+        _filter?: any
+    ): Promise<any> {
+        throw new Error('Method not implemented.');
+    }
+
+    async save(_appointment: any): Promise<void> {
+        throw new Error('Method not implemented.');
+    }
 }

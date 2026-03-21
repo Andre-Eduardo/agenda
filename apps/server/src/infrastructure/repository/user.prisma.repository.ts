@@ -136,6 +136,13 @@ export class UserPrismaRepository extends PrismaRepository implements UserReposi
         }
     }
 
+    async search(
+        _pagination: any,
+        _filter?: any
+    ): Promise<any> {
+        throw new Error('Method not implemented.');
+    }
+
     async delete(id: UserId): Promise<void> {
         await this.prisma.user.delete({
             where: {

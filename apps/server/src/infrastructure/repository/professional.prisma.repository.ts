@@ -37,4 +37,14 @@ export class ProfessionalPrismaRepository extends PrismaRepository implements Pr
             },
         });
     }
+    async search(
+        _pagination: any,
+        _filter?: any
+    ): Promise<any> {
+        throw new Error('Method not implemented.');
+    }
+
+    async save(_professional: any): Promise<void> {
+        throw new Error('Method not implemented.');
+    }
 }

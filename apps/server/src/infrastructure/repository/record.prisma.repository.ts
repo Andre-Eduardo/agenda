@@ -40,4 +40,14 @@ export class RecordPrismaRepository extends PrismaRepository implements RecordRe
             },
         });
     }
+    async search(
+        _pagination: any,
+        _filter?: any
+    ): Promise<any> {
+        throw new Error('Method not implemented.');
+    }
+
+    async save(_record: any): Promise<void> {
+        throw new Error('Method not implemented.');
+    }
 }

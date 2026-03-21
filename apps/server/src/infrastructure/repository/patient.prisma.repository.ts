@@ -37,4 +37,14 @@ export class PatientPrismaRepository extends PrismaRepository implements Patient
             },
         });
     }
+    async search(
+        _pagination: any,
+        _filter?: any
+    ): Promise<any> {
+        throw new Error('Method not implemented.');
+    }
+
+    async save(_patient: any): Promise<void> {
+        throw new Error('Method not implemented.');
+    }
 }
