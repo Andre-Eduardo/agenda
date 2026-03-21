@@ -1,11 +1,11 @@
 import {CanActivate, ExecutionContext, Injectable} from '@nestjs/common';
 import {Reflector} from '@nestjs/core';
 import {Request} from 'express';
-import {AccessDeniedException, AccessDeniedReason, UnauthenticatedException} from '../../../domain/@shared/exceptions';
-import {Permission} from '../../../domain/auth';
-import {Authorizer} from '../../../domain/auth/authorizer';
-import {ProfessionalId} from '../../../domain/professional/entities';
-import {Token, TokenProvider, TokenScope} from '../../../domain/user/token';
+import {AccessDeniedException, AccessDeniedReason, UnauthenticatedException} from '@domain/@shared/exceptions';
+import {Permission} from '@domain/auth';
+import {Authorizer} from '@domain/auth/authorizer';
+import {ProfessionalId} from '@domain/professional/entities';
+import {Token, TokenProvider, TokenScope} from '@domain/user/token';
 import {AUTHORIZE_KEY} from './authorize.decorator';
 import {BYPASS_PROFESSIONAL} from './bypass-professional.decorator';
 import {IS_PUBLIC_KEY} from './public.decorator';

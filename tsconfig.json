@@ -26,5 +26,10 @@
         "packages/*/src"
       ]
     }
-  }
+  },
+  "exclude": [
+    "**/*.spec.ts",
+    "**/*.test.ts",
+    "**/__tests__/*"
+  ]
 }
