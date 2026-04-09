@@ -1,5 +1,5 @@
 import {Injectable} from '@nestjs/common';
-import type {UploadFile as PrismaUploadFile} from '@prisma/client';
+import {FilePromotionStatus as PrismaFilePromotionStatus, type UploadFile as PrismaUploadFile} from '@prisma/client';
 import {FilePromotionStatus, UploadFile, UploadFileId} from '../../domain/file/entities';
 import {UploadFileRepository} from '../../domain/file/upload-file.repository';
 import {PrismaProvider} from './prisma/prisma.provider';
@@ -18,7 +18,7 @@ export class UploadFilePrismaRepository extends PrismaRepository implements Uplo
 
     async findPending(): Promise<UploadFile[]> {
         const models = await this.prisma.uploadFile.findMany({
-            where: {status: {in: ['PENDING', 'IN_PROGRESS']}},
+            where: {status: {in: [PrismaFilePromotionStatus.PENDING, PrismaFilePromotionStatus.IN_PROGRESS]}},
         });
         return models.map((m) => this.toDomain(m));
     }
@@ -26,7 +26,7 @@ export class UploadFilePrismaRepository extends PrismaRepository implements Uplo
     async findOldTemp(before: Date): Promise<UploadFile[]> {
         const models = await this.prisma.uploadFile.findMany({
             where: {
-                status: {in: ['PENDING', 'FAILED']},
+                status: {in: [PrismaFilePromotionStatus.PENDING, PrismaFilePromotionStatus.FAILED]},
                 createdAt: {lt: before},
             },
         });
@@ -38,7 +38,7 @@ export class UploadFilePrismaRepository extends PrismaRepository implements Uplo
             id: file.id.toString(),
             tempPath: file.tempPath,
             finalPath: file.finalPath,
-            status: file.status as string,
+            status: file.status as unknown as PrismaFilePromotionStatus,
             promotionAttempts: file.promotionAttempts,
             mimeType: file.mimeType,
             size: file.size,

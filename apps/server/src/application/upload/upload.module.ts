@@ -25,7 +25,7 @@ import {PromoteFileService} from './services/promote-file.service';
             imports: [InfrastructureModule],
             useClass: UploadConfigService,
         }),
-        ServeStaticModule.registerAsync({
+        ServeStaticModule.forRootAsync({
             imports: [InfrastructureModule],
             useClass: ServeStaticConfigService,
             extraProviders: [

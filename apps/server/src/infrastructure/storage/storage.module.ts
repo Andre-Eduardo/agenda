@@ -1,11 +1,12 @@
 import {Module} from '@nestjs/common';
 import {FileStorage} from '../../domain/@shared/storage/file-storage';
 import {FileStorageType} from '../../domain/file/entities';
-import {EnvConfigService} from '../config';
+import {ConfigModule, EnvConfigService} from '../config';
 import {LocalFileStorage} from './local-file.storage';
 import {S3FileStorage} from './s3-file.storage';
 
 @Module({
+    imports: [ConfigModule],
     providers: [
         {
             provide: FileStorage,

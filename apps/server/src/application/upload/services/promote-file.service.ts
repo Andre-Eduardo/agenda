@@ -5,6 +5,7 @@ import {FileStorage, FilePaths} from '../../../domain/@shared/storage/file-stora
 import {FilePromotionStatus, UploadFileId} from '../../../domain/file/entities';
 import {FileReadyEvent} from '../../../domain/file/events';
 import {UploadFileRepository} from '../../../domain/file/upload-file.repository';
+import type {MaybeAuthenticatedActor} from '../../../domain/@shared/actor';
 import type {ApplicationService, Command} from '../../@shared/application.service';
 
 export type PromoteFileDto = {fileId: UploadFileId};
@@ -12,14 +13,14 @@ export type PromoteFileDto = {fileId: UploadFileId};
 const MAX_PROMOTION_ATTEMPTS = 5;
 
 @Injectable()
-export class PromoteFileService implements ApplicationService<PromoteFileDto> {
+export class PromoteFileService implements ApplicationService<PromoteFileDto, void, MaybeAuthenticatedActor> {
     constructor(
         private readonly uploadFileRepository: UploadFileRepository,
         private readonly eventEmitter: EventEmitter2,
         @Inject(FileStorage) private readonly fileStorage: FileStorage
     ) {}
 
-    async execute({actor, payload}: Command<PromoteFileDto>): Promise<void> {
+    async execute({actor, payload}: Command<PromoteFileDto, MaybeAuthenticatedActor>): Promise<void> {
         const file = await this.uploadFileRepository.findById(payload.fileId);
         if (!file) return;
 

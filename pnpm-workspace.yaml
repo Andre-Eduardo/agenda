@@ -2,3 +2,10 @@ packages:
   - 'apps/**'
   - 'packages/**'
   - 'test/**'
+
+onlyBuiltDependencies:
+  - '@nestjs/core'
+  - '@prisma/client'
+  - '@prisma/engines'
+  - '@swc/core'
+  - prisma
