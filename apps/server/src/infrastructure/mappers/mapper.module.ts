@@ -5,10 +5,23 @@ import {PatientMapper} from './patient.mapper';
 import {PersonMapper} from './person.mapper';
 import {ProfessionalMapper} from './professional.mapper';
 import {RecordMapper} from './record.mapper';
+import {WorkingHoursMapper} from './working-hours.mapper';
+import {ProfessionalBlockMapper} from './professional-block.mapper';
+
+const mappers = [
+    PersonMapper,
+    ProfessionalMapper,
+    PatientMapper,
+    RecordMapper,
+    AppointmentMapper,
+    EventMapper,
+    WorkingHoursMapper,
+    ProfessionalBlockMapper,
+];
 
 @Global()
 @Module({
-    providers: [PersonMapper, ProfessionalMapper, PatientMapper, RecordMapper, AppointmentMapper, EventMapper],
-    exports: [PersonMapper, ProfessionalMapper, PatientMapper, RecordMapper, AppointmentMapper, EventMapper],
+    providers: mappers,
+    exports: mappers,
 })
 export class MapperModule {}

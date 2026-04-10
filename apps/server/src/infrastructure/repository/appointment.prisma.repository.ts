@@ -3,6 +3,7 @@ import * as PrismaClient from '@prisma/client';
 import {AppointmentRepository, AppointmentSearchFilter, AppointmentSortOptions} from '../../domain/appointment/appointment.repository';
 import {PaginatedList, Pagination} from '../../domain/@shared/repository';
 import {Appointment, AppointmentId} from '../../domain/appointment/entities';
+import {ProfessionalId} from '../../domain/professional/entities';
 import {AppointmentMapper} from '../mappers/appointment.mapper';
 import {PrismaProvider} from './prisma/prisma.provider';
 import {PrismaRepository} from './prisma.repository';
@@ -35,13 +36,24 @@ export class AppointmentPrismaRepository extends PrismaRepository implements App
             },
         });
     }
+
     async search(
         pagination: Pagination<AppointmentSortOptions>,
         filter: AppointmentSearchFilter = {}
     ): Promise<PaginatedList<Appointment>> {
         const where: PrismaClient.Prisma.AppointmentWhereInput = {
             id: filter.ids ? {in: filter.ids.map((id) => id.toString())} : undefined,
+            professionalId: filter.professionalId ? filter.professionalId.toString() : undefined,
+            patientId: filter.patientId ? filter.patientId.toString() : undefined,
+            status: filter.status ? {in: filter.status} : undefined,
+            startAt: filter.dateFrom || filter.dateTo
+                ? {
+                      gte: filter.dateFrom,
+                      lte: filter.dateTo,
+                  }
+                : undefined,
             note: filter.term ? {contains: filter.term, mode: 'insensitive'} : undefined,
+            deletedAt: null,
         };
 
         const [data, totalCount] = await Promise.all([
@@ -65,5 +77,25 @@ export class AppointmentPrismaRepository extends PrismaRepository implements App
             create: data,
             update: data,
         });
+    }
+
+    async findConflicts(
+        professionalId: ProfessionalId,
+        startAt: Date,
+        endAt: Date,
+        excludeId?: AppointmentId
+    ): Promise<Appointment[]> {
+        const records = await this.prisma.appointment.findMany({
+            where: {
+                professionalId: professionalId.toString(),
+                id: excludeId ? {not: excludeId.toString()} : undefined,
+                status: {in: ['SCHEDULED', 'CONFIRMED']},
+                startAt: {lt: endAt},
+                endAt: {gt: startAt},
+                deletedAt: null,
+            },
+        });
+
+        return records.map((r) => this.mapper.toDomain(r));
     }
 }

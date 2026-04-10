@@ -87,9 +87,11 @@ model Professional {
   updatedAt DateTime           @map("updated_at")
   deletedAt DateTime?          @map("deleted_at")
 
-  appointments Appointment[]
-  records      Record[]
-  patients     Patient[]
+  appointments       Appointment[]
+  records            Record[]
+  patients           Patient[]
+  workingHours       WorkingHours[]
+  professionalBlocks ProfessionalBlock[]
 
   @@map("professional")
 }
@@ -124,28 +126,71 @@ model Patient {
 
 enum AppointmentStatus {
   SCHEDULED
+  CONFIRMED
   CANCELLED
   COMPLETED
+  NO_SHOW
 
   @@map("appointment_status")
 }
 
+enum AppointmentType {
+  FIRST_VISIT
+  RETURN
+  WALK_IN
+  TELEMEDICINE
+  PROCEDURE
+
+  @@map("appointment_type")
+}
+
 model Appointment {
-  id             String            @id(map: "appointment_pk") @db.Uuid
-  professionalId String            @map("professional_id") @db.Uuid
-  professional   Professional      @relation(fields: [professionalId], references: [id], onDelete: Cascade)
-  patientId      String            @map("patient_id") @db.Uuid
-  patient        Patient           @relation(fields: [patientId], references: [id], onDelete: Cascade)
-  date           DateTime          @map("date")
-  status         AppointmentStatus @map("status")
-  canceledAt     DateTime?         @map("canceled_at")
-  canceledReason String?           @map("canceled_reason")
-  note           String?
-  createdAt      DateTime          @map("created_at")
-  updatedAt      DateTime          @map("updated_at")
-  deletedAt      DateTime?         @map("deleted_at")
+  id              String            @id(map: "appointment_pk") @db.Uuid
+  professionalId  String            @map("professional_id") @db.Uuid
+  professional    Professional      @relation(fields: [professionalId], references: [id], onDelete: Cascade)
+  patientId       String            @map("patient_id") @db.Uuid
+  patient         Patient           @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  startAt         DateTime          @map("start_at")
+  endAt           DateTime          @map("end_at")
+  durationMinutes Int               @map("duration_minutes")
+  type            AppointmentType   @map("type")
+  status          AppointmentStatus @map("status")
+  canceledAt      DateTime?         @map("canceled_at")
+  canceledReason  String?           @map("canceled_reason")
+  note            String?
+  createdAt       DateTime          @map("created_at")
+  updatedAt       DateTime          @map("updated_at")
+  deletedAt       DateTime?         @map("deleted_at")
 
   @@map("appointment")
+}
+
+model WorkingHours {
+  id             String       @id(map: "working_hours_pk") @db.Uuid
+  professionalId String       @map("professional_id") @db.Uuid
+  professional   Professional @relation(fields: [professionalId], references: [id], onDelete: Cascade)
+  dayOfWeek      Int          @map("day_of_week")
+  startTime      String       @map("start_time")
+  endTime        String       @map("end_time")
+  slotDuration   Int          @map("slot_duration")
+  active         Boolean      @default(true)
+  createdAt      DateTime     @map("created_at")
+  updatedAt      DateTime     @map("updated_at")
+
+  @@map("working_hours")
+}
+
+model ProfessionalBlock {
+  id             String       @id(map: "professional_block_pk") @db.Uuid
+  professionalId String       @map("professional_id") @db.Uuid
+  professional   Professional @relation(fields: [professionalId], references: [id], onDelete: Cascade)
+  startAt        DateTime     @map("start_at")
+  endAt          DateTime     @map("end_at")
+  reason         String?
+  createdAt      DateTime     @map("created_at")
+  updatedAt      DateTime     @map("updated_at")
+
+  @@map("professional_block")
 }
 
 model Record {
