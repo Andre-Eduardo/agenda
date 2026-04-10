@@ -9,10 +9,18 @@ export type UpdatePatient = Partial<PatientProps>;
 
 export class Patient extends Person {
     professionalId: ProfessionalId | null;
+    birthDate: Date | null;
+    email: string | null;
+    emergencyContactName: string | null;
+    emergencyContactPhone: string | null;
 
     constructor(props: AllEntityProps<Patient>) {
         super(props);
         this.professionalId = props.professionalId ?? null;
+        this.birthDate = props.birthDate ?? null;
+        this.email = props.email ?? null;
+        this.emergencyContactName = props.emergencyContactName ?? null;
+        this.emergencyContactPhone = props.emergencyContactPhone ?? null;
         this.validate();
     }
 
@@ -31,6 +39,10 @@ export class Patient extends Person {
             deletedAt: null,
             personType: props.personType ?? PersonType.NATURAL,
             professionalId: props.professionalId ?? null,
+            birthDate: props.birthDate ?? null,
+            email: props.email ?? null,
+            emergencyContactName: props.emergencyContactName ?? null,
+            emergencyContactPhone: props.emergencyContactPhone ?? null,
         });
 
         patient.addEvent(new PatientCreatedEvent({patient, timestamp: now}));
@@ -42,11 +54,36 @@ export class Patient extends Person {
         this.addEvent(new PatientDeletedEvent({patient: this}));
     }
 
-    change(): void {
+    change(props: UpdatePatient): void {
         const oldState = new Patient(this);
 
-        // No current props to update, but structure is here for future expansion
-        // if (props.someField !== undefined) { this.someField = props.someField; }
+        if (props.name !== undefined) {
+            this.name = props.name;
+        }
+
+        if (props.phone !== undefined) {
+            this.phone = props.phone;
+        }
+
+        if (props.gender !== undefined) {
+            this.gender = props.gender;
+        }
+
+        if (props.birthDate !== undefined) {
+            this.birthDate = props.birthDate;
+        }
+
+        if (props.email !== undefined) {
+            this.email = props.email;
+        }
+
+        if (props.emergencyContactName !== undefined) {
+            this.emergencyContactName = props.emergencyContactName;
+        }
+
+        if (props.emergencyContactPhone !== undefined) {
+            this.emergencyContactPhone = props.emergencyContactPhone;
+        }
 
         this.validate();
 
@@ -67,6 +104,10 @@ export class Patient extends Person {
             gender: this.gender ?? null,
             profiles: Array.from(this.profiles),
             personType: this.personType,
+            birthDate: this.birthDate?.toJSON() ?? null,
+            email: this.email,
+            emergencyContactName: this.emergencyContactName,
+            emergencyContactPhone: this.emergencyContactPhone,
             createdAt: this.createdAt.toJSON(),
             updatedAt: this.updatedAt.toJSON(),
             deletedAt: this.deletedAt?.toJSON() ?? null,

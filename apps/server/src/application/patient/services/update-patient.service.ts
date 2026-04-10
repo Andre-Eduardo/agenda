@@ -12,14 +12,22 @@ export class UpdatePatientService implements ApplicationService<UpdatePatientDto
         private readonly eventDispatcher: EventDispatcher
     ) {}
 
-    async execute({actor, payload: {id}}: Command<UpdatePatientDto>): Promise<PatientDto> {
+    async execute({actor, payload: {id, ...props}}: Command<UpdatePatientDto>): Promise<PatientDto> {
         const patient = await this.patientRepository.findById(id);
 
         if (patient === null) {
             throw new ResourceNotFoundException('Patient not found.', id.toString());
         }
 
-        patient.change();
+        patient.change({
+            name: props.name,
+            phone: props.phone ? {number: props.phone} as any : undefined,
+            gender: props.gender ?? undefined,
+            birthDate: props.birthDate ?? undefined,
+            email: props.email ?? undefined,
+            emergencyContactName: props.emergencyContactName ?? undefined,
+            emergencyContactPhone: props.emergencyContactPhone ?? undefined,
+        });
 
         await this.patientRepository.save(patient);
 

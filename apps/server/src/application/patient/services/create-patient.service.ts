@@ -23,6 +23,10 @@ export class CreatePatientService implements ApplicationService<CreatePatientDto
             personType: payload.personType ?? PersonType.NATURAL,
             profiles: new Set([PersonProfile.PATIENT]),
             professionalId: payload.professionalId ?? null,
+            birthDate: payload.birthDate ?? null,
+            email: payload.email ?? null,
+            emergencyContactName: payload.emergencyContactName ?? null,
+            emergencyContactPhone: payload.emergencyContactPhone ?? null,
         });
 
         await this.personRepository.save(patient as any);

@@ -92,6 +92,8 @@ model Professional {
   patients           Patient[]
   workingHours       WorkingHours[]
   professionalBlocks ProfessionalBlock[]
+  clinicalProfiles   ClinicalProfile[]
+  patientAlerts      PatientAlert[]
 
   @@map("professional")
 }
@@ -109,19 +111,73 @@ model ProfessionalConfig {
 }
 
 model Patient {
-  id             String        @id(map: "patient_pk") @db.Uuid
-  person         Person        @relation(fields: [id], references: [id], onDelete: Cascade)
-  documentId     String        @map("document_id") @db.Citext()
-  createdAt      DateTime      @map("created_at")
-  updatedAt      DateTime      @map("updated_at")
-  deletedAt      DateTime?     @map("deleted_at")
-  appointments   Appointment[]
-  records        Record[]
-  professional   Professional? @relation(fields: [professionalId], references: [id])
-  professionalId String?       @db.Uuid
+  id                    String           @id(map: "patient_pk") @db.Uuid
+  person                Person           @relation(fields: [id], references: [id], onDelete: Cascade)
+  documentId            String           @map("document_id") @db.Citext()
+  birthDate             DateTime?        @map("birth_date")
+  email                 String?          @db.Citext()
+  emergencyContactName  String?          @map("emergency_contact_name")
+  emergencyContactPhone String?          @map("emergency_contact_phone")
+  createdAt             DateTime         @map("created_at")
+  updatedAt             DateTime         @map("updated_at")
+  deletedAt             DateTime?        @map("deleted_at")
+  appointments          Appointment[]
+  records               Record[]
+  professional          Professional?    @relation(fields: [professionalId], references: [id])
+  professionalId        String?          @db.Uuid
+  clinicalProfile       ClinicalProfile?
+  alerts                PatientAlert[]
+  patientFiles          File[]
 
   @@unique([documentId], name: "patient_document_id_key")
   @@map("patient")
+}
+
+enum EvolutionTemplateType {
+  SOAP
+  DAP
+
+  @@map("evolution_template_type")
+}
+
+enum AttendanceType {
+  FIRST_VISIT
+  FOLLOW_UP
+  EVALUATION
+  PROCEDURE
+  TELEMEDICINE
+  INTERCURRENCE
+
+  @@map("attendance_type")
+}
+
+enum ClinicalStatusTag {
+  STABLE
+  IMPROVING
+  WORSENING
+  UNCHANGED
+  UNDER_OBSERVATION
+
+  @@map("clinical_status_tag")
+}
+
+enum ConductTag {
+  GUIDANCE
+  PRESCRIPTION
+  EXAM_REQUESTED
+  REFERRAL
+  FOLLOW_UP_SCHEDULED
+  THERAPY_ADJUSTMENT
+
+  @@map("conduct_tag")
+}
+
+enum AlertSeverity {
+  LOW
+  MEDIUM
+  HIGH
+
+  @@map("alert_severity")
 }
 
 enum AppointmentStatus {
@@ -161,6 +217,7 @@ model Appointment {
   createdAt       DateTime          @map("created_at")
   updatedAt       DateTime          @map("updated_at")
   deletedAt       DateTime?         @map("deleted_at")
+  records         Record[]
 
   @@map("appointment")
 }
@@ -194,32 +251,83 @@ model ProfessionalBlock {
 }
 
 model Record {
-  id             String       @id(map: "record_pk") @db.Uuid
-  professionalId String       @map("professional_id") @db.Uuid
-  professional   Professional @relation(fields: [professionalId], references: [id], onDelete: Cascade)
-  patientId      String       @map("patient_id") @db.Uuid
-  patient        Patient      @relation(fields: [patientId], references: [id])
-  description    String
+  id             String                 @id(map: "record_pk") @db.Uuid
+  professionalId String                 @map("professional_id") @db.Uuid
+  professional   Professional           @relation(fields: [professionalId], references: [id], onDelete: Cascade)
+  patientId      String                 @map("patient_id") @db.Uuid
+  patient        Patient                @relation(fields: [patientId], references: [id])
+  description    String?
+  templateType   EvolutionTemplateType? @map("template_type")
+  title          String?
+  attendanceType AttendanceType?        @map("attendance_type")
+  clinicalStatus ClinicalStatusTag?     @map("clinical_status")
+  conductTags    ConductTag[]           @map("conduct_tags")
+  subjective     String?
+  objective      String?
+  assessment     String?
+  plan           String?
+  freeNotes      String?                @map("free_notes")
+  eventDate      DateTime?              @map("event_date")
+  appointmentId  String?                @map("appointment_id") @db.Uuid
+  appointment    Appointment?           @relation(fields: [appointmentId], references: [id])
   files          File[]
-  createdAt      DateTime     @map("created_at")
-  updatedAt      DateTime     @map("updated_at")
-  deletedAt      DateTime?    @map("deleted_at")
+  createdAt      DateTime               @map("created_at")
+  updatedAt      DateTime               @map("updated_at")
+  deletedAt      DateTime?              @map("deleted_at")
 
   @@map("record")
 }
 
 model File {
-  id          String   @id(map: "file_pk") @db.Uuid
-  recordId    String   @map("record_id") @db.Uuid
-  record      Record   @relation(fields: [recordId], references: [id])
+  id          String    @id(map: "file_pk") @db.Uuid
+  recordId    String?   @map("record_id") @db.Uuid
+  record      Record?   @relation(fields: [recordId], references: [id])
+  patientId   String?   @map("patient_id") @db.Uuid
+  patient     Patient?  @relation(fields: [patientId], references: [id])
   fileName    String
   url         String
   description String
-  createdAt   DateTime @map("created_at")
-  updatedAt   DateTime @map("updated_at")
+  createdAt   DateTime  @map("created_at")
+  updatedAt   DateTime  @map("updated_at")
   deletedAt   DateTime? @map("deleted_at")
 
   @@map("file")
+}
+
+model ClinicalProfile {
+  id                 String       @id(map: "clinical_profile_pk") @db.Uuid
+  patientId          String       @unique @map("patient_id") @db.Uuid
+  patient            Patient      @relation(fields: [patientId], references: [id])
+  professionalId     String       @map("professional_id") @db.Uuid
+  professional       Professional @relation(fields: [professionalId], references: [id])
+  allergies          String?
+  chronicConditions  String?      @map("chronic_conditions")
+  currentMedications String?      @map("current_medications")
+  surgicalHistory    String?      @map("surgical_history")
+  familyHistory      String?      @map("family_history")
+  socialHistory      String?      @map("social_history")
+  generalNotes       String?      @map("general_notes")
+  createdAt          DateTime     @map("created_at")
+  updatedAt          DateTime     @map("updated_at")
+
+  @@map("clinical_profile")
+}
+
+model PatientAlert {
+  id             String        @id(map: "patient_alert_pk") @db.Uuid
+  patientId      String        @map("patient_id") @db.Uuid
+  patient        Patient       @relation(fields: [patientId], references: [id])
+  professionalId String        @map("professional_id") @db.Uuid
+  professional   Professional  @relation(fields: [professionalId], references: [id])
+  title          String
+  description    String?
+  severity       AlertSeverity
+  isActive       Boolean       @default(true) @map("is_active")
+  createdAt      DateTime      @map("created_at")
+  updatedAt      DateTime      @map("updated_at")
+  deletedAt      DateTime?     @map("deleted_at")
+
+  @@map("patient_alert")
 }
 
 enum FilePromotionStatus {

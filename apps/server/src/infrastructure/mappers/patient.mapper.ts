@@ -19,12 +19,15 @@ export class PatientMapper extends MapperWithoutDto<Patient, PatientModel> {
             id: PatientId.from(patientModel.id),
             professionalId: patientModel.professionalId ? ProfessionalId.from(patientModel.professionalId) : null,
             documentId: DocumentId.create(patientModel.documentId),
-            // Explicit casting or mapping for enums if names match
             gender: person.gender ? (person.gender as unknown as Gender) : null,
             personType: person.personType as unknown as PersonType,
             phone: person.phone ? ({number: person.phone} as any) : null,
             profiles: new Set([PersonProfile.PATIENT]),
             deletedAt: patientModel.deletedAt ?? null,
+            birthDate: patientModel.birthDate ?? null,
+            email: patientModel.email ?? null,
+            emergencyContactName: patientModel.emergencyContactName ?? null,
+            emergencyContactPhone: patientModel.emergencyContactPhone ?? null,
         });
     }
 
@@ -33,6 +36,10 @@ export class PatientMapper extends MapperWithoutDto<Patient, PatientModel> {
             id: entity.id.toString(),
             professionalId: entity.professionalId?.toString() ?? null,
             documentId: entity.documentId.toString(),
+            birthDate: entity.birthDate ?? null,
+            email: entity.email ?? null,
+            emergencyContactName: entity.emergencyContactName ?? null,
+            emergencyContactPhone: entity.emergencyContactPhone ?? null,
             createdAt: entity.createdAt,
             updatedAt: entity.updatedAt,
             deletedAt: entity.deletedAt ?? null,

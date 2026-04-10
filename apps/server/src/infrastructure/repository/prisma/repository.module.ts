@@ -1,8 +1,10 @@
 import {Module, Provider} from '@nestjs/common';
 import {AppointmentRepository} from '../../../domain/appointment/appointment.repository';
+import {ClinicalProfileRepository} from '../../../domain/clinical-profile/clinical-profile.repository';
 import {EventRepository} from '../../../domain/event/event.repository';
 import {UploadFileRepository} from '../../../domain/file/upload-file.repository';
 import {PatientRepository} from '../../../domain/patient/patient.repository';
+import {PatientAlertRepository} from '../../../domain/patient-alert/patient-alert.repository';
 import {PersonRepository} from '../../../domain/person/person.repository';
 import {ProfessionalRepository} from '../../../domain/professional/professional.repository';
 import {WorkingHoursRepository} from '../../../domain/professional/working-hours.repository';
@@ -11,8 +13,10 @@ import {RecordRepository} from '../../../domain/record/record.repository';
 import {UserRepository} from '../../../domain/user/user.repository';
 import {MapperModule} from '../../mappers';
 import {AppointmentPrismaRepository} from '../appointment.prisma.repository';
+import {ClinicalProfilePrismaRepository} from '../clinical-profile.prisma.repository';
 import {EventPrismaRepository} from '../event.prisma.repository';
 import {PatientPrismaRepository} from '../patient.prisma.repository';
+import {PatientAlertPrismaRepository} from '../patient-alert.prisma.repository';
 import {PersonPrismaRepository} from '../person.prisma.repository';
 import {ProfessionalPrismaRepository} from '../professional.prisma.repository';
 import {WorkingHoursPrismaRepository} from '../working-hours.prisma.repository';
@@ -63,6 +67,14 @@ const repositories: Provider[] = [
     {
         provide: ProfessionalBlockRepository,
         useClass: ProfessionalBlockPrismaRepository,
+    },
+    {
+        provide: ClinicalProfileRepository,
+        useClass: ClinicalProfilePrismaRepository,
+    },
+    {
+        provide: PatientAlertRepository,
+        useClass: PatientAlertPrismaRepository,
     },
 ];
 
