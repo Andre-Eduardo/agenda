@@ -3,6 +3,7 @@ import {PatientId} from '../../../domain/patient/entities';
 import {
     AttendanceType,
     ClinicalStatusTag,
+    RecordSource,
 } from '../../../domain/record/entities';
 import {createZodDto} from '../../@shared/validation/dto';
 import {datetime, entityId, pagination} from '../../@shared/validation/schemas';
@@ -14,6 +15,7 @@ export const searchRecordsSchema = pagination(['createdAt', 'updatedAt', 'eventD
     clinicalStatus: z.nativeEnum(ClinicalStatusTag).optional().openapi({description: 'Filter by clinical status'}),
     dateStart: datetime.optional().openapi({description: 'Filter events from this date (eventDate)'}),
     dateEnd: datetime.optional().openapi({description: 'Filter events up to this date (eventDate)'}),
+    source: z.nativeEnum(RecordSource).optional().openapi({description: 'Filter by record source'}),
 });
 
 export class SearchRecordsDto extends createZodDto(searchRecordsSchema) {}

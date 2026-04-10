@@ -9,7 +9,7 @@ export class SearchRecordsService implements ApplicationService<SearchRecordsDto
     constructor(private readonly recordRepository: RecordRepository) {}
 
     async execute({payload}: Command<SearchRecordsDto>): Promise<PaginatedDto<RecordDto>> {
-        const {term, sort, patientId, attendanceType, clinicalStatus, dateStart, dateEnd, ...rest} = payload;
+        const {term, sort, patientId, attendanceType, clinicalStatus, dateStart, dateEnd, source, ...rest} = payload;
 
         const result = await this.recordRepository.search(
             {
@@ -23,6 +23,7 @@ export class SearchRecordsService implements ApplicationService<SearchRecordsDto
                 clinicalStatus: clinicalStatus ?? undefined,
                 dateStart: dateStart ?? undefined,
                 dateEnd: dateEnd ?? undefined,
+                source: source ?? undefined,
             }
         );
 

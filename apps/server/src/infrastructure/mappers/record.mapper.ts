@@ -7,10 +7,12 @@ import {File, FileId} from '../../domain/record/entities/file.entity';
 import {
     Record,
     RecordId,
+    ImportedDocumentId,
     EvolutionTemplateType,
     AttendanceType,
     ClinicalStatusTag,
     ConductTag,
+    RecordSource,
 } from '../../domain/record/entities/record.entity';
 import {MapperWithoutDto} from './mapper';
 
@@ -39,6 +41,9 @@ export class RecordMapper extends MapperWithoutDto<Record, RecordModel> {
             freeNotes: model.freeNotes ?? null,
             eventDate: model.eventDate ?? null,
             appointmentId: model.appointmentId ? AppointmentId.from(model.appointmentId) : null,
+            source: model.source ? (model.source as unknown as RecordSource) : RecordSource.MANUAL,
+            importedDocumentId: model.importedDocumentId ? ImportedDocumentId.from(model.importedDocumentId) : null,
+            wasHumanEdited: model.wasHumanEdited ?? false,
             files:
                 model.files?.map(
                     (file) =>
@@ -71,6 +76,9 @@ export class RecordMapper extends MapperWithoutDto<Record, RecordModel> {
             freeNotes: entity.freeNotes,
             eventDate: entity.eventDate,
             appointmentId: entity.appointmentId?.toString() ?? null,
+            source: entity.source as unknown as PrismaClient.RecordSource,
+            importedDocumentId: entity.importedDocumentId?.toString() ?? null,
+            wasHumanEdited: entity.wasHumanEdited,
             createdAt: entity.createdAt,
             updatedAt: entity.updatedAt,
             deletedAt: entity.deletedAt ?? null,

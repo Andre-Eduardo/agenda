@@ -7,6 +7,7 @@ import {
     AttendanceType,
     ClinicalStatusTag,
     ConductTag,
+    RecordSource,
 } from '../../../domain/record/entities';
 import {createZodDto} from '../../@shared/validation/dto';
 import {datetime, entityId} from '../../@shared/validation/schemas';
@@ -36,6 +37,9 @@ export const createRecordSchema = z.object({
     freeNotes: z.string().optional().openapi({example: 'Patient was anxious during the visit'}),
     eventDate: datetime.optional(),
     appointmentId: entityId(AppointmentId).optional(),
+    source: z.nativeEnum(RecordSource).optional(),
+    importedDocumentId: z.string().uuid().optional(),
+    wasHumanEdited: z.boolean().optional(),
 });
 
 export class CreateRecordDto extends createZodDto(createRecordSchema) {}

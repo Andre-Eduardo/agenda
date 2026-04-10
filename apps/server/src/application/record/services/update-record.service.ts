@@ -1,5 +1,6 @@
 import {Injectable} from '@nestjs/common';
 import {ResourceNotFoundException} from '../../../domain/@shared/exceptions';
+import {ImportedDocumentId} from '../../../domain/record/entities';
 import {RecordRepository} from '../../../domain/record/record.repository';
 import {EventDispatcher} from '../../../domain/event';
 import {ApplicationService, Command} from '../../@shared/application.service';
@@ -19,7 +20,14 @@ export class UpdateRecordService implements ApplicationService<UpdateRecordDto, 
             throw new ResourceNotFoundException('Record not found.', id.toString());
         }
 
-        record.change(props);
+        const changeProps = {
+            ...props,
+            importedDocumentId: props.importedDocumentId !== undefined 
+                ? (props.importedDocumentId ? ImportedDocumentId.from(props.importedDocumentId) : null) 
+                : undefined,
+        };
+
+        record.change(changeProps);
 
         await this.recordRepository.save(record);
 

@@ -5,6 +5,7 @@ import {
     AttendanceType,
     ClinicalStatusTag,
     ConductTag,
+    RecordSource,
 } from '../../../domain/record/entities';
 import {EntityDto} from '../../@shared/dto';
 
@@ -76,6 +77,15 @@ export class RecordDto extends EntityDto {
     @ApiProperty({format: 'uuid', nullable: true, description: 'Linked appointment ID'})
     appointmentId: string | null;
 
+    @ApiProperty({enum: RecordSource, description: 'Origin of the record'})
+    source: RecordSource;
+
+    @ApiProperty({format: 'uuid', nullable: true, description: 'ID of the imported document if applicable'})
+    importedDocumentId: string | null;
+
+    @ApiProperty({description: 'Indicates if the imported record was manually reviewed and edited'})
+    wasHumanEdited: boolean;
+
     @ApiProperty({type: [FileDto], description: 'The attached files'})
     files: FileDto[];
 
@@ -96,6 +106,9 @@ export class RecordDto extends EntityDto {
         this.freeNotes = record.freeNotes;
         this.eventDate = record.eventDate?.toISOString() ?? null;
         this.appointmentId = record.appointmentId?.toString() ?? null;
+        this.source = record.source;
+        this.importedDocumentId = record.importedDocumentId?.toString() ?? null;
+        this.wasHumanEdited = record.wasHumanEdited;
         this.files = record.files.map((f) => new FileDto(f));
     }
 }

@@ -2,7 +2,7 @@ import {PaginatedList, Pagination} from '../@shared/repository';
 import type {PatientId} from '../patient/entities';
 import type {ProfessionalId} from '../professional/entities';
 import type {AppointmentId} from '../appointment/entities';
-import type {Record, RecordId, AttendanceType, ClinicalStatusTag} from './entities';
+import type {Record, RecordId, AttendanceType, ClinicalStatusTag, RecordSource} from './entities';
 
 export type RecordSearchFilter = {
     ids?: RecordId[];
@@ -14,6 +14,7 @@ export type RecordSearchFilter = {
     clinicalStatus?: ClinicalStatusTag;
     dateStart?: Date;
     dateEnd?: Date;
+    source?: RecordSource;
 };
 
 export type RecordSortOptions = [

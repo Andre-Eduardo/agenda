@@ -43,6 +43,11 @@ export enum ConductTag {
     THERAPY_ADJUSTMENT = 'THERAPY_ADJUSTMENT',
 }
 
+export enum RecordSource {
+    MANUAL = 'MANUAL',
+    IMPORT = 'IMPORT',
+}
+
 export type RecordProps = EntityProps<Record>;
 export type CreateRecord = CreateEntity<Record>;
 export type UpdateRecord = Partial<RecordProps>;
@@ -64,6 +69,9 @@ export class Record extends AggregateRoot<RecordId> {
     eventDate: Date | null;
     appointmentId: AppointmentId | null;
     files: File[];
+    source: RecordSource;
+    importedDocumentId: ImportedDocumentId | null;
+    wasHumanEdited: boolean;
 
     constructor(props: AllEntityProps<Record>) {
         super(props);
@@ -83,6 +91,9 @@ export class Record extends AggregateRoot<RecordId> {
         this.eventDate = props.eventDate ?? null;
         this.appointmentId = props.appointmentId ?? null;
         this.files = props.files;
+        this.source = props.source ?? RecordSource.MANUAL;
+        this.importedDocumentId = props.importedDocumentId ?? null;
+        this.wasHumanEdited = props.wasHumanEdited ?? false;
         this.validate();
     }
 
@@ -106,6 +117,9 @@ export class Record extends AggregateRoot<RecordId> {
             eventDate: props.eventDate ?? null,
             appointmentId: props.appointmentId ?? null,
             files: props.files ?? [],
+            source: props.source ?? RecordSource.MANUAL,
+            importedDocumentId: props.importedDocumentId ?? null,
+            wasHumanEdited: props.wasHumanEdited ?? false,
             createdAt: now,
             updatedAt: now,
             deletedAt: null,
@@ -175,6 +189,18 @@ export class Record extends AggregateRoot<RecordId> {
             this.appointmentId = props.appointmentId;
         }
 
+        if (props.source !== undefined) {
+            this.source = props.source;
+        }
+
+        if (props.importedDocumentId !== undefined) {
+            this.importedDocumentId = props.importedDocumentId;
+        }
+
+        if (props.wasHumanEdited !== undefined) {
+            this.wasHumanEdited = props.wasHumanEdited;
+        }
+
         this.validate();
 
         this.addEvent(new RecordChangedEvent({oldState, newState: this}));
@@ -203,10 +229,23 @@ export class Record extends AggregateRoot<RecordId> {
             eventDate: this.eventDate?.toJSON() ?? null,
             appointmentId: this.appointmentId?.toJSON() ?? null,
             files: this.files.map((f) => f.toJSON()),
+            source: this.source,
+            importedDocumentId: this.importedDocumentId?.toJSON() ?? null,
+            wasHumanEdited: this.wasHumanEdited,
             createdAt: this.createdAt.toJSON(),
             updatedAt: this.updatedAt.toJSON(),
             deletedAt: this.deletedAt?.toJSON() ?? null,
         };
+    }
+}
+
+export class ImportedDocumentId extends EntityId<'ImportedDocumentId'> {
+    static from(value: string): ImportedDocumentId {
+        return new ImportedDocumentId(value);
+    }
+
+    static generate(): ImportedDocumentId {
+        return new ImportedDocumentId();
     }
 }
 

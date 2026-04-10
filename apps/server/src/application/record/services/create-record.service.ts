@@ -1,5 +1,5 @@
 import {Injectable} from '@nestjs/common';
-import {File, FileId, Record} from '../../../domain/record/entities';
+import {File, FileId, Record, ImportedDocumentId, RecordSource} from '../../../domain/record/entities';
 import {RecordRepository} from '../../../domain/record/record.repository';
 import {EventDispatcher} from '../../../domain/event';
 import {ApplicationService, Command} from '../../@shared/application.service';
@@ -31,6 +31,9 @@ export class CreateRecordService implements ApplicationService<CreateRecordDto, 
             freeNotes: payload.freeNotes ?? null,
             eventDate: payload.eventDate ?? null,
             appointmentId: payload.appointmentId ?? null,
+            source: payload.source ?? RecordSource.MANUAL,
+            importedDocumentId: payload.importedDocumentId ? ImportedDocumentId.from(payload.importedDocumentId) : null,
+            wasHumanEdited: payload.wasHumanEdited ?? false,
             files: [],
         });
 

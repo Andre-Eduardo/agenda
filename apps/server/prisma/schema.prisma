@@ -94,15 +94,16 @@ model Professional {
   professionalBlocks ProfessionalBlock[]
   clinicalProfiles   ClinicalProfile[]
   patientAlerts      PatientAlert[]
+  ImportedDocument   ImportedDocument[]
 
   @@map("professional")
 }
 
 model ProfessionalConfig {
-  id        String   @id(map: "professional_config_pk") @db.Uuid
+  id        String    @id(map: "professional_config_pk") @db.Uuid
   color     String?
-  createdAt DateTime @map("created_at")
-  updatedAt DateTime @map("updated_at")
+  createdAt DateTime  @map("created_at")
+  updatedAt DateTime  @map("updated_at")
   deletedAt DateTime? @map("deleted_at")
 
   professional Professional?
@@ -111,23 +112,24 @@ model ProfessionalConfig {
 }
 
 model Patient {
-  id                    String           @id(map: "patient_pk") @db.Uuid
-  person                Person           @relation(fields: [id], references: [id], onDelete: Cascade)
-  documentId            String           @map("document_id") @db.Citext()
-  birthDate             DateTime?        @map("birth_date")
-  email                 String?          @db.Citext()
-  emergencyContactName  String?          @map("emergency_contact_name")
-  emergencyContactPhone String?          @map("emergency_contact_phone")
-  createdAt             DateTime         @map("created_at")
-  updatedAt             DateTime         @map("updated_at")
-  deletedAt             DateTime?        @map("deleted_at")
+  id                    String             @id(map: "patient_pk") @db.Uuid
+  person                Person             @relation(fields: [id], references: [id], onDelete: Cascade)
+  documentId            String             @map("document_id") @db.Citext()
+  birthDate             DateTime?          @map("birth_date")
+  email                 String?            @db.Citext()
+  emergencyContactName  String?            @map("emergency_contact_name")
+  emergencyContactPhone String?            @map("emergency_contact_phone")
+  createdAt             DateTime           @map("created_at")
+  updatedAt             DateTime           @map("updated_at")
+  deletedAt             DateTime?          @map("deleted_at")
   appointments          Appointment[]
   records               Record[]
-  professional          Professional?    @relation(fields: [professionalId], references: [id])
-  professionalId        String?          @db.Uuid
+  professional          Professional?      @relation(fields: [professionalId], references: [id])
+  professionalId        String?            @db.Uuid
   clinicalProfile       ClinicalProfile?
   alerts                PatientAlert[]
   patientFiles          File[]
+  ImportedDocument      ImportedDocument[]
 
   @@unique([documentId], name: "patient_document_id_key")
   @@map("patient")
@@ -138,6 +140,29 @@ enum EvolutionTemplateType {
   DAP
 
   @@map("evolution_template_type")
+}
+
+enum RecordSource {
+  MANUAL
+  IMPORT
+
+  @@map("record_source")
+}
+
+enum ImportStatus {
+  UPLOADED
+  QUALITY_CHECKED
+  PREPROCESSED
+  OCR_DONE
+  NORMALIZED
+  CLASSIFIED
+  AI_STRUCTURED
+  READY_FOR_REVIEW
+  APPROVED
+  REJECTED
+  FAILED
+
+  @@map("import_status")
 }
 
 enum AttendanceType {
@@ -271,27 +296,81 @@ model Record {
   appointmentId  String?                @map("appointment_id") @db.Uuid
   appointment    Appointment?           @relation(fields: [appointmentId], references: [id])
   files          File[]
-  createdAt      DateTime               @map("created_at")
-  updatedAt      DateTime               @map("updated_at")
-  deletedAt      DateTime?              @map("deleted_at")
+
+  source             RecordSource      @default(MANUAL) @map("source")
+  importedDocumentId String?           @map("imported_document_id") @db.Uuid
+  importedDocument   ImportedDocument? @relation(fields: [importedDocumentId], references: [id])
+  wasHumanEdited     Boolean           @default(false) @map("was_human_edited")
+
+  createdAt DateTime  @map("created_at")
+  updatedAt DateTime  @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
 
   @@map("record")
 }
 
 model File {
-  id          String    @id(map: "file_pk") @db.Uuid
-  recordId    String?   @map("record_id") @db.Uuid
-  record      Record?   @relation(fields: [recordId], references: [id])
-  patientId   String?   @map("patient_id") @db.Uuid
-  patient     Patient?  @relation(fields: [patientId], references: [id])
-  fileName    String
-  url         String
-  description String
-  createdAt   DateTime  @map("created_at")
-  updatedAt   DateTime  @map("updated_at")
-  deletedAt   DateTime? @map("deleted_at")
+  id                String             @id(map: "file_pk") @db.Uuid
+  recordId          String?            @map("record_id") @db.Uuid
+  record            Record?            @relation(fields: [recordId], references: [id])
+  patientId         String?            @map("patient_id") @db.Uuid
+  patient           Patient?           @relation(fields: [patientId], references: [id])
+  fileName          String
+  url               String
+  description       String
+  createdAt         DateTime           @map("created_at")
+  updatedAt         DateTime           @map("updated_at")
+  deletedAt         DateTime?          @map("deleted_at")
+  importedDocuments ImportedDocument[]
 
   @@map("file")
+}
+
+model ImportedDocument {
+  id             String       @id(map: "imported_document_pk") @db.Uuid
+  patientId      String       @map("patient_id") @db.Uuid
+  patient        Patient      @relation(fields: [patientId], references: [id])
+  professionalId String       @map("professional_id") @db.Uuid
+  professional   Professional @relation(fields: [professionalId], references: [id])
+  fileId         String       @map("file_id") @db.Uuid
+  file           File         @relation(fields: [fileId], references: [id])
+
+  documentType      String? @map("document_type")
+  qualityLabel      String? @map("quality_label")
+  qualityScore      Float?  @map("quality_score")
+  rawOcrText        String? @map("raw_ocr_text")
+  normalizedOcrText String? @map("normalized_ocr_text")
+  ocrConfidence     Float?  @map("ocr_confidence")
+  aiConfidence      Float?  @map("ai_confidence")
+
+  status         ImportStatus @default(UPLOADED) @map("status")
+  reviewRequired Boolean      @default(true) @map("review_required")
+
+  createdAt DateTime @map("created_at")
+  updatedAt DateTime @map("updated_at")
+
+  extractedFields ExtractedField[]
+  records         Record[]
+
+  @@map("imported_document")
+}
+
+model ExtractedField {
+  id                 String           @id(map: "extracted_field_pk") @db.Uuid
+  importedDocumentId String           @map("imported_document_id") @db.Uuid
+  importedDocument   ImportedDocument @relation(fields: [importedDocumentId], references: [id], onDelete: Cascade)
+
+  fieldKey        String  @map("field_key")
+  rawValue        String? @map("raw_value")
+  structuredValue Json?   @map("structured_value")
+  confidence      Float?  @map("confidence")
+  needsReview     Boolean @default(true) @map("needs_review")
+  correctedValue  Json?   @map("corrected_value")
+
+  createdAt DateTime @map("created_at")
+  updatedAt DateTime @map("updated_at")
+
+  @@map("extracted_field")
 }
 
 model ClinicalProfile {

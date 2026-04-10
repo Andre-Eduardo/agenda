@@ -54,6 +54,7 @@ export class RecordPrismaRepository extends PrismaRepository implements RecordRe
             appointmentId: filter.appointmentId ? filter.appointmentId.toString() : undefined,
             attendanceType: filter.attendanceType ? (filter.attendanceType as unknown as PrismaClient.AttendanceType) : undefined,
             clinicalStatus: filter.clinicalStatus ? (filter.clinicalStatus as unknown as PrismaClient.ClinicalStatusTag) : undefined,
+            source: filter.source ? (filter.source as unknown as PrismaClient.RecordSource) : undefined,
             eventDate: filter.dateStart || filter.dateEnd
                 ? {
                     gte: filter.dateStart,
