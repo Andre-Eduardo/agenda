@@ -5,6 +5,8 @@ import {UploadFileRepository} from '../../../domain/file/upload-file.repository'
 import {PatientRepository} from '../../../domain/patient/patient.repository';
 import {PersonRepository} from '../../../domain/person/person.repository';
 import {ProfessionalRepository} from '../../../domain/professional/professional.repository';
+import {WorkingHoursRepository} from '../../../domain/professional/working-hours.repository';
+import {ProfessionalBlockRepository} from '../../../domain/professional/professional-block.repository';
 import {RecordRepository} from '../../../domain/record/record.repository';
 import {UserRepository} from '../../../domain/user/user.repository';
 import {MapperModule} from '../../mappers';
@@ -13,6 +15,8 @@ import {EventPrismaRepository} from '../event.prisma.repository';
 import {PatientPrismaRepository} from '../patient.prisma.repository';
 import {PersonPrismaRepository} from '../person.prisma.repository';
 import {ProfessionalPrismaRepository} from '../professional.prisma.repository';
+import {WorkingHoursPrismaRepository} from '../working-hours.prisma.repository';
+import {ProfessionalBlockPrismaRepository} from '../professional-block.prisma.repository';
 import {RecordPrismaRepository} from '../record.prisma.repository';
 import {UploadFilePrismaRepository} from '../upload-file.prisma.repository';
 import {UserPrismaRepository} from '../user.prisma.repository';
@@ -51,6 +55,14 @@ const repositories: Provider[] = [
     {
         provide: UploadFileRepository,
         useClass: UploadFilePrismaRepository,
+    },
+    {
+        provide: WorkingHoursRepository,
+        useClass: WorkingHoursPrismaRepository,
+    },
+    {
+        provide: ProfessionalBlockRepository,
+        useClass: ProfessionalBlockPrismaRepository,
     },
 ];
 

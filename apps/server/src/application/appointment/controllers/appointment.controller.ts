@@ -1,4 +1,4 @@
-import {Body, Controller, Delete, Get, Post, Put, Query} from '@nestjs/common';
+import {Body, Controller, Delete, Get, Patch, Post, Put, Query} from '@nestjs/common';
 import {ApiTags} from '@nestjs/swagger';
 import {Actor} from '../../../domain/@shared/actor';
 import {AppointmentId} from '../../../domain/appointment/entities';
@@ -10,14 +10,17 @@ import {entityIdParam} from '../../@shared/openapi/params';
 import {ValidatedParam, ZodValidationPipe} from '../../@shared/validation';
 import {
     AppointmentDto,
+    CancelAppointmentInputDto,
     CreateAppointmentDto,
     SearchAppointmentsDto,
     UpdateAppointmentInputDto,
+    cancelAppointmentSchema,
     getAppointmentSchema,
     searchAppointmentsSchema,
     updateAppointmentSchema,
 } from '../dtos';
 import {
+    CancelAppointmentService,
     CreateAppointmentService,
     DeleteAppointmentService,
     GetAppointmentService,
@@ -34,6 +37,7 @@ export class AppointmentController {
         private readonly getAppointmentService: GetAppointmentService,
         private readonly searchAppointmentsService: SearchAppointmentsService,
         private readonly updateAppointmentService: UpdateAppointmentService,
+        private readonly cancelAppointmentService: CancelAppointmentService,
         private readonly deleteAppointmentService: DeleteAppointmentService
     ) {}
 
@@ -90,6 +94,21 @@ export class AppointmentController {
         @Body() payload: UpdateAppointmentInputDto
     ): Promise<AppointmentDto> {
         return this.updateAppointmentService.execute({actor, payload: {id, ...payload}});
+    }
+
+    @ApiOperation({
+        summary: 'Cancels an appointment',
+        parameters: [entityIdParam('Appointment ID')],
+        responses: [{status: 200, description: 'Appointment cancelled', type: AppointmentDto}],
+    })
+    @Authorize(AppointmentPermission.CANCEL)
+    @Patch(':id/cancel')
+    async cancelAppointment(
+        @RequestActor() actor: Actor,
+        @ValidatedParam('id', cancelAppointmentSchema.shape.id) id: AppointmentId,
+        @Body() payload: CancelAppointmentInputDto
+    ): Promise<AppointmentDto> {
+        return this.cancelAppointmentService.execute({actor, payload: {id, ...payload}});
     }
 
     @ApiOperation({

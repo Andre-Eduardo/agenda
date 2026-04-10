@@ -1,3 +1,4 @@
+export * from './cancel-appointment.service';
 export * from './create-appointment.service';
 export * from './delete-appointment.service';
 export * from './get-appointment.service';

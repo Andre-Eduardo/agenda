@@ -1,0 +1,51 @@
+import {Injectable} from '@nestjs/common';
+import {WorkingHoursRepository} from '../../domain/professional/working-hours.repository';
+import {WorkingHours, WorkingHoursId, ProfessionalId} from '../../domain/professional/entities';
+import {WorkingHoursMapper} from '../mappers/working-hours.mapper';
+import {PrismaProvider} from './prisma/prisma.provider';
+import {PrismaRepository} from './prisma.repository';
+
+@Injectable()
+export class WorkingHoursPrismaRepository extends PrismaRepository implements WorkingHoursRepository {
+    constructor(
+        readonly prismaProvider: PrismaProvider,
+        private readonly mapper: WorkingHoursMapper
+    ) {
+        super(prismaProvider);
+    }
+
+    async findById(id: WorkingHoursId): Promise<WorkingHours | null> {
+        const record = await this.prisma.workingHours.findUnique({
+            where: {id: id.toString()},
+        });
+
+        return record === null ? null : this.mapper.toDomain(record);
+    }
+
+    async findByProfessionalAndDay(professionalId: ProfessionalId, dayOfWeek: number): Promise<WorkingHours[]> {
+        const records = await this.prisma.workingHours.findMany({
+            where: {
+                professionalId: professionalId.toString(),
+                dayOfWeek,
+                active: true,
+            },
+        });
+
+        return records.map((r) => this.mapper.toDomain(r));
+    }
+
+    async save(workingHours: WorkingHours): Promise<void> {
+        const data = this.mapper.toPersistence(workingHours);
+        await this.prisma.workingHours.upsert({
+            where: {id: data.id},
+            create: data,
+            update: data,
+        });
+    }
+
+    async delete(id: WorkingHoursId): Promise<void> {
+        await this.prisma.workingHours.delete({
+            where: {id: id.toString()},
+        });
+    }
+}
