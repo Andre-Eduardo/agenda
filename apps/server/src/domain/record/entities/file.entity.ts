@@ -1,19 +1,22 @@
 import {Entity, type AllEntityProps, type EntityJson, type EntityProps} from '../../@shared/entity';
 import {EntityId} from '../../@shared/entity/id';
+import type {PatientId} from '../../patient/entities';
 import type {RecordId} from './record.entity';
 
 export type FileProps = EntityProps<File>;
 export type UpdateFile = Partial<FileProps>;
 
 export class File extends Entity<FileId> {
-    recordId: RecordId;
+    recordId: RecordId | null;
+    patientId: PatientId | null;
     fileName: string;
     url: string;
     description: string;
 
     constructor(props: AllEntityProps<File>) {
         super(props);
-        this.recordId = props.recordId;
+        this.recordId = props.recordId ?? null;
+        this.patientId = props.patientId ?? null;
         this.fileName = props.fileName;
         this.url = props.url;
         this.description = props.description;
@@ -22,7 +25,8 @@ export class File extends Entity<FileId> {
     toJSON(): EntityJson<File> {
         return {
             id: this.id.toJSON(),
-            recordId: this.recordId.toJSON(),
+            recordId: this.recordId?.toJSON() ?? null,
+            patientId: this.patientId?.toJSON() ?? null,
             fileName: this.fileName,
             url: this.url,
             description: this.description,

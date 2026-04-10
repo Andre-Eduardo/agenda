@@ -9,14 +9,21 @@ export class SearchRecordsService implements ApplicationService<SearchRecordsDto
     constructor(private readonly recordRepository: RecordRepository) {}
 
     async execute({payload}: Command<SearchRecordsDto>): Promise<PaginatedDto<RecordDto>> {
-        const {term, sort, ...rest} = payload;
+        const {term, sort, patientId, attendanceType, clinicalStatus, dateStart, dateEnd, ...rest} = payload;
 
         const result = await this.recordRepository.search(
             {
                 ...rest,
                 sort: sort ? (Object.entries(sort) as [keyof typeof sort, 'asc' | 'desc'][]).map(([key, direction]) => ({key, direction})) : undefined,
             },
-            {term: term ?? undefined}
+            {
+                term: term ?? undefined,
+                patientId: patientId ?? undefined,
+                attendanceType: attendanceType ?? undefined,
+                clinicalStatus: clinicalStatus ?? undefined,
+                dateStart: dateStart ?? undefined,
+                dateEnd: dateEnd ?? undefined,
+            }
         );
 
         return {

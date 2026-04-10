@@ -26,6 +26,18 @@ export class PatientDto extends EntityDto {
     @ApiProperty({format: 'uuid', nullable: true, description: 'The associated professional ID'})
     professionalId: string | null;
 
+    @ApiProperty({format: 'date-time', nullable: true, description: 'The patient birth date'})
+    birthDate: string | null;
+
+    @ApiProperty({nullable: true, description: 'The patient email'})
+    email: string | null;
+
+    @ApiProperty({nullable: true, description: 'Emergency contact name'})
+    emergencyContactName: string | null;
+
+    @ApiProperty({nullable: true, description: 'Emergency contact phone'})
+    emergencyContactPhone: string | null;
+
     constructor(patient: Patient) {
         super(patient);
         this.name = patient.name;
@@ -35,5 +47,9 @@ export class PatientDto extends EntityDto {
         this.personType = patient.personType;
         this.profiles = Array.from(patient.profiles);
         this.professionalId = patient.professionalId?.toString() ?? null;
+        this.birthDate = patient.birthDate?.toISOString() ?? null;
+        this.email = patient.email;
+        this.emergencyContactName = patient.emergencyContactName;
+        this.emergencyContactPhone = patient.emergencyContactPhone;
     }
 }

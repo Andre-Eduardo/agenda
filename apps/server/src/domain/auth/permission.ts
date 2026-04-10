@@ -48,6 +48,18 @@ export enum UploadPermission {
     UPLOAD = 'upload:upload',
 }
 
+export enum ClinicalProfilePermission {
+    VIEW = 'clinical-profile:view',
+    UPDATE = 'clinical-profile:update',
+}
+
+export enum PatientAlertPermission {
+    VIEW = 'patient-alert:view',
+    CREATE = 'patient-alert:create',
+    UPDATE = 'patient-alert:update',
+    DELETE = 'patient-alert:delete',
+}
+
 const PERMISSIONS = [
     ...Object.values(UserPermission),
     ...Object.values(ProfessionalPermission),
@@ -56,6 +68,8 @@ const PERMISSIONS = [
     ...Object.values(RecordPermission),
     ...Object.values(PersonPermission),
     ...Object.values(UploadPermission),
+    ...Object.values(ClinicalProfilePermission),
+    ...Object.values(PatientAlertPermission),
 ];
 
 export type Permission = (typeof PERMISSIONS)[number];

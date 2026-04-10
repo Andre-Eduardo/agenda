@@ -41,6 +41,7 @@ export class RecordPrismaRepository extends PrismaRepository implements RecordRe
             },
         });
     }
+
     async search(
         pagination: Pagination<RecordSortOptions>,
         filter: RecordSearchFilter = {}
@@ -48,6 +49,18 @@ export class RecordPrismaRepository extends PrismaRepository implements RecordRe
         const where: PrismaClient.Prisma.RecordWhereInput = {
             id: filter.ids ? {in: filter.ids.map((id) => id.toString())} : undefined,
             description: filter.term ? {contains: filter.term, mode: 'insensitive'} : undefined,
+            patientId: filter.patientId ? filter.patientId.toString() : undefined,
+            professionalId: filter.professionalId ? filter.professionalId.toString() : undefined,
+            appointmentId: filter.appointmentId ? filter.appointmentId.toString() : undefined,
+            attendanceType: filter.attendanceType ? (filter.attendanceType as unknown as PrismaClient.AttendanceType) : undefined,
+            clinicalStatus: filter.clinicalStatus ? (filter.clinicalStatus as unknown as PrismaClient.ClinicalStatusTag) : undefined,
+            eventDate: filter.dateStart || filter.dateEnd
+                ? {
+                    gte: filter.dateStart,
+                    lte: filter.dateEnd,
+                }
+                : undefined,
+            deletedAt: null,
         };
 
         const [data, totalCount] = await Promise.all([

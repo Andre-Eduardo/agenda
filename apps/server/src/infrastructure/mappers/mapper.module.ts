@@ -1,7 +1,9 @@
 import {Global, Module} from '@nestjs/common';
 import {AppointmentMapper} from './appointment.mapper';
+import {ClinicalProfileMapper} from './clinical-profile.mapper';
 import {EventMapper} from './event.mapper';
 import {PatientMapper} from './patient.mapper';
+import {PatientAlertMapper} from './patient-alert.mapper';
 import {PersonMapper} from './person.mapper';
 import {ProfessionalMapper} from './professional.mapper';
 import {RecordMapper} from './record.mapper';
@@ -17,6 +19,8 @@ const mappers = [
     EventMapper,
     WorkingHoursMapper,
     ProfessionalBlockMapper,
+    ClinicalProfileMapper,
+    PatientAlertMapper,
 ];
 
 @Global()

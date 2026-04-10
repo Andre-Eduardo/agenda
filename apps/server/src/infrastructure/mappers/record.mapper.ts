@@ -2,8 +2,16 @@ import {Injectable} from '@nestjs/common';
 import * as PrismaClient from '@prisma/client';
 import {PatientId} from '../../domain/patient/entities';
 import {ProfessionalId} from '../../domain/professional/entities';
+import {AppointmentId} from '../../domain/appointment/entities';
 import {File, FileId} from '../../domain/record/entities/file.entity';
-import {Record, RecordId} from '../../domain/record/entities/record.entity';
+import {
+    Record,
+    RecordId,
+    EvolutionTemplateType,
+    AttendanceType,
+    ClinicalStatusTag,
+    ConductTag,
+} from '../../domain/record/entities/record.entity';
 import {MapperWithoutDto} from './mapper';
 
 export type RecordModel = PrismaClient.Record & {
@@ -18,13 +26,27 @@ export class RecordMapper extends MapperWithoutDto<Record, RecordModel> {
             id: RecordId.from(model.id),
             patientId: PatientId.from(model.patientId),
             professionalId: ProfessionalId.from(model.professionalId),
+            description: model.description ?? null,
+            templateType: model.templateType ? (model.templateType as unknown as EvolutionTemplateType) : null,
+            title: model.title ?? null,
+            attendanceType: model.attendanceType ? (model.attendanceType as unknown as AttendanceType) : null,
+            clinicalStatus: model.clinicalStatus ? (model.clinicalStatus as unknown as ClinicalStatusTag) : null,
+            conductTags: (model.conductTags ?? []) as unknown as ConductTag[],
+            subjective: model.subjective ?? null,
+            objective: model.objective ?? null,
+            assessment: model.assessment ?? null,
+            plan: model.plan ?? null,
+            freeNotes: model.freeNotes ?? null,
+            eventDate: model.eventDate ?? null,
+            appointmentId: model.appointmentId ? AppointmentId.from(model.appointmentId) : null,
             files:
                 model.files?.map(
                     (file) =>
                         new File({
                             ...file,
                             id: FileId.from(file.id),
-                            recordId: RecordId.from(file.recordId),
+                            recordId: file.recordId ? RecordId.from(file.recordId) : null,
+                            patientId: file.patientId ? PatientId.from(file.patientId) : null,
                             deletedAt: file.deletedAt ?? null,
                         })
                 ) ?? [],
@@ -37,13 +59,25 @@ export class RecordMapper extends MapperWithoutDto<Record, RecordModel> {
             patientId: entity.patientId.toString(),
             professionalId: entity.professionalId.toString(),
             description: entity.description,
+            templateType: entity.templateType ? (entity.templateType as unknown as PrismaClient.EvolutionTemplateType) : null,
+            title: entity.title,
+            attendanceType: entity.attendanceType ? (entity.attendanceType as unknown as PrismaClient.AttendanceType) : null,
+            clinicalStatus: entity.clinicalStatus ? (entity.clinicalStatus as unknown as PrismaClient.ClinicalStatusTag) : null,
+            conductTags: (entity.conductTags ?? []) as unknown as PrismaClient.ConductTag[],
+            subjective: entity.subjective,
+            objective: entity.objective,
+            assessment: entity.assessment,
+            plan: entity.plan,
+            freeNotes: entity.freeNotes,
+            eventDate: entity.eventDate,
+            appointmentId: entity.appointmentId?.toString() ?? null,
             createdAt: entity.createdAt,
             updatedAt: entity.updatedAt,
             deletedAt: entity.deletedAt ?? null,
-            // Files are usually handled separately or via nested writes, but for the model return:
             files: entity.files.map((file) => ({
                 id: file.id.toString(),
-                recordId: file.recordId.toString(),
+                recordId: file.recordId?.toString() ?? null,
+                patientId: file.patientId?.toString() ?? null,
                 fileName: file.fileName,
                 url: file.url,
                 description: file.description,
