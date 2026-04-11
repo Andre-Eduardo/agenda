@@ -87,6 +87,12 @@ export class PatientContextChunkPrismaRepository
         }));
     }
 
+    async countByPatient(patientId: PatientId): Promise<number> {
+        return this.prisma.patientContextChunk.count({
+            where: {patientId: patientId.toString()},
+        });
+    }
+
     async save(chunk: PatientContextChunk): Promise<void> {
         const data = this.mapper.toPersistence(chunk);
         await this.prisma.patientContextChunk.upsert({

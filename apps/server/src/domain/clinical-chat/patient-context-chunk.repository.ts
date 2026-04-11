@@ -42,6 +42,9 @@ export interface PatientContextChunkRepository {
      */
     searchSimilar(filter: SimilaritySearchFilter): Promise<RankedChunk[]>;
 
+    /** Retorna o total de chunks indexados para um paciente. */
+    countByPatient(patientId: PatientId): Promise<number>;
+
     save(chunk: PatientContextChunk): Promise<void>;
 
     /** Salva múltiplos chunks em batch (upsert por patientId+sourceType+sourceId+chunkIndex). */
