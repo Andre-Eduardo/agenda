@@ -60,6 +60,21 @@ export enum PatientAlertPermission {
     DELETE = 'patient-alert:delete',
 }
 
+export enum FormTemplatePermission {
+    VIEW = 'form-template:view',
+    CREATE = 'form-template:create',
+    UPDATE = 'form-template:update',
+    DELETE = 'form-template:delete',
+    PUBLISH = 'form-template:publish',
+}
+
+export enum PatientFormPermission {
+    VIEW = 'patient-form:view',
+    CREATE = 'patient-form:create',
+    UPDATE = 'patient-form:update',
+    DELETE = 'patient-form:delete',
+}
+
 const PERMISSIONS = [
     ...Object.values(UserPermission),
     ...Object.values(ProfessionalPermission),
@@ -70,6 +85,8 @@ const PERMISSIONS = [
     ...Object.values(UploadPermission),
     ...Object.values(ClinicalProfilePermission),
     ...Object.values(PatientAlertPermission),
+    ...Object.values(FormTemplatePermission),
+    ...Object.values(PatientFormPermission),
 ];
 
 export type Permission = (typeof PERMISSIONS)[number];

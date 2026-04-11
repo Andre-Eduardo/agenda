@@ -16,6 +16,8 @@ import {ClinicalProfileModule} from './clinical-profile/clinical-profile.module'
 import {EventModule} from './event/event.module';
 import {PatientAlertModule} from './patient-alert/patient-alert.module';
 import {PatientModule} from './patient/patient.module';
+import {FormTemplateModule} from './form-template/form-template.module';
+import {PatientFormModule} from './patient-form/patient-form.module';
 import {ProfessionalModule} from './professional/professional.module';
 import {RecordModule} from './record/record.module';
 import {UploadModule} from './upload/upload.module';
@@ -78,6 +80,8 @@ const guards: Provider[] = [
         ClinicalProfileModule,
         PatientAlertModule,
         UploadModule,
+        FormTemplateModule,
+        PatientFormModule,
     ],
     providers: [...exceptionFilters, ...pipes, ...interceptors, ...guards],
 })

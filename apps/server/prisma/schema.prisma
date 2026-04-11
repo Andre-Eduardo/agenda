@@ -82,10 +82,11 @@ model Professional {
   config    ProfessionalConfig @relation(references: [id], fields: [configId])
   userId    String             @map("user_id") @db.Uuid
   user      User               @relation(fields: [userId], references: [id])
-  specialty String?
-  createdAt DateTime           @map("created_at")
-  updatedAt DateTime           @map("updated_at")
-  deletedAt DateTime?          @map("deleted_at")
+  specialty           String?
+  specialtyNormalized Specialty? @map("specialty_normalized")
+  createdAt           DateTime   @map("created_at")
+  updatedAt           DateTime   @map("updated_at")
+  deletedAt           DateTime?  @map("deleted_at")
 
   appointments       Appointment[]
   records            Record[]
@@ -95,6 +96,8 @@ model Professional {
   clinicalProfiles   ClinicalProfile[]
   patientAlerts      PatientAlert[]
   ImportedDocument   ImportedDocument[]
+  formTemplates      FormTemplate[]
+  patientForms       PatientForm[]
 
   @@map("professional")
 }
@@ -130,6 +133,7 @@ model Patient {
   alerts                PatientAlert[]
   patientFiles          File[]
   ImportedDocument      ImportedDocument[]
+  patientForms          PatientForm[]
 
   @@unique([documentId], name: "patient_document_id_key")
   @@map("patient")
@@ -203,6 +207,36 @@ enum AlertSeverity {
   HIGH
 
   @@map("alert_severity")
+}
+
+enum Specialty {
+  PSICOLOGIA
+  MEDICINA
+  FISIOTERAPIA
+  FONOAUDIOLOGIA
+  NUTRICAO
+  TERAPIA_OCUPACIONAL
+  ENFERMAGEM
+  OUTROS
+
+  @@map("specialty")
+}
+
+enum FormStatus {
+  DRAFT
+  PUBLISHED
+  DEPRECATED
+
+  @@map("form_status")
+}
+
+enum FormResponseStatus {
+  DRAFT
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+
+  @@map("form_response_status")
 }
 
 enum AppointmentStatus {
@@ -301,6 +335,9 @@ model Record {
   importedDocumentId String?           @map("imported_document_id") @db.Uuid
   importedDocument   ImportedDocument? @relation(fields: [importedDocumentId], references: [id])
   wasHumanEdited     Boolean           @default(false) @map("was_human_edited")
+
+  patientFormId String?     @unique @map("patient_form_id") @db.Uuid
+  patientForm   PatientForm? @relation("RecordPatientForm")
 
   createdAt DateTime  @map("created_at")
   updatedAt DateTime  @map("updated_at")
@@ -443,4 +480,90 @@ model Event {
   timestamp      DateTime
 
   @@map("event")
+}
+
+model FormTemplate {
+  id             String        @id(map: "form_template_pk") @db.Uuid
+  code           String        @unique(map: "form_template_code_key")
+  name           String
+  description    String?
+  specialty      Specialty
+  isPublic       Boolean       @default(false) @map("is_public")
+  professionalId String?       @map("professional_id") @db.Uuid
+  professional   Professional? @relation(fields: [professionalId], references: [id])
+  createdAt      DateTime      @map("created_at")
+  updatedAt      DateTime      @map("updated_at")
+  deletedAt      DateTime?     @map("deleted_at")
+
+  versions     FormTemplateVersion[]
+  patientForms PatientForm[]
+
+  @@map("form_template")
+}
+
+model FormTemplateVersion {
+  id             String       @id(map: "form_template_version_pk") @db.Uuid
+  templateId     String       @map("template_id") @db.Uuid
+  template       FormTemplate @relation(fields: [templateId], references: [id])
+  versionNumber  Int          @map("version_number")
+  status         FormStatus   @default(DRAFT) @map("status")
+  definitionJson Json         @map("definition_json") @db.JsonB
+  schemaJson     Json?        @map("schema_json") @db.JsonB
+  publishedAt    DateTime?    @map("published_at")
+  createdAt      DateTime     @map("created_at")
+  updatedAt      DateTime     @map("updated_at")
+
+  patientForms PatientForm[]
+
+  @@unique([templateId, versionNumber], name: "form_template_version_unique")
+  @@map("form_template_version")
+}
+
+model PatientForm {
+  id             String              @id(map: "patient_form_pk") @db.Uuid
+  patientId      String              @map("patient_id") @db.Uuid
+  patient        Patient             @relation(fields: [patientId], references: [id])
+  professionalId String              @map("professional_id") @db.Uuid
+  professional   Professional        @relation(fields: [professionalId], references: [id])
+  templateId     String              @map("template_id") @db.Uuid
+  template       FormTemplate        @relation(fields: [templateId], references: [id])
+  versionId      String              @map("version_id") @db.Uuid
+  version        FormTemplateVersion @relation(fields: [versionId], references: [id])
+  status         FormResponseStatus  @default(IN_PROGRESS) @map("status")
+  responseJson   Json                @map("response_json") @db.JsonB
+  computedJson   Json?               @map("computed_json") @db.JsonB
+  appliedAt      DateTime            @map("applied_at")
+  completedAt    DateTime?           @map("completed_at")
+  createdAt      DateTime            @map("created_at")
+  updatedAt      DateTime            @map("updated_at")
+
+  record     Record?          @relation("RecordPatientForm")
+  fieldIndex FormFieldIndex[]
+
+  @@map("patient_form")
+}
+
+model FormFieldIndex {
+  id            String      @id(map: "form_field_index_pk") @db.Uuid
+  patientFormId String      @map("patient_form_id") @db.Uuid
+  patientForm   PatientForm @relation(fields: [patientFormId], references: [id])
+  fieldId       String      @map("field_id")
+  fieldLabel    String?     @map("field_label")
+  fieldType     String?     @map("field_type")
+  valueText     String?     @map("value_text")
+  valueNumber   Float?      @map("value_number")
+  valueBoolean  Boolean?    @map("value_boolean")
+  valueDate     DateTime?   @map("value_date")
+  valueJson     Json?       @map("value_json") @db.JsonB
+  specialty     Specialty
+  confidence    Float?
+  createdAt     DateTime    @map("created_at")
+  updatedAt     DateTime    @map("updated_at")
+
+  @@unique([patientFormId, fieldId], name: "form_field_index_unique")
+  @@index([specialty], name: "form_field_index_specialty_idx")
+  @@index([fieldId], name: "form_field_index_field_id_idx")
+  @@index([valueText], name: "form_field_index_value_text_idx")
+  @@index([valueNumber], name: "form_field_index_value_number_idx")
+  @@map("form_field_index")
 }
