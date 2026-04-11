@@ -22,6 +22,7 @@ import {ProfessionalModule} from './professional/professional.module';
 import {RecordModule} from './record/record.module';
 import {UploadModule} from './upload/upload.module';
 import {UserModule} from './user/user.module';
+import {ClinicalChatModule} from './clinical-chat/clinical-chat.module';
 
 const exceptionFilters: Provider[] = [
     {
@@ -82,6 +83,7 @@ const guards: Provider[] = [
         UploadModule,
         FormTemplateModule,
         PatientFormModule,
+        ClinicalChatModule,
     ],
     providers: [...exceptionFilters, ...pipes, ...interceptors, ...guards],
 })

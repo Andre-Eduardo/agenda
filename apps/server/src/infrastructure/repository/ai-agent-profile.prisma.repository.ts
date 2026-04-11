@@ -1,0 +1,58 @@
+import {Injectable} from '@nestjs/common';
+import {AiAgentProfile, AiAgentProfileId} from '../../domain/clinical-chat/entities';
+import {AiAgentProfileRepository} from '../../domain/clinical-chat/ai-agent-profile.repository';
+import type {Specialty} from '../../domain/form-template/entities';
+import {AiAgentProfileMapper} from '../mappers/ai-agent-profile.mapper';
+import {PrismaProvider} from './prisma/prisma.provider';
+import {PrismaRepository} from './prisma.repository';
+
+@Injectable()
+export class AiAgentProfilePrismaRepository extends PrismaRepository implements AiAgentProfileRepository {
+    constructor(
+        readonly prismaProvider: PrismaProvider,
+        private readonly mapper: AiAgentProfileMapper
+    ) {
+        super(prismaProvider);
+    }
+
+    async findById(id: AiAgentProfileId): Promise<AiAgentProfile | null> {
+        const record = await this.prisma.aiAgentProfile.findUnique({
+            where: {id: id.toString()},
+        });
+        return record ? this.mapper.toDomain(record) : null;
+    }
+
+    async findBySlug(slug: string): Promise<AiAgentProfile | null> {
+        const record = await this.prisma.aiAgentProfile.findUnique({
+            where: {slug},
+        });
+        return record ? this.mapper.toDomain(record) : null;
+    }
+
+    async findBySpecialty(specialty: Specialty): Promise<AiAgentProfile | null> {
+        const record = await this.prisma.aiAgentProfile.findFirst({
+            where: {
+                specialty: specialty as never,
+                isActive: true,
+            },
+        });
+        return record ? this.mapper.toDomain(record) : null;
+    }
+
+    async findAllActive(): Promise<AiAgentProfile[]> {
+        const records = await this.prisma.aiAgentProfile.findMany({
+            where: {isActive: true},
+            orderBy: {name: 'asc'},
+        });
+        return records.map((r) => this.mapper.toDomain(r));
+    }
+
+    async save(profile: AiAgentProfile): Promise<void> {
+        const data = this.mapper.toPersistence(profile);
+        await this.prisma.aiAgentProfile.upsert({
+            where: {id: data.id},
+            create: data,
+            update: data,
+        });
+    }
+}
