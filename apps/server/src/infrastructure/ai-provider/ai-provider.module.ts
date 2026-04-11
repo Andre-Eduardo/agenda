@@ -4,58 +4,67 @@ import {MockChatProvider} from './mock-chat.provider';
 import {MockEmbeddingProvider} from './mock-embedding.provider';
 import {DefaultAiProviderRegistry} from './ai-provider-registry';
 import {CHAT_MODEL_PROVIDER_TOKEN, EMBEDDING_PROVIDER_TOKEN} from './ai-provider.tokens';
+import {OpenRouterChatProvider} from './openrouter-chat.provider';
 
 /**
  * Módulo de providers de IA para o chat clínico.
  *
- * AMBIENTE ATUAL: providers mock (desenvolvimento) — nenhuma API externa necessária.
+ * O provider ativo é selecionado pela variável de ambiente `AI_CHAT_PROVIDER`.
+ * Quando não configurada, o mock é usado (desenvolvimento local sem API key).
  *
- * ─── COMO ATIVAR UM PROVIDER REAL ───────────────────────────────────────────
- * Substitua os providers abaixo pelo provider real correspondente:
+ * ─── VARIÁVEIS DE AMBIENTE ───────────────────────────────────────────────────
+ * AI_CHAT_PROVIDER=openrouter        # ativa o OpenRouterChatProvider
+ * OPENROUTER_API_KEY=sk-or-...       # chave de API (obrigatória para openrouter)
+ * OPENROUTER_MODEL=openai/gpt-4o    # modelo no formato provider/model do OpenRouter
  *
- * Opção 1 — Troca direta:
- * { provide: CHAT_MODEL_PROVIDER_TOKEN, useClass: OpenAiChatProvider }
- *
- * Opção 2 — Seleção por variável de ambiente (recomendado para multi-env):
- * {
- *   provide: CHAT_MODEL_PROVIDER_TOKEN,
- *   useFactory: (config: ConfigService) => {
- *     switch (config.get<string>('AI_CHAT_PROVIDER', 'mock')) {
- *       case 'openai':     return new OpenAiChatProvider(config);
- *       case 'anthropic':  return new AnthropicChatProvider(config);
- *       case 'openrouter': return new OpenRouterChatProvider(config);
- *       default:           return new MockChatProvider();
- *     }
- *   },
- *   inject: [ConfigService],
- * }
- *
- * Variáveis de ambiente esperadas (quando provider real for ativado):
- * - AI_CHAT_PROVIDER=openai|anthropic|openrouter
- * - AI_CHAT_MODEL=gpt-4o|claude-3-5-sonnet-20241022|...
- * - OPENAI_API_KEY=sk-...
- * - ANTHROPIC_API_KEY=sk-ant-...
- * - OPENROUTER_API_KEY=sk-or-...
- * - AI_EMBEDDING_PROVIDER=openai|mock
+ * ─── COMO ADICIONAR UM NOVO PROVIDER ────────────────────────────────────────
+ * 1. Crie a implementação em `infrastructure/ai-provider/` (ex: openai-chat.provider.ts)
+ * 2. Adicione um case na factory abaixo com o novo identificador
+ * 3. Documente as variáveis de ambiente necessárias aqui e no .env.example
  * ─────────────────────────────────────────────────────────────────────────────
  */
 @Module({
     providers: [
-        // Implementações concretas (mock por padrão — substituir quando necessário)
         MockChatProvider,
         MockEmbeddingProvider,
+        OpenRouterChatProvider,
 
-        // Tokens de DI: permitem injeção por interface sem depender da implementação
+        // Chat provider: selecionado por AI_CHAT_PROVIDER (padrão: mock)
         {
             provide: CHAT_MODEL_PROVIDER_TOKEN,
-            useClass: MockChatProvider,
+            useFactory: (): MockChatProvider | OpenRouterChatProvider => {
+                const provider = process.env.AI_CHAT_PROVIDER ?? 'mock';
+
+                if (provider === 'openrouter') {
+                    const apiKey = process.env.OPENROUTER_API_KEY;
+                    const modelId = process.env.OPENROUTER_MODEL;
+
+                    if (!apiKey) {
+                        throw new Error(
+                            '[AiProviderModule] OPENROUTER_API_KEY não configurada. ' +
+                                'Defina a variável de ambiente ou use AI_CHAT_PROVIDER=mock.'
+                        );
+                    }
+                    if (!modelId) {
+                        throw new Error(
+                            '[AiProviderModule] OPENROUTER_MODEL não configurada. ' +
+                                'Exemplo: OPENROUTER_MODEL=openai/gpt-4o'
+                        );
+                    }
+
+                    return new OpenRouterChatProvider({apiKey, modelId});
+                }
+
+                // Padrão: mock (desenvolvimento sem API key)
+                return new MockChatProvider();
+            },
         },
+
         {
             provide: EMBEDDING_PROVIDER_TOKEN,
             useClass: MockEmbeddingProvider,
         },
 
-        // Registry unificado — expose para os services via AiProviderRegistry token
         {
             provide: AiProviderRegistry,
             useClass: DefaultAiProviderRegistry,
