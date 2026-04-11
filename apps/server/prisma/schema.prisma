@@ -629,6 +629,10 @@ model AiAgentProfile {
   allowedSources   String[]   @map("allowed_sources")
   /// Configuração de prioridade de contexto (JsonB livre para flexibilidade)
   contextPriority  Json?      @map("context_priority") @db.JsonB
+  /// Modelo fixo a ser usado por este agente no OpenRouter (ex: "openai/o1-mini", "anthropic/claude-3-5-sonnet").
+  /// Quando null, o sistema usa o modelo padrão da especialidade (specialty-model-defaults).
+  /// O valor "openrouter/auto" é bloqueado — o comportamento de roteamento automático não é permitido.
+  providerModelId  String?    @map("provider_model_id")
   isActive         Boolean    @default(true) @map("is_active")
   createdAt        DateTime   @map("created_at")
   updatedAt        DateTime   @map("updated_at")

@@ -21,6 +21,7 @@ import type {ChatMessage} from '../../../domain/clinical-chat/ports/chat-model.p
 import {GetContextSnapshotService} from './get-context-snapshot.service';
 import {RetrievePatientChunksService} from './retrieve-patient-chunks.service';
 import {ApplicationService, Command} from '../../@shared/application.service';
+import {getDefaultModelForSpecialty} from '../../../domain/clinical-chat/specialty-model-defaults';
 
 export type SendChatMessageInput = {
     sessionId: PatientChatSessionId;
@@ -168,18 +169,27 @@ export class SendChatMessageService
         interactionLog.userMessageId = userMessage.id.toString();
 
         // ─── 9. Chamar provider abstrato (nunca SDK direto) ──────────────────
+        // Resolve o modelo: agentProfile.providerModelId → padrão da especialidade
+        const resolvedModel =
+            agentProfile?.providerModelId ??
+            getDefaultModelForSpecialty(agentProfile?.specialty ?? null);
+
         const provider = this.aiProviderRegistry.getChatProvider();
         let replyContent: string;
         let replyMetadata: Record<string, unknown>;
         let usedFallback = false;
 
         try {
-            const reply = await provider.generateChatReply({messages, maxTokens: 1024});
+            const reply = await provider.generateChatReply({
+                messages,
+                maxTokens: 1024,
+                modelOverride: resolvedModel,
+            });
 
             replyContent = reply.content || '(sem resposta gerada)';
             replyMetadata = {
                 provider: provider.providerId,
-                model: provider.modelId,
+                model: resolvedModel,
                 finishReason: reply.finishReason,
                 usage: reply.usage,
                 agentSlug: agentProfile?.slug ?? null,
@@ -207,7 +217,7 @@ export class SendChatMessageService
             interactionLog.complete({
                 assistantMessageId: assistantMessage.id.toString(),
                 providerId: provider.providerId,
-                modelId: provider.modelId,
+                modelId: resolvedModel,
                 promptTokens: reply.usage.promptTokens,
                 completionTokens: reply.usage.completionTokens,
                 totalTokens: reply.usage.totalTokens,

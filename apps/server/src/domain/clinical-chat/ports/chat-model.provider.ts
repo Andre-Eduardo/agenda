@@ -28,6 +28,12 @@ export type ChatReplyInput = {
     temperature?: number;
     /** Sequências de parada */
     stop?: string[];
+    /**
+     * Sobrescreve o modelo padrão do provider para esta chamada específica.
+     * Usado pelo SendChatMessageService para aplicar o modelo do AgentProfile.
+     * O valor "openrouter/auto" é bloqueado — o provider lançará erro se receber esse valor.
+     */
+    modelOverride?: string;
 };
 
 export type ChatReplyOutput = {
