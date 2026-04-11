@@ -1,4 +1,4 @@
-import {Body, Controller, Get, Patch, Post, Query} from '@nestjs/common';
+import {Body, Controller, Get, HttpCode, HttpStatus, Patch, Post, Query} from '@nestjs/common';
 import {ApiTags} from '@nestjs/swagger';
 import {Actor} from '../../../domain/@shared/actor';
 import {
@@ -20,16 +20,21 @@ import {
     PatientChatSessionDto,
     PatientChatMessageDto,
     PatientContextSnapshotDto,
+    PatientContextChunkDto,
     CreateChatSessionDto,
     ListChatSessionsDto,
     ListChatMessagesDto,
     AddChatMessageDto,
     RebuildContextDto,
     RetrieveChunksDto,
+    SendChatMessageDto,
+    SendChatMessageResponseDto,
+    SessionContextInspectDto,
     listChatSessionsSchema,
     listChatMessagesSchema,
     rebuildContextSchema,
     retrieveChunksSchema,
+    sendChatMessageSchema,
 } from '../dtos';
 import {
     CreateChatSessionService,
@@ -40,9 +45,14 @@ import {
     ListChatMessagesService,
     RebuildContextSnapshotService,
     RetrievePatientChunksService,
+    GetContextSnapshotService,
+    InvalidateSnapshotService,
+    SendChatMessageService,
 } from '../services';
 import {AiAgentProfileRepository} from '../../../domain/clinical-chat/ai-agent-profile.repository';
 import {PatientContextSnapshotRepository} from '../../../domain/clinical-chat/patient-context-snapshot.repository';
+import {PatientContextChunkRepository} from '../../../domain/clinical-chat/patient-context-chunk.repository';
+import {AiProviderRegistry} from '../../../domain/clinical-chat/ports/ai-provider-registry.port';
 import {PatientId} from '../../../domain/patient/entities';
 
 const sessionIdSchema = z.object({id: entityId(PatientChatSessionId)});
@@ -59,8 +69,13 @@ export class ClinicalChatController {
         private readonly listMessagesService: ListChatMessagesService,
         private readonly rebuildContextService: RebuildContextSnapshotService,
         private readonly retrieveChunksService: RetrievePatientChunksService,
+        private readonly getSnapshotService: GetContextSnapshotService,
+        private readonly invalidateSnapshotService: InvalidateSnapshotService,
+        private readonly sendChatMessageService: SendChatMessageService,
         private readonly agentProfileRepository: AiAgentProfileRepository,
-        private readonly snapshotRepository: PatientContextSnapshotRepository
+        private readonly snapshotRepository: PatientContextSnapshotRepository,
+        private readonly chunkRepository: PatientContextChunkRepository,
+        private readonly aiProviderRegistry: AiProviderRegistry
     ) {}
 
     // ─── AI Agent Profiles ───────────────────────────────────────────────────
@@ -141,8 +156,47 @@ export class ClinicalChatController {
 
     // ─── Chat Messages ───────────────────────────────────────────────────────
 
+    /**
+     * Endpoint principal de chat com IA.
+     * Orquestra: contexto → snapshot → RAG → provider → persistência → resposta.
+     * Substitui o fluxo simples de addMessage para interações com IA.
+     */
     @ApiOperation({
-        summary: 'Adds a message to a chat session',
+        summary: 'Sends a message to the clinical chat and gets an AI-generated response',
+        description:
+            'Main clinical chat endpoint. Retrieves patient context, calls AI provider, ' +
+            'persists user message + assistant response, and returns structured output with audit log.',
+        parameters: [entityIdParam('Session ID')],
+        responses: [{status: 200, description: 'User message + assistant response', type: SendChatMessageResponseDto}],
+    })
+    @Authorize(ClinicalChatPermission.CREATE)
+    @HttpCode(HttpStatus.OK)
+    @Post('sessions/:id/chat')
+    async sendChatMessage(
+        @RequestActor() actor: Actor,
+        @ValidatedParam('id', sessionIdSchema.shape.id) id: PatientChatSessionId,
+        @Body() payload: SendChatMessageDto
+    ): Promise<SendChatMessageResponseDto> {
+        const result = await this.sendChatMessageService.execute({
+            actor,
+            payload: {
+                sessionId: id,
+                content: payload.content,
+                topK: payload.topK,
+                minScore: payload.minScore,
+            },
+        });
+
+        return new SendChatMessageResponseDto(result);
+    }
+
+    /**
+     * Endpoint legado para inserção manual de mensagem sem processamento de IA.
+     * Útil para testes ou inserção de mensagens de sistema/contexto.
+     */
+    @ApiOperation({
+        summary: 'Manually adds a message to a chat session (no AI processing)',
+        description: 'Use /chat endpoint for AI-powered responses. This endpoint only persists the message directly.',
         parameters: [entityIdParam('Session ID')],
         responses: [{status: 201, description: 'Message added', type: PatientChatMessageDto}],
     })
@@ -207,6 +261,28 @@ export class ClinicalChatController {
     }
 
     @ApiOperation({
+        summary: 'Invalidates the current clinical snapshot for a patient (marks as stale)',
+        description: 'Call this when patient data changes. Next /context/snapshot access will trigger rebuild.',
+        responses: [{status: 200, description: 'Invalidation result'}],
+    })
+    @Authorize(ClinicalChatPermission.REINDEX)
+    @Post('context/invalidate')
+    async invalidateSnapshot(
+        @RequestActor() actor: Actor,
+        @Body() payload: RebuildContextDto
+    ): Promise<{invalidated: boolean; previousStatus: string | null}> {
+        const patientId = payload.patientId as unknown as PatientId;
+        const result = await this.invalidateSnapshotService.execute({
+            patientId,
+            reason: 'Manual invalidation via API',
+        });
+        return {
+            invalidated: result.invalidated,
+            previousStatus: result.previousStatus,
+        };
+    }
+
+    @ApiOperation({
         summary: 'Retrieves relevant context chunks for a patient given a query',
         responses: [{status: 200, description: 'Relevant chunks retrieved'}],
     })
@@ -238,7 +314,7 @@ export class ClinicalChatController {
     }
 
     @ApiOperation({
-        summary: "Gets a patient's current context snapshot",
+        summary: "Gets a patient's current context snapshot (rebuilds if stale or missing)",
         parameters: [entityIdParam('Patient ID', 'patientId')],
         responses: [{status: 200, description: 'Snapshot retrieved', type: PatientContextSnapshotDto}],
     })
@@ -248,8 +324,57 @@ export class ClinicalChatController {
         @RequestActor() _actor: Actor,
         @ValidatedParam('patientId', z.string().uuid().transform((v) => PatientId.from(v)))
         patientId: PatientId
-    ): Promise<PatientContextSnapshotDto | null> {
-        const snapshot = await this.snapshotRepository.findByPatient(patientId);
-        return snapshot ? new PatientContextSnapshotDto(snapshot) : null;
+    ): Promise<{snapshot: PatientContextSnapshotDto | null; wasRebuilt: boolean; isStale: boolean}> {
+        const result = await this.getSnapshotService.execute({
+            patientId,
+            autoRebuildIfStale: false, // Na consulta direta, não reconstrói automaticamente
+        });
+        return {
+            snapshot: result.snapshot ? new PatientContextSnapshotDto(result.snapshot) : null,
+            wasRebuilt: result.wasRebuilt,
+            isStale: result.isStale,
+        };
+    }
+
+    /**
+     * Inspeciona o estado de contexto + provider de uma sessão.
+     * Útil para diagnóstico e debugging do pipeline de chat.
+     */
+    @ApiOperation({
+        summary: 'Inspects the current context and provider state for a session',
+        parameters: [entityIdParam('Session ID')],
+        responses: [{status: 200, description: 'Session context state', type: SessionContextInspectDto}],
+    })
+    @Authorize(ClinicalChatPermission.VIEW)
+    @Get('sessions/:id/inspect')
+    async inspectSession(
+        @RequestActor() _actor: Actor,
+        @ValidatedParam('id', sessionIdSchema.shape.id) id: PatientChatSessionId
+    ): Promise<SessionContextInspectDto> {
+        const session = await this.getSessionService.execute({
+            actor: _actor,
+            payload: {sessionId: id},
+        });
+
+        const patientId = session.patientId as unknown as PatientId;
+
+        const [snapshot, totalIndexed, providerHealth] = await Promise.all([
+            this.snapshotRepository.findByPatient(patientId),
+            this.chunkRepository.countByPatient(patientId),
+            this.aiProviderRegistry.healthCheckAll(),
+        ]);
+        const registeredProviders = this.aiProviderRegistry.listRegisteredProviders();
+        const allHealthy = Object.values(providerHealth).every(Boolean);
+
+        return {
+            sessionId: id.toString(),
+            patientId: patientId.toString(),
+            snapshotStatus: snapshot?.status ?? null,
+            snapshotBuiltAt: snapshot?.builtAt?.toISOString() ?? null,
+            snapshotContentHash: snapshot?.contentHash ?? null,
+            totalChunksIndexed: totalIndexed,
+            registeredProviders,
+            providerHealthy: allHealthy,
+        };
     }
 }

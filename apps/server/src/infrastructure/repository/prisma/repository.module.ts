@@ -37,11 +37,13 @@ import {PatientChatSessionRepository} from '../../../domain/clinical-chat/patien
 import {PatientChatMessageRepository} from '../../../domain/clinical-chat/patient-chat-message.repository';
 import {PatientContextSnapshotRepository} from '../../../domain/clinical-chat/patient-context-snapshot.repository';
 import {PatientContextChunkRepository} from '../../../domain/clinical-chat/patient-context-chunk.repository';
+import {ClinicalChatInteractionLogRepository} from '../../../domain/clinical-chat/clinical-chat-interaction-log.repository';
 import {AiAgentProfilePrismaRepository} from '../ai-agent-profile.prisma.repository';
 import {PatientChatSessionPrismaRepository} from '../patient-chat-session.prisma.repository';
 import {PatientChatMessagePrismaRepository} from '../patient-chat-message.prisma.repository';
 import {PatientContextSnapshotPrismaRepository} from '../patient-context-snapshot.prisma.repository';
 import {PatientContextChunkPrismaRepository} from '../patient-context-chunk.prisma.repository';
+import {ClinicalChatInteractionLogPrismaRepository} from '../clinical-chat-interaction-log.prisma.repository';
 import {PrismaService} from '.';
 import {PrismaProvider} from './prisma.provider';
 
@@ -130,6 +132,10 @@ const repositories: Provider[] = [
     {
         provide: PatientContextChunkRepository,
         useClass: PatientContextChunkPrismaRepository,
+    },
+    {
+        provide: ClinicalChatInteractionLogRepository,
+        useClass: ClinicalChatInteractionLogPrismaRepository,
     },
 ];
 

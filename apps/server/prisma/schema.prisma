@@ -342,7 +342,7 @@ model Record {
   wasHumanEdited     Boolean           @default(false) @map("was_human_edited")
 
   patientFormId String?     @unique @map("patient_form_id") @db.Uuid
-  patientForm   PatientForm? @relation("RecordPatientForm")
+  patientForm   PatientForm? @relation("RecordPatientForm", fields: [patientFormId], references: [id])
 
   createdAt DateTime  @map("created_at")
   updatedAt DateTime  @map("updated_at")
@@ -654,7 +654,8 @@ model PatientChatSession {
   updatedAt      DateTime          @map("updated_at")
   deletedAt      DateTime?         @map("deleted_at")
 
-  messages PatientChatMessage[]
+  messages         PatientChatMessage[]
+  interactionLogs  ClinicalChatInteractionLog[]
 
   @@index([patientId], name: "patient_chat_session_patient_idx")
   @@index([professionalId], name: "patient_chat_session_professional_idx")
@@ -737,4 +738,68 @@ model PatientContextChunk {
   @@index([patientId], name: "patient_context_chunk_patient_idx")
   @@index([sourceType, sourceId], name: "patient_context_chunk_source_idx")
   @@map("patient_context_chunk")
+}
+
+/// Status de uma interação de chat com IA.
+enum ChatInteractionStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  /// Resposta gerada por fallback (ex: provider indisponível, usado mock)
+  FALLBACK
+
+  @@map("chat_interaction_status")
+}
+
+/// Log de auditoria de uma interação de chat clínico com IA.
+/// Separa os dados de execução/rastreabilidade das mensagens em si.
+/// Permite auditoria completa de: provider usado, tokens, latência, chunks recuperados.
+model ClinicalChatInteractionLog {
+  id                 String               @id(map: "clinical_chat_interaction_log_pk") @db.Uuid
+  sessionId          String               @map("session_id") @db.Uuid
+  session            PatientChatSession   @relation(fields: [sessionId], references: [id])
+  /// ID da mensagem do usuário que originou esta interação
+  userMessageId      String               @map("user_message_id") @db.Uuid
+  /// ID da mensagem do assistente gerada (null se a geração falhou)
+  assistantMessageId String?              @map("assistant_message_id") @db.Uuid
+
+  // ─── Provider & Model ───────────────────────────────────────────────────────
+  /// Identificador do provider usado (ex: "openai", "anthropic", "mock")
+  providerId         String?              @map("provider_id")
+  /// Identificador do modelo usado (ex: "gpt-4o", "claude-3-5-sonnet", "mock-clinical-assistant-v1")
+  modelId            String?              @map("model_id")
+  agentProfileId     String?              @map("agent_profile_id") @db.Uuid
+  /// Slug do agente usado, para leitura humana sem JOIN
+  agentSlug          String?              @map("agent_slug")
+
+  // ─── Rastreabilidade de contexto ────────────────────────────────────────────
+  /// ID do snapshot usado como contexto base
+  snapshotId         String?              @map("snapshot_id") @db.Uuid
+  /// Hash do snapshot no momento da interação (detecta se estava stale)
+  snapshotVersion    String?              @map("snapshot_version")
+  /// IDs dos PatientContextChunks recuperados via RAG para esta interação
+  retrievedChunkIds  String[]             @map("retrieved_chunk_ids")
+
+  // ─── Uso de tokens ──────────────────────────────────────────────────────────
+  promptTokens       Int?                 @map("prompt_tokens")
+  completionTokens   Int?                 @map("completion_tokens")
+  totalTokens        Int?                 @map("total_tokens")
+
+  // ─── Performance ────────────────────────────────────────────────────────────
+  latencyMs          Int?                 @map("latency_ms")
+
+  // ─── Status & erros ─────────────────────────────────────────────────────────
+  status             ChatInteractionStatus @default(PENDING) @map("status")
+  errorCode          String?              @map("error_code")
+  errorMessage       String?              @map("error_message") @db.Text
+
+  // ─── Flags ──────────────────────────────────────────────────────────────────
+  /// true se a resposta foi gerada por um provider de fallback
+  usedFallback       Boolean              @default(false) @map("used_fallback")
+
+  createdAt          DateTime             @map("created_at")
+  updatedAt          DateTime             @map("updated_at")
+
+  @@index([sessionId], name: "clinical_chat_interaction_log_session_idx")
+  @@map("clinical_chat_interaction_log")
 }

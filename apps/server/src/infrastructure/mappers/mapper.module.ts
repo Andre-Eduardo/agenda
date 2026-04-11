@@ -18,6 +18,7 @@ import {PatientChatSessionMapper} from './patient-chat-session.mapper';
 import {PatientChatMessageMapper} from './patient-chat-message.mapper';
 import {PatientContextSnapshotMapper} from './patient-context-snapshot.mapper';
 import {PatientContextChunkMapper} from './patient-context-chunk.mapper';
+import {ClinicalChatInteractionLogMapper} from './clinical-chat-interaction-log.mapper';
 
 const mappers = [
     PersonMapper,
@@ -40,6 +41,7 @@ const mappers = [
     PatientChatMessageMapper,
     PatientContextSnapshotMapper,
     PatientContextChunkMapper,
+    ClinicalChatInteractionLogMapper,
 ];
 
 @Global()

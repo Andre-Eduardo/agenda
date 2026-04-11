@@ -1,6 +1,8 @@
 export * from './build-patient-context.service';
 export * from './index-patient-chunks.service';
 export * from './retrieve-patient-chunks.service';
+export * from './get-context-snapshot.service';
+export * from './invalidate-snapshot.service';
 export * from './create-chat-session.service';
 export * from './get-chat-session.service';
 export * from './list-chat-sessions.service';
@@ -8,3 +10,4 @@ export * from './close-chat-session.service';
 export * from './add-chat-message.service';
 export * from './list-chat-messages.service';
 export * from './rebuild-context-snapshot.service';
+export * from './send-chat-message.service';
