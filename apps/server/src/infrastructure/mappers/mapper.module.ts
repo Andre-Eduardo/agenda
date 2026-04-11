@@ -13,6 +13,11 @@ import {FormTemplateMapper} from './form-template.mapper';
 import {FormTemplateVersionMapper} from './form-template-version.mapper';
 import {PatientFormMapper} from './patient-form.mapper';
 import {FormFieldIndexMapper} from './form-field-index.mapper';
+import {AiAgentProfileMapper} from './ai-agent-profile.mapper';
+import {PatientChatSessionMapper} from './patient-chat-session.mapper';
+import {PatientChatMessageMapper} from './patient-chat-message.mapper';
+import {PatientContextSnapshotMapper} from './patient-context-snapshot.mapper';
+import {PatientContextChunkMapper} from './patient-context-chunk.mapper';
 
 const mappers = [
     PersonMapper,
@@ -29,6 +34,12 @@ const mappers = [
     FormTemplateVersionMapper,
     PatientFormMapper,
     FormFieldIndexMapper,
+    // Clinical Chat & RAG
+    AiAgentProfileMapper,
+    PatientChatSessionMapper,
+    PatientChatMessageMapper,
+    PatientContextSnapshotMapper,
+    PatientContextChunkMapper,
 ];
 
 @Global()

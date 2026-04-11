@@ -32,6 +32,16 @@ import {FormTemplatePrismaRepository} from '../form-template.prisma.repository';
 import {FormTemplateVersionPrismaRepository} from '../form-template-version.prisma.repository';
 import {PatientFormPrismaRepository} from '../patient-form.prisma.repository';
 import {FormFieldIndexPrismaRepository} from '../form-field-index.prisma.repository';
+import {AiAgentProfileRepository} from '../../../domain/clinical-chat/ai-agent-profile.repository';
+import {PatientChatSessionRepository} from '../../../domain/clinical-chat/patient-chat-session.repository';
+import {PatientChatMessageRepository} from '../../../domain/clinical-chat/patient-chat-message.repository';
+import {PatientContextSnapshotRepository} from '../../../domain/clinical-chat/patient-context-snapshot.repository';
+import {PatientContextChunkRepository} from '../../../domain/clinical-chat/patient-context-chunk.repository';
+import {AiAgentProfilePrismaRepository} from '../ai-agent-profile.prisma.repository';
+import {PatientChatSessionPrismaRepository} from '../patient-chat-session.prisma.repository';
+import {PatientChatMessagePrismaRepository} from '../patient-chat-message.prisma.repository';
+import {PatientContextSnapshotPrismaRepository} from '../patient-context-snapshot.prisma.repository';
+import {PatientContextChunkPrismaRepository} from '../patient-context-chunk.prisma.repository';
 import {PrismaService} from '.';
 import {PrismaProvider} from './prisma.provider';
 
@@ -99,6 +109,27 @@ const repositories: Provider[] = [
     {
         provide: FormFieldIndexRepository,
         useClass: FormFieldIndexPrismaRepository,
+    },
+    // Clinical Chat & RAG
+    {
+        provide: AiAgentProfileRepository,
+        useClass: AiAgentProfilePrismaRepository,
+    },
+    {
+        provide: PatientChatSessionRepository,
+        useClass: PatientChatSessionPrismaRepository,
+    },
+    {
+        provide: PatientChatMessageRepository,
+        useClass: PatientChatMessagePrismaRepository,
+    },
+    {
+        provide: PatientContextSnapshotRepository,
+        useClass: PatientContextSnapshotPrismaRepository,
+    },
+    {
+        provide: PatientContextChunkRepository,
+        useClass: PatientContextChunkPrismaRepository,
     },
 ];
 

@@ -98,6 +98,8 @@ model Professional {
   ImportedDocument   ImportedDocument[]
   formTemplates      FormTemplate[]
   patientForms       PatientForm[]
+  chatSessions       PatientChatSession[]
+  contextSnapshots   PatientContextSnapshot[]
 
   @@map("professional")
 }
@@ -134,6 +136,9 @@ model Patient {
   patientFiles          File[]
   ImportedDocument      ImportedDocument[]
   patientForms          PatientForm[]
+  chatSessions          PatientChatSession[]
+  contextSnapshots      PatientContextSnapshot[]
+  contextChunks         PatientContextChunk[]
 
   @@unique([documentId], name: "patient_document_id_key")
   @@map("patient")
@@ -566,4 +571,170 @@ model FormFieldIndex {
   @@index([valueText], name: "form_field_index_value_text_idx")
   @@index([valueNumber], name: "form_field_index_value_number_idx")
   @@map("form_field_index")
+}
+
+// ─── Clinical Chat & RAG ──────────────────────────────────────────────────────
+
+enum ChatSessionStatus {
+  ACTIVE
+  CLOSED
+  ARCHIVED
+
+  @@map("chat_session_status")
+}
+
+enum ChatMessageRole {
+  USER
+  ASSISTANT
+  SYSTEM
+  /// Mensagem interna de pipeline (ex: contexto injetado, trace). Não exibida ao usuário.
+  INTERNAL
+
+  @@map("chat_message_role")
+}
+
+enum ContextChunkSourceType {
+  RECORD
+  PATIENT_FORM
+  CLINICAL_PROFILE
+  PATIENT_ALERT
+  IMPORTED_DOCUMENT
+
+  @@map("context_chunk_source_type")
+}
+
+enum ContextSnapshotStatus {
+  PENDING
+  READY
+  /// Snapshot desatualizado — novos records/formulários foram criados depois
+  STALE
+  FAILED
+
+  @@map("context_snapshot_status")
+}
+
+/// Perfil de agente clínico por profissão/especialidade.
+/// Configura o comportamento futuro do LLM por especialidade sem acoplar a um provider específico.
+model AiAgentProfile {
+  id               String     @id(map: "ai_agent_profile_pk") @db.Uuid
+  name             String
+  /// Identificador único legível por humanos, ex: "psicologia-adulto"
+  slug             String     @unique(map: "ai_agent_profile_slug_key")
+  /// null = agente genérico; preenchido = agente especialista
+  specialty        Specialty?
+  description      String?
+  /// Instruções base para o prompt do agente (system prompt). Plugar no LLM na próxima etapa.
+  baseInstructions String?    @map("base_instructions") @db.Text
+  /// Tipos de fonte que este agente pode usar (ex: ["RECORD","CLINICAL_PROFILE"])
+  allowedSources   String[]   @map("allowed_sources")
+  /// Configuração de prioridade de contexto (JsonB livre para flexibilidade)
+  contextPriority  Json?      @map("context_priority") @db.JsonB
+  isActive         Boolean    @default(true) @map("is_active")
+  createdAt        DateTime   @map("created_at")
+  updatedAt        DateTime   @map("updated_at")
+
+  sessions PatientChatSession[]
+
+  @@map("ai_agent_profile")
+}
+
+/// Sessão de chat clínico entre um profissional e o contexto de um paciente.
+model PatientChatSession {
+  id             String            @id(map: "patient_chat_session_pk") @db.Uuid
+  patientId      String            @map("patient_id") @db.Uuid
+  patient        Patient           @relation(fields: [patientId], references: [id])
+  professionalId String            @map("professional_id") @db.Uuid
+  professional   Professional      @relation(fields: [professionalId], references: [id])
+  agentProfileId String?           @map("agent_profile_id") @db.Uuid
+  agentProfile   AiAgentProfile?   @relation(fields: [agentProfileId], references: [id])
+  title          String?
+  status         ChatSessionStatus @default(ACTIVE) @map("status")
+  lastActivityAt DateTime          @map("last_activity_at")
+  createdAt      DateTime          @map("created_at")
+  updatedAt      DateTime          @map("updated_at")
+  deletedAt      DateTime?         @map("deleted_at")
+
+  messages PatientChatMessage[]
+
+  @@index([patientId], name: "patient_chat_session_patient_idx")
+  @@index([professionalId], name: "patient_chat_session_professional_idx")
+  @@map("patient_chat_session")
+}
+
+/// Mensagem individual de uma sessão de chat clínico.
+/// Nesta etapa não há resposta real de IA — a estrutura está pronta para plugar um LLM.
+model PatientChatMessage {
+  id        String             @id(map: "patient_chat_message_pk") @db.Uuid
+  sessionId String             @map("session_id") @db.Uuid
+  session   PatientChatSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  role      ChatMessageRole    @map("role")
+  content   String             @db.Text
+  /// Metadados opcionais (ex: modelo utilizado, latência, flags)
+  metadata  Json?              @db.JsonB
+  /// IDs dos PatientContextChunks usados como contexto nesta mensagem (rastreabilidade RAG)
+  chunkIds  String[]           @map("chunk_ids")
+  createdAt DateTime           @map("created_at")
+  updatedAt DateTime           @map("updated_at")
+
+  @@index([sessionId], name: "patient_chat_message_session_idx")
+  @@map("patient_chat_message")
+}
+
+/// Snapshot consolidado do contexto clínico de um paciente.
+/// Usado para economizar tokens em sessões de chat futuras — serve como cache semântico.
+model PatientContextSnapshot {
+  id             String                @id(map: "patient_context_snapshot_pk") @db.Uuid
+  patientId      String                @map("patient_id") @db.Uuid
+  patient        Patient               @relation(fields: [patientId], references: [id])
+  /// null = snapshot genérico; preenchido = snapshot com perspectiva de um profissional
+  professionalId String?               @map("professional_id") @db.Uuid
+  professional   Professional?         @relation(fields: [professionalId], references: [id])
+  /// Facts estruturados do paciente (dados demográficos, condições, medicamentos, etc.)
+  patientFacts   Json                  @map("patient_facts") @db.JsonB
+  /// Alertas e informações críticas (alergias, contraindicações)
+  criticalContext Json?                @map("critical_context") @db.JsonB
+  /// Timeline resumida dos últimos records e formulários
+  timelineSummary Json?               @map("timeline_summary") @db.JsonB
+  /// Hash dos dados usados para detectar quando o snapshot ficou stale
+  contentHash    String                @map("content_hash")
+  status         ContextSnapshotStatus @default(PENDING) @map("status")
+  builtAt        DateTime?             @map("built_at")
+  createdAt      DateTime              @map("created_at")
+  updatedAt      DateTime              @map("updated_at")
+
+  @@unique([patientId, professionalId], name: "patient_context_snapshot_unique")
+  @@index([patientId], name: "patient_context_snapshot_patient_idx")
+  @@map("patient_context_snapshot")
+}
+
+/// Chunk indexável para RAG — representa um pedaço de conteúdo clínico do paciente.
+///
+/// EMBEDDING: O campo `embedding` é um placeholder para vetorização.
+/// Quando pgvector for ativado:
+///   1. Adicionar ao datasource: extensions = [pgvector(map: "vector")]
+///   2. Substituir `Json?` por `Unsupported("vector(1536)")`
+///   3. Adicionar índice: @@index([embedding], type: Hnsw, ops: VectorCosineOps)
+model PatientContextChunk {
+  id         String                 @id(map: "patient_context_chunk_pk") @db.Uuid
+  patientId  String                 @map("patient_id") @db.Uuid
+  patient    Patient                @relation(fields: [patientId], references: [id])
+  sourceType ContextChunkSourceType @map("source_type")
+  /// ID da entidade de origem (Record.id, PatientForm.id, etc.)
+  sourceId   String                 @map("source_id") @db.Uuid
+  content    String                 @db.Text
+  /// Metadados do chunk (título do record, data, specialty, etc.)
+  metadata   Json?                  @db.JsonB
+  chunkIndex Int                    @default(0) @map("chunk_index")
+  /// Placeholder para embedding vetorial.
+  /// TODO: substituir por Unsupported("vector(1536)") quando pgvector for ativado.
+  embedding  Json?                  @db.JsonB @map("embedding")
+  /// Hash do conteúdo — permite detectar se a fonte mudou e re-indexar
+  contentHash String               @map("content_hash")
+  createdAt  DateTime               @map("created_at")
+  updatedAt  DateTime               @map("updated_at")
+
+  @@unique([patientId, sourceType, sourceId, chunkIndex], name: "patient_context_chunk_unique")
+  @@index([patientId], name: "patient_context_chunk_patient_idx")
+  @@index([sourceType, sourceId], name: "patient_context_chunk_source_idx")
+  @@map("patient_context_chunk")
 }

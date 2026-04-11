@@ -75,6 +75,15 @@ export enum PatientFormPermission {
     DELETE = 'patient-form:delete',
 }
 
+export enum ClinicalChatPermission {
+    VIEW = 'clinical-chat:view',
+    CREATE = 'clinical-chat:create',
+    UPDATE = 'clinical-chat:update',
+    DELETE = 'clinical-chat:delete',
+    /** Permissão para re-indexar contexto clínico / disparar rebuild de snapshot */
+    REINDEX = 'clinical-chat:reindex',
+}
+
 const PERMISSIONS = [
     ...Object.values(UserPermission),
     ...Object.values(ProfessionalPermission),
@@ -87,6 +96,7 @@ const PERMISSIONS = [
     ...Object.values(PatientAlertPermission),
     ...Object.values(FormTemplatePermission),
     ...Object.values(PatientFormPermission),
+    ...Object.values(ClinicalChatPermission),
 ];
 
 export type Permission = (typeof PERMISSIONS)[number];
