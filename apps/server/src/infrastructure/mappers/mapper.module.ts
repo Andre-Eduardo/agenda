@@ -9,6 +9,10 @@ import {ProfessionalMapper} from './professional.mapper';
 import {RecordMapper} from './record.mapper';
 import {WorkingHoursMapper} from './working-hours.mapper';
 import {ProfessionalBlockMapper} from './professional-block.mapper';
+import {FormTemplateMapper} from './form-template.mapper';
+import {FormTemplateVersionMapper} from './form-template-version.mapper';
+import {PatientFormMapper} from './patient-form.mapper';
+import {FormFieldIndexMapper} from './form-field-index.mapper';
 
 const mappers = [
     PersonMapper,
@@ -21,6 +25,10 @@ const mappers = [
     ProfessionalBlockMapper,
     ClinicalProfileMapper,
     PatientAlertMapper,
+    FormTemplateMapper,
+    FormTemplateVersionMapper,
+    PatientFormMapper,
+    FormFieldIndexMapper,
 ];
 
 @Global()

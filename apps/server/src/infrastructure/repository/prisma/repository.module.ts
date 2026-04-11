@@ -11,6 +11,10 @@ import {WorkingHoursRepository} from '../../../domain/professional/working-hours
 import {ProfessionalBlockRepository} from '../../../domain/professional/professional-block.repository';
 import {RecordRepository} from '../../../domain/record/record.repository';
 import {UserRepository} from '../../../domain/user/user.repository';
+import {FormTemplateRepository} from '../../../domain/form-template/form-template.repository';
+import {FormTemplateVersionRepository} from '../../../domain/form-template-version/form-template-version.repository';
+import {PatientFormRepository} from '../../../domain/patient-form/patient-form.repository';
+import {FormFieldIndexRepository} from '../../../domain/form-field-index/form-field-index.repository';
 import {MapperModule} from '../../mappers';
 import {AppointmentPrismaRepository} from '../appointment.prisma.repository';
 import {ClinicalProfilePrismaRepository} from '../clinical-profile.prisma.repository';
@@ -24,6 +28,10 @@ import {ProfessionalBlockPrismaRepository} from '../professional-block.prisma.re
 import {RecordPrismaRepository} from '../record.prisma.repository';
 import {UploadFilePrismaRepository} from '../upload-file.prisma.repository';
 import {UserPrismaRepository} from '../user.prisma.repository';
+import {FormTemplatePrismaRepository} from '../form-template.prisma.repository';
+import {FormTemplateVersionPrismaRepository} from '../form-template-version.prisma.repository';
+import {PatientFormPrismaRepository} from '../patient-form.prisma.repository';
+import {FormFieldIndexPrismaRepository} from '../form-field-index.prisma.repository';
 import {PrismaService} from '.';
 import {PrismaProvider} from './prisma.provider';
 
@@ -75,6 +83,22 @@ const repositories: Provider[] = [
     {
         provide: PatientAlertRepository,
         useClass: PatientAlertPrismaRepository,
+    },
+    {
+        provide: FormTemplateRepository,
+        useClass: FormTemplatePrismaRepository,
+    },
+    {
+        provide: FormTemplateVersionRepository,
+        useClass: FormTemplateVersionPrismaRepository,
+    },
+    {
+        provide: PatientFormRepository,
+        useClass: PatientFormPrismaRepository,
+    },
+    {
+        provide: FormFieldIndexRepository,
+        useClass: FormFieldIndexPrismaRepository,
     },
 ];
 
