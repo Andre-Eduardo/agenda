@@ -28,6 +28,14 @@ export class AiAgentProfileDto extends EntityDto {
     @ApiProperty({nullable: true})
     contextPriority: Record<string, unknown> | null;
 
+    @ApiProperty({
+        nullable: true,
+        description:
+            'Modelo fixo para este agente no OpenRouter (ex: "openai/o1-mini"). ' +
+            'Quando null, usa o padrão da especialidade. O valor "openrouter/auto" não é permitido.',
+    })
+    providerModelId: string | null;
+
     @ApiProperty()
     isActive: boolean;
 
@@ -40,6 +48,7 @@ export class AiAgentProfileDto extends EntityDto {
         this.baseInstructions = entity.baseInstructions;
         this.allowedSources = entity.allowedSources;
         this.contextPriority = entity.contextPriority;
+        this.providerModelId = entity.providerModelId;
         this.isActive = entity.isActive;
     }
 }
@@ -56,6 +65,12 @@ export const createAiAgentProfileSchema = z.object({
     baseInstructions: z.string().optional(),
     allowedSources: z.array(z.string()).default([]),
     contextPriority: z.record(z.unknown()).optional(),
+    providerModelId: z
+        .string()
+        .refine((v) => v !== 'openrouter/auto', {
+            message: 'O modelo "openrouter/auto" não é permitido. Especifique um modelo fixo.',
+        })
+        .optional(),
     isActive: z.boolean().default(true),
 });
 

@@ -19,6 +19,12 @@ export class AiAgentProfile extends AggregateRoot<AiAgentProfileId> {
     allowedSources: string[];
     /** Configuração livre de prioridades de contexto para montagem do prompt. */
     contextPriority: Record<string, unknown> | null;
+    /**
+     * Modelo fixo a ser usado por este agente no OpenRouter (ex: "openai/o1-mini").
+     * Quando null, o sistema aplica o padrão da especialidade definido em specialty-model-defaults.
+     * O valor "openrouter/auto" é explicitamente proibido.
+     */
+    providerModelId: string | null;
     isActive: boolean;
 
     constructor(props: AllEntityProps<AiAgentProfile>) {
@@ -30,6 +36,7 @@ export class AiAgentProfile extends AggregateRoot<AiAgentProfileId> {
         this.baseInstructions = props.baseInstructions ?? null;
         this.allowedSources = props.allowedSources ?? [];
         this.contextPriority = props.contextPriority ?? null;
+        this.providerModelId = props.providerModelId ?? null;
         this.isActive = props.isActive ?? true;
     }
 
@@ -46,6 +53,7 @@ export class AiAgentProfile extends AggregateRoot<AiAgentProfileId> {
             baseInstructions: props.baseInstructions ?? null,
             allowedSources: props.allowedSources ?? [],
             contextPriority: props.contextPriority ?? null,
+            providerModelId: props.providerModelId ?? null,
             isActive: props.isActive ?? true,
             createdAt: now,
             updatedAt: now,
@@ -73,6 +81,7 @@ export class AiAgentProfile extends AggregateRoot<AiAgentProfileId> {
             baseInstructions: this.baseInstructions,
             allowedSources: this.allowedSources,
             contextPriority: this.contextPriority,
+            providerModelId: this.providerModelId,
             isActive: this.isActive,
             createdAt: this.createdAt.toJSON(),
             updatedAt: this.updatedAt.toJSON(),

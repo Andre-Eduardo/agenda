@@ -79,6 +79,12 @@ export class OpenRouterChatProvider implements ChatModelProvider {
     private readonly defaultMaxTokens: number;
 
     constructor(config: OpenRouterConfig) {
+        if (config.modelId === 'openrouter/auto') {
+            throw new Error(
+                '[OpenRouterChatProvider] O modelo "openrouter/auto" não é permitido. ' +
+                    'Configure um modelo fixo em OPENROUTER_MODEL ou no providerModelId do AgentProfile.'
+            );
+        }
         this.apiKey = config.apiKey;
         this.modelId = config.modelId;
         this.maxContextTokens = config.maxContextTokens ?? 128_000;
@@ -94,8 +100,17 @@ export class OpenRouterChatProvider implements ChatModelProvider {
      * - mensagem atual do usuário
      */
     async generateChatReply(input: ChatReplyInput): Promise<ChatReplyOutput> {
+        const effectiveModel = input.modelOverride ?? this.modelId;
+
+        if (effectiveModel === 'openrouter/auto') {
+            throw new Error(
+                '[OpenRouterChatProvider] O modelo "openrouter/auto" não é permitido em fluxos clínicos. ' +
+                    'Defina um modelo fixo no providerModelId do AgentProfile ou na configuração padrão da especialidade.'
+            );
+        }
+
         const requestBody: OpenRouterRequest = {
-            model: this.modelId,
+            model: effectiveModel,
             messages: input.messages.map((m) => ({role: m.role, content: m.content})),
             max_tokens: input.maxTokens ?? this.defaultMaxTokens,
         };
@@ -108,7 +123,7 @@ export class OpenRouterChatProvider implements ChatModelProvider {
         }
 
         this.logger.debug(
-            `OpenRouter request — model: ${this.modelId}, messages: ${input.messages.length}, max_tokens: ${requestBody.max_tokens}`
+            `OpenRouter request — model: ${effectiveModel}, messages: ${input.messages.length}, max_tokens: ${requestBody.max_tokens}`
         );
 
         let rawResponse: OpenRouterResponse;
