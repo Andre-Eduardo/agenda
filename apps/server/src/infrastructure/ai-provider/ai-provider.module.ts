@@ -2,6 +2,7 @@ import {Module} from '@nestjs/common';
 import {AiProviderRegistry} from '../../domain/clinical-chat/ports/ai-provider-registry.port';
 import {MockChatProvider} from './mock-chat.provider';
 import {MockEmbeddingProvider} from './mock-embedding.provider';
+import {OpenAiEmbeddingProvider} from './openai-embedding.provider';
 import {DefaultAiProviderRegistry} from './ai-provider-registry';
 import {CHAT_MODEL_PROVIDER_TOKEN, EMBEDDING_PROVIDER_TOKEN} from './ai-provider.tokens';
 import {OpenRouterChatProvider} from './openrouter-chat.provider';
@@ -9,16 +10,20 @@ import {OpenRouterChatProvider} from './openrouter-chat.provider';
 /**
  * Módulo de providers de IA para o chat clínico.
  *
- * O provider ativo é selecionado pela variável de ambiente `AI_CHAT_PROVIDER`.
- * Quando não configurada, o mock é usado (desenvolvimento local sem API key).
+ * Chat e embeddings são provisionados por tokens independentes, garantindo que
+ * trocar o modelo de chat não exige reindexação dos embeddings.
  *
  * ─── VARIÁVEIS DE AMBIENTE ───────────────────────────────────────────────────
  * AI_CHAT_PROVIDER=openrouter        # ativa o OpenRouterChatProvider
- * OPENROUTER_API_KEY=sk-or-...       # chave de API (obrigatória para openrouter)
+ * OPENROUTER_API_KEY=sk-or-...       # chave de API do OpenRouter
  * OPENROUTER_MODEL=openai/gpt-4o    # modelo no formato provider/model do OpenRouter
  *
+ * AI_EMBEDDING_PROVIDER=openai       # ativa o OpenAiEmbeddingProvider
+ * OPENAI_API_KEY=sk-...              # chave de API da OpenAI
+ * OPENAI_EMBEDDING_MODEL=text-embedding-3-small  # modelo de embeddings (opcional)
+ *
  * ─── COMO ADICIONAR UM NOVO PROVIDER ────────────────────────────────────────
- * 1. Crie a implementação em `infrastructure/ai-provider/` (ex: openai-chat.provider.ts)
+ * 1. Crie a implementação em `infrastructure/ai-provider/`
  * 2. Adicione um case na factory abaixo com o novo identificador
  * 3. Documente as variáveis de ambiente necessárias aqui e no .env.example
  * ─────────────────────────────────────────────────────────────────────────────
@@ -28,6 +33,7 @@ import {OpenRouterChatProvider} from './openrouter-chat.provider';
         MockChatProvider,
         MockEmbeddingProvider,
         OpenRouterChatProvider,
+        OpenAiEmbeddingProvider,
 
         // Chat provider: selecionado por AI_CHAT_PROVIDER (padrão: mock)
         {
@@ -60,9 +66,30 @@ import {OpenRouterChatProvider} from './openrouter-chat.provider';
             },
         },
 
+        // Embedding provider: selecionado por AI_EMBEDDING_PROVIDER (padrão: mock)
+        // Separado do ChatProvider — trocar o modelo de chat nunca exige reindexação.
         {
             provide: EMBEDDING_PROVIDER_TOKEN,
-            useClass: MockEmbeddingProvider,
+            useFactory: (): MockEmbeddingProvider | OpenAiEmbeddingProvider => {
+                const provider = process.env.AI_EMBEDDING_PROVIDER ?? 'mock';
+
+                if (provider === 'openai') {
+                    const apiKey = process.env.OPENAI_API_KEY;
+                    if (!apiKey) {
+                        throw new Error(
+                            '[AiProviderModule] OPENAI_API_KEY não configurada. ' +
+                                'Defina a variável de ambiente ou use AI_EMBEDDING_PROVIDER=mock.'
+                        );
+                    }
+                    return new OpenAiEmbeddingProvider({
+                        apiKey,
+                        model: process.env.OPENAI_EMBEDDING_MODEL,
+                    });
+                }
+
+                // Padrão: mock (desenvolvimento sem API key — vetores aleatórios)
+                return new MockEmbeddingProvider();
+            },
         },
 
         {

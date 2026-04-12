@@ -3,6 +3,7 @@ import {PatientId} from '../../../domain/patient/entities';
 import {ContextChunkSourceType} from '../../../domain/clinical-chat/entities';
 import {PatientContextChunkRepository, type RankedChunk} from '../../../domain/clinical-chat/patient-context-chunk.repository';
 import {PatientContextSnapshotRepository} from '../../../domain/clinical-chat/patient-context-snapshot.repository';
+import {AiProviderRegistry} from '../../../domain/clinical-chat/ports/ai-provider-registry.port';
 
 export type RetrieveChunksInput = {
     patientId: PatientId;
@@ -38,32 +39,30 @@ export type RetrievedContext = {
  *
  * Garante que a recuperação SEMPRE filtra por patientId — nunca mistura pacientes.
  *
- * ESTADO ATUAL: Busca por chunks mais recentes (sem semântica vetorial).
- *
- * PONTO DE INTEGRAÇÃO FUTURA (próxima etapa):
- * 1. Receber `queryEmbedding` gerado pelo provider de embeddings
- * 2. Passar para `chunkRepository.searchSimilar({ queryEmbedding, ... })`
- * 3. Com pgvector, a busca usará cosine similarity sobre os vetores indexados
- * 4. O score retornado será o score real de similaridade semântica
+ * O EmbeddingProvider gera o vetor da query para busca semântica por cosine similarity.
+ * O ChatProvider NUNCA é chamado aqui — embedding e chat são totalmente desacoplados.
  */
 @Injectable()
 export class RetrievePatientChunksService {
     constructor(
         private readonly chunkRepository: PatientContextChunkRepository,
-        private readonly snapshotRepository: PatientContextSnapshotRepository
+        private readonly snapshotRepository: PatientContextSnapshotRepository,
+        private readonly aiProviderRegistry: AiProviderRegistry
     ) {}
 
     async execute(input: RetrieveChunksInput): Promise<RetrievedContext> {
-        const {patientId, sourceTypes, topK = 10, minScore = 0} = input;
+        const {patientId, query, sourceTypes, topK = 10, minScore = 0} = input;
 
-        // PONTO DE INTEGRAÇÃO: quando embeddings estiverem disponíveis,
-        // gerar queryEmbedding aqui e passar para searchSimilar
+        // Gerar embedding da query via EmbeddingProvider (nunca via ChatProvider)
+        const embeddingProvider = this.aiProviderRegistry.getEmbeddingProvider();
+        const queryEmbedding = await embeddingProvider.generateEmbedding(query);
+
         const rankedChunks = await this.chunkRepository.searchSimilar({
             patientId,
             sourceTypes,
             limit: topK,
             minScore,
-            // queryEmbedding: await embeddingProvider.embed(query), // próxima etapa
+            queryEmbedding,
         });
 
         // Buscar snapshot do paciente para contexto estruturado

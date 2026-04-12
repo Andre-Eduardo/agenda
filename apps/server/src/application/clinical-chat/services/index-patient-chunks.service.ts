@@ -3,6 +3,7 @@ import {createHash} from 'crypto';
 import {PatientId} from '../../../domain/patient/entities';
 import {PatientContextChunk, ContextChunkSourceType} from '../../../domain/clinical-chat/entities';
 import {PatientContextChunkRepository} from '../../../domain/clinical-chat/patient-context-chunk.repository';
+import {AiProviderRegistry} from '../../../domain/clinical-chat/ports/ai-provider-registry.port';
 import type {PatientContextOutput} from './build-patient-context.service';
 
 export type IndexPatientChunksInput = {
@@ -22,16 +23,17 @@ export type IndexPatientChunksOutput = {
  * Serviço de chunking e indexação de contexto clínico do paciente.
  *
  * Transforma records e formulários em chunks pesquisáveis vinculados ao patientId.
- * Cada chunk preserva rastreabilidade da fonte original.
+ * Após gerar os chunks, vetoriza o conteúdo via EmbeddingProvider e persiste o embedding.
  *
- * PONTO DE INTEGRAÇÃO FUTURA:
- * - Após indexação, chamar provider de embeddings para vetorizar cada chunk
- * - Exemplo: `embeddingProvider.embed(chunk.content)` → `chunk.setEmbedding(vector)`
- * - O campo `embedding` em PatientContextChunk está preparado para receber o vetor
+ * O EmbeddingProvider é desacoplado do ChatProvider — trocar o modelo de chat
+ * nunca afeta os embeddings já indexados.
  */
 @Injectable()
 export class IndexPatientChunksService {
-    constructor(private readonly chunkRepository: PatientContextChunkRepository) {}
+    constructor(
+        private readonly chunkRepository: PatientContextChunkRepository,
+        private readonly aiProviderRegistry: AiProviderRegistry
+    ) {}
 
     async execute(input: IndexPatientChunksInput): Promise<IndexPatientChunksOutput> {
         const {patientId, context, reindex = false} = input;
@@ -69,8 +71,9 @@ export class IndexPatientChunksService {
             newChunks.push(...formChunks);
         }
 
-        // Persistir em batch (upsert por unique key)
+        // Vetorizar chunks em batch via EmbeddingProvider antes de persistir
         if (newChunks.length > 0) {
+            await this.embedChunks(newChunks);
             await this.chunkRepository.saveBatch(newChunks);
         }
 
@@ -82,6 +85,19 @@ export class IndexPatientChunksService {
                 ...context.relevantForms.map((f) => `PATIENT_FORM:${f.id}`),
             ],
         };
+    }
+
+    /**
+     * Gera embeddings em batch para todos os chunks e os associa via `setEmbedding`.
+     * Usa o EmbeddingProvider — nunca o ChatProvider.
+     */
+    private async embedChunks(chunks: PatientContextChunk[]): Promise<void> {
+        const embeddingProvider = this.aiProviderRegistry.getEmbeddingProvider();
+        const texts = chunks.map((c) => c.content);
+        const vectors = await embeddingProvider.generateEmbeddings(texts);
+        for (let i = 0; i < chunks.length; i++) {
+            chunks[i].setEmbedding(vectors[i]);
+        }
     }
 
     /**

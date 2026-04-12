@@ -1,5 +1,6 @@
 import {Injectable} from '@nestjs/common';
 import * as PrismaClient from '@prisma/client';
+import {Prisma} from '@prisma/client';
 import {PatientContextChunk, PatientContextChunkId, ContextChunkSourceType} from '../../domain/clinical-chat/entities';
 import {
     PatientContextChunkRepository,
@@ -11,6 +12,21 @@ import {PatientContextChunkMapper} from '../mappers/patient-context-chunk.mapper
 import {PrismaProvider} from './prisma/prisma.provider';
 import {PrismaRepository} from './prisma.repository';
 import type {PatientId} from '../../domain/patient/entities';
+
+/** Shape retornado pelo $queryRaw de similaridade (colunas em snake_case do PostgreSQL) */
+type RawChunkRow = {
+    id: string;
+    patient_id: string;
+    source_type: string;
+    source_id: string;
+    content: string;
+    metadata: unknown;
+    chunk_index: number;
+    content_hash: string;
+    created_at: Date;
+    updated_at: Date;
+    score: number;
+};
 
 @Injectable()
 export class PatientContextChunkPrismaRepository
@@ -50,23 +66,68 @@ export class PatientContextChunkPrismaRepository
     }
 
     /**
-     * Busca semântica por similaridade.
+     * Busca semântica por similaridade via pgvector cosine distance.
      *
-     * ESTADO ATUAL: Retorna chunks mais recentes como fallback (sem semântica vetorial).
-     * Score fixo em 1.0 até pgvector ser ativado.
+     * Quando `queryEmbedding` é fornecido, executa SQL raw com o operador `<=>` do pgvector
+     * e retorna chunks ordenados por score de similaridade (1 - distância coseno).
      *
-     * PONTO DE INTEGRAÇÃO (pgvector):
-     * Quando pgvector estiver ativo, substituir por:
-     * ```sql
-     * SELECT *, 1 - (embedding <=> $queryEmbedding::vector) AS score
-     * FROM patient_context_chunk
-     * WHERE patient_id = $patientId
-     * ORDER BY embedding <=> $queryEmbedding::vector
-     * LIMIT $limit
-     * ```
-     * Usando: this.prisma.$queryRaw<...>`SELECT ...`
+     * Sem queryEmbedding (fallback), retorna chunks mais recentes com score fixo 1.0.
      */
     async searchSimilar(filter: SimilaritySearchFilter): Promise<RankedChunk[]> {
+        const limit = filter.limit ?? 10;
+
+        if (filter.queryEmbedding && filter.queryEmbedding.length > 0) {
+            return this.searchByVector(filter, limit);
+        }
+
+        // Fallback: recency ordering sem semântica vetorial
+        return this.searchByRecency(filter, limit);
+    }
+
+    private async searchByVector(filter: SimilaritySearchFilter, limit: number): Promise<RankedChunk[]> {
+        const patientId = filter.patientId.toString();
+        // Formato aceito pelo pgvector: '[1.0,2.0,3.0,...]'
+        const vectorLiteral = `[${filter.queryEmbedding!.join(',')}]`;
+
+        // Filtro por sourceType opcional — composto com Prisma.sql para segurança
+        const sourceTypeClause = filter.sourceTypes && filter.sourceTypes.length > 0
+            ? Prisma.sql`AND source_type = ANY(ARRAY[${Prisma.join(
+                  filter.sourceTypes.map((t) => Prisma.sql`${t}::context_chunk_source_type`)
+              )}])`
+            : Prisma.empty;
+
+        const rows = await this.prisma.$queryRaw<RawChunkRow[]>`
+            SELECT
+                id,
+                patient_id,
+                source_type,
+                source_id,
+                content,
+                metadata,
+                chunk_index,
+                content_hash,
+                created_at,
+                updated_at,
+                (1 - (embedding <=> ${vectorLiteral}::vector)) AS score
+            FROM patient_context_chunk
+            WHERE patient_id = ${patientId}::uuid
+              AND embedding IS NOT NULL
+              ${sourceTypeClause}
+            ORDER BY embedding <=> ${vectorLiteral}::vector
+            LIMIT ${limit}
+        `;
+
+        const minScore = filter.minScore ?? 0;
+
+        return rows
+            .filter((row) => row.score >= minScore)
+            .map((row) => ({
+                chunk: this.mapper.toDomainFromRaw(row),
+                score: row.score,
+            }));
+    }
+
+    private async searchByRecency(filter: SimilaritySearchFilter, limit: number): Promise<RankedChunk[]> {
         const where: PrismaClient.Prisma.PatientContextChunkWhereInput = {
             patientId: filter.patientId.toString(),
             sourceType: filter.sourceTypes
@@ -76,11 +137,10 @@ export class PatientContextChunkPrismaRepository
 
         const records = await this.prisma.patientContextChunk.findMany({
             where,
-            take: filter.limit ?? 10,
+            take: limit,
             orderBy: {createdAt: 'desc'},
         });
 
-        // Retornar com score 1.0 — placeholder até embedding + pgvector
         return records.map((r) => ({
             chunk: this.mapper.toDomain(r),
             score: 1.0,
@@ -95,23 +155,36 @@ export class PatientContextChunkPrismaRepository
 
     async save(chunk: PatientContextChunk): Promise<void> {
         const data = this.mapper.toPersistence(chunk);
+        // Cast necessário: `embedding` é Unsupported("vector(1536)") no Prisma —
+        // o tipo gerado exclui o campo dos inputs, mas o resto do objeto é compatível.
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const prismaData = data as any;
         await this.prisma.patientContextChunk.upsert({
             where: {
                 patient_context_chunk_unique: {
                     patientId: data.patientId,
-                    sourceType: data.sourceType,
+                    sourceType: data.sourceType as unknown as PrismaClient.ContextChunkSourceType,
                     sourceId: data.sourceId,
                     chunkIndex: data.chunkIndex,
                 },
             },
-            create: data,
-            update: data,
+            create: prismaData,
+            update: prismaData,
         });
+
+        // O campo `embedding` é Unsupported("vector(1536)") no schema Prisma —
+        // precisa de SQL raw para persistir o vetor após o upsert.
+        if (chunk.embedding !== null && chunk.embedding !== undefined) {
+            const vectorLiteral = `[${chunk.embedding.join(',')}]`;
+            await this.prisma.$executeRaw`
+                UPDATE patient_context_chunk
+                SET embedding = ${vectorLiteral}::vector(1536)
+                WHERE id = ${chunk.id.toString()}::uuid
+            `;
+        }
     }
 
     async saveBatch(chunks: PatientContextChunk[]): Promise<void> {
-        // Upsert individual para cada chunk — mantém rastreabilidade
-        // Para volumes maiores, considerar createMany com skipDuplicates
         await Promise.all(chunks.map((chunk) => this.save(chunk)));
     }
 
