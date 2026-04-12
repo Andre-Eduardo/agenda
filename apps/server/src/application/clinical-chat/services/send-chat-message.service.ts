@@ -24,11 +24,20 @@ import {ContextPolicyService} from './context-policy.service';
 import {ApplicationService, Command} from '../../@shared/application.service';
 import {getDefaultModelForSpecialty} from '../../../domain/clinical-chat/specialty-model-defaults';
 
+// ─── Política padrão de contexto (Task 15) ───────────────────────────────────
+/** Limite máximo de tokens do contexto enviado ao modelo. */
+const MAX_CONTEXT_TOKENS = 6000;
+/** Número máximo de mensagens do histórico a incluir (janela deslizante). */
+const MAX_HISTORY_MESSAGES = 10;
+
 export type SendChatMessageInput = {
     sessionId: PatientChatSessionId;
     /** Texto da mensagem do usuário */
     content: string;
-    /** Quantidade máxima de chunks para recuperar (padrão: 8) */
+    /**
+     * Quantidade máxima de chunks para recuperar.
+     * Padrão: 5 (política padrão de contexto — Task 15).
+     */
     topK?: number;
     /** Score mínimo de relevância dos chunks (padrão: 0) */
     minScore?: number;
@@ -111,10 +120,12 @@ export class SendChatMessageService
         });
 
         // ─── 4. Recuperar chunks via RAG (filtrado por patientId) ─────────────
+        // topK=5 por política padrão; ordenação por relevância+recência aplicada
+        // internamente no RetrievePatientChunksService.
         const retrievalResult = await this.retrieveChunksService.execute({
             patientId,
             query: payload.content,
-            topK: payload.topK ?? 8,
+            topK: payload.topK ?? 5,
             minScore: payload.minScore ?? 0,
             sourceTypes: agentProfile?.allowedSources?.length
                 ? (agentProfile.allowedSources as any[])
@@ -138,10 +149,11 @@ export class SendChatMessageService
         const retrievedChunkIds = policyFilteredChunks.map((c) => c.id);
 
         // ─── 5. Buscar histórico recente da conversa ─────────────────────────
-        // Busca as últimas 10 mensagens (USER/ASSISTANT) para o histórico de contexto
+        // Busca as últimas MAX_HISTORY_MESSAGES mensagens (USER/ASSISTANT).
+        // A janela final pode ser reduzida pelo trimming de tokens (passo 6a).
         const recentMessagesResult = await this.messageRepository.listBySession(
             payload.sessionId,
-            {limit: 10, sort: [{key: 'createdAt', direction: 'desc'}]}
+            {limit: MAX_HISTORY_MESSAGES, sort: [{key: 'createdAt', direction: 'desc'}]}
         );
         const recentMessages = recentMessagesResult.data.filter(
             (m) => m.role === ChatMessageRole.USER || m.role === ChatMessageRole.ASSISTANT
@@ -156,13 +168,27 @@ export class SendChatMessageService
               )
             : null;
 
-        const messages = this.buildMessagePayload({
+        // ─── 6a. Aplicar limite de tokens (política padrão — Task 15) ─────────
+        // O snapshot estruturado e os chunks recuperados são sempre preservados.
+        // Mensagens do histórico são removidas da mais antiga para a mais recente
+        // até que o contexto total caiba dentro de MAX_CONTEXT_TOKENS.
+        const trimmedMessages = this.trimHistoryToTokenBudget({
             agentInstructions: agentProfile?.baseInstructions ?? null,
             patientFacts: sanitizedFacts,
             criticalContext: snapshot?.criticalContext ?? null,
             timelineSummary: snapshot?.timelineSummary ?? null,
             retrievedChunks: policyFilteredChunks,
             recentMessages,
+            userQuestion: payload.content,
+        });
+
+        const messages = this.buildMessagePayload({
+            agentInstructions: agentProfile?.baseInstructions ?? null,
+            patientFacts: sanitizedFacts,
+            criticalContext: snapshot?.criticalContext ?? null,
+            timelineSummary: snapshot?.timelineSummary ?? null,
+            retrievedChunks: policyFilteredChunks,
+            recentMessages: trimmedMessages,
             userQuestion: payload.content,
         });
 
@@ -260,6 +286,65 @@ export class SendChatMessageService
             // Re-lança para que o controller retorne erro estruturado
             throw error;
         }
+    }
+
+    /**
+     * Estima a quantidade de tokens de um texto.
+     *
+     * Usa a heurística padrão para tokenizadores GPT-style: ~4 caracteres por token.
+     * Suficiente para orçamento de contexto sem depender de biblioteca externa.
+     */
+    private estimateTokens(text: string): number {
+        return Math.ceil(text.length / 4);
+    }
+
+    /**
+     * Aplica o limite MAX_CONTEXT_TOKENS ao histórico de mensagens.
+     *
+     * Estratégia (Task 15):
+     * 1. O conteúdo fixo (snapshot + chunks) é sempre preservado — nunca cortado.
+     * 2. Mensagens do histórico são removidas da mais antiga para a mais recente
+     *    até que o total estimado fique abaixo de MAX_CONTEXT_TOKENS.
+     * 3. A pergunta atual do usuário é sempre incluída.
+     *
+     * @returns Array de PatientChatMessage já com trim aplicado (ordem desc, mais recente primeiro)
+     */
+    private trimHistoryToTokenBudget(params: {
+        agentInstructions: string | null;
+        patientFacts: PatientFacts | null;
+        criticalContext: CriticalContextEntry[] | null;
+        timelineSummary: TimelineEntry[] | null;
+        retrievedChunks: Array<{content: string; sourceType: string; sourceId: string; score: number}>;
+        recentMessages: PatientChatMessage[];
+        userQuestion: string;
+    }): PatientChatMessage[] {
+        // Calcula tokens do conteúdo fixo (system content sem histórico + pergunta)
+        const fixedTokens =
+            this.estimateTokens(params.agentInstructions ?? '') +
+            this.estimateTokens(JSON.stringify(params.patientFacts ?? {})) +
+            this.estimateTokens(JSON.stringify(params.criticalContext ?? [])) +
+            this.estimateTokens(JSON.stringify(params.timelineSummary ?? [])) +
+            params.retrievedChunks.reduce((sum, c) => sum + this.estimateTokens(c.content), 0) +
+            this.estimateTokens(params.userQuestion);
+
+        const budget = MAX_CONTEXT_TOKENS - fixedTokens;
+
+        // Sem orçamento para histórico — descarta tudo
+        if (budget <= 0) return [];
+
+        // Os mensagens chegam ordenadas por createdAt desc (mais recente primeiro).
+        // Mantém as mais recentes dentro do orçamento.
+        let usedTokens = 0;
+        const kept: PatientChatMessage[] = [];
+
+        for (const msg of params.recentMessages) {
+            const tokens = this.estimateTokens(msg.content);
+            if (usedTokens + tokens > budget) break;
+            usedTokens += tokens;
+            kept.push(msg);
+        }
+
+        return kept;
     }
 
     /** Retorna o primeiro agente genérico ativo (specialty=null) ou o primeiro ativo encontrado. */

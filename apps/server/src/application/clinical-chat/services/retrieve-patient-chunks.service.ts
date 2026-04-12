@@ -12,7 +12,10 @@ export type RetrieveChunksInput = {
     query: string;
     /** Filtrar por tipo de fonte (ex: apenas RECORD, apenas PATIENT_FORM) */
     sourceTypes?: ContextChunkSourceType[];
-    /** Número máximo de chunks a retornar (padrão: 10) */
+    /**
+     * Número máximo de chunks a retornar.
+     * Padrão: 5 (política padrão de contexto — Task 15).
+     */
     topK?: number;
     /** Score mínimo de relevância 0–1 (padrão: 0) */
     minScore?: number;
@@ -54,7 +57,7 @@ export class RetrievePatientChunksService {
     ) {}
 
     async execute(input: RetrieveChunksInput): Promise<RetrievedContext> {
-        const {patientId, query, sourceTypes, topK = 10, minScore = 0} = input;
+        const {patientId, query, sourceTypes, topK = 5, minScore = 0} = input;
 
         // ─── Guarda explícito de patientId ────────────────────────────────────
         // Lança PreconditionException em tempo de execução, independente de tipos TypeScript.
@@ -78,8 +81,13 @@ export class RetrievePatientChunksService {
 
         const filteredChunks = rankedChunks.filter((rc: RankedChunk) => rc.score >= minScore);
 
+        // ─── Ordenação combinada: relevância (70%) + recência (30%) ──────────
+        // Normaliza as datas dentro do conjunto recuperado para produzir um score
+        // de recência entre 0 e 1. Chunks sem eventDate recebem score neutro (0.5).
+        const sortedChunks = this.sortByRelevanceAndRecency(filteredChunks);
+
         return {
-            chunks: filteredChunks.map(({chunk, score}: RankedChunk) => ({
+            chunks: sortedChunks.map(({chunk, score}: RankedChunk) => ({
                 id: chunk.id.toString(),
                 content: chunk.content,
                 sourceType: chunk.sourceType,
@@ -93,7 +101,51 @@ export class RetrievePatientChunksService {
                       criticalContext: snapshot.criticalContext as unknown[],
                   }
                 : null,
-            totalChunks: filteredChunks.length,
+            totalChunks: sortedChunks.length,
         };
+    }
+
+    /**
+     * Re-ranqueia chunks por score combinado: relevância semântica + recência.
+     *
+     * Fórmula: combinedScore = (score * 0.7) + (recencyScore * 0.3)
+     * - relevanceWeight = 0.7 → similaridade semântica é o fator dominante
+     * - recencyWeight   = 0.3 → conteúdo mais recente é preferido em empates
+     * - recencyScore é normalizado entre 0–1 dentro do conjunto recuperado
+     * - Chunks sem metadata.eventDate recebem recencyScore = 0.5 (neutro)
+     *
+     * Resultado: ordenado pelo combined score decrescente (melhor primeiro).
+     */
+    private sortByRelevanceAndRecency(chunks: RankedChunk[]): RankedChunk[] {
+        if (chunks.length <= 1) return chunks;
+
+        // Coleta timestamps válidos para normalização
+        const timestamps = chunks
+            .map((rc) => rc.chunk.metadata?.['eventDate'])
+            .filter((d): d is string => typeof d === 'string' && d.length > 0)
+            .map((d) => new Date(d).getTime())
+            .filter((t) => !isNaN(t));
+
+        const minTime = timestamps.length > 0 ? Math.min(...timestamps) : 0;
+        const maxTime = timestamps.length > 0 ? Math.max(...timestamps) : 0;
+        const timeRange = maxTime > minTime ? maxTime - minTime : 1;
+
+        const withCombined = chunks.map((rc) => {
+            const rawDate = rc.chunk.metadata?.['eventDate'];
+            let recencyScore = 0.5; // neutro para chunks sem data
+
+            if (typeof rawDate === 'string' && rawDate.length > 0) {
+                const t = new Date(rawDate).getTime();
+                if (!isNaN(t)) {
+                    recencyScore = (t - minTime) / timeRange;
+                }
+            }
+
+            const combinedScore = rc.score * 0.7 + recencyScore * 0.3;
+            return {rc, combinedScore};
+        });
+
+        withCombined.sort((a, b) => b.combinedScore - a.combinedScore);
+        return withCombined.map(({rc}) => rc);
     }
 }
