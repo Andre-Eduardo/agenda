@@ -1,3 +1,4 @@
+export * from './context-policy.service';
 export * from './build-patient-context.service';
 export * from './index-patient-chunks.service';
 export * from './retrieve-patient-chunks.service';

@@ -27,6 +27,12 @@ export class AiAgentProfile extends AggregateRoot<AiAgentProfileId> {
     priorityFields: Record<string, unknown> | null;
     /** Objetivos de análise do agente, ex: ["summary", "hypotheses", "next_steps"] */
     analysisGoals: string[];
+    /**
+     * Campos de PatientFacts bloqueados para este agente.
+     * Esses campos são removidos antes de montar o contexto enviado ao LLM.
+     * Ex: ["documentId"] para agentes que não precisam do CPF/RG no prompt.
+     */
+    blacklistedFields: string[];
     /** Restrições comportamentais do agente (guardrails de segurança clínica). */
     guardrails: string | null;
     /** Estilo de resposta preferido (formato, tom, estrutura). */
@@ -52,6 +58,7 @@ export class AiAgentProfile extends AggregateRoot<AiAgentProfileId> {
         this.contextPriority = props.contextPriority ?? null;
         this.priorityFields = props.priorityFields ?? null;
         this.analysisGoals = props.analysisGoals ?? [];
+        this.blacklistedFields = props.blacklistedFields ?? [];
         this.guardrails = props.guardrails ?? null;
         this.responseStyle = props.responseStyle ?? null;
         this.providerModelId = props.providerModelId ?? null;
@@ -75,6 +82,7 @@ export class AiAgentProfile extends AggregateRoot<AiAgentProfileId> {
             contextPriority: props.contextPriority ?? null,
             priorityFields: props.priorityFields ?? null,
             analysisGoals: props.analysisGoals ?? [],
+            blacklistedFields: props.blacklistedFields ?? [],
             guardrails: props.guardrails ?? null,
             responseStyle: props.responseStyle ?? null,
             providerModelId: props.providerModelId ?? null,
@@ -109,6 +117,7 @@ export class AiAgentProfile extends AggregateRoot<AiAgentProfileId> {
             contextPriority: this.contextPriority,
             priorityFields: this.priorityFields,
             analysisGoals: this.analysisGoals,
+            blacklistedFields: this.blacklistedFields,
             guardrails: this.guardrails,
             responseStyle: this.responseStyle,
             providerModelId: this.providerModelId,

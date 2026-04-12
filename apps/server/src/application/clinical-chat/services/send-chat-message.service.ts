@@ -20,6 +20,7 @@ import {AiProviderRegistry} from '../../../domain/clinical-chat/ports/ai-provide
 import type {ChatMessage} from '../../../domain/clinical-chat/ports/chat-model.provider';
 import {GetContextSnapshotService} from './get-context-snapshot.service';
 import {RetrievePatientChunksService} from './retrieve-patient-chunks.service';
+import {ContextPolicyService} from './context-policy.service';
 import {ApplicationService, Command} from '../../@shared/application.service';
 import {getDefaultModelForSpecialty} from '../../../domain/clinical-chat/specialty-model-defaults';
 
@@ -77,7 +78,8 @@ export class SendChatMessageService
         private readonly interactionLogRepository: ClinicalChatInteractionLogRepository,
         private readonly aiProviderRegistry: AiProviderRegistry,
         private readonly getSnapshotService: GetContextSnapshotService,
-        private readonly retrieveChunksService: RetrievePatientChunksService
+        private readonly retrieveChunksService: RetrievePatientChunksService,
+        private readonly contextPolicyService: ContextPolicyService,
     ) {}
 
     async execute({payload}: Command<SendChatMessageInput>): Promise<SendChatMessageOutput> {
@@ -119,7 +121,21 @@ export class SendChatMessageService
                 : undefined,
         });
 
-        const retrievedChunkIds = retrievalResult.chunks.map((c) => c.id);
+        // ─── 4a. Aplicar ContextPolicy aos chunks recuperados ─────────────────
+        // Monta a política efetiva do agente e aplica filtros de allowedSources e
+        // minDate como segunda camada de segurança após a query no repositório.
+        const effectivePolicy = this.contextPolicyService.buildEffectivePolicy({
+            allowedSources: agentProfile?.allowedSources ?? [],
+            blacklistedFields: agentProfile?.blacklistedFields ?? [],
+            minDate: null, // sem filtro de data por padrão; configure por agente se necessário
+        });
+
+        const policyFilteredChunks = this.contextPolicyService.applyToChunks(
+            retrievalResult.chunks,
+            effectivePolicy,
+        );
+
+        const retrievedChunkIds = policyFilteredChunks.map((c) => c.id);
 
         // ─── 5. Buscar histórico recente da conversa ─────────────────────────
         // Busca as últimas 10 mensagens (USER/ASSISTANT) para o histórico de contexto
@@ -132,12 +148,20 @@ export class SendChatMessageService
         );
 
         // ─── 6. Montar payload de mensagens ──────────────────────────────────
+        // Aplica blacklistedFields para remover campos não clínicos antes do prompt.
+        const sanitizedFacts = snapshot?.patientFacts
+            ? this.contextPolicyService.sanitizePatientFacts(
+                  snapshot.patientFacts,
+                  effectivePolicy.blacklistedFields,
+              )
+            : null;
+
         const messages = this.buildMessagePayload({
             agentInstructions: agentProfile?.baseInstructions ?? null,
-            patientFacts: snapshot?.patientFacts ?? null,
+            patientFacts: sanitizedFacts,
             criticalContext: snapshot?.criticalContext ?? null,
             timelineSummary: snapshot?.timelineSummary ?? null,
-            retrievedChunks: retrievalResult.chunks,
+            retrievedChunks: policyFilteredChunks,
             recentMessages,
             userQuestion: payload.content,
         });

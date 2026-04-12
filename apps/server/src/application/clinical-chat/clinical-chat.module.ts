@@ -3,6 +3,8 @@ import {InfrastructureModule} from '../../infrastructure/infrastructure.module';
 import {ClinicalChatController} from './controllers/clinical-chat.controller';
 import {AgentsController} from './controllers/agents.controller';
 import {
+    // Task 14: Context policy rules
+    ContextPolicyService,
     // Context & RAG (Tasks 3-5)
     BuildPatientContextService,
     IndexPatientChunksService,
@@ -29,6 +31,9 @@ import {
     imports: [InfrastructureModule],
     controllers: [ClinicalChatController, AgentsController],
     providers: [
+        // ─── Task 14: Context policy rules ───────────────────────────────────
+        ContextPolicyService,
+
         // ─── Context & RAG ───────────────────────────────────────────────────
         BuildPatientContextService,
         IndexPatientChunksService,

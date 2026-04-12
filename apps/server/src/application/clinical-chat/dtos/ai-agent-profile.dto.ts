@@ -40,6 +40,14 @@ export class AiAgentProfileDto extends EntityDto {
     @ApiProperty({isArray: true, description: 'Objetivos de análise, ex: ["summary", "hypotheses", "next_steps"]'})
     analysisGoals: string[];
 
+    @ApiProperty({
+        isArray: true,
+        description:
+            'Campos de PatientFacts bloqueados para este agente. ' +
+            'Removidos antes de montar o prompt enviado ao LLM. Ex: ["documentId"].',
+    })
+    blacklistedFields: string[];
+
     @ApiProperty({nullable: true, description: 'Restrições comportamentais (guardrails de segurança clínica)'})
     guardrails: string | null;
 
@@ -70,6 +78,7 @@ export class AiAgentProfileDto extends EntityDto {
         this.contextPriority = entity.contextPriority;
         this.priorityFields = entity.priorityFields;
         this.analysisGoals = entity.analysisGoals;
+        this.blacklistedFields = entity.blacklistedFields;
         this.guardrails = entity.guardrails;
         this.responseStyle = entity.responseStyle;
         this.providerModelId = entity.providerModelId;
@@ -98,6 +107,7 @@ export const createAiAgentProfileSchema = z.object({
     contextPriority: z.record(z.unknown()).optional(),
     priorityFields: z.record(z.unknown()).optional(),
     analysisGoals: z.array(z.string()).default([]),
+    blacklistedFields: z.array(z.string()).default([]),
     guardrails: z.string().optional(),
     responseStyle: z.string().optional(),
     providerModelId: z

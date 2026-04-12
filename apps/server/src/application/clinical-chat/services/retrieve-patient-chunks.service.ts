@@ -4,6 +4,7 @@ import {ContextChunkSourceType} from '../../../domain/clinical-chat/entities';
 import {PatientContextChunkRepository, type RankedChunk} from '../../../domain/clinical-chat/patient-context-chunk.repository';
 import {PatientContextSnapshotRepository} from '../../../domain/clinical-chat/patient-context-snapshot.repository';
 import {AiProviderRegistry} from '../../../domain/clinical-chat/ports/ai-provider-registry.port';
+import {ContextPolicyService} from './context-policy.service';
 
 export type RetrieveChunksInput = {
     patientId: PatientId;
@@ -38,6 +39,7 @@ export type RetrievedContext = {
  * Serviço de recuperação de contexto clínico por paciente para RAG.
  *
  * Garante que a recuperação SEMPRE filtra por patientId — nunca mistura pacientes.
+ * Lança PreconditionException explicitamente se patientId estiver ausente.
  *
  * O EmbeddingProvider gera o vetor da query para busca semântica por cosine similarity.
  * O ChatProvider NUNCA é chamado aqui — embedding e chat são totalmente desacoplados.
@@ -47,11 +49,17 @@ export class RetrievePatientChunksService {
     constructor(
         private readonly chunkRepository: PatientContextChunkRepository,
         private readonly snapshotRepository: PatientContextSnapshotRepository,
-        private readonly aiProviderRegistry: AiProviderRegistry
+        private readonly aiProviderRegistry: AiProviderRegistry,
+        private readonly contextPolicyService: ContextPolicyService,
     ) {}
 
     async execute(input: RetrieveChunksInput): Promise<RetrievedContext> {
         const {patientId, query, sourceTypes, topK = 10, minScore = 0} = input;
+
+        // ─── Guarda explícito de patientId ────────────────────────────────────
+        // Lança PreconditionException em tempo de execução, independente de tipos TypeScript.
+        // Nenhuma query ao repositório ou embedding deve acontecer sem este filtro.
+        this.contextPolicyService.assertPatientIdRequired(patientId);
 
         // Gerar embedding da query via EmbeddingProvider (nunca via ChatProvider)
         const embeddingProvider = this.aiProviderRegistry.getEmbeddingProvider();
