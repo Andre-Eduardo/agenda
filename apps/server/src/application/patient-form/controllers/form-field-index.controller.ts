@@ -38,8 +38,8 @@ export class FormFieldIndexController {
     @Authorize(PatientFormPermission.VIEW)
     @Get('patients/:patientId/form-field-index')
     async listByPatient(
-        @RequestActor() actor: Actor,
-        @ValidatedParam('patientId', patientParamSchema.shape.patientId) patientId: PatientId,
+        @RequestActor() _actor: Actor,
+        @ValidatedParam('patientId', patientParamSchema.shape.patientId) _patientId: PatientId,
         @Query(new ZodValidationPipe(searchIndexSchema)) query: z.infer<typeof searchIndexSchema>
     ): Promise<FormFieldIndexDto[]> {
         const results = await this.indexerService.search({
@@ -56,7 +56,7 @@ export class FormFieldIndexController {
     @Authorize(PatientFormPermission.VIEW)
     @Get('form-field-index/search')
     async globalSearch(
-        @RequestActor() actor: Actor,
+        @RequestActor() _actor: Actor,
         @Query(new ZodValidationPipe(searchIndexSchema)) query: z.infer<typeof searchIndexSchema>
     ): Promise<FormFieldIndexDto[]> {
         const results = await this.indexerService.search({

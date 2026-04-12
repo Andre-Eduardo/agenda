@@ -85,7 +85,7 @@ export class FormAiContextService {
                 id: patient.id.toString(),
                 name: null, // Person name fetched via patient relation if needed
                 birthDate: patient.birthDate?.toISOString() ?? null,
-                documentId: patient.documentId,
+                documentId: patient.documentId.toString(),
             },
             forms: formEntries,
             generatedAt: new Date().toISOString(),

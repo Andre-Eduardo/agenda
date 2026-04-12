@@ -3,7 +3,7 @@ import {ResourceNotFoundException} from '../../../domain/@shared/exceptions';
 import {PatientRepository} from '../../../domain/patient/patient.repository';
 import {PatientId} from '../../../domain/patient/entities';
 import {ProfessionalId} from '../../../domain/professional/entities';
-import {AiAgentProfile, PatientChatSession} from '../../../domain/clinical-chat/entities';
+import {AiAgentProfile, PatientChatSession, ChatSessionStatus, AiAgentProfileId} from '../../../domain/clinical-chat/entities';
 import {PatientChatSessionRepository} from '../../../domain/clinical-chat/patient-chat-session.repository';
 import {ApplicationService, Command} from '../../@shared/application.service';
 import {AgentResolutionService} from './agent-resolution.service';
@@ -12,6 +12,7 @@ export type CreateChatSessionInput = {
     patientId: PatientId;
     professionalId: ProfessionalId;
     title?: string | null;
+    agentProfileId?: AiAgentProfileId | null;
 };
 
 export type CreateChatSessionOutput = {
@@ -60,8 +61,10 @@ export class CreateChatSessionService
         const session = PatientChatSession.create({
             patientId: payload.patientId,
             professionalId: payload.professionalId,
-            agentProfileId: resolvedAgent?.id ?? null,
+            agentProfileId: payload.agentProfileId ?? null,
             title: payload.title ?? null,
+            status: ChatSessionStatus.ACTIVE,
+            lastActivityAt: new Date(),
         });
 
         await this.sessionRepository.save(session);

@@ -1,6 +1,6 @@
 import type {ProfessionalId} from '@domain/professional/entities';
 import {type AllEntityProps, type EntityJson, type EntityProps, type CreateEntity} from '../../@shared/entity';
-import {Person, PersonId, PersonType} from '../../person/entities';
+import {Person, PersonId, PersonType} from '../../person/entities/person.entity';
 import {PatientCreatedEvent, PatientChangedEvent, PatientDeletedEvent} from '../events';
 
 export type PatientProps = EntityProps<Patient>;

@@ -17,7 +17,7 @@ export class SearchPatientAlertsService implements ApplicationService<SearchWith
         const result = await this.patientAlertRepository.search(
             {
                 ...rest,
-                sort: sort ? (Object.entries(sort) as [keyof typeof sort, 'asc' | 'desc'][]).map(([key, direction]) => ({key, direction})) : undefined,
+                sort: sort ?? undefined,
             },
             {
                 patientId,

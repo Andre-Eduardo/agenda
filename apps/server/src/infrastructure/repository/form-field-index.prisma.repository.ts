@@ -68,7 +68,7 @@ export class FormFieldIndexPrismaRepository extends PrismaRepository implements 
                             fieldId: d.fieldId,
                         },
                     },
-                    create: d,
+                    create: d as any,
                     update: {
                         fieldLabel: d.fieldLabel,
                         fieldType: d.fieldType,
@@ -76,7 +76,7 @@ export class FormFieldIndexPrismaRepository extends PrismaRepository implements 
                         valueNumber: d.valueNumber,
                         valueBoolean: d.valueBoolean,
                         valueDate: d.valueDate,
-                        valueJson: d.valueJson ?? PrismaClient.Prisma.JsonNull,
+                        valueJson: d.valueJson ?? (PrismaClient.Prisma.JsonNull as any),
                         confidence: d.confidence,
                         updatedAt: d.updatedAt,
                     },

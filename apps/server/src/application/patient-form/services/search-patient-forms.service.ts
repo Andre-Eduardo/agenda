@@ -14,7 +14,7 @@ export class SearchPatientFormsService
 {
     constructor(private readonly patientFormRepository: PatientFormRepository) {}
 
-    async execute({actor, payload}: Command<SearchPatientFormsPayload>): Promise<PaginatedDto<PatientFormDto>> {
+    async execute({actor: _actor, payload}: Command<SearchPatientFormsPayload>): Promise<PaginatedDto<PatientFormDto>> {
         const result = await this.patientFormRepository.search(
             {limit: payload.limit, sort: payload.sort as any},
             {

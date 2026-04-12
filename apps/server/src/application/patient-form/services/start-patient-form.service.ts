@@ -1,5 +1,5 @@
 import {Injectable} from '@nestjs/common';
-import {PatientForm} from '../../../domain/patient-form/entities';
+import {PatientForm, FormResponseStatus} from '../../../domain/patient-form/entities';
 import {PatientFormRepository} from '../../../domain/patient-form/patient-form.repository';
 import {FormTemplateRepository} from '../../../domain/form-template/form-template.repository';
 import {FormTemplateVersionRepository} from '../../../domain/form-template-version/form-template-version.repository';
@@ -15,7 +15,7 @@ export class StartPatientFormService implements ApplicationService<StartPatientF
         private readonly formTemplateVersionRepository: FormTemplateVersionRepository
     ) {}
 
-    async execute({actor, payload}: Command<StartPatientFormDto>): Promise<PatientFormDto> {
+    async execute({actor: _actor, payload}: Command<StartPatientFormDto>): Promise<PatientFormDto> {
         const template = await this.formTemplateRepository.findById(payload.templateId);
         if (!template) {
             throw new ResourceNotFoundException('Form template not found.', 'FormTemplate');
@@ -43,6 +43,7 @@ export class StartPatientFormService implements ApplicationService<StartPatientF
             versionId: version.id,
             responseJson: {answers: []},
             appliedAt: payload.appliedAt ?? new Date(),
+            status: FormResponseStatus.IN_PROGRESS,
         });
 
         await this.patientFormRepository.save(form);

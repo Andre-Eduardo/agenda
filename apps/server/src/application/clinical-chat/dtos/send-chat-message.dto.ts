@@ -117,26 +117,26 @@ export class SendChatMessageResponseDto {
 @ApiSchema({name: 'SessionContextInspect'})
 export class SessionContextInspectDto {
     @ApiProperty({format: 'uuid'})
-    sessionId: string;
+    sessionId!: string;
 
     @ApiProperty({format: 'uuid'})
-    patientId: string;
+    patientId!: string;
 
     @ApiProperty({nullable: true})
-    snapshotStatus: string | null;
+    snapshotStatus!: string | null;
 
     @ApiProperty({nullable: true})
-    snapshotBuiltAt: string | null;
+    snapshotBuiltAt!: string | null;
 
     @ApiProperty({nullable: true})
-    snapshotContentHash: string | null;
+    snapshotContentHash!: string | null;
 
     @ApiProperty({type: Number})
-    totalChunksIndexed: number;
+    totalChunksIndexed!: number;
 
     @ApiProperty({isArray: true, type: String})
-    registeredProviders: string[];
+    registeredProviders!: string[];
 
     @ApiProperty()
-    providerHealthy: boolean;
+    providerHealthy!: boolean;
 }

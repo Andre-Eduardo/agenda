@@ -27,8 +27,8 @@ export class PatientFormPrismaRepository extends PrismaRepository implements Pat
         const data = this.mapper.toPersistence(form);
         await this.prisma.patientForm.upsert({
             where: {id: data.id},
-            create: data,
-            update: data,
+            create: data as any,
+            update: data as any,
         });
     }
 

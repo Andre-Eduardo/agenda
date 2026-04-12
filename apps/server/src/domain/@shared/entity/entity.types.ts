@@ -9,11 +9,11 @@ type NonFunctionPropertyNames<T> = {
 }[keyof T];
 
 export type AllEntityProps<T extends Entity<Identifier<string>>> = FinalType<
-    Pick<
-        T,
-        // Getters are treated as non-functions by TypeScript
-        Exclude<NonFunctionPropertyNames<T>, 'events'>
-    >
+    {
+        [K in Exclude<NonFunctionPropertyNames<T>, 'events'> as K extends 'deletedAt' ? never : K]: T[K];
+    } & {
+        deletedAt?: Date | null;
+    }
 >;
 
 export type EntityProperties = 'id' | 'createdAt' | 'updatedAt';

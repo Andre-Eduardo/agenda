@@ -17,7 +17,7 @@ export class SavePatientFormDraftService implements ApplicationService<SavePatie
         private readonly indexer: FormFieldIndexerService
     ) {}
 
-    async execute({actor, payload}: Command<SavePatientFormDraftDto>): Promise<PatientFormDto> {
+    async execute({actor: _actor, payload}: Command<SavePatientFormDraftDto>): Promise<PatientFormDto> {
         const form = await this.patientFormRepository.findById(payload.patientFormId);
         if (!form) {
             throw new ResourceNotFoundException('Patient form not found.', 'PatientForm');

@@ -29,6 +29,11 @@ export type RetrievedContext = {
         sourceId: string;
         metadata: Record<string, unknown> | null;
         score: number;
+        patientId: string;
+        chunkIndex: number;
+        contentHash: string;
+        createdAt: Date;
+        updatedAt: Date;
     }>;
     /** Snapshot do paciente, se disponível */
     snapshot: {
@@ -94,6 +99,11 @@ export class RetrievePatientChunksService {
                 sourceId: chunk.sourceId,
                 metadata: chunk.metadata as Record<string, unknown> | null,
                 score,
+                patientId: chunk.patientId.toString(),
+                chunkIndex: chunk.chunkIndex,
+                contentHash: chunk.contentHash,
+                createdAt: chunk.createdAt,
+                updatedAt: chunk.updatedAt,
             })),
             snapshot: snapshot
                 ? {

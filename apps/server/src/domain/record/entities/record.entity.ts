@@ -1,4 +1,4 @@
-import type {PersonId} from '@domain/person/entities';
+import {PersonId} from '../../person/entities/person.entity';
 import {
     AggregateRoot,
     type AllEntityProps,
@@ -11,6 +11,7 @@ import type {ProfessionalId} from '../../professional/entities';
 import type {AppointmentId} from '../../appointment/entities';
 import {RecordCreatedEvent, RecordChangedEvent, RecordDeletedEvent} from '../events';
 import type {File} from './file.entity';
+import {ImportedDocumentId} from './imported-document.entity';
 
 export enum EvolutionTemplateType {
     SOAP = 'SOAP',
@@ -72,6 +73,7 @@ export class Record extends AggregateRoot<RecordId> {
     source: RecordSource;
     importedDocumentId: ImportedDocumentId | null;
     wasHumanEdited: boolean;
+    patientFormId: string | null;
 
     constructor(props: AllEntityProps<Record>) {
         super(props);
@@ -94,6 +96,7 @@ export class Record extends AggregateRoot<RecordId> {
         this.source = props.source ?? RecordSource.MANUAL;
         this.importedDocumentId = props.importedDocumentId ?? null;
         this.wasHumanEdited = props.wasHumanEdited ?? false;
+        this.patientFormId = props.patientFormId ?? null;
         this.validate();
     }
 
@@ -120,6 +123,7 @@ export class Record extends AggregateRoot<RecordId> {
             source: props.source ?? RecordSource.MANUAL,
             importedDocumentId: props.importedDocumentId ?? null,
             wasHumanEdited: props.wasHumanEdited ?? false,
+            patientFormId: props.patientFormId ?? null,
             createdAt: now,
             updatedAt: now,
             deletedAt: null,
@@ -232,20 +236,11 @@ export class Record extends AggregateRoot<RecordId> {
             source: this.source,
             importedDocumentId: this.importedDocumentId?.toJSON() ?? null,
             wasHumanEdited: this.wasHumanEdited,
+            patientFormId: this.patientFormId,
             createdAt: this.createdAt.toJSON(),
             updatedAt: this.updatedAt.toJSON(),
             deletedAt: this.deletedAt?.toJSON() ?? null,
         };
-    }
-}
-
-export class ImportedDocumentId extends EntityId<'ImportedDocumentId'> {
-    static from(value: string): ImportedDocumentId {
-        return new ImportedDocumentId(value);
-    }
-
-    static generate(): ImportedDocumentId {
-        return new ImportedDocumentId();
     }
 }
 

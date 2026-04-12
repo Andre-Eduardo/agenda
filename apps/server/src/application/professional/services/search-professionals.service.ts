@@ -14,7 +14,7 @@ export class SearchProfessionalsService implements ApplicationService<SearchProf
         const result = await this.professionalRepository.search(
             {
                 ...rest,
-                sort: sort ? (Object.entries(sort) as [keyof typeof sort, 'asc' | 'desc'][]).map(([key, direction]) => ({key, direction})) : undefined,
+                sort: sort ?? undefined,
             },
             {term: term ?? undefined}
         );

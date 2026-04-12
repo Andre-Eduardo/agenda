@@ -14,7 +14,7 @@ export class SearchRecordsService implements ApplicationService<SearchRecordsDto
         const result = await this.recordRepository.search(
             {
                 ...rest,
-                sort: sort ? (Object.entries(sort) as [keyof typeof sort, 'asc' | 'desc'][]).map(([key, direction]) => ({key, direction})) : undefined,
+                sort: sort ?? undefined,
             },
             {
                 term: term ?? undefined,

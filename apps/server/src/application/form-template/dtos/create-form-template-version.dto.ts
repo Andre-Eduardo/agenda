@@ -2,7 +2,7 @@ import {z} from 'zod';
 import {createZodDto} from '../../@shared/validation/dto';
 import type {FormDefinitionJson} from '../../../domain/form-template/types';
 
-const formFieldSchema: z.ZodType<object> = z.object({
+const formFieldSchema = z.object({
     id: z.string().min(1),
     type: z.enum([
         'text', 'textarea', 'number', 'date', 'datetime',

@@ -165,7 +165,7 @@ export class BuildPatientContextService {
             birthDate: patient!.birthDate?.toISOString().split('T')[0] ?? null,
             age,
             gender: patient!.gender ?? null,
-            documentId: patient!.documentId,
+            documentId: patient!.documentId.toString(),
             allergies: clinicalProfile?.allergies ?? null,
             chronicConditions: clinicalProfile?.chronicConditions ?? null,
             currentMedications: clinicalProfile?.currentMedications ?? null,

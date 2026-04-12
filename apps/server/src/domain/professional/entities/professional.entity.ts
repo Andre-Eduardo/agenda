@@ -1,5 +1,5 @@
 import {type AllEntityProps, type EntityJson, type EntityProps, type CreateEntity} from '../../@shared/entity';
-import {Person, PersonId, PersonType} from '../../person/entities';
+import {Person, PersonId, PersonType} from '../../person/entities/person.entity';
 import type {UserId} from '../../user/entities/user.entity';
 import {ProfessionalCreatedEvent, ProfessionalChangedEvent, ProfessionalDeletedEvent} from '../events';
 import type {ProfessionalConfigId} from './professional-config';
@@ -99,11 +99,11 @@ export class Professional extends Person {
 }
 
 export class ProfessionalId extends PersonId {
-    static from(value: string): PersonId {
-        return new PersonId(value);
+    static override from(value: string): ProfessionalId {
+        return new ProfessionalId(value);
     }
 
-    static generate(): PersonId {
-        return new PersonId();
+    static override generate(): ProfessionalId {
+        return new ProfessionalId();
     }
 }

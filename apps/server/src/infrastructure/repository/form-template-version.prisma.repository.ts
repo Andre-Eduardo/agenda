@@ -64,8 +64,8 @@ export class FormTemplateVersionPrismaRepository
         const data = this.mapper.toPersistence(version);
         await this.prisma.formTemplateVersion.upsert({
             where: {id: data.id},
-            create: data,
-            update: data,
+            create: data as any,
+            update: data as any,
         });
     }
 }

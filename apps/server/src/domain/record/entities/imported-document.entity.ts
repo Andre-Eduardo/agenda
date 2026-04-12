@@ -1,6 +1,6 @@
 import {EntityId} from '../../@shared/entity/id';
 import {AggregateRoot, type AllEntityProps, type EntityJson, type CreateEntity} from '../../@shared/entity';
-import type {PersonId} from '../../patient/entities';
+import {PersonId} from '../../person/entities/person.entity';
 import type {ProfessionalId} from '../../professional/entities';
 import type {FileId} from './file.entity';
 
@@ -57,8 +57,18 @@ export class ImportedDocument extends AggregateRoot<ImportedDocumentId> {
         return new ImportedDocument({
             ...props,
             id: ImportedDocumentId.generate(),
+            patientId: props.patientId!,
+            professionalId: props.professionalId!,
+            fileId: props.fileId!,
             status: props.status ?? ImportStatus.UPLOADED,
             reviewRequired: props.reviewRequired ?? true,
+            documentType: props.documentType ?? null,
+            qualityLabel: props.qualityLabel ?? null,
+            qualityScore: props.qualityScore ?? null,
+            rawOcrText: props.rawOcrText ?? null,
+            normalizedOcrText: props.normalizedOcrText ?? null,
+            ocrConfidence: props.ocrConfidence ?? null,
+            aiConfidence: props.aiConfidence ?? null,
             createdAt: now,
             updatedAt: now,
             deletedAt: null,
@@ -73,10 +83,16 @@ export class ImportedDocument extends AggregateRoot<ImportedDocumentId> {
             fileId: this.fileId.toJSON(),
             status: this.status,
             reviewRequired: this.reviewRequired,
+            documentType: this.documentType,
+            qualityLabel: this.qualityLabel,
+            qualityScore: this.qualityScore,
+            rawOcrText: this.rawOcrText,
+            normalizedOcrText: this.normalizedOcrText,
             ocrConfidence: this.ocrConfidence,
             aiConfidence: this.aiConfidence,
             createdAt: this.createdAt.toJSON(),
             updatedAt: this.updatedAt.toJSON(),
+            deletedAt: this.deletedAt?.toJSON() ?? null,
         };
     }
 }

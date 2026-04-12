@@ -203,6 +203,7 @@ export class SendChatMessageService
             snapshotVersion: snapshot?.contentHash ?? null,
             retrievedChunkIds,
             status: ChatInteractionStatus.PENDING,
+            usedFallback: false,
         });
 
         // ─── 8. Persistir mensagem do usuário ────────────────────────────────

@@ -1,8 +1,8 @@
 import {Injectable} from '@nestjs/common';
 import * as PrismaClient from '@prisma/client';
-import {DocumentId} from '../../domain/@shared/value-objects';
+import {DocumentId, Phone} from '../../domain/@shared/value-objects';
 import {Patient, PatientId} from '../../domain/patient/entities';
-import {Gender, PersonType, PersonProfile} from '../../domain/person/entities'; // Verify this path
+import {Gender, PersonType, PersonProfile} from '../../domain/person/entities/person.entity';
 import {ProfessionalId} from '../../domain/professional/entities';
 import {MapperWithoutDto} from './mapper';
 
@@ -21,7 +21,7 @@ export class PatientMapper extends MapperWithoutDto<Patient, PatientModel> {
             documentId: DocumentId.create(patientModel.documentId),
             gender: person.gender ? (person.gender as unknown as Gender) : null,
             personType: person.personType as unknown as PersonType,
-            phone: person.phone ? ({number: person.phone} as any) : null,
+            phone: person.phone ? Phone.create(person.phone) : null,
             profiles: new Set([PersonProfile.PATIENT]),
             deletedAt: patientModel.deletedAt ?? null,
             birthDate: patientModel.birthDate ?? null,

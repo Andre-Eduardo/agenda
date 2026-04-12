@@ -46,11 +46,11 @@ export class PatientContextSnapshotPrismaRepository
             where: {
                 patient_context_snapshot_unique: {
                     patientId: data.patientId,
-                    professionalId: data.professionalId ?? null,
+                    professionalId: data.professionalId ?? (null as any),
                 },
             },
-            create: data,
-            update: data,
+            create: data as any,
+            update: data as any,
         });
     }
 }

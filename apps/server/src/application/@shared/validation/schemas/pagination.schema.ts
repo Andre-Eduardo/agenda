@@ -1,4 +1,5 @@
 import {z} from 'zod';
+import {Sort} from '../../../../domain/@shared/repository/pagination';
 
 export function pagination<U extends string, T extends [U, ...U[]]>(sortOptions: T) {
     return z
@@ -14,6 +15,13 @@ export function pagination<U extends string, T extends [U, ...U[]]>(sortOptions:
             sort: z
                 .record(z.enum<U, T>(sortOptions), z.enum(['asc', 'desc']))
                 .nullish()
+                .transform((val) => {
+                    if (!val) return undefined;
+                    return Object.entries(val).map(([key, direction]) => ({
+                        key: key as U,
+                        direction: direction as 'asc' | 'desc',
+                    })) as Sort<T>[];
+                })
                 .openapi({description: 'The fields to sort by'}),
         })
         .openapi({

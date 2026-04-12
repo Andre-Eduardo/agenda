@@ -1,4 +1,4 @@
-import {AggregateRoot, type AllEntityProps, type CreateEntity, type EntityProps} from '../../@shared/entity';
+import {AggregateRoot, type AllEntityProps, type CreateEntity, type EntityProps, type EntityJson} from '../../@shared/entity';
 import {EntityId} from '../../@shared/entity/id';
 import type {ProfessionalId} from '../../professional/entities';
 
@@ -48,7 +48,7 @@ export class FormTemplate extends AggregateRoot<FormTemplateId> {
         });
     }
 
-    update(props: Partial<Pick<FormTemplateProps, 'name' | 'description'>>): void {
+    change(props: Partial<Pick<FormTemplateProps, 'name' | 'description'>>): void {
         if (props.name !== undefined) this.name = props.name;
         if (props.description !== undefined) this.description = props.description;
         this.updatedAt = new Date();
@@ -59,7 +59,7 @@ export class FormTemplate extends AggregateRoot<FormTemplateId> {
         this.updatedAt = new Date();
     }
 
-    toJSON() {
+    toJSON(): EntityJson<FormTemplate> {
         return {
             id: this.id.toJSON(),
             code: this.code,

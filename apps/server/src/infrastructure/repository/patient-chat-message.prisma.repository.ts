@@ -52,8 +52,8 @@ export class PatientChatMessagePrismaRepository
         const data = this.mapper.toPersistence(message);
         await this.prisma.patientChatMessage.upsert({
             where: {id: data.id},
-            create: data,
-            update: data,
+            create: data as any,
+            update: data as any,
         });
     }
 }

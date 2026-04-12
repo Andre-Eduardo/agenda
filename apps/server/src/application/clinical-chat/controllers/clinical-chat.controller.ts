@@ -271,7 +271,7 @@ export class ClinicalChatController {
     @Authorize(ClinicalChatPermission.REINDEX)
     @Post('context/invalidate')
     async invalidateSnapshot(
-        @RequestActor() actor: Actor,
+        @RequestActor() _actor: Actor,
         @Body() payload: RebuildContextDto
     ): Promise<{invalidated: boolean; previousStatus: string | null}> {
         const patientId = payload.patientId as unknown as PatientId;
@@ -292,7 +292,7 @@ export class ClinicalChatController {
     @Authorize(ClinicalChatPermission.VIEW)
     @Get('context/retrieve')
     async retrieveChunks(
-        @RequestActor() actor: Actor,
+        @RequestActor() _actor: Actor,
         @Query(new ZodValidationPipe(retrieveChunksSchema)) query: RetrieveChunksDto
     ): Promise<{chunks: PatientContextChunkDto[]; snapshotAvailable: boolean; totalChunks: number}> {
         const result = await this.retrieveChunksService.execute({
@@ -310,8 +310,13 @@ export class ClinicalChatController {
                 sourceId: c.sourceId,
                 metadata: c.metadata,
                 score: c.score,
+                patientId: c.patientId,
+                chunkIndex: c.chunkIndex,
+                contentHash: c.contentHash,
+                createdAt: c.createdAt.toISOString(),
+                updatedAt: c.updatedAt.toISOString(),
             })),
-            snapshotAvailable: result.snapshot !== null,
+            snapshotAvailable: !!result.snapshot,
             totalChunks: result.totalChunks,
         };
     }

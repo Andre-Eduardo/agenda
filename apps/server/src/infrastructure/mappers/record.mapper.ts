@@ -7,13 +7,13 @@ import {File, FileId} from '../../domain/record/entities/file.entity';
 import {
     Record,
     RecordId,
-    ImportedDocumentId,
     EvolutionTemplateType,
     AttendanceType,
     ClinicalStatusTag,
     ConductTag,
     RecordSource,
 } from '../../domain/record/entities/record.entity';
+import {ImportedDocumentId} from '../../domain/record/entities/imported-document.entity';
 import {MapperWithoutDto} from './mapper';
 
 export type RecordModel = PrismaClient.Record & {
@@ -82,6 +82,7 @@ export class RecordMapper extends MapperWithoutDto<Record, RecordModel> {
             createdAt: entity.createdAt,
             updatedAt: entity.updatedAt,
             deletedAt: entity.deletedAt ?? null,
+            patientFormId: entity.patientFormId,
             files: entity.files.map((file) => ({
                 id: file.id.toString(),
                 recordId: file.recordId?.toString() ?? null,

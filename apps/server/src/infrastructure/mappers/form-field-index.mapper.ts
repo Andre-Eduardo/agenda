@@ -39,7 +39,7 @@ export class FormFieldIndexMapper extends MapperWithoutDto<FormFieldIndex, FormF
             valueNumber: entity.valueNumber,
             valueBoolean: entity.valueBoolean,
             valueDate: entity.valueDate ?? null,
-            valueJson: entity.valueJson ? (entity.valueJson as PrismaClient.Prisma.InputJsonValue) : null,
+            valueJson: entity.valueJson ? (entity.valueJson as PrismaClient.Prisma.JsonValue) : null,
             specialty: entity.specialty as unknown as PrismaClient.Specialty,
             confidence: entity.confidence,
             createdAt: entity.createdAt,

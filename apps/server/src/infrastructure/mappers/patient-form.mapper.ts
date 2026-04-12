@@ -38,9 +38,9 @@ export class PatientFormMapper extends MapperWithoutDto<PatientForm, PatientForm
             templateId: entity.templateId.toString(),
             versionId: entity.versionId.toString(),
             status: entity.status as unknown as PrismaClient.FormResponseStatus,
-            responseJson: entity.responseJson as unknown as PrismaClient.Prisma.InputJsonValue,
+            responseJson: entity.responseJson as unknown as PrismaClient.Prisma.JsonValue,
             computedJson: entity.computedJson
-                ? (entity.computedJson as unknown as PrismaClient.Prisma.InputJsonValue)
+                ? (entity.computedJson as unknown as PrismaClient.Prisma.JsonValue)
                 : null,
             appliedAt: entity.appliedAt,
             completedAt: entity.completedAt ?? null,
