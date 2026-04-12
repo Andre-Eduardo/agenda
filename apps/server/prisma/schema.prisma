@@ -6,7 +6,7 @@ generator client {
 datasource db {
   provider   = "postgresql"
   url        = env("DATABASE_URL")
-  extensions = [citext]
+  extensions = [citext, pgvector(map: "vector")]
 }
 
 model User {
@@ -742,9 +742,9 @@ model PatientContextChunk {
   /// Metadados do chunk (título do record, data, specialty, etc.)
   metadata   Json?                  @db.JsonB
   chunkIndex Int                    @default(0) @map("chunk_index")
-  /// Placeholder para embedding vetorial.
-  /// TODO: substituir por Unsupported("vector(1536)") quando pgvector for ativado.
-  embedding  Json?                  @db.JsonB @map("embedding")
+  /// Embedding vetorial do chunk para busca semântica via pgvector.
+  /// Gerado pelo EmbeddingProvider (nunca pelo ChatProvider).
+  embedding  Unsupported("vector(1536)")?  @map("embedding")
   /// Hash do conteúdo — permite detectar se a fonte mudou e re-indexar
   contentHash String               @map("content_hash")
   createdAt  DateTime               @map("created_at")
@@ -753,6 +753,8 @@ model PatientContextChunk {
   @@unique([patientId, sourceType, sourceId, chunkIndex], name: "patient_context_chunk_unique")
   @@index([patientId], name: "patient_context_chunk_patient_idx")
   @@index([sourceType, sourceId], name: "patient_context_chunk_source_idx")
+  // Nota: índice HNSW (embedding vector_cosine_ops) é criado via migration SQL —
+  // Prisma v6 não suporta a sintaxe @@index para tipos pgvector.
   @@map("patient_context_chunk")
 }
 
