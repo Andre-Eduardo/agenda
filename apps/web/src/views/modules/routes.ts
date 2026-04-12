@@ -1,8 +1,8 @@
-import { layout, rootRoute } from '@tanstack/virtual-file-routes';
+import { layout, rootRoute, route } from '@tanstack/virtual-file-routes';
 
 export const routes = rootRoute('../root.tsx', [
   layout('auth', '../layouts/AuthLayout/index.tsx', [
-    layout('login', 'auth/pages/login/index.tsx'),
+    route('/auth/login', 'auth/pages/login/index.tsx'),
   ]),
   layout('stackedLayout', '../layouts/StackedLayout/index.tsx', [
     // Authenticated routes will be added here

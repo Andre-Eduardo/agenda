@@ -9,27 +9,82 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './views/root'
+import { Route as DotDotLayoutsAuthLayoutIndexRouteImport } from './views/layouts/AuthLayout/index'
+import { Route as authPagesLoginIndexRouteImport } from './views/modules/auth/pages/login/index'
 
-export interface FileRoutesByFullPath {}
-export interface FileRoutesByTo {}
+const DotDotLayoutsAuthLayoutIndexRoute =
+  DotDotLayoutsAuthLayoutIndexRouteImport.update({
+    id: '/_auth',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const authPagesLoginIndexRoute = authPagesLoginIndexRouteImport.update({
+  id: '/auth/login',
+  path: '/auth/login',
+  getParentRoute: () => DotDotLayoutsAuthLayoutIndexRoute,
+} as any)
+
+export interface FileRoutesByFullPath {
+  '/': typeof DotDotLayoutsAuthLayoutIndexRouteWithChildren
+  '/auth/login': typeof authPagesLoginIndexRoute
+}
+export interface FileRoutesByTo {
+  '/': typeof DotDotLayoutsAuthLayoutIndexRouteWithChildren
+  '/auth/login': typeof authPagesLoginIndexRoute
+}
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
+  '/_auth': typeof DotDotLayoutsAuthLayoutIndexRouteWithChildren
+  '/_auth/auth/login': typeof authPagesLoginIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: never
+  fullPaths: '/' | '/auth/login'
   fileRoutesByTo: FileRoutesByTo
-  to: never
-  id: '__root__'
+  to: '/' | '/auth/login'
+  id: '__root__' | '/_auth' | '/_auth/auth/login'
   fileRoutesById: FileRoutesById
 }
-export interface RootRouteChildren {}
-
-declare module '@tanstack/react-router' {
-  interface FileRoutesByPath {}
+export interface RootRouteChildren {
+  DotDotLayoutsAuthLayoutIndexRoute: typeof DotDotLayoutsAuthLayoutIndexRouteWithChildren
 }
 
-const rootRouteChildren: RootRouteChildren = {}
+declare module '@tanstack/react-router' {
+  interface FileRoutesByPath {
+    '/_auth': {
+      id: '/_auth'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof DotDotLayoutsAuthLayoutIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_auth/auth/login': {
+      id: '/_auth/auth/login'
+      path: '/auth/login'
+      fullPath: '/auth/login'
+      preLoaderRoute: typeof authPagesLoginIndexRouteImport
+      parentRoute: typeof DotDotLayoutsAuthLayoutIndexRoute
+    }
+  }
+}
+
+interface DotDotLayoutsAuthLayoutIndexRouteChildren {
+  authPagesLoginIndexRoute: typeof authPagesLoginIndexRoute
+}
+
+const DotDotLayoutsAuthLayoutIndexRouteChildren: DotDotLayoutsAuthLayoutIndexRouteChildren =
+  {
+    authPagesLoginIndexRoute: authPagesLoginIndexRoute,
+  }
+
+const DotDotLayoutsAuthLayoutIndexRouteWithChildren =
+  DotDotLayoutsAuthLayoutIndexRoute._addFileChildren(
+    DotDotLayoutsAuthLayoutIndexRouteChildren,
+  )
+
+const rootRouteChildren: RootRouteChildren = {
+  DotDotLayoutsAuthLayoutIndexRoute:
+    DotDotLayoutsAuthLayoutIndexRouteWithChildren,
+}
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
