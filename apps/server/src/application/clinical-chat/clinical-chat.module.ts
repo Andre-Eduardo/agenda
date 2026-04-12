@@ -11,6 +11,8 @@ import {
     // Task 6: Snapshot management
     GetContextSnapshotService,
     InvalidateSnapshotService,
+    // Task 12: Agent auto-resolution
+    AgentResolutionService,
     // Chat sessions (Tasks 4-5)
     CreateChatSessionService,
     GetChatSessionService,
@@ -36,6 +38,9 @@ import {
         // ─── Task 6: Snapshot management ─────────────────────────────────────
         GetContextSnapshotService,
         InvalidateSnapshotService,
+
+        // ─── Task 12: Agent auto-resolution ──────────────────────────────────
+        AgentResolutionService,
 
         // ─── Chat sessions ───────────────────────────────────────────────────
         CreateChatSessionService,

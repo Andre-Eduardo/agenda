@@ -2,7 +2,6 @@ import {Body, Controller, Get, HttpCode, HttpStatus, Patch, Post, Query} from '@
 import {ApiTags} from '@nestjs/swagger';
 import {Actor} from '../../../domain/@shared/actor';
 import {
-    AiAgentProfileId,
     PatientChatSessionId,
     ChatMessageRole,
 } from '../../../domain/clinical-chat/entities';
@@ -95,6 +94,10 @@ export class ClinicalChatController {
 
     @ApiOperation({
         summary: 'Creates a new clinical chat session for a patient',
+        description:
+            'O agente de IA é selecionado automaticamente com base na especialidade ' +
+            'do profissional logado. A resposta inclui `agentName` e `agentSlug` para ' +
+            'exibição contextual na interface (ex: "Agente ativo: Neurologia").',
         responses: [{status: 201, description: 'Session created', type: PatientChatSessionDto}],
     })
     @Authorize(ClinicalChatPermission.CREATE)
@@ -103,8 +106,8 @@ export class ClinicalChatController {
         @RequestActor() actor: Actor,
         @Body() payload: CreateChatSessionDto
     ): Promise<PatientChatSessionDto> {
-        const session = await this.createSessionService.execute({actor, payload});
-        return new PatientChatSessionDto(session);
+        const result = await this.createSessionService.execute({actor, payload});
+        return new PatientChatSessionDto(result.session, result.resolvedAgent);
     }
 
     @ApiOperation({

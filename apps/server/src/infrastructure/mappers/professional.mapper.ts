@@ -5,6 +5,7 @@ import {ProfessionalDto} from '../../application/professional/dtos/professional.
 import {Gender, PersonType, PersonProfile} from '../../domain/person/entities';
 import {Professional, ProfessionalConfigId, ProfessionalId} from '../../domain/professional/entities';
 import {UserId} from '../../domain/user/entities/user.entity';
+import {Specialty} from '../../domain/form-template/entities';
 import {MapperWithDto} from './mapper';
 
 const ProfessionalWithPerson = Prisma.validator<Prisma.ProfessionalDefaultArgs>()({
@@ -39,6 +40,7 @@ export class ProfessionalMapper extends MapperWithDto<
             configId: ProfessionalConfigId.from(model.configId),
             userId: model.userId ? UserId.from(model.userId) : null,
             specialty: model.specialty ?? '',
+            specialtyNormalized: (model.specialtyNormalized as unknown as Specialty) ?? null,
         });
     }
 
@@ -49,6 +51,7 @@ export class ProfessionalMapper extends MapperWithDto<
             configId: entity.configId.toString(),
             userId: entity.userId?.toString() ?? '',
             specialty: entity.specialty,
+            specialtyNormalized: (entity.specialtyNormalized as unknown as PrismaClient.Specialty) ?? null,
             createdAt: entity.createdAt,
             updatedAt: entity.updatedAt,
             deletedAt: entity.deletedAt ?? null,
