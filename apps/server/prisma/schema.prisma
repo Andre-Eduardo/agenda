@@ -637,6 +637,9 @@ model AiAgentProfile {
   priorityFields   Json?      @map("priority_fields") @db.JsonB
   /// Objetivos de análise do agente (ex: ["summary", "hypotheses", "next_steps"])
   analysisGoals    String[]   @map("analysis_goals")
+  /// Campos de PatientFacts bloqueados para este agente — removidos do prompt enviado ao LLM.
+  /// Ex: ["documentId"] para agentes que não precisam do identificador administrativo.
+  blacklistedFields String[]  @default([]) @map("blacklisted_fields")
   /// Restrições comportamentais do agente (guardrails de segurança clínica)
   guardrails       String?    @db.Text
   /// Estilo de resposta preferido (ex: formato, tom, estrutura)
