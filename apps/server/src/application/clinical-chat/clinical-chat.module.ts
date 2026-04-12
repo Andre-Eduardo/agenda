@@ -1,6 +1,7 @@
 import {Module} from '@nestjs/common';
 import {InfrastructureModule} from '../../infrastructure/infrastructure.module';
 import {ClinicalChatController} from './controllers/clinical-chat.controller';
+import {AgentsController} from './controllers/agents.controller';
 import {
     // Context & RAG (Tasks 3-5)
     BuildPatientContextService,
@@ -24,7 +25,7 @@ import {
 
 @Module({
     imports: [InfrastructureModule],
-    controllers: [ClinicalChatController],
+    controllers: [ClinicalChatController, AgentsController],
     providers: [
         // ─── Context & RAG ───────────────────────────────────────────────────
         BuildPatientContextService,

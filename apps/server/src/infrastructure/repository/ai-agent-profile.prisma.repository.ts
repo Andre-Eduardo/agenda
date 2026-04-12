@@ -1,4 +1,5 @@
 import {Injectable} from '@nestjs/common';
+import {Prisma} from '@prisma/client';
 import {AiAgentProfile, AiAgentProfileId} from '../../domain/clinical-chat/entities';
 import {AiAgentProfileRepository} from '../../domain/clinical-chat/ai-agent-profile.repository';
 import type {Specialty} from '../../domain/form-template/entities';
@@ -49,10 +50,15 @@ export class AiAgentProfilePrismaRepository extends PrismaRepository implements 
 
     async save(profile: AiAgentProfile): Promise<void> {
         const data = this.mapper.toPersistence(profile);
+        // Nullable JSON fields require Prisma.DbNull instead of null for create/update operations
+        const jsonFields = {
+            contextPriority: data.contextPriority ?? Prisma.DbNull,
+            priorityFields: data.priorityFields ?? Prisma.DbNull,
+        };
         await this.prisma.aiAgentProfile.upsert({
             where: {id: data.id},
-            create: data,
-            update: data,
+            create: {...data, ...jsonFields},
+            update: {...data, ...jsonFields},
         });
     }
 }
