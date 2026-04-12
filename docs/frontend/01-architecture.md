@@ -10,7 +10,7 @@
 | Router | TanStack Router | 1.125.6 |
 | Server State | TanStack React Query | 5.71.10 |
 | UI State | Zustand | 5.0.5 |
-| UI Component Library | `@ecxus/ui` | 0.0.2-rc.124 |
+| UI Component Library | Mantine | 8.x (Beta) |
 | Forms | React Hook Form | 7.66.1 |
 | Validation | Zod | 3.24.2 |
 | i18n | i18next + react-i18next | 24.x / 15.x |

@@ -2,9 +2,9 @@
 
 ## Approach
 
-The app uses a **CSS-in-JS** system provided by the UI library. Styles are written as **typed JavaScript objects** (not CSS strings or class names) and applied via a `style` prop on a layout component from the library.
+The app uses **Mantine v8** for UI components. Styles are written as **standard React CSS objects** in co-located `styles.ts` files and applied via the `style` prop on Mantine components (like `Box`, `Flex`, `Button`).
 
-There is **no Tailwind CSS**, no CSS Modules, and no styled-components.
+There is **no Tailwind CSS**, no CSS Modules (unless strictly necessary for global styles), and no legacy CSS-in-JS libraries like Emotion or styled-components.
 
 ---
 
@@ -22,24 +22,25 @@ ItemForm/
 
 **`styles.ts` example:**
 ```ts
-import type {BoxStyle} from '@ui-lib/components/Box';
+import { CSSProperties } from 'react';
 
-export const containerStyle: BoxStyle = {
+export const containerStyle: CSSProperties = {
   display: 'flex',
   flexDirection: 'column',
-  gap: 4,
+  gap: 'var(--mantine-spacing-md)',
 };
 
-export const actionsStyle: BoxStyle = {
+export const actionsStyle: CSSProperties = {
   display: 'flex',
   justifyContent: 'flex-end',
-  gap: 2,
+  gap: 'var(--mantine-spacing-xs)',
 };
 ```
 
 **`index.tsx` usage:**
 ```tsx
-import {containerStyle, actionsStyle} from './styles';
+import { Box } from '@mantine/core';
+import { containerStyle, actionsStyle } from './styles';
 
 function ItemForm() {
   return (
@@ -53,225 +54,74 @@ function ItemForm() {
 
 ---
 
-## Token System (Key-Based Colors)
+## Token System (CSS Variables)
 
-Colors are **never hardcoded** (no hex values, no `rgb()` literals in component files). Instead, they reference **string token paths** that resolve to theme values at runtime. This is what makes light/dark mode work automatically.
+Colors and spacing are managed via **Mantine CSS Variables**. This ensures that light/dark mode transitions are handled automatically by the browser without re-renders.
 
-### Token Path Convention
+### Mantine Variable Convention
 
-Token paths follow a hierarchical dot-notation that mirrors the UI structure:
+Mantine exposes variables for colors, spacing, radius, and shadows:
 
-```
-{scope}.{area}.{component-or-module}.{element}.{property}
-```
+| Type | Variable Pattern | Example |
+|------|------------------|---------|
+| Colors | `var(--mantine-color-{name}-{index})` | `var(--mantine-color-blue-6)` |
+| Spacing | `var(--mantine-spacing-{size})` | `var(--mantine-spacing-xl)` |
+| Radius | `var(--mantine-radius-{size})` | `var(--mantine-radius-md)` |
+| Fonts | `var(--mantine-font-family)` | `var(--mantine-font-family-monospace)` |
 
-**Scopes:**
+### App-Specific Tokens
 
-| Scope | Used for |
-|-------|---------|
-| `app.components.{name}.*` | Shared cross-module components |
-| `app.module.{module}.components.{name}.*` | Feature-specific components |
-| `app.module.{module}.page.{page}.*` | Feature-specific pages |
-| `app.layout.{layout}.*` | Layout shells (sidebar, etc.) |
-| `app.page.{name}.*` | Standalone pages (error, not-found) |
+For application-specific tokens not covered by Mantine's defaults, we define custom CSS variables in the global theme.
 
 **Examples:**
 ```ts
-'app.components.actionCard.backgroundHover'
-'app.components.filter.title'
-'app.module.featureA.components.stateCard.active.background'
-'app.module.featureA.page.detailsPage.labelColor'
-'app.layout.stackedLayout.border'
-'app.page.notFound.title.text'
-```
-
-Base palette tokens from the UI library are also available:
-```ts
-'brand.850'
-'accent.base'
-'accent.muted'
-'gray.dark.500'
-'danger.500'
-'warning.300'
-'info.200'
-'white'
-'transparent'
+'var(--app-card-bg)'
+'var(--app-sidebar-width)'
+'var(--app-header-height)'
 ```
 
 ---
 
-## Theme Definition Files
+## Theme Definition
 
-The app defines two theme files, each exporting a complete token tree:
-
-```
-src/styles/
-├── lightMode.ts     ← light color values
-└── darkMode.ts      ← dark color values
-```
-
-Both files extend the base theme from the UI library and add app-specific tokens:
+The app theme is defined in `src/styles/theme.ts` using `createTheme`.
 
 ```ts
-// src/styles/lightMode.ts
-import {lightMode as baseMode} from '@ui-lib/styles/theme/colors/light';
+// src/styles/theme.ts
+import { createTheme } from '@mantine/core';
 
-export const lightMode = {
-  ...baseMode,       // inherit all UI library tokens
-  app: {
-    components: {
-      filter: {
-        background: gray.dark[50],
-        title: brand['700'],
-      },
-    },
-    module: {
-      featureA: {
-        components: {
-          stateCard: {
-            active:   {background: green['200'], border: green['500'], text: green['700']},
-            inactive: {background: gray['200'],  border: gray['500'],  text: gray['700']},
-          },
-        },
-      },
-    },
-    layout: {
-      stackedLayout: {
-        border: gray.dark['200'],
-      },
-    },
-    page: {
-      notFound: {
-        title: {text: accent.base},
-      },
-    },
+export const theme = createTheme({
+  primaryColor: 'brand',
+  colors: {
+    brand: ['#eef3ff', ...], // 10 color shades
   },
-};
+  // Custom configurations
+});
 ```
-
-`darkMode.ts` mirrors the exact same structure with dark-appropriate values.
-
----
-
-## Adding a New Token
-
-1. Add the token to both `lightMode.ts` and `darkMode.ts` under the correct scope
-2. Reference it by path string in `styles.ts`:
-   ```ts
-   color: 'app.module.myFeature.components.myCard.title'
-   ```
-
-Never add a token to only one mode — both must always be in sync.
 
 ---
 
 ## Light/Dark Mode Switching
 
-The current mode is stored in Zustand (`appStore.colorMode`) and persisted to localStorage. Initial value comes from `window.matchMedia('(prefers-color-scheme: dark)')`.
+Mantine handles light/dark mode via the `defaultColorScheme` and `forceColorScheme` props on `MantineProvider`. The current mode is managed by Mantine's internal state or synced with Zustand if needed.
 
-The theme provider is configured in `App.tsx`:
+The provider is configured in `App.tsx`:
 ```tsx
-<ThemeProvider
-  colorModes={{light: lightMode, dark: darkMode}}
-  defaultMode={colorMode}
-  onColorModeChange={setColorMode}
->
+<MantineProvider theme={theme} defaultColorScheme="light">
+  ...
+</MantineProvider>
 ```
-
-Switching the mode at runtime:
-```tsx
-const {setColorMode} = useTheme(); // hook from the UI library
-
-setColorMode('dark');
-```
-
----
-
-## Nested Selectors and Pseudo-selectors
-
-Style objects support nested CSS selectors using `&`:
-
-```ts
-const style: BoxStyle = {
-  display: 'flex',
-
-  // Target a child with a class
-  '& > .icon': {
-    color: 'accent.base',
-    transition: 'color 0.2s',
-  },
-
-  // Hover state
-  '&:hover': {
-    backgroundColor: 'app.components.card.backgroundHover',
-  },
-
-  // Pseudo-elements
-  '&::before': {
-    content: '""',
-    display: 'block',
-  },
-};
-```
-
----
-
-## Keyframe Animations
-
-Define keyframes inline inside the style object:
-
-```ts
-const style: BoxStyle = {
-  '@keyframes fadeIn': {
-    '0%':   {opacity: 0, transform: 'translateY(-8px)'},
-    '100%': {opacity: 1, transform: 'translateY(0)'},
-  },
-  animation: 'fadeIn 0.3s ease-out',
-};
-```
-
----
-
-## Spacing Scale
-
-Numeric spacing values map to a base scale (typically 4px per unit):
-
-```
-gap: 1  →  4px
-gap: 2  →  8px
-gap: 4  →  16px
-gap: 8  →  32px
-padding: 4  →  16px
-```
-
-Use numeric values from the scale — do not write `'16px'` directly unless unavoidable.
 
 ---
 
 ## Responsive Styles
 
-The style object supports breakpoint keys:
+While the `style` prop is static, you can use Mantine's `styles` API or class names for complex responsive logic, but for simple layouts, prefer Mantine's responsive props on components like `Grid`, `SimpleGrid`, or `Group`:
 
-```ts
-const style: BoxStyle = {
-  flexDirection: 'column',   // default (mobile-first)
-
-  '@sm': {
-    flexDirection: 'row',    // at 'sm' breakpoint and above
-  },
-};
+```tsx
+<Group gap={{ base: 'sm', sm: 'lg' }}>
+  ...
+</Group>
 ```
 
-Breakpoints match the UI library's breakpoint scale (`sm`, `md`, `lg`, `xl`).
-
----
-
-## Summary: What to Put in `styles.ts` vs. Inline
-
-| ✅ In `styles.ts` | ❌ Not in component JSX |
-|-------------------|------------------------|
-| Layout and spacing | Hardcoded hex colors |
-| Token-based colors | Arbitrary pixel values |
-| Animations | Style logic mixed with render logic |
-| Nested selectors | Copy-pasted styles across files |
-| Responsive variants | |
+Or use media queries within standard CSS if `style` objects are insufficient.

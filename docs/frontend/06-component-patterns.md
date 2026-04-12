@@ -32,9 +32,9 @@ Reusable components used across multiple modules:
 
 Feature-specific components scoped to a single module. They are never imported by other modules.
 
-### 4. UI Library Components
+### 4. Mantine Components
 
-All primitive UI elements (buttons, inputs, tables, etc.) come from the UI library package. Never build raw HTML equivalents for things the library already provides.
+All primitive UI elements (buttons, inputs, tables, etc.) come from the **Mantine** library. Never build raw HTML equivalents for things the library already provides.
 
 ---
 
