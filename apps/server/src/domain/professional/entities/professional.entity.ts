@@ -3,6 +3,7 @@ import {Person, PersonId, PersonType} from '../../person/entities';
 import type {UserId} from '../../user/entities/user.entity';
 import {ProfessionalCreatedEvent, ProfessionalChangedEvent, ProfessionalDeletedEvent} from '../events';
 import type {ProfessionalConfigId} from './professional-config';
+import type {Specialty} from '../../form-template/entities';
 
 export type ProfessionalProps = EntityProps<Professional>;
 export type CreateProfessional = CreateEntity<Professional>;
@@ -12,12 +13,15 @@ export class Professional extends Person {
     configId: ProfessionalConfigId;
     userId: UserId | null;
     specialty: string;
+    /** Especialidade normalizada como enum, derivada do campo `specialty` no cadastro. */
+    specialtyNormalized: Specialty | null;
 
     constructor(props: AllEntityProps<Professional>) {
         super(props);
         this.configId = props.configId;
         this.userId = props.userId ?? null;
         this.specialty = props.specialty;
+        this.specialtyNormalized = props.specialtyNormalized ?? null;
         this.validate();
     }
 
@@ -35,6 +39,7 @@ export class Professional extends Person {
             configId: props.configId,
             userId: props.userId ?? null,
             specialty: props.specialty,
+            specialtyNormalized: props.specialtyNormalized ?? null,
             createdAt: now,
             updatedAt: now,
             deletedAt: null,
@@ -60,6 +65,10 @@ export class Professional extends Person {
             this.specialty = props.specialty;
         }
 
+        if (props.specialtyNormalized !== undefined) {
+            this.specialtyNormalized = props.specialtyNormalized;
+        }
+
         this.validate();
 
         this.addEvent(new ProfessionalChangedEvent({oldState, newState: this}));
@@ -81,6 +90,7 @@ export class Professional extends Person {
             configId: this.configId.toJSON(),
             userId: this.userId?.toJSON() ?? null,
             specialty: this.specialty,
+            specialtyNormalized: this.specialtyNormalized,
             createdAt: this.createdAt.toJSON(),
             updatedAt: this.updatedAt.toJSON(),
             deletedAt: this.deletedAt?.toJSON() ?? null,
