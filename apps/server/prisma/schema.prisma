@@ -614,22 +614,34 @@ enum ContextSnapshotStatus {
 }
 
 /// Perfil de agente clínico por profissão/especialidade.
-/// Configura o comportamento futuro do LLM por especialidade sem acoplar a um provider específico.
+/// Catálogo versionado e configurável — carregado pelo ChatService sem hardcode.
 model AiAgentProfile {
   id               String     @id(map: "ai_agent_profile_pk") @db.Uuid
   name             String
+  /// Identificador programático em snake_case, ex: "medico_geral", "psicologia_clinica"
+  code             String?    @unique(map: "ai_agent_profile_code_key")
   /// Identificador único legível por humanos, ex: "psicologia-adulto"
   slug             String     @unique(map: "ai_agent_profile_slug_key")
+  /// Grupo de especialidade, ex: "medicina", "psicologia"
+  specialtyGroup   String?    @map("specialty_group")
   /// null = agente genérico; preenchido = agente especialista
   specialty        Specialty?
   description      String?
-  /// Instruções base para o prompt do agente (system prompt). Plugar no LLM na próxima etapa.
+  /// Instruções base para o prompt do agente (system prompt).
   baseInstructions String?    @map("base_instructions") @db.Text
   /// Tipos de fonte que este agente pode usar (ex: ["RECORD","CLINICAL_PROFILE"])
   allowedSources   String[]   @map("allowed_sources")
-  /// Configuração de prioridade de contexto (JsonB livre para flexibilidade)
+  /// Configuração de prioridade de contexto por tipo de dado (JsonB livre)
   contextPriority  Json?      @map("context_priority") @db.JsonB
-  /// Modelo fixo a ser usado por este agente no OpenRouter (ex: "openai/o1-mini", "anthropic/claude-3-5-sonnet").
+  /// Campos específicos de JSONB clínico que têm maior peso na análise
+  priorityFields   Json?      @map("priority_fields") @db.JsonB
+  /// Objetivos de análise do agente (ex: ["summary", "hypotheses", "next_steps"])
+  analysisGoals    String[]   @map("analysis_goals")
+  /// Restrições comportamentais do agente (guardrails de segurança clínica)
+  guardrails       String?    @db.Text
+  /// Estilo de resposta preferido (ex: formato, tom, estrutura)
+  responseStyle    String?    @map("response_style") @db.Text
+  /// Modelo fixo a ser usado por este agente no OpenRouter (ex: "openai/o1-mini").
   /// Quando null, o sistema usa o modelo padrão da especialidade (specialty-model-defaults).
   /// O valor "openrouter/auto" é bloqueado — o comportamento de roteamento automático não é permitido.
   providerModelId  String?    @map("provider_model_id")
