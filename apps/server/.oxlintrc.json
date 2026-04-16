@@ -1,0 +1,60 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "extends": ["../../oxlint-base.json"],
+  "jsPlugins": [
+    "@eslint-community/eslint-plugin-eslint-comments",
+    "@stylistic/eslint-plugin",
+    "eslint-plugin-sort-export-all"
+  ],
+  "categories": {
+    "correctness": "error",
+    "suspicious": "error",
+    "pedantic": "error",
+    "style": "error"
+  },
+  "options": {
+    "typeAware": true,
+    "denyWarnings": true,
+    "reportUnusedDisableDirectives": "error"
+  },
+  "env": {
+    "builtin": true,
+    "es2016": true
+  },
+  "ignorePatterns": [
+    "dist",
+    "node_modules",
+    "**/logs",
+    "**/*.log",
+    "coverage",
+    ".idea",
+    ".vscode",
+    "**/.env",
+    ".jest",
+    "uploads",
+    "test-files",
+    "openapi.json"
+  ],
+  "overrides": [
+    {
+      "files": ["src/**/*.ts"],
+      "rules": {
+        /**
+         * This helps to DI interfaces without the need to create a symbol/const that references interfaces and call
+         * @Inject everywhere the implementation is needed.
+         * This happens because the interfaces are not present at runtime so can't be used by Nest as provide key
+         * when injecting the dependency implementation. But abstract class makes this possible,
+         * so merging interface declaration and abstract class solves the limitation.
+         */
+        "@typescript-eslint/no-unsafe-declaration-merging": "off",
+        "no-restricted-imports": [
+          "error",
+          {
+            "message": "Use the value object BigDecimal instead",
+            "name": "bignumber.js"
+          }
+        ]
+      }
+    }
+  ]
+}

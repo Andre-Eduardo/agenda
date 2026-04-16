@@ -12,8 +12,12 @@
     }
   },
   "scripts": {
+    "lint": "oxlint && oxfmt --check",
+    "lint:fix": "oxlint --fix && oxfmt",
+    "code-check": "oxlint --type-check && oxfmt --check",
     "generate": "orval",
-    "build": "pnpm run generate && tsc && vite build",
+    "codegen": "orval && pnpm lint:fix && pnpm build",
+    "build": "tsc && vite build",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
@@ -22,6 +26,9 @@
   },
   "devDependencies": {
     "orval": "^7.6.0",
+    "oxfmt": "^0.41.0",
+    "oxlint": "^1.56.0",
+    "oxlint-tsgolint": "^0.18.0",
     "typescript": "^5.8.3",
     "vite": "^6.2.0",
     "vite-plugin-dts": "^4.5.3"

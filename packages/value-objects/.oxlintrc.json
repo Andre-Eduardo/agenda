@@ -1,0 +1,55 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "extends": ["../../oxlint-base.json"],
+  "jsPlugins": [
+    "@eslint-community/eslint-plugin-eslint-comments",
+    "@stylistic/eslint-plugin",
+    "eslint-plugin-sort-export-all"
+  ],
+  "categories": {
+    "correctness": "error",
+    "suspicious": "error",
+    "pedantic": "error",
+    "style": "error"
+  },
+  "options": {
+    "typeAware": true,
+    "denyWarnings": true,
+    "reportUnusedDisableDirectives": "error"
+  },
+  "env": {
+    "builtin": true,
+    "es2016": true
+  },
+  "ignorePatterns": [
+    "dist",
+    "node_modules",
+    "**/logs",
+    "**/*.log",
+    "coverage",
+    ".idea",
+    ".vscode",
+    "**/.env",
+    ".jest"
+  ],
+  "overrides": [
+    {
+      "files": ["src/**/*.ts", "!src/models/big-decimal.ts"],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "message": "Use the value object BigDecimal instead",
+            "name": "bignumber.js"
+          }
+        ]
+      }
+    },
+    {
+      "files": ["src/models/big-decimal.ts"],
+      "rules": {
+        "no-restricted-imports": "off"
+      }
+    }
+  ]
+}

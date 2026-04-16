@@ -13,7 +13,7 @@ import {randomUUID} from 'crypto';
 
 const prisma = new PrismaClient();
 
-async function main() {
+export async function main() {
     const now = new Date();
 
     // -----------------------------------------------------------------------
@@ -286,6 +286,8 @@ async function main() {
     console.log('✔ Seeded form templates: Médica, Psicológica, Fisioterapêutica');
 }
 
-main()
-    .catch(console.error)
-    .finally(() => prisma.$disconnect());
+if (require.main === module) {
+    main()
+        .catch(console.error)
+        .finally(() => prisma.$disconnect());
+}

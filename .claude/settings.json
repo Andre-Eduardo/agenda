@@ -1,5 +1,4 @@
 {
-  "enabledMcpjsonServers": ["playwright", "chrome-devtools"],
   "permissions": {
     "allow": [
       "Bash(xargs ls *)",
@@ -24,7 +23,27 @@
       "Bash(pnpm install *)",
       "Read(//c/Users/andre/.claude/**)",
       "Skill(update-config)",
-      "Skill(update-config:*)"
+      "Skill(update-config:*)",
+      "Bash(claude mcp *)",
+      "mcp__claude_ai_Figma__get_design_context",
+      "Bash(curl -sL \"https://claude.ai/api/stitch/projects/4054613841908875098/screens/95264b4cd35d4dfb953e3ed943e9ef51\" -o /tmp/stitch_screen.json)",
+      "Bash(echo \"Status: $?\")",
+      "Read(//tmp/**)",
+      "Bash(curl -sL \"https://claude.ai/api/stitch/screen/95264b4cd35d4dfb953e3ed943e9ef51\" -H \"Accept: application/json\" -o /tmp/stitch2.json)",
+      "Bash(curl -sL \"https://claude.ai/api/stitch/4054613841908875098/screens/95264b4cd35d4dfb953e3ed943e9ef51\" -H \"Accept: application/json\" -o /tmp/stitch3.json)",
+      "WebFetch(domain:claude.ai)",
+      "Bash(curl -sIL \"https://claude.ai/api/stitch/screens/95264b4cd35d4dfb953e3ed943e9ef51/image\")",
+      "Bash(curl -sIL \"https://assets.claude.ai/stitch/screens/95264b4cd35d4dfb953e3ed943e9ef51/screenshot.png\")",
+      "Bash(curl -sI https://assets.claude.ai/__TRACKED_VAR__ -o /dev/null -w '%{http_code}')",
+      "mcp__claude_ai_Figma__use_figma",
+      "Bash(pnpm -F @agenda-app/app typecheck)",
+      "Bash(grep -E \"\\\\.\\(ts|js\\)$\")",
+      "Read(//i/Ecxus/automo-app/**)",
+      "Bash(cmd /c \"dir /b E:\\\\agenda\\\\node_modules\\\\@ecxus 2>&1\")"
     ]
-  }
+  },
+  "enabledMcpjsonServers": [
+    "playwright",
+    "chrome-devtools"
+  ]
 }

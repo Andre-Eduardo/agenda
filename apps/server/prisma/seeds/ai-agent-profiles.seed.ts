@@ -346,7 +346,7 @@ Foque em:
     },
 ];
 
-async function main() {
+export async function main() {
     const now = new Date();
     console.log('Seeding AI agent profiles (versioned catalog)...');
 
@@ -393,11 +393,13 @@ async function main() {
     console.log(`Done. ${agents.length} agent profiles seeded.`);
 }
 
-main()
-    .catch((e) => {
-        console.error(e);
-        process.exit(1);
-    })
-    .finally(() => {
-        void prisma.$disconnect();
-    });
+if (require.main === module) {
+    main()
+        .catch((e) => {
+            console.error(e);
+            process.exit(1);
+        })
+        .finally(() => {
+            void prisma.$disconnect();
+        });
+}

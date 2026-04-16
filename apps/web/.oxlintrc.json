@@ -1,0 +1,191 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "extends": ["../../oxlint-base.json"],
+  "plugins": ["react", "jsx-a11y"],
+  "jsPlugins": [
+    "@eslint-community/eslint-plugin-eslint-comments",
+    "@stylistic/eslint-plugin",
+    "eslint-plugin-sort-export-all"
+  ],
+  "categories": {
+    "correctness": "error",
+    "suspicious": "error",
+    "pedantic": "error",
+    "style": "error"
+  },
+  "options": {
+    "typeAware": true,
+    "denyWarnings": true,
+    "reportUnusedDisableDirectives": "error"
+  },
+  "env": {
+    "builtin": true,
+    "browser": true,
+    "es2016": true
+  },
+  "ignorePatterns": [
+    "dist",
+    "node_modules",
+    "**/logs",
+    "**/*.log",
+    "coverage",
+    ".idea",
+    ".vscode",
+    "**/.env",
+    ".jest",
+    "**/.tanstack",
+    "src/routeTree.gen.ts"
+  ],
+  "rules": {
+    // ── Correctness: react / jsx-a11y turn off ──
+    "react/jsx-key": "off",
+    "react/no-did-mount-set-state": "off",
+    "react/no-unsafe": "off",
+    "jsx-a11y/no-aria-hidden-on-focusable": "off",
+    "jsx-a11y/prefer-tag-over-role": "off",
+
+    // ── Correctness: react / jsx-a11y custom options ──
+    "react/no-string-refs": ["error", {"noTemplateLiterals": true}],
+    "jsx-a11y/alt-text": [
+      "error",
+      {
+        "elements": ["img", "object", "area", "input[type=\"image\"]"],
+        "img": [],
+        "object": [],
+        "area": [],
+        "input[type=\"image\"]": []
+      }
+    ],
+    "jsx-a11y/anchor-is-valid": [
+      "error",
+      {
+        "components": ["Link"],
+        "specialLink": ["to"],
+        "aspects": ["noHref", "invalidHref", "preferButton"]
+      }
+    ],
+    "jsx-a11y/aria-role": ["error", {"ignoreNonDOM": false}],
+    "jsx-a11y/autocomplete-valid": ["error", {"inputComponents": ["Input"]}],
+    "jsx-a11y/label-has-associated-control": [
+      "error",
+      {
+        "labelComponents": [],
+        "labelAttributes": [],
+        "controlComponents": [],
+        "assert": "both",
+        "depth": 25
+      }
+    ],
+    "jsx-a11y/media-has-caption": ["error", {"audio": [], "video": [], "track": []}],
+    "jsx-a11y/no-autofocus": ["error", {"ignoreNonDOM": true}],
+    "jsx-a11y/no-distracting-elements": ["error", {"elements": ["marquee", "blink"]}],
+    "jsx-a11y/no-noninteractive-tabindex": [
+      "error",
+      {"tags": [], "roles": ["tabpanel"], "allowExpressionValues": true}
+    ],
+    "jsx-a11y/no-static-element-interactions": [
+      "error",
+      {"handlers": ["onClick", "onMouseDown", "onMouseUp", "onKeyPress", "onKeyDown", "onKeyUp"]}
+    ],
+
+    // ── Suspicious: react ──
+    "react/iframe-missing-sandbox": "off",
+    "react/react-in-jsx-scope": "off",
+    "react/jsx-no-script-url": [
+      "error",
+      [
+        {"name": "Link", "props": ["to", "href"]},
+        {"name": "NavLink", "props": ["to"]},
+        {"name": "NextLink", "props": ["to", "href"]}
+      ],
+      {"includeFromSettings": true}
+    ],
+    "react/style-prop-object": ["error", {"allow": []}],
+
+    // ── Pedantic: react ──
+    "react/checked-requires-onchange-or-readonly": "off",
+    "react/display-name": "off",
+    "@typescript-eslint/only-throw-error": "off",
+    "react/jsx-no-target-blank": [
+      "error",
+      {
+        "allowReferrer": false,
+        "enforceDynamicLinks": "always",
+        "warnOnSpreadAttributes": false,
+        "links": true,
+        "forms": false
+      }
+    ],
+    "react/jsx-no-useless-fragment": ["error", {"allowExpressions": true}],
+
+    // ── Style: react ──
+    "react/jsx-boolean-value": ["error", "never", {"always": []}],
+    "react/jsx-curly-brace-presence": ["error", {"props": "never", "children": "never"}],
+    "react/jsx-fragments": ["error", "syntax"],
+    "react/jsx-pascal-case": [
+      "error",
+      {"allowAllCaps": true, "allowLeadingUnderscore": false, "allowNamespace": true, "ignore": []}
+    ],
+    "react/prefer-es6-class": ["error", "always"],
+    "react/self-closing-comp": ["error", {"component": true, "html": true}],
+    "react/state-in-constructor": ["error", "always"],
+    "react/jsx-handler-names": "off",
+    "react/jsx-max-depth": "off",
+    "react/jsx-props-no-spreading": "off",
+    "react/no-set-state": "off",
+    "@typescript-eslint/consistent-type-imports": "error",
+
+    // ── Restriction: react + web-specific ──
+    "react/button-has-type": "error",
+    "react/no-danger": "warn",
+    "react/no-unknown-property": ["error", {"ignore": [], "requireDataLowercase": false}],
+    "react/jsx-filename-extension": ["error", {"extensions": [".jsx", ".tsx"]}],
+    "react/jsx-no-constructed-context-values": "error",
+    "react/no-array-index-key": "error",
+    "no-restricted-imports": [
+      "error",
+      {
+        "importNames": ["default"],
+        "message": "Do not use React qualifier, use import deconstruction instead.",
+        "name": "react"
+      }
+    ],
+    "no-restricted-globals": [
+      "error",
+      {"name": "isFinite", "message": "Use Number.isFinite instead."},
+      {"name": "isNaN", "message": "Use Number.isNaN instead."},
+      {"name": "addEventListener", "message": "Use window.addEventListener instead."},
+      {"name": "blur", "message": "Use window.blur instead."},
+      {"name": "close", "message": "Use window.close instead."},
+      {"name": "closed", "message": "Use window.closed instead."},
+      {"name": "confirm", "message": "Use window.confirm instead."},
+      {"name": "event", "message": "Use window.event instead."},
+      {"name": "find", "message": "Use window.find instead."},
+      {"name": "focus", "message": "Use window.focus instead."},
+      {"name": "history", "message": "Use window.history instead."},
+      {"name": "length", "message": "Use window.length instead."},
+      {"name": "location", "message": "Use window.location instead."},
+      {"name": "name", "message": "Use window.name instead."},
+      {"name": "open", "message": "Use window.open instead."},
+      {"name": "opener", "message": "Use window.opener instead."},
+      {"name": "parent", "message": "Use window.parent instead."},
+      {"name": "print", "message": "Use window.print instead."},
+      {"name": "removeEventListener", "message": "Use window.removeEventListener instead."},
+      {"name": "screen", "message": "Use window.screen instead."},
+      {"name": "scroll", "message": "Use window.scroll instead."},
+      {"name": "scrollBy", "message": "Use window.scrollBy instead."},
+      {"name": "scrollTo", "message": "Use window.scrollTo instead."},
+      {"name": "self", "message": "Use window.self instead."},
+      {"name": "status", "message": "Use window.status instead."},
+      {"name": "stop", "message": "Use window.stop instead."},
+      {"name": "top", "message": "Use window.top instead."}
+    ],
+
+    // ── jsPlugin: @stylistic jsx ──
+    "@stylistic/jsx-curly-brace-presence": "off",
+    "@stylistic/jsx-function-call-newline": "off",
+    "@stylistic/jsx-pascal-case": "off",
+    "@stylistic/jsx-self-closing-comp": "off",
+    "@stylistic/jsx-sort-props": "off"
+  }
+}

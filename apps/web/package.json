@@ -6,7 +6,9 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
-    "lint": "oxlint .",
+    "lint": "oxlint && oxfmt --check",
+    "lint:fix": "oxlint --fix && oxfmt",
+    "code-check": "oxlint --type-check && oxfmt --check",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit"
   },
@@ -31,7 +33,9 @@
     "@types/react": "^19.0.8",
     "@types/react-dom": "^19.0.3",
     "@vitejs/plugin-react-swc": "^3.8.0",
+    "oxfmt": "^0.41.0",
     "oxlint": "^1.56.0",
+    "oxlint-tsgolint": "^0.18.0",
     "typescript": "^6.0.2",
     "vite": "^6.4.0",
     "vite-tsconfig-paths": "^5.1.4"

@@ -22,7 +22,8 @@
     "sourceMap": true,
     "baseUrl": ".",
     "paths": {
-      "@automo/*": [
+      "*": ["./*"],
+      "@agenda-app/*": [
         "packages/*/src"
       ]
     }

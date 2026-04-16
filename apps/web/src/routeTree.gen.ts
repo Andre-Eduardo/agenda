@@ -10,11 +10,18 @@
 
 import { Route as rootRouteImport } from './views/root'
 import { Route as DotDotLayoutsAuthLayoutIndexRouteImport } from './views/layouts/AuthLayout/index'
+import { Route as dashboardPagesIndexIndexRouteImport } from './views/modules/dashboard/pages/index/index'
 import { Route as authPagesLoginIndexRouteImport } from './views/modules/auth/pages/login/index'
 
 const DotDotLayoutsAuthLayoutIndexRoute =
   DotDotLayoutsAuthLayoutIndexRouteImport.update({
     id: '/_auth',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const dashboardPagesIndexIndexRoute =
+  dashboardPagesIndexIndexRouteImport.update({
+    id: '/_stackedLayout/',
+    path: '/',
     getParentRoute: () => rootRouteImport,
   } as any)
 const authPagesLoginIndexRoute = authPagesLoginIndexRouteImport.update({
@@ -24,16 +31,17 @@ const authPagesLoginIndexRoute = authPagesLoginIndexRouteImport.update({
 } as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof DotDotLayoutsAuthLayoutIndexRouteWithChildren
+  '/': typeof dashboardPagesIndexIndexRoute
   '/auth/login': typeof authPagesLoginIndexRoute
 }
 export interface FileRoutesByTo {
-  '/': typeof DotDotLayoutsAuthLayoutIndexRouteWithChildren
+  '/': typeof dashboardPagesIndexIndexRoute
   '/auth/login': typeof authPagesLoginIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_auth': typeof DotDotLayoutsAuthLayoutIndexRouteWithChildren
+  '/_stackedLayout/': typeof dashboardPagesIndexIndexRoute
   '/_auth/auth/login': typeof authPagesLoginIndexRoute
 }
 export interface FileRouteTypes {
@@ -41,11 +49,12 @@ export interface FileRouteTypes {
   fullPaths: '/' | '/auth/login'
   fileRoutesByTo: FileRoutesByTo
   to: '/' | '/auth/login'
-  id: '__root__' | '/_auth' | '/_auth/auth/login'
+  id: '__root__' | '/_auth' | '/_stackedLayout/' | '/_auth/auth/login'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   DotDotLayoutsAuthLayoutIndexRoute: typeof DotDotLayoutsAuthLayoutIndexRouteWithChildren
+  dashboardPagesIndexIndexRoute: typeof dashboardPagesIndexIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -55,6 +64,13 @@ declare module '@tanstack/react-router' {
       path: ''
       fullPath: '/'
       preLoaderRoute: typeof DotDotLayoutsAuthLayoutIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_stackedLayout/': {
+      id: '/_stackedLayout/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof dashboardPagesIndexIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_auth/auth/login': {
@@ -84,6 +100,7 @@ const DotDotLayoutsAuthLayoutIndexRouteWithChildren =
 const rootRouteChildren: RootRouteChildren = {
   DotDotLayoutsAuthLayoutIndexRoute:
     DotDotLayoutsAuthLayoutIndexRouteWithChildren,
+  dashboardPagesIndexIndexRoute: dashboardPagesIndexIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

@@ -5,7 +5,7 @@ export const routes = rootRoute('../root.tsx', [
     route('/auth/login', 'auth/pages/login/index.tsx'),
   ]),
   layout('stackedLayout', '../layouts/StackedLayout/index.tsx', [
-    // Authenticated routes will be added here
+    route('/', 'dashboard/pages/index/index.tsx'),
   ]),
 ]);
 

@@ -12,6 +12,9 @@
     }
   },
   "scripts": {
+    "lint": "oxlint && oxfmt --check",
+    "lint:fix": "oxlint --fix && oxfmt",
+    "code-check": "oxlint --type-check && oxfmt --check",
     "build": "tsc && vite build",
     "typecheck": "tsc --noEmit"
   },
@@ -20,6 +23,9 @@
     "bignumber.js": "^9.1.2"
   },
   "devDependencies": {
+    "oxfmt": "^0.41.0",
+    "oxlint": "^1.56.0",
+    "oxlint-tsgolint": "^0.18.0",
     "typescript": "^5.8.3",
     "vite": "^6.2.0",
     "vite-plugin-dts": "^4.5.3"

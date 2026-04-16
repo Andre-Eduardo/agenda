@@ -14,12 +14,14 @@
   "scripts": {
     "typecheck": "pnpm -r typecheck",
     "build": "pnpm -r build",
-    "lint": "pnpm -r lint --cache --cache-location=../../node_modules/.cache/.eslintcache",
+    "lint": "pnpm -r lint",
     "lint:fix": "pnpm -r lint:fix",
-    "start:dev:full": "concurrently -n server,web -c green,blue \"pnpm -F @agenda-app/server start:dev:full\" \"pnpm -F @agenda-app/web dev\"",
-    "generate:client": "pnpm -F @agenda-app/client codegen"
+    "code-check": "pnpm -r code-check",
+    "start:dev": "concurrently -n server,web -c green,blue \"pnpm -F @agenda-app/server start:dev:full\" \"wait-on tcp:localhost:3000 && pnpm -F @agenda-app/app dev\"",
+    "generate:client": "pnpm -F @agenda-app/server openapi:generate && pnpm -F @agenda-app/client codegen"
   },
   "devDependencies": {
-    "concurrently": "^9.1.2"
+    "concurrently": "^9.1.2",
+    "wait-on": "^9.0.3"
   }
 }
