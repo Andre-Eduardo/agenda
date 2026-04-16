@@ -1,7 +1,7 @@
 services:
   postgres:
     container_name: "postgres-${BUILD_TAG}"
-    image: postgres:16-alpine
+    image: pgvector/pgvector:pg16
     # Configure non-durable storage for CI
     # https://www.postgresql.org/docs/9.1/non-durability.html
     command: [ "-c", "fsync=off", "-c", "synchronous_commit=off", "-c", "full_page_writes=off" ]

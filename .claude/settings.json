@@ -1,7 +1,30 @@
 {
+  "enabledMcpjsonServers": ["playwright", "chrome-devtools"],
   "permissions": {
     "allow": [
-      "Bash(xargs ls *)"
+      "Bash(xargs ls *)",
+      "Bash(pnpm -F @agenda-app/server exec prisma migrate status)",
+      "Bash(psql -U postgres -h localhost -d agenda -c \"SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' ORDER BY table_name;\")",
+      "Bash(echo \"SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' ORDER BY table_name;\")",
+      "Bash(DATABASE_URL=\"postgresql://postgres:postgres@localhost:5432/agenda\" npx prisma db execute --schema prisma/schema.prisma --file /tmp/check.sql)",
+      "Bash(echo \"SELECT migration_name, finished_at IS NOT NULL as finished, rolled_back_at IS NOT NULL as rolled_back FROM _prisma_migrations ORDER BY started_at;\")",
+      "Bash(DATABASE_URL=\"postgresql://postgres:postgres@localhost:5432/agenda\" npx prisma db execute --schema prisma/schema.prisma --file /tmp/mig.sql)",
+      "Bash(node -e ' *)",
+      "Bash(reg query *)",
+      "Read(//c/Program Files/**)",
+      "Read(//c/Program Files \\(x86\\)/**)",
+      "Bash(where pg_config)",
+      "Read(//d//**)",
+      "Read(//e//**)",
+      "Read(//usr/lib/**)",
+      "Bash(docker stop *)",
+      "Bash(docker rm *)",
+      "Bash(docker compose *)",
+      "Bash(pnpm -F @agenda-app/server add -D @swc/core)",
+      "Bash(pnpm install *)",
+      "Read(//c/Users/andre/.claude/**)",
+      "Skill(update-config)",
+      "Skill(update-config:*)"
     ]
   }
 }
