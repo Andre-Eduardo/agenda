@@ -1,4 +1,5 @@
 import {Injectable} from '@nestjs/common';
+import {Actor} from '../../../domain/@shared/actor';
 import {AppointmentRepository} from '../../../domain/appointment/appointment.repository';
 import {PaginatedDto} from '../../@shared/dto';
 import {ApplicationService, Command} from '../../@shared/application.service';
@@ -8,7 +9,7 @@ import {AppointmentDto, SearchAppointmentsDto} from '../dtos';
 export class SearchAppointmentsService implements ApplicationService<SearchAppointmentsDto, PaginatedDto<AppointmentDto>> {
     constructor(private readonly appointmentRepository: AppointmentRepository) {}
 
-    async execute({payload}: Command<SearchAppointmentsDto>): Promise<PaginatedDto<AppointmentDto>> {
+    async execute({actor, payload}: Command<SearchAppointmentsDto, Actor>): Promise<PaginatedDto<AppointmentDto>> {
         const {term, sort, ...rest} = payload;
 
         const result = await this.appointmentRepository.search(
@@ -16,7 +17,10 @@ export class SearchAppointmentsService implements ApplicationService<SearchAppoi
                 ...rest,
                 sort: sort ?? undefined,
             },
-            {term: term ?? undefined}
+            {
+                term: term ?? undefined,
+                professionalId: actor.professionalId ?? undefined,
+            }
         );
 
         return {

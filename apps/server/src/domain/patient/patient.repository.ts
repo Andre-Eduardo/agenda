@@ -1,10 +1,12 @@
 import { PaginatedList, Pagination } from '../@shared/repository';
 import type {PersonId} from '../person/entities';
+import type {ProfessionalId} from '../professional/entities';
 import type {Patient, PatientId} from './entities';
 
 export type PatientSearchFilter = {
     ids?: PatientId[];
     term?: string;
+    professionalId?: ProfessionalId;
 };
 
 export type PatientSortOptions = [
@@ -13,8 +15,8 @@ export type PatientSortOptions = [
 ];
 
 export interface PatientRepository {
-    findById(id: PersonId): Promise<Patient | null>;
-    
+    findById(id: PersonId, professionalId?: ProfessionalId): Promise<Patient | null>;
+
     delete(id: PersonId): Promise<void>;
 
     search(

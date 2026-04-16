@@ -24,10 +24,10 @@ export class RequestContextMiddleware implements NestMiddleware {
         };
 
         if (request.method === 'GET') {
-            request.query.companyId ??= this.getCompanyFromRequest(request);
+            request.query.professionalId ??= this.getProfessionalFromRequest(request);
         } else if (request.body && typeof request.body === 'object') {
             // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access -- This is a safe access
-            request.body.companyId ??= this.getCompanyFromRequest(request);
+            request.body.professionalId ??= this.getProfessionalFromRequest(request);
         }
 
         response.actions = new ExpressContextActions(response, this.authCookie, this.companyCookie, {
@@ -38,7 +38,7 @@ export class RequestContextMiddleware implements NestMiddleware {
         next();
     }
 
-    private getCompanyFromRequest(request: Request): string | undefined {
+    private getProfessionalFromRequest(request: Request): string | undefined {
         const signedCookies = request.signedCookies as Record<string, string> | undefined;
 
         return signedCookies?.[this.companyCookie];

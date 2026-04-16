@@ -3,6 +3,7 @@ import * as PrismaClient from '@prisma/client';
 import {Patient, PatientId} from '../../domain/patient/entities';
 import {PatientRepository, PatientSearchFilter, PatientSortOptions} from '../../domain/patient/patient.repository';
 import {PaginatedList, Pagination} from '../../domain/@shared/repository';
+import {ProfessionalId} from '../../domain/professional/entities';
 import {PatientMapper} from '../mappers/patient.mapper';
 import {PrismaProvider} from './prisma/prisma.provider';
 import {PrismaRepository} from './prisma.repository';
@@ -18,10 +19,11 @@ export class PatientPrismaRepository extends PrismaRepository implements Patient
         super(prismaProvider);
     }
 
-    async findById(id: PatientId): Promise<Patient | null> {
-        const patient = await this.prisma.patient.findUnique({
+    async findById(id: PatientId, professionalId?: ProfessionalId): Promise<Patient | null> {
+        const patient = await this.prisma.patient.findFirst({
             where: {
                 id: id.toString(),
+                ...(professionalId ? {professionalId: professionalId.toString()} : {}),
             },
             include: {
                 person: true,
@@ -38,12 +40,14 @@ export class PatientPrismaRepository extends PrismaRepository implements Patient
             },
         });
     }
+
     async search(
         pagination: Pagination<PatientSortOptions>,
         filter: PatientSearchFilter = {}
     ): Promise<PaginatedList<Patient>> {
         const where: PrismaClient.Prisma.PatientWhereInput = {
             id: filter.ids ? {in: filter.ids.map((id) => id.toString())} : undefined,
+            professionalId: filter.professionalId ? filter.professionalId.toString() : undefined,
             OR: filter.term
                 ? [
                       {person: {name: {contains: filter.term, mode: 'insensitive'}}},

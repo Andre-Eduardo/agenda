@@ -69,7 +69,6 @@ model Person {
   professional Professional?
   patients     Patient[]
 
-  @@unique([documentId], name: "person_document_id_key")
   @@map("person")
 }
 
@@ -140,7 +139,7 @@ model Patient {
   contextSnapshots      PatientContextSnapshot[]
   contextChunks         PatientContextChunk[]
 
-  @@unique([documentId], name: "patient_document_id_key")
+  @@unique([documentId, professionalId], name: "patient_document_id_professional_key")
   @@map("patient")
 }
 

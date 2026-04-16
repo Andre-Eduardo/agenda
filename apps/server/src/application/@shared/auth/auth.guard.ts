@@ -64,6 +64,7 @@ export class AuthGuard implements CanActivate {
         request.actor = {
             ...request.actor,
             userId: token.userId,
+            professionalId: professionalId ?? null,
         };
 
         const permissions = this.reflector.get<Permission[] | undefined>(AUTHORIZE_KEY, context.getHandler());

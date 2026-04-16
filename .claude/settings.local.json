@@ -5,7 +5,28 @@
       "Bash(ls -la /e/agenda/apps/server/src/application/*.ts)",
       "Bash(ls -la /e/agenda/apps/server/src/infrastructure/*.ts)",
       "Bash(ls -la /e/agenda/apps/server/src/*.ts)",
-      "Bash(xargs wc:*)"
+      "Bash(xargs wc:*)",
+      "Bash(xargs grep:*)",
+      "Bash(npx prisma:*)",
+      "Bash(pnpm -F @agenda-app/server prisma:generate)",
+      "Bash(pnpm -F @agenda-app/server openapi:generate)",
+      "Bash(pnpm -F @agenda-app/client generate)",
+      "Bash(pnpm -F @agenda-app/server test)",
+      "Bash(pnpm -F @agenda-app/server test:integration)",
+      "Bash(pnpm run typecheck)"
+    ]
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash -c 'if echo \"$CLAUDE_TOOL_INPUT\" | grep -q \"prisma/schema.prisma\"; then cd /e/agenda/apps/server && pnpm prisma:generate; fi'"
+          }
+        ]
+      }
     ]
   }
 }
