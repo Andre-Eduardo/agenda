@@ -17,6 +17,10 @@ author = "agent"
 task = "workflow.run"
 args = "Start application"
 
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "Backend API"
+
 [[workflows.workflow]]
 name = "Start application"
 author = "agent"
@@ -26,8 +30,24 @@ outputType = "webview"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "cd apps/server && pnpm run prisma:generate && pnpm run prisma:migrate && NODE_ENV=development NODE_OPTIONS='--experimental-global-webcrypto' npx nest start --watch"
+args = "cd apps/web && pnpm run dev"
 waitForPort = 5000
+
+[[workflows.workflow]]
+name = "Backend API"
+author = "agent"
+
+[workflows.workflow.metadata]
+outputType = "console"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "cd apps/server && pnpm run prisma:generate && pnpm run prisma:migrate && NODE_ENV=development NODE_OPTIONS='--experimental-global-webcrypto' npx nest start --watch"
+waitForPort = 3000
+
+[[ports]]
+localPort = 3000
+externalPort = 3000
 
 [[ports]]
 localPort = 5000

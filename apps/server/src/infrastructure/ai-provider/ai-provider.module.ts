@@ -32,8 +32,6 @@ import {OpenRouterChatProvider} from './openrouter-chat.provider';
     providers: [
         MockChatProvider,
         MockEmbeddingProvider,
-        OpenRouterChatProvider,
-        OpenAiEmbeddingProvider,
 
         // Chat provider: selecionado por AI_CHAT_PROVIDER (padrão: mock)
         {

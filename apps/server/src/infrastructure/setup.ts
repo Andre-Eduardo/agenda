@@ -4,8 +4,8 @@ import {VersioningType} from '@nestjs/common';
 import type {NestExpressApplication} from '@nestjs/platform-express';
 import type {OpenAPIObject} from '@nestjs/swagger';
 import {DocumentBuilder, SwaggerModule} from '@nestjs/swagger';
-import * as compression from 'compression';
-import * as cookieParser from 'cookie-parser';
+import compression from 'compression';
+import cookieParser from 'cookie-parser';
 import helmet from 'helmet';
 import {EnvConfigService} from './config';
 

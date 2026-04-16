@@ -915,6 +915,13 @@
                     "asc",
                     "desc"
                   ]
+                },
+                "startAt": {
+                  "type": "string",
+                  "enum": [
+                    "asc",
+                    "desc"
+                  ]
                 }
               },
               "nullable": true,
@@ -1080,6 +1087,59 @@
         ]
       }
     },
+    "/api/v1/appointments/{id}/cancel": {
+      "patch": {
+        "operationId": "cancelAppointment",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Appointment ID",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CancelAppointmentInputDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Appointment cancelled",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Appointment"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Request failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Cancels an appointment",
+        "tags": [
+          "Appointment"
+        ]
+      }
+    },
     "/api/v1/records": {
       "post": {
         "operationId": "createRecord",
@@ -1167,6 +1227,13 @@
                     "asc",
                     "desc"
                   ]
+                },
+                "eventDate": {
+                  "type": "string",
+                  "enum": [
+                    "asc",
+                    "desc"
+                  ]
                 }
               },
               "nullable": true,
@@ -1180,6 +1247,83 @@
             "description": "Search term to filter records by description",
             "schema": {
               "type": "string"
+            }
+          },
+          {
+            "name": "patientId",
+            "required": true,
+            "in": "query",
+            "description": "Filter by patient ID",
+            "schema": {
+              "format": "uuid",
+              "example": "dc5782d4-ce8e-4f95-bb0b-d1a4e130aee8",
+              "type": "string"
+            }
+          },
+          {
+            "name": "attendanceType",
+            "required": true,
+            "in": "query",
+            "description": "Filter by attendance type",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "FIRST_VISIT",
+                "FOLLOW_UP",
+                "EVALUATION",
+                "PROCEDURE",
+                "TELEMEDICINE",
+                "INTERCURRENCE"
+              ]
+            }
+          },
+          {
+            "name": "clinicalStatus",
+            "required": true,
+            "in": "query",
+            "description": "Filter by clinical status",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "STABLE",
+                "IMPROVING",
+                "WORSENING",
+                "UNCHANGED",
+                "UNDER_OBSERVATION"
+              ]
+            }
+          },
+          {
+            "name": "dateStart",
+            "required": true,
+            "in": "query",
+            "description": "Filter events from this date (eventDate)",
+            "schema": {
+              "format": "date-time",
+              "type": "string"
+            }
+          },
+          {
+            "name": "dateEnd",
+            "required": true,
+            "in": "query",
+            "description": "Filter events up to this date (eventDate)",
+            "schema": {
+              "format": "date-time",
+              "type": "string"
+            }
+          },
+          {
+            "name": "source",
+            "required": true,
+            "in": "query",
+            "description": "Filter by record source",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "MANUAL",
+                "IMPORT"
+              ]
             }
           }
         ],
@@ -1332,6 +1476,359 @@
         ]
       }
     },
+    "/api/v1/patients/{patientId}/clinical-profile": {
+      "get": {
+        "operationId": "getClinicalProfile",
+        "parameters": [
+          {
+            "name": "patientId",
+            "required": true,
+            "in": "path",
+            "description": "Patient ID",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Clinical profile found or null",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClinicalProfile"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Request failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Gets the clinical profile of a patient",
+        "tags": [
+          "ClinicalProfile"
+        ]
+      },
+      "put": {
+        "operationId": "upsertClinicalProfile",
+        "parameters": [
+          {
+            "name": "patientId",
+            "required": true,
+            "in": "path",
+            "description": "Patient ID",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpsertClinicalProfileInputDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Clinical profile upserted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClinicalProfile"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Request failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Creates or updates the clinical profile of a patient",
+        "tags": [
+          "ClinicalProfile"
+        ]
+      }
+    },
+    "/api/v1/patients/{patientId}/alerts": {
+      "get": {
+        "operationId": "searchPatientAlerts",
+        "parameters": [
+          {
+            "name": "patientId",
+            "required": true,
+            "in": "path",
+            "description": "Patient ID",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "cursor",
+            "required": true,
+            "in": "query",
+            "description": "The cursor to start from",
+            "schema": {
+              "format": "uuid",
+              "nullable": true,
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "required": true,
+            "in": "query",
+            "description": "The number of items to return",
+            "schema": {
+              "minimum": 0,
+              "exclusiveMinimum": true,
+              "example": 10,
+              "type": "number"
+            }
+          },
+          {
+            "name": "sort",
+            "required": true,
+            "in": "query",
+            "description": "The fields to sort by",
+            "schema": {
+              "properties": {
+                "createdAt": {
+                  "type": "string",
+                  "enum": [
+                    "asc",
+                    "desc"
+                  ]
+                },
+                "updatedAt": {
+                  "type": "string",
+                  "enum": [
+                    "asc",
+                    "desc"
+                  ]
+                },
+                "severity": {
+                  "type": "string",
+                  "enum": [
+                    "asc",
+                    "desc"
+                  ]
+                }
+              },
+              "nullable": true,
+              "type": "object"
+            }
+          },
+          {
+            "name": "isActive",
+            "required": true,
+            "in": "query",
+            "description": "Filter by active status (true/false)",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of patient alerts"
+          },
+          "default": {
+            "description": "Request failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Lists clinical alerts for a patient",
+        "tags": [
+          "PatientAlert"
+        ]
+      },
+      "post": {
+        "operationId": "createPatientAlert",
+        "parameters": [
+          {
+            "name": "patientId",
+            "required": true,
+            "in": "path",
+            "description": "Patient ID",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreatePatientAlertInputDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Alert created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PatientAlert"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Request failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Creates a clinical alert for a patient",
+        "tags": [
+          "PatientAlert"
+        ]
+      }
+    },
+    "/api/v1/patients/{patientId}/alerts/{alertId}": {
+      "put": {
+        "operationId": "updatePatientAlert",
+        "parameters": [
+          {
+            "name": "alertId",
+            "required": true,
+            "in": "path",
+            "description": "Alert ID",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "patientId",
+            "required": true,
+            "in": "path",
+            "description": "Patient ID",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdatePatientAlertInputDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Alert updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PatientAlert"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Request failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Updates a clinical alert",
+        "tags": [
+          "PatientAlert"
+        ]
+      },
+      "delete": {
+        "operationId": "deletePatientAlert",
+        "parameters": [
+          {
+            "name": "alertId",
+            "required": true,
+            "in": "path",
+            "description": "Alert ID",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "patientId",
+            "required": true,
+            "in": "path",
+            "description": "Patient ID",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Alert deleted"
+          },
+          "default": {
+            "description": "Request failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Soft-deletes a clinical alert",
+        "tags": [
+          "PatientAlert"
+        ]
+      }
+    },
     "/api/v1/upload/prepare": {
       "post": {
         "operationId": "prepareUpload",
@@ -1415,6 +1912,1688 @@
           "Upload"
         ]
       }
+    },
+    "/api/v1/form-templates": {
+      "get": {
+        "operationId": "search",
+        "parameters": [
+          {
+            "name": "specialty",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "PSICOLOGIA",
+                "MEDICINA",
+                "FISIOTERAPIA",
+                "FONOAUDIOLOGIA",
+                "NUTRICAO",
+                "TERAPIA_OCUPACIONAL",
+                "ENFERMAGEM",
+                "OUTROS"
+              ]
+            }
+          },
+          {
+            "name": "scope",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": "all",
+              "type": "string",
+              "enum": [
+                "public",
+                "mine",
+                "all"
+              ]
+            }
+          },
+          {
+            "name": "professionalId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "example": "dc5782d4-ce8e-4f95-bb0b-d1a4e130aee8",
+              "type": "string"
+            }
+          },
+          {
+            "name": "cursor",
+            "required": false,
+            "in": "query",
+            "description": "The cursor to start from",
+            "schema": {
+              "format": "uuid",
+              "nullable": true,
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "required": true,
+            "in": "query",
+            "description": "The number of items to return",
+            "schema": {
+              "minimum": 0,
+              "exclusiveMinimum": true,
+              "example": 10,
+              "type": "number"
+            }
+          },
+          {
+            "name": "sort",
+            "required": false,
+            "in": "query",
+            "description": "The fields to sort by",
+            "schema": {
+              "properties": {
+                "createdAt": {
+                  "type": "string",
+                  "enum": [
+                    "asc",
+                    "desc"
+                  ]
+                },
+                "updatedAt": {
+                  "type": "string",
+                  "enum": [
+                    "asc",
+                    "desc"
+                  ]
+                },
+                "name": {
+                  "type": "string",
+                  "enum": [
+                    "asc",
+                    "desc"
+                  ]
+                }
+              },
+              "nullable": true,
+              "type": "object"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Paginated list of templates"
+          },
+          "default": {
+            "description": "Request failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          }
+        },
+        "summary": "List form templates (filterable by specialty and scope)",
+        "tags": [
+          "FormTemplate"
+        ]
+      },
+      "post": {
+        "operationId": "create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateFormTemplateInputDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Template created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FormTemplate"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Request failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Create a new form template",
+        "tags": [
+          "FormTemplate"
+        ]
+      }
+    },
+    "/api/v1/form-templates/{templateId}": {
+      "get": {
+        "operationId": "getById",
+        "parameters": [
+          {
+            "name": "templateId",
+            "required": true,
+            "in": "path",
+            "description": "Template ID",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Template",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FormTemplate"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Request failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Get a form template by ID",
+        "tags": [
+          "FormTemplate"
+        ]
+      },
+      "delete": {
+        "operationId": "delete",
+        "parameters": [
+          {
+            "name": "templateId",
+            "required": true,
+            "in": "path",
+            "description": "Template ID",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Deleted"
+          },
+          "default": {
+            "description": "Request failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Soft-delete a form template",
+        "tags": [
+          "FormTemplate"
+        ]
+      }
+    },
+    "/api/v1/form-templates/{templateId}/clone": {
+      "post": {
+        "operationId": "clone",
+        "parameters": [
+          {
+            "name": "templateId",
+            "required": true,
+            "in": "path",
+            "description": "Template ID",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Cloned template",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FormTemplate"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Request failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Clone a public template for a professional",
+        "tags": [
+          "FormTemplate"
+        ]
+      }
+    },
+    "/api/v1/form-templates/{templateId}/versions": {
+      "get": {
+        "operationId": "listVersions",
+        "parameters": [
+          {
+            "name": "templateId",
+            "required": true,
+            "in": "path",
+            "description": "Template ID",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of versions"
+          },
+          "default": {
+            "description": "Request failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          }
+        },
+        "summary": "List all versions of a template",
+        "tags": [
+          "FormTemplate"
+        ]
+      },
+      "post": {
+        "operationId": "createVersion",
+        "parameters": [
+          {
+            "name": "templateId",
+            "required": true,
+            "in": "path",
+            "description": "Template ID",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateFormTemplateVersionInputDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Version created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FormTemplateVersion"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Request failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Create a new version for a template",
+        "tags": [
+          "FormTemplate"
+        ]
+      }
+    },
+    "/api/v1/form-templates/versions/{versionId}/publish": {
+      "post": {
+        "operationId": "publishVersion",
+        "parameters": [
+          {
+            "name": "versionId",
+            "required": true,
+            "in": "path",
+            "description": "Version ID",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Version published",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FormTemplateVersion"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Request failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Publish a template version",
+        "tags": [
+          "FormTemplate"
+        ]
+      }
+    },
+    "/api/v1/form-templates/versions/{versionId}/deprecate": {
+      "post": {
+        "operationId": "deprecateVersion",
+        "parameters": [
+          {
+            "name": "versionId",
+            "required": true,
+            "in": "path",
+            "description": "Version ID",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Version deprecated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FormTemplateVersion"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Request failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Deprecate a template version",
+        "tags": [
+          "FormTemplate"
+        ]
+      }
+    },
+    "/api/v1/patients/{patientId}/forms": {
+      "get": {
+        "operationId": "search",
+        "parameters": [
+          {
+            "name": "patientId",
+            "required": true,
+            "in": "path",
+            "description": "Patient ID",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "specialty",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "PSICOLOGIA",
+                "MEDICINA",
+                "FISIOTERAPIA",
+                "FONOAUDIOLOGIA",
+                "NUTRICAO",
+                "TERAPIA_OCUPACIONAL",
+                "ENFERMAGEM",
+                "OUTROS"
+              ]
+            }
+          },
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "DRAFT",
+                "IN_PROGRESS",
+                "COMPLETED",
+                "CANCELLED"
+              ]
+            }
+          },
+          {
+            "name": "cursor",
+            "required": false,
+            "in": "query",
+            "description": "The cursor to start from",
+            "schema": {
+              "format": "uuid",
+              "nullable": true,
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "required": true,
+            "in": "query",
+            "description": "The number of items to return",
+            "schema": {
+              "minimum": 0,
+              "exclusiveMinimum": true,
+              "example": 10,
+              "type": "number"
+            }
+          },
+          {
+            "name": "sort",
+            "required": false,
+            "in": "query",
+            "description": "The fields to sort by",
+            "schema": {
+              "properties": {
+                "appliedAt": {
+                  "type": "string",
+                  "enum": [
+                    "asc",
+                    "desc"
+                  ]
+                },
+                "createdAt": {
+                  "type": "string",
+                  "enum": [
+                    "asc",
+                    "desc"
+                  ]
+                },
+                "updatedAt": {
+                  "type": "string",
+                  "enum": [
+                    "asc",
+                    "desc"
+                  ]
+                },
+                "completedAt": {
+                  "type": "string",
+                  "enum": [
+                    "asc",
+                    "desc"
+                  ]
+                }
+              },
+              "nullable": true,
+              "type": "object"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Paginated list of patient forms"
+          },
+          "default": {
+            "description": "Request failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          }
+        },
+        "summary": "List all forms for a patient",
+        "tags": [
+          "PatientForm"
+        ]
+      },
+      "post": {
+        "operationId": "start",
+        "parameters": [
+          {
+            "name": "patientId",
+            "required": true,
+            "in": "path",
+            "description": "Patient ID",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StartPatientFormInputDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Patient form started",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PatientForm"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Request failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Start a new patient form (opens with empty answers)",
+        "tags": [
+          "PatientForm"
+        ]
+      }
+    },
+    "/api/v1/patients/{patientId}/forms/{patientFormId}": {
+      "get": {
+        "operationId": "getById",
+        "parameters": [
+          {
+            "name": "patientFormId",
+            "required": true,
+            "in": "path",
+            "description": "Form ID",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "patientId",
+            "required": true,
+            "in": "path",
+            "description": "Patient ID",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Patient form",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PatientForm"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Request failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Get a specific patient form",
+        "tags": [
+          "PatientForm"
+        ]
+      }
+    },
+    "/api/v1/patients/{patientId}/forms/{patientFormId}/draft": {
+      "patch": {
+        "operationId": "saveDraft",
+        "parameters": [
+          {
+            "name": "patientFormId",
+            "required": true,
+            "in": "path",
+            "description": "Form ID",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "patientId",
+            "required": true,
+            "in": "path",
+            "description": "Patient ID",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SavePatientFormDraftInputDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Draft saved",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PatientForm"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Request failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Save a draft of the form (partial save, no validation of required fields)",
+        "tags": [
+          "PatientForm"
+        ]
+      }
+    },
+    "/api/v1/patients/{patientId}/forms/{patientFormId}/complete": {
+      "post": {
+        "operationId": "complete",
+        "parameters": [
+          {
+            "name": "patientFormId",
+            "required": true,
+            "in": "path",
+            "description": "Form ID",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "patientId",
+            "required": true,
+            "in": "path",
+            "description": "Patient ID",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CompletePatientFormInputDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Form completed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PatientForm"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Request failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Complete the form (validates all required fields and computes scores)",
+        "tags": [
+          "PatientForm"
+        ]
+      }
+    },
+    "/api/v1/patients/{patientId}/form-field-index": {
+      "get": {
+        "operationId": "listByPatient",
+        "parameters": [
+          {
+            "name": "patientId",
+            "required": true,
+            "in": "path",
+            "description": "Patient ID",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Indexed fields"
+          },
+          "default": {
+            "description": "Request failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          }
+        },
+        "summary": "List indexed fields from a patient's forms",
+        "tags": [
+          "FormFieldIndex"
+        ]
+      }
+    },
+    "/api/v1/form-field-index/search": {
+      "get": {
+        "operationId": "globalSearch",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Indexed fields"
+          },
+          "default": {
+            "description": "Request failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Search indexed fields across all patients",
+        "tags": [
+          "FormFieldIndex"
+        ]
+      }
+    },
+    "/api/v1/patients/{patientId}/ai-context": {
+      "get": {
+        "operationId": "getAiContext",
+        "parameters": [
+          {
+            "name": "patientId",
+            "required": true,
+            "in": "path",
+            "description": "Patient ID",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "AI context payload"
+          },
+          "default": {
+            "description": "Request failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Get structured AI context payload for a patient",
+        "tags": [
+          "FormAiContext"
+        ]
+      }
+    },
+    "/api/v1/clinical-chat/agent-profiles": {
+      "get": {
+        "operationId": "listAgentProfiles",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Agent profiles list",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AiAgentProfile"
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Request failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Lists all active AI agent profiles",
+        "tags": [
+          "Clinical Chat"
+        ]
+      }
+    },
+    "/api/v1/clinical-chat/sessions": {
+      "post": {
+        "description": "O agente de IA é selecionado automaticamente com base na especialidade do profissional logado. A resposta inclui `agentName` e `agentSlug` para exibição contextual na interface (ex: \"Agente ativo: Neurologia\").",
+        "operationId": "createSession",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateChatSessionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Session created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PatientChatSession"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Request failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Creates a new clinical chat session for a patient",
+        "tags": [
+          "Clinical Chat"
+        ]
+      },
+      "get": {
+        "operationId": "listSessions",
+        "parameters": [
+          {
+            "name": "cursor",
+            "required": true,
+            "in": "query",
+            "description": "The cursor to start from",
+            "schema": {
+              "format": "uuid",
+              "nullable": true,
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "required": true,
+            "in": "query",
+            "description": "The number of items to return",
+            "schema": {
+              "minimum": 0,
+              "exclusiveMinimum": true,
+              "example": 10,
+              "type": "number"
+            }
+          },
+          {
+            "name": "sort",
+            "required": true,
+            "in": "query",
+            "description": "The fields to sort by",
+            "schema": {
+              "properties": {
+                "createdAt": {
+                  "type": "string",
+                  "enum": [
+                    "asc",
+                    "desc"
+                  ]
+                },
+                "updatedAt": {
+                  "type": "string",
+                  "enum": [
+                    "asc",
+                    "desc"
+                  ]
+                },
+                "lastActivityAt": {
+                  "type": "string",
+                  "enum": [
+                    "asc",
+                    "desc"
+                  ]
+                }
+              },
+              "nullable": true,
+              "type": "object"
+            }
+          },
+          {
+            "name": "patientId",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "example": "dc5782d4-ce8e-4f95-bb0b-d1a4e130aee8",
+              "type": "string"
+            }
+          },
+          {
+            "name": "professionalId",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "example": "dc5782d4-ce8e-4f95-bb0b-d1a4e130aee8",
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "ACTIVE",
+                "CLOSED",
+                "ARCHIVED"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Sessions list"
+          },
+          "default": {
+            "description": "Request failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Lists clinical chat sessions with filters",
+        "tags": [
+          "Clinical Chat"
+        ]
+      }
+    },
+    "/api/v1/clinical-chat/sessions/{id}": {
+      "get": {
+        "operationId": "getSession",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Session ID",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Session found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PatientChatSession"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Request failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Gets a clinical chat session by ID",
+        "tags": [
+          "Clinical Chat"
+        ]
+      }
+    },
+    "/api/v1/clinical-chat/sessions/{id}/close": {
+      "patch": {
+        "operationId": "closeSession",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Session ID",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Session closed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PatientChatSession"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Request failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Closes a clinical chat session",
+        "tags": [
+          "Clinical Chat"
+        ]
+      }
+    },
+    "/api/v1/clinical-chat/sessions/{id}/chat": {
+      "post": {
+        "description": "Main clinical chat endpoint. Retrieves patient context, calls AI provider, persists user message + assistant response, and returns structured output with audit log.",
+        "operationId": "sendChatMessage",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Session ID",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SendChatMessageDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "User message + assistant response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SendChatMessageResponse"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Request failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Sends a message to the clinical chat and gets an AI-generated response",
+        "tags": [
+          "Clinical Chat"
+        ]
+      }
+    },
+    "/api/v1/clinical-chat/sessions/{id}/messages": {
+      "post": {
+        "description": "Use /chat endpoint for AI-powered responses. This endpoint only persists the message directly.",
+        "operationId": "addMessage",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Session ID",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddChatMessageDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Message added",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PatientChatMessage"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Request failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Manually adds a message to a chat session (no AI processing)",
+        "tags": [
+          "Clinical Chat"
+        ]
+      },
+      "get": {
+        "operationId": "listMessages",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "$ref": "#/components/schemas/PatientChatSessionId"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Messages list"
+          },
+          "default": {
+            "description": "Request failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Lists messages of a chat session",
+        "tags": [
+          "Clinical Chat"
+        ]
+      }
+    },
+    "/api/v1/clinical-chat/context/rebuild": {
+      "post": {
+        "operationId": "rebuildContext",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RebuildContextDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Context rebuilt"
+          },
+          "default": {
+            "description": "Request failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Rebuilds the clinical context snapshot and re-indexes chunks for a patient",
+        "tags": [
+          "Clinical Chat"
+        ]
+      }
+    },
+    "/api/v1/clinical-chat/context/invalidate": {
+      "post": {
+        "description": "Call this when patient data changes. Next /context/snapshot access will trigger rebuild.",
+        "operationId": "invalidateSnapshot",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RebuildContextDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Invalidation result"
+          },
+          "default": {
+            "description": "Request failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Invalidates the current clinical snapshot for a patient (marks as stale)",
+        "tags": [
+          "Clinical Chat"
+        ]
+      }
+    },
+    "/api/v1/clinical-chat/context/retrieve": {
+      "get": {
+        "operationId": "retrieveChunks",
+        "parameters": [
+          {
+            "name": "patientId",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "example": "dc5782d4-ce8e-4f95-bb0b-d1a4e130aee8",
+              "type": "string"
+            }
+          },
+          {
+            "name": "query",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "minLength": 1,
+              "maxLength": 1000,
+              "example": "Qual o histórico de ansiedade deste paciente?",
+              "type": "string"
+            }
+          },
+          {
+            "name": "sourceTypes",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "RECORD",
+                  "PATIENT_FORM",
+                  "CLINICAL_PROFILE",
+                  "PATIENT_ALERT",
+                  "IMPORTED_DOCUMENT"
+                ]
+              }
+            }
+          },
+          {
+            "name": "topK",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 0,
+              "maximum": 50,
+              "exclusiveMinimum": true,
+              "default": 10,
+              "type": "integer"
+            }
+          },
+          {
+            "name": "minScore",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 0,
+              "maximum": 1,
+              "nullable": true,
+              "default": 0,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Relevant chunks retrieved"
+          },
+          "default": {
+            "description": "Request failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Retrieves relevant context chunks for a patient given a query",
+        "tags": [
+          "Clinical Chat"
+        ]
+      }
+    },
+    "/api/v1/clinical-chat/context/snapshot/{patientId}": {
+      "get": {
+        "operationId": "getSnapshot",
+        "parameters": [
+          {
+            "name": "patientId",
+            "required": true,
+            "in": "path",
+            "description": "Patient ID",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Snapshot retrieved",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PatientContextSnapshot"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Request failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Gets a patient's current context snapshot (rebuilds if stale or missing)",
+        "tags": [
+          "Clinical Chat"
+        ]
+      }
+    },
+    "/api/v1/clinical-chat/sessions/{id}/inspect": {
+      "get": {
+        "operationId": "inspectSession",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Session ID",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Session context state",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionContextInspect"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Request failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Inspects the current context and provider state for a session",
+        "tags": [
+          "Clinical Chat"
+        ]
+      }
+    },
+    "/api/v1/agents": {
+      "get": {
+        "description": "Returns the versioned catalog of active clinical AI agent profiles. O agente ativo de uma sessão é selecionado automaticamente pelo backend com base na especialidade do profissional — não há seleção manual pelo usuário.",
+        "operationId": "listAgents",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "List of active agent profiles",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AiAgentProfile"
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Request failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Lists all active AI agent profiles",
+        "tags": [
+          "Agents"
+        ]
+      }
+    },
+    "/api/v1/agents/resolve/{professionalId}": {
+      "get": {
+        "description": "Pré-visualiza o agente que seria selecionado automaticamente para o profissional informado. Use este endpoint para exibir \"Agente ativo: {agentName}\" antes de iniciar o chat.",
+        "operationId": "resolveAgentForProfessional",
+        "parameters": [
+          {
+            "name": "professionalId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "$ref": "#/components/schemas/ProfessionalId"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Resolved agent profile for the professional",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AiAgentProfile"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Request failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Resolves the AI agent that would be used for a given professional",
+        "tags": [
+          "Agents"
+        ]
+      }
+    },
+    "/api/v1/agents/mapping-rules": {
+      "get": {
+        "description": "Retorna as regras de correspondência entre especialidade profissional e agente clínico. Útil para diagnóstico e documentação da lógica de resolução automática.",
+        "operationId": "listMappingRules",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Active mapping rules ordered by priority"
+          },
+          "default": {
+            "description": "Request failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Lists the active agent mapping rules (for diagnostics)",
+        "tags": [
+          "Agents"
+        ]
+      }
     }
   },
   "info": {
@@ -1426,7 +3605,7 @@
   "tags": [],
   "servers": [
     {
-      "url": "http://127.0.0.1:5000",
+      "url": "http://127.0.0.1:3000",
       "description": "Local development server"
     }
   ],
@@ -1441,7 +3620,7 @@
             "example": "Invalid input"
           },
           "type": {
-            "type": "string",
+            "type": "object",
             "format": "uri",
             "description": "A URI reference that identifies the problem type",
             "example": "https://developer.mozilla.org/docs/Web/HTTP/Status/400"
@@ -1582,8 +3761,7 @@
             "example": "john.doe"
           },
           "email": {
-            "type": "string",
-            "nullable": true,
+            "type": "object",
             "description": "The email of the user",
             "example": "john.doe@example.com"
           },
@@ -1741,39 +3919,39 @@
             "example": "123.456.789-00"
           },
           "phone": {
-            "type": "string",
+            "type": "object",
             "nullable": true,
             "description": "The professional phone",
             "example": "(12) 94567-8912"
           },
           "gender": {
-            "nullable": true,
+            "type": "string",
             "enum": [
               "MALE",
               "FEMALE",
               "OTHER"
             ],
-            "type": "string",
+            "nullable": true,
             "description": "The professional gender"
           },
           "personType": {
+            "type": "string",
             "enum": [
               "NATURAL",
               "LEGAL"
             ],
-            "type": "string",
             "description": "The person type"
           },
           "profiles": {
             "type": "array",
+            "description": "The professional profiles",
             "items": {
               "type": "string",
               "enum": [
                 "PATIENT",
                 "PROFESSIONAL"
               ]
-            },
-            "description": "The professional profiles"
+            }
           },
           "specialty": {
             "type": "string",
@@ -1786,9 +3964,9 @@
             "description": "The professional config ID"
           },
           "userId": {
-            "type": "string",
-            "nullable": true,
+            "type": "object",
             "format": "uuid",
+            "nullable": true,
             "description": "The associated user ID"
           }
         },
@@ -1865,6 +4043,28 @@
             "nullable": true,
             "format": "uuid",
             "example": "dc5782d4-ce8e-4f95-bb0b-d1a4e130aee8"
+          },
+          "birthDate": {
+            "type": "string",
+            "nullable": true,
+            "format": "date-time",
+            "description": "A datetime in ISO 8601 format."
+          },
+          "email": {
+            "type": "string",
+            "nullable": true,
+            "format": "email",
+            "example": "john.doe@example.com"
+          },
+          "emergencyContactName": {
+            "type": "string",
+            "nullable": true,
+            "example": "Jane Doe"
+          },
+          "emergencyContactPhone": {
+            "type": "string",
+            "nullable": true,
+            "example": "(12) 94567-8912"
           }
         },
         "required": [
@@ -1901,45 +4101,66 @@
             "example": "123.456.789-00"
           },
           "phone": {
-            "type": "string",
+            "type": "object",
             "nullable": true,
             "description": "The patient phone",
             "example": "(12) 94567-8912"
           },
           "gender": {
-            "nullable": true,
+            "type": "string",
             "enum": [
               "MALE",
               "FEMALE",
               "OTHER"
             ],
-            "type": "string",
+            "nullable": true,
             "description": "The patient gender"
           },
           "personType": {
+            "type": "string",
             "enum": [
               "NATURAL",
               "LEGAL"
             ],
-            "type": "string",
             "description": "The person type"
           },
           "profiles": {
             "type": "array",
+            "description": "The patient profiles",
             "items": {
               "type": "string",
               "enum": [
                 "PATIENT",
                 "PROFESSIONAL"
               ]
-            },
-            "description": "The patient profiles"
+            }
           },
           "professionalId": {
-            "type": "string",
-            "nullable": true,
+            "type": "object",
             "format": "uuid",
+            "nullable": true,
             "description": "The associated professional ID"
+          },
+          "birthDate": {
+            "type": "object",
+            "format": "date-time",
+            "nullable": true,
+            "description": "The patient birth date"
+          },
+          "email": {
+            "type": "object",
+            "nullable": true,
+            "description": "The patient email"
+          },
+          "emergencyContactName": {
+            "type": "object",
+            "nullable": true,
+            "description": "Emergency contact name"
+          },
+          "emergencyContactPhone": {
+            "type": "object",
+            "nullable": true,
+            "description": "Emergency contact phone"
           }
         },
         "required": [
@@ -1952,12 +4173,67 @@
           "gender",
           "personType",
           "profiles",
-          "professionalId"
+          "professionalId",
+          "birthDate",
+          "email",
+          "emergencyContactName",
+          "emergencyContactPhone"
         ]
       },
       "UpdatePatientInputDto": {
         "type": "object",
-        "properties": {}
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "example": "John Doe"
+          },
+          "phone": {
+            "type": "string",
+            "nullable": true,
+            "example": "(12) 94567-8912"
+          },
+          "gender": {
+            "type": "string",
+            "nullable": true,
+            "enum": [
+              "MALE",
+              "FEMALE",
+              "OTHER"
+            ]
+          },
+          "birthDate": {
+            "type": "string",
+            "nullable": true,
+            "format": "date-time",
+            "description": "A datetime in ISO 8601 format."
+          },
+          "email": {
+            "type": "string",
+            "nullable": true,
+            "format": "email",
+            "example": "john.doe@example.com"
+          },
+          "emergencyContactName": {
+            "type": "string",
+            "nullable": true,
+            "example": "Jane Doe"
+          },
+          "emergencyContactPhone": {
+            "type": "string",
+            "nullable": true,
+            "example": "(12) 94567-8912"
+          }
+        },
+        "required": [
+          "name",
+          "phone",
+          "gender",
+          "birthDate",
+          "email",
+          "emergencyContactName",
+          "emergencyContactPhone"
+        ]
       },
       "CreateAppointmentDto": {
         "type": "object",
@@ -1972,21 +4248,41 @@
             "format": "uuid",
             "example": "dc5782d4-ce8e-4f95-bb0b-d1a4e130aee8"
           },
-          "date": {
+          "startAt": {
             "type": "string",
             "format": "date-time",
             "description": "A datetime in ISO 8601 format."
+          },
+          "endAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "A datetime in ISO 8601 format."
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "FIRST_VISIT",
+              "RETURN",
+              "WALK_IN",
+              "TELEMEDICINE",
+              "PROCEDURE"
+            ]
           },
           "note": {
             "type": "string",
             "nullable": true,
             "example": "Patient has allergy to penicillin"
+          },
+          "retroactive": {
+            "type": "boolean"
           }
         },
         "required": [
           "patientId",
           "professionalId",
-          "date"
+          "startAt",
+          "endAt",
+          "type"
         ]
       },
       "Appointment": {
@@ -2017,33 +4313,55 @@
             "format": "uuid",
             "description": "The professional ID"
           },
-          "date": {
+          "startAt": {
             "type": "string",
             "format": "date-time",
-            "description": "The appointment date"
+            "description": "The appointment start time"
+          },
+          "endAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "The appointment end time"
+          },
+          "durationMinutes": {
+            "type": "number",
+            "description": "Duration in minutes"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "FIRST_VISIT",
+              "RETURN",
+              "WALK_IN",
+              "TELEMEDICINE",
+              "PROCEDURE"
+            ],
+            "description": "The appointment type"
           },
           "status": {
+            "type": "string",
             "enum": [
               "SCHEDULED",
+              "CONFIRMED",
               "CANCELLED",
-              "COMPLETED"
+              "COMPLETED",
+              "NO_SHOW"
             ],
-            "type": "string",
             "description": "The appointment status"
           },
           "canceledAt": {
-            "type": "string",
-            "nullable": true,
+            "type": "object",
             "format": "date-time",
+            "nullable": true,
             "description": "When the appointment was canceled"
           },
           "canceledReason": {
-            "type": "string",
+            "type": "object",
             "nullable": true,
             "description": "The reason for cancellation"
           },
           "note": {
-            "type": "string",
+            "type": "object",
             "nullable": true,
             "description": "Notes about the appointment"
           }
@@ -2054,7 +4372,10 @@
           "updatedAt",
           "patientId",
           "professionalId",
-          "date",
+          "startAt",
+          "endAt",
+          "durationMinutes",
+          "type",
           "status",
           "canceledAt",
           "canceledReason",
@@ -2064,33 +4385,50 @@
       "UpdateAppointmentInputDto": {
         "type": "object",
         "properties": {
-          "date": {
+          "startAt": {
             "type": "string",
             "format": "date-time",
             "description": "A datetime in ISO 8601 format."
+          },
+          "endAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "A datetime in ISO 8601 format."
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "FIRST_VISIT",
+              "RETURN",
+              "WALK_IN",
+              "TELEMEDICINE",
+              "PROCEDURE"
+            ]
           },
           "note": {
             "type": "string",
             "nullable": true,
             "example": "Rescheduled appointment"
-          },
-          "canceledAt": {
+          }
+        },
+        "required": [
+          "startAt",
+          "endAt",
+          "type",
+          "note"
+        ]
+      },
+      "CancelAppointmentInputDto": {
+        "type": "object",
+        "properties": {
+          "reason": {
             "type": "string",
-            "nullable": true,
-            "format": "date-time",
-            "description": "A datetime in ISO 8601 format."
-          },
-          "canceledReason": {
-            "type": "string",
-            "nullable": true,
+            "minLength": 1,
             "example": "Patient requested cancellation"
           }
         },
         "required": [
-          "date",
-          "note",
-          "canceledAt",
-          "canceledReason"
+          "reason"
         ]
       },
       "CreateRecordDto": {
@@ -2109,7 +4447,7 @@
           "description": {
             "type": "string",
             "minLength": 1,
-            "example": "Annual checkup notes"
+            "example": "General clinical note"
           },
           "files": {
             "type": "array",
@@ -2141,12 +4479,103 @@
               ]
             },
             "default": []
+          },
+          "title": {
+            "type": "string",
+            "maxLength": 255,
+            "example": "Follow-up consultation"
+          },
+          "templateType": {
+            "type": "string",
+            "enum": [
+              "SOAP",
+              "DAP"
+            ]
+          },
+          "attendanceType": {
+            "type": "string",
+            "enum": [
+              "FIRST_VISIT",
+              "FOLLOW_UP",
+              "EVALUATION",
+              "PROCEDURE",
+              "TELEMEDICINE",
+              "INTERCURRENCE"
+            ]
+          },
+          "clinicalStatus": {
+            "type": "string",
+            "enum": [
+              "STABLE",
+              "IMPROVING",
+              "WORSENING",
+              "UNCHANGED",
+              "UNDER_OBSERVATION"
+            ]
+          },
+          "conductTags": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "GUIDANCE",
+                "PRESCRIPTION",
+                "EXAM_REQUESTED",
+                "REFERRAL",
+                "FOLLOW_UP_SCHEDULED",
+                "THERAPY_ADJUSTMENT"
+              ]
+            },
+            "default": []
+          },
+          "subjective": {
+            "type": "string",
+            "example": "Patient reports persistent headache for 3 days"
+          },
+          "objective": {
+            "type": "string",
+            "example": "BP 120/80, no fever"
+          },
+          "assessment": {
+            "type": "string",
+            "example": "Tension headache, likely stress-related"
+          },
+          "plan": {
+            "type": "string",
+            "example": "Analgesics as needed, return in 7 days if unresolved"
+          },
+          "freeNotes": {
+            "type": "string",
+            "example": "Patient was anxious during the visit"
+          },
+          "eventDate": {
+            "type": "string",
+            "format": "date-time",
+            "description": "A datetime in ISO 8601 format."
+          },
+          "appointmentId": {
+            "type": "string",
+            "format": "uuid",
+            "example": "dc5782d4-ce8e-4f95-bb0b-d1a4e130aee8"
+          },
+          "source": {
+            "type": "string",
+            "enum": [
+              "MANUAL",
+              "IMPORT"
+            ]
+          },
+          "importedDocumentId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "wasHumanEdited": {
+            "type": "boolean"
           }
         },
         "required": [
           "patientId",
-          "professionalId",
-          "description"
+          "professionalId"
         ]
       },
       "FileDto": {
@@ -2202,8 +4631,118 @@
             "description": "The professional ID"
           },
           "description": {
+            "type": "object",
+            "nullable": true,
+            "description": "Legacy free-text description"
+          },
+          "templateType": {
             "type": "string",
-            "description": "The record description"
+            "enum": [
+              "SOAP",
+              "DAP"
+            ],
+            "nullable": true,
+            "description": "Evolution template type"
+          },
+          "title": {
+            "type": "object",
+            "nullable": true,
+            "description": "Evolution title"
+          },
+          "attendanceType": {
+            "type": "string",
+            "enum": [
+              "FIRST_VISIT",
+              "FOLLOW_UP",
+              "EVALUATION",
+              "PROCEDURE",
+              "TELEMEDICINE",
+              "INTERCURRENCE"
+            ],
+            "nullable": true,
+            "description": "Attendance type"
+          },
+          "clinicalStatus": {
+            "type": "string",
+            "enum": [
+              "STABLE",
+              "IMPROVING",
+              "WORSENING",
+              "UNCHANGED",
+              "UNDER_OBSERVATION"
+            ],
+            "nullable": true,
+            "description": "Clinical status"
+          },
+          "conductTags": {
+            "type": "array",
+            "description": "Conduct tags",
+            "items": {
+              "type": "string",
+              "enum": [
+                "GUIDANCE",
+                "PRESCRIPTION",
+                "EXAM_REQUESTED",
+                "REFERRAL",
+                "FOLLOW_UP_SCHEDULED",
+                "THERAPY_ADJUSTMENT"
+              ]
+            }
+          },
+          "subjective": {
+            "type": "object",
+            "nullable": true,
+            "description": "SOAP Subjective"
+          },
+          "objective": {
+            "type": "object",
+            "nullable": true,
+            "description": "SOAP Objective"
+          },
+          "assessment": {
+            "type": "object",
+            "nullable": true,
+            "description": "SOAP/DAP Assessment"
+          },
+          "plan": {
+            "type": "object",
+            "nullable": true,
+            "description": "SOAP/DAP Plan"
+          },
+          "freeNotes": {
+            "type": "object",
+            "nullable": true,
+            "description": "Free notes"
+          },
+          "eventDate": {
+            "type": "object",
+            "format": "date-time",
+            "nullable": true,
+            "description": "Event date (clinical event)"
+          },
+          "appointmentId": {
+            "type": "object",
+            "format": "uuid",
+            "nullable": true,
+            "description": "Linked appointment ID"
+          },
+          "source": {
+            "type": "string",
+            "enum": [
+              "MANUAL",
+              "IMPORT"
+            ],
+            "description": "Origin of the record"
+          },
+          "importedDocumentId": {
+            "type": "object",
+            "format": "uuid",
+            "nullable": true,
+            "description": "ID of the imported document if applicable"
+          },
+          "wasHumanEdited": {
+            "type": "boolean",
+            "description": "Indicates if the imported record was manually reviewed and edited"
           },
           "files": {
             "description": "The attached files",
@@ -2220,6 +4759,21 @@
           "patientId",
           "professionalId",
           "description",
+          "templateType",
+          "title",
+          "attendanceType",
+          "clinicalStatus",
+          "conductTags",
+          "subjective",
+          "objective",
+          "assessment",
+          "plan",
+          "freeNotes",
+          "eventDate",
+          "appointmentId",
+          "source",
+          "importedDocumentId",
+          "wasHumanEdited",
           "files"
         ]
       },
@@ -2229,11 +4783,367 @@
           "description": {
             "type": "string",
             "minLength": 1,
-            "example": "Updated checkup notes"
+            "example": "Updated clinical note"
+          },
+          "title": {
+            "type": "string",
+            "maxLength": 255,
+            "example": "Follow-up consultation"
+          },
+          "templateType": {
+            "type": "string",
+            "enum": [
+              "SOAP",
+              "DAP"
+            ]
+          },
+          "attendanceType": {
+            "type": "string",
+            "enum": [
+              "FIRST_VISIT",
+              "FOLLOW_UP",
+              "EVALUATION",
+              "PROCEDURE",
+              "TELEMEDICINE",
+              "INTERCURRENCE"
+            ]
+          },
+          "clinicalStatus": {
+            "type": "string",
+            "enum": [
+              "STABLE",
+              "IMPROVING",
+              "WORSENING",
+              "UNCHANGED",
+              "UNDER_OBSERVATION"
+            ]
+          },
+          "conductTags": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "GUIDANCE",
+                "PRESCRIPTION",
+                "EXAM_REQUESTED",
+                "REFERRAL",
+                "FOLLOW_UP_SCHEDULED",
+                "THERAPY_ADJUSTMENT"
+              ]
+            }
+          },
+          "subjective": {
+            "type": "string"
+          },
+          "objective": {
+            "type": "string"
+          },
+          "assessment": {
+            "type": "string"
+          },
+          "plan": {
+            "type": "string"
+          },
+          "freeNotes": {
+            "type": "string"
+          },
+          "eventDate": {
+            "type": "string",
+            "format": "date-time",
+            "description": "A datetime in ISO 8601 format."
+          },
+          "source": {
+            "type": "string",
+            "enum": [
+              "MANUAL",
+              "IMPORT"
+            ]
+          },
+          "importedDocumentId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "wasHumanEdited": {
+            "type": "boolean"
           }
         },
         "required": [
-          "description"
+          "description",
+          "title",
+          "templateType",
+          "attendanceType",
+          "clinicalStatus",
+          "conductTags",
+          "subjective",
+          "objective",
+          "assessment",
+          "plan",
+          "freeNotes",
+          "eventDate",
+          "source",
+          "importedDocumentId",
+          "wasHumanEdited"
+        ]
+      },
+      "ClinicalProfile": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "The unique identifier of the entity"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "The date and time the entity was created"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "The date and time the entity was last updated"
+          },
+          "patientId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "The patient ID"
+          },
+          "professionalId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "The professional ID"
+          },
+          "allergies": {
+            "type": "object",
+            "nullable": true,
+            "description": "Known allergies"
+          },
+          "chronicConditions": {
+            "type": "object",
+            "nullable": true,
+            "description": "Chronic conditions"
+          },
+          "currentMedications": {
+            "type": "object",
+            "nullable": true,
+            "description": "Current medications"
+          },
+          "surgicalHistory": {
+            "type": "object",
+            "nullable": true,
+            "description": "Surgical history"
+          },
+          "familyHistory": {
+            "type": "object",
+            "nullable": true,
+            "description": "Family history"
+          },
+          "socialHistory": {
+            "type": "object",
+            "nullable": true,
+            "description": "Social history"
+          },
+          "generalNotes": {
+            "type": "object",
+            "nullable": true,
+            "description": "General notes"
+          }
+        },
+        "required": [
+          "id",
+          "createdAt",
+          "updatedAt",
+          "patientId",
+          "professionalId",
+          "allergies",
+          "chronicConditions",
+          "currentMedications",
+          "surgicalHistory",
+          "familyHistory",
+          "socialHistory",
+          "generalNotes"
+        ]
+      },
+      "UpsertClinicalProfileInputDto": {
+        "type": "object",
+        "properties": {
+          "professionalId": {
+            "type": "string",
+            "format": "uuid",
+            "example": "dc5782d4-ce8e-4f95-bb0b-d1a4e130aee8"
+          },
+          "allergies": {
+            "type": "string",
+            "nullable": true,
+            "example": "Penicillin, NSAIDs"
+          },
+          "chronicConditions": {
+            "type": "string",
+            "nullable": true,
+            "example": "Type 2 Diabetes, Hypertension"
+          },
+          "currentMedications": {
+            "type": "string",
+            "nullable": true,
+            "example": "Metformin 500mg, Lisinopril 10mg"
+          },
+          "surgicalHistory": {
+            "type": "string",
+            "nullable": true,
+            "example": "Appendectomy 2010"
+          },
+          "familyHistory": {
+            "type": "string",
+            "nullable": true,
+            "example": "Father: CAD, Mother: Breast cancer"
+          },
+          "socialHistory": {
+            "type": "string",
+            "nullable": true,
+            "example": "Non-smoker, occasional alcohol"
+          },
+          "generalNotes": {
+            "type": "string",
+            "nullable": true,
+            "example": "Patient prefers morning appointments"
+          }
+        },
+        "required": [
+          "professionalId"
+        ]
+      },
+      "CreatePatientAlertInputDto": {
+        "type": "object",
+        "properties": {
+          "professionalId": {
+            "type": "string",
+            "format": "uuid",
+            "example": "dc5782d4-ce8e-4f95-bb0b-d1a4e130aee8"
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 255,
+            "example": "Penicillin allergy — severe reaction"
+          },
+          "description": {
+            "type": "string",
+            "nullable": true,
+            "example": "Patient had anaphylaxis in 2018 — carry epipen"
+          },
+          "severity": {
+            "type": "string",
+            "enum": [
+              "LOW",
+              "MEDIUM",
+              "HIGH"
+            ],
+            "default": "MEDIUM"
+          },
+          "isActive": {
+            "type": "boolean",
+            "default": true
+          }
+        },
+        "required": [
+          "professionalId",
+          "title"
+        ]
+      },
+      "PatientAlert": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "The unique identifier of the entity"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "The date and time the entity was created"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "The date and time the entity was last updated"
+          },
+          "patientId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "The patient ID"
+          },
+          "professionalId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "The professional ID"
+          },
+          "title": {
+            "type": "string",
+            "description": "Alert title"
+          },
+          "description": {
+            "type": "object",
+            "nullable": true,
+            "description": "Alert description"
+          },
+          "severity": {
+            "type": "string",
+            "enum": [
+              "LOW",
+              "MEDIUM",
+              "HIGH"
+            ],
+            "description": "Alert severity"
+          },
+          "isActive": {
+            "type": "boolean",
+            "description": "Whether the alert is active"
+          }
+        },
+        "required": [
+          "id",
+          "createdAt",
+          "updatedAt",
+          "patientId",
+          "professionalId",
+          "title",
+          "description",
+          "severity",
+          "isActive"
+        ]
+      },
+      "UpdatePatientAlertInputDto": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 255,
+            "example": "Updated alert title"
+          },
+          "description": {
+            "type": "string",
+            "nullable": true,
+            "example": "Updated description"
+          },
+          "severity": {
+            "type": "string",
+            "enum": [
+              "LOW",
+              "MEDIUM",
+              "HIGH"
+            ]
+          },
+          "isActive": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "title",
+          "description",
+          "severity",
+          "isActive"
         ]
       },
       "PrepareUploadInputDto": {
@@ -2292,11 +5202,11 @@
         "type": "object",
         "properties": {
           "storageType": {
+            "type": "string",
             "enum": [
               "LOCAL",
               "S3"
-            ],
-            "type": "string"
+            ]
           },
           "fileId": {
             "type": "string"
@@ -2305,12 +5215,7 @@
             "type": "string"
           },
           "upload": {
-            "nullable": true,
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/UploadInfoDto"
-              }
-            ]
+            "$ref": "#/components/schemas/UploadInfoDto"
           }
         },
         "required": [
@@ -2345,6 +5250,1245 @@
           "fileId",
           "tempPath"
         ]
+      },
+      "CreateFormTemplateInputDto": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 100,
+            "pattern": "^[a-z0-9_]+$",
+            "example": "psico_anamnese_inicial"
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 255,
+            "example": "Anamnese Inicial"
+          },
+          "description": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 1000,
+            "example": "Formulário de anamnese para primeira consulta"
+          },
+          "specialty": {
+            "type": "string",
+            "enum": [
+              "PSICOLOGIA",
+              "MEDICINA",
+              "FISIOTERAPIA",
+              "FONOAUDIOLOGIA",
+              "NUTRICAO",
+              "TERAPIA_OCUPACIONAL",
+              "ENFERMAGEM",
+              "OUTROS"
+            ],
+            "example": "PSICOLOGIA"
+          },
+          "isPublic": {
+            "type": "boolean",
+            "default": false,
+            "description": "Public templates are available to all professionals"
+          },
+          "professionalId": {
+            "type": "string",
+            "nullable": true,
+            "format": "uuid",
+            "example": "dc5782d4-ce8e-4f95-bb0b-d1a4e130aee8"
+          }
+        },
+        "required": [
+          "code",
+          "name",
+          "specialty"
+        ]
+      },
+      "FormTemplate": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "The unique identifier of the entity"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "The date and time the entity was created"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "The date and time the entity was last updated"
+          },
+          "code": {
+            "type": "string",
+            "description": "Unique stable code for the template"
+          },
+          "name": {
+            "type": "string",
+            "description": "Template name"
+          },
+          "description": {
+            "type": "object",
+            "nullable": true,
+            "description": "Optional description"
+          },
+          "specialty": {
+            "type": "string",
+            "enum": [
+              "PSICOLOGIA",
+              "MEDICINA",
+              "FISIOTERAPIA",
+              "FONOAUDIOLOGIA",
+              "NUTRICAO",
+              "TERAPIA_OCUPACIONAL",
+              "ENFERMAGEM",
+              "OUTROS"
+            ],
+            "description": "Target specialty"
+          },
+          "isPublic": {
+            "type": "boolean",
+            "description": "Whether this is a public system template"
+          },
+          "professionalId": {
+            "type": "object",
+            "format": "uuid",
+            "nullable": true,
+            "description": "Owner professional ID (null for public templates)"
+          }
+        },
+        "required": [
+          "id",
+          "createdAt",
+          "updatedAt",
+          "code",
+          "name",
+          "description",
+          "specialty",
+          "isPublic",
+          "professionalId"
+        ]
+      },
+      "CreateFormTemplateVersionInputDto": {
+        "type": "object",
+        "properties": {
+          "definitionJson": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "minLength": 1,
+                "required": true
+              },
+              "name": {
+                "type": "string",
+                "minLength": 1,
+                "required": true
+              },
+              "specialty": {
+                "type": "string",
+                "minLength": 1,
+                "required": true
+              },
+              "category": {
+                "type": "string",
+                "required": false
+              },
+              "sections": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "minLength": 1,
+                      "required": true
+                    },
+                    "label": {
+                      "type": "string",
+                      "minLength": 1,
+                      "required": true
+                    },
+                    "order": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "required": true
+                    },
+                    "description": {
+                      "type": "string",
+                      "required": false
+                    },
+                    "repeatable": {
+                      "type": "boolean",
+                      "required": false
+                    },
+                    "fields": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "minLength": 1,
+                            "required": true
+                          },
+                          "type": {
+                            "type": "string",
+                            "enum": [
+                              "text",
+                              "textarea",
+                              "number",
+                              "date",
+                              "datetime",
+                              "select",
+                              "multiselect",
+                              "radio",
+                              "checkbox",
+                              "boolean",
+                              "file",
+                              "score",
+                              "computed"
+                            ],
+                            "required": true
+                          },
+                          "label": {
+                            "type": "string",
+                            "minLength": 1,
+                            "required": true
+                          },
+                          "order": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "required": true
+                          },
+                          "placeholder": {
+                            "type": "string",
+                            "required": false
+                          },
+                          "required": {
+                            "type": "boolean",
+                            "required": false
+                          },
+                          "unit": {
+                            "type": "string",
+                            "required": false
+                          },
+                          "options": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "value": {
+                                  "type": "string",
+                                  "required": true
+                                },
+                                "label": {
+                                  "type": "string",
+                                  "required": true
+                                },
+                                "score": {
+                                  "type": "number",
+                                  "required": false
+                                }
+                              },
+                              "required": [
+                                "value",
+                                "label"
+                              ]
+                            },
+                            "required": false
+                          },
+                          "repeatable": {
+                            "type": "boolean",
+                            "required": false
+                          },
+                          "validation": {
+                            "type": "object",
+                            "properties": {
+                              "min": {
+                                "type": "number"
+                              },
+                              "max": {
+                                "type": "number"
+                              },
+                              "minLength": {
+                                "type": "integer"
+                              },
+                              "maxLength": {
+                                "type": "integer"
+                              },
+                              "pattern": {
+                                "type": "string"
+                              },
+                              "message": {
+                                "type": "string"
+                              }
+                            },
+                            "required": false
+                          },
+                          "ui": {
+                            "type": "object",
+                            "properties": {
+                              "width": {
+                                "type": "string",
+                                "enum": [
+                                  "full",
+                                  "half",
+                                  "third"
+                                ]
+                              },
+                              "hint": {
+                                "type": "string"
+                              },
+                              "tooltip": {
+                                "type": "string"
+                              }
+                            },
+                            "required": false
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "type",
+                          "label",
+                          "order"
+                        ]
+                      },
+                      "minItems": 1,
+                      "required": true
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "label",
+                    "order",
+                    "fields"
+                  ]
+                },
+                "minItems": 1,
+                "required": true
+              },
+              "scoring": {
+                "type": "object",
+                "properties": {
+                  "enabled": {
+                    "type": "boolean",
+                    "required": true
+                  },
+                  "totalFieldId": {
+                    "type": "string",
+                    "required": false
+                  },
+                  "rules": {
+                    "type": "array",
+                    "items": {
+                      "nullable": true
+                    },
+                    "required": false
+                  }
+                },
+                "required": false
+              },
+              "metadata": {
+                "type": "object",
+                "additionalProperties": {
+                  "nullable": true
+                },
+                "required": false
+              }
+            }
+          },
+          "schemaJson": {
+            "type": "object",
+            "nullable": true,
+            "additionalProperties": {
+              "nullable": true
+            }
+          }
+        },
+        "required": [
+          "definitionJson"
+        ]
+      },
+      "FormTemplateVersion": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "The unique identifier of the entity"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "The date and time the entity was created"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "The date and time the entity was last updated"
+          },
+          "templateId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Template ID"
+          },
+          "versionNumber": {
+            "type": "number",
+            "description": "Auto-incremented version number"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "DRAFT",
+              "PUBLISHED",
+              "DEPRECATED"
+            ],
+            "description": "Version lifecycle status"
+          },
+          "definitionJson": {
+            "type": "object",
+            "description": "Form field structure (JSON)"
+          },
+          "schemaJson": {
+            "type": "object",
+            "nullable": true,
+            "description": "Optional JSON schema for validation"
+          },
+          "publishedAt": {
+            "type": "object",
+            "format": "date-time",
+            "nullable": true,
+            "description": "When this version was published"
+          }
+        },
+        "required": [
+          "id",
+          "createdAt",
+          "updatedAt",
+          "templateId",
+          "versionNumber",
+          "status",
+          "definitionJson",
+          "schemaJson",
+          "publishedAt"
+        ]
+      },
+      "StartPatientFormInputDto": {
+        "type": "object",
+        "properties": {
+          "professionalId": {
+            "type": "string",
+            "format": "uuid",
+            "example": "dc5782d4-ce8e-4f95-bb0b-d1a4e130aee8"
+          },
+          "templateId": {
+            "type": "string",
+            "format": "uuid",
+            "example": "dc5782d4-ce8e-4f95-bb0b-d1a4e130aee8"
+          },
+          "versionId": {
+            "type": "string",
+            "format": "uuid",
+            "example": "dc5782d4-ce8e-4f95-bb0b-d1a4e130aee8"
+          },
+          "appliedAt": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "professionalId",
+          "templateId"
+        ]
+      },
+      "PatientForm": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "The unique identifier of the entity"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "The date and time the entity was created"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "The date and time the entity was last updated"
+          },
+          "patientId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "professionalId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "templateId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "versionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "DRAFT",
+              "IN_PROGRESS",
+              "COMPLETED",
+              "CANCELLED"
+            ]
+          },
+          "responseJson": {
+            "type": "object",
+            "description": "Form answers JSON"
+          },
+          "computedJson": {
+            "type": "object",
+            "nullable": true,
+            "description": "Computed scores and classifications"
+          },
+          "appliedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "completedAt": {
+            "type": "object",
+            "format": "date-time",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "createdAt",
+          "updatedAt",
+          "patientId",
+          "professionalId",
+          "templateId",
+          "versionId",
+          "status",
+          "responseJson",
+          "computedJson",
+          "appliedAt",
+          "completedAt"
+        ]
+      },
+      "SavePatientFormDraftInputDto": {
+        "type": "object",
+        "properties": {
+          "answers": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "fieldId": {
+                  "type": "string",
+                  "minLength": 1,
+                  "required": true
+                },
+                "valueText": {
+                  "type": "string",
+                  "nullable": true,
+                  "required": false
+                },
+                "valueNumber": {
+                  "type": "number",
+                  "nullable": true,
+                  "required": false
+                },
+                "valueBoolean": {
+                  "type": "boolean",
+                  "nullable": true,
+                  "required": false
+                },
+                "valueDate": {
+                  "type": "string",
+                  "nullable": true,
+                  "required": false
+                },
+                "valueJson": {
+                  "nullable": true,
+                  "required": false
+                }
+              },
+              "required": [
+                "fieldId"
+              ]
+            }
+          }
+        },
+        "required": [
+          "answers"
+        ]
+      },
+      "CompletePatientFormInputDto": {
+        "type": "object",
+        "properties": {
+          "answers": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "fieldId": {
+                  "type": "string",
+                  "minLength": 1,
+                  "required": true
+                },
+                "valueText": {
+                  "type": "string",
+                  "nullable": true,
+                  "required": false
+                },
+                "valueNumber": {
+                  "type": "number",
+                  "nullable": true,
+                  "required": false
+                },
+                "valueBoolean": {
+                  "type": "boolean",
+                  "nullable": true,
+                  "required": false
+                },
+                "valueDate": {
+                  "type": "string",
+                  "nullable": true,
+                  "required": false
+                },
+                "valueJson": {
+                  "nullable": true,
+                  "required": false
+                }
+              },
+              "required": [
+                "fieldId"
+              ]
+            }
+          },
+          "linkToRecordId": {
+            "type": "string",
+            "nullable": true,
+            "format": "uuid"
+          }
+        },
+        "required": [
+          "answers"
+        ]
+      },
+      "AiAgentProfile": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "The unique identifier of the entity"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "The date and time the entity was created"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "The date and time the entity was last updated"
+          },
+          "name": {
+            "type": "string"
+          },
+          "code": {
+            "type": "object",
+            "nullable": true,
+            "description": "Identificador programático em snake_case, ex: \"medico_geral\""
+          },
+          "slug": {
+            "type": "string",
+            "description": "Identificador único legível, ex: \"psicologia-adulto\""
+          },
+          "specialtyGroup": {
+            "type": "object",
+            "nullable": true,
+            "description": "Grupo de especialidade, ex: \"medicina\", \"psicologia\""
+          },
+          "specialty": {
+            "type": "string",
+            "enum": [
+              "PSICOLOGIA",
+              "MEDICINA",
+              "FISIOTERAPIA",
+              "FONOAUDIOLOGIA",
+              "NUTRICAO",
+              "TERAPIA_OCUPACIONAL",
+              "ENFERMAGEM",
+              "OUTROS"
+            ],
+            "nullable": true
+          },
+          "description": {
+            "type": "object",
+            "nullable": true
+          },
+          "baseInstructions": {
+            "type": "object",
+            "nullable": true,
+            "description": "Instruções base para o LLM (system prompt)"
+          },
+          "allowedSources": {
+            "description": "Fontes de contexto permitidas para este agente",
+            "type": "array",
+            "items": {
+              "type": "array"
+            }
+          },
+          "contextPriority": {
+            "type": "object",
+            "nullable": true,
+            "description": "Pesos de prioridade por tipo de contexto"
+          },
+          "priorityFields": {
+            "type": "object",
+            "nullable": true,
+            "description": "Campos de JSONB clínico com maior peso na análise"
+          },
+          "analysisGoals": {
+            "description": "Objetivos de análise, ex: [\"summary\", \"hypotheses\", \"next_steps\"]",
+            "type": "array",
+            "items": {
+              "type": "array"
+            }
+          },
+          "blacklistedFields": {
+            "description": "Campos de PatientFacts bloqueados para este agente. Removidos antes de montar o prompt enviado ao LLM. Ex: [\"documentId\"].",
+            "type": "array",
+            "items": {
+              "type": "array"
+            }
+          },
+          "guardrails": {
+            "type": "object",
+            "nullable": true,
+            "description": "Restrições comportamentais (guardrails de segurança clínica)"
+          },
+          "responseStyle": {
+            "type": "object",
+            "nullable": true,
+            "description": "Estilo de resposta preferido (formato, tom, estrutura)"
+          },
+          "providerModelId": {
+            "type": "object",
+            "nullable": true,
+            "description": "Modelo fixo para este agente no OpenRouter (ex: \"openai/o1-mini\"). Quando null, usa o padrão da especialidade. O valor \"openrouter/auto\" não é permitido."
+          },
+          "isActive": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "createdAt",
+          "updatedAt",
+          "name",
+          "code",
+          "slug",
+          "specialtyGroup",
+          "specialty",
+          "description",
+          "baseInstructions",
+          "allowedSources",
+          "contextPriority",
+          "priorityFields",
+          "analysisGoals",
+          "blacklistedFields",
+          "guardrails",
+          "responseStyle",
+          "providerModelId",
+          "isActive"
+        ]
+      },
+      "CreateChatSessionDto": {
+        "type": "object",
+        "properties": {
+          "patientId": {
+            "type": "string",
+            "format": "uuid",
+            "example": "dc5782d4-ce8e-4f95-bb0b-d1a4e130aee8"
+          },
+          "professionalId": {
+            "type": "string",
+            "format": "uuid",
+            "example": "dc5782d4-ce8e-4f95-bb0b-d1a4e130aee8"
+          },
+          "title": {
+            "type": "string",
+            "maxLength": 255
+          }
+        },
+        "required": [
+          "patientId",
+          "professionalId"
+        ]
+      },
+      "PatientChatSession": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "The unique identifier of the entity"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "The date and time the entity was created"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "The date and time the entity was last updated"
+          },
+          "patientId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "professionalId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "agentProfileId": {
+            "type": "object",
+            "format": "uuid",
+            "nullable": true
+          },
+          "agentName": {
+            "type": "object",
+            "nullable": true,
+            "description": "Nome do agente selecionado automaticamente com base no perfil profissional. Exibir na interface como \"Agente ativo: {agentName}\"."
+          },
+          "agentSlug": {
+            "type": "object",
+            "nullable": true,
+            "description": "Slug legível do agente ativo"
+          },
+          "title": {
+            "type": "object",
+            "nullable": true
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "ACTIVE",
+              "CLOSED",
+              "ARCHIVED"
+            ]
+          },
+          "lastActivityAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "deletedAt": {
+            "type": "object",
+            "format": "date-time",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "createdAt",
+          "updatedAt",
+          "patientId",
+          "professionalId",
+          "agentProfileId",
+          "agentName",
+          "agentSlug",
+          "title",
+          "status",
+          "lastActivityAt",
+          "deletedAt"
+        ]
+      },
+      "SendChatMessageDto": {
+        "type": "object",
+        "properties": {
+          "content": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 10000
+          },
+          "topK": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 20,
+            "default": 8
+          },
+          "minScore": {
+            "type": "number",
+            "nullable": true,
+            "minimum": 0,
+            "maximum": 1,
+            "default": 0
+          }
+        },
+        "required": [
+          "content"
+        ]
+      },
+      "PatientChatMessage": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "The unique identifier of the entity"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "The date and time the entity was created"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "The date and time the entity was last updated"
+          },
+          "sessionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "USER",
+              "ASSISTANT",
+              "SYSTEM",
+              "INTERNAL"
+            ]
+          },
+          "content": {
+            "type": "string"
+          },
+          "metadata": {
+            "type": "object",
+            "nullable": true
+          },
+          "chunkIds": {
+            "description": "IDs dos chunks usados como contexto (rastreabilidade RAG)",
+            "type": "array",
+            "items": {
+              "type": "array"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "createdAt",
+          "updatedAt",
+          "sessionId",
+          "role",
+          "content",
+          "metadata",
+          "chunkIds"
+        ]
+      },
+      "ChatInteractionLog": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "sessionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "userMessageId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "assistantMessageId": {
+            "type": "object",
+            "format": "uuid",
+            "nullable": true
+          },
+          "providerId": {
+            "type": "object",
+            "nullable": true
+          },
+          "modelId": {
+            "type": "object",
+            "nullable": true
+          },
+          "agentSlug": {
+            "type": "object",
+            "nullable": true
+          },
+          "retrievedChunkIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "promptTokens": {
+            "type": "number",
+            "nullable": true
+          },
+          "completionTokens": {
+            "type": "number",
+            "nullable": true
+          },
+          "totalTokens": {
+            "type": "number",
+            "nullable": true
+          },
+          "latencyMs": {
+            "type": "number",
+            "nullable": true
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "PENDING",
+              "COMPLETED",
+              "FAILED",
+              "FALLBACK"
+            ]
+          },
+          "errorCode": {
+            "type": "object",
+            "nullable": true
+          },
+          "usedFallback": {
+            "type": "boolean"
+          },
+          "createdAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "sessionId",
+          "userMessageId",
+          "assistantMessageId",
+          "providerId",
+          "modelId",
+          "agentSlug",
+          "retrievedChunkIds",
+          "promptTokens",
+          "completionTokens",
+          "totalTokens",
+          "latencyMs",
+          "status",
+          "errorCode",
+          "usedFallback",
+          "createdAt"
+        ]
+      },
+      "SendChatMessageResponse": {
+        "type": "object",
+        "properties": {
+          "userMessage": {
+            "$ref": "#/components/schemas/PatientChatMessage"
+          },
+          "assistantMessage": {
+            "$ref": "#/components/schemas/PatientChatMessage"
+          },
+          "interactionLog": {
+            "$ref": "#/components/schemas/ChatInteractionLog"
+          }
+        },
+        "required": [
+          "userMessage",
+          "assistantMessage",
+          "interactionLog"
+        ]
+      },
+      "AddChatMessageDto": {
+        "type": "object",
+        "properties": {
+          "role": {
+            "type": "string",
+            "enum": [
+              "USER",
+              "ASSISTANT",
+              "SYSTEM",
+              "INTERNAL"
+            ]
+          },
+          "content": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 10000
+          },
+          "metadata": {
+            "type": "object",
+            "additionalProperties": {
+              "nullable": true
+            }
+          },
+          "chunkIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "default": []
+          }
+        },
+        "required": [
+          "role",
+          "content"
+        ]
+      },
+      "PatientChatSessionId": {
+        "type": "object",
+        "properties": {}
+      },
+      "RebuildContextDto": {
+        "type": "object",
+        "properties": {
+          "patientId": {
+            "type": "string",
+            "format": "uuid",
+            "example": "dc5782d4-ce8e-4f95-bb0b-d1a4e130aee8"
+          },
+          "professionalId": {
+            "type": "string",
+            "format": "uuid",
+            "example": "dc5782d4-ce8e-4f95-bb0b-d1a4e130aee8"
+          },
+          "reindex": {
+            "type": "boolean",
+            "default": true
+          }
+        },
+        "required": [
+          "patientId"
+        ]
+      },
+      "PatientContextSnapshot": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "The unique identifier of the entity"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "The date and time the entity was created"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "The date and time the entity was last updated"
+          },
+          "patientId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "professionalId": {
+            "type": "object",
+            "format": "uuid",
+            "nullable": true
+          },
+          "patientFacts": {
+            "type": "object",
+            "description": "Facts estruturados do paciente"
+          },
+          "criticalContext": {
+            "type": "object",
+            "nullable": true
+          },
+          "timelineSummary": {
+            "type": "object",
+            "nullable": true,
+            "description": "Timeline resumida de eventos clínicos"
+          },
+          "contentHash": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "builtAt": {
+            "type": "object",
+            "format": "date-time",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "createdAt",
+          "updatedAt",
+          "patientId",
+          "professionalId",
+          "patientFacts",
+          "criticalContext",
+          "timelineSummary",
+          "contentHash",
+          "status",
+          "builtAt"
+        ]
+      },
+      "SessionContextInspect": {
+        "type": "object",
+        "properties": {
+          "sessionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "patientId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "snapshotStatus": {
+            "type": "object",
+            "nullable": true
+          },
+          "snapshotBuiltAt": {
+            "type": "object",
+            "nullable": true
+          },
+          "snapshotContentHash": {
+            "type": "object",
+            "nullable": true
+          },
+          "totalChunksIndexed": {
+            "type": "number"
+          },
+          "registeredProviders": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "providerHealthy": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "sessionId",
+          "patientId",
+          "snapshotStatus",
+          "snapshotBuiltAt",
+          "snapshotContentHash",
+          "totalChunksIndexed",
+          "registeredProviders",
+          "providerHealthy"
+        ]
+      },
+      "ProfessionalId": {
+        "type": "object",
+        "properties": {}
       }
     }
   }

@@ -1,3 +1,4 @@
+import { createFileRoute } from '@tanstack/react-router';
 import { 
   Box, 
   Button, 
@@ -8,7 +9,6 @@ import {
   Text, 
   Anchor, 
   Flex,
-  Center,
   Divider
 } from '@mantine/core';
 import { 
@@ -28,6 +28,10 @@ import {
   footerTextStyle, 
   footerContainerStyle 
 } from './styles';
+
+export const Route = createFileRoute('/_auth/auth/login')({
+  component: LoginPage,
+});
 
 export default function LoginPage() {
   return (
@@ -52,7 +56,7 @@ export default function LoginPage() {
                 clinical_notes
               </span>
             </Box>
-            <Title order={1} style={{ fontSize: '1.5rem', fontWeight: 800, tracking: '-0.02em' }}>
+            <Title order={1} style={{ fontSize: '1.5rem', fontWeight: 800 }}>
               Agenda Saúde
             </Title>
           </Box>
