@@ -13,7 +13,10 @@
       "Bash(pnpm -F @agenda-app/client generate)",
       "Bash(pnpm -F @agenda-app/server test)",
       "Bash(pnpm -F @agenda-app/server test:integration)",
-      "Bash(pnpm run typecheck)"
+      "Bash(pnpm run typecheck)",
+      "Bash(pnpm exec *)",
+      "Bash(git stash *)",
+      "Bash(node -e ' *)"
     ]
   },
   "hooks": {

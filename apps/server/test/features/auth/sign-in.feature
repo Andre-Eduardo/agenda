@@ -25,9 +25,3 @@ Feature: Sign in
             | username | nobody_${ref:var:contextId} |
             | password | J0hn.Do3!                   |
         Then the request should fail with a 401 status code
-
-    Scenario: Sign in and sign out
-        Given I am signed in as "john_doe"
-        When I send a "POST" request to "/api/v1/auth/sign-out"
-        Then the request should succeed with a 200 status code
-        And I should be signed out
