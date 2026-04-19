@@ -67,11 +67,12 @@ When(
         const body = singleEntry(this, table);
         const resolvedUrl = resolveReferences(this, url);
 
-        requestContext.response = await (this.agent as any)[method.toLowerCase()](resolvedUrl)
+        const response = await (this.agent as any)[method.toLowerCase()](resolvedUrl)
             .set(requestContext.headers)
             .send(body);
+        requestContext.response = response;
 
-        this.variables.lastResponse = requestContext.response.body;
+        this.variables.lastResponse = response.body;
     }
 );
 
@@ -89,11 +90,12 @@ When(
         const query = singleEntry(this, table);
         const resolvedUrl = resolveReferences(this, url);
 
-        requestContext.response = await (this.agent as any)[method.toLowerCase()](resolvedUrl)
+        const response = await (this.agent as any)[method.toLowerCase()](resolvedUrl)
             .set(requestContext.headers)
             .query(qs.stringify(query, {encode: false}));
+        requestContext.response = response;
 
-        this.variables.lastResponse = requestContext.response.body;
+        this.variables.lastResponse = response.body;
     }
 );
 
@@ -113,10 +115,11 @@ When(
     async function (this: Context, method: string, url: string) {
         const resolvedUrl = resolveReferences(this, url);
 
-        requestContext.response = await (this.agent as any)[method.toLowerCase()](resolvedUrl)
+        const response = await (this.agent as any)[method.toLowerCase()](resolvedUrl)
             .set(requestContext.headers);
+        requestContext.response = response;
 
-        this.variables.lastResponse = requestContext.response.body;
+        this.variables.lastResponse = response.body;
     }
 );
 
@@ -136,11 +139,12 @@ When(
         const resolvedBody = resolveReferences(this, rawBody.trim());
         const body = JSON.parse(resolvedBody);
 
-        requestContext.response = await (this.agent as any)[method.toLowerCase()](resolvedUrl)
+        const response = await (this.agent as any)[method.toLowerCase()](resolvedUrl)
             .set(requestContext.headers)
             .send(body);
+        requestContext.response = response;
 
-        this.variables.lastResponse = requestContext.response.body;
+        this.variables.lastResponse = response.body;
     }
 );
 

@@ -75,7 +75,27 @@
       "Bash(pnpm -F @agenda-app/client build)",
       "Bash(grep -iE \"patient$|patient\\\\.ts$\")",
       "Bash(pnpm -F @agenda-app/app add @hookform/resolvers)",
-      "Bash(pnpm -F @agenda-app/app build)"
+      "Bash(pnpm -F @agenda-app/app build)",
+      "Bash(git push *)",
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(pnpm -F @agenda-app/value-objects add -D @types/validator)",
+      "Bash(pnpm -F @agenda-app/server start:dev)",
+      "Bash(pnpm -F @agenda-app/app dev)",
+      "Bash(curl -sf http://localhost:3000/api)",
+      "Bash(curl -sf http://localhost:3000/health)",
+      "Bash(curl -sf http://localhost:3000)",
+      "Bash(curl -sS -o /dev/null -w \"%{http_code}\" http://127.0.0.1:3000/api/docs)",
+      "Bash(curl -sS -o /dev/null -w \"%{http_code}\" http://127.0.0.1:5000/)",
+      "Bash(python3 -c \"import json; d=json.load\\(open\\('c:/Users/marya/OneDrive/Documentos/agenda/apps/server/openapi.json'\\)\\); print\\(json.dumps\\(d['components']['schemas']['SavePatientFormDraftInputDto'], indent=2\\)\\)\")",
+      "Bash(node -e \"const d=require\\('c:/Users/marya/OneDrive/Documentos/agenda/apps/server/openapi.json'\\); console.log\\(JSON.stringify\\(d.components.schemas.SavePatientFormDraftInputDto, null, 2\\)\\)\")",
+      "Bash(node -e \"const d=require\\('c:/Users/marya/OneDrive/Documentos/agenda/apps/server/openapi.json'\\); const names=Object.keys\\(d.components.schemas\\); const bad=[]; for\\(const n of names\\){const s=JSON.stringify\\(d.components.schemas[n]\\); if\\(s.includes\\('\\\\\"required\\\\\":true'\\)||s.includes\\('\\\\\"required\\\\\":false'\\)\\)bad.push\\(n\\);} console.log\\(bad\\);\")",
+      "Bash(node -e \"const d=require\\('c:/Users/marya/OneDrive/Documentos/agenda/apps/server/openapi.json'\\); console.log\\(JSON.stringify\\(d.components.schemas.CreateRecordDto, null, 2\\)\\)\")",
+      "Bash(node -e \"const d=require\\('c:/Users/marya/OneDrive/Documentos/agenda/apps/server/openapi.json'\\); const names=Object.keys\\(d.components.schemas\\); const bad=[]; for\\(const n of names\\){const s=JSON.stringify\\(d.components.schemas[n]\\); if\\(s.includes\\('\\\\\"required\\\\\":true'\\)||s.includes\\('\\\\\"required\\\\\":false'\\)\\)bad.push\\(n\\);} console.log\\('bad:', bad\\);\")",
+      "Bash(pnpm -F @agenda-app/server typecheck)",
+      "Bash(pnpm -F @agenda-app/server test -- --testPathPattern=\"fake-user\")",
+      "Bash(pnpm -F @agenda-app/server test -- --testPathPattern=\"user/entities\")",
+      "Bash(pnpm -F @agenda-app/server test -- --testPathPattern=\"user.entity\")"
     ]
   },
   "enabledMcpjsonServers": [

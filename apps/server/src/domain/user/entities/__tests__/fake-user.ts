@@ -1,6 +1,6 @@
 import {Email} from '../../../@shared/value-objects';
 import {GlobalRole} from '../../../auth';
-import {ProfessionalId} from '../../professional/entities';
+import {ProfessionalId} from '../../../professional/entities';
 import {ObfuscatedPassword, Username} from '../../value-objects';
 import {User, UserId} from '../user.entity';
 

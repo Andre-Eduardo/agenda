@@ -189,10 +189,10 @@ export class Context extends World {
         const resolved = resolveReferences(this, pattern);
 
         // Pattern may be a JSON string literal or a raw value
-        let parsed: unknown;
+        let parsed: string | object;
 
         try {
-            parsed = JSON.parse(resolved);
+            parsed = JSON.parse(resolved) as string | object;
         } catch {
             parsed = resolved;
         }

@@ -7,8 +7,8 @@ export default defineConfig({
     lib: {
       entry: resolve(__dirname, 'src/index.ts'),
       name: 'AgendaClient',
-      fileName: (format) => `index.${format === 'es' ? 'mjs' : 'js'}`,
-      formats: ['es', 'cjs'],
+      fileName: () => 'index.mjs',
+      formats: ['es'],
     },
     rollupOptions: {
       external: ['axios', '@tanstack/react-query', 'react'],

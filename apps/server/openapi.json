@@ -4457,19 +4457,16 @@
                 "fileName": {
                   "type": "string",
                   "minLength": 1,
-                  "example": "exam.pdf",
-                  "required": true
+                  "example": "exam.pdf"
                 },
                 "url": {
                   "type": "string",
                   "format": "uri",
-                  "example": "https://storage.example.com/exam.pdf",
-                  "required": true
+                  "example": "https://storage.example.com/exam.pdf"
                 },
                 "description": {
                   "type": "string",
-                  "example": "Blood test results",
-                  "required": true
+                  "example": "Blood test results"
                 }
               },
               "required": [
@@ -5381,22 +5378,18 @@
             "properties": {
               "id": {
                 "type": "string",
-                "minLength": 1,
-                "required": true
+                "minLength": 1
               },
               "name": {
                 "type": "string",
-                "minLength": 1,
-                "required": true
+                "minLength": 1
               },
               "specialty": {
                 "type": "string",
-                "minLength": 1,
-                "required": true
+                "minLength": 1
               },
               "category": {
-                "type": "string",
-                "required": false
+                "type": "string"
               },
               "sections": {
                 "type": "array",
@@ -5405,26 +5398,21 @@
                   "properties": {
                     "id": {
                       "type": "string",
-                      "minLength": 1,
-                      "required": true
+                      "minLength": 1
                     },
                     "label": {
                       "type": "string",
-                      "minLength": 1,
-                      "required": true
+                      "minLength": 1
                     },
                     "order": {
                       "type": "integer",
-                      "minimum": 0,
-                      "required": true
+                      "minimum": 0
                     },
                     "description": {
-                      "type": "string",
-                      "required": false
+                      "type": "string"
                     },
                     "repeatable": {
-                      "type": "boolean",
-                      "required": false
+                      "type": "boolean"
                     },
                     "fields": {
                       "type": "array",
@@ -5433,8 +5421,7 @@
                         "properties": {
                           "id": {
                             "type": "string",
-                            "minLength": 1,
-                            "required": true
+                            "minLength": 1
                           },
                           "type": {
                             "type": "string",
@@ -5452,30 +5439,24 @@
                               "file",
                               "score",
                               "computed"
-                            ],
-                            "required": true
+                            ]
                           },
                           "label": {
                             "type": "string",
-                            "minLength": 1,
-                            "required": true
+                            "minLength": 1
                           },
                           "order": {
                             "type": "integer",
-                            "minimum": 0,
-                            "required": true
+                            "minimum": 0
                           },
                           "placeholder": {
-                            "type": "string",
-                            "required": false
+                            "type": "string"
                           },
                           "required": {
-                            "type": "boolean",
-                            "required": false
+                            "type": "boolean"
                           },
                           "unit": {
-                            "type": "string",
-                            "required": false
+                            "type": "string"
                           },
                           "options": {
                             "type": "array",
@@ -5483,28 +5464,23 @@
                               "type": "object",
                               "properties": {
                                 "value": {
-                                  "type": "string",
-                                  "required": true
+                                  "type": "string"
                                 },
                                 "label": {
-                                  "type": "string",
-                                  "required": true
+                                  "type": "string"
                                 },
                                 "score": {
-                                  "type": "number",
-                                  "required": false
+                                  "type": "number"
                                 }
                               },
                               "required": [
                                 "value",
                                 "label"
                               ]
-                            },
-                            "required": false
+                            }
                           },
                           "repeatable": {
-                            "type": "boolean",
-                            "required": false
+                            "type": "boolean"
                           },
                           "validation": {
                             "type": "object",
@@ -5527,8 +5503,7 @@
                               "message": {
                                 "type": "string"
                               }
-                            },
-                            "required": false
+                            }
                           },
                           "ui": {
                             "type": "object",
@@ -5547,8 +5522,7 @@
                               "tooltip": {
                                 "type": "string"
                               }
-                            },
-                            "required": false
+                            }
                           }
                         },
                         "required": [
@@ -5558,8 +5532,7 @@
                           "order"
                         ]
                       },
-                      "minItems": 1,
-                      "required": true
+                      "minItems": 1
                     }
                   },
                   "required": [
@@ -5569,36 +5542,33 @@
                     "fields"
                   ]
                 },
-                "minItems": 1,
-                "required": true
+                "minItems": 1
               },
               "scoring": {
                 "type": "object",
                 "properties": {
                   "enabled": {
-                    "type": "boolean",
-                    "required": true
+                    "type": "boolean"
                   },
                   "totalFieldId": {
-                    "type": "string",
-                    "required": false
+                    "type": "string"
                   },
                   "rules": {
                     "type": "array",
                     "items": {
                       "nullable": true
-                    },
-                    "required": false
+                    }
                   }
                 },
-                "required": false
+                "required": [
+                  "enabled"
+                ]
               },
               "metadata": {
                 "type": "object",
                 "additionalProperties": {
                   "nullable": true
-                },
-                "required": false
+                }
               }
             }
           },
@@ -5793,32 +5763,26 @@
               "properties": {
                 "fieldId": {
                   "type": "string",
-                  "minLength": 1,
-                  "required": true
+                  "minLength": 1
                 },
                 "valueText": {
                   "type": "string",
-                  "nullable": true,
-                  "required": false
+                  "nullable": true
                 },
                 "valueNumber": {
                   "type": "number",
-                  "nullable": true,
-                  "required": false
+                  "nullable": true
                 },
                 "valueBoolean": {
                   "type": "boolean",
-                  "nullable": true,
-                  "required": false
+                  "nullable": true
                 },
                 "valueDate": {
                   "type": "string",
-                  "nullable": true,
-                  "required": false
+                  "nullable": true
                 },
                 "valueJson": {
-                  "nullable": true,
-                  "required": false
+                  "nullable": true
                 }
               },
               "required": [
@@ -5841,32 +5805,26 @@
               "properties": {
                 "fieldId": {
                   "type": "string",
-                  "minLength": 1,
-                  "required": true
+                  "minLength": 1
                 },
                 "valueText": {
                   "type": "string",
-                  "nullable": true,
-                  "required": false
+                  "nullable": true
                 },
                 "valueNumber": {
                   "type": "number",
-                  "nullable": true,
-                  "required": false
+                  "nullable": true
                 },
                 "valueBoolean": {
                   "type": "boolean",
-                  "nullable": true,
-                  "required": false
+                  "nullable": true
                 },
                 "valueDate": {
                   "type": "string",
-                  "nullable": true,
-                  "required": false
+                  "nullable": true
                 },
                 "valueJson": {
-                  "nullable": true,
-                  "required": false
+                  "nullable": true
                 }
               },
               "required": [

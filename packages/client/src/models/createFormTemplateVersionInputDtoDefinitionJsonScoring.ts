@@ -13,7 +13,7 @@
 import type { CreateFormTemplateVersionInputDtoDefinitionJsonScoringRulesItem } from './createFormTemplateVersionInputDtoDefinitionJsonScoringRulesItem';
 
 export type CreateFormTemplateVersionInputDtoDefinitionJsonScoring = {
-  enabled?: boolean;
+  enabled: boolean;
   totalFieldId?: string;
   rules?: CreateFormTemplateVersionInputDtoDefinitionJsonScoringRulesItem[];
 };
