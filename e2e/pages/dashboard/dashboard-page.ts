@@ -9,7 +9,7 @@ export class DashboardPage extends BasePage {
 
     constructor(page: Page) {
         super(page);
-        this.greetingHeading = page.getByRole('heading', {name: /bom dia|boa tarde|boa noite/i});
+        this.greetingHeading = page.getByText(/bom dia|boa tarde|boa noite/i).first();
         this.todayAppointmentsCard = page.getByText(/consultas hoje/i).first();
         this.newAppointmentButton = page.getByRole('button', {name: /nova consulta/i}).first();
         this.newPatientButton = page.getByRole('button', {name: /novo paciente/i}).first();

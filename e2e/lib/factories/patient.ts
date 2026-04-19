@@ -19,11 +19,19 @@ export type CreatedPatient = {
     professionalId: string;
 };
 
+function randomDigits(length: number): string {
+    let out = '';
+    for (const byte of randomBytes(length)) {
+        out += (byte % 10).toString();
+    }
+    return out;
+}
+
 export async function createTestPatient(entry: CreatePatientEntry): Promise<CreatedPatient> {
     const suffix = randomBytes(4).toString('hex');
     const now = new Date();
     const name = entry.name ?? `Paciente Teste ${suffix}`;
-    const documentId = entry.documentId ?? `111.222.${suffix.slice(0, 3)}-${suffix.slice(3, 5)}`;
+    const documentId = entry.documentId ?? `111.222.${randomDigits(3)}-${randomDigits(2)}`;
 
     const person = await prisma.person.create({
         data: {

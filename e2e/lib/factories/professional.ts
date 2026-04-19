@@ -4,6 +4,14 @@ import {prisma} from './prisma';
 import type {CreatedUser, CreateUserEntry} from './user';
 import {createTestUser} from './user';
 
+function randomDigits(length: number): string {
+    let out = '';
+    for (const byte of randomBytes(length)) {
+        out += (byte % 10).toString();
+    }
+    return out;
+}
+
 export type Specialty =
     | 'PSICOLOGIA'
     | 'MEDICINA'
@@ -54,7 +62,7 @@ export async function createTestProfessional(
         data: {
             id: uuidv7(),
             name: entry.personName ?? user.name,
-            documentId: entry.documentId ?? `000.000.${suffix.slice(0, 3)}-${suffix.slice(3, 5)}`,
+            documentId: entry.documentId ?? `000.000.${randomDigits(3)}-${randomDigits(2)}`,
             personType: 'NATURAL',
             createdAt: now,
             updatedAt: now,

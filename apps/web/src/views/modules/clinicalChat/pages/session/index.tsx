@@ -75,8 +75,6 @@ function ChatSessionPage() {
     messagesRef.current?.scrollTo({ top: messagesRef.current.scrollHeight });
   }, [messages.length]);
 
-  if (!sessionId) return <LoadingSkeleton rows={3} />;
-
   return (
     <Page title="Chat Clínico IA" subtitle="Assistente para análise clínica">
       <Box

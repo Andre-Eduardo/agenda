@@ -129,7 +129,7 @@ model Patient {
   appointments          Appointment[]
   records               Record[]
   professional          Professional?      @relation(fields: [professionalId], references: [id])
-  professionalId        String?            @db.Uuid
+  professionalId        String?            @map("professional_id") @db.Uuid
   clinicalProfile       ClinicalProfile?
   alerts                PatientAlert[]
   patientFiles          File[]

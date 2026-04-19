@@ -26,30 +26,34 @@ function AiAnalysisPage() {
     query: { enabled: !!session?.id },
   } as any);
 
-  if (!session) return <EmptyState icon="psychology" title="Sem sessão ativa" message="Abra o Chat Clínico primeiro." />;
-  if (isLoading) return <LoadingSkeleton rows={4} height={80} />;
-  if (!snapshot) return <EmptyState icon="psychology" title="Análise indisponível" message="Ainda não há snapshot estruturado." />;
-
   const snap = snapshot as any;
 
   return (
     <Page title="Análise IA Estruturada" subtitle="Snapshot da sessão clínica">
-      <Stack gap="md">
-        {Object.entries(snap).map(([key, value]) => (
-          <Box key={key} style={{ backgroundColor: 'white', borderRadius: 10, padding: 16 }}>
-            <Title order={4} mb="xs" style={{ textTransform: 'capitalize' }}>
-              {key.replace(/([A-Z])/g, ' $1').trim()}
-            </Title>
-            {typeof value === 'string' ? (
-              <Text size="sm">{value}</Text>
-            ) : (
-              <pre style={{ fontSize: 12, overflow: 'auto', margin: 0 }}>
-                {JSON.stringify(value, null, 2)}
-              </pre>
-            )}
-          </Box>
-        ))}
-      </Stack>
+      {!session ? (
+        <EmptyState icon="psychology" title="Sem sessão ativa" message="Abra o Chat Clínico primeiro." />
+      ) : isLoading ? (
+        <LoadingSkeleton rows={4} height={80} />
+      ) : !snapshot ? (
+        <EmptyState icon="psychology" title="Análise indisponível" message="Ainda não há snapshot estruturado." />
+      ) : (
+        <Stack gap="md">
+          {Object.entries(snap).map(([key, value]) => (
+            <Box key={key} style={{ backgroundColor: 'white', borderRadius: 10, padding: 16 }}>
+              <Title order={4} mb="xs" style={{ textTransform: 'capitalize' }}>
+                {key.replace(/([A-Z])/g, ' $1').trim()}
+              </Title>
+              {typeof value === 'string' ? (
+                <Text size="sm">{value}</Text>
+              ) : (
+                <pre style={{ fontSize: 12, overflow: 'auto', margin: 0 }}>
+                  {JSON.stringify(value, null, 2)}
+                </pre>
+              )}
+            </Box>
+          ))}
+        </Stack>
+      )}
     </Page>
   );
 }

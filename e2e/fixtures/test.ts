@@ -105,7 +105,10 @@ export const test = base.extend<CustomFixtures>({
     createAuthenticatedProfessional: async ({page}, use) => {
         const factory = async (options: CreateAuthenticatedProfessionalOptions = {}) => {
             const {autoLogin = true, ...entry} = options;
-            const professional = await createTestProfessional(entry);
+            const professional = await createTestProfessional({
+                ...entry,
+                user: {globalRole: 'OWNER', ...(entry.user ?? {})},
+            });
 
             if (autoLogin) {
                 await login(page, {

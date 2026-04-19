@@ -20,13 +20,21 @@
       "name": "📦 value-objects",
       "path": "packages/value-objects"
     }
+    {
+      "name": "📦 E2E",
+      "path": "e2e"
+    }
   ],
   "settings": {
     "typescript.tsdk": "node_modules/typescript/lib",
     "typescript.enablePromptUseWorkspaceTsdk": true,
     "eslint.workingDirectories": [
-      { "pattern": "apps/*" },
-      { "pattern": "packages/*" }
+      {
+        "pattern": "apps/*"
+      },
+      {
+        "pattern": "packages/*"
+      }
     ],
     "files.exclude": {
       "**/node_modules": true,

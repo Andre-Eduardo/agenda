@@ -120,7 +120,16 @@
       "Bash(psql -h localhost -U postgres -d agenda -c \"SELECT email, username FROM \\\\\"User\\\\\" LIMIT 5;\")",
       "Bash(docker exec *)",
       "Bash(pnpm -F @agenda-app/server prisma:seed)",
-      "Bash(powershell -Command \"Stop-Process -Id 21120,21128,22116,10464,11396 -Force -ErrorAction SilentlyContinue\")"
+      "Bash(powershell -Command \"Stop-Process -Id 21120,21128,22116,10464,11396 -Force -ErrorAction SilentlyContinue\")",
+      "Bash(pnpm test *)",
+      "Bash(pnpm test:chrome)",
+      "Bash(echo \"EXIT=$?\")",
+      "Bash(pnpm prisma *)",
+      "Read(//c/c/Users/marya/Documents/agenda/apps/server/prisma/**)",
+      "Bash(PGPASSWORD=postgres psql -h localhost -U postgres -d agenda -c \"\\\\d patient\")",
+      "Bash(pnpm prisma:generate)",
+      "Bash(netstat -ano)",
+      "Bash(grep \"tests\\\\\\\\\\\\\\\\navigation\" /tmp/e2e2.log)"
     ],
     "additionalDirectories": [
       "\\tmp"
