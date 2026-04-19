@@ -28,7 +28,7 @@ export class AiAgentProfileDto extends EntityDto {
     @ApiProperty({nullable: true, description: 'Instruções base para o LLM (system prompt)'})
     baseInstructions: string | null;
 
-    @ApiProperty({isArray: true, description: 'Fontes de contexto permitidas para este agente'})
+    @ApiProperty({type: String, isArray: true, description: 'Fontes de contexto permitidas para este agente'})
     allowedSources: string[];
 
     @ApiProperty({nullable: true, description: 'Pesos de prioridade por tipo de contexto'})
@@ -37,10 +37,11 @@ export class AiAgentProfileDto extends EntityDto {
     @ApiProperty({nullable: true, description: 'Campos de JSONB clínico com maior peso na análise'})
     priorityFields: Record<string, unknown> | null;
 
-    @ApiProperty({isArray: true, description: 'Objetivos de análise, ex: ["summary", "hypotheses", "next_steps"]'})
+    @ApiProperty({type: String, isArray: true, description: 'Objetivos de análise, ex: ["summary", "hypotheses", "next_steps"]'})
     analysisGoals: string[];
 
     @ApiProperty({
+        type: String,
         isArray: true,
         description:
             'Campos de PatientFacts bloqueados para este agente. ' +

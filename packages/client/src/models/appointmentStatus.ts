@@ -20,6 +20,8 @@ export type AppointmentStatus = typeof AppointmentStatus[keyof typeof Appointmen
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const AppointmentStatus = {
   SCHEDULED: 'SCHEDULED',
+  CONFIRMED: 'CONFIRMED',
   CANCELLED: 'CANCELLED',
   COMPLETED: 'COMPLETED',
+  NO_SHOW: 'NO_SHOW',
 } as const;

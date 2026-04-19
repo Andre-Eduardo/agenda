@@ -10,6 +10,7 @@
                 the token will be invalidated and removed from the cookie.
  * OpenAPI spec version: 0.0.0
  */
+import type { UserEmail } from './userEmail';
 
 export interface User {
   /** The unique identifier of the entity */
@@ -20,11 +21,8 @@ export interface User {
   updatedAt: string;
   /** The username of the user */
   username: string;
-  /**
-   * The email of the user
-   * @nullable
-   */
-  email: string | null;
+  /** The email of the user */
+  email: UserEmail;
   /** The name of the user */
   name: string;
 }

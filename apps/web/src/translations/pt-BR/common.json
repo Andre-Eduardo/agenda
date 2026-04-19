@@ -1,0 +1,40 @@
+{
+  "actions": {
+    "save": "Salvar",
+    "cancel": "Cancelar",
+    "delete": "Excluir",
+    "confirm": "Confirmar",
+    "create": "Criar",
+    "edit": "Editar",
+    "back": "Voltar",
+    "search": "Buscar",
+    "close": "Fechar",
+    "viewAll": "Ver tudo",
+    "new": "Novo"
+  },
+  "states": {
+    "loading": "Carregando...",
+    "empty": "Nenhum resultado encontrado",
+    "error": "Ocorreu um erro. Tente novamente.",
+    "saved": "Salvo com sucesso",
+    "saving": "Salvando..."
+  },
+  "confirm": {
+    "deleteTitle": "Confirmar exclusão",
+    "deleteMessage": "Esta ação não pode ser desfeita. Deseja continuar?"
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "appointments": "Consultas",
+    "patients": "Pacientes",
+    "professionals": "Profissionais",
+    "forms": "Formulários",
+    "chat": "Chat Clínico",
+    "system": "Sistema",
+    "menu": "Menu principal",
+    "logout": "Sair"
+  },
+  "user": {
+    "online": "Online"
+  }
+}

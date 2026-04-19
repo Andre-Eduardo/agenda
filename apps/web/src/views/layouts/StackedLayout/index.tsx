@@ -1,5 +1,8 @@
-import { Outlet, Link, useRouterState } from '@tanstack/react-router';
+import { Outlet, Link, useRouterState, useNavigate } from '@tanstack/react-router';
 import { Box, Text, Badge } from '@mantine/core';
+import { useTranslation } from 'react-i18next';
+import { useGetCurrentUser, useSignOut } from '@agenda-app/client';
+import { useAppStore } from '../../../store/appStore';
 import {
   rootStyle,
   sidebarStyle,
@@ -19,27 +22,73 @@ import {
   notifDotStyle,
 } from './styles';
 
-const navItems = [
-  { icon: 'home', label: 'Dashboard', path: '/' },
-  { icon: 'calendar_month', label: 'Consultas', path: '/appointments' },
-  { icon: 'people', label: 'Pacientes', path: '/patients' },
-  { icon: 'medical_services', label: 'Profissionais', path: '/professionals' },
+interface NavItem {
+  icon: string;
+  labelKey: string;
+  path: string;
+}
+
+const primaryNav: NavItem[] = [
+  { icon: 'home', labelKey: 'nav.dashboard', path: '/' },
+  { icon: 'calendar_month', labelKey: 'nav.appointments', path: '/appointments' },
+  { icon: 'people', labelKey: 'nav.patients', path: '/patients' },
+  { icon: 'medical_services', labelKey: 'nav.professionals', path: '/professionals' },
 ];
 
-const secondaryNavItems = [
-  { icon: 'bar_chart', label: 'Relatórios', path: '/reports' },
-  { icon: 'settings', label: 'Configurações', path: '/settings' },
+const secondaryNav: NavItem[] = [
+  { icon: 'description', labelKey: 'nav.forms', path: '/form-templates' },
 ];
+
+function NavEntry({ item, currentPath }: { item: NavItem; currentPath: string }) {
+  const { t } = useTranslation();
+  const isActive = item.path === '/' ? currentPath === '/' : currentPath.startsWith(item.path);
+  return (
+    <Link
+      to={item.path}
+      style={isActive ? navItemActiveStyle : navItemStyle}
+    >
+      <span className="material-symbols-outlined" style={navItemIconStyle}>
+        {item.icon}
+      </span>
+      {t(item.labelKey)}
+    </Link>
+  );
+}
+
+function getInitials(name: string | undefined): string {
+  if (!name) return '??';
+  const parts = name.trim().split(/\s+/);
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+  return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase();
+}
 
 export function StackedLayout() {
+  const { t } = useTranslation();
   const routerState = useRouterState();
   const currentPath = routerState.location.pathname;
+  const navigate = useNavigate();
+  const setAuth = useAppStore((s) => s.setAuth);
+
+  const { data: user } = useGetCurrentUser({
+    query: { retry: false, staleTime: 60_000 },
+  });
+  const signOutMutation = useSignOut();
+
+  const initials = getInitials(user?.name);
+  const displayName = user?.name ?? user?.username ?? '—';
+
+  const handleLogout = () => {
+    signOutMutation.mutate(undefined, {
+      onSettled: () => {
+        setAuth(false, null);
+        navigate({ to: '/auth/login' });
+      },
+    });
+  };
 
   return (
     <Box style={rootStyle}>
-      {/* Sidebar */}
       <Box style={sidebarStyle}>
-        {/* Brand */}
         <Box style={sidebarBrandStyle}>
           <Box style={brandIconStyle}>
             <span className="material-symbols-outlined" style={{ fontSize: '22px' }}>
@@ -56,68 +105,44 @@ export function StackedLayout() {
           </Box>
         </Box>
 
-        {/* Navigation */}
         <Box style={sidebarNavStyle}>
-          <Text style={navSectionLabelStyle}>Menu principal</Text>
-          {navItems.map((item) => {
-            const isActive = item.path === '/'
-              ? currentPath === '/'
-              : currentPath.startsWith(item.path);
-            return (
-              <Link
-                key={item.path}
-                to={item.path as '/'}
-                style={isActive ? navItemActiveStyle : navItemStyle}
-              >
-                <span className="material-symbols-outlined" style={navItemIconStyle}>
-                  {item.icon}
-                </span>
-                {item.label}
-              </Link>
-            );
-          })}
+          <Text style={navSectionLabelStyle}>{t('nav.menu')}</Text>
+          {primaryNav.map((item) => (
+            <NavEntry key={item.path} item={item} currentPath={currentPath} />
+          ))}
 
-          <Text style={{ ...navSectionLabelStyle, marginTop: '8px' }}>Sistema</Text>
-          {secondaryNavItems.map((item) => {
-            const isActive = currentPath.startsWith(item.path);
-            return (
-              <Link
-                key={item.path}
-                to={item.path as '/'}
-                style={isActive ? navItemActiveStyle : navItemStyle}
-              >
-                <span className="material-symbols-outlined" style={navItemIconStyle}>
-                  {item.icon}
-                </span>
-                {item.label}
-              </Link>
-            );
-          })}
+          <Text style={{ ...navSectionLabelStyle, marginTop: '8px' }}>{t('nav.system')}</Text>
+          {secondaryNav.map((item) => (
+            <NavEntry key={item.path} item={item} currentPath={currentPath} />
+          ))}
         </Box>
 
-        {/* User footer */}
         <Box style={sidebarFooterStyle}>
-          <Box style={userAvatarStyle}>AD</Box>
+          <Box style={userAvatarStyle}>{initials}</Box>
           <Box style={{ flex: 1, minWidth: 0 }}>
             <Text fw={600} size="xs" c="white" truncate>
-              Dr. Admin
+              {displayName}
             </Text>
             <Text size="xs" style={{ color: 'rgba(255,255,255,0.45)' }} truncate>
-              Administrador
+              {String(user?.email ?? '')}
             </Text>
           </Box>
           <span
             className="material-symbols-outlined"
-            style={{ fontSize: '18px', color: 'rgba(255,255,255,0.35)', cursor: 'pointer' }}
+            onClick={handleLogout}
+            title={t('nav.logout')}
+            style={{
+              fontSize: '18px',
+              color: 'rgba(255,255,255,0.35)',
+              cursor: 'pointer',
+            }}
           >
             logout
           </span>
         </Box>
       </Box>
 
-      {/* Main content */}
       <Box style={mainStyle}>
-        {/* Topbar */}
         <Box style={topbarStyle}>
           <Box style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <span
@@ -127,36 +152,11 @@ export function StackedLayout() {
               chevron_right
             </span>
             <Text size="sm" fw={600} c="brand.8">
-              {getPageTitle(currentPath)}
+              {getPageTitle(currentPath, t)}
             </Text>
           </Box>
 
           <Box style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            {/* Search */}
-            <Box
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                backgroundColor: 'var(--mantine-color-brand-0)',
-                border: '1px solid var(--mantine-color-brand-1)',
-                borderRadius: '8px',
-                padding: '6px 12px',
-                cursor: 'pointer',
-              }}
-            >
-              <span
-                className="material-symbols-outlined"
-                style={{ fontSize: '18px', color: 'var(--mantine-color-brand-3)' }}
-              >
-                search
-              </span>
-              <Text size="xs" c="brand.3">
-                Buscar paciente...
-              </Text>
-            </Box>
-
-            {/* Notifications */}
             <Box style={notifBtnStyle}>
               <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>
                 notifications
@@ -164,14 +164,6 @@ export function StackedLayout() {
               <Box style={notifDotStyle} />
             </Box>
 
-            {/* Help */}
-            <Box style={{ ...notifBtnStyle, color: 'var(--mantine-color-brand-3)' }}>
-              <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>
-                help_outline
-              </span>
-            </Box>
-
-            {/* User chip */}
             <Box
               style={{
                 display: 'flex',
@@ -185,19 +177,18 @@ export function StackedLayout() {
               }}
             >
               <Box style={{ ...userAvatarStyle, width: '28px', height: '28px', fontSize: '11px' }}>
-                AD
+                {initials}
               </Box>
               <Text size="xs" fw={600} c="brand.8">
-                Dr. Admin
+                {displayName}
               </Text>
               <Badge size="xs" color="green" variant="light">
-                Online
+                {t('user.online')}
               </Badge>
             </Box>
           </Box>
         </Box>
 
-        {/* Page content */}
         <Box style={contentStyle}>
           <Outlet />
         </Box>
@@ -206,14 +197,11 @@ export function StackedLayout() {
   );
 }
 
-function getPageTitle(path: string): string {
-  if (path === '/') return 'Dashboard';
-  if (path.startsWith('/appointments')) return 'Consultas';
-  if (path.startsWith('/patients')) return 'Pacientes';
-  if (path.startsWith('/professionals')) return 'Profissionais';
-  if (path.startsWith('/reports')) return 'Relatórios';
-  if (path.startsWith('/settings')) return 'Configurações';
+function getPageTitle(path: string, t: (key: string) => string): string {
+  if (path === '/') return t('nav.dashboard');
+  if (path.startsWith('/appointments')) return t('nav.appointments');
+  if (path.startsWith('/patients')) return t('nav.patients');
+  if (path.startsWith('/professionals')) return t('nav.professionals');
+  if (path.startsWith('/form-templates')) return t('nav.forms');
   return 'Agenda Saúde';
 }
-
-export default StackedLayout;

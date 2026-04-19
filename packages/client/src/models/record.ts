@@ -10,6 +10,21 @@
                 the token will be invalidated and removed from the cookie.
  * OpenAPI spec version: 0.0.0
  */
+import type { RecordDescription } from './recordDescription';
+import type { RecordTemplateType } from './recordTemplateType';
+import type { RecordTitle } from './recordTitle';
+import type { RecordAttendanceType } from './recordAttendanceType';
+import type { RecordClinicalStatus } from './recordClinicalStatus';
+import type { RecordConductTagsItem } from './recordConductTagsItem';
+import type { RecordSubjective } from './recordSubjective';
+import type { RecordObjective } from './recordObjective';
+import type { RecordAssessment } from './recordAssessment';
+import type { RecordPlan } from './recordPlan';
+import type { RecordFreeNotes } from './recordFreeNotes';
+import type { RecordEventDate } from './recordEventDate';
+import type { RecordAppointmentId } from './recordAppointmentId';
+import type { RecordSource } from './recordSource';
+import type { RecordImportedDocumentId } from './recordImportedDocumentId';
 import type { FileDto } from './fileDto';
 
 export interface Record {
@@ -23,8 +38,77 @@ export interface Record {
   patientId: string;
   /** The professional ID */
   professionalId: string;
-  /** The record description */
-  description: string;
+  /**
+   * Legacy free-text description
+   * @nullable
+   */
+  description: RecordDescription;
+  /**
+   * Evolution template type
+   * @nullable
+   */
+  templateType: RecordTemplateType;
+  /**
+   * Evolution title
+   * @nullable
+   */
+  title: RecordTitle;
+  /**
+   * Attendance type
+   * @nullable
+   */
+  attendanceType: RecordAttendanceType;
+  /**
+   * Clinical status
+   * @nullable
+   */
+  clinicalStatus: RecordClinicalStatus;
+  /** Conduct tags */
+  conductTags: RecordConductTagsItem[];
+  /**
+   * SOAP Subjective
+   * @nullable
+   */
+  subjective: RecordSubjective;
+  /**
+   * SOAP Objective
+   * @nullable
+   */
+  objective: RecordObjective;
+  /**
+   * SOAP/DAP Assessment
+   * @nullable
+   */
+  assessment: RecordAssessment;
+  /**
+   * SOAP/DAP Plan
+   * @nullable
+   */
+  plan: RecordPlan;
+  /**
+   * Free notes
+   * @nullable
+   */
+  freeNotes: RecordFreeNotes;
+  /**
+   * Event date (clinical event)
+   * @nullable
+   */
+  eventDate: RecordEventDate;
+  /**
+   * Linked appointment ID
+   * @nullable
+   */
+  appointmentId: RecordAppointmentId;
+  /** Origin of the record */
+  source: RecordSource;
+  /**
+   * ID of the imported document if applicable
+   * @nullable
+   */
+  importedDocumentId: RecordImportedDocumentId;
+  /** Indicates if the imported record was manually reviewed and edited */
+  wasHumanEdited: boolean;
   /** The attached files */
   files: FileDto[];
 }

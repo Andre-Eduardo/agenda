@@ -21,7 +21,7 @@ export class PatientChatMessageDto extends EntityDto {
     @ApiProperty({nullable: true})
     metadata: Record<string, unknown> | null;
 
-    @ApiProperty({isArray: true, description: 'IDs dos chunks usados como contexto (rastreabilidade RAG)'})
+    @ApiProperty({type: String, isArray: true, description: 'IDs dos chunks usados como contexto (rastreabilidade RAG)'})
     chunkIds: string[];
 
     constructor(entity: PatientChatMessage) {

@@ -1915,7 +1915,7 @@
     },
     "/api/v1/form-templates": {
       "get": {
-        "operationId": "search",
+        "operationId": "searchFormTemplates",
         "parameters": [
           {
             "name": "specialty",
@@ -2372,7 +2372,7 @@
     },
     "/api/v1/patients/{patientId}/forms": {
       "get": {
-        "operationId": "search",
+        "operationId": "searchPatientForms",
         "parameters": [
           {
             "name": "patientId",
@@ -5946,7 +5946,7 @@
             "description": "Fontes de contexto permitidas para este agente",
             "type": "array",
             "items": {
-              "type": "array"
+              "type": "string"
             }
           },
           "contextPriority": {
@@ -5963,14 +5963,14 @@
             "description": "Objetivos de análise, ex: [\"summary\", \"hypotheses\", \"next_steps\"]",
             "type": "array",
             "items": {
-              "type": "array"
+              "type": "string"
             }
           },
           "blacklistedFields": {
             "description": "Campos de PatientFacts bloqueados para este agente. Removidos antes de montar o prompt enviado ao LLM. Ex: [\"documentId\"].",
             "type": "array",
             "items": {
-              "type": "array"
+              "type": "string"
             }
           },
           "guardrails": {
@@ -6183,7 +6183,7 @@
             "description": "IDs dos chunks usados como contexto (rastreabilidade RAG)",
             "type": "array",
             "items": {
-              "type": "array"
+              "type": "string"
             }
           }
         },

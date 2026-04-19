@@ -47,7 +47,7 @@ export class PatientFormController {
     })
     @Authorize(PatientFormPermission.VIEW)
     @Get()
-    async search(
+    async searchPatientForms(
         @RequestActor() actor: Actor,
         @ValidatedParam('patientId', patientFormPatientParamSchema.shape.patientId) patientId: PatientId,
         @Query(new ZodValidationPipe(searchPatientFormsSchema)) query: SearchPatientFormsDto

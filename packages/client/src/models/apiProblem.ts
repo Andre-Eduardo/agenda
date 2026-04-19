@@ -10,13 +10,14 @@
                 the token will be invalidated and removed from the cookie.
  * OpenAPI spec version: 0.0.0
  */
+import type { ApiProblemType } from './apiProblemType';
 import type { ApiProblemStatus } from './apiProblemStatus';
 
 export interface ApiProblem {
   /** A short, human-readable summary of the problem */
   title: string;
   /** A URI reference that identifies the problem type */
-  type: string;
+  type: ApiProblemType;
   /** A human-readable explanation specific to this occurrence of the problem */
   detail: string;
   /** The HTTP status code */

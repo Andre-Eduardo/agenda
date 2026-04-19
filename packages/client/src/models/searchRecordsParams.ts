@@ -12,6 +12,10 @@
  */
 import type { SearchRecordsSortCreatedAt } from './searchRecordsSortCreatedAt';
 import type { SearchRecordsSortUpdatedAt } from './searchRecordsSortUpdatedAt';
+import type { SearchRecordsSortEventDate } from './searchRecordsSortEventDate';
+import type { SearchRecordsAttendanceType } from './searchRecordsAttendanceType';
+import type { SearchRecordsClinicalStatus } from './searchRecordsClinicalStatus';
+import type { SearchRecordsSource } from './searchRecordsSource';
 
 export type SearchRecordsParams = {
 /**
@@ -32,9 +36,34 @@ limit: number;
 sort: {
   createdAt?: SearchRecordsSortCreatedAt;
   updatedAt?: SearchRecordsSortUpdatedAt;
+  eventDate?: SearchRecordsSortEventDate;
 } | null;
 /**
  * Search term to filter records by description
  */
 term: string;
+/**
+ * Filter by patient ID
+ */
+patientId: string;
+/**
+ * Filter by attendance type
+ */
+attendanceType: SearchRecordsAttendanceType;
+/**
+ * Filter by clinical status
+ */
+clinicalStatus: SearchRecordsClinicalStatus;
+/**
+ * Filter events from this date (eventDate)
+ */
+dateStart: string;
+/**
+ * Filter events up to this date (eventDate)
+ */
+dateEnd: string;
+/**
+ * Filter by record source
+ */
+source: SearchRecordsSource;
 };

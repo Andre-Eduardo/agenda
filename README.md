@@ -23,6 +23,20 @@ cd agenda-app
 pnpm install
 ```
 
+## Environment variables
+
+Copy `.env.example` to `.env` and fill in the required values:
+
+```bash
+cp .env.example .env
+```
+
+| Variable          | Description                                                                 |
+|-------------------|-----------------------------------------------------------------------------|
+| `STITCH_API_KEY`  | API key for the Stitch MCP server (used by `.mcp.json` via `${STITCH_API_KEY}`) |
+
+The `.env` file is git-ignored. Never commit real keys.
+
 ## Running
 
 To proceed, make sure you have [Docker](https://docs.docker.com/compose/install) installed and running on your machine.

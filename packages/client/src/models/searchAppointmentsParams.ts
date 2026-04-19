@@ -12,6 +12,7 @@
  */
 import type { SearchAppointmentsSortCreatedAt } from './searchAppointmentsSortCreatedAt';
 import type { SearchAppointmentsSortUpdatedAt } from './searchAppointmentsSortUpdatedAt';
+import type { SearchAppointmentsSortStartAt } from './searchAppointmentsSortStartAt';
 
 export type SearchAppointmentsParams = {
 /**
@@ -32,6 +33,7 @@ limit: number;
 sort: {
   createdAt?: SearchAppointmentsSortCreatedAt;
   updatedAt?: SearchAppointmentsSortUpdatedAt;
+  startAt?: SearchAppointmentsSortStartAt;
 } | null;
 /**
  * Search term to filter appointments by note

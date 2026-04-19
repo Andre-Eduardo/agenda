@@ -1,0 +1,40 @@
+{
+  "actions": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "confirm": "Confirm",
+    "create": "Create",
+    "edit": "Edit",
+    "back": "Back",
+    "search": "Search",
+    "close": "Close",
+    "viewAll": "View all",
+    "new": "New"
+  },
+  "states": {
+    "loading": "Loading...",
+    "empty": "No results found",
+    "error": "Something went wrong. Please try again.",
+    "saved": "Saved successfully",
+    "saving": "Saving..."
+  },
+  "confirm": {
+    "deleteTitle": "Confirm deletion",
+    "deleteMessage": "This action cannot be undone. Continue?"
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "appointments": "Appointments",
+    "patients": "Patients",
+    "professionals": "Professionals",
+    "forms": "Forms",
+    "chat": "Clinical Chat",
+    "system": "System",
+    "menu": "Main menu",
+    "logout": "Sign out"
+  },
+  "user": {
+    "online": "Online"
+  }
+}

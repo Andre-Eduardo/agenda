@@ -1,0 +1,52 @@
+{
+  "folders": [
+    {
+      "name": "🌐 root",
+      "path": "."
+    },
+    {
+      "name": "🖥️ server",
+      "path": "apps/server"
+    },
+    {
+      "name": "🎨 web",
+      "path": "apps/web"
+    },
+    {
+      "name": "📦 client",
+      "path": "packages/client"
+    },
+    {
+      "name": "📦 value-objects",
+      "path": "packages/value-objects"
+    }
+  ],
+  "settings": {
+    "typescript.tsdk": "node_modules/typescript/lib",
+    "typescript.enablePromptUseWorkspaceTsdk": true,
+    "eslint.workingDirectories": [
+      { "pattern": "apps/*" },
+      { "pattern": "packages/*" }
+    ],
+    "files.exclude": {
+      "**/node_modules": true,
+      "**/dist": true,
+      "**/.turbo": true
+    },
+    "search.exclude": {
+      "**/node_modules": true,
+      "**/dist": true,
+      "**/pnpm-lock.yaml": true
+    }
+  },
+  "extensions": {
+    "recommendations": [
+      "dbaeumer.vscode-eslint",
+      "esbenp.prettier-vscode",
+      "prisma.prisma",
+      "bradlc.vscode-tailwindcss",
+      "orta.vscode-jest",
+      "cucumberopen.cucumber-official"
+    ]
+  }
+}

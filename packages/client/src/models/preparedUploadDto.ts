@@ -11,12 +11,11 @@
  * OpenAPI spec version: 0.0.0
  */
 import type { PreparedUploadDtoStorageType } from './preparedUploadDtoStorageType';
-import type { PreparedUploadDtoUpload } from './preparedUploadDtoUpload';
+import type { UploadInfoDto } from './uploadInfoDto';
 
 export interface PreparedUploadDto {
   storageType: PreparedUploadDtoStorageType;
   fileId: string;
   tempPath: string;
-  /** @nullable */
-  upload?: PreparedUploadDtoUpload;
+  upload?: UploadInfoDto;
 }

@@ -10,9 +10,11 @@
                 the token will be invalidated and removed from the cookie.
  * OpenAPI spec version: 0.0.0
  */
+import type { ProfessionalPhone } from './professionalPhone';
 import type { ProfessionalGender } from './professionalGender';
 import type { ProfessionalPersonType } from './professionalPersonType';
 import type { ProfessionalProfilesItem } from './professionalProfilesItem';
+import type { ProfessionalUserId } from './professionalUserId';
 
 export interface Professional {
   /** The unique identifier of the entity */
@@ -29,7 +31,7 @@ export interface Professional {
    * The professional phone
    * @nullable
    */
-  phone: string | null;
+  phone: ProfessionalPhone;
   /**
    * The professional gender
    * @nullable
@@ -47,5 +49,5 @@ export interface Professional {
    * The associated user ID
    * @nullable
    */
-  userId: string | null;
+  userId: ProfessionalUserId;
 }

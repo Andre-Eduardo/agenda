@@ -5,9 +5,5 @@ export const Route = createFileRoute('/_auth')({
 });
 
 export function AuthLayout() {
-  return (
-    <Outlet />
-  );
+  return <Outlet />;
 }
-
-export default AuthLayout;

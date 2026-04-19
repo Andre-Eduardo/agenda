@@ -16,7 +16,11 @@
       "Bash(pnpm run typecheck)",
       "Bash(pnpm exec *)",
       "Bash(git stash *)",
-      "Bash(node -e ' *)"
+      "Bash(node -e ' *)",
+      "Bash(pnpm -F @agenda-app/app lint)",
+      "Bash(tasklist)",
+      "Bash(tasklist /FI \"IMAGENAME eq node.exe\" /V)",
+      "Bash(wmic process *)"
     ]
   },
   "hooks": {

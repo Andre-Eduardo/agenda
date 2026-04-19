@@ -21,10 +21,11 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "axios": "^1.7.9",
-    "@tanstack/react-query": "^5.71.10"
+    "@tanstack/react-query": "^5.71.10",
+    "axios": "^1.7.9"
   },
   "devDependencies": {
+    "@stoplight/spectral-rulesets": "^1.22.1",
     "orval": "^7.6.0",
     "oxfmt": "^0.41.0",
     "oxlint": "^1.56.0",

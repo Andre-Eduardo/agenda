@@ -24,4 +24,15 @@ export interface CreatePatientDto {
   personType?: CreatePatientDtoPersonType;
   /** @nullable */
   professionalId?: string | null;
+  /**
+   * A datetime in ISO 8601 format.
+   * @nullable
+   */
+  birthDate?: string | null;
+  /** @nullable */
+  email?: string | null;
+  /** @nullable */
+  emergencyContactName?: string | null;
+  /** @nullable */
+  emergencyContactPhone?: string | null;
 }

@@ -1,0 +1,69 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": ["react", "jsx-a11y", "import", "typescript"],
+  "categories": {
+    "correctness": "error",
+    "suspicious": "error",
+    "pedantic": "error",
+    "style": "error"
+  },
+  "options": {
+    "typeAware": true,
+    "denyWarnings": true
+  },
+  "env": {
+    "builtin": true,
+    "browser": true,
+    "es2016": true
+  },
+  "ignorePatterns": [
+    "dist",
+    "node_modules",
+    "**/logs",
+    "**/*.log",
+    "coverage",
+    ".idea",
+    ".vscode",
+    "**/.env",
+    ".jest",
+    "**/.tanstack",
+    "src/routeTree.gen.ts"
+  ],
+  "rules": {
+    "react/jsx-key": "off",
+    "react/no-did-mount-set-state": "off",
+    "react/no-unsafe": "off",
+    "jsx-a11y/no-aria-hidden-on-focusable": "off",
+    "jsx-a11y/prefer-tag-over-role": "off",
+    "react/iframe-missing-sandbox": "off",
+    "react/react-in-jsx-scope": "off",
+    "react/checked-requires-onchange-or-readonly": "off",
+    "react/display-name": "off",
+    "@typescript-eslint/only-throw-error": "off",
+    "react/jsx-no-useless-fragment": ["error", {"allowExpressions": true}],
+    "react/jsx-boolean-value": ["error", "never"],
+    "react/jsx-curly-brace-presence": ["error", {"props": "never", "children": "never"}],
+    "react/jsx-fragments": ["error", "syntax"],
+    "react/self-closing-comp": ["error", {"component": true, "html": true}],
+    "react/jsx-handler-names": "off",
+    "react/jsx-max-depth": "off",
+    "react/jsx-props-no-spreading": "off",
+    "react/no-set-state": "off",
+    "@typescript-eslint/consistent-type-imports": "error",
+    "react/button-has-type": "error",
+    "react/no-danger": "warn",
+    "react/jsx-filename-extension": ["error", {"extensions": [".jsx", ".tsx"]}],
+    "react/jsx-no-constructed-context-values": "error",
+    "react/no-array-index-key": "error",
+    "no-restricted-imports": [
+      "error",
+      {
+        "importNames": ["default"],
+        "message": "Do not use React qualifier, use import deconstruction instead.",
+        "name": "react"
+      }
+    ],
+    "@typescript-eslint/no-explicit-any": "error",
+    "@typescript-eslint/no-non-null-assertion": "error"
+  }
+}

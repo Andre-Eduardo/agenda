@@ -10,8 +10,29 @@
                 the token will be invalidated and removed from the cookie.
  * OpenAPI spec version: 0.0.0
  */
+import type { UpdateRecordInputDtoTemplateType } from './updateRecordInputDtoTemplateType';
+import type { UpdateRecordInputDtoAttendanceType } from './updateRecordInputDtoAttendanceType';
+import type { UpdateRecordInputDtoClinicalStatus } from './updateRecordInputDtoClinicalStatus';
+import type { UpdateRecordInputDtoConductTagsItem } from './updateRecordInputDtoConductTagsItem';
+import type { UpdateRecordInputDtoSource } from './updateRecordInputDtoSource';
 
 export interface UpdateRecordInputDto {
   /** @minLength 1 */
   description: string;
+  /** @maxLength 255 */
+  title: string;
+  templateType: UpdateRecordInputDtoTemplateType;
+  attendanceType: UpdateRecordInputDtoAttendanceType;
+  clinicalStatus: UpdateRecordInputDtoClinicalStatus;
+  conductTags: UpdateRecordInputDtoConductTagsItem[];
+  subjective: string;
+  objective: string;
+  assessment: string;
+  plan: string;
+  freeNotes: string;
+  /** A datetime in ISO 8601 format. */
+  eventDate: string;
+  source: UpdateRecordInputDtoSource;
+  importedDocumentId: string;
+  wasHumanEdited: boolean;
 }

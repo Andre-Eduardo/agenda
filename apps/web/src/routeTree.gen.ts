@@ -10,12 +10,49 @@
 
 import { Route as rootRouteImport } from './views/root'
 import { Route as DotDotLayoutsAuthLayoutIndexRouteImport } from './views/layouts/AuthLayout/index'
+import { Route as professionalPagesListIndexRouteImport } from './views/modules/professional/pages/list/index'
+import { Route as patientPagesListIndexRouteImport } from './views/modules/patient/pages/list/index'
+import { Route as formTemplatePagesListIndexRouteImport } from './views/modules/formTemplate/pages/list/index'
+import { Route as appointmentPagesListIndexRouteImport } from './views/modules/appointment/pages/list/index'
 import { Route as dashboardPagesIndexIndexRouteImport } from './views/modules/dashboard/pages/index/index'
+import { Route as patientPagesDetailIndexRouteImport } from './views/modules/patient/pages/detail/index'
 import { Route as authPagesLoginIndexRouteImport } from './views/modules/auth/pages/login/index'
+import { Route as professionalPagesFormNewRouteImport } from './views/modules/professional/pages/form/new'
+import { Route as patientPagesFormNewRouteImport } from './views/modules/patient/pages/form/new'
+import { Route as clinicalChatPagesSessionIndexRouteImport } from './views/modules/clinicalChat/pages/session/index'
+import { Route as clinicalChatPagesAiAnalysisIndexRouteImport } from './views/modules/clinicalChat/pages/aiAnalysis/index'
+import { Route as professionalPagesFormEditRouteImport } from './views/modules/professional/pages/form/edit'
+import { Route as patientPagesFormEditRouteImport } from './views/modules/patient/pages/form/edit'
+import { Route as recordPagesNewIndexRouteImport } from './views/modules/record/pages/new/index'
+import { Route as patientFormPagesFillIndexRouteImport } from './views/modules/patientForm/pages/fill/index'
+import { Route as recordPagesEditIndexRouteImport } from './views/modules/record/pages/edit/index'
 
 const DotDotLayoutsAuthLayoutIndexRoute =
   DotDotLayoutsAuthLayoutIndexRouteImport.update({
     id: '/_auth',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const professionalPagesListIndexRoute =
+  professionalPagesListIndexRouteImport.update({
+    id: '/_stackedLayout/professionals',
+    path: '/professionals',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const patientPagesListIndexRoute = patientPagesListIndexRouteImport.update({
+  id: '/_stackedLayout/patients',
+  path: '/patients',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const formTemplatePagesListIndexRoute =
+  formTemplatePagesListIndexRouteImport.update({
+    id: '/_stackedLayout/form-templates',
+    path: '/form-templates',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const appointmentPagesListIndexRoute =
+  appointmentPagesListIndexRouteImport.update({
+    id: '/_stackedLayout/appointments',
+    path: '/appointments',
     getParentRoute: () => rootRouteImport,
   } as any)
 const dashboardPagesIndexIndexRoute =
@@ -24,37 +61,188 @@ const dashboardPagesIndexIndexRoute =
     path: '/',
     getParentRoute: () => rootRouteImport,
   } as any)
+const patientPagesDetailIndexRoute = patientPagesDetailIndexRouteImport.update({
+  id: '/$patientId',
+  path: '/$patientId',
+  getParentRoute: () => patientPagesListIndexRoute,
+} as any)
 const authPagesLoginIndexRoute = authPagesLoginIndexRouteImport.update({
   id: '/auth/login',
   path: '/auth/login',
   getParentRoute: () => DotDotLayoutsAuthLayoutIndexRoute,
 } as any)
+const professionalPagesFormNewRoute =
+  professionalPagesFormNewRouteImport.update({
+    id: '/new',
+    path: '/new',
+    getParentRoute: () => professionalPagesListIndexRoute,
+  } as any)
+const patientPagesFormNewRoute = patientPagesFormNewRouteImport.update({
+  id: '/new',
+  path: '/new',
+  getParentRoute: () => patientPagesListIndexRoute,
+} as any)
+const clinicalChatPagesSessionIndexRoute =
+  clinicalChatPagesSessionIndexRouteImport.update({
+    id: '/chat',
+    path: '/chat',
+    getParentRoute: () => patientPagesDetailIndexRoute,
+  } as any)
+const clinicalChatPagesAiAnalysisIndexRoute =
+  clinicalChatPagesAiAnalysisIndexRouteImport.update({
+    id: '/ai-analysis',
+    path: '/ai-analysis',
+    getParentRoute: () => patientPagesDetailIndexRoute,
+  } as any)
+const professionalPagesFormEditRoute =
+  professionalPagesFormEditRouteImport.update({
+    id: '/$professionalId/edit',
+    path: '/$professionalId/edit',
+    getParentRoute: () => professionalPagesListIndexRoute,
+  } as any)
+const patientPagesFormEditRoute = patientPagesFormEditRouteImport.update({
+  id: '/edit',
+  path: '/edit',
+  getParentRoute: () => patientPagesDetailIndexRoute,
+} as any)
+const recordPagesNewIndexRoute = recordPagesNewIndexRouteImport.update({
+  id: '/records/new',
+  path: '/records/new',
+  getParentRoute: () => patientPagesDetailIndexRoute,
+} as any)
+const patientFormPagesFillIndexRoute =
+  patientFormPagesFillIndexRouteImport.update({
+    id: '/forms/$patientFormId',
+    path: '/forms/$patientFormId',
+    getParentRoute: () => patientPagesDetailIndexRoute,
+  } as any)
+const recordPagesEditIndexRoute = recordPagesEditIndexRouteImport.update({
+  id: '/records/$recordId/edit',
+  path: '/records/$recordId/edit',
+  getParentRoute: () => patientPagesDetailIndexRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof dashboardPagesIndexIndexRoute
+  '/appointments': typeof appointmentPagesListIndexRoute
+  '/form-templates': typeof formTemplatePagesListIndexRoute
+  '/patients': typeof patientPagesListIndexRouteWithChildren
+  '/professionals': typeof professionalPagesListIndexRouteWithChildren
+  '/patients/new': typeof patientPagesFormNewRoute
+  '/professionals/new': typeof professionalPagesFormNewRoute
   '/auth/login': typeof authPagesLoginIndexRoute
+  '/patients/$patientId': typeof patientPagesDetailIndexRouteWithChildren
+  '/patients/$patientId/edit': typeof patientPagesFormEditRoute
+  '/professionals/$professionalId/edit': typeof professionalPagesFormEditRoute
+  '/patients/$patientId/ai-analysis': typeof clinicalChatPagesAiAnalysisIndexRoute
+  '/patients/$patientId/chat': typeof clinicalChatPagesSessionIndexRoute
+  '/patients/$patientId/forms/$patientFormId': typeof patientFormPagesFillIndexRoute
+  '/patients/$patientId/records/new': typeof recordPagesNewIndexRoute
+  '/patients/$patientId/records/$recordId/edit': typeof recordPagesEditIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof dashboardPagesIndexIndexRoute
+  '/appointments': typeof appointmentPagesListIndexRoute
+  '/form-templates': typeof formTemplatePagesListIndexRoute
+  '/patients': typeof patientPagesListIndexRouteWithChildren
+  '/professionals': typeof professionalPagesListIndexRouteWithChildren
+  '/patients/new': typeof patientPagesFormNewRoute
+  '/professionals/new': typeof professionalPagesFormNewRoute
   '/auth/login': typeof authPagesLoginIndexRoute
+  '/patients/$patientId': typeof patientPagesDetailIndexRouteWithChildren
+  '/patients/$patientId/edit': typeof patientPagesFormEditRoute
+  '/professionals/$professionalId/edit': typeof professionalPagesFormEditRoute
+  '/patients/$patientId/ai-analysis': typeof clinicalChatPagesAiAnalysisIndexRoute
+  '/patients/$patientId/chat': typeof clinicalChatPagesSessionIndexRoute
+  '/patients/$patientId/forms/$patientFormId': typeof patientFormPagesFillIndexRoute
+  '/patients/$patientId/records/new': typeof recordPagesNewIndexRoute
+  '/patients/$patientId/records/$recordId/edit': typeof recordPagesEditIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_auth': typeof DotDotLayoutsAuthLayoutIndexRouteWithChildren
   '/_stackedLayout/': typeof dashboardPagesIndexIndexRoute
+  '/_stackedLayout/appointments': typeof appointmentPagesListIndexRoute
+  '/_stackedLayout/form-templates': typeof formTemplatePagesListIndexRoute
+  '/_stackedLayout/patients': typeof patientPagesListIndexRouteWithChildren
+  '/_stackedLayout/professionals': typeof professionalPagesListIndexRouteWithChildren
+  '/_stackedLayout/patients/new': typeof patientPagesFormNewRoute
+  '/_stackedLayout/professionals/new': typeof professionalPagesFormNewRoute
   '/_auth/auth/login': typeof authPagesLoginIndexRoute
+  '/_stackedLayout/patients/$patientId': typeof patientPagesDetailIndexRouteWithChildren
+  '/_stackedLayout/patients/$patientId/edit': typeof patientPagesFormEditRoute
+  '/_stackedLayout/professionals/$professionalId/edit': typeof professionalPagesFormEditRoute
+  '/_stackedLayout/patients/$patientId/ai-analysis': typeof clinicalChatPagesAiAnalysisIndexRoute
+  '/_stackedLayout/patients/$patientId/chat': typeof clinicalChatPagesSessionIndexRoute
+  '/_stackedLayout/patients/$patientId/forms/$patientFormId': typeof patientFormPagesFillIndexRoute
+  '/_stackedLayout/patients/$patientId/records/new': typeof recordPagesNewIndexRoute
+  '/_stackedLayout/patients/$patientId/records/$recordId/edit': typeof recordPagesEditIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/auth/login'
+  fullPaths:
+    | '/'
+    | '/appointments'
+    | '/form-templates'
+    | '/patients'
+    | '/professionals'
+    | '/patients/new'
+    | '/professionals/new'
+    | '/auth/login'
+    | '/patients/$patientId'
+    | '/patients/$patientId/edit'
+    | '/professionals/$professionalId/edit'
+    | '/patients/$patientId/ai-analysis'
+    | '/patients/$patientId/chat'
+    | '/patients/$patientId/forms/$patientFormId'
+    | '/patients/$patientId/records/new'
+    | '/patients/$patientId/records/$recordId/edit'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth/login'
-  id: '__root__' | '/_auth' | '/_stackedLayout/' | '/_auth/auth/login'
+  to:
+    | '/'
+    | '/appointments'
+    | '/form-templates'
+    | '/patients'
+    | '/professionals'
+    | '/patients/new'
+    | '/professionals/new'
+    | '/auth/login'
+    | '/patients/$patientId'
+    | '/patients/$patientId/edit'
+    | '/professionals/$professionalId/edit'
+    | '/patients/$patientId/ai-analysis'
+    | '/patients/$patientId/chat'
+    | '/patients/$patientId/forms/$patientFormId'
+    | '/patients/$patientId/records/new'
+    | '/patients/$patientId/records/$recordId/edit'
+  id:
+    | '__root__'
+    | '/_auth'
+    | '/_stackedLayout/'
+    | '/_stackedLayout/appointments'
+    | '/_stackedLayout/form-templates'
+    | '/_stackedLayout/patients'
+    | '/_stackedLayout/professionals'
+    | '/_stackedLayout/patients/new'
+    | '/_stackedLayout/professionals/new'
+    | '/_auth/auth/login'
+    | '/_stackedLayout/patients/$patientId'
+    | '/_stackedLayout/patients/$patientId/edit'
+    | '/_stackedLayout/professionals/$professionalId/edit'
+    | '/_stackedLayout/patients/$patientId/ai-analysis'
+    | '/_stackedLayout/patients/$patientId/chat'
+    | '/_stackedLayout/patients/$patientId/forms/$patientFormId'
+    | '/_stackedLayout/patients/$patientId/records/new'
+    | '/_stackedLayout/patients/$patientId/records/$recordId/edit'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   DotDotLayoutsAuthLayoutIndexRoute: typeof DotDotLayoutsAuthLayoutIndexRouteWithChildren
   dashboardPagesIndexIndexRoute: typeof dashboardPagesIndexIndexRoute
+  appointmentPagesListIndexRoute: typeof appointmentPagesListIndexRoute
+  formTemplatePagesListIndexRoute: typeof formTemplatePagesListIndexRoute
+  patientPagesListIndexRoute: typeof patientPagesListIndexRouteWithChildren
+  professionalPagesListIndexRoute: typeof professionalPagesListIndexRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
@@ -66,6 +254,34 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DotDotLayoutsAuthLayoutIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_stackedLayout/professionals': {
+      id: '/_stackedLayout/professionals'
+      path: '/professionals'
+      fullPath: '/professionals'
+      preLoaderRoute: typeof professionalPagesListIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_stackedLayout/patients': {
+      id: '/_stackedLayout/patients'
+      path: '/patients'
+      fullPath: '/patients'
+      preLoaderRoute: typeof patientPagesListIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_stackedLayout/form-templates': {
+      id: '/_stackedLayout/form-templates'
+      path: '/form-templates'
+      fullPath: '/form-templates'
+      preLoaderRoute: typeof formTemplatePagesListIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_stackedLayout/appointments': {
+      id: '/_stackedLayout/appointments'
+      path: '/appointments'
+      fullPath: '/appointments'
+      preLoaderRoute: typeof appointmentPagesListIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_stackedLayout/': {
       id: '/_stackedLayout/'
       path: '/'
@@ -73,12 +289,82 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof dashboardPagesIndexIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_stackedLayout/patients/$patientId': {
+      id: '/_stackedLayout/patients/$patientId'
+      path: '/$patientId'
+      fullPath: '/patients/$patientId'
+      preLoaderRoute: typeof patientPagesDetailIndexRouteImport
+      parentRoute: typeof patientPagesListIndexRoute
+    }
     '/_auth/auth/login': {
       id: '/_auth/auth/login'
       path: '/auth/login'
       fullPath: '/auth/login'
       preLoaderRoute: typeof authPagesLoginIndexRouteImport
       parentRoute: typeof DotDotLayoutsAuthLayoutIndexRoute
+    }
+    '/_stackedLayout/professionals/new': {
+      id: '/_stackedLayout/professionals/new'
+      path: '/new'
+      fullPath: '/professionals/new'
+      preLoaderRoute: typeof professionalPagesFormNewRouteImport
+      parentRoute: typeof professionalPagesListIndexRoute
+    }
+    '/_stackedLayout/patients/new': {
+      id: '/_stackedLayout/patients/new'
+      path: '/new'
+      fullPath: '/patients/new'
+      preLoaderRoute: typeof patientPagesFormNewRouteImport
+      parentRoute: typeof patientPagesListIndexRoute
+    }
+    '/_stackedLayout/patients/$patientId/chat': {
+      id: '/_stackedLayout/patients/$patientId/chat'
+      path: '/chat'
+      fullPath: '/patients/$patientId/chat'
+      preLoaderRoute: typeof clinicalChatPagesSessionIndexRouteImport
+      parentRoute: typeof patientPagesDetailIndexRoute
+    }
+    '/_stackedLayout/patients/$patientId/ai-analysis': {
+      id: '/_stackedLayout/patients/$patientId/ai-analysis'
+      path: '/ai-analysis'
+      fullPath: '/patients/$patientId/ai-analysis'
+      preLoaderRoute: typeof clinicalChatPagesAiAnalysisIndexRouteImport
+      parentRoute: typeof patientPagesDetailIndexRoute
+    }
+    '/_stackedLayout/professionals/$professionalId/edit': {
+      id: '/_stackedLayout/professionals/$professionalId/edit'
+      path: '/$professionalId/edit'
+      fullPath: '/professionals/$professionalId/edit'
+      preLoaderRoute: typeof professionalPagesFormEditRouteImport
+      parentRoute: typeof professionalPagesListIndexRoute
+    }
+    '/_stackedLayout/patients/$patientId/edit': {
+      id: '/_stackedLayout/patients/$patientId/edit'
+      path: '/edit'
+      fullPath: '/patients/$patientId/edit'
+      preLoaderRoute: typeof patientPagesFormEditRouteImport
+      parentRoute: typeof patientPagesDetailIndexRoute
+    }
+    '/_stackedLayout/patients/$patientId/records/new': {
+      id: '/_stackedLayout/patients/$patientId/records/new'
+      path: '/records/new'
+      fullPath: '/patients/$patientId/records/new'
+      preLoaderRoute: typeof recordPagesNewIndexRouteImport
+      parentRoute: typeof patientPagesDetailIndexRoute
+    }
+    '/_stackedLayout/patients/$patientId/forms/$patientFormId': {
+      id: '/_stackedLayout/patients/$patientId/forms/$patientFormId'
+      path: '/forms/$patientFormId'
+      fullPath: '/patients/$patientId/forms/$patientFormId'
+      preLoaderRoute: typeof patientFormPagesFillIndexRouteImport
+      parentRoute: typeof patientPagesDetailIndexRoute
+    }
+    '/_stackedLayout/patients/$patientId/records/$recordId/edit': {
+      id: '/_stackedLayout/patients/$patientId/records/$recordId/edit'
+      path: '/records/$recordId/edit'
+      fullPath: '/patients/$patientId/records/$recordId/edit'
+      preLoaderRoute: typeof recordPagesEditIndexRouteImport
+      parentRoute: typeof patientPagesDetailIndexRoute
     }
   }
 }
@@ -97,10 +383,70 @@ const DotDotLayoutsAuthLayoutIndexRouteWithChildren =
     DotDotLayoutsAuthLayoutIndexRouteChildren,
   )
 
+interface patientPagesDetailIndexRouteChildren {
+  patientPagesFormEditRoute: typeof patientPagesFormEditRoute
+  clinicalChatPagesAiAnalysisIndexRoute: typeof clinicalChatPagesAiAnalysisIndexRoute
+  clinicalChatPagesSessionIndexRoute: typeof clinicalChatPagesSessionIndexRoute
+  patientFormPagesFillIndexRoute: typeof patientFormPagesFillIndexRoute
+  recordPagesNewIndexRoute: typeof recordPagesNewIndexRoute
+  recordPagesEditIndexRoute: typeof recordPagesEditIndexRoute
+}
+
+const patientPagesDetailIndexRouteChildren: patientPagesDetailIndexRouteChildren =
+  {
+    patientPagesFormEditRoute: patientPagesFormEditRoute,
+    clinicalChatPagesAiAnalysisIndexRoute:
+      clinicalChatPagesAiAnalysisIndexRoute,
+    clinicalChatPagesSessionIndexRoute: clinicalChatPagesSessionIndexRoute,
+    patientFormPagesFillIndexRoute: patientFormPagesFillIndexRoute,
+    recordPagesNewIndexRoute: recordPagesNewIndexRoute,
+    recordPagesEditIndexRoute: recordPagesEditIndexRoute,
+  }
+
+const patientPagesDetailIndexRouteWithChildren =
+  patientPagesDetailIndexRoute._addFileChildren(
+    patientPagesDetailIndexRouteChildren,
+  )
+
+interface patientPagesListIndexRouteChildren {
+  patientPagesFormNewRoute: typeof patientPagesFormNewRoute
+  patientPagesDetailIndexRoute: typeof patientPagesDetailIndexRouteWithChildren
+}
+
+const patientPagesListIndexRouteChildren: patientPagesListIndexRouteChildren = {
+  patientPagesFormNewRoute: patientPagesFormNewRoute,
+  patientPagesDetailIndexRoute: patientPagesDetailIndexRouteWithChildren,
+}
+
+const patientPagesListIndexRouteWithChildren =
+  patientPagesListIndexRoute._addFileChildren(
+    patientPagesListIndexRouteChildren,
+  )
+
+interface professionalPagesListIndexRouteChildren {
+  professionalPagesFormNewRoute: typeof professionalPagesFormNewRoute
+  professionalPagesFormEditRoute: typeof professionalPagesFormEditRoute
+}
+
+const professionalPagesListIndexRouteChildren: professionalPagesListIndexRouteChildren =
+  {
+    professionalPagesFormNewRoute: professionalPagesFormNewRoute,
+    professionalPagesFormEditRoute: professionalPagesFormEditRoute,
+  }
+
+const professionalPagesListIndexRouteWithChildren =
+  professionalPagesListIndexRoute._addFileChildren(
+    professionalPagesListIndexRouteChildren,
+  )
+
 const rootRouteChildren: RootRouteChildren = {
   DotDotLayoutsAuthLayoutIndexRoute:
     DotDotLayoutsAuthLayoutIndexRouteWithChildren,
   dashboardPagesIndexIndexRoute: dashboardPagesIndexIndexRoute,
+  appointmentPagesListIndexRoute: appointmentPagesListIndexRoute,
+  formTemplatePagesListIndexRoute: formTemplatePagesListIndexRoute,
+  patientPagesListIndexRoute: patientPagesListIndexRouteWithChildren,
+  professionalPagesListIndexRoute: professionalPagesListIndexRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

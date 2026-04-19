@@ -11,11 +11,33 @@
  * OpenAPI spec version: 0.0.0
  */
 import type { CreateRecordDtoFilesItem } from './createRecordDtoFilesItem';
+import type { CreateRecordDtoTemplateType } from './createRecordDtoTemplateType';
+import type { CreateRecordDtoAttendanceType } from './createRecordDtoAttendanceType';
+import type { CreateRecordDtoClinicalStatus } from './createRecordDtoClinicalStatus';
+import type { CreateRecordDtoConductTagsItem } from './createRecordDtoConductTagsItem';
+import type { CreateRecordDtoSource } from './createRecordDtoSource';
 
 export interface CreateRecordDto {
   patientId: string;
   professionalId: string;
   /** @minLength 1 */
-  description: string;
+  description?: string;
   files?: CreateRecordDtoFilesItem[];
+  /** @maxLength 255 */
+  title?: string;
+  templateType?: CreateRecordDtoTemplateType;
+  attendanceType?: CreateRecordDtoAttendanceType;
+  clinicalStatus?: CreateRecordDtoClinicalStatus;
+  conductTags?: CreateRecordDtoConductTagsItem[];
+  subjective?: string;
+  objective?: string;
+  assessment?: string;
+  plan?: string;
+  freeNotes?: string;
+  /** A datetime in ISO 8601 format. */
+  eventDate?: string;
+  appointmentId?: string;
+  source?: CreateRecordDtoSource;
+  importedDocumentId?: string;
+  wasHumanEdited?: boolean;
 }

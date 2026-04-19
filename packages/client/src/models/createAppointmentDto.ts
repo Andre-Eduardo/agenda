@@ -10,12 +10,17 @@
                 the token will be invalidated and removed from the cookie.
  * OpenAPI spec version: 0.0.0
  */
+import type { CreateAppointmentDtoType } from './createAppointmentDtoType';
 
 export interface CreateAppointmentDto {
   patientId: string;
   professionalId: string;
   /** A datetime in ISO 8601 format. */
-  date: string;
+  startAt: string;
+  /** A datetime in ISO 8601 format. */
+  endAt: string;
+  type: CreateAppointmentDtoType;
   /** @nullable */
   note?: string | null;
+  retroactive?: boolean;
 }

@@ -62,7 +62,7 @@ export class FormTemplateController {
     })
     @Authorize(FormTemplatePermission.VIEW)
     @Get()
-    async search(
+    async searchFormTemplates(
         @RequestActor() actor: Actor,
         @Query(new ZodValidationPipe(searchFormTemplatesSchema)) query: SearchFormTemplatesDto
     ): Promise<PaginatedDto<FormTemplateDto>> {

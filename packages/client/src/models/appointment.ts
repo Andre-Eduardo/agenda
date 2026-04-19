@@ -10,7 +10,11 @@
                 the token will be invalidated and removed from the cookie.
  * OpenAPI spec version: 0.0.0
  */
+import type { AppointmentType } from './appointmentType';
 import type { AppointmentStatus } from './appointmentStatus';
+import type { AppointmentCanceledAt } from './appointmentCanceledAt';
+import type { AppointmentCanceledReason } from './appointmentCanceledReason';
+import type { AppointmentNote } from './appointmentNote';
 
 export interface Appointment {
   /** The unique identifier of the entity */
@@ -23,23 +27,29 @@ export interface Appointment {
   patientId: string;
   /** The professional ID */
   professionalId: string;
-  /** The appointment date */
-  date: string;
+  /** The appointment start time */
+  startAt: string;
+  /** The appointment end time */
+  endAt: string;
+  /** Duration in minutes */
+  durationMinutes: number;
+  /** The appointment type */
+  type: AppointmentType;
   /** The appointment status */
   status: AppointmentStatus;
   /**
    * When the appointment was canceled
    * @nullable
    */
-  canceledAt: string | null;
+  canceledAt: AppointmentCanceledAt;
   /**
    * The reason for cancellation
    * @nullable
    */
-  canceledReason: string | null;
+  canceledReason: AppointmentCanceledReason;
   /**
    * Notes about the appointment
    * @nullable
    */
-  note: string | null;
+  note: AppointmentNote;
 }

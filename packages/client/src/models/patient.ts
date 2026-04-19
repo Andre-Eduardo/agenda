@@ -10,9 +10,15 @@
                 the token will be invalidated and removed from the cookie.
  * OpenAPI spec version: 0.0.0
  */
+import type { PatientPhone } from './patientPhone';
 import type { PatientGender } from './patientGender';
 import type { PatientPersonType } from './patientPersonType';
 import type { PatientProfilesItem } from './patientProfilesItem';
+import type { PatientProfessionalId } from './patientProfessionalId';
+import type { PatientBirthDate } from './patientBirthDate';
+import type { PatientEmail } from './patientEmail';
+import type { PatientEmergencyContactName } from './patientEmergencyContactName';
+import type { PatientEmergencyContactPhone } from './patientEmergencyContactPhone';
 
 export interface Patient {
   /** The unique identifier of the entity */
@@ -29,7 +35,7 @@ export interface Patient {
    * The patient phone
    * @nullable
    */
-  phone: string | null;
+  phone: PatientPhone;
   /**
    * The patient gender
    * @nullable
@@ -43,5 +49,25 @@ export interface Patient {
    * The associated professional ID
    * @nullable
    */
-  professionalId: string | null;
+  professionalId: PatientProfessionalId;
+  /**
+   * The patient birth date
+   * @nullable
+   */
+  birthDate: PatientBirthDate;
+  /**
+   * The patient email
+   * @nullable
+   */
+  email: PatientEmail;
+  /**
+   * Emergency contact name
+   * @nullable
+   */
+  emergencyContactName: PatientEmergencyContactName;
+  /**
+   * Emergency contact phone
+   * @nullable
+   */
+  emergencyContactPhone: PatientEmergencyContactPhone;
 }

@@ -10,5 +10,24 @@
                 the token will be invalidated and removed from the cookie.
  * OpenAPI spec version: 0.0.0
  */
+import type { UpdatePatientInputDtoGender } from './updatePatientInputDtoGender';
 
-export interface UpdatePatientInputDto { [key: string]: unknown }
+export interface UpdatePatientInputDto {
+  /** @minLength 1 */
+  name: string;
+  /** @nullable */
+  phone: string | null;
+  /** @nullable */
+  gender: UpdatePatientInputDtoGender;
+  /**
+   * A datetime in ISO 8601 format.
+   * @nullable
+   */
+  birthDate: string | null;
+  /** @nullable */
+  email: string | null;
+  /** @nullable */
+  emergencyContactName: string | null;
+  /** @nullable */
+  emergencyContactPhone: string | null;
+}

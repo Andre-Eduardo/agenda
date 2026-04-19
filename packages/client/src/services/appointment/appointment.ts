@@ -32,6 +32,7 @@ import type {
 import type {
   ApiProblem,
   Appointment,
+  CancelAppointmentInputDto,
   CreateAppointmentDto,
   SearchAppointmentsParams,
   UpdateAppointmentInputDto
@@ -415,6 +416,70 @@ export const useDeleteAppointment = <TError = ApiProblem,
       > => {
 
       const mutationOptions = getDeleteAppointmentMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
+ * @summary Cancels an appointment
+ */
+export const cancelAppointment = (
+    id: string,
+    cancelAppointmentInputDto: CancelAppointmentInputDto,
+ options?: SecondParameter<typeof apiClient>,) => {
+      
+      
+      return apiClient<Appointment>(
+      {url: `/api/v1/appointments/${id}/cancel`, method: 'PATCH',
+      headers: {'Content-Type': 'application/json', },
+      data: cancelAppointmentInputDto
+    },
+      options);
+    }
+  
+
+
+export const getCancelAppointmentMutationOptions = <TError = ApiProblem,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof cancelAppointment>>, TError,{id: string;data: CancelAppointmentInputDto}, TContext>, request?: SecondParameter<typeof apiClient>}
+): UseMutationOptions<Awaited<ReturnType<typeof cancelAppointment>>, TError,{id: string;data: CancelAppointmentInputDto}, TContext> => {
+
+const mutationKey = ['cancelAppointment'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof cancelAppointment>>, {id: string;data: CancelAppointmentInputDto}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  cancelAppointment(id,data,requestOptions)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CancelAppointmentMutationResult = NonNullable<Awaited<ReturnType<typeof cancelAppointment>>>
+    export type CancelAppointmentMutationBody = CancelAppointmentInputDto
+    export type CancelAppointmentMutationError = ApiProblem
+
+    /**
+ * @summary Cancels an appointment
+ */
+export const useCancelAppointment = <TError = ApiProblem,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof cancelAppointment>>, TError,{id: string;data: CancelAppointmentInputDto}, TContext>, request?: SecondParameter<typeof apiClient>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof cancelAppointment>>,
+        TError,
+        {id: string;data: CancelAppointmentInputDto},
+        TContext
+      > => {
+
+      const mutationOptions = getCancelAppointmentMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
