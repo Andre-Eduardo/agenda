@@ -95,7 +95,12 @@
       "Bash(pnpm -F @agenda-app/server typecheck)",
       "Bash(pnpm -F @agenda-app/server test -- --testPathPattern=\"fake-user\")",
       "Bash(pnpm -F @agenda-app/server test -- --testPathPattern=\"user/entities\")",
-      "Bash(pnpm -F @agenda-app/server test -- --testPathPattern=\"user.entity\")"
+      "Bash(pnpm -F @agenda-app/server test -- --testPathPattern=\"user.entity\")",
+      "Edit(/.claude/skills/code-review/**)",
+      "Edit(/.claude/skills/refactoring/**)"
+    ],
+    "additionalDirectories": [
+      "\\tmp"
     ]
   },
   "enabledMcpjsonServers": [

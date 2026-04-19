@@ -1,5 +1,6 @@
 import {Injectable} from '@nestjs/common';
 import * as PrismaClient from '@prisma/client';
+import {toEnum} from '../../domain/@shared/utils';
 import {PatientChatMessage, PatientChatMessageId, PatientChatSessionId, ChatMessageRole} from '../../domain/clinical-chat/entities';
 import {MapperWithoutDto} from './mapper';
 
@@ -11,7 +12,7 @@ export class PatientChatMessageMapper extends MapperWithoutDto<PatientChatMessag
         return new PatientChatMessage({
             id: PatientChatMessageId.from(model.id),
             sessionId: PatientChatSessionId.from(model.sessionId),
-            role: model.role as unknown as ChatMessageRole,
+            role: toEnum(ChatMessageRole, model.role),
             content: model.content,
             metadata: model.metadata as Record<string, unknown> | null,
             chunkIds: model.chunkIds ?? [],
@@ -25,7 +26,7 @@ export class PatientChatMessageMapper extends MapperWithoutDto<PatientChatMessag
         return {
             id: entity.id.toString(),
             sessionId: entity.sessionId.toString(),
-            role: entity.role as unknown as PrismaClient.ChatMessageRole,
+            role: toEnum(PrismaClient.ChatMessageRole, entity.role),
             content: entity.content,
             metadata: entity.metadata as PrismaClient.Prisma.JsonValue,
             chunkIds: entity.chunkIds,

@@ -1,5 +1,6 @@
 import {Injectable} from '@nestjs/common';
 import * as PrismaClient from '@prisma/client';
+import {toEnum} from '../../domain/@shared/utils';
 import {FormTemplate, FormTemplateId, Specialty} from '../../domain/form-template/entities';
 import {ProfessionalId} from '../../domain/professional/entities';
 import {MapperWithoutDto} from './mapper';
@@ -14,7 +15,7 @@ export class FormTemplateMapper extends MapperWithoutDto<FormTemplate, FormTempl
             code: model.code,
             name: model.name,
             description: model.description ?? null,
-            specialty: model.specialty as unknown as Specialty,
+            specialty: toEnum(Specialty, model.specialty),
             isPublic: model.isPublic,
             professionalId: model.professionalId ? ProfessionalId.from(model.professionalId) : null,
             createdAt: model.createdAt,
@@ -29,7 +30,7 @@ export class FormTemplateMapper extends MapperWithoutDto<FormTemplate, FormTempl
             code: entity.code,
             name: entity.name,
             description: entity.description,
-            specialty: entity.specialty as unknown as PrismaClient.Specialty,
+            specialty: toEnum(PrismaClient.Specialty, entity.specialty),
             isPublic: entity.isPublic,
             professionalId: entity.professionalId?.toString() ?? null,
             createdAt: entity.createdAt,

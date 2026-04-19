@@ -105,6 +105,22 @@ throw new PreconditionException(EntityExceptions.cannot_delete_active);
 
 Nunca lance `Error` puro ou `HttpException` de services. Chaves de exceção devem existir nos 3 arquivos de tradução (`pt-BR`, `en-US`, `es-ES`).
 
+## Type safety — regras obrigatórias
+
+**Zero casts em `src/` fora de `__tests__/`.** Antes de commitar, confirme:
+
+```bash
+grep -rE "\bas any\b|as unknown as" apps/server/src/ --include="*.ts" | grep -v __tests__
+```
+
+- Enums Prisma ↔ domínio: sempre use `toEnum` / `toEnumOrNull` / `toEnumArray` de `@domain/@shared/utils` — eles validam em runtime e retornam o tipo correto
+- IDs/value objects de DTOs Zod (`entityId()`, `phone()`) **já estão tipados** — nunca caste de novo
+- JSON fields na escrita Prisma: use `satisfies Prisma.XxxUncheckedCreateInput` + `Prisma.JsonNull` para campos nullable (detalhes em §5 do doc)
+- Snapshot de entidade (`oldState`): `new Entity(this)`, nunca `this.toJSON() as any`
+- Non-null assertions (`!`) proibidas — estreite o parâmetro ou use guard explícito
+
+**Referência completa e exemplos**: [`docs/type-safety-patterns.md`](../../docs/type-safety-patterns.md).
+
 ## Entidade de domínio
 
 ```typescript

@@ -1,6 +1,7 @@
 import {Injectable} from '@nestjs/common';
 import * as PrismaClient from '@prisma/client';
 import {DocumentId, Phone} from '../../domain/@shared/value-objects';
+import {toEnum, toEnumOrNull} from '../../domain/@shared/utils';
 import {Patient, PatientId} from '../../domain/patient/entities';
 import {Gender, PersonType, PersonProfile} from '../../domain/person/entities/person.entity';
 import {ProfessionalId} from '../../domain/professional/entities';
@@ -19,8 +20,8 @@ export class PatientMapper extends MapperWithoutDto<Patient, PatientModel> {
             id: PatientId.from(patientModel.id),
             professionalId: patientModel.professionalId ? ProfessionalId.from(patientModel.professionalId) : null,
             documentId: DocumentId.create(patientModel.documentId),
-            gender: person.gender ? (person.gender as unknown as Gender) : null,
-            personType: person.personType as unknown as PersonType,
+            gender: toEnumOrNull(Gender, person.gender),
+            personType: toEnum(PersonType, person.personType),
             phone: person.phone ? Phone.create(person.phone) : null,
             profiles: new Set([PersonProfile.PATIENT]),
             deletedAt: patientModel.deletedAt ?? null,
@@ -48,8 +49,8 @@ export class PatientMapper extends MapperWithoutDto<Patient, PatientModel> {
                 name: entity.name,
                 documentId: entity.documentId.toString(),
                 phone: entity.phone?.toString() ?? null,
-                gender: entity.gender ? (entity.gender as unknown as PrismaClient.Gender) : null,
-                personType: entity.personType as unknown as PrismaClient.PersonType,
+                gender: toEnumOrNull(PrismaClient.Gender, entity.gender),
+                personType: toEnum(PrismaClient.PersonType, entity.personType),
                 createdAt: entity.createdAt,
                 updatedAt: entity.updatedAt,
                 deletedAt: entity.deletedAt ?? null,

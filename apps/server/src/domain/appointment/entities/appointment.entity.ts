@@ -88,7 +88,7 @@ export class Appointment extends AggregateRoot<AppointmentId> {
             throw new PreconditionException(`Cannot modify an appointment with status ${this.status}.`);
         }
 
-        const oldState = new Appointment(this.toJSON() as any);
+        const oldState = new Appointment(this);
 
         if (props.startAt !== undefined) {
             this.startAt = props.startAt;
@@ -120,7 +120,7 @@ export class Appointment extends AggregateRoot<AppointmentId> {
             throw new PreconditionException(`Cannot cancel an appointment with status ${this.status}.`);
         }
 
-        const oldState = new Appointment(this.toJSON() as any);
+        const oldState = new Appointment(this);
         this.status = AppointmentStatus.CANCELLED;
         this.canceledAt = new Date();
         this.canceledReason = reason;
@@ -133,7 +133,7 @@ export class Appointment extends AggregateRoot<AppointmentId> {
             throw new PreconditionException(`Cannot confirm an appointment with status ${this.status}.`);
         }
 
-        const oldState = new Appointment(this.toJSON() as any);
+        const oldState = new Appointment(this);
         this.status = AppointmentStatus.CONFIRMED;
         this.addEvent(new AppointmentChangedEvent({oldState, newState: this}));
     }
@@ -143,7 +143,7 @@ export class Appointment extends AggregateRoot<AppointmentId> {
             throw new PreconditionException(`Cannot complete an appointment with status ${this.status}.`);
         }
 
-        const oldState = new Appointment(this.toJSON() as any);
+        const oldState = new Appointment(this);
         this.status = AppointmentStatus.COMPLETED;
         this.addEvent(new AppointmentChangedEvent({oldState, newState: this}));
     }
@@ -153,7 +153,7 @@ export class Appointment extends AggregateRoot<AppointmentId> {
             throw new PreconditionException(`Cannot mark no-show for an appointment with status ${this.status}.`);
         }
 
-        const oldState = new Appointment(this.toJSON() as any);
+        const oldState = new Appointment(this);
         this.status = AppointmentStatus.NO_SHOW;
         this.addEvent(new AppointmentChangedEvent({oldState, newState: this}));
     }

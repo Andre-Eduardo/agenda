@@ -69,7 +69,18 @@ Sempre que a API do servidor mudar:
 
 - `docs/architecture-overview.md` — Clean Architecture, DDD, camadas
 - `docs/backend-style-guide.md` — convenções de nomenclatura, DTOs, controllers
+- `docs/type-safety-patterns.md` — **regras obrigatórias sobre casts, enum converters, JSON Prisma**
 - `docs/service-patterns.md` — BaseApplicationService, Command, mappers
 - `docs/testing-patterns.md` — testes unitários (Jest + jest-mock-extended)
 - `docs/integration-test-patterns.md` — BDD (Cucumber.js), isolamento, referências
 - `docs/frontend/` — arquitetura, roteamento, auth, state, forms, i18n
+
+## Type safety (resumo)
+
+Zero casts em `src/` do server fora de `__tests__/`. Para qualquer conversão entre Prisma e domínio, use os helpers de `@domain/@shared/utils`:
+
+```typescript
+import {toEnum, toEnumOrNull, toEnumArray} from '@domain/@shared/utils';
+```
+
+Detalhes e exceções autorizadas: [`docs/type-safety-patterns.md`](docs/type-safety-patterns.md).

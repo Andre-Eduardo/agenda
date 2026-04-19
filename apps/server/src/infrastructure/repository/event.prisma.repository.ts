@@ -35,14 +35,15 @@ export class EventPrismaRepository extends PrismaRepository implements EventRepo
 
     private static denormalize(event: Event<DomainEvent, MaybeAuthenticatedActor>): EventModel {
         const {actor, payload: domainEvent} = event;
-        // Attempt to extract professionalId if present in event properties
-        const {professionalId} = domainEvent as any;
-        const {type, timestamp, ...payload} = domainEvent;
 
-        // Remove professionalId from payload if we stored it separately?
-        // Or keep it. For now, we extract it for the column.
-        if ((payload as any).professionalId) {
-            delete (payload as any).professionalId;
+        // Alguns DomainEvents carregam um `professionalId` opcional diretamente no evento —
+        // quando presente, é extraído para a coluna dedicada e removido do payload.
+        const professionalId = EventPrismaRepository.extractProfessionalId(domainEvent);
+
+        const {type, timestamp, ...rest} = domainEvent;
+        const payload: Record<string, unknown> = {...rest};
+        if ('professionalId' in payload) {
+            delete payload.professionalId;
         }
 
         return {
@@ -53,6 +54,19 @@ export class EventPrismaRepository extends PrismaRepository implements EventRepo
             professionalId: professionalId?.toString() ?? null,
             timestamp,
         };
+    }
+
+    /** Lê de forma type-safe o `professionalId` quando o DomainEvent o expõe. */
+    private static extractProfessionalId(domainEvent: DomainEvent): ProfessionalId | null {
+        if (!('professionalId' in domainEvent)) return null;
+        const candidate = (domainEvent as {professionalId: unknown}).professionalId;
+        if (candidate instanceof ProfessionalId) {
+            return candidate;
+        }
+        if (typeof candidate === 'string' && candidate.length > 0) {
+            return ProfessionalId.from(candidate);
+        }
+        return null;
     }
 
     async add(event: Event<DomainEvent, MaybeAuthenticatedActor>): Promise<void> {

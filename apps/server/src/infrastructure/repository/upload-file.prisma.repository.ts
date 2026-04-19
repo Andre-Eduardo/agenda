@@ -2,6 +2,7 @@ import {Injectable} from '@nestjs/common';
 import {FilePromotionStatus as PrismaFilePromotionStatus, type UploadFile as PrismaUploadFile} from '@prisma/client';
 import {FilePromotionStatus, UploadFile, UploadFileId} from '../../domain/file/entities';
 import {UploadFileRepository} from '../../domain/file/upload-file.repository';
+import {toEnum} from '../../domain/@shared/utils';
 import {PrismaProvider} from './prisma/prisma.provider';
 import {PrismaRepository} from './prisma.repository';
 
@@ -38,7 +39,7 @@ export class UploadFilePrismaRepository extends PrismaRepository implements Uplo
             id: file.id.toString(),
             tempPath: file.tempPath,
             finalPath: file.finalPath,
-            status: file.status as unknown as PrismaFilePromotionStatus,
+            status: toEnum(PrismaFilePromotionStatus, file.status),
             promotionAttempts: file.promotionAttempts,
             mimeType: file.mimeType,
             size: file.size,
@@ -63,7 +64,7 @@ export class UploadFilePrismaRepository extends PrismaRepository implements Uplo
             id: UploadFileId.from(model.id),
             tempPath: model.tempPath,
             finalPath: model.finalPath,
-            status: model.status as FilePromotionStatus,
+            status: toEnum(FilePromotionStatus, model.status),
             promotionAttempts: model.promotionAttempts,
             mimeType: model.mimeType,
             size: model.size,

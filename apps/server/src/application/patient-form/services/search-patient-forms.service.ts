@@ -16,7 +16,7 @@ export class SearchPatientFormsService
 
     async execute({actor: _actor, payload}: Command<SearchPatientFormsPayload>): Promise<PaginatedDto<PatientFormDto>> {
         const result = await this.patientFormRepository.search(
-            {limit: payload.limit, sort: payload.sort as any},
+            {limit: payload.limit, sort: payload.sort},
             {
                 patientId: payload.patientId,
                 status: payload.status,

@@ -1,5 +1,6 @@
 import {Injectable} from '@nestjs/common';
 import * as PrismaClient from '@prisma/client';
+import {toEnum} from '../../domain/@shared/utils';
 import {FormTemplateVersion, FormTemplateVersionId, FormStatus} from '../../domain/form-template-version/entities';
 import {FormTemplateId} from '../../domain/form-template/entities';
 import {MapperWithoutDto} from './mapper';
@@ -14,7 +15,7 @@ export class FormTemplateVersionMapper extends MapperWithoutDto<FormTemplateVers
             id: FormTemplateVersionId.from(model.id),
             templateId: FormTemplateId.from(model.templateId),
             versionNumber: model.versionNumber,
-            status: model.status as unknown as FormStatus,
+            status: toEnum(FormStatus, model.status),
             definitionJson: model.definitionJson as unknown as FormDefinitionJson,
             schemaJson: model.schemaJson ?? null,
             publishedAt: model.publishedAt ?? null,
@@ -29,7 +30,7 @@ export class FormTemplateVersionMapper extends MapperWithoutDto<FormTemplateVers
             id: entity.id.toString(),
             templateId: entity.templateId.toString(),
             versionNumber: entity.versionNumber,
-            status: entity.status as unknown as PrismaClient.FormStatus,
+            status: toEnum(PrismaClient.FormStatus, entity.status),
             definitionJson: entity.definitionJson as unknown as PrismaClient.Prisma.JsonValue,
             schemaJson: entity.schemaJson ? (entity.schemaJson as PrismaClient.Prisma.JsonValue) : null,
             publishedAt: entity.publishedAt ?? null,

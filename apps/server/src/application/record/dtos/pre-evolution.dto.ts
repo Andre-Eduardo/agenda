@@ -16,7 +16,7 @@ export class PreEvolutionFieldDto {
     rawValue!: string | null;
 
     @ApiProperty({nullable: true, description: 'Structured value processed by AI'})
-    structuredValue!: any | null;
+    structuredValue!: unknown | null;
 
     @ApiProperty({description: 'AI confidence score (0.0 to 1.0)'})
     confidence!: number;
@@ -25,7 +25,7 @@ export class PreEvolutionFieldDto {
     needsReview!: boolean;
 
     @ApiProperty({nullable: true, description: 'Value after human correction'})
-    correctedValue!: any | null;
+    correctedValue!: unknown | null;
 }
 
 export enum PreEvolutionStatus {

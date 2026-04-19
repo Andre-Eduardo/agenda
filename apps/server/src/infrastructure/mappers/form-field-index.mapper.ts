@@ -1,5 +1,6 @@
 import {Injectable} from '@nestjs/common';
 import * as PrismaClient from '@prisma/client';
+import {toEnum} from '../../domain/@shared/utils';
 import {FormFieldIndex, FormFieldIndexId} from '../../domain/form-field-index/entities';
 import {PatientFormId} from '../../domain/patient-form/entities';
 import {Specialty} from '../../domain/form-template/entities';
@@ -21,7 +22,7 @@ export class FormFieldIndexMapper extends MapperWithoutDto<FormFieldIndex, FormF
             valueBoolean: model.valueBoolean ?? null,
             valueDate: model.valueDate ?? null,
             valueJson: model.valueJson ?? null,
-            specialty: model.specialty as unknown as Specialty,
+            specialty: toEnum(Specialty, model.specialty),
             confidence: model.confidence ?? null,
             createdAt: model.createdAt,
             updatedAt: model.updatedAt,
@@ -40,7 +41,7 @@ export class FormFieldIndexMapper extends MapperWithoutDto<FormFieldIndex, FormF
             valueBoolean: entity.valueBoolean,
             valueDate: entity.valueDate ?? null,
             valueJson: entity.valueJson ? (entity.valueJson as PrismaClient.Prisma.JsonValue) : null,
-            specialty: entity.specialty as unknown as PrismaClient.Specialty,
+            specialty: toEnum(PrismaClient.Specialty, entity.specialty),
             confidence: entity.confidence,
             createdAt: entity.createdAt,
             updatedAt: entity.updatedAt,

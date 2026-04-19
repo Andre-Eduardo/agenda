@@ -29,7 +29,7 @@ export class CreatePatientService implements ApplicationService<CreatePatientDto
             emergencyContactPhone: payload.emergencyContactPhone ?? null,
         });
 
-        await this.personRepository.save(patient as any);
+        await this.personRepository.save(patient);
         await this.patientRepository.save(patient);
 
         this.eventDispatcher.dispatch(actor, patient);

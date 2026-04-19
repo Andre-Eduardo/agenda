@@ -1,4 +1,5 @@
 import {Injectable} from '@nestjs/common';
+import {Prisma} from '@prisma/client';
 import {PatientContextSnapshot, PatientContextSnapshotId} from '../../domain/clinical-chat/entities';
 import {PatientContextSnapshotRepository} from '../../domain/clinical-chat/patient-context-snapshot.repository';
 import type {PatientId} from '../../domain/patient/entities';
@@ -42,15 +43,23 @@ export class PatientContextSnapshotPrismaRepository
 
     async save(snapshot: PatientContextSnapshot): Promise<void> {
         const data = this.mapper.toPersistence(snapshot);
+        // `patientFacts` é obrigatório no domínio; `criticalContext`/`timelineSummary` são opcionais.
+        const writeData: Prisma.PatientContextSnapshotUncheckedCreateInput = {
+            ...data,
+            patientFacts: data.patientFacts as Prisma.InputJsonValue,
+            criticalContext: data.criticalContext === null ? Prisma.JsonNull : (data.criticalContext as Prisma.InputJsonValue),
+            timelineSummary: data.timelineSummary === null ? Prisma.JsonNull : (data.timelineSummary as Prisma.InputJsonValue),
+        };
+        // Quirk conhecido do Prisma: em unique composto com coluna nullable, o tipo gerado
+        // exige `string` não-nulo. Em runtime, `null` é aceito e mapeia para `IS NULL` no SQL.
+        const compoundUnique = {
+            patientId: data.patientId,
+            professionalId: data.professionalId as string,
+        };
         await this.prisma.patientContextSnapshot.upsert({
-            where: {
-                patient_context_snapshot_unique: {
-                    patientId: data.patientId,
-                    professionalId: data.professionalId ?? (null as any),
-                },
-            },
-            create: data as any,
-            update: data as any,
+            where: {patient_context_snapshot_unique: compoundUnique},
+            create: writeData,
+            update: writeData,
         });
     }
 }

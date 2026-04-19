@@ -1,5 +1,6 @@
 import {Injectable} from '@nestjs/common';
 import * as PrismaClient from '@prisma/client';
+import {toEnum} from '../../domain/@shared/utils';
 import {
     PatientContextSnapshot,
     PatientContextSnapshotId,
@@ -25,7 +26,7 @@ export class PatientContextSnapshotMapper extends MapperWithoutDto<PatientContex
             criticalContext: model.criticalContext as CriticalContextEntry[] | null,
             timelineSummary: model.timelineSummary as TimelineEntry[] | null,
             contentHash: model.contentHash,
-            status: model.status as unknown as ContextSnapshotStatus,
+            status: toEnum(ContextSnapshotStatus, model.status),
             builtAt: model.builtAt ?? null,
             createdAt: model.createdAt,
             updatedAt: model.updatedAt,
@@ -42,7 +43,7 @@ export class PatientContextSnapshotMapper extends MapperWithoutDto<PatientContex
             criticalContext: entity.criticalContext as PrismaClient.Prisma.JsonValue,
             timelineSummary: entity.timelineSummary as PrismaClient.Prisma.JsonValue,
             contentHash: entity.contentHash,
-            status: entity.status as unknown as PrismaClient.ContextSnapshotStatus,
+            status: toEnum(PrismaClient.ContextSnapshotStatus, entity.status),
             builtAt: entity.builtAt,
             createdAt: entity.createdAt,
             updatedAt: entity.updatedAt,

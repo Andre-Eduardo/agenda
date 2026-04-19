@@ -1,5 +1,6 @@
 import {Injectable} from '@nestjs/common';
 import * as PrismaClient from '@prisma/client';
+import {toEnum} from '../../domain/@shared/utils';
 import {PatientChatSession, PatientChatSessionId, ChatSessionStatus, AiAgentProfileId} from '../../domain/clinical-chat/entities';
 import {PatientId} from '../../domain/patient/entities';
 import {ProfessionalId} from '../../domain/professional/entities';
@@ -16,7 +17,7 @@ export class PatientChatSessionMapper extends MapperWithoutDto<PatientChatSessio
             professionalId: ProfessionalId.from(model.professionalId),
             agentProfileId: model.agentProfileId ? AiAgentProfileId.from(model.agentProfileId) : null,
             title: model.title ?? null,
-            status: model.status as unknown as ChatSessionStatus,
+            status: toEnum(ChatSessionStatus, model.status),
             lastActivityAt: model.lastActivityAt,
             createdAt: model.createdAt,
             updatedAt: model.updatedAt,
@@ -31,7 +32,7 @@ export class PatientChatSessionMapper extends MapperWithoutDto<PatientChatSessio
             professionalId: entity.professionalId.toString(),
             agentProfileId: entity.agentProfileId?.toString() ?? null,
             title: entity.title,
-            status: entity.status as unknown as PrismaClient.ChatSessionStatus,
+            status: toEnum(PrismaClient.ChatSessionStatus, entity.status),
             lastActivityAt: entity.lastActivityAt,
             createdAt: entity.createdAt,
             updatedAt: entity.updatedAt,

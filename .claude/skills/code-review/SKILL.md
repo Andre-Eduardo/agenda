@@ -15,6 +15,7 @@ Use this skill to inspect code for correctness, maintainability, and higher-orde
 5. Check for security vulnerabilities
 6. Verify error handling is appropriate
 7. Assess readability and maintainability
+8. **Type safety audit (server code)**: verificar conformidade com `docs/type-safety-patterns.md` — ver seção abaixo
 
 ## Examples
 **Code quality feedback:**
@@ -41,6 +42,25 @@ const query = `SELECT * FROM users WHERE id = ${userId}`;
 const query = 'SELECT * FROM users WHERE id = ?';
 db.query(query, [userId]);
 ```
+
+## Type safety audit (apps/server)
+
+Para código do server (`apps/server/src/`) sinalize como defeito qualquer:
+
+- `as any` — **sempre** um red flag. Peça remoção ou justificativa escrita no código.
+- `as unknown as X` — só aceitável nas exceções listadas em §10 de `docs/type-safety-patterns.md` (proxy do Prisma, workaround Zod/Swagger, JSON structural).
+- `value as SomeEnum` para enums Prisma ↔ domínio — substitua por `toEnum` / `toEnumOrNull` / `toEnumArray` de `@domain/@shared/utils`.
+- Non-null assertions (`foo!.bar`, `getValue()!`) — peça para estreitar o tipo do parâmetro ou usar guard explícito.
+- Cast em IDs vindos de payload Zod (`payload.patientId as PatientId`) — já são tipados pelo `entityId()`; remova.
+- `data as any` em `upsert`/`create` do Prisma — substitua por `satisfies Prisma.XxxUncheckedCreateInput` + normalização `Prisma.JsonNull`.
+- `this.toJSON() as any` para criar `oldState` de evento — use `new Entity(this)`.
+
+Grep útil para incluir no review:
+```bash
+grep -rE "\bas any\b|as unknown as|![ \t]*\." apps/server/src/ --include="*.ts" | grep -v __tests__
+```
+
+Referência obrigatória: [`docs/type-safety-patterns.md`](../../docs/type-safety-patterns.md).
 
 ## Quality Bar
 - Focus on the most impactful issues first

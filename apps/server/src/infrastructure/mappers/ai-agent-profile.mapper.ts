@@ -1,5 +1,6 @@
 import {Injectable} from '@nestjs/common';
 import * as PrismaClient from '@prisma/client';
+import {toEnumOrNull} from '../../domain/@shared/utils';
 import {AiAgentProfile, AiAgentProfileId} from '../../domain/clinical-chat/entities';
 import {Specialty} from '../../domain/form-template/entities';
 import {MapperWithoutDto} from './mapper';
@@ -15,7 +16,7 @@ export class AiAgentProfileMapper extends MapperWithoutDto<AiAgentProfile, AiAge
             code: model.code ?? null,
             slug: model.slug,
             specialtyGroup: model.specialtyGroup ?? null,
-            specialty: model.specialty ? (model.specialty as unknown as Specialty) : null,
+            specialty: toEnumOrNull(Specialty, model.specialty),
             description: model.description ?? null,
             baseInstructions: model.baseInstructions ?? null,
             allowedSources: model.allowedSources ?? [],
@@ -40,7 +41,7 @@ export class AiAgentProfileMapper extends MapperWithoutDto<AiAgentProfile, AiAge
             code: entity.code,
             slug: entity.slug,
             specialtyGroup: entity.specialtyGroup,
-            specialty: entity.specialty ? (entity.specialty as unknown as PrismaClient.Specialty) : null,
+            specialty: toEnumOrNull(PrismaClient.Specialty, entity.specialty),
             description: entity.description,
             baseInstructions: entity.baseInstructions,
             allowedSources: entity.allowedSources,

@@ -3,6 +3,7 @@ import * as PrismaClient from '@prisma/client';
 import {Record, RecordId} from '../../domain/record/entities/record.entity';
 import {RecordRepository, RecordSearchFilter, RecordSortOptions} from '../../domain/record/record.repository';
 import {PaginatedList, Pagination} from '../../domain/@shared/repository';
+import {toEnumOrNull} from '../../domain/@shared/utils';
 import {RecordMapper} from '../mappers/record.mapper';
 import {PrismaProvider} from './prisma/prisma.provider';
 import {PrismaRepository} from './prisma.repository';
@@ -52,9 +53,9 @@ export class RecordPrismaRepository extends PrismaRepository implements RecordRe
             patientId: filter.patientId ? filter.patientId.toString() : undefined,
             professionalId: filter.professionalId ? filter.professionalId.toString() : undefined,
             appointmentId: filter.appointmentId ? filter.appointmentId.toString() : undefined,
-            attendanceType: filter.attendanceType ? (filter.attendanceType as unknown as PrismaClient.AttendanceType) : undefined,
-            clinicalStatus: filter.clinicalStatus ? (filter.clinicalStatus as unknown as PrismaClient.ClinicalStatusTag) : undefined,
-            source: filter.source ? (filter.source as unknown as PrismaClient.RecordSource) : undefined,
+            attendanceType: toEnumOrNull(PrismaClient.AttendanceType, filter.attendanceType) ?? undefined,
+            clinicalStatus: toEnumOrNull(PrismaClient.ClinicalStatusTag, filter.clinicalStatus) ?? undefined,
+            source: toEnumOrNull(PrismaClient.RecordSource, filter.source) ?? undefined,
             eventDate: filter.dateStart || filter.dateEnd
                 ? {
                     gte: filter.dateStart,

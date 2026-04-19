@@ -17,6 +17,8 @@ import {
     type TimelineEntry,
     ContextSnapshotStatus,
 } from '../../../domain/clinical-chat/entities';
+import type {Patient} from '../../../domain/patient/entities';
+import type {ClinicalProfile} from '../../../domain/clinical-profile/entities';
 import type {Record as ClinicalRecord} from '../../../domain/record/entities';
 import type {PatientForm} from '../../../domain/patient-form/entities';
 import {FormResponseStatus} from '../../../domain/patient-form/entities';
@@ -155,17 +157,17 @@ export class BuildPatientContextService {
     }
 
     private buildPatientFacts(
-        patient: Awaited<ReturnType<PatientRepository['findById']>>,
-        clinicalProfile: Awaited<ReturnType<ClinicalProfileRepository['findByPatientId']>>
+        patient: Patient,
+        clinicalProfile: ClinicalProfile | null
     ): PatientFacts {
-        const age = patient!.birthDate ? this.calculateAge(patient!.birthDate) : null;
+        const age = patient.birthDate ? this.calculateAge(patient.birthDate) : null;
 
         return {
-            name: patient!.name,
-            birthDate: patient!.birthDate?.toISOString().split('T')[0] ?? null,
+            name: patient.name,
+            birthDate: patient.birthDate?.toISOString().split('T')[0] ?? null,
             age,
-            gender: patient!.gender ?? null,
-            documentId: patient!.documentId.toString(),
+            gender: patient.gender ?? null,
+            documentId: patient.documentId.toString(),
             allergies: clinicalProfile?.allergies ?? null,
             chronicConditions: clinicalProfile?.chronicConditions ?? null,
             currentMedications: clinicalProfile?.currentMedications ?? null,
@@ -178,7 +180,7 @@ export class BuildPatientContextService {
 
     private buildCriticalContext(
         alerts: PatientAlert[],
-        clinicalProfile: Awaited<ReturnType<ClinicalProfileRepository['findByPatientId']>>
+        clinicalProfile: ClinicalProfile | null
     ): CriticalContextEntry[] {
         const entries: CriticalContextEntry[] = [];
 

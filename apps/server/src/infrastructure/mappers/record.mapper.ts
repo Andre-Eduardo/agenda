@@ -1,5 +1,6 @@
 import {Injectable} from '@nestjs/common';
 import * as PrismaClient from '@prisma/client';
+import {toEnum, toEnumOrNull, toEnumArray} from '../../domain/@shared/utils';
 import {PatientId} from '../../domain/patient/entities';
 import {ProfessionalId} from '../../domain/professional/entities';
 import {AppointmentId} from '../../domain/appointment/entities';
@@ -29,11 +30,11 @@ export class RecordMapper extends MapperWithoutDto<Record, RecordModel> {
             patientId: PatientId.from(model.patientId),
             professionalId: ProfessionalId.from(model.professionalId),
             description: model.description ?? null,
-            templateType: model.templateType ? (model.templateType as unknown as EvolutionTemplateType) : null,
+            templateType: toEnumOrNull(EvolutionTemplateType, model.templateType),
             title: model.title ?? null,
-            attendanceType: model.attendanceType ? (model.attendanceType as unknown as AttendanceType) : null,
-            clinicalStatus: model.clinicalStatus ? (model.clinicalStatus as unknown as ClinicalStatusTag) : null,
-            conductTags: (model.conductTags ?? []) as unknown as ConductTag[],
+            attendanceType: toEnumOrNull(AttendanceType, model.attendanceType),
+            clinicalStatus: toEnumOrNull(ClinicalStatusTag, model.clinicalStatus),
+            conductTags: toEnumArray(ConductTag, model.conductTags ?? []),
             subjective: model.subjective ?? null,
             objective: model.objective ?? null,
             assessment: model.assessment ?? null,
@@ -41,7 +42,7 @@ export class RecordMapper extends MapperWithoutDto<Record, RecordModel> {
             freeNotes: model.freeNotes ?? null,
             eventDate: model.eventDate ?? null,
             appointmentId: model.appointmentId ? AppointmentId.from(model.appointmentId) : null,
-            source: model.source ? (model.source as unknown as RecordSource) : RecordSource.MANUAL,
+            source: model.source ? toEnum(RecordSource, model.source) : RecordSource.MANUAL,
             importedDocumentId: model.importedDocumentId ? ImportedDocumentId.from(model.importedDocumentId) : null,
             wasHumanEdited: model.wasHumanEdited ?? false,
             files:
@@ -64,11 +65,11 @@ export class RecordMapper extends MapperWithoutDto<Record, RecordModel> {
             patientId: entity.patientId.toString(),
             professionalId: entity.professionalId.toString(),
             description: entity.description,
-            templateType: entity.templateType ? (entity.templateType as unknown as PrismaClient.EvolutionTemplateType) : null,
+            templateType: toEnumOrNull(PrismaClient.EvolutionTemplateType, entity.templateType),
             title: entity.title,
-            attendanceType: entity.attendanceType ? (entity.attendanceType as unknown as PrismaClient.AttendanceType) : null,
-            clinicalStatus: entity.clinicalStatus ? (entity.clinicalStatus as unknown as PrismaClient.ClinicalStatusTag) : null,
-            conductTags: (entity.conductTags ?? []) as unknown as PrismaClient.ConductTag[],
+            attendanceType: toEnumOrNull(PrismaClient.AttendanceType, entity.attendanceType),
+            clinicalStatus: toEnumOrNull(PrismaClient.ClinicalStatusTag, entity.clinicalStatus),
+            conductTags: toEnumArray(PrismaClient.ConductTag, entity.conductTags ?? []),
             subjective: entity.subjective,
             objective: entity.objective,
             assessment: entity.assessment,
@@ -76,7 +77,7 @@ export class RecordMapper extends MapperWithoutDto<Record, RecordModel> {
             freeNotes: entity.freeNotes,
             eventDate: entity.eventDate,
             appointmentId: entity.appointmentId?.toString() ?? null,
-            source: entity.source as unknown as PrismaClient.RecordSource,
+            source: toEnum(PrismaClient.RecordSource, entity.source),
             importedDocumentId: entity.importedDocumentId?.toString() ?? null,
             wasHumanEdited: entity.wasHumanEdited,
             createdAt: entity.createdAt,

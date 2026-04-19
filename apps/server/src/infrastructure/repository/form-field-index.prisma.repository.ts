@@ -1,8 +1,10 @@
 import {Injectable} from '@nestjs/common';
 import * as PrismaClient from '@prisma/client';
+import {Prisma} from '@prisma/client';
 import {FormFieldIndex, FormFieldIndexId} from '../../domain/form-field-index/entities';
 import {FormFieldIndexRepository, FormFieldIndexFilter} from '../../domain/form-field-index/form-field-index.repository';
 import {PatientFormId} from '../../domain/patient-form/entities';
+import {toEnumOrNull} from '../../domain/@shared/utils';
 import {FormFieldIndexMapper} from '../mappers/form-field-index.mapper';
 import {PrismaProvider} from './prisma/prisma.provider';
 import {PrismaRepository} from './prisma.repository';
@@ -47,7 +49,7 @@ export class FormFieldIndexPrismaRepository extends PrismaRepository implements 
         const where: PrismaClient.Prisma.FormFieldIndexWhereInput = {
             patientFormId: filter.patientFormId?.toString(),
             fieldId: filter.fieldId,
-            specialty: filter.specialty as PrismaClient.Specialty | undefined,
+            specialty: toEnumOrNull(PrismaClient.Specialty, filter.specialty) ?? undefined,
         };
 
         const records = await this.prisma.formFieldIndex.findMany({where, orderBy: {createdAt: 'desc'}});
@@ -60,15 +62,20 @@ export class FormFieldIndexPrismaRepository extends PrismaRepository implements 
         const data = entries.map((e) => this.mapper.toPersistence(e));
 
         await this.prisma.$transaction(
-            data.map((d) =>
-                this.prisma.formFieldIndex.upsert({
+            data.map((d) => {
+                const valueJson = d.valueJson ?? Prisma.JsonNull;
+                const createData = {
+                    ...d,
+                    valueJson,
+                } satisfies Prisma.FormFieldIndexUncheckedCreateInput;
+                return this.prisma.formFieldIndex.upsert({
                     where: {
                         form_field_index_unique: {
                             patientFormId: d.patientFormId,
                             fieldId: d.fieldId,
                         },
                     },
-                    create: d as any,
+                    create: createData,
                     update: {
                         fieldLabel: d.fieldLabel,
                         fieldType: d.fieldType,
@@ -76,12 +83,12 @@ export class FormFieldIndexPrismaRepository extends PrismaRepository implements 
                         valueNumber: d.valueNumber,
                         valueBoolean: d.valueBoolean,
                         valueDate: d.valueDate,
-                        valueJson: d.valueJson ?? (PrismaClient.Prisma.JsonNull as any),
+                        valueJson,
                         confidence: d.confidence,
                         updatedAt: d.updatedAt,
                     },
-                })
-            )
+                });
+            })
         );
     }
 

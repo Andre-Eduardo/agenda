@@ -18,7 +18,7 @@ export class SearchFormTemplatesService
     async execute({payload}: Command<SearchFormTemplatesPayload>): Promise<PaginatedDto<FormTemplateDto>> {
         const filter = this.buildFilter(payload);
         const result: PaginatedList<FormTemplate> = await this.formTemplateRepository.search(
-            {limit: payload.limit, sort: payload.sort as any},
+            {limit: payload.limit, sort: payload.sort},
             filter
         );
 

@@ -40,6 +40,7 @@ if (isValidEmail(email)) {
 - If tests break, you changed behavior
 - Use IDE refactoring tools when available
 - Keep the PR focused and reviewable
+- **Nunca introduza casts novos** (`as any`, `as unknown as`, `!`) para silenciar erros do TypeScript durante refactor. Se uma mudança quebra a tipagem, o refactor está errado — conserte a raiz. Para server code, siga `docs/type-safety-patterns.md`.
 
 ## Resource Strategy
 - Add `scripts/` only when the task is fragile, repetitive, or benefits from deterministic execution.

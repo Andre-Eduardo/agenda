@@ -358,3 +358,26 @@ async handle({actor, payload}: Command<CreateEntityDto>): Promise<EntityDto> {
 - For paginated responses, create a concrete class: `class PaginatedEntityDto extends PaginatedDto<EntityDto> {}`
 - Use `@ApiSchema({name: 'EntityName'})` on response DTOs to control the schema name in Swagger
 - `companyId` is hidden from OpenAPI by default via `createZodDto(schema, true)`
+
+## Type Safety
+
+**Não use casts** (`as`, `as any`, `as unknown as`, `!`) para "consertar" erros do TypeScript. Casts mascaram dados inválidos e criam tipos falsos. Quando a conversão for realmente necessária (fronteira com Prisma, HTTP, JSON), use as funções de inferência de `@domain/@shared/utils`:
+
+```typescript
+import {toEnum, toEnumOrNull, toEnumArray} from '@domain/@shared/utils';
+
+// Mapper Prisma → Domínio
+gender: toEnumOrNull(Gender, model.gender),
+status: toEnum(ChatSessionStatus, model.status),
+```
+
+**Regras obrigatórias antes de qualquer commit:**
+
+- Zero `as any` em `src/` (fora de `__tests__/`)
+- IDs/value objects vindos de schemas Zod (`entityId()`, `phone()`, `z.nativeEnum()`) **já estão tipados** — não caste novamente
+- Enums Prisma ↔ domínio usam `toEnum*` — runtime valida + TypeScript infere
+- JSON fields na escrita Prisma usam `satisfies Prisma.XxxUncheckedCreateInput` + `Prisma.JsonNull`
+- Snapshot de entidade: `new Entity(this)` — nunca `this.toJSON() as any`
+- Non-null assertions (`!`) são proibidas — estreite o tipo do parâmetro ou use type guard
+
+Detalhes completos, exemplos e lista de casts aceitáveis: [`docs/type-safety-patterns.md`](./type-safety-patterns.md).

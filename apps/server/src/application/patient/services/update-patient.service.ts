@@ -21,7 +21,7 @@ export class UpdatePatientService implements ApplicationService<UpdatePatientDto
 
         patient.change({
             name: props.name,
-            phone: props.phone ? {number: props.phone} as any : undefined,
+            phone: props.phone ?? undefined,
             gender: props.gender ?? undefined,
             birthDate: props.birthDate ?? undefined,
             email: props.email ?? undefined,

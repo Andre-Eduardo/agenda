@@ -8,6 +8,7 @@ import {
     SimilaritySearchFilter,
     RankedChunk,
 } from '../../domain/clinical-chat/patient-context-chunk.repository';
+import {toEnum, toEnumArray} from '../../domain/@shared/utils';
 import {PatientContextChunkMapper} from '../mappers/patient-context-chunk.mapper';
 import {PrismaProvider} from './prisma/prisma.provider';
 import {PrismaRepository} from './prisma.repository';
@@ -51,7 +52,7 @@ export class PatientContextChunkPrismaRepository
         const where: PrismaClient.Prisma.PatientContextChunkWhereInput = {
             patientId: filter.patientId.toString(),
             sourceType: filter.sourceTypes
-                ? {in: filter.sourceTypes as unknown as PrismaClient.ContextChunkSourceType[]}
+                ? {in: toEnumArray(PrismaClient.ContextChunkSourceType, filter.sourceTypes)}
                 : undefined,
             sourceId: filter.sourceId,
         };
@@ -77,17 +78,21 @@ export class PatientContextChunkPrismaRepository
         const limit = filter.limit ?? 10;
 
         if (filter.queryEmbedding && filter.queryEmbedding.length > 0) {
-            return this.searchByVector(filter, limit);
+            return this.searchByVector(filter, filter.queryEmbedding, limit);
         }
 
         // Fallback: recency ordering sem semântica vetorial
         return this.searchByRecency(filter, limit);
     }
 
-    private async searchByVector(filter: SimilaritySearchFilter, limit: number): Promise<RankedChunk[]> {
+    private async searchByVector(
+        filter: SimilaritySearchFilter,
+        queryEmbedding: number[],
+        limit: number,
+    ): Promise<RankedChunk[]> {
         const patientId = filter.patientId.toString();
         // Formato aceito pelo pgvector: '[1.0,2.0,3.0,...]'
-        const vectorLiteral = `[${filter.queryEmbedding!.join(',')}]`;
+        const vectorLiteral = `[${queryEmbedding.join(',')}]`;
 
         // Filtro por sourceType opcional — composto com Prisma.sql para segurança
         const sourceTypeClause = filter.sourceTypes && filter.sourceTypes.length > 0
@@ -131,7 +136,7 @@ export class PatientContextChunkPrismaRepository
         const where: PrismaClient.Prisma.PatientContextChunkWhereInput = {
             patientId: filter.patientId.toString(),
             sourceType: filter.sourceTypes
-                ? {in: filter.sourceTypes as unknown as PrismaClient.ContextChunkSourceType[]}
+                ? {in: toEnumArray(PrismaClient.ContextChunkSourceType, filter.sourceTypes)}
                 : undefined,
         };
 
@@ -155,21 +160,24 @@ export class PatientContextChunkPrismaRepository
 
     async save(chunk: PatientContextChunk): Promise<void> {
         const data = this.mapper.toPersistence(chunk);
-        // Cast necessário: `embedding` é Unsupported("vector(1536)") no Prisma —
-        // o tipo gerado exclui o campo dos inputs, mas o resto do objeto é compatível.
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const prismaData = data as any;
+        // O campo `embedding` é Unsupported("vector(1536)") — o tipo UncheckedCreateInput
+        // do Prisma não o inclui (persistido via $executeRaw abaixo). `metadata` precisa
+        // de `Prisma.JsonNull` (sentinel) quando null, pois `null` puro é rejeitado.
+        const writeData = {
+            ...data,
+            metadata: data.metadata ?? Prisma.JsonNull,
+        } satisfies Prisma.PatientContextChunkUncheckedCreateInput;
         await this.prisma.patientContextChunk.upsert({
             where: {
                 patient_context_chunk_unique: {
                     patientId: data.patientId,
-                    sourceType: data.sourceType as unknown as PrismaClient.ContextChunkSourceType,
+                    sourceType: data.sourceType,
                     sourceId: data.sourceId,
                     chunkIndex: data.chunkIndex,
                 },
             },
-            create: prismaData,
-            update: prismaData,
+            create: writeData,
+            update: writeData,
         });
 
         // O campo `embedding` é Unsupported("vector(1536)") no schema Prisma —
@@ -196,7 +204,7 @@ export class PatientContextChunkPrismaRepository
         await this.prisma.patientContextChunk.deleteMany({
             where: {
                 patientId: patientId.toString(),
-                sourceType: sourceType as unknown as PrismaClient.ContextChunkSourceType,
+                sourceType: toEnum(PrismaClient.ContextChunkSourceType, sourceType),
                 sourceId,
             },
         });

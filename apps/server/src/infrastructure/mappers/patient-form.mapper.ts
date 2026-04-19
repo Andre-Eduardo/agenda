@@ -1,5 +1,6 @@
 import {Injectable} from '@nestjs/common';
 import * as PrismaClient from '@prisma/client';
+import {toEnum} from '../../domain/@shared/utils';
 import {PatientForm, PatientFormId, FormResponseStatus} from '../../domain/patient-form/entities';
 import {PatientId} from '../../domain/patient/entities';
 import {ProfessionalId} from '../../domain/professional/entities';
@@ -19,7 +20,7 @@ export class PatientFormMapper extends MapperWithoutDto<PatientForm, PatientForm
             professionalId: ProfessionalId.from(model.professionalId),
             templateId: FormTemplateId.from(model.templateId),
             versionId: FormTemplateVersionId.from(model.versionId),
-            status: model.status as unknown as FormResponseStatus,
+            status: toEnum(FormResponseStatus, model.status),
             responseJson: model.responseJson as unknown as FormResponseJson,
             computedJson: model.computedJson ? (model.computedJson as unknown as FormComputedJson) : null,
             appliedAt: model.appliedAt,
@@ -37,7 +38,7 @@ export class PatientFormMapper extends MapperWithoutDto<PatientForm, PatientForm
             professionalId: entity.professionalId.toString(),
             templateId: entity.templateId.toString(),
             versionId: entity.versionId.toString(),
-            status: entity.status as unknown as PrismaClient.FormResponseStatus,
+            status: toEnum(PrismaClient.FormResponseStatus, entity.status),
             responseJson: entity.responseJson as unknown as PrismaClient.Prisma.JsonValue,
             computedJson: entity.computedJson
                 ? (entity.computedJson as unknown as PrismaClient.Prisma.JsonValue)

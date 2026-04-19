@@ -59,8 +59,34 @@ describe('CreateFeatureService', () => {
 })
 ```
 
+## Type safety — checklist obrigatório
+
+Ao escrever o código, **nunca** use `as any`, `as unknown as`, ou `!`. Veja `docs/type-safety-patterns.md`.
+
+Casos comuns ao criar endpoint novo:
+
+- **Payload do controller**: os campos do DTO Zod já estão tipados (IDs, enums, value objects). Passe direto para o service — sem cast.
+  ```typescript
+  // ✅ payload.patientId já é PatientId
+  await this.service.execute({actor, payload: {id: payload.patientId}});
+  ```
+
+- **Mapper novo**: para converter enums Prisma ↔ domínio, use os helpers:
+  ```typescript
+  import {toEnum, toEnumOrNull, toEnumArray} from '@domain/@shared/utils';
+  status: toEnum(MyDomainEnum, model.status),
+  severity: toEnumOrNull(AlertSeverity, model.severity),
+  ```
+
+- **Repository com `upsert` e campos JSON**: use `satisfies Prisma.XxxUncheckedCreateInput` + `Prisma.JsonNull` para nullable JSON. Nunca `data as any`.
+
+- **Snapshot de entidade em eventos**: `new Entity(this)`, nunca `this.toJSON() as any`.
+
+- **Entidade filha salva num repo da pai** (ex: `Patient` em `PersonRepository`): a herança já resolve — sem cast.
+
 3. After creation:
    - Register the service in the feature module
-   - Run typecheck: `pnpm -F @automo/server typecheck`
-   - Run tests: `pnpm -F @automo/server test -- --no-coverage <test-path>`
+   - Run typecheck: `pnpm -F @agenda-app/server typecheck`
+   - Confirme zero casts novos: `grep -rE "\bas any\b|as unknown as" apps/server/src/ --include="*.ts" | grep -v __tests__`
+   - Run tests: `pnpm -F @agenda-app/server test -- --no-coverage <test-path>`
    - Remind user to regenerate client: `/generate-client`

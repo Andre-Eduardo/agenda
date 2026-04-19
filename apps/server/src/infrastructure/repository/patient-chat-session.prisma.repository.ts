@@ -1,12 +1,13 @@
 import {Injectable} from '@nestjs/common';
 import * as PrismaClient from '@prisma/client';
-import {PatientChatSession, PatientChatSessionId, ChatSessionStatus} from '../../domain/clinical-chat/entities';
+import {PatientChatSession, PatientChatSessionId} from '../../domain/clinical-chat/entities';
 import {
     PatientChatSessionRepository,
     PatientChatSessionFilter,
     PatientChatSessionSortOptions,
 } from '../../domain/clinical-chat/patient-chat-session.repository';
 import {PaginatedList, Pagination} from '../../domain/@shared/repository';
+import {toEnumOrNull} from '../../domain/@shared/utils';
 import {PatientChatSessionMapper} from '../mappers/patient-chat-session.mapper';
 import {PrismaProvider} from './prisma/prisma.provider';
 import {PrismaRepository} from './prisma.repository';
@@ -37,7 +38,7 @@ export class PatientChatSessionPrismaRepository
         const where: PrismaClient.Prisma.PatientChatSessionWhereInput = {
             patientId: filter.patientId?.toString(),
             professionalId: filter.professionalId?.toString(),
-            status: filter.status ? (filter.status as unknown as PrismaClient.ChatSessionStatus) : undefined,
+            status: toEnumOrNull(PrismaClient.ChatSessionStatus, filter.status) ?? undefined,
             deletedAt: null,
         };
 

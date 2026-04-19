@@ -42,7 +42,7 @@ export class CreateProfessionalService implements ApplicationService<CreateProfe
             },
         });
 
-        await this.personRepository.save(professional as any);
+        await this.personRepository.save(professional);
         await this.professionalRepository.save(professional);
 
         this.eventDispatcher.dispatch(actor, professional);

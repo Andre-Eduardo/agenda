@@ -1,5 +1,6 @@
 import {Injectable} from '@nestjs/common';
 import * as PrismaClient from '@prisma/client';
+import {toEnum} from '../../domain/@shared/utils';
 import {
     ClinicalChatInteractionLog,
     ClinicalChatInteractionLogId,
@@ -34,7 +35,7 @@ export class ClinicalChatInteractionLogMapper extends MapperWithoutDto<
             completionTokens: model.completionTokens ?? null,
             totalTokens: model.totalTokens ?? null,
             latencyMs: model.latencyMs ?? null,
-            status: model.status as unknown as ChatInteractionStatus,
+            status: toEnum(ChatInteractionStatus, model.status),
             errorCode: model.errorCode ?? null,
             errorMessage: model.errorMessage ?? null,
             usedFallback: model.usedFallback,
@@ -61,7 +62,7 @@ export class ClinicalChatInteractionLogMapper extends MapperWithoutDto<
             completionTokens: entity.completionTokens ?? null,
             totalTokens: entity.totalTokens ?? null,
             latencyMs: entity.latencyMs ?? null,
-            status: entity.status as unknown as PrismaClient.ChatInteractionStatus,
+            status: toEnum(PrismaClient.ChatInteractionStatus, entity.status),
             errorCode: entity.errorCode ?? null,
             errorMessage: entity.errorMessage ?? null,
             usedFallback: entity.usedFallback,

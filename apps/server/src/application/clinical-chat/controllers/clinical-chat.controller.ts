@@ -3,7 +3,6 @@ import {ApiTags} from '@nestjs/swagger';
 import {Actor} from '../../../domain/@shared/actor';
 import {
     PatientChatSessionId,
-    ChatMessageRole,
 } from '../../../domain/clinical-chat/entities';
 import {ClinicalChatPermission} from '../../../domain/auth';
 import {Authorize} from '../../@shared/auth';
@@ -214,7 +213,7 @@ export class ClinicalChatController {
             actor,
             payload: {
                 sessionId: id,
-                role: payload.role as ChatMessageRole,
+                role: payload.role,
                 content: payload.content,
                 metadata: payload.metadata ?? null,
                 chunkIds: payload.chunkIds ?? [],
@@ -274,9 +273,8 @@ export class ClinicalChatController {
         @RequestActor() _actor: Actor,
         @Body() payload: RebuildContextDto
     ): Promise<{invalidated: boolean; previousStatus: string | null}> {
-        const patientId = payload.patientId as unknown as PatientId;
         const result = await this.invalidateSnapshotService.execute({
-            patientId,
+            patientId: payload.patientId,
             reason: 'Manual invalidation via API',
         });
         return {
@@ -296,7 +294,7 @@ export class ClinicalChatController {
         @Query(new ZodValidationPipe(retrieveChunksSchema)) query: RetrieveChunksDto
     ): Promise<{chunks: PatientContextChunkDto[]; snapshotAvailable: boolean; totalChunks: number}> {
         const result = await this.retrieveChunksService.execute({
-            patientId: query.patientId as PatientId,
+            patientId: query.patientId,
             query: query.query,
             sourceTypes: query.sourceTypes,
             topK: query.topK,
@@ -364,7 +362,7 @@ export class ClinicalChatController {
             payload: {sessionId: id},
         });
 
-        const patientId = session.patientId as unknown as PatientId;
+        const patientId = session.patientId;
 
         const [snapshot, totalIndexed, providerHealth] = await Promise.all([
             this.snapshotRepository.findByPatient(patientId),

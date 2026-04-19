@@ -1,7 +1,8 @@
 import {Injectable} from '@nestjs/common';
 import * as PrismaClient from '@prisma/client';
 import {DocumentId, Phone} from '../../domain/@shared/value-objects';
-import {Person, PersonId, Gender} from '../../domain/person/entities';
+import {toEnum, toEnumOrNull} from '../../domain/@shared/utils';
+import {Person, PersonId, Gender, PersonType} from '../../domain/person/entities';
 import {MapperWithoutDto} from './mapper';
 
 export type PersonModel = PrismaClient.Person;
@@ -14,9 +15,9 @@ export class PersonMapper extends MapperWithoutDto<Person, PersonModel> {
             id: PersonId.from(model.id),
             documentId: DocumentId.create(model.documentId),
             name: model.name,
-            gender: model.gender as Gender | null,
+            gender: toEnumOrNull(Gender, model.gender),
             phone: model.phone === null ? null : Phone.create(model.phone),
-            personType: model.personType as any,
+            personType: toEnum(PersonType, model.personType),
             profiles: new Set(),
             deletedAt: model.deletedAt ?? null,
         });
@@ -28,10 +29,11 @@ export class PersonMapper extends MapperWithoutDto<Person, PersonModel> {
             name: entity.name,
             documentId: entity.documentId.toString(),
             phone: entity.phone?.toString() ?? null,
-            gender: entity.gender as any,
+            gender: toEnumOrNull(PrismaClient.Gender, entity.gender),
+            personType: toEnum(PrismaClient.PersonType, entity.personType),
             createdAt: entity.createdAt,
             updatedAt: entity.updatedAt,
             deletedAt: entity.deletedAt ?? null,
-        } as unknown as PersonModel;
+        };
     }
 }

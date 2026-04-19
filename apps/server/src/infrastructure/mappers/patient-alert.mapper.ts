@@ -1,5 +1,6 @@
 import {Injectable} from '@nestjs/common';
 import * as PrismaClient from '@prisma/client';
+import {toEnum} from '../../domain/@shared/utils';
 import {PatientId} from '../../domain/patient/entities';
 import {ProfessionalId} from '../../domain/professional/entities';
 import {PatientAlert, PatientAlertId, AlertSeverity} from '../../domain/patient-alert/entities';
@@ -16,7 +17,7 @@ export class PatientAlertMapper extends MapperWithoutDto<PatientAlert, PatientAl
             patientId: PatientId.from(model.patientId),
             professionalId: ProfessionalId.from(model.professionalId),
             description: model.description ?? null,
-            severity: model.severity as unknown as AlertSeverity,
+            severity: toEnum(AlertSeverity, model.severity),
             isActive: model.isActive,
             deletedAt: model.deletedAt ?? null,
         });
@@ -29,7 +30,7 @@ export class PatientAlertMapper extends MapperWithoutDto<PatientAlert, PatientAl
             professionalId: entity.professionalId.toString(),
             title: entity.title,
             description: entity.description,
-            severity: entity.severity as unknown as PrismaClient.AlertSeverity,
+            severity: toEnum(PrismaClient.AlertSeverity, entity.severity),
             isActive: entity.isActive,
             createdAt: entity.createdAt,
             updatedAt: entity.updatedAt,

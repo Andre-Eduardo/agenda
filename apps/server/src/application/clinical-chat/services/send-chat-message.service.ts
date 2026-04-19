@@ -1,7 +1,16 @@
 import {Injectable} from '@nestjs/common';
 import {ResourceNotFoundException, PreconditionException} from '../../../domain/@shared/exceptions';
-import {PatientId} from '../../../domain/patient/entities';
-import {ProfessionalId} from '../../../domain/professional/entities';
+import type {PatientId} from '../../../domain/patient/entities';
+import type {ProfessionalId} from '../../../domain/professional/entities';
+
+/**
+ * Filtra uma lista de strings arbitrárias mantendo apenas aquelas que são
+ * valores válidos do enum ContextChunkSourceType.
+ */
+function toContextChunkSourceTypes(sources: string[]): ContextChunkSourceType[] {
+    const validValues = new Set<string>(Object.values(ContextChunkSourceType));
+    return sources.filter((s): s is ContextChunkSourceType => validValues.has(s));
+}
 import {
     PatientChatSessionId,
     PatientChatMessage,
@@ -9,7 +18,7 @@ import {
     ChatSessionStatus,
     ClinicalChatInteractionLog,
     ChatInteractionStatus,
-    AiAgentProfileId,
+    ContextChunkSourceType,
 } from '../../../domain/clinical-chat/entities';
 import type {PatientFacts, CriticalContextEntry, TimelineEntry} from '../../../domain/clinical-chat/entities';
 import {PatientChatSessionRepository} from '../../../domain/clinical-chat/patient-chat-session.repository';
@@ -103,13 +112,13 @@ export class SendChatMessageService
             throw new PreconditionException('Cannot send message to a non-active session.');
         }
 
-        const patientId = session.patientId as PatientId;
+        const patientId = session.patientId;
         // O professionalId vem da sessão — foi validado no momento da criação
-        const professionalId = session.professionalId as ProfessionalId;
+        const professionalId = session.professionalId;
 
         // ─── 2. Resolver perfil do agente ────────────────────────────────────
         const agentProfile = session.agentProfileId
-            ? await this.agentProfileRepository.findById(session.agentProfileId as AiAgentProfileId)
+            ? await this.agentProfileRepository.findById(session.agentProfileId)
             : await this.resolveDefaultAgentProfile();
 
         // ─── 3. Obter snapshot clínico ───────────────────────────────────────
@@ -128,7 +137,7 @@ export class SendChatMessageService
             topK: payload.topK ?? 5,
             minScore: payload.minScore ?? 0,
             sourceTypes: agentProfile?.allowedSources?.length
-                ? (agentProfile.allowedSources as any[])
+                ? toContextChunkSourceTypes(agentProfile.allowedSources)
                 : undefined,
         });
 

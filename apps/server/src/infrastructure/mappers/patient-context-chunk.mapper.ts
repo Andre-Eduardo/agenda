@@ -1,5 +1,6 @@
 import {Injectable} from '@nestjs/common';
 import * as PrismaClient from '@prisma/client';
+import {toEnum} from '../../domain/@shared/utils';
 import {PatientContextChunk, PatientContextChunkId, ContextChunkSourceType, type ChunkMetadata} from '../../domain/clinical-chat/entities';
 import {PatientId} from '../../domain/patient/entities';
 import {MapperWithoutDto} from './mapper';
@@ -30,7 +31,7 @@ export class PatientContextChunkMapper extends MapperWithoutDto<PatientContextCh
         return new PatientContextChunk({
             id: PatientContextChunkId.from(model.id),
             patientId: PatientId.from(model.patientId),
-            sourceType: model.sourceType as unknown as ContextChunkSourceType,
+            sourceType: toEnum(ContextChunkSourceType, model.sourceType),
             sourceId: model.sourceId,
             content: model.content,
             metadata: model.metadata as ChunkMetadata | null,
@@ -49,7 +50,7 @@ export class PatientContextChunkMapper extends MapperWithoutDto<PatientContextCh
         return new PatientContextChunk({
             id: PatientContextChunkId.from(row.id),
             patientId: PatientId.from(row.patient_id),
-            sourceType: row.source_type as ContextChunkSourceType,
+            sourceType: toEnum(ContextChunkSourceType, row.source_type),
             sourceId: row.source_id,
             content: row.content,
             metadata: row.metadata as ChunkMetadata | null,
@@ -67,7 +68,7 @@ export class PatientContextChunkMapper extends MapperWithoutDto<PatientContextCh
         return {
             id: entity.id.toString(),
             patientId: entity.patientId.toString(),
-            sourceType: entity.sourceType as unknown as PrismaClient.ContextChunkSourceType,
+            sourceType: toEnum(PrismaClient.ContextChunkSourceType, entity.sourceType),
             sourceId: entity.sourceId,
             content: entity.content,
             metadata: entity.metadata as PrismaClient.Prisma.JsonValue,

@@ -1,4 +1,5 @@
 import {Injectable} from '@nestjs/common';
+import {Prisma} from '@prisma/client';
 import {PatientChatMessage, PatientChatMessageId, PatientChatSessionId} from '../../domain/clinical-chat/entities';
 import {
     PatientChatMessageRepository,
@@ -50,10 +51,16 @@ export class PatientChatMessagePrismaRepository
 
     async save(message: PatientChatMessage): Promise<void> {
         const data = this.mapper.toPersistence(message);
+        // Prisma exige `Prisma.JsonNull` (sentinel) em colunas JSON anuláveis — `null` puro
+        // é rejeitado pelo tipo UncheckedCreateInput/UpdateInput. Normalizamos aqui.
+        const writeData = {
+            ...data,
+            metadata: data.metadata ?? Prisma.JsonNull,
+        } satisfies Prisma.PatientChatMessageUncheckedCreateInput;
         await this.prisma.patientChatMessage.upsert({
             where: {id: data.id},
-            create: data as any,
-            update: data as any,
+            create: writeData,
+            update: writeData,
         });
     }
 }

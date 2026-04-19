@@ -1,4 +1,5 @@
 import {Injectable} from '@nestjs/common';
+import {Prisma} from '@prisma/client';
 import {FormTemplateVersion, FormTemplateVersionId} from '../../domain/form-template-version/entities';
 import {FormTemplateVersionRepository} from '../../domain/form-template-version/form-template-version.repository';
 import {FormTemplateId} from '../../domain/form-template/entities';
@@ -62,10 +63,16 @@ export class FormTemplateVersionPrismaRepository
 
     async save(version: FormTemplateVersion): Promise<void> {
         const data = this.mapper.toPersistence(version);
+        // `definitionJson` é obrigatório no domínio; `schemaJson` é opcional (usa sentinel JsonNull).
+        const writeData: Prisma.FormTemplateVersionUncheckedCreateInput = {
+            ...data,
+            definitionJson: data.definitionJson as Prisma.InputJsonValue,
+            schemaJson: data.schemaJson === null ? Prisma.JsonNull : (data.schemaJson as Prisma.InputJsonValue),
+        };
         await this.prisma.formTemplateVersion.upsert({
             where: {id: data.id},
-            create: data as any,
-            update: data as any,
+            create: writeData,
+            update: writeData,
         });
     }
 }
