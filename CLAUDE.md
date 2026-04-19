@@ -18,7 +18,7 @@ docs/             — Documentação de arquitetura e padrões
 
 ```bash
 pnpm install                     # instalar dependências
-pnpm run start:dev:full          # server + web em paralelo (concurrently)
+pnpm run start:dev               # server + web em paralelo (concurrently)
 pnpm run typecheck               # tsc em todos os pacotes
 pnpm run build                   # build de todos os pacotes
 pnpm run lint                    # lint em todos os pacotes

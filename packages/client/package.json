@@ -16,7 +16,7 @@
     "lint:fix": "oxlint --fix && oxfmt",
     "code-check": "oxlint --type-check && oxfmt --check",
     "generate": "orval",
-    "codegen": "orval && pnpm lint:fix && pnpm build",
+    "codegen": "orval && pnpm build",
     "build": "tsc && vite build",
     "typecheck": "tsc --noEmit"
   },
@@ -25,7 +25,10 @@
     "axios": "^1.7.9"
   },
   "devDependencies": {
+    "@eslint-community/eslint-plugin-eslint-comments": "^4.7.1",
     "@stoplight/spectral-rulesets": "^1.22.1",
+    "@stylistic/eslint-plugin": "^5.10.0",
+    "eslint-plugin-sort-export-all": "^2.1.0",
     "orval": "^7.6.0",
     "oxfmt": "^0.41.0",
     "oxlint": "^1.56.0",

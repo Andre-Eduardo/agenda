@@ -1,0 +1,37 @@
+{
+  "name": "@agenda-app/e2e",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "prisma:generate": "prisma generate --schema=../apps/server/prisma/schema.prisma",
+    "test": "playwright test",
+    "test:local": "playwright test --grep-invert @visual",
+    "test:nav": "playwright test tests/navigation",
+    "test:headed": "playwright test --headed",
+    "test:ui": "playwright test --ui",
+    "test:debug": "playwright test --debug",
+    "test:chrome": "pnpm test:local --project=desktop-chrome",
+    "test:mobile": "pnpm test:local --project=mobile-chrome",
+    "test:failed": "pnpm test:local --last-failed",
+    "report": "playwright show-report",
+    "codegen": "playwright codegen",
+    "install:browsers": "playwright install --with-deps"
+  },
+  "dependencies": {
+    "@playwright/test": "^1.58.0",
+    "@prisma/client": "^6.0.0",
+    "uuidv7": "^1.0.0"
+  },
+  "devDependencies": {
+    "@eslint/compat": "^1.2.3",
+    "@types/node": "^22.0.0",
+    "eslint": "^9.0.0",
+    "eslint-plugin-playwright": "^2.0.0",
+    "prisma": "^6.0.0",
+    "ts-node": "^10.9.0",
+    "typescript": "^5.9.0"
+  }
+}
