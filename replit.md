@@ -1,69 +1,83 @@
-# Automo - Agenda App
+# Automo — Agenda Saúde
 
-A multi-tenant hospitality management backend system built with NestJS.
+Sistema multi-tenant de gestão clínica (hospitalar/ambulatorial) — monorepo pnpm com NestJS backend e React/Vite frontend.
 
-## Architecture
+## Arquitetura
 
-- **Framework**: NestJS (v11) with TypeScript
-- **Database**: PostgreSQL via Prisma ORM (v6)
-- **Validation**: Zod schemas
-- **Auth**: JWT tokens with signed cookies
-- **Storage**: Local filesystem or AWS S3
-- **Logging**: Winston structured logging
-- **Package Manager**: pnpm (monorepo with pnpm workspaces)
+- **Backend**: NestJS v11 + TypeScript — porta 3000
+- **Frontend**: React + Vite (SWC) + TanStack Router + TanStack Query + Mantine UI — porta 5000
+- **Banco**: PostgreSQL via Prisma ORM v6
+- **Auth**: JWT com signed cookies
+- **Package Manager**: pnpm workspaces
 
-## Project Structure
+## Estrutura
 
 ```
 apps/
-  server/          - NestJS backend application
+  server/          - NestJS backend
     src/
       application/ - Controllers, DTOs, Application Services
-      domain/      - Domain entities, value objects, events, repositories
-      infrastructure/ - Prisma repositories, config, mappers, storage
-    prisma/        - Prisma schema
+      domain/      - Entidades, value objects, eventos, repositórios
+      infrastructure/ - Prisma repos, config, mappers, storage, AI
+    prisma/        - Schema Prisma + migrações
+  web/             - React/Vite frontend
+    src/
+      lib/client/  - Shim local @agenda-app/client (hooks TanStack Query)
+      views/
+        layouts/   - AuthLayout, StackedLayout
+        modules/   - Páginas por módulo (auth, dashboard, patient, appointment, etc.)
+      store/       - Zustand appStore (auth state)
+      utils/       - apiTypes (PaginatedResult), etc.
 ```
 
-## Key Features
+## Rotas Backend (prefixo /api/v1/)
 
-- Multi-tenancy (scoped by companyId via signed cookies)
-- Domain-Driven Design (DDD) with clean architecture
-- Role-based and permission-based access control
-- File upload with local/S3 storage
-- Swagger/OpenAPI documentation at `/api/docs`
-- CQRS-inspired service pattern
+- `POST /auth/sign-in` — login (username + password)
+- `POST /auth/sign-out` — logout
+- `GET  /user/me` — usuário autenticado
+- `GET/POST /patients` — listagem e criação de pacientes
+- `GET/PUT /patients/:id` — detalhe e edição
+- `GET /patients/:id/clinical-profile` — perfil clínico
+- `GET/POST /patients/:id/alerts` — alertas do paciente
+- `GET/POST /patients/:id/forms/:formId` — formulários dinâmicos
+- `GET/POST /appointments` — consultas
+- `PATCH /appointments/:id/cancel` — cancelar consulta
+- `GET/POST /records` — prontuários/evoluções
+- `GET/POST /professionals` — profissionais
+- `GET/POST /form-templates` — modelos de formulário
+- `GET/POST /clinical-chat/sessions` — sessões de chat clínico IA
+- `POST /clinical-chat/sessions/:id/chat` — enviar mensagem
+- `GET /clinical-chat/sessions/:id/messages` — listar mensagens
+- `GET /clinical-chat/context/snapshot/:patientId` — snapshot clínico
 
-## Running the Application
+## Módulo @agenda-app/client (shim local)
 
-The application starts with:
+Localizado em `apps/web/src/lib/client/index.ts`, mapeado via alias Vite.
+Contém todos os hooks TanStack Query para comunicação com a API REST.
+
+Alias em `apps/web/vite.config.ts`:
+```ts
+resolve: { alias: { '@agenda-app/client': path.resolve(__dirname, './src/lib/client/index.ts') } }
 ```
-cd apps/server && pnpm run prisma:generate && pnpm run prisma:migrate && NODE_ENV=development NODE_OPTIONS='--experimental-global-webcrypto' npx nest start --watch
-```
 
-The server runs on port 5000 in development.
+## Workflows
 
-## API Documentation
+- **Backend API**: `cd apps/server && pnpm run prisma:generate && pnpm run prisma:migrate && NODE_ENV=development NODE_OPTIONS='--experimental-global-webcrypto' npx nest start --watch`
+- **Start application**: `cd apps/web && pnpm run dev`
 
-Available at: `http://localhost:5000/api/docs`
+Frontend disponível em `$REPLIT_DEV_DOMAIN`, API proxiada em `/api`.
 
-## Environment Variables (apps/server/.env)
+## Credenciais de teste
 
-- `DATABASE_URL` - PostgreSQL connection string (set from Replit database)
-- `PORT` - Server port (5000 for dev)
-- `NODE_ENV` - Environment (development/production)
-- `COOKIE_SECRET` - Secret for cookie signing
-- `AUTH_TOKEN_SECRET` - JWT secret
-- `STORAGE_TYPE` - LOCAL or S3
-- `LOCAL_UPLOAD_DIR` - Directory for local uploads
-- `PUBLIC_BASE_URL` - Public base URL for file links
+- **Usuário**: `admin`
+- **Senha**: `Admin@123456`
 
-## Bugs Fixed During Import
+## Correções aplicadas
 
-1. `@ecxus/eslint-plugin` - Private package removed from devDependencies (only needed for linting)
-2. `ServeStaticModule.registerAsync` → `ServeStaticModule.forRootAsync` (API change in newer version)
-3. `NestFactory.create<NestExpressApplication>` - Added proper type annotation in main.ts
-4. `UploadFilePrismaRepository` - Fixed status field casting to use Prisma enum
-5. `EventMapper` missing from `MapperModule` - Added it
-6. `StorageModule` missing `ConfigModule` import - Added import
-7. Node.js 18 `crypto` not defined - Added `--experimental-global-webcrypto` flag
-8. `PromoteFileService` - Updated to accept `MaybeAuthenticatedActor` instead of `Actor`
+1. `ai-provider.module.ts` — removido OpenRouterChatProvider dos providers diretos (factory-only)
+2. `compression`/`cookieParser` imports corrigidos para estilo default (incompatibilidade SWC + CJS)
+3. `AuthLayout` e `login` — adicionados exports `Route` via `createFileRoute`
+4. `StackedLayout` — adicionado export `Route` via `createFileRoute('/_stackedLayout')`
+5. Migração `20260415000000_scope_patient_document_id_to_professional` — resolvida como applied (coluna já existia em outro estado)
+6. Shim `@agenda-app/client` criado localmente com todos os hooks utilizados pelas 17+ páginas frontend
+7. Endpoint `/user/me` corrigido (controller é `user`, não `users`)

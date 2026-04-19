@@ -1,4 +1,4 @@
-import { Outlet, Link, useRouterState, useNavigate } from '@tanstack/react-router';
+import { Outlet, Link, useRouterState, useNavigate, createFileRoute } from '@tanstack/react-router';
 import { Box, Text, Badge } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
 import { useGetCurrentUser, useSignOut } from '@agenda-app/client';
@@ -21,6 +21,10 @@ import {
   notifBtnStyle,
   notifDotStyle,
 } from './styles';
+
+export const Route = createFileRoute('/_stackedLayout')({
+  component: StackedLayout,
+});
 
 interface NavItem {
   icon: string;
