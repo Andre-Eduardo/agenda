@@ -2,7 +2,7 @@ import {Injectable} from '@nestjs/common';
 import * as PrismaClient from '@prisma/client';
 import {Prisma} from '@prisma/client';
 import {AgentProposal, AgentProposalId, AgentProposalStatus} from '../../domain/agent-proposal/entities';
-import {AgentProposalRepository, AgentProposalSearchFilter, AgentProposalSortOptions} from '../../domain/agent-proposal/agent-proposal.repository';
+import {AgentProposalRepository, AgentProposalSearchFilter, AgentProposalSortOptions, ProposalStats} from '../../domain/agent-proposal/agent-proposal.repository';
 import {PaginatedList, Pagination} from '../../domain/@shared/repository';
 import {AgentProposalMapper} from '../mappers/agent-proposal.mapper';
 import {PrismaProvider} from './prisma/prisma.provider';
@@ -75,5 +75,41 @@ export class AgentProposalPrismaRepository extends PrismaRepository implements A
             },
         });
         return result.count;
+    }
+
+    async getProposalStats(from: Date, to: Date): Promise<ProposalStats> {
+        const dateFilter = {createdAt: {gte: from, lte: to}};
+
+        const [byTypeRows, confirmed, resolved] = await Promise.all([
+            this.prisma.agentProposal.groupBy({
+                by: ['proposalType'],
+                where: dateFilter,
+                _count: {id: true},
+            }),
+            this.prisma.agentProposal.count({
+                where: {...dateFilter, status: PrismaClient.AgentProposalStatus.CONFIRMED},
+            }),
+            this.prisma.agentProposal.count({
+                where: {
+                    ...dateFilter,
+                    status: {
+                        in: [
+                            PrismaClient.AgentProposalStatus.CONFIRMED,
+                            PrismaClient.AgentProposalStatus.REJECTED,
+                        ],
+                    },
+                },
+            }),
+        ]);
+
+        const byType: Record<string, number> = {};
+        for (const row of byTypeRows) {
+            byType[row.proposalType] = row._count.id;
+        }
+
+        return {
+            byType,
+            confirmationRate: resolved > 0 ? confirmed / resolved : null,
+        };
     }
 }

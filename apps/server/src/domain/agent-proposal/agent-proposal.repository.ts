@@ -10,6 +10,11 @@ export type AgentProposalSearchFilter = {
 
 export type AgentProposalSortOptions = ['createdAt', 'updatedAt', 'expiresAt'];
 
+export type ProposalStats = {
+    byType: Record<string, number>;
+    confirmationRate: number | null;
+};
+
 export interface AgentProposalRepository {
     findById(id: AgentProposalId): Promise<AgentProposal | null>;
     save(proposal: AgentProposal): Promise<void>;
@@ -18,6 +23,7 @@ export interface AgentProposalRepository {
         filter?: AgentProposalSearchFilter,
     ): Promise<PaginatedList<AgentProposal>>;
     markExpired(before: Date): Promise<number>;
+    getProposalStats(from: Date, to: Date): Promise<ProposalStats>;
 }
 
 export abstract class AgentProposalRepository {}

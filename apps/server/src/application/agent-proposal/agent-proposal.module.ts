@@ -1,6 +1,7 @@
 import {Module} from '@nestjs/common';
 import {InfrastructureModule} from '../../infrastructure/infrastructure.module';
 import {AgentProposalController} from './controllers/agent-proposal.controller';
+import {ExpireOldProposalsJob} from './jobs/expire-old-proposals.job';
 import {CreateAppointmentProposalService} from './services/create-appointment-proposal.service';
 import {CreateAppointmentCancelProposalService} from './services/create-appointment-cancel-proposal.service';
 import {CreateAppointmentRescheduleProposalService} from './services/create-appointment-reschedule-proposal.service';
@@ -20,6 +21,7 @@ import {ListPendingProposalsService} from './services/list-pending-proposals.ser
         ConfirmProposalService,
         RejectProposalService,
         ListPendingProposalsService,
+        ExpireOldProposalsJob,
     ],
     exports: [
         CreateAppointmentProposalService,

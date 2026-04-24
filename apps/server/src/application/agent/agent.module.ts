@@ -3,6 +3,8 @@ import {InfrastructureModule} from '../../infrastructure/infrastructure.module';
 import {KnowledgeBaseModule} from '../knowledge-base/knowledge-base.module';
 import {AgentProposalModule} from '../agent-proposal/agent-proposal.module';
 import {AgentAskController} from './controllers/agent-ask.controller';
+import {AgentMetricsController} from './controllers/agent-metrics.controller';
+import {GetAgentMetricsService} from './services/get-agent-metrics.service';
 import {AgentLoopService} from './core/agent-loop.service';
 import {ToolDispatcherService} from './core/tool-dispatcher.service';
 import {ToolRegistryService} from './core/tool-registry.service';
@@ -62,11 +64,12 @@ const toolMultiProviders = toolClasses.map((cls) => ({
 
 @Module({
     imports: [InfrastructureModule, KnowledgeBaseModule, AgentProposalModule],
-    controllers: [AgentAskController],
+    controllers: [AgentAskController, AgentMetricsController],
     providers: [
         ToolRegistryService,
         ToolDispatcherService,
         AgentLoopService,
+        GetAgentMetricsService,
         // Snapshot pipeline (stateless — safe to register here alongside ClinicalChatModule)
         GetContextSnapshotService,
         BuildPatientContextService,

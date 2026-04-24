@@ -1,6 +1,15 @@
 import type {ClinicalChatInteractionLog, ClinicalChatInteractionLogId} from './entities';
 import type {PatientChatSessionId} from './entities';
 
+export type InteractionMetrics = {
+    totalInteractions: number;
+    avgIterations: number | null;
+    avgDurationMs: number | null;
+    avgChunksUsed: number | null;
+    avgTopKScore: number | null;
+    topTools: Array<{name: string; count: number}>;
+};
+
 export interface ClinicalChatInteractionLogRepository {
     findById(id: ClinicalChatInteractionLogId): Promise<ClinicalChatInteractionLog | null>;
 
@@ -8,6 +17,8 @@ export interface ClinicalChatInteractionLogRepository {
     findBySessionId(sessionId: PatientChatSessionId): Promise<ClinicalChatInteractionLog[]>;
 
     save(log: ClinicalChatInteractionLog): Promise<void>;
+
+    getInteractionMetrics(from: Date, to: Date): Promise<InteractionMetrics>;
 }
 
 export abstract class ClinicalChatInteractionLogRepository {}
