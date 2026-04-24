@@ -22,13 +22,9 @@ Feature: User retrieval (GET)
         Given I am signed in as "john_doe"
         When I send a "GET" request to "/api/v1/user/${ref:id:user:john_doe}"
         Then the request should succeed with a 200 status code
-        And the response should match:
-            """JSON
-            {
-              "id": "${ref:id:user:john_doe}",
-              "username": "john_doe_${ref:var:contextId}"
-            }
-            """
+        And the response should contain:
+            | id       | ${ref:id:user:john_doe}           |
+            | username | john_doe_${ref:var:contextId}     |
 
     Scenario: Get user by unknown ID
         Given I am signed in as "john_doe"

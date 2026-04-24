@@ -10,7 +10,8 @@ Feature: User deletion (DELETE)
 
     Scenario: Delete user
         Given I am signed in as "jane_doe"
-        When I send a "DELETE" request to "/api/v1/user/${ref:id:user:jane_doe}"
+        When I send a "DELETE" request to "/api/v1/user/${ref:id:user:jane_doe}" with:
+            | password | J@n3.Do3! |
         Then the request should succeed with a 200 status code
 
     Scenario: Delete user without authentication

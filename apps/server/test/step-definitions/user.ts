@@ -3,6 +3,7 @@ import type {DataTable} from '@cucumber/cucumber';
 import {chai} from '../support/chai-setup';
 import type {Context} from '../support/context';
 import {multipleEntries} from '../support/data-table-converters';
+import {resolveReferences} from '../support/parser';
 
 // ---------------------------------------------------------------------------
 // Per-scenario password store — kept in memory only (never persisted)
@@ -53,7 +54,10 @@ Given(
         for (const row of rows) {
             const username = row.Username;
             const password = row.Password?.trim() || `${username}Pa$$w0rd`;
-            const email = row.Email?.trim() || `${username}_${this.variables.contextId}@test.agenda.dev`;
+            const rawEmail = row.Email?.trim() || `${username}@test.agenda.dev`;
+            // Always insert contextId before @ to prevent collisions across parallel runs/reruns
+            const [localPart, domain] = rawEmail.split('@');
+            const email = `${localPart}_${this.variables.contextId}@${domain}`;
             const uniqueUsername = this.getUniqueValue(username);
 
             storePassword(username, password);
@@ -144,7 +148,7 @@ Given(
             .send({
                 username: this.getUniqueValue(username),
                 password: getPassword(username),
-                professionalId,
+                professionalId: resolveReferences(this, professionalId),
             });
 
         chai.expect(response.error, `Sign-in failed for "${username}": ${JSON.stringify(response.body)}`).to.be.false;

@@ -46,6 +46,8 @@ import {PatientContextChunkPrismaRepository} from '../patient-context-chunk.pris
 import {ClinicalChatInteractionLogPrismaRepository} from '../clinical-chat-interaction-log.prisma.repository';
 import {KnowledgeChunkRepository} from '../../../domain/knowledge-base/knowledge-chunk.repository';
 import {KnowledgeChunkPrismaRepository} from '../knowledge-chunk.prisma.repository';
+import {AgentProposalRepository} from '../../../domain/agent-proposal/agent-proposal.repository';
+import {AgentProposalPrismaRepository} from '../agent-proposal.prisma.repository';
 import {PrismaService} from '.';
 import {PrismaProvider} from './prisma.provider';
 
@@ -143,6 +145,11 @@ const repositories: Provider[] = [
     {
         provide: KnowledgeChunkRepository,
         useClass: KnowledgeChunkPrismaRepository,
+    },
+    // Agent Proposal
+    {
+        provide: AgentProposalRepository,
+        useClass: AgentProposalPrismaRepository,
     },
 ];
 

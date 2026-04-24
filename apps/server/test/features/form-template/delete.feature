@@ -19,7 +19,7 @@ Feature: Form template deletion (DELETE)
         Then the request should succeed with a 201 status code
         And I save the response field "id" as "form-template" id for "to_delete"
         When I send a "DELETE" request to "/api/v1/form-templates/${ref:id:form-template:to_delete}"
-        Then the request should succeed with a 200 status code
+        Then the request should succeed with a 204 status code
         # TODO: Verify the template no longer appears in the listing after soft-delete.
 
     Scenario: Delete form template without authentication

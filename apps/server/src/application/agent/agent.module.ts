@@ -1,6 +1,7 @@
 import {Module} from '@nestjs/common';
 import {InfrastructureModule} from '../../infrastructure/infrastructure.module';
 import {KnowledgeBaseModule} from '../knowledge-base/knowledge-base.module';
+import {AgentProposalModule} from '../agent-proposal/agent-proposal.module';
 import {AgentAskController} from './controllers/agent-ask.controller';
 import {AgentLoopService} from './core/agent-loop.service';
 import {ToolDispatcherService} from './core/tool-dispatcher.service';
@@ -23,6 +24,12 @@ import {GetPatientFormTool} from './tools/form-data/get-patient-form.tool';
 import {ListPatientFormsTool} from './tools/form-data/list-patient-forms.tool';
 // Knowledge tools
 import {SearchKnowledgeTool} from './tools/knowledge/search-knowledge.tool';
+// Mutation tools
+import {ProposeAppointmentTool} from './tools/mutations/propose-appointment.tool';
+import {ProposeCancelAppointmentTool} from './tools/mutations/propose-cancel-appointment.tool';
+import {ProposeRescheduleAppointmentTool} from './tools/mutations/propose-reschedule-appointment.tool';
+import {DraftRecordEvolutionTool} from './tools/mutations/draft-record-evolution.tool';
+import {ProposePatientAlertTool} from './tools/mutations/propose-patient-alert.tool';
 // Snapshot pipeline needed by GetPatientProfileTool
 import {GetContextSnapshotService} from '../clinical-chat/services/get-context-snapshot.service';
 import {BuildPatientContextService} from '../clinical-chat/services/build-patient-context.service';
@@ -41,6 +48,11 @@ const toolClasses = [
     GetPatientFormTool,
     ListPatientFormsTool,
     SearchKnowledgeTool,
+    ProposeAppointmentTool,
+    ProposeCancelAppointmentTool,
+    ProposeRescheduleAppointmentTool,
+    DraftRecordEvolutionTool,
+    ProposePatientAlertTool,
 ];
 
 const toolMultiProviders = toolClasses.map((cls) => ({
@@ -49,7 +61,7 @@ const toolMultiProviders = toolClasses.map((cls) => ({
 }));
 
 @Module({
-    imports: [InfrastructureModule, KnowledgeBaseModule],
+    imports: [InfrastructureModule, KnowledgeBaseModule, AgentProposalModule],
     controllers: [AgentAskController],
     providers: [
         ToolRegistryService,

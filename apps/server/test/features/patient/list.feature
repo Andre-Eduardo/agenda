@@ -17,16 +17,13 @@ Feature: Patient listing and retrieval (GET)
             | professionalId | ${ref:id:professional:dr_house} |
         Then the request should succeed with a 201 status code
         When I send a "GET" request to "/api/v1/patients" with the query:
-            | page | 1  |
-            | size | 10 |
+            | limit | 10 |
         Then the request should succeed with a 200 status code
         And the response should match:
             """JSON
             {
-              "data": "__array__",
-              "total": "__number__",
-              "page": 1,
-              "size": 10
+              "data": "_.isArray",
+              "totalCount": "_.isNumber"
             }
             """
 
@@ -38,8 +35,7 @@ Feature: Patient listing and retrieval (GET)
         Then the request should succeed with a 201 status code
         When I send a "GET" request to "/api/v1/patients" with the query:
             | search | Busca Unica ${ref:var:contextId} |
-            | page   | 1                                |
-            | size   | 10                               |
+            | limit  | 10                               |
         Then the request should succeed with a 200 status code
 
     Scenario: List patients without authentication

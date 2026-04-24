@@ -22,19 +22,16 @@ Feature: Appointment listing and retrieval (GET)
             | professionalId | ${ref:id:professional:dr_house} |
             | startAt        | 2026-10-01T09:00:00.000Z        |
             | endAt          | 2026-10-01T10:00:00.000Z        |
-            | type           | CONSULTATION                    |
+            | type           | FIRST_VISIT                     |
         Then the request should succeed with a 201 status code
         When I send a "GET" request to "/api/v1/appointments" with the query:
-            | page | 1  |
-            | size | 10 |
+            | limit | 10 |
         Then the request should succeed with a 200 status code
         And the response should match:
             """JSON
             {
-              "data": "__array__",
-              "total": "__number__",
-              "page": 1,
-              "size": 10
+              "data": "_.isArray",
+              "totalCount": "_.isNumber"
             }
             """
 
@@ -44,12 +41,11 @@ Feature: Appointment listing and retrieval (GET)
             | professionalId | ${ref:id:professional:dr_house} |
             | startAt        | 2026-11-01T09:00:00.000Z        |
             | endAt          | 2026-11-01T10:00:00.000Z        |
-            | type           | CONSULTATION                    |
+            | type           | FIRST_VISIT                     |
         Then the request should succeed with a 201 status code
         When I send a "GET" request to "/api/v1/appointments" with the query:
             | patientId | ${ref:id:patient:appt_patient} |
-            | page      | 1                              |
-            | size      | 10                             |
+            | limit     | 10                             |
         Then the request should succeed with a 200 status code
 
     Scenario: Get appointment by ID
@@ -58,7 +54,7 @@ Feature: Appointment listing and retrieval (GET)
             | professionalId | ${ref:id:professional:dr_house} |
             | startAt        | 2026-12-01T09:00:00.000Z        |
             | endAt          | 2026-12-01T10:00:00.000Z        |
-            | type           | CONSULTATION                    |
+            | type           | FIRST_VISIT                     |
         Then the request should succeed with a 201 status code
         And I save the response field "id" as "appointment" id for "get_test"
         When I send a "GET" request to "/api/v1/appointments/${ref:id:appointment:get_test}"

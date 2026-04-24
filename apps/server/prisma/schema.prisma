@@ -99,6 +99,7 @@ model Professional {
   patientForms       PatientForm[]
   chatSessions       PatientChatSession[]
   contextSnapshots   PatientContextSnapshot[]
+  agentProposals     AgentProposal[]
 
   @@map("professional")
 }
@@ -854,4 +855,56 @@ model ClinicalChatInteractionLog {
 
   @@index([sessionId], name: "clinical_chat_interaction_log_session_idx")
   @@map("clinical_chat_interaction_log")
+}
+
+// ─── Agent Proposal ───────────────────────────────────────────────────────────
+
+enum AgentProposalType {
+  APPOINTMENT
+  APPOINTMENT_CANCEL
+  APPOINTMENT_RESCHEDULE
+  PATIENT_ALERT
+
+  @@map("agent_proposal_type")
+}
+
+enum AgentProposalStatus {
+  PENDING
+  CONFIRMED
+  REJECTED
+  EXPIRED
+
+  @@map("agent_proposal_status")
+}
+
+/// A proposal created by the AI agent that requires human confirmation before executing.
+/// Mutations never write to domain entities directly — they always go through AgentProposal first.
+model AgentProposal {
+  id              String              @id(map: "agent_proposal_pk") @db.Uuid
+  sessionId       String?             @map("session_id") @db.Uuid
+  messageId       String?             @map("message_id") @db.Uuid
+  patientId       String?             @map("patient_id") @db.Uuid
+  professionalId  String              @map("professional_id") @db.Uuid
+  professional    Professional        @relation(fields: [professionalId], references: [id])
+  proposalType    AgentProposalType   @map("type")
+  status          AgentProposalStatus @default(PENDING) @map("status")
+  /// Payload for creating the target entity when confirmed
+  payload         Json                @db.JsonB
+  /// Simplified preview for frontend rendering
+  preview         Json                @db.JsonB
+  rationale       String?             @db.Text
+  confidence      Float?
+  /// ID of the entity created upon confirmation
+  resultEntityId  String?             @map("result_entity_id") @db.Uuid
+  expiresAt       DateTime?           @map("expires_at")
+  confirmedAt     DateTime?           @map("confirmed_at")
+  confirmedBy     String?             @map("confirmed_by") @db.Uuid
+  rejectedAt      DateTime?           @map("rejected_at")
+  rejectionReason String?             @map("rejection_reason") @db.Text
+  createdAt       DateTime            @map("created_at")
+  updatedAt       DateTime            @map("updated_at")
+
+  @@index([professionalId, status], name: "agent_proposal_professional_status_idx")
+  @@index([patientId], name: "agent_proposal_patient_idx")
+  @@map("agent_proposal")
 }

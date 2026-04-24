@@ -1,5 +1,5 @@
 import {randomBytes} from 'node:crypto';
-import {World} from '@cucumber/cucumber';
+import {World, setWorldConstructor} from '@cucumber/cucumber';
 import {Test} from '@nestjs/testing';
 import type {NestExpressApplication} from '@nestjs/platform-express';
 import * as supertest from 'supertest';
@@ -100,7 +100,7 @@ export class Context extends World {
         // service picks them up correctly.
         process.env['TZ'] = 'UTC';
         process.env['NODE_ENV'] = 'test';
-        process.env['STORAGE_TYPE'] = 'local';
+        process.env['STORAGE_TYPE'] = 'LOCAL';
         process.env['LOCAL_UPLOAD_DIR'] = './test-files';
         process.env['PUBLIC_BASE_URL'] = 'http://localhost:3333';
         // MQTT is disabled in tests: without MQTT_BROKER_URL the service skips
@@ -200,3 +200,5 @@ export class Context extends World {
         chai.expect(data).to.matchPattern(parsed);
     }
 }
+
+setWorldConstructor(Context);

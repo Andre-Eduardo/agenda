@@ -17,7 +17,8 @@ Feature: Form template listing and retrieval (GET)
             | specialty      | MEDICINA                         |
             | professionalId | ${ref:id:professional:dr_house}  |
         Then the request should succeed with a 201 status code
-        When I send a "GET" request to "/api/v1/form-templates"
+        When I send a "GET" request to "/api/v1/form-templates" with the query:
+            | limit | 10 |
         Then the request should succeed with a 200 status code
 
     Scenario: Filter templates by specialty
@@ -29,6 +30,7 @@ Feature: Form template listing and retrieval (GET)
         Then the request should succeed with a 201 status code
         When I send a "GET" request to "/api/v1/form-templates" with the query:
             | specialty | PSICOLOGIA |
+            | limit     | 10         |
         Then the request should succeed with a 200 status code
 
     Scenario: Get form template by ID

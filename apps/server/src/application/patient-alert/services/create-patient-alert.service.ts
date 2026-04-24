@@ -1,6 +1,8 @@
 import {Injectable} from '@nestjs/common';
+import {ResourceNotFoundException} from '../../../domain/@shared/exceptions';
 import {PatientAlert} from '../../../domain/patient-alert/entities';
 import {PatientAlertRepository} from '../../../domain/patient-alert/patient-alert.repository';
+import {PatientRepository} from '../../../domain/patient/patient.repository';
 import {EventDispatcher} from '../../../domain/event';
 import {ApplicationService, Command} from '../../@shared/application.service';
 import {CreatePatientAlertDto, PatientAlertDto} from '../dtos';
@@ -9,10 +11,17 @@ import {CreatePatientAlertDto, PatientAlertDto} from '../dtos';
 export class CreatePatientAlertService implements ApplicationService<CreatePatientAlertDto, PatientAlertDto> {
     constructor(
         private readonly patientAlertRepository: PatientAlertRepository,
+        private readonly patientRepository: PatientRepository,
         private readonly eventDispatcher: EventDispatcher
     ) {}
 
     async execute({actor, payload}: Command<CreatePatientAlertDto>): Promise<PatientAlertDto> {
+        const patient = await this.patientRepository.findById(payload.patientId);
+
+        if (!patient) {
+            throw new ResourceNotFoundException('Patient not found.', payload.patientId.toString());
+        }
+
         const alert = PatientAlert.create({
             patientId: payload.patientId,
             professionalId: payload.professionalId,
