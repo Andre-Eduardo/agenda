@@ -12,6 +12,7 @@ import {
 import { Page } from '../../../../components/Page';
 import { LoadingSkeleton } from '../../../../components/LoadingSkeleton';
 import { EmptyState } from '../../../../components/EmptyState';
+import { ProposalCard } from '../../components/ProposalCard';
 
 export const Route = createFileRoute('/_stackedLayout/patients/$patientId/chat')({
   component: ChatSessionPage,
@@ -95,21 +96,27 @@ function ChatSessionPage() {
           <EmptyState icon="chat" title="Nenhuma mensagem" message="Inicie a conversa abaixo." />
         ) : (
           <Stack gap="sm">
-            {messages.map((m: any) => (
-              <Box
-                key={m.id}
-                style={{
-                  alignSelf: m.role === 'USER' ? 'flex-end' : 'flex-start',
-                  maxWidth: '75%',
-                  backgroundColor: m.role === 'USER' ? 'var(--mantine-color-brand-6)' : 'var(--mantine-color-brand-0)',
-                  color: m.role === 'USER' ? 'white' : 'inherit',
-                  padding: '10px 14px',
-                  borderRadius: 10,
-                }}
-              >
-                <Text size="sm">{m.content}</Text>
-              </Box>
-            ))}
+            {messages.map((m: any) => {
+              const proposalIds: string[] =
+                m.role === 'ASSISTANT' && Array.isArray(m.metadata?.proposalIds)
+                  ? (m.metadata.proposalIds as string[])
+                  : [];
+              return (
+                <Box key={m.id} style={{ alignSelf: m.role === 'USER' ? 'flex-end' : 'flex-start', maxWidth: '75%' }}>
+                  <Box
+                    style={{
+                      backgroundColor: m.role === 'USER' ? 'var(--mantine-color-brand-6)' : 'var(--mantine-color-brand-0)',
+                      color: m.role === 'USER' ? 'white' : 'inherit',
+                      padding: '10px 14px',
+                      borderRadius: 10,
+                    }}
+                  >
+                    <Text size="sm">{m.content}</Text>
+                  </Box>
+                  {proposalIds.length > 0 && <ProposalCard proposalIds={proposalIds} />}
+                </Box>
+              );
+            })}
           </Stack>
         )}
       </Box>
