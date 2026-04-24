@@ -6,6 +6,7 @@ import type {ProfessionalId} from '../../professional/entities';
 import type {FormTemplateId} from '../../form-template/entities';
 import type {FormTemplateVersionId} from '../../form-template-version/entities';
 import type {FormResponseJson, FormComputedJson} from '../../form-template/types';
+import {PatientFormCompletedEvent} from '../events';
 
 export enum FormResponseStatus {
     DRAFT = 'DRAFT',
@@ -81,6 +82,7 @@ export class PatientForm extends AggregateRoot<PatientFormId> {
         this.status = FormResponseStatus.COMPLETED;
         this.completedAt = now;
         this.updatedAt = now;
+        this.addEvent(new PatientFormCompletedEvent({formId: this.id, patientId: this.patientId, timestamp: now}));
     }
 
     cancel(): void {

@@ -27,6 +27,8 @@ import {
     // Task 8: Main chat orchestrator
     SendChatMessageService,
 } from './services';
+import {ReindexOnRecordSavedHandler} from './handlers/reindex-on-record-saved.handler';
+import {ReindexOnFormCompletedHandler} from './handlers/reindex-on-form-completed.handler';
 
 @Module({
     imports: [InfrastructureModule, AgentModule],
@@ -60,6 +62,10 @@ import {
 
         // ─── Task 8: Main chat orchestrator ──────────────────────────────────
         SendChatMessageService,
+
+        // ─── Phase 4: Auto re-index handlers ─────────────────────────────────
+        ReindexOnRecordSavedHandler,
+        ReindexOnFormCompletedHandler,
     ],
 })
 export class ClinicalChatModule {}

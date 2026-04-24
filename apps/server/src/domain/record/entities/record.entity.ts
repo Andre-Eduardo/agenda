@@ -9,7 +9,7 @@ import {
 import {EntityId} from '../../@shared/entity/id';
 import type {ProfessionalId} from '../../professional/entities';
 import type {AppointmentId} from '../../appointment/entities';
-import {RecordCreatedEvent, RecordChangedEvent, RecordDeletedEvent} from '../events';
+import {RecordCreatedEvent, RecordChangedEvent, RecordDeletedEvent, RecordSavedEvent} from '../events';
 import type {File} from './file.entity';
 import {ImportedDocumentId} from './imported-document.entity';
 
@@ -130,6 +130,7 @@ export class Record extends AggregateRoot<RecordId> {
         });
 
         record.addEvent(new RecordCreatedEvent({record, timestamp: now}));
+        record.addEvent(new RecordSavedEvent({recordId: record.id, patientId: record.patientId, action: 'CREATED', timestamp: now}));
 
         return record;
     }
@@ -208,6 +209,7 @@ export class Record extends AggregateRoot<RecordId> {
         this.validate();
 
         this.addEvent(new RecordChangedEvent({oldState, newState: this}));
+        this.addEvent(new RecordSavedEvent({recordId: this.id, patientId: this.patientId, action: 'UPDATED', timestamp: new Date()}));
     }
 
     validate(): void {
