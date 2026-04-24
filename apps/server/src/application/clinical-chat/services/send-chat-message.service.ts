@@ -215,6 +215,8 @@ export class SendChatMessageService
             retrievedChunkIds,
             status: ChatInteractionStatus.PENDING,
             usedFallback: false,
+            toolNames: [],
+            proposalIds: [],
         });
 
         // ─── 8. Persistir mensagem do usuário ────────────────────────────────
@@ -248,6 +250,10 @@ export class SendChatMessageService
             completionTokens: null,
             totalTokens: null,
         };
+        let agentToolNames: string[] = [];
+        let agentProposalIds: string[] = [];
+        let agentTotalIterations: number | undefined;
+        let agentAvgTopKScore: number | undefined;
 
         try {
             if (useAgentTools && this.agentLoop) {
@@ -262,6 +268,11 @@ export class SendChatMessageService
                     modelOverride: resolvedModel,
                 });
                 replyContent = agentReply.answer || '(sem resposta gerada)';
+                agentToolNames = agentReply.toolCalls.map((tc) => tc.tool);
+                agentProposalIds = agentReply.proposalIds;
+                agentTotalIterations = agentReply.totalIterations;
+                const scores = policyFilteredChunks.map((c) => c.score).filter((s) => s > 0);
+                agentAvgTopKScore = scores.length > 0 ? scores.reduce((a, b) => a + b, 0) / scores.length : undefined;
                 replyMetadata = {
                     provider: provider.providerId,
                     model: resolvedModel,
@@ -270,6 +281,7 @@ export class SendChatMessageService
                     snapshotVersion: snapshot?.contentHash ?? null,
                     chunksUsed: retrievedChunkIds.length,
                     toolCalls: agentReply.toolCalls.length,
+                    proposalIds: agentReply.proposalIds,
                     totalIterations: agentReply.totalIterations,
                     agentEnabled: true,
                 };
@@ -318,6 +330,12 @@ export class SendChatMessageService
                 totalTokens: replyUsage.totalTokens,
                 latencyMs,
                 usedFallback,
+                toolNames: agentToolNames,
+                proposalIds: agentProposalIds,
+                totalIterations: agentTotalIterations,
+                ragChunksUsed: policyFilteredChunks.length,
+                avgTopKScore: agentAvgTopKScore,
+                totalDurationMs: Date.now() - startedAt,
             });
             await this.interactionLogRepository.save(interactionLog);
 

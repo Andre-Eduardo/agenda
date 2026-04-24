@@ -850,6 +850,20 @@ model ClinicalChatInteractionLog {
   /// true se a resposta foi gerada por um provider de fallback
   usedFallback       Boolean              @default(false) @map("used_fallback")
 
+  // ─── Agent observability ────────────────────────────────────────────────────
+  /// Names of agent tools called during this interaction
+  toolNames          String[]             @default([]) @map("tool_names")
+  /// IDs of AgentProposals created during this interaction
+  proposalIds        String[]             @default([]) @map("proposal_ids")
+  /// Number of agent loop iterations performed
+  totalIterations    Int?                 @map("total_iterations")
+  /// Number of RAG chunks used as context
+  ragChunksUsed      Int?                 @map("rag_chunks_used")
+  /// Average similarity score of retrieved RAG chunks
+  avgTopKScore       Float?               @map("avg_top_k_score")
+  /// Total wall-clock duration including all tool calls (ms)
+  totalDurationMs    Int?                 @map("total_duration_ms")
+
   createdAt          DateTime             @map("created_at")
   updatedAt          DateTime             @map("updated_at")
 
