@@ -356,7 +356,7 @@ model File {
   record            Record?            @relation(fields: [recordId], references: [id])
   patientId         String?            @map("patient_id") @db.Uuid
   patient           Patient?           @relation(fields: [patientId], references: [id])
-  fileName          String
+  fileName          String   @map("file_name")
   url               String
   description       String
   createdAt         DateTime           @map("created_at")
@@ -758,6 +758,38 @@ model PatientContextChunk {
   // Nota: índice HNSW (embedding vector_cosine_ops) é criado via migration SQL —
   // Prisma v6 não suporta a sintaxe @@index para tipos pgvector.
   @@map("patient_context_chunk")
+}
+
+// ─── Knowledge Base RAG ───────────────────────────────────────────────────────
+
+/// Chunk de conhecimento global (manuais, protocolos, CIDs, diretrizes).
+/// Separado do PatientContextChunk — sem patientId, filtrado por specialty/category.
+model KnowledgeChunk {
+  id          String     @id(map: "knowledge_chunk_pk") @db.Uuid
+  /// null = chunk global; preenchido = scoped para uma empresa
+  companyId   String?    @map("company_id") @db.Uuid
+  specialty   Specialty? @map("specialty")
+  /// "protocolo" | "cid" | "faq" | "manual" | "diretriz"
+  category    String     @map("category")
+  content     String     @db.Text
+  /// {title, section, tags, originalFormat}
+  metadata    Json?      @db.JsonB
+  sourceFile  String?    @map("source_file")
+  sourcePage  Int?       @map("source_page")
+  /// Embedding vetorial para busca semântica via pgvector.
+  /// Gerado pelo EmbeddingProvider (nunca pelo ChatProvider).
+  embedding   Unsupported("vector(1536)")?
+  /// Hash SHA-256 do content — detecta mudanças para re-indexação
+  contentHash String     @map("content_hash") @unique
+
+  createdAt   DateTime   @map("created_at")
+  updatedAt   DateTime   @map("updated_at")
+
+  @@index([companyId], name: "knowledge_chunk_company_idx")
+  @@index([specialty], name: "knowledge_chunk_specialty_idx")
+  @@index([category], name: "knowledge_chunk_category_idx")
+  // Nota: índice HNSW criado via migration SQL (Prisma v6 não suporta sintaxe pgvector).
+  @@map("knowledge_chunk")
 }
 
 /// Status de uma interação de chat com IA.

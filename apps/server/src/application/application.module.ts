@@ -23,6 +23,7 @@ import {RecordModule} from './record/record.module';
 import {UploadModule} from './upload/upload.module';
 import {UserModule} from './user/user.module';
 import {ClinicalChatModule} from './clinical-chat/clinical-chat.module';
+import {KnowledgeBaseModule} from './knowledge-base/knowledge-base.module';
 
 const exceptionFilters: Provider[] = [
     {
@@ -84,6 +85,7 @@ const guards: Provider[] = [
         FormTemplateModule,
         PatientFormModule,
         ClinicalChatModule,
+        KnowledgeBaseModule,
     ],
     providers: [...exceptionFilters, ...pipes, ...interceptors, ...guards],
 })

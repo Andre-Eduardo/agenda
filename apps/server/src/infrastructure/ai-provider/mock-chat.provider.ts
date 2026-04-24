@@ -44,7 +44,8 @@ export class MockChatProvider implements ChatModelProvider {
         await this.simulateLatency(200, 600);
 
         const systemMessage = input.messages.find((m) => m.role === 'system');
-        const hasContext = systemMessage && systemMessage.content.length > 50;
+        const hasContext = systemMessage && (systemMessage as {role: 'system'; content: string}).content.length > 50;
+        const hasTools = input.tools && input.tools.length > 0;
 
         const content = [
             `[ASSISTENTE CLÍNICO — MODO DESENVOLVIMENTO]`,
@@ -56,15 +57,16 @@ export class MockChatProvider implements ChatModelProvider {
             `"${questionPreview}${isTruncated ? '...' : ''}"`,
             ``,
             hasContext
-                ? `Contexto clínico detectado: ${systemMessage!.content.length} caracteres de contexto injetado.`
+                ? `Contexto clínico detectado: ${(systemMessage as {role: 'system'; content: string}).content.length} caracteres de contexto injetado.`
                 : `Nenhum contexto clínico detectado no sistema.`,
+            ...(hasTools ? [``, `${input.tools!.length} ferramenta(s) disponível(is): ${input.tools!.map((t) => t.name).join(', ')}.`] : []),
             ``,
             `Para ativar um provider real, consulte:`,
             `infrastructure/ai-provider/ai-provider.tokens.ts`,
             `infrastructure/ai-provider/ai-provider.module.ts`,
         ].join('\n');
 
-        const promptTokens = this.estimateTokenCount(input.messages.map((m) => m.content).join(' '));
+        const promptTokens = this.estimateTokenCount(input.messages.map((m) => m.content ?? '').join(' '));
         const completionTokens = Math.ceil(content.length / 4);
 
         return {
@@ -85,7 +87,7 @@ export class MockChatProvider implements ChatModelProvider {
     }
 
     async estimateUsage(input: ChatReplyInput): Promise<UsageEstimate> {
-        const text = input.messages.map((m) => m.content).join(' ');
+        const text = input.messages.map((m) => m.content ?? '').join(' ');
         const estimatedPromptTokens = this.estimateTokenCount(text);
         const estimatedCompletionTokens = Math.round(estimatedPromptTokens * 0.3);
 

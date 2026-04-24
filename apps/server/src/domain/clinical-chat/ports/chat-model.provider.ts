@@ -15,9 +15,21 @@
  * ─────────────────────────────────────────────────────────────────────────────
  */
 
-export type ChatMessage = {
-    role: 'system' | 'user' | 'assistant';
-    content: string;
+export type ChatMessage =
+    | {role: 'system' | 'user' | 'assistant'; content: string}
+    | {role: 'tool'; content: string; toolCallId: string};
+
+/** JSON Schema object describing a tool parameter. */
+export type LLMToolDefinition = {
+    name: string;
+    description: string;
+    parameters: Record<string, unknown>; // JSON Schema object
+};
+
+export type LLMToolCall = {
+    id: string;
+    name: string;
+    arguments: Record<string, unknown>;
 };
 
 export type ChatReplyInput = {
@@ -34,16 +46,23 @@ export type ChatReplyInput = {
      * O valor "openrouter/auto" é bloqueado — o provider lançará erro se receber esse valor.
      */
     modelOverride?: string;
+    /** Tool definitions exposed to the model. */
+    tools?: LLMToolDefinition[];
+    /** "auto" lets the model decide; "none" disables tool use. */
+    toolChoice?: 'auto' | 'none';
 };
 
 export type ChatReplyOutput = {
     content: string;
-    finishReason: 'stop' | 'length' | 'error' | string;
+    /** 'tool_use' when the model requested one or more tool calls. */
+    finishReason: 'stop' | 'length' | 'error' | 'tool_use' | string;
     usage: {
         promptTokens: number | null;
         completionTokens: number | null;
         totalTokens: number | null;
     };
+    /** Populated when finishReason is 'tool_use'. */
+    toolCalls?: LLMToolCall[];
     /** Resposta bruta do provider para debug/auditoria */
     rawResponse?: unknown;
 };
