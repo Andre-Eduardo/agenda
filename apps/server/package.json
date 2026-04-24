@@ -27,7 +27,8 @@
     "prisma:seed": "ts-node prisma/seed.ts",
     "prepare-env": "node scripts/create-env.mjs",
     "postinstall": "pnpm prisma:generate",
-    "ingest:knowledge": "ts-node --swc scripts/ingest-knowledge.ts"
+    "ingest:knowledge": "ts-node --swc scripts/ingest-knowledge.ts",
+    "validate:agent": "ts-node --swc scripts/validate-agent.ts"
   },
   "prisma": {
     "seed": "ts-node prisma/seed.ts"
