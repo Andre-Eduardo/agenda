@@ -133,14 +133,14 @@ Given('I am signed in as {string}', async function (this: Context, username: str
 });
 
 /**
- * Signs in as a previously created user using a specific professional context.
+ * Signs in as a previously created user using a specific clinic-member context.
  *
  * Example:
- *   Given I am signed in as "john_doe" with professional "${ref:id:professional:dr_house}"
+ *   Given I am signed in as "john_doe" with clinic member "${ref:id:clinicMember:dr_house}"
  */
 Given(
-    'I am signed in as {string} with professional {string}',
-    async function (this: Context, username: string, professionalId: string) {
+    'I am signed in as {string} with clinic member {string}',
+    async function (this: Context, username: string, clinicMemberId: string) {
         this.clearAgent();
 
         const response = await this.agent
@@ -148,7 +148,7 @@ Given(
             .send({
                 username: this.getUniqueValue(username),
                 password: getPassword(username),
-                professionalId: resolveReferences(this, professionalId),
+                clinicMemberId: resolveReferences(this, clinicMemberId),
             });
 
         chai.expect(response.error, `Sign-in failed for "${username}": ${JSON.stringify(response.body)}`).to.be.false;

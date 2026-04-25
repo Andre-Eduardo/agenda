@@ -1,7 +1,7 @@
 /**
  * Seed: Pacientes de desenvolvimento.
  *
- * Depende de: professional.seed (professionalId fixo)
+ * Depende de: clinic.seed (clinicId fixo)
  *
  * Cria 4 pacientes com perfis variados para cobrir cenários de testes:
  *   - Ana (retorno frequente, alérgica)
@@ -15,7 +15,7 @@ import {PrismaClient} from '@prisma/client';
 
 const prisma = new PrismaClient();
 
-const PROFESSIONAL_ID = '00000000-0000-0000-0000-000000000004';
+const CLINIC_ID = '00000000-0000-0000-0000-000000000010';
 
 const PATIENTS = [
     {
@@ -94,7 +94,7 @@ export async function main() {
                 email: p.email,
                 emergencyContactName: p.emergencyContactName,
                 emergencyContactPhone: p.emergencyContactPhone,
-                professionalId: PROFESSIONAL_ID,
+                clinicId: CLINIC_ID,
                 createdAt: now,
                 updatedAt: now,
             },

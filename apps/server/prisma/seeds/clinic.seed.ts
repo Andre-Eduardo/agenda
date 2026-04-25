@@ -1,19 +1,18 @@
 /**
- * Seed: Profissional de desenvolvimento com login admin.
+ * Seed: Clínica de desenvolvimento com login admin.
  *
- * Cria:
- *   - User  (username: admin | email: admin@agenda.dev | role: OWNER)
- *   - Person (profissional)
- *   - ProfessionalConfig
- *   - Professional
+ * Cria a árvore mínima para o sistema funcionar:
+ *   - User          (username: admin | email: admin@agenda.dev | role: OWNER)
+ *   - Clinic        (clínica padrão de desenvolvimento, isPersonalClinic=true)
+ *   - ClinicMember  (OWNER do User na Clinic)
+ *   - Person        (dados pessoais — usado também por Patient)
+ *   - Professional  (extensão 1:1 do ClinicMember com role=PROFESSIONAL)
  *
- * Senha: Admin@123456
- * IMPORTANTE: A política do app exige senha forte (maiúscula, minúscula, número, símbolo).
- * "123456" não atende — use Admin@123456 nos testes de login.
+ * Senha: Admin@123456 (atende a política do app — maiúscula/minúscula/número/símbolo).
  *
  * IDs fixos garantem idempotência via upsert.
  *
- * Run via: ts-node prisma/seeds/professional.seed.ts
+ * Run via: ts-node prisma/seeds/clinic.seed.ts
  */
 import {PrismaClient} from '@prisma/client';
 import * as crypto from 'crypto';
@@ -23,10 +22,11 @@ const prisma = new PrismaClient();
 const scrypt = promisify(crypto.scrypt);
 
 // IDs fixos para idempotência
-const IDS = {
+export const IDS = {
     user: '00000000-0000-0000-0000-000000000001',
     person: '00000000-0000-0000-0000-000000000002',
-    config: '00000000-0000-0000-0000-000000000003',
+    clinic: '00000000-0000-0000-0000-000000000010',
+    clinicMember: '00000000-0000-0000-0000-000000000011',
     professional: '00000000-0000-0000-0000-000000000004',
 };
 
@@ -41,10 +41,7 @@ async function hashPassword(raw: string): Promise<string> {
 export async function main() {
     const now = new Date();
 
-    // 1. Senha
     const password = await hashPassword('Admin@123456');
-
-    // 2. User
     await prisma.user.upsert({
         where: {id: IDS.user},
         create: {
@@ -67,7 +64,49 @@ export async function main() {
     });
     console.log('✔ User admin criado/atualizado');
 
-    // 3. Person
+    await prisma.clinic.upsert({
+        where: {id: IDS.clinic},
+        create: {
+            id: IDS.clinic,
+            name: 'Clínica Dev',
+            documentId: '00.000.000/0001-00',
+            phone: '(11) 99999-0000',
+            email: 'contato@agenda.dev',
+            isPersonalClinic: true,
+            createdAt: now,
+            updatedAt: now,
+        },
+        update: {
+            name: 'Clínica Dev',
+            updatedAt: now,
+        },
+    });
+    console.log('✔ Clinic criada/atualizada');
+
+    await prisma.clinicMember.upsert({
+        where: {id: IDS.clinicMember},
+        create: {
+            id: IDS.clinicMember,
+            clinicId: IDS.clinic,
+            userId: IDS.user,
+            role: 'OWNER',
+            displayName: 'Dr. Admin Silva',
+            color: '#4F81BD',
+            isActive: true,
+            invitedByMemberId: null,
+            createdAt: now,
+            updatedAt: now,
+        },
+        update: {
+            role: 'OWNER',
+            displayName: 'Dr. Admin Silva',
+            color: '#4F81BD',
+            isActive: true,
+            updatedAt: now,
+        },
+    });
+    console.log('✔ ClinicMember (OWNER) criado/atualizado');
+
     await prisma.person.upsert({
         where: {id: IDS.person},
         create: {
@@ -85,38 +124,21 @@ export async function main() {
             updatedAt: now,
         },
     });
-    console.log('✔ Person (profissional) criado/atualizado');
+    console.log('✔ Person base criado/atualizado');
 
-    // 4. ProfessionalConfig
-    await prisma.professionalConfig.upsert({
-        where: {id: IDS.config},
-        create: {
-            id: IDS.config,
-            color: '#4F81BD',
-            createdAt: now,
-            updatedAt: now,
-        },
-        update: {
-            color: '#4F81BD',
-            updatedAt: now,
-        },
-    });
-    console.log('✔ ProfessionalConfig criado/atualizado');
-
-    // 5. Professional
     await prisma.professional.upsert({
         where: {id: IDS.professional},
         create: {
             id: IDS.professional,
-            personId: IDS.person,
-            configId: IDS.config,
-            userId: IDS.user,
+            clinicMemberId: IDS.clinicMember,
+            registrationNumber: 'CRM-SP 12345',
             specialty: 'Medicina Geral',
             specialtyNormalized: 'MEDICINA',
             createdAt: now,
             updatedAt: now,
         },
         update: {
+            registrationNumber: 'CRM-SP 12345',
             specialty: 'Medicina Geral',
             specialtyNormalized: 'MEDICINA',
             updatedAt: now,
@@ -126,7 +148,9 @@ export async function main() {
     console.log('');
     console.log('  Login: admin@agenda.dev');
     console.log('  Senha: Admin@123456');
-    console.log('  Professional ID:', IDS.professional);
+    console.log('  Clinic ID:        ', IDS.clinic);
+    console.log('  ClinicMember ID:  ', IDS.clinicMember);
+    console.log('  Professional ID:  ', IDS.professional);
 }
 
 if (require.main === module) {
