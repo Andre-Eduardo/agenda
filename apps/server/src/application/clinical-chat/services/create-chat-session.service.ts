@@ -1,13 +1,15 @@
-import {Injectable} from '@nestjs/common';
+import {Injectable, Logger} from '@nestjs/common';
 import {ResourceNotFoundException} from '../../../domain/@shared/exceptions';
 import {ClinicId} from '../../../domain/clinic/entities';
 import {ClinicMemberId} from '../../../domain/clinic-member/entities';
 import {PatientRepository} from '../../../domain/patient/patient.repository';
 import {PatientId} from '../../../domain/patient/entities';
+import {ProfessionalRepository} from '../../../domain/professional/professional.repository';
+import {AiAgentProfileRepository} from '../../../domain/clinical-chat/ai-agent-profile.repository';
 import {AiAgentProfile, PatientChatSession, ChatSessionStatus, AiAgentProfileId} from '../../../domain/clinical-chat/entities';
 import {PatientChatSessionRepository} from '../../../domain/clinical-chat/patient-chat-session.repository';
 import {ApplicationService, Command} from '../../@shared/application.service';
-import {AgentResolutionService} from './agent-resolution.service';
+import {AgentResolverService} from '../../../ai/agents/agent-resolver.service';
 
 export type CreateChatSessionInput = {
     clinicId: ClinicId;
@@ -26,17 +28,24 @@ export type CreateChatSessionOutput = {
 /**
  * Creates a clinical chat session with automatic agent resolution.
  *
- * The AI agent is selected based on the member's specialty (when the member
- * has a Professional 1:1 with a specialty). The resolved agentProfileId is
- * persisted on the session for use in subsequent interactions.
+ * Resolution flow:
+ * 1. Fetch the member's Professional record to get specialtyNormalized
+ * 2. AgentResolverService.resolveAgentBySpecialty(specialty) → AgentConfig (no DB query)
+ * 3. Find AiAgentProfile in DB by slug
+ * 4. If not found, log a warning and fall back to null (sync:agents should be run)
+ * 5. Create session with resolved agentProfileId
  */
 @Injectable()
 export class CreateChatSessionService
     implements ApplicationService<CreateChatSessionInput, CreateChatSessionOutput>
 {
+    private readonly logger = new Logger(CreateChatSessionService.name);
+
     constructor(
         private readonly patientRepository: PatientRepository,
-        private readonly agentResolutionService: AgentResolutionService,
+        private readonly professionalRepository: ProfessionalRepository,
+        private readonly agentResolverService: AgentResolverService,
+        private readonly agentProfileRepository: AiAgentProfileRepository,
         private readonly sessionRepository: PatientChatSessionRepository,
     ) {}
 
@@ -46,13 +55,10 @@ export class CreateChatSessionService
             throw new ResourceNotFoundException('Patient not found.', payload.patientId.toString());
         }
 
-        // Resolve agent based on member's specialty. If no agent is mapped to
-        // this member's specialty, fall back to the generic agent at message time.
         let resolvedAgent: AiAgentProfile | null = null;
-        try {
-            resolvedAgent = await this.agentResolutionService.resolveForMember(payload.memberId);
-        } catch {
-            resolvedAgent = null;
+
+        if (!payload.agentProfileId) {
+            resolvedAgent = await this.resolveAgentForMember(payload.memberId);
         }
 
         const session = PatientChatSession.create({
@@ -68,5 +74,42 @@ export class CreateChatSessionService
         await this.sessionRepository.save(session);
 
         return {session, resolvedAgent};
+    }
+
+    private async resolveAgentForMember(memberId: ClinicMemberId): Promise<AiAgentProfile | null> {
+        try {
+            const professional = await this.professionalRepository.findByClinicMemberId(memberId);
+
+            if (!professional?.specialtyNormalized) {
+                return this.fallbackToGenericAgent();
+            }
+
+            const agentConfig = this.agentResolverService.resolveAgentBySpecialty(
+                professional.specialtyNormalized,
+            );
+
+            const agentProfile = await this.agentProfileRepository.findBySlug(agentConfig.slug);
+
+            if (!agentProfile) {
+                this.logger.warn(
+                    `AiAgentProfile com slug "${agentConfig.slug}" não encontrado no banco. ` +
+                        'Execute "pnpm sync:agents" para sincronizar o registry com o banco.',
+                );
+                return this.fallbackToGenericAgent();
+            }
+
+            return agentProfile;
+        } catch (error) {
+            this.logger.warn(
+                `Falha ao resolver agente para membro ${memberId.toString()}: ` +
+                    (error instanceof Error ? error.message : String(error)),
+            );
+            return null;
+        }
+    }
+
+    private async fallbackToGenericAgent(): Promise<AiAgentProfile | null> {
+        const allActive = await this.agentProfileRepository.findAllActive();
+        return allActive.find((p) => p.specialty === null) ?? allActive[0] ?? null;
     }
 }

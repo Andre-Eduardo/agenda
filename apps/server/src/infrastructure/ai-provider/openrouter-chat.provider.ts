@@ -18,6 +18,10 @@ export type OpenRouterConfig = {
     maxContextTokens?: number;
     /** Tokens máximos padrão para geração quando não especificado pelo caller */
     defaultMaxTokens?: number;
+    /** Valor do header X-Title enviado ao OpenRouter (identifica a aplicação) */
+    appName?: string;
+    /** Valor do header HTTP-Referer enviado ao OpenRouter (URL da aplicação) */
+    appUrl?: string;
 };
 
 /** Formato da requisição para a API OpenRouter (compatível com OpenAI) */
@@ -86,6 +90,8 @@ export class OpenRouterChatProvider implements ChatModelProvider {
     private readonly apiKey: string;
     private readonly maxContextTokens: number;
     private readonly defaultMaxTokens: number;
+    private readonly appName: string;
+    private readonly appUrl: string | null;
 
     constructor(config: OpenRouterConfig) {
         if (config.modelId === 'openrouter/auto') {
@@ -98,6 +104,8 @@ export class OpenRouterChatProvider implements ChatModelProvider {
         this.modelId = config.modelId;
         this.maxContextTokens = config.maxContextTokens ?? 128_000;
         this.defaultMaxTokens = config.defaultMaxTokens ?? 1024;
+        this.appName = config.appName ?? 'Agenda — Chat Clínico Assistivo';
+        this.appUrl = config.appUrl ?? null;
     }
 
     /**
@@ -149,13 +157,18 @@ export class OpenRouterChatProvider implements ChatModelProvider {
         let rawResponse: OpenRouterResponse;
 
         try {
+            const headers: Record<string, string> = {
+                Authorization: `Bearer ${this.apiKey}`,
+                'Content-Type': 'application/json',
+                'X-Title': this.appName,
+            };
+            if (this.appUrl) {
+                headers['HTTP-Referer'] = this.appUrl;
+            }
+
             const response = await fetch(`${OPENROUTER_BASE_URL}/chat/completions`, {
                 method: 'POST',
-                headers: {
-                    Authorization: `Bearer ${this.apiKey}`,
-                    'Content-Type': 'application/json',
-                    'X-Title': 'Agenda — Chat Clínico Assistivo',
-                },
+                headers,
                 body: JSON.stringify(requestBody),
             });
 
