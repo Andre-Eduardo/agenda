@@ -38,6 +38,7 @@ import {BillingModule} from './billing/billing.module';
 import {PaymentModule} from './payment/payment.module';
 import {AppointmentPaymentModule} from './appointment-payment/appointment-payment.module';
 import {FinancialReportModule} from './financial-report/financial-report.module';
+import {WorkingHoursModule} from './working-hours/working-hours.module';
 
 const exceptionFilters: Provider[] = [
     {
@@ -114,6 +115,7 @@ const guards: Provider[] = [
         PaymentModule,
         AppointmentPaymentModule,
         FinancialReportModule,
+        WorkingHoursModule,
     ],
     providers: [...exceptionFilters, ...pipes, ...interceptors, ...guards],
 })

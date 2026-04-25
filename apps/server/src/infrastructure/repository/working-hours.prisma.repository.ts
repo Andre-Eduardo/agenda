@@ -22,6 +22,14 @@ export class WorkingHoursPrismaRepository extends PrismaRepository implements Wo
         return record === null ? null : this.mapper.toDomain(record);
     }
 
+    async findByMember(clinicMemberId: ClinicMemberId): Promise<WorkingHours[]> {
+        const records = await this.prisma.workingHours.findMany({
+            where: {clinicMemberId: clinicMemberId.toString()},
+            orderBy: {dayOfWeek: 'asc'},
+        });
+        return records.map((r) => this.mapper.toDomain(r));
+    }
+
     async findByMemberAndDay(clinicMemberId: ClinicMemberId, dayOfWeek: number): Promise<WorkingHours[]> {
         const records = await this.prisma.workingHours.findMany({
             where: {
