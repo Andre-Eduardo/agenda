@@ -1,5 +1,5 @@
 import {ApiProperty, ApiSchema} from '@nestjs/swagger';
-import type {ClinicMemberUsageEntry, CurrentUsageResult, MetricStatus, UsageAlert} from '../subscription.service';
+import type {AddonDetail, ClinicMemberUsageEntry, CurrentUsageResult, MetricStatus, UsageAlert} from '../subscription.service';
 import {PLAN_LIMITS} from '../subscription-plans.config';
 
 export class UsageMetricDto {
@@ -95,6 +95,52 @@ export class SubscriptionInfoDto {
     }
 }
 
+export class AddonGrantsTotalsDto {
+    @ApiProperty({required: false, nullable: true})
+    docsPerMonth?: number;
+
+    @ApiProperty({required: false, nullable: true})
+    chatMessagesPerMonth?: number;
+
+    @ApiProperty({required: false, nullable: true})
+    clinicalImagesPerMonth?: number;
+
+    @ApiProperty({required: false, nullable: true})
+    storageHotGb?: number;
+
+    constructor(grants: AddonGrantsTotalsDto) {
+        this.docsPerMonth = grants.docsPerMonth;
+        this.chatMessagesPerMonth = grants.chatMessagesPerMonth;
+        this.clinicalImagesPerMonth = grants.clinicalImagesPerMonth;
+        this.storageHotGb = grants.storageHotGb;
+    }
+}
+
+export class ActiveAddonDto {
+    @ApiProperty()
+    code: string;
+
+    @ApiProperty()
+    name: string;
+
+    @ApiProperty()
+    quantity: number;
+
+    @ApiProperty({type: AddonGrantsTotalsDto})
+    grantsTotal: AddonGrantsTotalsDto;
+
+    @ApiProperty({format: 'date-time'})
+    expiresAt: string;
+
+    constructor(detail: AddonDetail) {
+        this.code = detail.code;
+        this.name = detail.name;
+        this.quantity = detail.quantity;
+        this.grantsTotal = new AddonGrantsTotalsDto(detail.grantsTotal);
+        this.expiresAt = detail.expiresAt;
+    }
+}
+
 @ApiSchema({name: 'CurrentUsage'})
 export class CurrentUsageDto {
     @ApiProperty({enum: Object.keys(PLAN_LIMITS)})
@@ -124,6 +170,9 @@ export class CurrentUsageDto {
     @ApiProperty({type: [UsageAlertDto]})
     alerts: UsageAlertDto[];
 
+    @ApiProperty({type: [ActiveAddonDto]})
+    addons: ActiveAddonDto[];
+
     @ApiProperty({type: SubscriptionInfoDto})
     subscription: SubscriptionInfoDto;
 
@@ -142,6 +191,7 @@ export class CurrentUsageDto {
         this.warningThreshold = result.warningThreshold;
         this.limitsReached = result.limitsReached;
         this.alerts = result.alerts.map((a) => new UsageAlertDto(a));
+        this.addons = result.addons.map((a) => new ActiveAddonDto(a));
         this.subscription = new SubscriptionInfoDto(result.subscription);
     }
 }
