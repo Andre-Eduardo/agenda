@@ -17,8 +17,10 @@ export class UpsertClinicalProfileService implements ApplicationService<UpsertCl
 
         if (profile === null) {
             profile = ClinicalProfile.create({
+                clinicId: actor.clinicId,
                 patientId: payload.patientId,
-                professionalId: payload.professionalId,
+                createdByMemberId: actor.clinicMemberId,
+                responsibleProfessionalId: payload.responsibleProfessionalId,
                 allergies: payload.allergies ?? null,
                 chronicConditions: payload.chronicConditions ?? null,
                 currentMedications: payload.currentMedications ?? null,

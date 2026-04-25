@@ -1,13 +1,14 @@
 import {z} from 'zod';
+import {ClinicMemberId} from '../../../domain/clinic-member/entities';
 import {PatientId} from '../../../domain/patient/entities';
-import {ProfessionalId} from '../../../domain/professional/entities';
 import {AppointmentType} from '../../../domain/appointment/entities';
 import {createZodDto} from '../../@shared/validation/dto';
 import {datetime, entityId} from '../../@shared/validation/schemas';
 
 export const createAppointmentSchema = z.object({
     patientId: entityId(PatientId),
-    professionalId: entityId(ProfessionalId),
+    /** ClinicMember who will attend the appointment (typically a PROFESSIONAL). */
+    attendedByMemberId: entityId(ClinicMemberId),
     startAt: datetime,
     endAt: datetime,
     type: z.nativeEnum(AppointmentType),

@@ -5,7 +5,8 @@ import {createZodDto} from '../../@shared/validation/dto';
 import {entityId} from '../../@shared/validation/schemas';
 
 const upsertClinicalProfileInputSchema = z.object({
-    professionalId: entityId(ProfessionalId),
+    /** Professional clinically responsible for this profile. */
+    responsibleProfessionalId: entityId(ProfessionalId),
     allergies: z.string().nullish().openapi({example: 'Penicillin, NSAIDs'}),
     chronicConditions: z.string().nullish().openapi({example: 'Type 2 Diabetes, Hypertension'}),
     currentMedications: z.string().nullish().openapi({example: 'Metformin 500mg, Lisinopril 10mg'}),

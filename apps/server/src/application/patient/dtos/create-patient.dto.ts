@@ -1,6 +1,6 @@
 import {z} from 'zod';
+import {ClinicId} from '../../../domain/clinic/entities';
 import {Gender, PersonType} from '../../../domain/person/entities';
-import {ProfessionalId} from '../../../domain/professional/entities';
 import {createZodDto} from '../../@shared/validation/dto';
 import {datetime, documentId, entityId, phone} from '../../@shared/validation/schemas';
 
@@ -10,7 +10,8 @@ export const createPatientSchema = z.object({
     phone: phone().nullish(),
     gender: z.nativeEnum(Gender).nullish(),
     personType: z.nativeEnum(PersonType).optional(),
-    professionalId: entityId(ProfessionalId).nullish(),
+    /** Tenant boundary — injected from cookie via RequestContextMiddleware. */
+    clinicId: entityId(ClinicId).nullish(),
     birthDate: datetime.nullish(),
     email: z.string().email().nullish().openapi({example: 'john.doe@example.com'}),
     emergencyContactName: z.string().nullish().openapi({example: 'Jane Doe'}),

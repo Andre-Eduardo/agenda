@@ -1,7 +1,7 @@
 import {Injectable} from '@nestjs/common';
+import {EventDispatcher} from '../../../domain/event';
 import {File, FileId, Record, ImportedDocumentId, RecordSource} from '../../../domain/record/entities';
 import {RecordRepository} from '../../../domain/record/record.repository';
-import {EventDispatcher} from '../../../domain/event';
 import {ApplicationService, Command} from '../../@shared/application.service';
 import {CreateRecordDto, RecordDto} from '../dtos';
 
@@ -9,15 +9,17 @@ import {CreateRecordDto, RecordDto} from '../dtos';
 export class CreateRecordService implements ApplicationService<CreateRecordDto, RecordDto> {
     constructor(
         private readonly recordRepository: RecordRepository,
-        private readonly eventDispatcher: EventDispatcher
+        private readonly eventDispatcher: EventDispatcher,
     ) {}
 
     async execute({actor, payload}: Command<CreateRecordDto>): Promise<RecordDto> {
         const now = new Date();
 
         const record = Record.create({
+            clinicId: actor.clinicId,
+            createdByMemberId: actor.clinicMemberId,
+            responsibleProfessionalId: payload.responsibleProfessionalId,
             patientId: payload.patientId,
-            professionalId: payload.professionalId,
             description: payload.description ?? null,
             templateType: payload.templateType ?? null,
             title: payload.title ?? null,
@@ -42,6 +44,8 @@ export class CreateRecordService implements ApplicationService<CreateRecordDto, 
                 (f) =>
                     new File({
                         id: FileId.generate(),
+                        clinicId: actor.clinicId,
+                        createdByMemberId: actor.clinicMemberId,
                         recordId: record.id,
                         patientId: null,
                         fileName: f.fileName,
@@ -50,7 +54,7 @@ export class CreateRecordService implements ApplicationService<CreateRecordDto, 
                         createdAt: now,
                         updatedAt: now,
                         deletedAt: null,
-                    })
+                    }),
             );
 
             record.files = files;

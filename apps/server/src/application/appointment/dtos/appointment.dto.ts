@@ -5,11 +5,17 @@ import {EntityDto} from '../../@shared/dto';
 
 @ApiSchema({name: 'Appointment'})
 export class AppointmentDto extends EntityDto {
+    @ApiProperty({format: 'uuid', description: 'The clinic this appointment belongs to'})
+    clinicId: string;
+
     @ApiProperty({format: 'uuid', description: 'The patient ID'})
     patientId: string;
 
-    @ApiProperty({format: 'uuid', description: 'The professional ID'})
-    professionalId: string;
+    @ApiProperty({format: 'uuid', description: 'ClinicMember scheduled to attend'})
+    attendedByMemberId: string;
+
+    @ApiProperty({format: 'uuid', description: 'ClinicMember who created/scheduled the appointment'})
+    createdByMemberId: string;
 
     @ApiProperty({format: 'date-time', description: 'The appointment start time'})
     startAt: string;
@@ -37,8 +43,10 @@ export class AppointmentDto extends EntityDto {
 
     constructor(appointment: Appointment) {
         super(appointment);
+        this.clinicId = appointment.clinicId.toString();
         this.patientId = appointment.patientId.toString();
-        this.professionalId = appointment.professionalId.toString();
+        this.attendedByMemberId = appointment.attendedByMemberId.toString();
+        this.createdByMemberId = appointment.createdByMemberId.toString();
         this.startAt = appointment.startAt.toISOString();
         this.endAt = appointment.endAt.toISOString();
         this.durationMinutes = appointment.durationMinutes;

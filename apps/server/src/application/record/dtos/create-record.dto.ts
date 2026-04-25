@@ -20,7 +20,8 @@ const fileSchema = z.object({
 
 export const createRecordSchema = z.object({
     patientId: entityId(PatientId),
-    professionalId: entityId(ProfessionalId),
+    /** Professional clinically responsible (≠ whoever typed the record). */
+    responsibleProfessionalId: entityId(ProfessionalId),
     // Legacy free text — now optional
     description: z.string().min(1).optional().openapi({example: 'General clinical note'}),
     files: z.array(fileSchema).default([]),

@@ -32,11 +32,17 @@ class FileDto {
 
 @ApiSchema({name: 'Record'})
 export class RecordDto extends EntityDto {
+    @ApiProperty({format: 'uuid', description: 'The clinic this record belongs to'})
+    clinicId: string;
+
     @ApiProperty({format: 'uuid', description: 'The patient ID'})
     patientId: string;
 
-    @ApiProperty({format: 'uuid', description: 'The professional ID'})
-    professionalId: string;
+    @ApiProperty({format: 'uuid', description: 'ClinicMember who typed the record'})
+    createdByMemberId: string;
+
+    @ApiProperty({format: 'uuid', description: 'Professional clinically responsible'})
+    responsibleProfessionalId: string;
 
     @ApiProperty({nullable: true, description: 'Legacy free-text description'})
     description: string | null;
@@ -91,8 +97,10 @@ export class RecordDto extends EntityDto {
 
     constructor(record: Record) {
         super(record);
+        this.clinicId = record.clinicId.toString();
         this.patientId = record.patientId.toString();
-        this.professionalId = record.professionalId.toString();
+        this.createdByMemberId = record.createdByMemberId.toString();
+        this.responsibleProfessionalId = record.responsibleProfessionalId.toString();
         this.description = record.description;
         this.templateType = record.templateType;
         this.title = record.title;

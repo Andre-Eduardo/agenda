@@ -1,10 +1,10 @@
 import {Injectable} from '@nestjs/common';
-import {Professional, ProfessionalConfig} from '../../../domain/professional/entities';
-import {ProfessionalRepository} from '../../../domain/professional/professional.repository';
-import {PersonRepository} from '../../../domain/person/person.repository';
-import {PersonProfile, PersonType} from '../../../domain/person/entities';
+import {ResourceNotFoundException} from '../../../domain/@shared/exceptions';
+import {ClinicMemberRepository} from '../../../domain/clinic-member/clinic-member.repository';
+import {ClinicMemberRole} from '../../../domain/clinic-member/entities';
 import {EventDispatcher} from '../../../domain/event';
-import {PrismaProvider} from '../../../infrastructure/repository/prisma/prisma.provider';
+import {Professional} from '../../../domain/professional/entities';
+import {ProfessionalRepository} from '../../../domain/professional/professional.repository';
 import {ApplicationService, Command} from '../../@shared/application.service';
 import {CreateProfessionalDto, ProfessionalDto} from '../dtos';
 
@@ -12,37 +12,37 @@ import {CreateProfessionalDto, ProfessionalDto} from '../dtos';
 export class CreateProfessionalService implements ApplicationService<CreateProfessionalDto, ProfessionalDto> {
     constructor(
         private readonly professionalRepository: ProfessionalRepository,
-        private readonly personRepository: PersonRepository,
-        private readonly prismaProvider: PrismaProvider,
-        private readonly eventDispatcher: EventDispatcher
+        private readonly clinicMemberRepository: ClinicMemberRepository,
+        private readonly eventDispatcher: EventDispatcher,
     ) {}
 
     async execute({actor, payload}: Command<CreateProfessionalDto>): Promise<ProfessionalDto> {
-        const config = ProfessionalConfig.create({color: payload.color ?? null});
+        const member = await this.clinicMemberRepository.findById(payload.clinicMemberId);
+
+        if (member === null) {
+            throw new ResourceNotFoundException(
+                'clinic_member.not_found',
+                payload.clinicMemberId.toString(),
+            );
+        }
+
+        if (member.role !== ClinicMemberRole.PROFESSIONAL) {
+            // Professional records require the linked member to be a PROFESSIONAL.
+            // Owners/admins/secretaries can edit clinical data via permissions, but only
+            // professionals can be clinically responsible (responsibleProfessionalId).
+            throw new ResourceNotFoundException(
+                'clinic_member.role_mismatch',
+                `Member ${member.id.toString()} has role ${member.role}, expected PROFESSIONAL.`,
+            );
+        }
 
         const professional = Professional.create({
-            name: payload.name,
-            documentId: payload.documentId,
-            phone: payload.phone ?? null,
-            gender: payload.gender ?? null,
-            personType: payload.personType ?? PersonType.NATURAL,
-            profiles: new Set([PersonProfile.PROFESSIONAL]),
-            specialty: payload.specialty,
-            configId: config.id,
-            userId: payload.userId ?? actor.userId,
+            clinicMemberId: payload.clinicMemberId,
+            registrationNumber: payload.registrationNumber ?? null,
+            specialty: payload.specialty ?? null,
+            specialtyNormalized: payload.specialtyNormalized ?? null,
         });
 
-        await this.prismaProvider.client.professionalConfig.create({
-            data: {
-                id: config.id.toString(),
-                color: config.color,
-                createdAt: config.createdAt,
-                updatedAt: config.updatedAt,
-                deletedAt: config.deletedAt ?? null,
-            },
-        });
-
-        await this.personRepository.save(professional);
         await this.professionalRepository.save(professional);
 
         this.eventDispatcher.dispatch(actor, professional);

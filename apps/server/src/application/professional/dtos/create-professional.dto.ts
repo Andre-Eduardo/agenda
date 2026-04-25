@@ -1,18 +1,18 @@
 import {z} from 'zod';
-import {Gender, PersonType} from '../../../domain/person/entities';
-import {UserId} from '../../../domain/user/entities';
+import {ClinicMemberId} from '../../../domain/clinic-member/entities';
+import {Specialty} from '../../../domain/form-template/entities';
 import {createZodDto} from '../../@shared/validation/dto';
-import {documentId, entityId, phone} from '../../@shared/validation/schemas';
+import {entityId} from '../../@shared/validation/schemas';
 
 export const createProfessionalSchema = z.object({
-    name: z.string().min(1).openapi({example: 'Dr. Jane Smith'}),
-    documentId,
-    phone: phone().nullish(),
-    gender: z.nativeEnum(Gender).nullish(),
-    personType: z.nativeEnum(PersonType).optional(),
-    specialty: z.string().min(1).openapi({example: 'Cardiology'}),
-    userId: entityId(UserId).nullish(),
-    color: z.string().nullish().openapi({example: '#3B82F6', description: 'Display color for the professional'}),
+    /** ClinicMember that this Professional record extends 1:1 (must have role=PROFESSIONAL). */
+    clinicMemberId: entityId(ClinicMemberId),
+    /** Professional registration number (CRM, CRP, COREN, etc.) */
+    registrationNumber: z.string().nullish().openapi({example: 'CRM-SP 12345'}),
+    /** Free-form specialty as typed by the user */
+    specialty: z.string().nullish().openapi({example: 'Cardiology'}),
+    /** Normalized specialty enum, derived from `specialty` server-side */
+    specialtyNormalized: z.nativeEnum(Specialty).nullish(),
 });
 
 export class CreateProfessionalDto extends createZodDto(createProfessionalSchema) {}

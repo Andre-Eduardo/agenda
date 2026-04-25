@@ -19,7 +19,7 @@ export class SearchAppointmentsService implements ApplicationService<SearchAppoi
             },
             {
                 term: term ?? undefined,
-                professionalId: actor.clinicMemberId ?? undefined,
+                clinicId: actor.clinicId ?? undefined,
             }
         );
 

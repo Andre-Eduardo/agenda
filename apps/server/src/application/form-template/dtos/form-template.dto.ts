@@ -17,11 +17,14 @@ export class FormTemplateDto extends EntityDto {
     @ApiProperty({enum: Specialty, description: 'Target specialty'})
     specialty: Specialty;
 
-    @ApiProperty({description: 'Whether this is a public system template'})
+    @ApiProperty({description: 'Whether this is a public system template (clinicId is null)'})
     isPublic: boolean;
 
-    @ApiProperty({format: 'uuid', nullable: true, description: 'Owner professional ID (null for public templates)'})
-    professionalId: string | null;
+    @ApiProperty({format: 'uuid', nullable: true, description: 'Owner clinic ID (null for public templates)'})
+    clinicId: string | null;
+
+    @ApiProperty({format: 'uuid', nullable: true, description: 'Member who created the template (null for public templates)'})
+    createdByMemberId: string | null;
 
     constructor(template: FormTemplate) {
         super(template);
@@ -30,6 +33,7 @@ export class FormTemplateDto extends EntityDto {
         this.description = template.description;
         this.specialty = template.specialty;
         this.isPublic = template.isPublic;
-        this.professionalId = template.professionalId?.toString() ?? null;
+        this.clinicId = template.clinicId?.toString() ?? null;
+        this.createdByMemberId = template.createdByMemberId?.toString() ?? null;
     }
 }
