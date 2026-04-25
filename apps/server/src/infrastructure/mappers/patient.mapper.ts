@@ -3,16 +3,42 @@ import * as PrismaClient from '@prisma/client';
 import {DocumentId, Phone} from '../../domain/@shared/value-objects';
 import {toEnum, toEnumOrNull} from '../../domain/@shared/utils';
 import {ClinicId} from '../../domain/clinic/entities';
-import {Patient, PatientId} from '../../domain/patient/entities';
+import {Patient, PatientId, type PatientAddressData, type InsurancePlanSummary} from '../../domain/patient/entities';
 import {Gender, PersonType} from '../../domain/person/entities/person.entity';
 import {MapperWithoutDto} from './mapper';
 
-export type PatientModel = PrismaClient.Patient & {person: PrismaClient.Person};
+export type PatientModel = PrismaClient.Patient & {
+    person: PrismaClient.Person;
+    address: PrismaClient.PatientAddress | null;
+    insurancePlan: PrismaClient.InsurancePlan | null;
+};
+
+function toAddressData(model: PrismaClient.PatientAddress): PatientAddressData {
+    return {
+        street: model.street ?? null,
+        number: model.number ?? null,
+        complement: model.complement ?? null,
+        neighborhood: model.neighborhood ?? null,
+        city: model.city ?? null,
+        state: model.state ?? null,
+        zipCode: model.zipCode ?? null,
+        country: model.country ?? null,
+    };
+}
+
+function toInsurancePlanSummary(model: PrismaClient.InsurancePlan): InsurancePlanSummary {
+    return {
+        id: model.id,
+        name: model.name,
+        code: model.code ?? null,
+        isActive: model.isActive,
+    };
+}
 
 @Injectable()
 export class PatientMapper extends MapperWithoutDto<Patient, PatientModel> {
     toDomain(model: PatientModel): Patient {
-        const {person, ...patientModel} = model;
+        const {person, address, insurancePlan, ...patientModel} = model;
 
         return new Patient({
             ...patientModel,
@@ -28,6 +54,11 @@ export class PatientMapper extends MapperWithoutDto<Patient, PatientModel> {
             email: patientModel.email ?? null,
             emergencyContactName: patientModel.emergencyContactName ?? null,
             emergencyContactPhone: patientModel.emergencyContactPhone ?? null,
+            address: address ? toAddressData(address) : null,
+            insurancePlanId: patientModel.insurancePlanId ?? null,
+            insuranceCardNumber: patientModel.insuranceCardNumber ?? null,
+            insuranceValidUntil: patientModel.insuranceValidUntil ?? null,
+            insurancePlan: insurancePlan ? toInsurancePlanSummary(insurancePlan) : null,
         });
     }
 
@@ -40,6 +71,9 @@ export class PatientMapper extends MapperWithoutDto<Patient, PatientModel> {
             email: entity.email ?? null,
             emergencyContactName: entity.emergencyContactName ?? null,
             emergencyContactPhone: entity.emergencyContactPhone ?? null,
+            insurancePlanId: entity.insurancePlanId ?? null,
+            insuranceCardNumber: entity.insuranceCardNumber ?? null,
+            insuranceValidUntil: entity.insuranceValidUntil ?? null,
             createdAt: entity.createdAt,
             updatedAt: entity.updatedAt,
             deletedAt: entity.deletedAt ?? null,
@@ -54,6 +88,8 @@ export class PatientMapper extends MapperWithoutDto<Patient, PatientModel> {
                 updatedAt: entity.updatedAt,
                 deletedAt: entity.deletedAt ?? null,
             },
+            address: null,
+            insurancePlan: null,
         };
     }
 }

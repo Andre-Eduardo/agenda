@@ -13,6 +13,7 @@ export * from './form-template.prisma.repository';
 export * from './form-template-version.prisma.repository';
 export * from './knowledge-chunk.prisma.repository';
 export * from './member-block.prisma.repository';
+export * from './insurance-plan.prisma.repository';
 export * from './patient.prisma.repository';
 export * from './patient-alert.prisma.repository';
 export * from './patient-chat-message.prisma.repository';

@@ -4,6 +4,7 @@ import {AiAgentProfileMapper} from './ai-agent-profile.mapper';
 import {AppointmentMapper} from './appointment.mapper';
 import {ClinicMapper} from './clinic.mapper';
 import {ClinicMemberMapper} from './clinic-member.mapper';
+import {InsurancePlanMapper} from './insurance-plan.mapper';
 import {ClinicPatientAccessMapper} from './clinic-patient-access.mapper';
 import {ClinicalChatInteractionLogMapper} from './clinical-chat-interaction-log.mapper';
 import {ClinicalProfileMapper} from './clinical-profile.mapper';
@@ -36,6 +37,7 @@ const mappers = [
     PersonMapper,
     ProfessionalMapper,
     PatientMapper,
+    InsurancePlanMapper,
     // Schedule
     AppointmentMapper,
     WorkingHoursMapper,

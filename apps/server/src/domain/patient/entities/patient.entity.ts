@@ -3,6 +3,24 @@ import {type AllEntityProps, type EntityJson, type EntityProps, type CreateEntit
 import {Person, PersonId, PersonType} from '../../person/entities/person.entity';
 import {PatientCreatedEvent, PatientChangedEvent, PatientDeletedEvent} from '../events';
 
+export type PatientAddressData = {
+    street: string | null;
+    number: string | null;
+    complement: string | null;
+    neighborhood: string | null;
+    city: string | null;
+    state: string | null;
+    zipCode: string | null;
+    country: string | null;
+};
+
+export type InsurancePlanSummary = {
+    id: string;
+    name: string;
+    code: string | null;
+    isActive: boolean;
+};
+
 export type PatientProps = EntityProps<Patient>;
 export type CreatePatient = CreateEntity<Patient>;
 export type UpdatePatient = Partial<PatientProps>;
@@ -13,6 +31,12 @@ export class Patient extends Person {
     email: string | null;
     emergencyContactName: string | null;
     emergencyContactPhone: string | null;
+    address: PatientAddressData | null;
+    insurancePlanId: string | null;
+    insuranceCardNumber: string | null;
+    insuranceValidUntil: Date | null;
+    /** Populated by repository when insurancePlanId is set. Read-only from domain perspective. */
+    insurancePlan: InsurancePlanSummary | null;
 
     constructor(props: AllEntityProps<Patient>) {
         super(props);
@@ -21,6 +45,11 @@ export class Patient extends Person {
         this.email = props.email ?? null;
         this.emergencyContactName = props.emergencyContactName ?? null;
         this.emergencyContactPhone = props.emergencyContactPhone ?? null;
+        this.address = props.address ?? null;
+        this.insurancePlanId = props.insurancePlanId ?? null;
+        this.insuranceCardNumber = props.insuranceCardNumber ?? null;
+        this.insuranceValidUntil = props.insuranceValidUntil ?? null;
+        this.insurancePlan = props.insurancePlan ?? null;
         this.validate();
     }
 
@@ -43,6 +72,11 @@ export class Patient extends Person {
             email: props.email ?? null,
             emergencyContactName: props.emergencyContactName ?? null,
             emergencyContactPhone: props.emergencyContactPhone ?? null,
+            address: props.address ?? null,
+            insurancePlanId: props.insurancePlanId ?? null,
+            insuranceCardNumber: props.insuranceCardNumber ?? null,
+            insuranceValidUntil: props.insuranceValidUntil ?? null,
+            insurancePlan: props.insurancePlan ?? null,
         });
 
         patient.addEvent(new PatientCreatedEvent({patient, timestamp: now}));
@@ -57,33 +91,17 @@ export class Patient extends Person {
     change(props: UpdatePatient): void {
         const oldState = new Patient(this);
 
-        if (props.name !== undefined) {
-            this.name = props.name;
-        }
-
-        if (props.phone !== undefined) {
-            this.phone = props.phone;
-        }
-
-        if (props.gender !== undefined) {
-            this.gender = props.gender;
-        }
-
-        if (props.birthDate !== undefined) {
-            this.birthDate = props.birthDate;
-        }
-
-        if (props.email !== undefined) {
-            this.email = props.email;
-        }
-
-        if (props.emergencyContactName !== undefined) {
-            this.emergencyContactName = props.emergencyContactName;
-        }
-
-        if (props.emergencyContactPhone !== undefined) {
-            this.emergencyContactPhone = props.emergencyContactPhone;
-        }
+        if (props.name !== undefined) this.name = props.name;
+        if (props.phone !== undefined) this.phone = props.phone;
+        if (props.gender !== undefined) this.gender = props.gender;
+        if (props.birthDate !== undefined) this.birthDate = props.birthDate;
+        if (props.email !== undefined) this.email = props.email;
+        if (props.emergencyContactName !== undefined) this.emergencyContactName = props.emergencyContactName;
+        if (props.emergencyContactPhone !== undefined) this.emergencyContactPhone = props.emergencyContactPhone;
+        if (props.address !== undefined) this.address = props.address;
+        if (props.insurancePlanId !== undefined) this.insurancePlanId = props.insurancePlanId;
+        if (props.insuranceCardNumber !== undefined) this.insuranceCardNumber = props.insuranceCardNumber;
+        if (props.insuranceValidUntil !== undefined) this.insuranceValidUntil = props.insuranceValidUntil;
 
         this.validate();
 
@@ -107,6 +125,11 @@ export class Patient extends Person {
             email: this.email,
             emergencyContactName: this.emergencyContactName,
             emergencyContactPhone: this.emergencyContactPhone,
+            address: this.address,
+            insurancePlanId: this.insurancePlanId,
+            insuranceCardNumber: this.insuranceCardNumber,
+            insuranceValidUntil: this.insuranceValidUntil?.toJSON() ?? null,
+            insurancePlan: this.insurancePlan,
             createdAt: this.createdAt.toJSON(),
             updatedAt: this.updatedAt.toJSON(),
             deletedAt: this.deletedAt?.toJSON() ?? null,

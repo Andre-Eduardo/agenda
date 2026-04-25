@@ -20,6 +20,16 @@ export class CreateClinicService implements ApplicationService<CreateClinicDto, 
             phone: payload.phone ? Phone.create(payload.phone) : null,
             email: payload.email ? Email.create(payload.email) : null,
             isPersonalClinic: payload.isPersonalClinic ?? false,
+            street: payload.street ?? null,
+            number: payload.number ?? null,
+            complement: payload.complement ?? null,
+            neighborhood: payload.neighborhood ?? null,
+            city: payload.city ?? null,
+            state: payload.state ?? null,
+            zipCode: payload.zipCode ?? null,
+            country: payload.country ?? null,
+            logoUrl: payload.logoUrl ?? null,
+            clinicSpecialties: payload.clinicSpecialties ?? [],
         });
 
         await this.clinicRepository.save(clinic);

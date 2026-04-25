@@ -83,16 +83,29 @@ model Person {
 /// nenhum dado vaza entre clínicas. Para profissional autônomo, uma Clinic é criada
 /// automaticamente com isPersonalClinic = true (front esconde menus de equipe).
 model Clinic {
-  id               String    @id(map: "clinic_pk") @db.Uuid
+  id               String     @id(map: "clinic_pk") @db.Uuid
   name             String
-  documentId       String?   @map("document_id")
+  documentId       String?    @map("document_id")
   phone            String?
-  email            String?   @db.Citext()
+  email            String?    @db.Citext()
   /// true = autônomo usando o sistema sem clínica real. Front simplifica UI.
-  isPersonalClinic Boolean   @default(false) @map("is_personal_clinic")
-  createdAt        DateTime  @map("created_at")
-  updatedAt        DateTime  @map("updated_at")
-  deletedAt        DateTime? @map("deleted_at")
+  isPersonalClinic Boolean    @default(false) @map("is_personal_clinic")
+  /// Endereço da clínica
+  street           String?
+  number           String?
+  complement       String?
+  neighborhood     String?
+  city             String?
+  state            String?
+  zipCode          String?    @map("zip_code")
+  country          String?    @default("BR")
+  /// URL da logo da clínica
+  logoUrl          String?    @map("logo_url")
+  /// Especialidades atendidas pela clínica
+  clinicSpecialties Specialty[] @map("clinic_specialties")
+  createdAt        DateTime   @map("created_at")
+  updatedAt        DateTime   @map("updated_at")
+  deletedAt        DateTime?  @map("deleted_at")
 
   members             ClinicMember[]
   patients            Patient[]
@@ -113,6 +126,8 @@ model Clinic {
   events              Event[]
   agentProposals      AgentProposal[]
   knowledgeChunks     KnowledgeChunk[]
+  patientAddresses    PatientAddress[]
+  insurancePlans      InsurancePlan[]
 
   @@map("clinic")
 }
@@ -347,18 +362,23 @@ model DocumentPermission {
 /// - clinicId adicionado (boundary de tenant)
 /// - unique constraint mudou: era (documentId, professionalId), agora (documentId, clinicId)
 model Patient {
-  id                    String    @id(map: "patient_pk") @db.Uuid
-  person                Person    @relation(fields: [id], references: [id], onDelete: Cascade)
-  clinicId              String    @map("clinic_id") @db.Uuid
-  clinic                Clinic    @relation(fields: [clinicId], references: [id])
-  documentId            String    @map("document_id") @db.Citext()
-  birthDate             DateTime? @map("birth_date")
-  email                 String?   @db.Citext()
-  emergencyContactName  String?   @map("emergency_contact_name")
-  emergencyContactPhone String?   @map("emergency_contact_phone")
-  createdAt             DateTime  @map("created_at")
-  updatedAt             DateTime  @map("updated_at")
-  deletedAt             DateTime? @map("deleted_at")
+  id                    String        @id(map: "patient_pk") @db.Uuid
+  person                Person        @relation(fields: [id], references: [id], onDelete: Cascade)
+  clinicId              String        @map("clinic_id") @db.Uuid
+  clinic                Clinic        @relation(fields: [clinicId], references: [id])
+  documentId            String        @map("document_id") @db.Citext()
+  birthDate             DateTime?     @map("birth_date")
+  email                 String?       @db.Citext()
+  emergencyContactName  String?       @map("emergency_contact_name")
+  emergencyContactPhone String?       @map("emergency_contact_phone")
+  /// Convênio/plano de saúde
+  insurancePlanId       String?       @map("insurance_plan_id") @db.Uuid
+  insurancePlan         InsurancePlan? @relation(fields: [insurancePlanId], references: [id])
+  insuranceCardNumber   String?       @map("insurance_card_number")
+  insuranceValidUntil   DateTime?     @map("insurance_valid_until")
+  createdAt             DateTime      @map("created_at")
+  updatedAt             DateTime      @map("updated_at")
+  deletedAt             DateTime?     @map("deleted_at")
 
   accesses          ClinicPatientAccess[]
   appointments      Appointment[]
@@ -371,10 +391,53 @@ model Patient {
   chatSessions      PatientChatSession[]
   contextSnapshots  PatientContextSnapshot[]
   contextChunks     PatientContextChunk[]
+  address           PatientAddress?
 
   @@unique([documentId, clinicId], name: "patient_document_clinic_unique")
   @@index([clinicId], name: "patient_clinic_idx")
   @@map("patient")
+}
+
+/// Endereço do paciente — separado de Person para manter Person reutilizável.
+/// Relação 1:1 com Patient; escopo de tenant via clinicId.
+model PatientAddress {
+  id           String  @id(map: "patient_address_pk") @db.Uuid
+  patientId    String  @unique @map("patient_id") @db.Uuid
+  patient      Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  clinicId     String  @map("clinic_id") @db.Uuid
+  clinic       Clinic  @relation(fields: [clinicId], references: [id])
+  street       String?
+  number       String?
+  complement   String?
+  neighborhood String?
+  city         String?
+  state        String?
+  zipCode      String? @map("zip_code")
+  country      String? @default("BR")
+  createdAt    DateTime @map("created_at")
+  updatedAt    DateTime @map("updated_at")
+
+  @@index([clinicId], name: "patient_address_clinic_idx")
+  @@map("patient_address")
+}
+
+/// Plano de saúde/convênio da clínica.
+/// Cadastrado por clínica (não global no MVP).
+model InsurancePlan {
+  id        String    @id(map: "insurance_plan_pk") @db.Uuid
+  clinicId  String    @map("clinic_id") @db.Uuid
+  clinic    Clinic    @relation(fields: [clinicId], references: [id])
+  name      String
+  code      String?
+  isActive  Boolean   @default(true) @map("is_active")
+  createdAt DateTime  @map("created_at")
+  updatedAt DateTime  @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  patients  Patient[]
+
+  @@index([clinicId], name: "insurance_plan_clinic_idx")
+  @@map("insurance_plan")
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

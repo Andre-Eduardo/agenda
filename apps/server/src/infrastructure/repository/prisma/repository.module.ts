@@ -18,6 +18,7 @@ import {FormFieldIndexRepository} from '../../../domain/form-field-index/form-fi
 import {FormTemplateRepository} from '../../../domain/form-template/form-template.repository';
 import {FormTemplateVersionRepository} from '../../../domain/form-template-version/form-template-version.repository';
 import {KnowledgeChunkRepository} from '../../../domain/knowledge-base/knowledge-chunk.repository';
+import {InsurancePlanRepository} from '../../../domain/insurance-plan/insurance-plan.repository';
 import {PatientRepository} from '../../../domain/patient/patient.repository';
 import {PatientAlertRepository} from '../../../domain/patient-alert/patient-alert.repository';
 import {PatientFormRepository} from '../../../domain/patient-form/patient-form.repository';
@@ -43,6 +44,7 @@ import {FormTemplatePrismaRepository} from '../form-template.prisma.repository';
 import {FormTemplateVersionPrismaRepository} from '../form-template-version.prisma.repository';
 import {KnowledgeChunkPrismaRepository} from '../knowledge-chunk.prisma.repository';
 import {MemberBlockPrismaRepository} from '../member-block.prisma.repository';
+import {InsurancePlanPrismaRepository} from '../insurance-plan.prisma.repository';
 import {PatientPrismaRepository} from '../patient.prisma.repository';
 import {PatientAlertPrismaRepository} from '../patient-alert.prisma.repository';
 import {PatientChatMessagePrismaRepository} from '../patient-chat-message.prisma.repository';
@@ -72,6 +74,7 @@ const repositories: Provider[] = [
     // People
     {provide: ProfessionalRepository, useClass: ProfessionalPrismaRepository},
     {provide: PatientRepository, useClass: PatientPrismaRepository},
+    {provide: InsurancePlanRepository, useClass: InsurancePlanPrismaRepository},
     // Schedule
     {provide: AppointmentRepository, useClass: AppointmentPrismaRepository},
     {provide: WorkingHoursRepository, useClass: WorkingHoursPrismaRepository},

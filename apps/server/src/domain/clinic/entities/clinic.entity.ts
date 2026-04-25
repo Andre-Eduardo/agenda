@@ -8,6 +8,7 @@ import {
 import {EntityId} from '../../@shared/entity/id';
 import {InvalidInputException} from '../../@shared/exceptions';
 import type {DocumentId, Email, Phone} from '../../@shared/value-objects';
+import type {Specialty} from '../../form-template/entities';
 import {ClinicCreatedEvent, ClinicChangedEvent, ClinicDeletedEvent} from '../events';
 
 export type ClinicProps = EntityProps<Clinic>;
@@ -21,6 +22,16 @@ export class Clinic extends AggregateRoot<ClinicId> {
     email: Email | null;
     /** true = autônomo usando o sistema sem clínica real. Front simplifica UI. */
     isPersonalClinic: boolean;
+    street: string | null;
+    number: string | null;
+    complement: string | null;
+    neighborhood: string | null;
+    city: string | null;
+    state: string | null;
+    zipCode: string | null;
+    country: string | null;
+    logoUrl: string | null;
+    clinicSpecialties: Specialty[];
 
     constructor(props: AllEntityProps<Clinic>) {
         super(props);
@@ -29,6 +40,16 @@ export class Clinic extends AggregateRoot<ClinicId> {
         this.phone = props.phone ?? null;
         this.email = props.email ?? null;
         this.isPersonalClinic = props.isPersonalClinic;
+        this.street = props.street ?? null;
+        this.number = props.number ?? null;
+        this.complement = props.complement ?? null;
+        this.neighborhood = props.neighborhood ?? null;
+        this.city = props.city ?? null;
+        this.state = props.state ?? null;
+        this.zipCode = props.zipCode ?? null;
+        this.country = props.country ?? null;
+        this.logoUrl = props.logoUrl ?? null;
+        this.clinicSpecialties = props.clinicSpecialties ?? [];
         this.validate();
     }
 
@@ -43,6 +64,16 @@ export class Clinic extends AggregateRoot<ClinicId> {
             phone: props.phone ?? null,
             email: props.email ?? null,
             isPersonalClinic: props.isPersonalClinic ?? false,
+            street: props.street ?? null,
+            number: props.number ?? null,
+            complement: props.complement ?? null,
+            neighborhood: props.neighborhood ?? null,
+            city: props.city ?? null,
+            state: props.state ?? null,
+            zipCode: props.zipCode ?? null,
+            country: props.country ?? null,
+            logoUrl: props.logoUrl ?? null,
+            clinicSpecialties: props.clinicSpecialties ?? [],
             createdAt: now,
             updatedAt: now,
             deletedAt: null,
@@ -56,21 +87,20 @@ export class Clinic extends AggregateRoot<ClinicId> {
     change(props: UpdateClinic): void {
         const oldState = new Clinic(this);
 
-        if (props.name !== undefined) {
-            this.name = props.name;
-        }
-
-        if (props.documentId !== undefined) {
-            this.documentId = props.documentId;
-        }
-
-        if (props.phone !== undefined) {
-            this.phone = props.phone;
-        }
-
-        if (props.email !== undefined) {
-            this.email = props.email;
-        }
+        if (props.name !== undefined) this.name = props.name;
+        if (props.documentId !== undefined) this.documentId = props.documentId;
+        if (props.phone !== undefined) this.phone = props.phone;
+        if (props.email !== undefined) this.email = props.email;
+        if (props.street !== undefined) this.street = props.street;
+        if (props.number !== undefined) this.number = props.number;
+        if (props.complement !== undefined) this.complement = props.complement;
+        if (props.neighborhood !== undefined) this.neighborhood = props.neighborhood;
+        if (props.city !== undefined) this.city = props.city;
+        if (props.state !== undefined) this.state = props.state;
+        if (props.zipCode !== undefined) this.zipCode = props.zipCode;
+        if (props.country !== undefined) this.country = props.country;
+        if (props.logoUrl !== undefined) this.logoUrl = props.logoUrl;
+        if (props.clinicSpecialties !== undefined) this.clinicSpecialties = props.clinicSpecialties;
 
         this.validate();
         this.addEvent(new ClinicChangedEvent({oldState, newState: this}));
@@ -95,6 +125,16 @@ export class Clinic extends AggregateRoot<ClinicId> {
             phone: this.phone?.toJSON() ?? null,
             email: this.email?.toJSON() ?? null,
             isPersonalClinic: this.isPersonalClinic,
+            street: this.street,
+            number: this.number,
+            complement: this.complement,
+            neighborhood: this.neighborhood,
+            city: this.city,
+            state: this.state,
+            zipCode: this.zipCode,
+            country: this.country,
+            logoUrl: this.logoUrl,
+            clinicSpecialties: this.clinicSpecialties,
             createdAt: this.createdAt.toJSON(),
             updatedAt: this.updatedAt.toJSON(),
             deletedAt: this.deletedAt?.toJSON() ?? null,

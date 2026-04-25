@@ -1,7 +1,7 @@
 import {Injectable} from '@nestjs/common';
 import * as PrismaClient from '@prisma/client';
 import {ClinicId} from '../../domain/clinic/entities';
-import {Patient, PatientId} from '../../domain/patient/entities';
+import {Patient, PatientId, type PatientAddressData} from '../../domain/patient/entities';
 import {PatientRepository, PatientSearchFilter, PatientSortOptions} from '../../domain/patient/patient.repository';
 import {PaginatedList, Pagination} from '../../domain/@shared/repository';
 import {PatientMapper} from '../mappers/patient.mapper';
@@ -9,6 +9,12 @@ import {PrismaProvider} from './prisma/prisma.provider';
 import {PrismaRepository} from './prisma.repository';
 
 export type PatientModel = PrismaClient.Patient;
+
+const patientIncludes = {
+    person: true,
+    address: true,
+    insurancePlan: true,
+} as const;
 
 @Injectable()
 export class PatientPrismaRepository extends PrismaRepository implements PatientRepository {
@@ -25,9 +31,7 @@ export class PatientPrismaRepository extends PrismaRepository implements Patient
                 id: id.toString(),
                 ...(clinicId ? {clinicId: clinicId.toString()} : {}),
             },
-            include: {
-                person: true,
-            },
+            include: patientIncludes,
         });
 
         return patient === null ? null : this.mapper.toDomain(patient);
@@ -35,9 +39,7 @@ export class PatientPrismaRepository extends PrismaRepository implements Patient
 
     async delete(id: PatientId): Promise<void> {
         await this.prisma.patient.delete({
-            where: {
-                id: id.toString(),
-            },
+            where: {id: id.toString()},
         });
     }
 
@@ -59,7 +61,7 @@ export class PatientPrismaRepository extends PrismaRepository implements Patient
         const [data, totalCount] = await Promise.all([
             this.prisma.patient.findMany({
                 where,
-                include: {person: true},
+                include: patientIncludes,
                 ...this.normalizePagination(pagination, {createdAt: 'desc'}),
             }),
             this.prisma.patient.count({where}),
@@ -73,7 +75,7 @@ export class PatientPrismaRepository extends PrismaRepository implements Patient
 
     async save(patient: Patient): Promise<void> {
         const data = this.mapper.toPersistence(patient);
-        const {person, clinicId, ...patientFields} = data;
+        const {person, address: _address, insurancePlan: _insurancePlan, clinicId, ...patientFields} = data;
 
         await this.prisma.$transaction(async (tx) => {
             await tx.person.upsert({
@@ -86,6 +88,56 @@ export class PatientPrismaRepository extends PrismaRepository implements Patient
                 create: {...patientFields, clinicId},
                 update: {...patientFields, clinicId},
             });
+
+            if (patient.address !== null) {
+                await this.upsertAddress(tx, patient.id.toString(), patient.clinicId.toString(), patient.address);
+            }
         });
+    }
+
+    private async upsertAddress(
+        tx: PrismaClient.Prisma.TransactionClient,
+        patientId: string,
+        clinicId: string,
+        address: PatientAddressData,
+    ): Promise<void> {
+        const existing = await tx.patientAddress.findUnique({where: {patientId}});
+        const now = new Date();
+
+        if (existing === null) {
+            const {randomUUID} = await import('node:crypto');
+            await tx.patientAddress.create({
+                data: {
+                    id: randomUUID(),
+                    patientId,
+                    clinicId,
+                    street: address.street,
+                    number: address.number,
+                    complement: address.complement,
+                    neighborhood: address.neighborhood,
+                    city: address.city,
+                    state: address.state,
+                    zipCode: address.zipCode,
+                    country: address.country,
+                    createdAt: now,
+                    updatedAt: now,
+                },
+            });
+        } else {
+            await tx.patientAddress.update({
+                where: {patientId},
+                data: {
+                    street: address.street,
+                    number: address.number,
+                    complement: address.complement,
+                    neighborhood: address.neighborhood,
+                    city: address.city,
+                    state: address.state,
+                    zipCode: address.zipCode,
+                    country: address.country,
+                    updatedAt: now,
+                },
+            });
+        }
     }
 }

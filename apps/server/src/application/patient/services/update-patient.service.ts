@@ -27,6 +27,23 @@ export class UpdatePatientService implements ApplicationService<UpdatePatientDto
             email: props.email ?? undefined,
             emergencyContactName: props.emergencyContactName ?? undefined,
             emergencyContactPhone: props.emergencyContactPhone ?? undefined,
+            address: props.address !== undefined
+                ? props.address
+                    ? {
+                          street: props.address.street ?? null,
+                          number: props.address.number ?? null,
+                          complement: props.address.complement ?? null,
+                          neighborhood: props.address.neighborhood ?? null,
+                          city: props.address.city ?? null,
+                          state: props.address.state ?? null,
+                          zipCode: props.address.zipCode ?? null,
+                          country: props.address.country ?? null,
+                      }
+                    : null
+                : undefined,
+            insurancePlanId: props.insurancePlanId !== undefined ? (props.insurancePlanId ?? null) : undefined,
+            insuranceCardNumber: props.insuranceCardNumber !== undefined ? (props.insuranceCardNumber ?? null) : undefined,
+            insuranceValidUntil: props.insuranceValidUntil !== undefined ? (props.insuranceValidUntil ?? null) : undefined,
         });
 
         await this.patientRepository.save(patient);
