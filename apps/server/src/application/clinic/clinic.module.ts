@@ -6,11 +6,12 @@ import {
     CreateInsurancePlanService,
     GetClinicService,
     ListInsurancePlansService,
+    UpdateClinicService,
 } from './services';
 
 @Module({
     imports: [InfrastructureModule],
     controllers: [ClinicController],
-    providers: [CreateClinicService, GetClinicService, CreateInsurancePlanService, ListInsurancePlansService],
+    providers: [CreateClinicService, GetClinicService, CreateInsurancePlanService, ListInsurancePlansService, UpdateClinicService],
 })
 export class ClinicModule {}

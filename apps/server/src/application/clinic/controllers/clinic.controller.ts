@@ -1,21 +1,22 @@
-import {Body, Controller, Get, Post} from '@nestjs/common';
+import {Body, Controller, Get, Patch, Post} from '@nestjs/common';
 import {ApiTags} from '@nestjs/swagger';
 import {z} from 'zod';
 import {Actor} from '../../../domain/@shared/actor';
 import {ClinicId} from '../../../domain/clinic/entities';
-import {InsurancePlanPermission} from '../../../domain/auth';
+import {ClinicPermission, InsurancePlanPermission} from '../../../domain/auth';
 import {Authorize} from '../../@shared/auth';
 import {BypassClinicMember} from '../../@shared/auth/bypass-clinic-member.decorator';
 import {RequestActor} from '../../@shared/auth/request-actor.decorator';
 import {ApiOperation} from '../../@shared/openapi/decorators';
 import {entityIdParam} from '../../@shared/openapi/params';
 import {ValidatedParam} from '../../@shared/validation';
-import {ClinicDto, CreateClinicDto, CreateInsurancePlanDto, InsurancePlanDto} from '../dtos';
+import {ClinicDto, CreateClinicDto, CreateInsurancePlanDto, InsurancePlanDto, UpdateClinicDto} from '../dtos';
 import {
     CreateClinicService,
     CreateInsurancePlanService,
     GetClinicService,
     ListInsurancePlansService,
+    UpdateClinicService,
 } from '../services';
 
 @ApiTags('Clinic')
@@ -26,6 +27,7 @@ export class ClinicController {
         private readonly getClinicService: GetClinicService,
         private readonly createInsurancePlanService: CreateInsurancePlanService,
         private readonly listInsurancePlansService: ListInsurancePlansService,
+        private readonly updateClinicService: UpdateClinicService,
     ) {}
 
     @ApiOperation({
@@ -50,6 +52,22 @@ export class ClinicController {
         clinicId: ClinicId,
     ): Promise<ClinicDto> {
         return this.getClinicService.execute({actor, payload: {clinicId}});
+    }
+
+    @ApiOperation({
+        summary: 'Update a clinic',
+        parameters: [entityIdParam('Clinic ID', 'clinicId')],
+        responses: [{status: 200, description: 'Clinic updated', type: ClinicDto}],
+    })
+    @Authorize(ClinicPermission.UPDATE)
+    @Patch(':clinicId')
+    async updateClinic(
+        @RequestActor() actor: Actor,
+        @ValidatedParam('clinicId', z.string().uuid().transform((v) => ClinicId.from(v)))
+        _clinicId: ClinicId,
+        @Body() payload: UpdateClinicDto,
+    ): Promise<ClinicDto> {
+        return this.updateClinicService.execute({actor, payload});
     }
 
     @ApiOperation({
