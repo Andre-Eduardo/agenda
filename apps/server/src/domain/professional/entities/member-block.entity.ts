@@ -1,30 +1,35 @@
 import {type AllEntityProps, type EntityProps, type CreateEntity, Entity} from '../../@shared/entity';
 import {EntityId} from '../../@shared/entity/id';
-import type {ProfessionalId} from './professional.entity';
+import type {ClinicMemberId} from '../../clinic-member/entities';
 
-export type ProfessionalBlockProps = EntityProps<ProfessionalBlock>;
-export type CreateProfessionalBlock = CreateEntity<ProfessionalBlock>;
+export type MemberBlockProps = EntityProps<MemberBlock>;
+export type CreateMemberBlock = CreateEntity<MemberBlock>;
 
-export class ProfessionalBlock extends Entity<ProfessionalBlockId> {
-    professionalId: ProfessionalId;
+/**
+ * Bloqueio de agenda de um membro da clínica.
+ * Substitui o antigo ProfessionalBlock — agora referencia ClinicMember
+ * (que pode ou não ter Professional associado).
+ */
+export class MemberBlock extends Entity<MemberBlockId> {
+    clinicMemberId: ClinicMemberId;
     startAt: Date;
     endAt: Date;
     reason: string | null;
 
-    constructor(props: AllEntityProps<ProfessionalBlock>) {
+    constructor(props: AllEntityProps<MemberBlock>) {
         super(props);
-        this.professionalId = props.professionalId;
+        this.clinicMemberId = props.clinicMemberId;
         this.startAt = props.startAt;
         this.endAt = props.endAt;
         this.reason = props.reason ?? null;
     }
 
-    static create(props: CreateProfessionalBlock): ProfessionalBlock {
+    static create(props: CreateMemberBlock): MemberBlock {
         const now = new Date();
 
-        return new ProfessionalBlock({
+        return new MemberBlock({
             ...props,
-            id: ProfessionalBlockId.generate(),
+            id: MemberBlockId.generate(),
             reason: props.reason ?? null,
             createdAt: now,
             updatedAt: now,
@@ -35,7 +40,7 @@ export class ProfessionalBlock extends Entity<ProfessionalBlockId> {
     toJSON() {
         return {
             id: this.id.toJSON(),
-            professionalId: this.professionalId.toJSON(),
+            clinicMemberId: this.clinicMemberId.toJSON(),
             startAt: this.startAt.toJSON(),
             endAt: this.endAt.toJSON(),
             reason: this.reason,
@@ -50,12 +55,12 @@ export class ProfessionalBlock extends Entity<ProfessionalBlockId> {
     }
 }
 
-export class ProfessionalBlockId extends EntityId<'ProfessionalBlockId'> {
-    static from(value: string): ProfessionalBlockId {
-        return new ProfessionalBlockId(value);
+export class MemberBlockId extends EntityId<'MemberBlockId'> {
+    static from(value: string): MemberBlockId {
+        return new MemberBlockId(value);
     }
 
-    static generate(): ProfessionalBlockId {
-        return new ProfessionalBlockId();
+    static generate(): MemberBlockId {
+        return new MemberBlockId();
     }
 }

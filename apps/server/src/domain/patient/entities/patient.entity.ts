@@ -1,4 +1,4 @@
-import type {ProfessionalId} from '@domain/professional/entities';
+import type {ClinicId} from '@domain/clinic/entities';
 import {type AllEntityProps, type EntityJson, type EntityProps, type CreateEntity} from '../../@shared/entity';
 import {Person, PersonId, PersonType} from '../../person/entities/person.entity';
 import {PatientCreatedEvent, PatientChangedEvent, PatientDeletedEvent} from '../events';
@@ -8,7 +8,7 @@ export type CreatePatient = CreateEntity<Patient>;
 export type UpdatePatient = Partial<PatientProps>;
 
 export class Patient extends Person {
-    professionalId: ProfessionalId | null;
+    clinicId: ClinicId;
     birthDate: Date | null;
     email: string | null;
     emergencyContactName: string | null;
@@ -16,7 +16,7 @@ export class Patient extends Person {
 
     constructor(props: AllEntityProps<Patient>) {
         super(props);
-        this.professionalId = props.professionalId ?? null;
+        this.clinicId = props.clinicId;
         this.birthDate = props.birthDate ?? null;
         this.email = props.email ?? null;
         this.emergencyContactName = props.emergencyContactName ?? null;
@@ -38,7 +38,7 @@ export class Patient extends Person {
             updatedAt: now,
             deletedAt: null,
             personType: props.personType ?? PersonType.NATURAL,
-            professionalId: props.professionalId ?? null,
+            clinicId: props.clinicId,
             birthDate: props.birthDate ?? null,
             email: props.email ?? null,
             emergencyContactName: props.emergencyContactName ?? null,
@@ -97,12 +97,11 @@ export class Patient extends Person {
     toJSON(): EntityJson<Patient> {
         return {
             id: this.id.toJSON(),
-            professionalId: this.professionalId?.toJSON() ?? null,
+            clinicId: this.clinicId.toJSON(),
             name: this.name,
             documentId: this.documentId.toJSON(),
             phone: this.phone?.toJSON() ?? null,
             gender: this.gender ?? null,
-            profiles: Array.from(this.profiles),
             personType: this.personType,
             birthDate: this.birthDate?.toJSON() ?? null,
             email: this.email,

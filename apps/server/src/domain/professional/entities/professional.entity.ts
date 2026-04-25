@@ -1,28 +1,41 @@
-import {type AllEntityProps, type EntityJson, type EntityProps, type CreateEntity} from '../../@shared/entity';
-import {Person, PersonId, PersonType} from '../../person/entities/person.entity';
-import type {UserId} from '../../user/entities/user.entity';
-import {ProfessionalCreatedEvent, ProfessionalChangedEvent, ProfessionalDeletedEvent} from '../events';
-import type {ProfessionalConfigId} from './professional-config';
+import {
+    AggregateRoot,
+    type AllEntityProps,
+    type CreateEntity,
+    type EntityJson,
+    type EntityProps,
+} from '../../@shared/entity';
+import {EntityId} from '../../@shared/entity/id';
+import type {ClinicMemberId} from '../../clinic-member/entities';
 import type {Specialty} from '../../form-template/entities';
+import {ProfessionalCreatedEvent, ProfessionalChangedEvent, ProfessionalDeletedEvent} from '../events';
 
 export type ProfessionalProps = EntityProps<Professional>;
 export type CreateProfessional = CreateEntity<Professional>;
 export type UpdateProfessional = Partial<ProfessionalProps>;
 
-export class Professional extends Person {
-    configId: ProfessionalConfigId;
-    userId: UserId | null;
-    specialty: string;
+/**
+ * Profissional de saúde — extensão 1:1 de ClinicMember (apenas role=PROFESSIONAL).
+ *
+ * MUDANÇAS:
+ * - Não extende mais Person (dados pessoais ficam em User via ClinicMember)
+ * - Não tem mais relação direta com User (vai via ClinicMember)
+ * - Não tem mais ProfessionalConfig (color migrou para ClinicMember)
+ * - Aparece nas relações de "responsabilidade clínica" (responsibleProfessionalId)
+ */
+export class Professional extends AggregateRoot<ProfessionalId> {
+    clinicMemberId: ClinicMemberId;
+    registrationNumber: string | null;
+    specialty: string | null;
     /** Especialidade normalizada como enum, derivada do campo `specialty` no cadastro. */
     specialtyNormalized: Specialty | null;
 
     constructor(props: AllEntityProps<Professional>) {
         super(props);
-        this.configId = props.configId;
-        this.userId = props.userId ?? null;
-        this.specialty = props.specialty;
+        this.clinicMemberId = props.clinicMemberId;
+        this.registrationNumber = props.registrationNumber ?? null;
+        this.specialty = props.specialty ?? null;
         this.specialtyNormalized = props.specialtyNormalized ?? null;
-        this.validate();
     }
 
     static create(props: CreateProfessional): Professional {
@@ -31,14 +44,9 @@ export class Professional extends Person {
         const professional = new Professional({
             ...props,
             id: ProfessionalId.generate(),
-            name: props.name,
-            documentId: props.documentId,
-            phone: props.phone ?? null,
-            gender: props.gender ?? null,
-            personType: props.personType ?? PersonType.NATURAL,
-            configId: props.configId,
-            userId: props.userId ?? null,
-            specialty: props.specialty,
+            clinicMemberId: props.clinicMemberId,
+            registrationNumber: props.registrationNumber ?? null,
+            specialty: props.specialty ?? null,
             specialtyNormalized: props.specialtyNormalized ?? null,
             createdAt: now,
             updatedAt: now,
@@ -51,14 +59,15 @@ export class Professional extends Person {
     }
 
     delete(): void {
+        super.delete();
         this.addEvent(new ProfessionalDeletedEvent({professional: this}));
     }
 
     change(props: UpdateProfessional): void {
         const oldState = new Professional(this);
 
-        if (props.userId !== undefined) {
-            this.userId = props.userId;
+        if (props.registrationNumber !== undefined) {
+            this.registrationNumber = props.registrationNumber;
         }
 
         if (props.specialty !== undefined) {
@@ -69,26 +78,14 @@ export class Professional extends Person {
             this.specialtyNormalized = props.specialtyNormalized;
         }
 
-        this.validate();
-
         this.addEvent(new ProfessionalChangedEvent({oldState, newState: this}));
-    }
-
-    validate(): void {
-        // Add validation logic if needed
     }
 
     toJSON(): EntityJson<Professional> {
         return {
             id: this.id.toJSON(),
-            name: this.name,
-            documentId: this.documentId.toJSON(),
-            phone: this.phone?.toJSON() ?? null,
-            gender: this.gender ?? null,
-            profiles: Array.from(this.profiles),
-            personType: this.personType,
-            configId: this.configId.toJSON(),
-            userId: this.userId?.toJSON() ?? null,
+            clinicMemberId: this.clinicMemberId.toJSON(),
+            registrationNumber: this.registrationNumber,
             specialty: this.specialty,
             specialtyNormalized: this.specialtyNormalized,
             createdAt: this.createdAt.toJSON(),
@@ -98,12 +95,12 @@ export class Professional extends Person {
     }
 }
 
-export class ProfessionalId extends PersonId {
-    static override from(value: string): ProfessionalId {
+export class ProfessionalId extends EntityId<'ProfessionalId'> {
+    static from(value: string): ProfessionalId {
         return new ProfessionalId(value);
     }
 
-    static override generate(): ProfessionalId {
+    static generate(): ProfessionalId {
         return new ProfessionalId();
     }
 }
