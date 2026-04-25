@@ -1,5 +1,7 @@
 import {Global, Module} from '@nestjs/common';
 import {AgentProposalMapper} from './agent-proposal.mapper';
+import {ClinicalDocumentMapper} from './clinical-document.mapper';
+import {ClinicalDocumentTemplateMapper} from './clinical-document-template.mapper';
 import {AiAgentProfileMapper} from './ai-agent-profile.mapper';
 import {AppointmentMapper} from './appointment.mapper';
 import {AppointmentReminderMapper} from './appointment-reminder.mapper';
@@ -56,6 +58,8 @@ const mappers = [
     DraftEvolutionMapper,
     ClinicalProfileMapper,
     PatientAlertMapper,
+    ClinicalDocumentMapper,
+    ClinicalDocumentTemplateMapper,
     // Forms
     FormTemplateMapper,
     FormTemplateVersionMapper,

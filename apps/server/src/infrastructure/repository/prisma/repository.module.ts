@@ -1,5 +1,7 @@
 import {Module, Provider} from '@nestjs/common';
 import {AgentProposalRepository} from '../../../domain/agent-proposal/agent-proposal.repository';
+import {ClinicalDocumentRepository} from '../../../domain/clinical-document/clinical-document.repository';
+import {ClinicalDocumentTemplateRepository} from '../../../domain/clinical-document/clinical-document-template.repository';
 import {AppointmentRepository} from '../../../domain/appointment/appointment.repository';
 import {AppointmentReminderRepository} from '../../../domain/appointment-reminder/appointment-reminder.repository';
 import {ClinicReminderConfigRepository} from '../../../domain/clinic-reminder-config/clinic-reminder-config.repository';
@@ -35,6 +37,8 @@ import {RecordRepository} from '../../../domain/record/record.repository';
 import {UserRepository} from '../../../domain/user/user.repository';
 import {MapperModule} from '../../mappers';
 import {AgentProposalPrismaRepository} from '../agent-proposal.prisma.repository';
+import {ClinicalDocumentPrismaRepository} from '../clinical-document.prisma.repository';
+import {ClinicalDocumentTemplatePrismaRepository} from '../clinical-document-template.prisma.repository';
 import {AiAgentProfilePrismaRepository} from '../ai-agent-profile.prisma.repository';
 import {AppointmentPrismaRepository} from '../appointment.prisma.repository';
 import {AppointmentReminderPrismaRepository} from '../appointment-reminder.prisma.repository';
@@ -115,6 +119,9 @@ const repositories: Provider[] = [
     {provide: KnowledgeChunkRepository, useClass: KnowledgeChunkPrismaRepository},
     // Agent Proposal
     {provide: AgentProposalRepository, useClass: AgentProposalPrismaRepository},
+    // Clinical Documents
+    {provide: ClinicalDocumentRepository, useClass: ClinicalDocumentPrismaRepository},
+    {provide: ClinicalDocumentTemplateRepository, useClass: ClinicalDocumentTemplatePrismaRepository},
 ];
 
 @Module({

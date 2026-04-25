@@ -4,6 +4,7 @@ import {clinicEvents} from '../clinic/events';
 import {clinicMemberEvents} from '../clinic-member/events';
 import {clinicPatientAccessEvents} from '../clinic-patient-access/events';
 import {clinicalProfileEvents} from '../clinical-profile/events';
+import {clinicalDocumentEvents} from '../clinical-document/events';
 import {documentPermissionEvents} from '../document-permission/events';
 import {draftEvolutionEvents} from '../draft-evolution/events';
 import {fileEvents} from '../file/events';
@@ -24,6 +25,7 @@ export const eventTypes = [
     personEvents,
     fileEvents,
     clinicalProfileEvents,
+    clinicalDocumentEvents,
     patientAlertEvents,
     patientFormEvents,
     clinicEvents,

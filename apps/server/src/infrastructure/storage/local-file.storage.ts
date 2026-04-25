@@ -41,6 +41,13 @@ export class LocalFileStorage implements FileStorage {
         }
     }
 
+    async storeBuffer(filePath: string, buffer: Buffer, _mimeType: string): Promise<string> {
+        const resolved = this.resolvePath(filePath);
+        fs.mkdirSync(path.dirname(resolved), {recursive: true});
+        fs.writeFileSync(resolved, buffer);
+        return `${this.config.storage.publicBaseUrl}/uploads/${filePath}`;
+    }
+
     private resolvePath(filePath: string): string {
         return path.join(this.config.storage.localUploadDir, filePath);
     }

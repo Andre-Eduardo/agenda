@@ -9,6 +9,8 @@ export interface FileStorage {
     promote(tempPath: string, finalPath: string): Promise<void>;
     getFileInfo(path: string): Promise<{size: number; checksum: string} | null>;
     delete(path: string): Promise<void>;
+    /** Stores a buffer directly (server-side upload) and returns the public URL. */
+    storeBuffer(path: string, buffer: Buffer, mimeType: string): Promise<string>;
 }
 
 export const FileStorage = Symbol('FileStorage');
