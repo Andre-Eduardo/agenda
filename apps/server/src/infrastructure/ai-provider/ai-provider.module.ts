@@ -6,6 +6,8 @@ import {OpenAiEmbeddingProvider} from './openai-embedding.provider';
 import {DefaultAiProviderRegistry} from './ai-provider-registry';
 import {CHAT_MODEL_PROVIDER_TOKEN, EMBEDDING_PROVIDER_TOKEN} from './ai-provider.tokens';
 import {OpenRouterChatProvider} from './openrouter-chat.provider';
+import {OpenRouterProvider} from '../../ai/providers/openrouter.provider';
+import {AI_PROVIDER} from '../../ai/providers/ai-provider.token';
 
 /**
  * Módulo de providers de IA para o chat clínico.
@@ -56,11 +58,28 @@ import {OpenRouterChatProvider} from './openrouter-chat.provider';
                         );
                     }
 
-                    return new OpenRouterChatProvider({apiKey, modelId});
+                    return new OpenRouterChatProvider({
+                        apiKey,
+                        modelId,
+                        appName: process.env.OPENROUTER_APP_NAME,
+                        appUrl: process.env.OPENROUTER_APP_URL,
+                    });
                 }
 
                 // Padrão: mock (desenvolvimento sem API key)
                 return new MockChatProvider();
+            },
+        },
+
+        // IAiProvider via AI_PROVIDER token — usado por serviços que dependem da interface limpa
+        // Ativo apenas quando AI_CHAT_PROVIDER=openrouter; caso contrário não é registrado
+        {
+            provide: AI_PROVIDER,
+            useFactory: (): OpenRouterProvider | null => {
+                if ((process.env.AI_CHAT_PROVIDER ?? 'mock') !== 'openrouter') {
+                    return null;
+                }
+                return new OpenRouterProvider();
             },
         },
 
@@ -99,6 +118,7 @@ import {OpenRouterChatProvider} from './openrouter-chat.provider';
         CHAT_MODEL_PROVIDER_TOKEN,
         EMBEDDING_PROVIDER_TOKEN,
         AiProviderRegistry,
+        AI_PROVIDER,
     ],
 })
 export class AiProviderModule {}

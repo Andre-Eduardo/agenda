@@ -25,6 +25,7 @@
     "prisma:migrate:create": "node scripts/create-migration.mjs",
     "prisma:migrate:reset": "prisma migrate reset",
     "prisma:seed": "ts-node prisma/seed.ts",
+    "sync:agents": "ts-node -r tsconfig-paths/register src/ai/agents/sync-agents.command.ts",
     "prepare-env": "node scripts/create-env.mjs",
     "postinstall": "pnpm prisma:generate",
     "ingest:knowledge": "ts-node --swc scripts/ingest-knowledge.ts",

@@ -3,6 +3,7 @@ import {InfrastructureModule} from '../../infrastructure/infrastructure.module';
 import {AgentModule} from '../agent/agent.module';
 import {ClinicalChatController} from './controllers/clinical-chat.controller';
 import {AgentsController} from './controllers/agents.controller';
+import {AgentResolverService} from '../../ai/agents/agent-resolver.service';
 import {
     // Task 14: Context policy rules
     ContextPolicyService,
@@ -14,7 +15,7 @@ import {
     // Task 6: Snapshot management
     GetContextSnapshotService,
     InvalidateSnapshotService,
-    // Task 12: Agent auto-resolution
+    // Task 12: Agent auto-resolution (legacy — used by AgentsController)
     AgentResolutionService,
     // Chat sessions (Tasks 4-5)
     CreateChatSessionService,
@@ -47,7 +48,10 @@ import {ReindexOnFormCompletedHandler} from './handlers/reindex-on-form-complete
         GetContextSnapshotService,
         InvalidateSnapshotService,
 
-        // ─── Task 12: Agent auto-resolution ──────────────────────────────────
+        // ─── Agent registry resolver (zero-DB, env-driven) ───────────────────
+        AgentResolverService,
+
+        // ─── Task 12: Agent auto-resolution (legacy — used by AgentsController) ─
         AgentResolutionService,
 
         // ─── Chat sessions ───────────────────────────────────────────────────
