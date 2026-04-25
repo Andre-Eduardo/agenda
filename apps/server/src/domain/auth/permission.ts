@@ -33,6 +33,7 @@ export enum AppointmentPermission {
 
 export enum AppointmentReminderPermission {
     VIEW = 'appointment-reminder:view',
+    DISPATCH = 'appointment-reminder:dispatch',
 }
 
 export enum ClinicReminderConfigPermission {

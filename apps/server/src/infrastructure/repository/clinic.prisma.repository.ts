@@ -22,6 +22,13 @@ export class ClinicPrismaRepository extends PrismaRepository implements ClinicRe
         return clinic === null ? null : this.mapper.toDomain(clinic);
     }
 
+    async findAllActive(): Promise<Clinic[]> {
+        const clinics = await this.prisma.clinic.findMany({
+            where: {deletedAt: null},
+        });
+        return clinics.map((clinic) => this.mapper.toDomain(clinic));
+    }
+
     async save(clinic: Clinic): Promise<void> {
         const data = this.mapper.toPersistence(clinic);
         await this.prisma.clinic.upsert({
