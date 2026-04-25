@@ -33,6 +33,7 @@ import {KnowledgeBaseModule} from './knowledge-base/knowledge-base.module';
 import {AgentModule} from './agent/agent.module';
 import {ImportedDocumentModule} from './imported-document/imported-document.module';
 import {ClinicalDocumentModule} from './clinical-document/clinical-document.module';
+import {SubscriptionModule} from './subscription/subscription.module';
 
 const exceptionFilters: Provider[] = [
     {
@@ -104,6 +105,7 @@ const guards: Provider[] = [
         AgentModule,
         ImportedDocumentModule,
         ClinicalDocumentModule,
+        SubscriptionModule,
     ],
     providers: [...exceptionFilters, ...pipes, ...interceptors, ...guards],
 })

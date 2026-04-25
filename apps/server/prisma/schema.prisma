@@ -134,6 +134,8 @@ model Clinic {
   draftEvolutions           DraftEvolution[]
   clinicalDocuments         ClinicalDocument[]
   clinicalDocumentTemplates ClinicalDocumentTemplate[]
+  professionalSubscriptions ProfessionalSubscription[]
+  usageRecords              UsageRecord[]
 
   @@map("clinic")
 }
@@ -190,6 +192,10 @@ model ClinicMember {
 
   // Extensão profissional (apenas quando role = PROFESSIONAL)
   professional Professional?
+
+  // Assinatura e metering (apenas quando role = PROFESSIONAL)
+  subscription ProfessionalSubscription?
+  usageRecords UsageRecord[]
 
   // Acesso e configurações pessoais
   patientAccesses            ClinicPatientAccess[]
@@ -1528,4 +1534,86 @@ model ClinicalDocument {
   @@index([patientId], name: "clinical_document_patient_idx")
   @@index([createdByMemberId], name: "clinical_document_created_by_idx")
   @@map("clinical_document")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// XX. PLANOS, ASSINATURAS E METERING
+// ─────────────────────────────────────────────────────────────────────────────
+
+enum PlanCode {
+  STARTER
+  CONSULTORIO
+  CLINICA
+  ESPECIALISTA
+
+  @@map("plan_code")
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  SUSPENDED
+  CANCELLED
+  TRIAL
+
+  @@map("subscription_status")
+}
+
+/// Assinatura ativa de um profissional. Cada ClinicMember com role PROFESSIONAL
+/// tem no máximo uma assinatura (relação 1:1 garantida pelo @unique em memberId).
+/// Os limites NÃO ficam aqui — estão em subscription-plans.config.ts (config estática).
+model ProfessionalSubscription {
+  id                 String             @id(map: "professional_subscription_pk") @db.Uuid
+  clinicId           String             @map("clinic_id") @db.Uuid
+  clinic             Clinic             @relation(fields: [clinicId], references: [id])
+  memberId           String             @unique @map("member_id") @db.Uuid
+  member             ClinicMember       @relation(fields: [memberId], references: [id])
+  planCode           PlanCode           @map("plan_code")
+  status             SubscriptionStatus @default(ACTIVE) @map("status")
+  currentPeriodStart DateTime           @map("current_period_start")
+  currentPeriodEnd   DateTime           @map("current_period_end")
+  previousPlanCode   PlanCode?          @map("previous_plan_code")
+  planChangedAt      DateTime?          @map("plan_changed_at")
+
+  createdAt DateTime  @map("created_at")
+  updatedAt DateTime  @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  usageRecords UsageRecord[]
+
+  @@index([clinicId], name: "professional_subscription_clinic_idx")
+  @@index([planCode], name: "professional_subscription_plan_code_idx")
+  @@map("professional_subscription")
+}
+
+/// Contadores de uso mensal por profissional.
+/// Criado no primeiro acesso do mês (lazy) — nunca ao início do período.
+/// Incrementado atomicamente em cada operação relevante.
+model UsageRecord {
+  id             String                   @id(map: "usage_record_pk") @db.Uuid
+  clinicId       String                   @map("clinic_id") @db.Uuid
+  clinic         Clinic                   @relation(fields: [clinicId], references: [id])
+  memberId       String                   @map("member_id") @db.Uuid
+  member         ClinicMember             @relation(fields: [memberId], references: [id])
+  subscriptionId String                   @map("subscription_id") @db.Uuid
+  subscription   ProfessionalSubscription @relation(fields: [subscriptionId], references: [id])
+
+  periodYear  Int @map("period_year")
+  periodMonth Int @map("period_month")
+
+  docsUploaded     Int   @default(0) @map("docs_uploaded")
+  chatMessages     Int   @default(0) @map("chat_messages")
+  clinicalImages   Int   @default(0) @map("clinical_images")
+  storageHotGbUsed Float @default(0) @map("storage_hot_gb_used")
+
+  /// Snapshot do planCode no momento da criação do período.
+  /// Garante rastreabilidade mesmo se o plano mudar durante o mês.
+  planCodeSnapshot PlanCode @map("plan_code_snapshot")
+
+  createdAt DateTime @map("created_at")
+  updatedAt DateTime @map("updated_at")
+
+  @@unique([memberId, periodYear, periodMonth], name: "usage_record_member_period_unique")
+  @@index([clinicId], name: "usage_record_clinic_idx")
+  @@index([memberId], name: "usage_record_member_idx")
+  @@map("usage_record")
 }
