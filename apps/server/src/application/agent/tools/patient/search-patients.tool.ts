@@ -27,7 +27,7 @@ export class SearchPatientsTool implements AgentTool<Input, Output> {
     async execute(input: Input, context: ToolContext): Promise<Output> {
         const result = await this.patientRepository.search(
             {page: 1, limit: input.limit ?? 10, sort: [{key: 'createdAt', direction: 'desc'}]},
-            {term: input.term, professionalId: context.professionalId}
+            {term: input.term, clinicId: context.clinicId}
         );
         return {patients: result.data.map(toPatientView), total: result.totalCount};
     }

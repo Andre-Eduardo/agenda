@@ -1,4 +1,5 @@
 import {Injectable} from '@nestjs/common';
+import {ClinicId} from '../../../domain/clinic/entities';
 import {AiProviderRegistry} from '../../../domain/clinical-chat/ports/ai-provider-registry.port';
 import type {Specialty} from '../../../domain/form-template/entities';
 import type {KnowledgeChunk} from '../../../domain/knowledge-base/entities';
@@ -9,7 +10,8 @@ export type RetrieveKnowledgeChunksInput = {
     topK?: number;
     specialty?: Specialty;
     category?: string;
-    companyId?: string;
+    /** null = global chunks only; ClinicId = clinic-private + global. */
+    clinicId?: ClinicId | null;
     minScore?: number;
 };
 
@@ -42,7 +44,7 @@ export class RetrieveKnowledgeChunksService {
             queryEmbedding,
             specialty: input.specialty,
             category: input.category,
-            companyId: input.companyId,
+            clinicId: input.clinicId,
             topK: input.topK ?? 5,
             minScore: input.minScore ?? 0.5,
         });

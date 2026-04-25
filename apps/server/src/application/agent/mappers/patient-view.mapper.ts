@@ -7,7 +7,7 @@ export type PatientView = {
     phone: string | null;
     gender: string | null;
     birthDate: string | null;
-    professionalId: string | null;
+    clinicId: string;
 };
 
 export function toPatientView(p: Patient): PatientView {
@@ -18,6 +18,6 @@ export function toPatientView(p: Patient): PatientView {
         phone: p.phone?.toString() ?? null,
         gender: p.gender,
         birthDate: p.birthDate?.toISOString() ?? null,
-        professionalId: p.professionalId?.toString() ?? null,
+        clinicId: p.clinicId.toString(),
     };
 }

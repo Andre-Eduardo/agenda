@@ -2,16 +2,16 @@ import {Injectable} from '@nestjs/common';
 import {AgentProposal, AgentProposalType} from '../../../domain/agent-proposal/entities';
 import {AgentProposalRepository} from '../../../domain/agent-proposal/agent-proposal.repository';
 import {AppointmentRepository} from '../../../domain/appointment/appointment.repository';
+import {ClinicMemberId} from '../../../domain/clinic-member/entities';
 import {PatientRepository} from '../../../domain/patient/patient.repository';
 import {PatientId} from '../../../domain/patient/entities';
-import {ProfessionalId} from '../../../domain/professional/entities';
 import {ResourceNotFoundException} from '../../../domain/@shared/exceptions';
 import type {Command} from '../../@shared/application.service';
-import type {Actor} from '../../../domain/@shared/actor';
 
 export type CreateAppointmentProposalInput = {
     patientId: string;
-    professionalId: string;
+    /** Member who will attend the appointment if confirmed. */
+    attendedByMemberId: string;
     startAt: Date;
     endAt: Date;
     type?: string;
@@ -36,21 +36,26 @@ export class CreateAppointmentProposalService {
         private readonly patientRepository: PatientRepository,
     ) {}
 
-    async execute({payload}: Command<CreateAppointmentProposalInput>): Promise<AppointmentProposalResult> {
+    async execute({actor, payload}: Command<CreateAppointmentProposalInput>): Promise<AppointmentProposalResult> {
         const patientId = PatientId.from(payload.patientId);
-        const professionalId = ProfessionalId.from(payload.professionalId);
+        const attendedByMemberId = ClinicMemberId.from(payload.attendedByMemberId);
 
-        const patient = await this.patientRepository.findById(patientId);
+        const patient = await this.patientRepository.findById(patientId, actor.clinicId);
         if (!patient) {
             throw new ResourceNotFoundException('Patient not found.', payload.patientId);
         }
 
-        const conflicts = await this.appointmentRepository.findConflicts(professionalId, payload.startAt, payload.endAt);
+        const conflicts = await this.appointmentRepository.findConflicts(
+            attendedByMemberId,
+            payload.startAt,
+            payload.endAt,
+        );
         const hasConflict = conflicts.length > 0;
 
         const preview: Record<string, unknown> = {
             patientId: payload.patientId,
             patientName: patient.name,
+            attendedByMemberId: payload.attendedByMemberId,
             startAt: payload.startAt.toISOString(),
             endAt: payload.endAt.toISOString(),
             type: payload.type ?? 'FOLLOW_UP',
@@ -59,14 +64,15 @@ export class CreateAppointmentProposalService {
         };
 
         const proposal = AgentProposal.create({
-            professionalId,
+            clinicId: actor.clinicId,
+            createdByMemberId: actor.clinicMemberId,
             patientId: payload.patientId,
             sessionId: payload.sessionId ?? null,
             messageId: payload.messageId ?? null,
             type: AgentProposalType.APPOINTMENT,
             payload: {
                 patientId: payload.patientId,
-                professionalId: payload.professionalId,
+                attendedByMemberId: payload.attendedByMemberId,
                 startAt: payload.startAt.toISOString(),
                 endAt: payload.endAt.toISOString(),
                 type: payload.type ?? 'FOLLOW_UP',

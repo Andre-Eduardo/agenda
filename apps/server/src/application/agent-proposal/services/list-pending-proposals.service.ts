@@ -1,10 +1,10 @@
 import {Injectable} from '@nestjs/common';
 import {AgentProposalRepository} from '../../../domain/agent-proposal/agent-proposal.repository';
 import {AgentProposalStatus} from '../../../domain/agent-proposal/entities';
-import {ProfessionalId} from '../../../domain/professional/entities';
+import {ClinicId} from '../../../domain/clinic/entities';
 import type {Command} from '../../@shared/application.service';
 
-export type ListPendingProposalsInput = {professionalId: string};
+export type ListPendingProposalsInput = {clinicId: string};
 export type ProposalSummary = {
     id: string;
     type: string;
@@ -24,7 +24,7 @@ export class ListPendingProposalsService {
         const result = await this.proposalRepository.search(
             {page: 1, limit: 50, sort: [{key: 'createdAt', direction: 'desc'}]},
             {
-                professionalId: ProfessionalId.from(payload.professionalId),
+                clinicId: ClinicId.from(payload.clinicId),
                 status: AgentProposalStatus.PENDING,
             },
         );

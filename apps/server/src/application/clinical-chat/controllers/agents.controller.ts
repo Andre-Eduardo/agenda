@@ -1,38 +1,37 @@
 import {Controller, Get} from '@nestjs/common';
 import {ApiTags} from '@nestjs/swagger';
+import {z} from 'zod';
 import {Actor} from '../../../domain/@shared/actor';
 import {ClinicalChatPermission} from '../../../domain/auth';
+import {ClinicMemberId} from '../../../domain/clinic-member/entities';
+import {AgentMappingRule} from '../../../domain/clinical-chat/agent-resolution.config';
+import {AiAgentProfileRepository} from '../../../domain/clinical-chat/ai-agent-profile.repository';
 import {Authorize} from '../../@shared/auth';
 import {RequestActor} from '../../@shared/auth/request-actor.decorator';
 import {ApiOperation} from '../../@shared/openapi/decorators';
 import {ValidatedParam} from '../../@shared/validation';
-import {z} from 'zod';
 import {AiAgentProfileDto} from '../dtos';
-import {AiAgentProfileRepository} from '../../../domain/clinical-chat/ai-agent-profile.repository';
 import {AgentResolutionService} from '../services';
-import {ProfessionalId} from '../../../domain/professional/entities';
-import {AgentMappingRule} from '../../../domain/clinical-chat/agent-resolution.config';
 
 /**
- * Expõe o catálogo de AgentProfiles e suporte à resolução automática de agente.
+ * Catalog of AgentProfiles and support for the auto-resolution endpoint.
  *
- * Task 12: A seleção de agente é feita automaticamente pelo backend com base
- * na especialidade do profissional. O frontend não exibe dropdown de seleção manual.
+ * Agent selection happens server-side based on the calling member's
+ * specialty — there's no manual dropdown on the frontend.
  */
 @ApiTags('Agents')
 @Controller('agents')
 export class AgentsController {
     constructor(
         private readonly agentProfileRepository: AiAgentProfileRepository,
-        private readonly agentResolutionService: AgentResolutionService
+        private readonly agentResolutionService: AgentResolutionService,
     ) {}
 
     @ApiOperation({
         summary: 'Lists all active AI agent profiles',
         description:
             'Returns the versioned catalog of active clinical AI agent profiles. ' +
-            'O agente ativo de uma sessão é selecionado automaticamente pelo backend ' +
-            'com base na especialidade do profissional — não há seleção manual pelo usuário.',
+            'The active agent for a session is selected automatically server-side based on the member\'s specialty.',
         responses: [{status: 200, description: 'List of active agent profiles', type: AiAgentProfileDto, isArray: true}],
     })
     @Authorize(ClinicalChatPermission.VIEW)
@@ -43,37 +42,35 @@ export class AgentsController {
     }
 
     @ApiOperation({
-        summary: 'Resolves the AI agent that would be used for a given professional',
+        summary: 'Resolve the AI agent for a given clinic member',
         description:
-            'Pré-visualiza o agente que seria selecionado automaticamente para o profissional informado. ' +
-            'Use este endpoint para exibir "Agente ativo: {agentName}" antes de iniciar o chat.',
+            'Previews which agent would be picked automatically for the given member. ' +
+            'Use this to render "Active agent: {agentName}" before starting a chat session.',
         responses: [
             {
                 status: 200,
-                description: 'Resolved agent profile for the professional',
+                description: 'Resolved agent profile for the member',
                 type: AiAgentProfileDto,
             },
         ],
     })
     @Authorize(ClinicalChatPermission.VIEW)
-    @Get('resolve/:professionalId')
-    async resolveAgentForProfessional(
+    @Get('resolve/:clinicMemberId')
+    async resolveAgentForMember(
         @RequestActor() _actor: Actor,
         @ValidatedParam(
-            'professionalId',
-            z.string().uuid().transform((v) => ProfessionalId.from(v))
+            'clinicMemberId',
+            z.string().uuid().transform((v) => ClinicMemberId.from(v)),
         )
-        professionalId: ProfessionalId
+        clinicMemberId: ClinicMemberId,
     ): Promise<AiAgentProfileDto> {
-        const agent = await this.agentResolutionService.resolveForProfessional(professionalId);
+        const agent = await this.agentResolutionService.resolveForMember(clinicMemberId);
         return new AiAgentProfileDto(agent);
     }
 
     @ApiOperation({
         summary: 'Lists the active agent mapping rules (for diagnostics)',
-        description:
-            'Retorna as regras de correspondência entre especialidade profissional e agente clínico. ' +
-            'Útil para diagnóstico e documentação da lógica de resolução automática.',
+        description: 'Returns the rules matching member specialty to clinical agent. Useful for debugging the auto-resolution logic.',
         responses: [{status: 200, description: 'Active mapping rules ordered by priority'}],
     })
     @Authorize(ClinicalChatPermission.VIEW)

@@ -32,7 +32,7 @@ export class ListPatientRecordsTool implements AgentTool<Input, Output> {
             {page: 1, limit: input.limit ?? 10, sort: [{key: 'eventDate', direction: 'desc'}]},
             {
                 patientId: PatientId.from(input.patientId),
-                professionalId: context.professionalId,
+                clinicId: context.clinicId,
                 dateStart: input.dateStart ? new Date(input.dateStart) : undefined,
                 dateEnd: input.dateEnd ? new Date(input.dateEnd) : undefined,
             }

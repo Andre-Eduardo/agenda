@@ -29,7 +29,6 @@ export class ProposeCancelAppointmentTool implements AgentTool<Input, Appointmen
             actor: context.actor,
             payload: {
                 appointmentId: input.appointmentId,
-                professionalId: context.professionalId?.toString() ?? context.actor.userId.toString(),
                 reason: input.reason,
                 sessionId: context.sessionId?.toString(),
                 messageId: context.messageId,

@@ -1,7 +1,5 @@
 import {Inject, Injectable, Optional} from '@nestjs/common';
 import {ResourceNotFoundException, PreconditionException} from '../../../domain/@shared/exceptions';
-import type {PatientId} from '../../../domain/patient/entities';
-import type {ProfessionalId} from '../../../domain/professional/entities';
 import {AgentLoopService} from '../../agent/core/agent-loop.service';
 
 /**
@@ -115,8 +113,9 @@ export class SendChatMessageService
         }
 
         const patientId = session.patientId;
-        // O professionalId vem da sessão — foi validado no momento da criação
-        const professionalId = session.professionalId;
+        // memberId comes from the session — validated at creation time.
+        const memberId = session.memberId;
+        const clinicId = session.clinicId;
 
         // ─── 2. Resolver perfil do agente ────────────────────────────────────
         const agentProfile = session.agentProfileId
@@ -125,8 +124,9 @@ export class SendChatMessageService
 
         // ─── 3. Obter snapshot clínico ───────────────────────────────────────
         const {snapshot} = await this.getSnapshotService.execute({
+            clinicId,
             patientId,
-            professionalId,
+            memberId,
             autoRebuildIfStale: true,
         });
 
@@ -205,6 +205,7 @@ export class SendChatMessageService
 
         // ─── 7. Criar log de interação (PENDING) ──────────────────────────────
         const interactionLog = ClinicalChatInteractionLog.create({
+            clinicId,
             sessionId: payload.sessionId,
             userMessageId: '', // será preenchido após persistência da mensagem
             assistantMessageId: null,
@@ -261,7 +262,8 @@ export class SendChatMessageService
                     messages,
                     context: {
                         actor,
-                        professionalId,
+                        clinicId,
+                        memberId,
                         patientId,
                         sessionId: payload.sessionId,
                     },

@@ -29,9 +29,14 @@ export class GetPatientProfileTool implements AgentTool<Input, Output> {
     constructor(private readonly getSnapshotService: GetContextSnapshotService) {}
 
     async execute(input: Input, context: ToolContext): Promise<Output> {
+        if (!context.clinicId) {
+            return {patientFacts: null, criticalContext: null, timelineSummary: null, isStale: false};
+        }
+
         const {snapshot, isStale} = await this.getSnapshotService.execute({
             patientId: PatientId.from(input.patientId),
-            professionalId: context.professionalId ?? null,
+            clinicId: context.clinicId,
+            memberId: context.memberId ?? null,
             autoRebuildIfStale: false,
         });
 

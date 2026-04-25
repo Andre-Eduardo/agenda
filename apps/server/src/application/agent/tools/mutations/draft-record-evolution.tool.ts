@@ -2,11 +2,12 @@ import {Injectable} from '@nestjs/common';
 import {z} from 'zod';
 import type {AgentTool, ToolContext} from '../../interfaces';
 import {AGENT_TOOL_TOKEN} from '../../interfaces';
+import {ProfessionalRepository} from '../../../../domain/professional/professional.repository';
 import {RecordRepository} from '../../../../domain/record/record.repository';
 import {Record, RecordSource} from '../../../../domain/record/entities';
 import {PatientId} from '../../../../domain/patient/entities';
-import {ProfessionalId} from '../../../../domain/professional/entities';
 import {EventDispatcher} from '../../../../domain/event';
+import {PreconditionException} from '../../../../domain/@shared/exceptions';
 
 const schema = z.object({
     patientId: z.string().uuid().describe('UUID of the patient this evolution is for.'),
@@ -38,15 +39,29 @@ export class DraftRecordEvolutionTool implements AgentTool<Input, Output> {
 
     constructor(
         private readonly recordRepository: RecordRepository,
+        private readonly professionalRepository: ProfessionalRepository,
         private readonly eventDispatcher: EventDispatcher,
     ) {}
 
     async execute(input: Input, context: ToolContext): Promise<Output> {
-        const professionalId = context.professionalId ?? ProfessionalId.from(context.actor.userId.toString());
+        const memberId = context.memberId ?? context.actor.clinicMemberId;
+        const clinicId = context.clinicId ?? context.actor.clinicId;
+
+        // The Record's responsibleProfessional is derived from the chat member.
+        // If the member doesn't have a Professional 1:1 (e.g. SECRETARY chatting),
+        // we can't draft a clinical record on their behalf — fail loudly.
+        const professional = await this.professionalRepository.findByClinicMemberId(memberId);
+        if (professional === null) {
+            throw new PreconditionException(
+                'Cannot draft a clinical record on behalf of a non-PROFESSIONAL member.',
+            );
+        }
 
         const record = Record.create({
+            clinicId,
             patientId: PatientId.from(input.patientId),
-            professionalId,
+            createdByMemberId: memberId,
+            responsibleProfessionalId: professional.id,
             title: input.title ?? 'AI-assisted evolution (draft)',
             subjective: input.subjective ?? null,
             objective: input.objective ?? null,

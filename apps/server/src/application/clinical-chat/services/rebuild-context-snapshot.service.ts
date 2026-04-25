@@ -1,13 +1,14 @@
 import {Injectable} from '@nestjs/common';
+import {Actor} from '../../../domain/@shared/actor';
+import {ClinicMemberId} from '../../../domain/clinic-member/entities';
 import {PatientId} from '../../../domain/patient/entities';
-import {ProfessionalId} from '../../../domain/professional/entities';
 import {ApplicationService, Command} from '../../@shared/application.service';
 import {BuildPatientContextService, type PatientContextOutput} from './build-patient-context.service';
 import {IndexPatientChunksService, type IndexPatientChunksOutput} from './index-patient-chunks.service';
 
 export type RebuildContextSnapshotInput = {
     patientId: PatientId;
-    professionalId?: ProfessionalId | null;
+    memberId?: ClinicMemberId | null;
     reindex?: boolean;
 };
 
@@ -17,12 +18,8 @@ export type RebuildContextSnapshotOutput = {
 };
 
 /**
- * Orquestra a reconstrução completa do contexto clínico e re-indexação de chunks.
- * Endpoint para forçar atualização quando records ou formulários mudam.
- *
- * Pode ser chamado:
- * - Manualmente pelo profissional
- * - Automaticamente via event listener quando Record ou PatientForm é criado/atualizado
+ * Orchestrates full reconstruction of a patient's clinical context and
+ * re-indexes chunks. Endpoint to force a refresh when records/forms change.
  */
 @Injectable()
 export class RebuildContextSnapshotService
@@ -30,16 +27,21 @@ export class RebuildContextSnapshotService
 {
     constructor(
         private readonly buildContextService: BuildPatientContextService,
-        private readonly indexChunksService: IndexPatientChunksService
+        private readonly indexChunksService: IndexPatientChunksService,
     ) {}
 
-    async execute({payload}: Command<RebuildContextSnapshotInput>): Promise<RebuildContextSnapshotOutput> {
+    async execute({
+        actor,
+        payload,
+    }: Command<RebuildContextSnapshotInput, Actor>): Promise<RebuildContextSnapshotOutput> {
         const context = await this.buildContextService.execute({
+            clinicId: actor.clinicId,
             patientId: payload.patientId,
-            professionalId: payload.professionalId ?? null,
+            memberId: payload.memberId ?? null,
         });
 
         const indexing = await this.indexChunksService.execute({
+            clinicId: actor.clinicId,
             patientId: payload.patientId,
             context,
             reindex: payload.reindex ?? true,

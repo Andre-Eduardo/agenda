@@ -2,8 +2,8 @@ import {ApiProperty, ApiSchema} from '@nestjs/swagger';
 import {z} from 'zod';
 import {EntityDto} from '../../@shared/dto';
 import {ChatSessionStatus} from '../../../domain/clinical-chat/entities';
+import {ClinicMemberId} from '../../../domain/clinic-member/entities';
 import {PatientId} from '../../../domain/patient/entities';
-import {ProfessionalId} from '../../../domain/professional/entities';
 import {entityId, pagination} from '../../@shared/validation/schemas';
 import {createZodDto} from '../../@shared/validation/dto';
 import type {PatientChatSession, AiAgentProfile} from '../../../domain/clinical-chat/entities';
@@ -11,32 +11,31 @@ import type {PatientChatSession, AiAgentProfile} from '../../../domain/clinical-
 @ApiSchema({name: 'PatientChatSession'})
 export class PatientChatSessionDto extends EntityDto {
     @ApiProperty({format: 'uuid'})
-    patientId: string;
+    clinicId: string;
 
     @ApiProperty({format: 'uuid'})
-    professionalId: string;
+    patientId: string;
+
+    @ApiProperty({format: 'uuid', description: 'ClinicMember owner of the session'})
+    memberId: string;
 
     @ApiProperty({format: 'uuid', nullable: true})
     agentProfileId: string | null;
 
     /**
-     * Nome do agente resolvido automaticamente com base na especialidade do profissional.
-     * Exemplo: "Agente — Neurologia", "Agente — Psicologia Clínica".
-     * Preenchido na criação da sessão; pode ser null em listagens históricas sem join.
+     * Agent display name resolved server-side based on the member's
+     * professional specialty. Example: "Agente — Neurologia".
+     * Filled on session creation; may be null on history listings without join.
      */
     @ApiProperty({
         nullable: true,
         description:
-            'Nome do agente selecionado automaticamente com base no perfil profissional. ' +
-            'Exibir na interface como "Agente ativo: {agentName}".',
+            'Agent name resolved automatically from the member\'s professional profile. ' +
+            'Render as "Active agent: {agentName}".',
     })
     agentName: string | null;
 
-    /**
-     * Slug do agente — identificador legível por humanos.
-     * Exemplo: "neurologia", "psicologia-clinica".
-     */
-    @ApiProperty({nullable: true, description: 'Slug legível do agente ativo'})
+    @ApiProperty({nullable: true, description: 'Human-readable agent slug'})
     agentSlug: string | null;
 
     @ApiProperty({nullable: true})
@@ -53,8 +52,9 @@ export class PatientChatSessionDto extends EntityDto {
 
     constructor(entity: PatientChatSession, resolvedAgent?: AiAgentProfile | null) {
         super(entity);
+        this.clinicId = entity.clinicId.toString();
         this.patientId = entity.patientId.toString();
-        this.professionalId = entity.professionalId.toString();
+        this.memberId = entity.memberId.toString();
         this.agentProfileId = entity.agentProfileId?.toString() ?? null;
         this.agentName = resolvedAgent?.name ?? null;
         this.agentSlug = resolvedAgent?.slug ?? null;
@@ -66,12 +66,12 @@ export class PatientChatSessionDto extends EntityDto {
 }
 
 /**
- * Task 12 — agentProfileId removido da criação manual.
- * O agente é resolvido automaticamente pelo backend com base no perfil do profissional.
+ * Agent is resolved automatically server-side based on the member's specialty,
+ * so the client only needs to pick the patient. The owning member is taken
+ * from the actor.
  */
 export const createChatSessionSchema = z.object({
     patientId: entityId(PatientId),
-    professionalId: entityId(ProfessionalId),
     title: z.string().max(255).optional(),
 });
 
@@ -79,7 +79,7 @@ export class CreateChatSessionDto extends createZodDto(createChatSessionSchema) 
 
 export const listChatSessionsSchema = pagination(['createdAt', 'updatedAt', 'lastActivityAt'] as const).extend({
     patientId: entityId(PatientId).optional(),
-    professionalId: entityId(ProfessionalId).optional(),
+    memberId: entityId(ClinicMemberId).optional(),
     status: z.nativeEnum(ChatSessionStatus).optional(),
 });
 
