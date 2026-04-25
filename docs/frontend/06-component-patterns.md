@@ -32,9 +32,9 @@ Reusable components used across multiple modules:
 
 Feature-specific components scoped to a single module. They are never imported by other modules.
 
-### 4. Mantine Components
+### 4. shadcn/ui Components
 
-All primitive UI elements (buttons, inputs, tables, etc.) come from the **Mantine** library. Never build raw HTML equivalents for things the library already provides.
+All primitive UI elements (buttons, inputs, tables, badges, dialogs, etc.) come from **shadcn/ui** (`src/components/ui/`). Never build raw HTML equivalents for things the library already provides. Clinical-domain components live in `src/components/clinical/` (see [design-system.md § 13](./design-system.md#13-mapa-de-componentes-clínicos-customizados)).
 
 ---
 
@@ -44,7 +44,7 @@ All primitive UI elements (buttons, inputs, tables, etc.) come from the **Mantin
 |--------|-----------|---------|
 | Component directory | PascalCase + `index.tsx` | `ItemForm/index.tsx` |
 | Hook files | camelCase + `use` prefix | `useCan.ts`, `useFileUpload.ts` |
-| Style files | `styles.ts` (co-located) | `ItemForm/styles.ts` |
+| Style utilities | `cn()` + Tailwind classes inline | see `@/lib/utils` |
 | Translation key files | `translations.ts` (co-located) | `ItemForm/translations.ts` |
 | Route definitions | `pages/routes.ts` per module | `feature/pages/routes.ts` |
 | Type exports | PascalCase + descriptive suffix | `ItemFormFields`, `ItemFormRef` |

@@ -10,7 +10,11 @@
 | Router | TanStack Router | 1.125.6 |
 | Server State | TanStack React Query | 5.71.10 |
 | UI State | Zustand | 5.0.5 |
-| UI Component Library | Mantine | 8.x (Beta) |
+| UI Components | shadcn/ui + Radix UI | — (owned source) |
+| CSS Framework | Tailwind CSS | v4 |
+| Charts | Recharts | — |
+| Calendar | react-day-picker | v9+ |
+| Icons | Lucide Icons | — |
 | Forms | React Hook Form | 7.66.1 |
 | Validation | Zod | 3.24.2 |
 | i18n | i18next + react-i18next | 24.x / 15.x |
@@ -33,7 +37,7 @@ apps/web/
     ├── routeTree.gen.ts         # AUTO-GENERATED — do not edit manually
     ├── hooks/                   # App-level custom hooks (useCan, useFileUpload, ...)
     ├── store/                   # Zustand stores (appStore, devtoolsStore)
-    ├── styles/                  # Theme color definitions (lightMode.ts, darkMode.ts)
+    ├── app/                     # globals.css — Tailwind @theme + CSS variable tokens
     ├── translations/            # i18n setup + locale JSON files
     │   ├── i18n.ts             # i18next instance configuration
     │   ├── pt-BR/              # Portuguese (default) translation namespaces
@@ -69,13 +73,11 @@ modules/{module}/
 │   ├── routes.ts               # Route definitions for this module
 │   └── {PageName}/
 │       ├── index.tsx           # Page component + Route definition
-│       ├── styles.ts           # CSS-in-JS style objects for this page
 │       ├── translations.ts     # Translation key constants (namespace prefix)
 │       └── index.test.tsx      # Page tests
 └── components/
     └── {ComponentName}/
         ├── index.tsx           # Component implementation
-        ├── styles.ts           # CSS-in-JS style objects
         ├── translations.ts     # Translation key constants
         └── index.test.tsx      # Component tests
 ```
@@ -85,18 +87,16 @@ modules/{module}/
 The provider hierarchy from outermost to innermost:
 
 ```tsx
-<ThemeProvider colorModes={...} i18n={i18nInstance}>
+<ThemeProvider>                      {/* sets/removes `dark` class on <html> from Zustand */}
   <QueryClientProvider client={queryClient}>
     <QueryErrorHandler />          {/* global React Query error boundary */}
-    <SidebarProvider>
-      <RouterProvider router={router} context={{auth}} />
-    </SidebarProvider>
+    <RouterProvider router={router} context={{auth}} />
   </QueryClientProvider>
 </ThemeProvider>
 ```
 
 Key points:
-- `ThemeProvider` (from the UI library) owns theme switching and i18n integration.
+- `ThemeProvider` reads `colorMode` from Zustand and toggles the `dark` class on `<html>`. Shadcn/ui dark mode uses `@custom-variant dark (&:is(.dark *))`.
 - `QueryErrorHandler` sits here to catch unhandled query errors globally.
 - `RouterProvider` receives `auth` from Zustand as router context so route guards can check it.
 

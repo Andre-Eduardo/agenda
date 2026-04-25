@@ -6,17 +6,19 @@
 |---------|------|
 | **React Hook Form** 7.x | Form state, registration, submission, dirty tracking |
 | **Zod** 3.x | Schema definition and validation rules |
-| **`useValidatedForm`** (UI library hook) | Wraps `useForm` with Zod resolver integration |
-| **`Controller`** (RHF) | Bridge for controlled UI library components |
+| **`@hookform/resolvers/zod`** | Wires Zod schema as RHF resolver |
+| **shadcn/ui** `Form` components | Accessible form primitives with error binding |
+| **`Controller`** (RHF) | Bridge for controlled shadcn/ui components |
 
 ---
 
-## `useValidatedForm` Hook
+## Form Setup
 
-The primary form hook. Wraps React Hook Form's `useForm` with Zod schema auto-wiring:
+React Hook Form is used directly with the Zod resolver:
 
 ```ts
-import {useValidatedForm} from '@ui-lib/hooks/useValidatedForm';
+import {useForm} from 'react-hook-form';
+import {zodResolver} from '@hookform/resolvers/zod';
 
 const {
   handleSubmit,
@@ -24,10 +26,10 @@ const {
   register,
   control,
   setError,
-} = useValidatedForm<FormFields>({
-  mode: 'onSubmit',      // validate on submit (lazy — no per-keystroke noise)
-  schema: zodSchema,     // Zod schema — resolver is auto-configured
-  defaultValues: data,   // optional pre-fill for edit mode
+} = useForm<FormFields>({
+  mode: 'onSubmit',            // validate on submit (lazy — no per-keystroke noise)
+  resolver: zodResolver(schema),
+  defaultValues: data,         // optional pre-fill for edit mode
 });
 ```
 
@@ -75,60 +77,60 @@ export type FormFields = z.infer<ReturnType<typeof useSchema>>;
 
 ## Uncontrolled Text Fields (`register`)
 
-For standard text inputs, use `register` directly:
+For standard text inputs, use `register` directly with shadcn/ui `Input` and `Label`:
 
 ```tsx
-<TextField
-  {...register('name')}
-  label={t('form.field.name.label')}
-  placeholder={t('form.field.name.placeholder')}
-  invalid={errors.name !== undefined}
-  hint={errors.name?.message}
-/>
+import {Input} from '@/components/ui/input';
+import {Label} from '@/components/ui/label';
+
+<div className="flex flex-col gap-1">
+  <Label htmlFor="name">{t('form.field.name.label')}</Label>
+  <Input
+    id="name"
+    {...register('name')}
+    placeholder={t('form.field.name.placeholder')}
+    aria-invalid={errors.name !== undefined}
+  />
+  {errors.name && (
+    <p className="text-[var(--color-warning)] text-xs">{errors.name.message}</p>
+  )}
+</div>
 ```
 
-Pattern: `invalid` receives a boolean, `hint` receives the error message string.
+Use `--color-warning` (not `--color-danger`) for form validation errors.
 
 ---
 
 ## Controlled Fields (`Controller`)
 
-UI library components that use custom event handlers (e.g., `onValueChange` instead of `onChange`) require `Controller`:
+shadcn/ui components with non-standard event handlers require `Controller`:
 
 ```tsx
 import {Controller} from 'react-hook-form';
+import {Select, SelectTrigger, SelectContent, SelectItem, SelectValue} from '@/components/ui/select';
+import {Textarea} from '@/components/ui/textarea';
 
 // Select / dropdown
 <Controller
   name="categoryId"
   control={control}
   render={({field}) => (
-    <SelectField
-      {...field}
-      label={t('form.field.category.label')}
-      invalid={errors.categoryId !== undefined}
-      hint={errors.categoryId?.message}
-      value={field.value}
-      onValueChange={(value) => field.onChange(value)}
-    >
-      {options.map(opt => <SelectItem key={opt.value} {...opt} />)}
-    </SelectField>
-  )}
-/>
-
-// Number input
-<Controller
-  name="code"
-  control={control}
-  render={({field}) => (
-    <NumberField
-      {...field}
-      invalid={errors.code !== undefined}
-      hint={errors.code?.message}
-      minValue={1}
-      label={t('form.field.code.label')}
-      formatOptions={{useGrouping: false, maximumFractionDigits: 0}}
-    />
+    <div className="flex flex-col gap-1">
+      <Label>{t('form.field.category.label')}</Label>
+      <Select value={field.value} onValueChange={field.onChange}>
+        <SelectTrigger aria-invalid={errors.categoryId !== undefined}>
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          {options.map(opt => (
+            <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+      {errors.categoryId && (
+        <p className="text-[var(--color-warning)] text-xs">{errors.categoryId.message}</p>
+      )}
+    </div>
   )}
 />
 
@@ -137,12 +139,13 @@ import {Controller} from 'react-hook-form';
   name="description"
   control={control}
   render={({field}) => (
-    <TextAreaField
-      {...field}
-      height={20}
-      label={t('form.field.description.label')}
-      placeholder={t('form.field.description.placeholder')}
-    />
+    <div className="flex flex-col gap-1">
+      <Label>{t('form.field.description.label')}</Label>
+      <Textarea
+        {...field}
+        placeholder={t('form.field.description.placeholder')}
+      />
+    </div>
   )}
 />
 ```
@@ -151,30 +154,28 @@ import {Controller} from 'react-hook-form';
 
 ## Form Layout
 
+Use plain `<form>` with Tailwind flex/grid layout:
+
 ```tsx
-// Full form container
-<Form gap={8} onSubmit={submitForm}>
+<form onSubmit={submitForm} className="flex flex-col gap-[var(--gap-elements)]">
 
-  // Vertical stack of fields
-  <FormGroup direction="column">
+  {/* Vertical stack of fields */}
+  <div className="flex flex-col gap-[var(--gap-elements)]">
 
-    // Horizontal row, flex-ratio columns, collapses vertically at 'lg'
-    <FormGroup direction="row" columnsFlex={[3, 2]} verticalBreakpoint="lg">
+    {/* Horizontal row, collapses to column on small screens */}
+    <div className="grid grid-cols-1 lg:grid-cols-[3fr_2fr] gap-[var(--gap-elements)]">
+      {/* inputs */}
+    </div>
 
-      // No wrap inner row
-      <FormGroup direction="row" columnsFlex={[1, 0]} noWrap>
-        {/* inputs */}
-      </FormGroup>
-
-    </FormGroup>
-
-    // Section with title separator
-    <FormGroup direction="column" header={{title: t('form.section.files'), separator: true}}>
+    {/* Section with separator */}
+    <div className="flex flex-col gap-[var(--gap-elements)]">
+      <Separator />
+      <p className="text-[var(--color-text-secondary)] text-sm">{t('form.section.files')}</p>
       <Uploader files={files} onChange={handleFilesChange} />
-    </FormGroup>
+    </div>
 
-  </FormGroup>
-</Form>
+  </div>
+</form>
 ```
 
 ---
@@ -265,29 +266,28 @@ Zod validation runs inside `handleSubmit(onSubmit)` before `onSubmit` is called.
 For forms that don't need extraction (e.g., sign-in), everything lives in the page:
 
 ```tsx
-const {handleSubmit, formState: {errors}, register} = useValidatedForm<Fields>({
+import {useForm} from 'react-hook-form';
+import {zodResolver} from '@hookform/resolvers/zod';
+import {Button} from '@/components/ui/button';
+import {Input} from '@/components/ui/input';
+import {Label} from '@/components/ui/label';
+
+const {handleSubmit, formState: {errors}, register} = useForm<Fields>({
   mode: 'onSubmit',
-  schema,
+  resolver: zodResolver(schema),
 });
 
-<Form onSubmit={handleSubmit(handleLogin)}>
-  <FormGroup direction="column">
-    <TextField
-      {...register('username')}
-      label="Username"
-      invalid={errors.username !== undefined}
-      hint={errors.username?.message}
-    />
-    <TextField
-      {...register('password')}
-      type="password"
-      label="Password"
-      invalid={errors.password !== undefined}
-      hint={errors.password?.message}
-    />
-    <Button type="submit" variant="primary" disabled={isPending}>
-      Login
-    </Button>
-  </FormGroup>
-</Form>
+<form onSubmit={handleSubmit(handleLogin)} className="flex flex-col gap-4">
+  <div className="flex flex-col gap-1">
+    <Label htmlFor="username">Username</Label>
+    <Input id="username" {...register('username')} aria-invalid={!!errors.username} />
+    {errors.username && <p className="text-[var(--color-warning)] text-xs">{errors.username.message}</p>}
+  </div>
+  <div className="flex flex-col gap-1">
+    <Label htmlFor="password">Password</Label>
+    <Input id="password" type="password" {...register('password')} aria-invalid={!!errors.password} />
+    {errors.password && <p className="text-[var(--color-warning)] text-xs">{errors.password.message}</p>}
+  </div>
+  <Button type="submit" disabled={isPending}>Login</Button>
+</form>
 ```

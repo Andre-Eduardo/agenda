@@ -140,38 +140,34 @@ Value objects are available as a dependency for shared domain logic. For form-le
 
 ---
 
-## UI Library Package (`@ui-lib`)
+## UI Components — shadcn/ui
 
-The UI library is an **external npm package** (not a workspace package) that provides the entire component and styling system. Key import paths:
+UI components are **not an external package**. shadcn/ui installs component source files directly into `src/components/ui/`. They are owned code.
 
 ```ts
-// Layout and style system
-import {Box} from '@ui-lib/components/Box';
-import type {BoxStyle} from '@ui-lib/components/Box';
+// Primitive components
+import {Button} from '@/components/ui/button';
+import {Input} from '@/components/ui/input';
+import {Badge} from '@/components/ui/badge';
+import {Card, CardHeader, CardContent, CardFooter} from '@/components/ui/card';
+import {Dialog, DialogContent, DialogHeader, DialogTitle} from '@/components/ui/dialog';
+import {Select, SelectTrigger, SelectContent, SelectItem, SelectValue} from '@/components/ui/select';
+import {Textarea} from '@/components/ui/textarea';
+import {Label} from '@/components/ui/label';
+import {Skeleton} from '@/components/ui/skeleton';
+import {Separator} from '@/components/ui/separator';
+import {Tabs, TabsList, TabsTrigger, TabsContent} from '@/components/ui/tabs';
+import {Table, TableHeader, TableBody, TableRow, TableHead, TableCell} from '@/components/ui/table';
+import {Tooltip, TooltipTrigger, TooltipContent} from '@/components/ui/tooltip';
+import {DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem} from '@/components/ui/dropdown-menu';
+import {Sheet, SheetContent, SheetHeader, SheetTitle} from '@/components/ui/sheet';
+import {ScrollArea} from '@/components/ui/scroll-area';
+import {Avatar, AvatarImage, AvatarFallback} from '@/components/ui/avatar';
 
-// Theme and providers
-import {ThemeProvider} from '@ui-lib/ThemeProvider';
-import {createThemeCache} from '@ui-lib/components/Theme';
-import {useTheme} from '@ui-lib/components/Theme';
-import type {ColorMode} from '@ui-lib/styles/theme/colors';
-import type {SupportedColorMode} from '@ui-lib/styles/theme/colors';
-
-// Sidebar system
-import {SidebarProvider} from '@ui-lib/components/Sidebar/SidebarProvider';
-import {Sidebar, SidebarItem, SidebarItemsGroup, SidebarSubItem, useSidebar} from '@ui-lib/components/Sidebar';
-
-// Hooks
-import {useValidatedForm} from '@ui-lib/hooks/useValidatedForm';
-import {useTranslation} from '@ui-lib/hooks/useTranslation';
-import {useMediaQuery} from '@ui-lib/hooks/useMediaQuery';
-import {useNotification} from '@ui-lib/components/Notification';
-
-// i18n resources (merged into app i18next instance)
-import uiPtBr from '@ui-lib/translations/pt-BR';
-import uiEnUs from '@ui-lib/translations/en-US';
-import uiEsEs from '@ui-lib/translations/es-ES';
-import type {SupportedLocales} from '@ui-lib/translations';
-import type {Locale} from '@ui-lib/components/Locale';
+// cn utility (from shadcn/ui setup)
+import {cn} from '@/lib/utils';
 ```
 
-All other UI components (Button, TextField, Table, etc.) follow the same import pattern: `@ui-lib/components/{ComponentName}`.
+Clinical-domain components live in `src/components/clinical/` and are hand-built on top of shadcn/ui primitives. See [design-system.md § 13](./design-system.md#13-mapa-de-componentes-clínicos-customizados).
+
+To add a new shadcn component: `npx shadcn@latest add <component-name>`.
