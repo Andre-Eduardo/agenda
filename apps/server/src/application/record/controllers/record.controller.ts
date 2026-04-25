@@ -11,17 +11,25 @@ import {entityIdParam} from '../../@shared/openapi/params';
 import {ValidatedParam} from '../../@shared/validation';
 import {
     CreateRecordDto,
+    RecordAmendmentDto,
     RecordDto,
+    ReopenRecordBodyDto,
     SearchRecordsDto,
     UpdateRecordInputDto,
     getRecordSchema,
+    reopenRecordBodySchema,
+    reopenRecordSchema,
+    signRecordSchema,
     updateRecordSchema,
 } from '../dtos';
 import {
     CreateRecordService,
     DeleteRecordService,
+    GetRecordAmendmentsService,
     GetRecordService,
+    ReopenRecordService,
     SearchRecordsService,
+    SignRecordService,
     UpdateRecordService,
 } from '../services';
 
@@ -33,7 +41,10 @@ export class RecordController {
         private readonly getRecordService: GetRecordService,
         private readonly searchRecordsService: SearchRecordsService,
         private readonly updateRecordService: UpdateRecordService,
-        private readonly deleteRecordService: DeleteRecordService
+        private readonly deleteRecordService: DeleteRecordService,
+        private readonly signRecordService: SignRecordService,
+        private readonly reopenRecordService: ReopenRecordService,
+        private readonly getRecordAmendmentsService: GetRecordAmendmentsService,
     ) {}
 
     @ApiOperation({
@@ -71,6 +82,49 @@ export class RecordController {
         @ValidatedParam('id', getRecordSchema.shape.id) id: RecordId
     ): Promise<RecordDto> {
         return this.getRecordService.execute({actor, payload: {id}});
+    }
+
+    @ApiOperation({
+        summary: 'Signs and locks a record',
+        parameters: [entityIdParam('Record ID')],
+        responses: [{status: 200, description: 'Record signed', type: RecordDto}],
+    })
+    @Authorize(RecordPermission.UPDATE)
+    @Post(':id/sign')
+    async signRecord(
+        @RequestActor() actor: Actor,
+        @ValidatedParam('id', signRecordSchema.shape.id) id: RecordId
+    ): Promise<RecordDto> {
+        return this.signRecordService.execute({actor, payload: {id}});
+    }
+
+    @ApiOperation({
+        summary: 'Reopens a locked record with justification',
+        parameters: [entityIdParam('Record ID')],
+        responses: [{status: 200, description: 'Record reopened', type: RecordDto}],
+    })
+    @Authorize(RecordPermission.UPDATE)
+    @Post(':id/reopen')
+    async reopenRecord(
+        @RequestActor() actor: Actor,
+        @ValidatedParam('id', reopenRecordSchema.shape.id) id: RecordId,
+        @Body() body: ReopenRecordBodyDto
+    ): Promise<RecordDto> {
+        return this.reopenRecordService.execute({actor, payload: {id, justification: body.justification}});
+    }
+
+    @ApiOperation({
+        summary: 'Lists amendments (reopen history) for a record',
+        parameters: [entityIdParam('Record ID')],
+        responses: [{status: 200, description: 'Amendments list', type: [RecordAmendmentDto]}],
+    })
+    @Authorize(RecordPermission.VIEW)
+    @Get(':id/amendments')
+    async getRecordAmendments(
+        @RequestActor() actor: Actor,
+        @ValidatedParam('id', getRecordSchema.shape.id) id: RecordId
+    ): Promise<RecordAmendmentDto[]> {
+        return this.getRecordAmendmentsService.execute({actor, payload: {id}});
     }
 
     @ApiOperation({

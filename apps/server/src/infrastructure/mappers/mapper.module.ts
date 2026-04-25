@@ -26,6 +26,9 @@ import {PatientContextSnapshotMapper} from './patient-context-snapshot.mapper';
 import {PatientFormMapper} from './patient-form.mapper';
 import {PersonMapper} from './person.mapper';
 import {ProfessionalMapper} from './professional.mapper';
+import {DraftEvolutionMapper} from './draft-evolution.mapper';
+import {ImportedDocumentMapper} from './imported-document.mapper';
+import {RecordAmendmentMapper} from './record-amendment.mapper';
 import {RecordMapper} from './record.mapper';
 import {WorkingHoursMapper} from './working-hours.mapper';
 
@@ -48,6 +51,9 @@ const mappers = [
     MemberBlockMapper,
     // Clinical
     RecordMapper,
+    RecordAmendmentMapper,
+    ImportedDocumentMapper,
+    DraftEvolutionMapper,
     ClinicalProfileMapper,
     PatientAlertMapper,
     // Forms

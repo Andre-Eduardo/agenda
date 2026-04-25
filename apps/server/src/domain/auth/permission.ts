@@ -47,6 +47,12 @@ export enum RecordPermission {
     DELETE = 'record:delete',
 }
 
+export enum ImportedDocumentPermission {
+    VIEW = 'imported-document:view',
+    CREATE = 'imported-document:create',
+    UPDATE = 'imported-document:update',
+}
+
 export enum PersonPermission {
     VIEW = 'person:view',
     CREATE = 'person:create',
@@ -106,6 +112,7 @@ const PERMISSIONS = [
     ...Object.values(PatientPermission),
     ...Object.values(AppointmentPermission),
     ...Object.values(RecordPermission),
+    ...Object.values(ImportedDocumentPermission),
     ...Object.values(PersonPermission),
     ...Object.values(UploadPermission),
     ...Object.values(ClinicalProfilePermission),

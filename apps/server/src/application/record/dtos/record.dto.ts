@@ -92,6 +92,15 @@ export class RecordDto extends EntityDto {
     @ApiProperty({description: 'Indicates if the imported record was manually reviewed and edited'})
     wasHumanEdited: boolean;
 
+    @ApiProperty({description: 'Whether the record is locked (signed)'})
+    isLocked: boolean;
+
+    @ApiProperty({format: 'date-time', nullable: true, description: 'When the record was signed'})
+    signedAt: string | null;
+
+    @ApiProperty({format: 'uuid', nullable: true, description: 'ID of the member who signed the record'})
+    signedByMemberId: string | null;
+
     @ApiProperty({type: [FileDto], description: 'The attached files'})
     files: FileDto[];
 
@@ -117,6 +126,9 @@ export class RecordDto extends EntityDto {
         this.source = record.source;
         this.importedDocumentId = record.importedDocumentId?.toString() ?? null;
         this.wasHumanEdited = record.wasHumanEdited;
+        this.isLocked = record.isLocked;
+        this.signedAt = record.signedAt?.toISOString() ?? null;
+        this.signedByMemberId = record.signedByMemberId?.toString() ?? null;
         this.files = record.files.map((f) => new FileDto(f));
     }
 }

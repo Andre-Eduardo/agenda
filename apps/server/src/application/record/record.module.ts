@@ -4,8 +4,11 @@ import {RecordController} from './controllers/record.controller';
 import {
     CreateRecordService,
     DeleteRecordService,
+    GetRecordAmendmentsService,
     GetRecordService,
+    ReopenRecordService,
     SearchRecordsService,
+    SignRecordService,
     UpdateRecordService,
 } from './services';
 
@@ -15,9 +18,12 @@ import {
     providers: [
         CreateRecordService,
         GetRecordService,
+        GetRecordAmendmentsService,
         SearchRecordsService,
         UpdateRecordService,
         DeleteRecordService,
+        SignRecordService,
+        ReopenRecordService,
     ],
 })
 export class RecordModule {}

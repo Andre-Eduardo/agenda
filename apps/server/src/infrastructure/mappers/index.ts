@@ -8,5 +8,8 @@ export * from './mapper.module';
 export * from './member-block.mapper';
 export * from './person.mapper';
 export * from './professional.mapper';
+export * from './draft-evolution.mapper';
+export * from './imported-document.mapper';
+export * from './record-amendment.mapper';
 export * from './record.mapper';
 export * from './working-hours.mapper';

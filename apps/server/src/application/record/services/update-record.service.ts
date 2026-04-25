@@ -1,5 +1,5 @@
 import {Injectable} from '@nestjs/common';
-import {ResourceNotFoundException} from '../../../domain/@shared/exceptions';
+import {AccessDeniedException, AccessDeniedReason, ResourceNotFoundException} from '../../../domain/@shared/exceptions';
 import {ImportedDocumentId} from '../../../domain/record/entities';
 import {RecordRepository} from '../../../domain/record/record.repository';
 import {EventDispatcher} from '../../../domain/event';
@@ -18,6 +18,10 @@ export class UpdateRecordService implements ApplicationService<UpdateRecordDto, 
 
         if (record === null) {
             throw new ResourceNotFoundException('Record not found.', id.toString());
+        }
+
+        if (record.isLocked) {
+            throw new AccessDeniedException('RECORD_LOCKED', AccessDeniedReason.NOT_ALLOWED);
         }
 
         const changeProps = {
