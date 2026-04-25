@@ -1,5 +1,7 @@
 import {Entity, type AllEntityProps, type EntityJson, type EntityProps} from '../../@shared/entity';
 import {EntityId} from '../../@shared/entity/id';
+import type {ClinicId} from '../../clinic/entities';
+import type {ClinicMemberId} from '../../clinic-member/entities';
 import type {PatientId} from '../../patient/entities';
 import type {RecordId} from './record.entity';
 
@@ -7,6 +9,8 @@ export type FileProps = EntityProps<File>;
 export type UpdateFile = Partial<FileProps>;
 
 export class File extends Entity<FileId> {
+    clinicId: ClinicId;
+    createdByMemberId: ClinicMemberId;
     recordId: RecordId | null;
     patientId: PatientId | null;
     fileName: string;
@@ -15,6 +19,8 @@ export class File extends Entity<FileId> {
 
     constructor(props: AllEntityProps<File>) {
         super(props);
+        this.clinicId = props.clinicId;
+        this.createdByMemberId = props.createdByMemberId;
         this.recordId = props.recordId ?? null;
         this.patientId = props.patientId ?? null;
         this.fileName = props.fileName;
@@ -25,6 +31,8 @@ export class File extends Entity<FileId> {
     toJSON(): EntityJson<File> {
         return {
             id: this.id.toJSON(),
+            clinicId: this.clinicId.toJSON(),
+            createdByMemberId: this.createdByMemberId.toJSON(),
             recordId: this.recordId?.toJSON() ?? null,
             patientId: this.patientId?.toJSON() ?? null,
             fileName: this.fileName,

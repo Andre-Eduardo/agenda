@@ -6,8 +6,9 @@ import {
     type CreateEntity,
 } from '../../@shared/entity';
 import {EntityId} from '../../@shared/entity/id';
+import type {ClinicId} from '../../clinic/entities';
+import type {ClinicMemberId} from '../../clinic-member/entities';
 import type {PatientId} from '../../patient/entities';
-import type {ProfessionalId} from '../../professional/entities';
 import {PatientAlertCreatedEvent, PatientAlertChangedEvent, PatientAlertDeletedEvent} from '../events';
 
 export enum AlertSeverity {
@@ -21,8 +22,10 @@ export type CreatePatientAlert = CreateEntity<PatientAlert>;
 export type UpdatePatientAlert = Partial<PatientAlertProps>;
 
 export class PatientAlert extends AggregateRoot<PatientAlertId> {
+    clinicId: ClinicId;
     patientId: PatientId;
-    professionalId: ProfessionalId;
+    /** Membro que criou o alerta (substitui professionalId). */
+    createdByMemberId: ClinicMemberId;
     title: string;
     description: string | null;
     severity: AlertSeverity;
@@ -30,8 +33,9 @@ export class PatientAlert extends AggregateRoot<PatientAlertId> {
 
     constructor(props: AllEntityProps<PatientAlert>) {
         super(props);
+        this.clinicId = props.clinicId;
         this.patientId = props.patientId;
-        this.professionalId = props.professionalId;
+        this.createdByMemberId = props.createdByMemberId;
         this.title = props.title;
         this.description = props.description ?? null;
         this.severity = props.severity;
@@ -86,8 +90,9 @@ export class PatientAlert extends AggregateRoot<PatientAlertId> {
     toJSON(): EntityJson<PatientAlert> {
         return {
             id: this.id.toJSON(),
+            clinicId: this.clinicId.toJSON(),
             patientId: this.patientId.toJSON(),
-            professionalId: this.professionalId.toJSON(),
+            createdByMemberId: this.createdByMemberId.toJSON(),
             title: this.title,
             description: this.description,
             severity: this.severity,

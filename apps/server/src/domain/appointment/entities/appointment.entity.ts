@@ -6,8 +6,9 @@ import {
     type CreateEntity,
 } from '../../@shared/entity';
 import {EntityId} from '../../@shared/entity/id';
+import type {ClinicId} from '../../clinic/entities';
+import type {ClinicMemberId} from '../../clinic-member/entities';
 import type {PatientId} from '../../patient/entities';
-import type {ProfessionalId} from '../../professional/entities';
 import {InvalidInputException, PreconditionException} from '../../@shared/exceptions';
 import {AppointmentCreatedEvent, AppointmentChangedEvent, AppointmentDeletedEvent} from '../events';
 
@@ -32,8 +33,12 @@ export enum AppointmentType {
 }
 
 export class Appointment extends AggregateRoot<AppointmentId> {
+    clinicId: ClinicId;
     patientId: PatientId;
-    professionalId: ProfessionalId;
+    /** Membro que vai atender (geralmente um PROFESSIONAL). */
+    attendedByMemberId: ClinicMemberId;
+    /** Quem agendou (pode ser um SECRETARY, ADMIN, etc.). */
+    createdByMemberId: ClinicMemberId;
     startAt: Date;
     endAt: Date;
     durationMinutes: number;
@@ -45,8 +50,10 @@ export class Appointment extends AggregateRoot<AppointmentId> {
 
     constructor(props: AllEntityProps<Appointment>) {
         super(props);
+        this.clinicId = props.clinicId;
         this.patientId = props.patientId;
-        this.professionalId = props.professionalId;
+        this.attendedByMemberId = props.attendedByMemberId;
+        this.createdByMemberId = props.createdByMemberId;
         this.startAt = props.startAt;
         this.endAt = props.endAt;
         this.durationMinutes = props.durationMinutes;
@@ -175,8 +182,10 @@ export class Appointment extends AggregateRoot<AppointmentId> {
     toJSON(): EntityJson<Appointment> {
         return {
             id: this.id.toJSON(),
+            clinicId: this.clinicId.toJSON(),
             patientId: this.patientId.toJSON(),
-            professionalId: this.professionalId.toJSON(),
+            attendedByMemberId: this.attendedByMemberId.toJSON(),
+            createdByMemberId: this.createdByMemberId.toJSON(),
             startAt: this.startAt.toJSON(),
             endAt: this.endAt.toJSON(),
             durationMinutes: this.durationMinutes,

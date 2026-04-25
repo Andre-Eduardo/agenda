@@ -7,6 +7,8 @@ import {
     type CreateEntity,
 } from '../../@shared/entity';
 import {EntityId} from '../../@shared/entity/id';
+import type {ClinicId} from '../../clinic/entities';
+import type {ClinicMemberId} from '../../clinic-member/entities';
 import type {ProfessionalId} from '../../professional/entities';
 import type {AppointmentId} from '../../appointment/entities';
 import {RecordCreatedEvent, RecordChangedEvent, RecordDeletedEvent, RecordSavedEvent} from '../events';
@@ -54,8 +56,12 @@ export type CreateRecord = CreateEntity<Record>;
 export type UpdateRecord = Partial<RecordProps>;
 
 export class Record extends AggregateRoot<RecordId> {
+    clinicId: ClinicId;
     patientId: PersonId;
-    professionalId: ProfessionalId;
+    /** Membro que digitou/criou o registro. */
+    createdByMemberId: ClinicMemberId;
+    /** Profissional clinicamente responsável (≠ quem digitou). */
+    responsibleProfessionalId: ProfessionalId;
     description: string | null;
     templateType: EvolutionTemplateType | null;
     title: string | null;
@@ -77,8 +83,10 @@ export class Record extends AggregateRoot<RecordId> {
 
     constructor(props: AllEntityProps<Record>) {
         super(props);
+        this.clinicId = props.clinicId;
         this.patientId = props.patientId;
-        this.professionalId = props.professionalId;
+        this.createdByMemberId = props.createdByMemberId;
+        this.responsibleProfessionalId = props.responsibleProfessionalId;
         this.description = props.description ?? null;
         this.templateType = props.templateType ?? null;
         this.title = props.title ?? null;
@@ -219,8 +227,10 @@ export class Record extends AggregateRoot<RecordId> {
     toJSON(): EntityJson<Record> {
         return {
             id: this.id.toJSON(),
+            clinicId: this.clinicId.toJSON(),
             patientId: this.patientId.toJSON(),
-            professionalId: this.professionalId.toJSON(),
+            createdByMemberId: this.createdByMemberId.toJSON(),
+            responsibleProfessionalId: this.responsibleProfessionalId.toJSON(),
             description: this.description,
             templateType: this.templateType,
             title: this.title,

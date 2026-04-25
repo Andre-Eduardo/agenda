@@ -1,10 +1,14 @@
+import type {ClinicId} from '../clinic/entities';
+import type {ClinicMemberId} from '../clinic-member/entities';
 import type {PatientId} from '../patient/entities';
 import type {ProfessionalId} from '../professional/entities';
 import type {ClinicalProfile, ClinicalProfileId} from './entities';
 
 export type ClinicalProfileSearchFilter = {
+    clinicId?: ClinicId;
     patientId?: PatientId;
-    professionalId?: ProfessionalId;
+    createdByMemberId?: ClinicMemberId;
+    responsibleProfessionalId?: ProfessionalId;
 };
 
 export interface ClinicalProfileRepository {

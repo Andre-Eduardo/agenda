@@ -1,12 +1,15 @@
 import {PaginatedList, Pagination} from '../@shared/repository';
-import type {Appointment, AppointmentId, AppointmentStatus} from './entities';
+import type {ClinicId} from '../clinic/entities';
+import type {ClinicMemberId} from '../clinic-member/entities';
 import type {PatientId} from '../patient/entities';
-import type {ProfessionalId} from '../professional/entities';
+import type {Appointment, AppointmentId, AppointmentStatus} from './entities';
 
 export type AppointmentSearchFilter = {
     ids?: AppointmentId[];
     term?: string;
-    professionalId?: ProfessionalId;
+    clinicId?: ClinicId;
+    attendedByMemberId?: ClinicMemberId;
+    createdByMemberId?: ClinicMemberId;
     patientId?: PatientId;
     status?: AppointmentStatus[];
     dateFrom?: Date;
@@ -32,7 +35,7 @@ export interface AppointmentRepository {
     save(appointment: Appointment): Promise<void>;
 
     findConflicts(
-        professionalId: ProfessionalId,
+        attendedByMemberId: ClinicMemberId,
         startAt: Date,
         endAt: Date,
         excludeId?: AppointmentId

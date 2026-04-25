@@ -6,6 +6,8 @@ import {
     type CreateEntity,
 } from '../../@shared/entity';
 import {EntityId} from '../../@shared/entity/id';
+import type {ClinicId} from '../../clinic/entities';
+import type {ClinicMemberId} from '../../clinic-member/entities';
 import type {PatientId} from '../../patient/entities';
 import type {ProfessionalId} from '../../professional/entities';
 import {ClinicalProfileCreatedEvent, ClinicalProfileChangedEvent} from '../events';
@@ -15,8 +17,11 @@ export type CreateClinicalProfile = CreateEntity<ClinicalProfile>;
 export type UpdateClinicalProfile = Partial<ClinicalProfileProps>;
 
 export class ClinicalProfile extends AggregateRoot<ClinicalProfileId> {
+    clinicId: ClinicId;
     patientId: PatientId;
-    professionalId: ProfessionalId;
+    createdByMemberId: ClinicMemberId;
+    /** Profissional clinicamente responsável (≠ quem digitou). */
+    responsibleProfessionalId: ProfessionalId;
     allergies: string | null;
     chronicConditions: string | null;
     currentMedications: string | null;
@@ -27,8 +32,10 @@ export class ClinicalProfile extends AggregateRoot<ClinicalProfileId> {
 
     constructor(props: AllEntityProps<ClinicalProfile>) {
         super(props);
+        this.clinicId = props.clinicId;
         this.patientId = props.patientId;
-        this.professionalId = props.professionalId;
+        this.createdByMemberId = props.createdByMemberId;
+        this.responsibleProfessionalId = props.responsibleProfessionalId;
         this.allergies = props.allergies ?? null;
         this.chronicConditions = props.chronicConditions ?? null;
         this.currentMedications = props.currentMedications ?? null;
@@ -98,8 +105,10 @@ export class ClinicalProfile extends AggregateRoot<ClinicalProfileId> {
     toJSON(): EntityJson<ClinicalProfile> {
         return {
             id: this.id.toJSON(),
+            clinicId: this.clinicId.toJSON(),
             patientId: this.patientId.toJSON(),
-            professionalId: this.professionalId.toJSON(),
+            createdByMemberId: this.createdByMemberId.toJSON(),
+            responsibleProfessionalId: this.responsibleProfessionalId.toJSON(),
             allergies: this.allergies,
             chronicConditions: this.chronicConditions,
             currentMedications: this.currentMedications,
