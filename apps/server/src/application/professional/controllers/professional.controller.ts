@@ -4,7 +4,7 @@ import {Actor} from '../../../domain/@shared/actor';
 import {ProfessionalId} from '../../../domain/professional/entities';
 import {ProfessionalPermission} from '../../../domain/auth';
 import {Authorize} from '../../@shared/auth';
-import {BypassProfessional} from '../../@shared/auth/bypass-professional.decorator';
+import {BypassClinicMember} from '../../@shared/auth/bypass-clinic-member.decorator';
 import {RequestActor} from '../../@shared/auth/request-actor.decorator';
 import {PaginatedDto} from '../../@shared/dto';
 import {ApiOperation} from '../../@shared/openapi/decorators';
@@ -42,7 +42,7 @@ export class ProfessionalController {
         summary: 'Creates a new professional',
         responses: [{status: 201, description: 'Professional created', type: ProfessionalDto}],
     })
-    @BypassProfessional()
+    @BypassClinicMember()
     @Authorize(ProfessionalPermission.CREATE)
     @Post()
     async createProfessional(

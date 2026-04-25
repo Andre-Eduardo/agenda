@@ -1,15 +1,21 @@
 import type {JwtPayload} from 'jsonwebtoken';
 import * as jwt from 'jsonwebtoken';
 import {z} from 'zod';
-import {ProfessionalId} from '../../../domain/professional/entities';
+import {ClinicId} from '../../../domain/clinic/entities';
+import {ClinicMemberId} from '../../../domain/clinic-member/entities';
 import {UserId} from '../../../domain/user/entities';
-import type {TokenData} from '../../../domain/user/token';
+import type {TokenClinicMember, TokenData} from '../../../domain/user/token';
 import {Token, TokenScope} from '../../../domain/user/token';
 
 type JsonWebTokenOptions = {
     data: TokenData;
     encodedToken: string;
 };
+
+const clinicMemberSchema = z.object({
+    clinicMemberId: z.string().uuid(),
+    clinicId: z.string().uuid(),
+});
 
 /**
  * A signed token designed to be used on the Web.
@@ -30,8 +36,8 @@ export class JsonWebToken extends Token {
             aud: z.literal(this.AUDIENCE),
             scope: z.array(z.nativeEnum(TokenScope)),
             sub: z.string().uuid(),
-            professionalId: z.string().uuid().nullable(),
-            professionals: z.array(z.string().uuid()).optional(),
+            clinicMemberId: z.string().uuid().nullable(),
+            clinicMembers: z.array(clinicMemberSchema).optional(),
             metadata: z.record(z.string(), z.union([z.string(), z.number(), z.boolean()])).optional(),
         })
         .strict();
@@ -64,8 +70,12 @@ export class JsonWebToken extends Token {
             expirationTime: new Date(payload.exp * 1000),
             issueTime: new Date(payload.iat * 1000),
             userId: UserId.from(payload.sub),
-            professionalId: payload.professionalId ? ProfessionalId.from(payload.professionalId) : null,
-            professionals: payload.professionals?.map((id) => ProfessionalId.from(id)) ?? [],
+            clinicMemberId: payload.clinicMemberId ? ClinicMemberId.from(payload.clinicMemberId) : null,
+            clinicMembers:
+                payload.clinicMembers?.map<TokenClinicMember>((m) => ({
+                    clinicMemberId: ClinicMemberId.from(m.clinicMemberId),
+                    clinicId: ClinicId.from(m.clinicId),
+                })) ?? [],
             scope: payload.scope,
             metadata: payload.metadata,
         };
@@ -88,8 +98,11 @@ export class JsonWebToken extends Token {
             aud: JsonWebToken.AUDIENCE,
             scope: [...data.scope],
             sub: data.userId.toString(),
-            professionalId: data.professionalId?.toString() ?? null,
-            professionals: data.professionals.map((id) => id.toString()),
+            clinicMemberId: data.clinicMemberId?.toString() ?? null,
+            clinicMembers: data.clinicMembers.map((m) => ({
+                clinicMemberId: m.clinicMemberId.toString(),
+                clinicId: m.clinicId.toString(),
+            })),
             metadata: data.metadata,
         } satisfies z.infer<typeof this.CLAIM_VALIDATION>;
     }

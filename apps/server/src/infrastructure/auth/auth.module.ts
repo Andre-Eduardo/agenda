@@ -5,7 +5,7 @@ import {ConfigModule, EnvConfigService} from '../config';
 import {JsonWebTokenProvider} from './jwt';
 
 export const AUTH_COOKIE = 'AUTH_COOKIE';
-export const COMPANY_COOKIE = 'COMPANY_COOKIE';
+export const CLINIC_MEMBER_COOKIE = 'CLINIC_MEMBER_COOKIE';
 export const COOKIE_OPTIONS = 'COOKIE_OPTIONS';
 
 const providers: Provider[] = [
@@ -15,8 +15,8 @@ const providers: Provider[] = [
         inject: [EnvConfigService],
     },
     {
-        provide: COMPANY_COOKIE,
-        useFactory: (configService: EnvConfigService): string => configService.company.cookieName,
+        provide: CLINIC_MEMBER_COOKIE,
+        useFactory: (configService: EnvConfigService): string => configService.clinicMember.cookieName,
         inject: [EnvConfigService],
     },
     {

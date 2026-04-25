@@ -61,7 +61,7 @@ const guards: Provider[] = [
         useFactory: (configService: EnvConfigService, tokenProvider: TokenProvider, userRepository: UserRepository) =>
             new AuthGuard(
                 configService.auth.cookieName,
-                configService.company.cookieName,
+                configService.clinicMember.cookieName,
                 tokenProvider,
                 new MultiAuthorizer(new GlobalAuthorizer(userRepository)),
                 new Reflector()
