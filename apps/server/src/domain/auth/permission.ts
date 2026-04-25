@@ -106,6 +106,14 @@ export enum ClinicalChatPermission {
     REINDEX = 'clinical-chat:reindex',
 }
 
+export enum ClinicalDocumentPermission {
+    VIEW = 'clinical-document:view',
+    CREATE = 'clinical-document:create',
+    GENERATE = 'clinical-document:generate',
+    CANCEL = 'clinical-document:cancel',
+    MANAGE_TEMPLATES = 'clinical-document:manage-templates',
+}
+
 const PERMISSIONS = [
     ...Object.values(UserPermission),
     ...Object.values(ProfessionalPermission),
@@ -121,6 +129,7 @@ const PERMISSIONS = [
     ...Object.values(PatientFormPermission),
     ...Object.values(InsurancePlanPermission),
     ...Object.values(ClinicalChatPermission),
+    ...Object.values(ClinicalDocumentPermission),
     ...Object.values(AppointmentReminderPermission),
     ...Object.values(ClinicReminderConfigPermission),
 ];

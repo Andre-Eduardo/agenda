@@ -69,4 +69,17 @@ export class S3FileStorage implements FileStorage {
     async delete(filePath: string): Promise<void> {
         await this.client.send(new DeleteObjectCommand({Bucket: this.bucket, Key: filePath}));
     }
+
+    async storeBuffer(filePath: string, buffer: Buffer, mimeType: string): Promise<string> {
+        await this.client.send(
+            new PutObjectCommand({
+                Bucket: this.bucket,
+                Key: filePath,
+                Body: buffer,
+                ContentType: mimeType,
+            }),
+        );
+        const region = this.config.storage.s3.region ?? 'us-east-1';
+        return `https://${this.bucket}.s3.${region}.amazonaws.com/${filePath}`;
+    }
 }

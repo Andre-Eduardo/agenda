@@ -128,10 +128,12 @@ model Clinic {
   knowledgeChunks     KnowledgeChunk[]
   patientAddresses    PatientAddress[]
   insurancePlans      InsurancePlan[]
-  reminderConfig      ClinicReminderConfig?
-  reminders           AppointmentReminder[]
-  recordAmendments    RecordAmendment[]
-  draftEvolutions     DraftEvolution[]
+  reminderConfig            ClinicReminderConfig?
+  reminders                 AppointmentReminder[]
+  recordAmendments          RecordAmendment[]
+  draftEvolutions           DraftEvolution[]
+  clinicalDocuments         ClinicalDocument[]
+  clinicalDocumentTemplates ClinicalDocumentTemplate[]
 
   @@map("clinic")
 }
@@ -214,6 +216,7 @@ model ClinicMember {
   createdAgentProposals    AgentProposal[]          @relation("AgentProposalCreatedBy")
   createdDraftEvolutions   DraftEvolution[]         @relation("DraftCreatedBy")
   approvedDraftEvolutions  DraftEvolution[]         @relation("DraftApprovedBy")
+  createdClinicalDocuments ClinicalDocument[]
 
   @@unique([clinicId, userId], name: "clinic_member_clinic_user_unique")
   @@index([clinicId], name: "clinic_member_clinic_idx")
@@ -258,9 +261,10 @@ model Professional {
   deletedAt           DateTime?    @map("deleted_at")
 
   // Relações como profissional clinicamente responsável (≠ quem digitou)
-  responsibleRecords          Record[]          @relation("RecordResponsibleProfessional")
-  responsibleClinicalProfiles ClinicalProfile[] @relation("ClinicalProfileResponsibleProfessional")
-  responsiblePatientForms     PatientForm[]     @relation("PatientFormResponsibleProfessional")
+  responsibleRecords             Record[]           @relation("RecordResponsibleProfessional")
+  responsibleClinicalProfiles    ClinicalProfile[]  @relation("ClinicalProfileResponsibleProfessional")
+  responsiblePatientForms        PatientForm[]      @relation("PatientFormResponsibleProfessional")
+  responsibleClinicalDocuments   ClinicalDocument[] @relation("ClinicalDocumentResponsibleProfessional")
 
   @@map("professional")
 }
@@ -388,20 +392,21 @@ model Patient {
   updatedAt             DateTime      @map("updated_at")
   deletedAt             DateTime?     @map("deleted_at")
 
-  accesses          ClinicPatientAccess[]
-  appointments      Appointment[]
-  records           Record[]
-  clinicalProfile   ClinicalProfile?
-  alerts            PatientAlert[]
-  patientFiles      File[]
-  importedDocuments ImportedDocument[]
-  patientForms      PatientForm[]
-  chatSessions      PatientChatSession[]
-  contextSnapshots  PatientContextSnapshot[]
-  contextChunks     PatientContextChunk[]
-  address           PatientAddress?
-  reminders         AppointmentReminder[]
-  draftEvolutions   DraftEvolution[]
+  accesses              ClinicPatientAccess[]
+  appointments          Appointment[]
+  records               Record[]
+  clinicalProfile       ClinicalProfile?
+  alerts                PatientAlert[]
+  patientFiles          File[]
+  importedDocuments     ImportedDocument[]
+  patientForms          PatientForm[]
+  chatSessions          PatientChatSession[]
+  contextSnapshots      PatientContextSnapshot[]
+  contextChunks         PatientContextChunk[]
+  address               PatientAddress?
+  reminders             AppointmentReminder[]
+  draftEvolutions       DraftEvolution[]
+  clinicalDocuments     ClinicalDocument[]
 
   @@unique([documentId, clinicId], name: "patient_document_clinic_unique")
   @@index([clinicId], name: "patient_clinic_idx")
@@ -624,8 +629,9 @@ model Appointment {
   createdAt           DateTime          @map("created_at")
   updatedAt           DateTime          @map("updated_at")
   deletedAt           DateTime?         @map("deleted_at")
-  records             Record[]
-  reminders           AppointmentReminder[]
+  records           Record[]
+  reminders         AppointmentReminder[]
+  clinicalDocuments ClinicalDocument[]
 
   @@index([clinicId], name: "appointment_clinic_idx")
   @@index([attendedByMemberId], name: "appointment_attended_by_idx")
@@ -716,8 +722,9 @@ model Record {
   updatedAt DateTime  @map("updated_at")
   deletedAt DateTime? @map("deleted_at")
 
-  amendments     RecordAmendment[]
-  draftEvolution DraftEvolution?
+  amendments        RecordAmendment[]
+  draftEvolution    DraftEvolution?
+  clinicalDocuments ClinicalDocument[]
 
   @@index([clinicId], name: "record_clinic_idx")
   @@index([patientId], name: "record_patient_idx")
@@ -761,6 +768,8 @@ model File {
   updatedAt         DateTime           @map("updated_at")
   deletedAt         DateTime?          @map("deleted_at")
   importedDocuments ImportedDocument[]
+
+  clinicalDocument  ClinicalDocument?
 
   @@index([clinicId], name: "file_clinic_idx")
   @@map("file")
@@ -1435,4 +1444,88 @@ model ClinicReminderConfig {
   updatedAt       DateTime          @map("updated_at")
 
   @@map("clinic_reminder_config")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 16. DOCUMENTOS CLÍNICOS — RECEITUÁRIO, ATESTADO, ENCAMINHAMENTO
+// ─────────────────────────────────────────────────────────────────────────────
+
+enum ClinicalDocumentType {
+  PRESCRIPTION         // receituário simples
+  PRESCRIPTION_SPECIAL // receituário especial (controlados)
+  MEDICAL_CERTIFICATE  // atestado médico
+  REFERRAL             // encaminhamento
+  EXAM_REQUEST         // solicitação de exame
+
+  @@map("clinical_document_type")
+}
+
+enum ClinicalDocumentStatus {
+  DRAFT
+  GENERATED
+  CANCELLED
+
+  @@map("clinical_document_status")
+}
+
+/// Template de layout PDFMake por tipo de documento.
+/// clinicId = null + isDefault = true → template padrão do sistema.
+/// clinicId preenchido → template customizado da clínica.
+model ClinicalDocumentTemplate {
+  id        String               @id @db.Uuid
+  clinicId  String?              @map("clinic_id") @db.Uuid
+  clinic    Clinic?              @relation(fields: [clinicId], references: [id])
+  type      ClinicalDocumentType @map("type")
+  isDefault Boolean              @default(false) @map("is_default")
+  name      String
+  layoutJson Json                @map("layout_json") @db.JsonB
+  createdAt DateTime             @map("created_at")
+  updatedAt DateTime             @map("updated_at")
+
+  documents ClinicalDocument[]
+
+  @@unique([clinicId, type], name: "clinical_document_template_clinic_type_unique")
+  @@index([clinicId], name: "clinical_document_template_clinic_idx")
+  @@map("clinical_document_template")
+}
+
+/// Documento clínico gerado (receituário, atestado, encaminhamento, etc.).
+/// fileId é preenchido após geração do PDF e upload para o storage.
+model ClinicalDocument {
+  id                        String                    @id @db.Uuid
+  clinicId                  String                    @map("clinic_id") @db.Uuid
+  clinic                    Clinic                    @relation(fields: [clinicId], references: [id])
+  patientId                 String                    @map("patient_id") @db.Uuid
+  patient                   Patient                   @relation(fields: [patientId], references: [id])
+  createdByMemberId         String                    @map("created_by_member_id") @db.Uuid
+  createdBy                 ClinicMember              @relation(fields: [createdByMemberId], references: [id])
+  responsibleProfessionalId String                    @map("responsible_professional_id") @db.Uuid
+  responsibleProfessional   Professional              @relation("ClinicalDocumentResponsibleProfessional", fields: [responsibleProfessionalId], references: [id])
+
+  type       ClinicalDocumentType   @map("type")
+  templateId String?                @map("template_id") @db.Uuid
+  template   ClinicalDocumentTemplate? @relation(fields: [templateId], references: [id])
+
+  /// Dados usados para preencher o template (medicamentos, dias de afastamento, etc.)
+  contentJson Json                  @map("content_json") @db.JsonB
+
+  fileId      String?               @unique @map("file_id") @db.Uuid
+  file        File?                 @relation(fields: [fileId], references: [id])
+
+  generatedAt DateTime?             @map("generated_at")
+  status      ClinicalDocumentStatus @default(DRAFT) @map("status")
+
+  appointmentId String?             @map("appointment_id") @db.Uuid
+  appointment   Appointment?        @relation(fields: [appointmentId], references: [id])
+  recordId      String?             @map("record_id") @db.Uuid
+  record        Record?             @relation(fields: [recordId], references: [id])
+
+  createdAt DateTime  @map("created_at")
+  updatedAt DateTime  @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  @@index([clinicId], name: "clinical_document_clinic_idx")
+  @@index([patientId], name: "clinical_document_patient_idx")
+  @@index([createdByMemberId], name: "clinical_document_created_by_idx")
+  @@map("clinical_document")
 }
