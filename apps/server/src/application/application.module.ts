@@ -11,7 +11,9 @@ import {ApiExceptionFilter, HttpExceptionFilter, ZodExceptionFilter} from './@sh
 import {ExceptionLoggerInterceptor, RequestLoggerMiddleware} from './@shared/logger/handlers';
 import {ZodValidationPipe} from './@shared/validation';
 import {AppointmentModule} from './appointment/appointment.module';
+import {AppointmentReminderModule} from './appointment-reminder/appointment-reminder.module';
 import {AuthModule} from './auth/auth.module';
+import {ClinicReminderConfigModule} from './clinic-reminder-config/clinic-reminder-config.module';
 import {ClinicModule} from './clinic/clinic.module';
 import {ClinicMemberModule} from './clinic-member/clinic-member.module';
 import {ClinicPatientAccessModule} from './clinic-patient-access/clinic-patient-access.module';
@@ -87,6 +89,8 @@ const guards: Provider[] = [
         ProfessionalModule,
         PatientModule,
         AppointmentModule,
+        AppointmentReminderModule,
+        ClinicReminderConfigModule,
         RecordModule,
         ClinicalProfileModule,
         PatientAlertModule,

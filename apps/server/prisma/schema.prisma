@@ -128,6 +128,8 @@ model Clinic {
   knowledgeChunks     KnowledgeChunk[]
   patientAddresses    PatientAddress[]
   insurancePlans      InsurancePlan[]
+  reminderConfig      ClinicReminderConfig?
+  reminders           AppointmentReminder[]
 
   @@map("clinic")
 }
@@ -392,6 +394,7 @@ model Patient {
   contextSnapshots  PatientContextSnapshot[]
   contextChunks     PatientContextChunk[]
   address           PatientAddress?
+  reminders         AppointmentReminder[]
 
   @@unique([documentId, clinicId], name: "patient_document_clinic_unique")
   @@index([clinicId], name: "patient_clinic_idx")
@@ -537,8 +540,27 @@ enum AppointmentStatus {
   CANCELLED
   COMPLETED
   NO_SHOW
+  ARRIVED
+  IN_PROGRESS
 
   @@map("appointment_status")
+}
+
+enum ReminderChannel {
+  WHATSAPP
+  SMS
+  EMAIL
+
+  @@map("reminder_channel")
+}
+
+enum ReminderStatus {
+  PENDING
+  SENT
+  FAILED
+  CANCELLED
+
+  @@map("reminder_status")
 }
 
 enum AppointmentType {
@@ -579,10 +601,15 @@ model Appointment {
   canceledAt          DateTime?         @map("canceled_at")
   canceledReason      String?           @map("canceled_reason")
   note                String?
+  /// Momento em que o paciente deu entrada na recepção (status ARRIVED)
+  arrivedAt           DateTime?         @map("arrived_at")
+  /// Momento em que o paciente foi chamado para a sala (status IN_PROGRESS)
+  calledAt            DateTime?         @map("called_at")
   createdAt           DateTime          @map("created_at")
   updatedAt           DateTime          @map("updated_at")
   deletedAt           DateTime?         @map("deleted_at")
   records             Record[]
+  reminders           AppointmentReminder[]
 
   @@index([clinicId], name: "appointment_clinic_idx")
   @@index([attendedByMemberId], name: "appointment_attended_by_idx")
@@ -1271,4 +1298,53 @@ model AgentProposal {
   @@index([createdByMemberId], name: "agent_proposal_created_by_member_idx")
   @@index([patientId], name: "agent_proposal_patient_idx")
   @@map("agent_proposal")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 15. LEMBRETES DE AGENDAMENTO
+// ─────────────────────────────────────────────────────────────────────────────
+
+/// Registro de lembrete agendado para um agendamento.
+/// status=PENDING significa que ainda não foi enviado.
+/// O job de disparo externo consulta GET /clinics/:id/reminders/pending para obter a fila.
+model AppointmentReminder {
+  id            String          @id(map: "appointment_reminder_pk") @db.Uuid
+  clinicId      String          @map("clinic_id") @db.Uuid
+  clinic        Clinic          @relation(fields: [clinicId], references: [id])
+  appointmentId String          @map("appointment_id") @db.Uuid
+  appointment   Appointment     @relation(fields: [appointmentId], references: [id])
+  patientId     String          @map("patient_id") @db.Uuid
+  patient       Patient         @relation(fields: [patientId], references: [id])
+
+  channel       ReminderChannel @map("channel")
+  status        ReminderStatus  @default(PENDING) @map("status")
+  scheduledAt   DateTime        @map("scheduled_at")
+  sentAt        DateTime?       @map("sent_at")
+  failedAt      DateTime?       @map("failed_at")
+  attempts      Int             @default(0)
+  errorMessage  String?         @map("error_message") @db.Text
+
+  createdAt     DateTime        @map("created_at")
+  updatedAt     DateTime        @map("updated_at")
+
+  @@index([clinicId], name: "appointment_reminder_clinic_idx")
+  @@index([appointmentId], name: "appointment_reminder_appointment_idx")
+  @@index([scheduledAt, status], name: "appointment_reminder_scheduled_status_idx")
+  @@map("appointment_reminder")
+}
+
+/// Configuração de lembretes automáticos por clínica.
+/// hoursBeforeList: lista de horas antes do agendamento para gerar lembretes (ex: [24, 2]).
+/// enabledChannels: canais habilitados para envio.
+model ClinicReminderConfig {
+  id              String            @id(map: "clinic_reminder_config_pk") @db.Uuid
+  clinicId        String            @unique @map("clinic_id") @db.Uuid
+  clinic          Clinic            @relation(fields: [clinicId], references: [id])
+  enabledChannels ReminderChannel[] @map("enabled_channels")
+  hoursBeforeList Int[]             @map("hours_before_list")
+  isActive        Boolean           @default(true) @map("is_active")
+  createdAt       DateTime          @map("created_at")
+  updatedAt       DateTime          @map("updated_at")
+
+  @@map("clinic_reminder_config")
 }

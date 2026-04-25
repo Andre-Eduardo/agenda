@@ -26,6 +26,8 @@ export class AppointmentMapper extends MapperWithoutDto<Appointment, Appointment
             canceledReason: model.canceledReason ?? null,
             note: model.note ?? null,
             status: model.status as AppointmentStatus,
+            arrivedAt: model.arrivedAt ?? null,
+            calledAt: model.calledAt ?? null,
         });
     }
 
@@ -44,6 +46,8 @@ export class AppointmentMapper extends MapperWithoutDto<Appointment, Appointment
             canceledAt: entity.canceledAt,
             canceledReason: entity.canceledReason,
             note: entity.note,
+            arrivedAt: entity.arrivedAt,
+            calledAt: entity.calledAt,
             createdAt: entity.createdAt,
             updatedAt: entity.updatedAt,
             deletedAt: entity.deletedAt ?? null,

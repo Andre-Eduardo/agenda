@@ -1,6 +1,8 @@
 import {Module, Provider} from '@nestjs/common';
 import {AgentProposalRepository} from '../../../domain/agent-proposal/agent-proposal.repository';
 import {AppointmentRepository} from '../../../domain/appointment/appointment.repository';
+import {AppointmentReminderRepository} from '../../../domain/appointment-reminder/appointment-reminder.repository';
+import {ClinicReminderConfigRepository} from '../../../domain/clinic-reminder-config/clinic-reminder-config.repository';
 import {AiAgentProfileRepository} from '../../../domain/clinical-chat/ai-agent-profile.repository';
 import {ClinicalChatInteractionLogRepository} from '../../../domain/clinical-chat/clinical-chat-interaction-log.repository';
 import {PatientChatMessageRepository} from '../../../domain/clinical-chat/patient-chat-message.repository';
@@ -32,6 +34,8 @@ import {MapperModule} from '../../mappers';
 import {AgentProposalPrismaRepository} from '../agent-proposal.prisma.repository';
 import {AiAgentProfilePrismaRepository} from '../ai-agent-profile.prisma.repository';
 import {AppointmentPrismaRepository} from '../appointment.prisma.repository';
+import {AppointmentReminderPrismaRepository} from '../appointment-reminder.prisma.repository';
+import {ClinicReminderConfigPrismaRepository} from '../clinic-reminder-config.prisma.repository';
 import {ClinicalChatInteractionLogPrismaRepository} from '../clinical-chat-interaction-log.prisma.repository';
 import {ClinicalProfilePrismaRepository} from '../clinical-profile.prisma.repository';
 import {ClinicMemberPrismaRepository} from '../clinic-member.prisma.repository';
@@ -77,6 +81,8 @@ const repositories: Provider[] = [
     {provide: InsurancePlanRepository, useClass: InsurancePlanPrismaRepository},
     // Schedule
     {provide: AppointmentRepository, useClass: AppointmentPrismaRepository},
+    {provide: AppointmentReminderRepository, useClass: AppointmentReminderPrismaRepository},
+    {provide: ClinicReminderConfigRepository, useClass: ClinicReminderConfigPrismaRepository},
     {provide: WorkingHoursRepository, useClass: WorkingHoursPrismaRepository},
     {provide: MemberBlockRepository, useClass: MemberBlockPrismaRepository},
     // Clinical

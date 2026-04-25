@@ -41,6 +41,12 @@ export class AppointmentDto extends EntityDto {
     @ApiProperty({nullable: true, description: 'Notes about the appointment'})
     note: string | null;
 
+    @ApiProperty({format: 'date-time', nullable: true, description: 'When the patient arrived at the reception'})
+    arrivedAt: string | null;
+
+    @ApiProperty({format: 'date-time', nullable: true, description: 'When the patient was called to the room'})
+    calledAt: string | null;
+
     constructor(appointment: Appointment) {
         super(appointment);
         this.clinicId = appointment.clinicId.toString();
@@ -55,5 +61,7 @@ export class AppointmentDto extends EntityDto {
         this.canceledAt = appointment.canceledAt?.toISOString() ?? null;
         this.canceledReason = appointment.canceledReason;
         this.note = appointment.note;
+        this.arrivedAt = appointment.arrivedAt?.toISOString() ?? null;
+        this.calledAt = appointment.calledAt?.toISOString() ?? null;
     }
 }

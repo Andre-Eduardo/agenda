@@ -10,10 +10,18 @@ import type {ClinicId} from '../../clinic/entities';
 import type {ClinicMemberId} from '../../clinic-member/entities';
 import type {PatientId} from '../../patient/entities';
 import {InvalidInputException, PreconditionException} from '../../@shared/exceptions';
-import {AppointmentCreatedEvent, AppointmentChangedEvent, AppointmentDeletedEvent} from '../events';
+import {
+    AppointmentCreatedEvent,
+    AppointmentChangedEvent,
+    AppointmentDeletedEvent,
+    AppointmentCheckinEvent,
+    AppointmentCalledEvent,
+} from '../events';
 
 export type AppointmentProps = EntityProps<Appointment>;
-export type CreateAppointment = Omit<CreateEntity<Appointment>, 'status'> & {status?: AppointmentStatus};
+export type CreateAppointment = Omit<CreateEntity<Appointment>, 'status' | 'arrivedAt' | 'calledAt'> & {
+    status?: AppointmentStatus;
+};
 export type UpdateAppointment = Partial<AppointmentProps>;
 
 export enum AppointmentStatus {
@@ -22,6 +30,8 @@ export enum AppointmentStatus {
     CANCELLED = 'CANCELLED',
     COMPLETED = 'COMPLETED',
     NO_SHOW = 'NO_SHOW',
+    ARRIVED = 'ARRIVED',
+    IN_PROGRESS = 'IN_PROGRESS',
 }
 
 export enum AppointmentType {
@@ -47,6 +57,10 @@ export class Appointment extends AggregateRoot<AppointmentId> {
     canceledReason: string | null;
     note: string | null;
     status: AppointmentStatus;
+    /** Momento em que o paciente deu entrada na recepção. */
+    arrivedAt: Date | null;
+    /** Momento em que o paciente foi chamado para a sala. */
+    calledAt: Date | null;
 
     constructor(props: AllEntityProps<Appointment>) {
         super(props);
@@ -62,6 +76,8 @@ export class Appointment extends AggregateRoot<AppointmentId> {
         this.canceledReason = props.canceledReason ?? null;
         this.note = props.note ?? null;
         this.status = props.status ?? AppointmentStatus.SCHEDULED;
+        this.arrivedAt = props.arrivedAt ?? null;
+        this.calledAt = props.calledAt ?? null;
         this.validate();
     }
 
@@ -76,6 +92,8 @@ export class Appointment extends AggregateRoot<AppointmentId> {
             canceledReason: props.canceledReason ?? null,
             note: props.note ?? null,
             canceledAt: props.canceledAt ?? null,
+            arrivedAt: null,
+            calledAt: null,
             createdAt: now,
             updatedAt: now,
             deletedAt: null,
@@ -123,7 +141,12 @@ export class Appointment extends AggregateRoot<AppointmentId> {
     }
 
     cancel(reason: string): void {
-        if (this.status !== AppointmentStatus.SCHEDULED && this.status !== AppointmentStatus.CONFIRMED) {
+        const cancellableStatuses = [
+            AppointmentStatus.SCHEDULED,
+            AppointmentStatus.CONFIRMED,
+            AppointmentStatus.ARRIVED,
+        ];
+        if (!cancellableStatuses.includes(this.status)) {
             throw new PreconditionException(`Cannot cancel an appointment with status ${this.status}.`);
         }
 
@@ -146,7 +169,8 @@ export class Appointment extends AggregateRoot<AppointmentId> {
     }
 
     complete(): void {
-        if (this.status !== AppointmentStatus.CONFIRMED && this.status !== AppointmentStatus.SCHEDULED) {
+        if (this.status !== AppointmentStatus.CONFIRMED && this.status !== AppointmentStatus.SCHEDULED
+            && this.status !== AppointmentStatus.IN_PROGRESS) {
             throw new PreconditionException(`Cannot complete an appointment with status ${this.status}.`);
         }
 
@@ -156,12 +180,39 @@ export class Appointment extends AggregateRoot<AppointmentId> {
     }
 
     noShow(): void {
-        if (this.status !== AppointmentStatus.CONFIRMED && this.status !== AppointmentStatus.SCHEDULED) {
+        if (this.status !== AppointmentStatus.CONFIRMED && this.status !== AppointmentStatus.SCHEDULED
+            && this.status !== AppointmentStatus.ARRIVED) {
             throw new PreconditionException(`Cannot mark no-show for an appointment with status ${this.status}.`);
         }
 
         const oldState = new Appointment(this);
         this.status = AppointmentStatus.NO_SHOW;
+        this.addEvent(new AppointmentChangedEvent({oldState, newState: this}));
+    }
+
+    checkin(): void {
+        if (this.status !== AppointmentStatus.SCHEDULED && this.status !== AppointmentStatus.CONFIRMED) {
+            throw new PreconditionException(`Cannot check in an appointment with status ${this.status}.`);
+        }
+
+        const oldState = new Appointment(this);
+        this.status = AppointmentStatus.ARRIVED;
+        this.arrivedAt = new Date();
+
+        this.addEvent(new AppointmentCheckinEvent({appointment: this}));
+        this.addEvent(new AppointmentChangedEvent({oldState, newState: this}));
+    }
+
+    call(): void {
+        if (this.status !== AppointmentStatus.ARRIVED) {
+            throw new PreconditionException(`Cannot call an appointment with status ${this.status}.`);
+        }
+
+        const oldState = new Appointment(this);
+        this.status = AppointmentStatus.IN_PROGRESS;
+        this.calledAt = new Date();
+
+        this.addEvent(new AppointmentCalledEvent({appointment: this}));
         this.addEvent(new AppointmentChangedEvent({oldState, newState: this}));
     }
 
@@ -194,6 +245,8 @@ export class Appointment extends AggregateRoot<AppointmentId> {
             canceledReason: this.canceledReason,
             note: this.note,
             status: this.status,
+            arrivedAt: this.arrivedAt?.toJSON() ?? null,
+            calledAt: this.calledAt?.toJSON() ?? null,
             createdAt: this.createdAt.toJSON(),
             updatedAt: this.updatedAt.toJSON(),
             deletedAt: this.deletedAt?.toJSON() ?? null,
