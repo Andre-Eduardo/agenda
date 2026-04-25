@@ -36,6 +36,8 @@ import {ClinicalDocumentModule} from './clinical-document/clinical-document.modu
 import {SubscriptionModule} from './subscription/subscription.module';
 import {BillingModule} from './billing/billing.module';
 import {PaymentModule} from './payment/payment.module';
+import {AppointmentPaymentModule} from './appointment-payment/appointment-payment.module';
+import {FinancialReportModule} from './financial-report/financial-report.module';
 
 const exceptionFilters: Provider[] = [
     {
@@ -110,6 +112,8 @@ const guards: Provider[] = [
         SubscriptionModule,
         BillingModule,
         PaymentModule,
+        AppointmentPaymentModule,
+        FinancialReportModule,
     ],
     providers: [...exceptionFilters, ...pipes, ...interceptors, ...guards],
 })
