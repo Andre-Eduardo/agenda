@@ -62,6 +62,20 @@ export class AppointmentReminder extends AggregateRoot<AppointmentReminderId> {
         });
     }
 
+    markSent(sentAt: Date): void {
+        this.status = ReminderStatus.SENT;
+        this.sentAt = sentAt;
+        this.update();
+    }
+
+    markFailed(failedAt: Date, errorMessage: string): void {
+        this.status = ReminderStatus.FAILED;
+        this.failedAt = failedAt;
+        this.errorMessage = errorMessage;
+        this.attempts += 1;
+        this.update();
+    }
+
     cancel(): void {
         this.status = ReminderStatus.CANCELLED;
         this.update();
