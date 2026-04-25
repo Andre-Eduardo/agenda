@@ -136,6 +136,7 @@ model Clinic {
   clinicalDocumentTemplates ClinicalDocumentTemplate[]
   professionalSubscriptions ProfessionalSubscription[]
   usageRecords              UsageRecord[]
+  subscriptionAddons        SubscriptionAddon[]
   appointmentPayments       AppointmentPayment[]
 
   @@map("clinic")
@@ -225,6 +226,8 @@ model ClinicMember {
   approvedDraftEvolutions  DraftEvolution[]         @relation("DraftApprovedBy")
   createdClinicalDocuments ClinicalDocument[]
   registeredPayments       AppointmentPayment[] @relation("AppointmentPaymentRegisteredBy")
+  subscriptionAddons       SubscriptionAddon[]  @relation("AddonMember")
+  grantedAddons            SubscriptionAddon[]  @relation("AddonGrantedBy")
 
   @@unique([clinicId, userId], name: "clinic_member_clinic_user_unique")
   @@index([clinicId], name: "clinic_member_clinic_idx")
@@ -1655,8 +1658,9 @@ model ProfessionalSubscription {
   updatedAt DateTime  @map("updated_at")
   deletedAt DateTime? @map("deleted_at")
 
-  usageRecords  UsageRecord[]
-  paymentEvents PaymentEvent[]
+  usageRecords       UsageRecord[]
+  paymentEvents      PaymentEvent[]
+  subscriptionAddons SubscriptionAddon[]
 
   @@index([clinicId], name: "professional_subscription_clinic_idx")
   @@index([planCode], name: "professional_subscription_plan_code_idx")
@@ -1718,4 +1722,41 @@ model UsageRecord {
   @@index([clinicId], name: "usage_record_clinic_idx")
   @@index([memberId], name: "usage_record_member_idx")
   @@map("usage_record")
+}
+
+/// Pacote extra de cota adquirido por um profissional para o mês corrente.
+/// Vigência limitada ao periodYear/periodMonth — não há rollover automático.
+/// O registro é imutável após criação; compras adicionais do mesmo add-on somam quantity.
+model SubscriptionAddon {
+  id             String                   @id @db.Uuid
+  clinicId       String                   @map("clinic_id") @db.Uuid
+  clinic         Clinic                   @relation(fields: [clinicId], references: [id])
+  memberId       String                   @map("member_id") @db.Uuid
+  member         ClinicMember             @relation("AddonMember", fields: [memberId], references: [id])
+  subscriptionId String                   @map("subscription_id") @db.Uuid
+  subscription   ProfessionalSubscription @relation(fields: [subscriptionId], references: [id])
+
+  /// Código do catálogo (ADDON_CATALOG) — string para não criar enum a cada novo add-on
+  addonCode String @map("addon_code")
+
+  /// Permite comprar múltiplas unidades do mesmo add-on no mês
+  quantity Int @default(1)
+
+  periodYear  Int @map("period_year")
+  periodMonth Int @map("period_month")
+
+  /// Preço no momento da compra — histórico imutável
+  pricePaidBrl Float @map("price_paid_brl")
+
+  /// Quem liberou o add-on (ADMIN/OWNER ou sistema)
+  grantedByMemberId String?      @map("granted_by_member_id") @db.Uuid
+  grantedByMember   ClinicMember? @relation("AddonGrantedBy", fields: [grantedByMemberId], references: [id])
+
+  createdAt DateTime @map("created_at")
+  updatedAt DateTime @map("updated_at")
+
+  @@unique([memberId, addonCode, periodYear, periodMonth], name: "subscription_addon_member_code_period_unique")
+  @@index([clinicId], name: "subscription_addon_clinic_idx")
+  @@index([memberId, periodYear, periodMonth], name: "subscription_addon_member_period_idx")
+  @@map("subscription_addon")
 }

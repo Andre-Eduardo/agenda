@@ -13,8 +13,45 @@ export type PlanFeatures = {
     storageArchiveIncluded: boolean;
 };
 
-// Placeholder for future add-on support
-export type ActiveAddon = never;
+export type AddonGrantKey = 'docsPerMonth' | 'chatMessagesPerMonth' | 'clinicalImagesPerMonth' | 'storageHotGb';
+
+export type AddonGrants = Partial<Pick<PlanLimits, AddonGrantKey>>;
+
+export type AddonCatalogEntry = {
+    code: string;
+    name: string;
+    priceMonthlyBrl: number;
+    grants: AddonGrants;
+};
+
+export type AddonCode = 'EXTRA_DOCS_300' | 'EXTRA_CHAT_1000' | 'EXTRA_IMAGES_30' | 'EXTRA_STORAGE_10GB';
+
+export const ADDON_CATALOG: Record<AddonCode, AddonCatalogEntry> = {
+    EXTRA_DOCS_300: {
+        code: 'EXTRA_DOCS_300',
+        name: '+300 documentos',
+        priceMonthlyBrl: 12,
+        grants: {docsPerMonth: 300},
+    },
+    EXTRA_CHAT_1000: {
+        code: 'EXTRA_CHAT_1000',
+        name: '+1.000 mensagens de chat',
+        priceMonthlyBrl: 9,
+        grants: {chatMessagesPerMonth: 1000},
+    },
+    EXTRA_IMAGES_30: {
+        code: 'EXTRA_IMAGES_30',
+        name: '+30 imagens clínicas',
+        priceMonthlyBrl: 49,
+        grants: {clinicalImagesPerMonth: 30},
+    },
+    EXTRA_STORAGE_10GB: {
+        code: 'EXTRA_STORAGE_10GB',
+        name: '+10 GB storage',
+        priceMonthlyBrl: 9,
+        grants: {storageHotGb: 10},
+    },
+};
 
 export const PLAN_LIMITS = {
     STARTER: {
@@ -100,7 +137,24 @@ export function getPlanLimits(planCode: PlanCode): PlanLimits {
     return PLAN_LIMITS[planCode].limits;
 }
 
-// Placeholder — add-on accumulation will be implemented in a future task
-export function getEffectiveLimits(planCode: PlanCode, _addons: ActiveAddon[]): PlanLimits {
-    return getPlanLimits(planCode);
+function applyAddonGrants(limits: PlanLimits, grants: AddonGrants, quantity: number): void {
+    if (grants.docsPerMonth !== undefined) limits.docsPerMonth += grants.docsPerMonth * quantity;
+    if (grants.chatMessagesPerMonth !== undefined) limits.chatMessagesPerMonth += grants.chatMessagesPerMonth * quantity;
+    if (grants.clinicalImagesPerMonth !== undefined) limits.clinicalImagesPerMonth += grants.clinicalImagesPerMonth * quantity;
+    if (grants.storageHotGb !== undefined) limits.storageHotGb += grants.storageHotGb * quantity;
+}
+
+export function getEffectiveLimits(
+    planCode: PlanCode,
+    addons: {addonCode: AddonCode; quantity: number}[],
+): PlanLimits {
+    const base = getPlanLimits(planCode);
+    const effective: PlanLimits = {...base};
+
+    for (const {addonCode, quantity} of addons) {
+        const catalog = ADDON_CATALOG[addonCode];
+        applyAddonGrants(effective, catalog.grants, quantity);
+    }
+
+    return effective;
 }

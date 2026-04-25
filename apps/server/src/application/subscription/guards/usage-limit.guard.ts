@@ -1,6 +1,8 @@
 import {CanActivate, ExecutionContext, ForbiddenException, HttpException, HttpStatus, Injectable} from '@nestjs/common';
 import {Reflector} from '@nestjs/core';
+import {OnEvent} from '@nestjs/event-emitter';
 import {Request} from 'express';
+import {AddonPurchasedEvent} from '../../../domain/subscription/events';
 import {USAGE_METRIC_KEY} from '../decorators/use-usage-limit.decorator';
 import {SubscriptionService, UsageMetric} from '../subscription.service';
 
@@ -10,6 +12,15 @@ export class UsageLimitGuard implements CanActivate {
         private readonly subscriptionService: SubscriptionService,
         private readonly reflector: Reflector,
     ) {}
+
+    // Invalidate the service-level addon cache immediately on purchase so the
+    // next guarded request uses the updated effective limits.
+    @OnEvent(AddonPurchasedEvent.type)
+    handleAddonPurchased(event: {payload: AddonPurchasedEvent}): void {
+        // The cache invalidation is handled inside SubscriptionService.purchaseAddon().
+        // This listener exists as an explicit hook for future cross-service invalidation.
+        void event;
+    }
 
     async canActivate(context: ExecutionContext): Promise<boolean> {
         const metric = this.reflector.get<UsageMetric | undefined>(USAGE_METRIC_KEY, context.getHandler());
@@ -33,6 +44,8 @@ export class UsageLimitGuard implements CanActivate {
 
         let usage;
         try {
+            // getCurrentUsage() resolves effective limits (plan base + active add-ons).
+            // Active add-ons are cached for 60 s inside SubscriptionService.getActiveAddons().
             usage = await this.subscriptionService.getCurrentUsage(memberId, clinicId);
         } catch {
             throw new ForbiddenException({

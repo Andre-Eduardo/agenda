@@ -1,14 +1,19 @@
 import {Injectable} from '@nestjs/common';
+import {EventEmitter2} from '@nestjs/event-emitter';
 import {randomUUID} from 'crypto';
-import {AccessDeniedException, AccessDeniedReason, ResourceNotFoundException} from '../../domain/@shared/exceptions';
+import {AccessDeniedException, AccessDeniedReason, InvalidInputException, ResourceNotFoundException} from '../../domain/@shared/exceptions';
 import {ClinicMemberRole} from '../../domain/clinic-member/entities';
 import {toEnum} from '../../domain/@shared/utils';
+import {AddonPurchasedEvent} from '../../domain/subscription/events';
 import {PrismaProvider} from '../../infrastructure/repository/prisma/prisma.provider';
 import {
+    ADDON_CATALOG,
+    AddonCode,
+    AddonGrants,
     PLAN_LIMITS,
     PlanCode,
     PlanCodeRecord,
-    getPlanLimits,
+    getEffectiveLimits,
 } from './subscription-plans.config';
 
 export type UsageMetric = 'docs' | 'chat' | 'images';
@@ -29,6 +34,19 @@ export type UsageAlert = {
     message: string;
 };
 
+export type ActiveAddonEntry = {
+    addonCode: AddonCode;
+    quantity: number;
+};
+
+export type AddonDetail = {
+    code: string;
+    name: string;
+    quantity: number;
+    grantsTotal: AddonGrants;
+    expiresAt: string;
+};
+
 export type CurrentUsageResult = {
     planCode: PlanCode;
     planName: string;
@@ -44,6 +62,7 @@ export type CurrentUsageResult = {
     warningThreshold: number;
     limitsReached: string[];
     alerts: UsageAlert[];
+    addons: AddonDetail[];
     subscription: {
         status: string;
         currentPeriodStart: string;
@@ -67,9 +86,19 @@ const METRIC_LABELS: Record<string, string> = {
     storageHotGb: 'armazenamento',
 };
 
+type AddonCacheEntry = {
+    addons: ActiveAddonEntry[];
+    expiresAt: number;
+};
+
 @Injectable()
 export class SubscriptionService {
-    constructor(private readonly prismaProvider: PrismaProvider) {}
+    private readonly addonCache = new Map<string, AddonCacheEntry>();
+
+    constructor(
+        private readonly prismaProvider: PrismaProvider,
+        private readonly eventEmitter: EventEmitter2,
+    ) {}
 
     private get prisma() {
         return this.prismaProvider.client;
@@ -92,6 +121,22 @@ export class SubscriptionService {
     private periodResetAt(year: number, month: number): string {
         // First day of the next month (month is 1-based; Date constructor is 0-based → month index = next month)
         return new Date(year, month, 1).toISOString();
+    }
+
+    private periodEndIso(year: number, month: number): string {
+        return new Date(year, month, 0, 23, 59, 59, 999).toISOString();
+    }
+
+    private addonCacheKey(memberId: string, year: number, month: number): string {
+        return `${memberId}:${year}:${month}`;
+    }
+
+    private invalidateAddonCache(memberId: string): void {
+        for (const key of this.addonCache.keys()) {
+            if (key.startsWith(`${memberId}:`)) {
+                this.addonCache.delete(key);
+            }
+        }
     }
 
     private calcMetric(used: number, limit: number | null): UsageMetricDetail {
@@ -129,6 +174,32 @@ export class SubscriptionService {
         }
 
         return alerts;
+    }
+
+    /**
+     * Returns add-ons active for the member in the current period.
+     * Results are cached for 60 s to avoid an extra query per guarded request.
+     */
+    async getActiveAddons(memberId: string, _clinicId: string): Promise<ActiveAddonEntry[]> {
+        const {year, month} = this.currentPeriod();
+        const cacheKey = this.addonCacheKey(memberId, year, month);
+        const cached = this.addonCache.get(cacheKey);
+
+        if (cached && Date.now() < cached.expiresAt) {
+            return cached.addons;
+        }
+
+        const rows = await this.prisma.subscriptionAddon.findMany({
+            where: {memberId, periodYear: year, periodMonth: month},
+            select: {addonCode: true, quantity: true},
+        });
+
+        const addons: ActiveAddonEntry[] = rows
+            .filter((r) => r.addonCode in ADDON_CATALOG)
+            .map((r) => ({addonCode: r.addonCode as AddonCode, quantity: r.quantity}));
+
+        this.addonCache.set(cacheKey, {addons, expiresAt: Date.now() + 60_000});
+        return addons;
     }
 
     /**
@@ -190,7 +261,7 @@ export class SubscriptionService {
     }
 
     /**
-     * Returns current usage with limits resolved from the static plan config.
+     * Returns current usage with effective limits (plan base + active add-ons).
      * Creates the UsageRecord for the current period if it does not exist yet.
      */
     async getCurrentUsage(memberId: string, clinicId: string): Promise<CurrentUsageResult> {
@@ -204,8 +275,10 @@ export class SubscriptionService {
 
         const record = await this.getOrCreateUsageRecord(memberId, clinicId);
         const planCode = toEnum(PlanCodeRecord, subscription.planCode);
-        const limits = getPlanLimits(planCode);
         const {year, month} = this.currentPeriod();
+
+        const activeAddons = await this.getActiveAddons(memberId, clinicId);
+        const limits = getEffectiveLimits(planCode, activeAddons);
 
         const docs = this.calcMetric(record.docsUploaded, limits.docsPerMonth);
         const chat = this.calcMetric(record.chatMessages, limits.chatMessagesPerMonth);
@@ -221,6 +294,17 @@ export class SubscriptionService {
         if (storageHotGb.limit !== null && storageHotGb.remaining === 0 && storageHotGb.status !== 'NOT_INCLUDED') limitsReached.push('storageHotGb');
 
         const alerts = this.buildAlerts(usage);
+        const expiresAt = this.periodEndIso(year, month);
+
+        const addonDetails: AddonDetail[] = activeAddons.map(({addonCode, quantity}) => {
+            const catalog = ADDON_CATALOG[addonCode];
+            const grantsTotal: AddonGrants = {};
+            if (catalog.grants.docsPerMonth !== undefined) grantsTotal.docsPerMonth = catalog.grants.docsPerMonth * quantity;
+            if (catalog.grants.chatMessagesPerMonth !== undefined) grantsTotal.chatMessagesPerMonth = catalog.grants.chatMessagesPerMonth * quantity;
+            if (catalog.grants.clinicalImagesPerMonth !== undefined) grantsTotal.clinicalImagesPerMonth = catalog.grants.clinicalImagesPerMonth * quantity;
+            if (catalog.grants.storageHotGb !== undefined) grantsTotal.storageHotGb = catalog.grants.storageHotGb * quantity;
+            return {code: addonCode, name: catalog.name, quantity, grantsTotal, expiresAt};
+        });
 
         return {
             planCode,
@@ -232,12 +316,147 @@ export class SubscriptionService {
             warningThreshold: WARNING_THRESHOLD,
             limitsReached,
             alerts,
+            addons: addonDetails,
             subscription: {
                 status: subscription.status,
                 currentPeriodStart: subscription.currentPeriodStart.toISOString(),
                 currentPeriodEnd: subscription.currentPeriodEnd.toISOString(),
             },
         };
+    }
+
+    /**
+     * Purchases (or increments) an add-on for the member's current month.
+     * If the same add-on already exists this month, the quantity is summed.
+     * Emits ADDON_PURCHASED event and invalidates the addon cache.
+     */
+    async purchaseAddon(
+        memberId: string,
+        clinicId: string,
+        addonCode: AddonCode,
+        quantity: number,
+        grantedByMemberId: string,
+    ): Promise<CurrentUsageResult> {
+        const catalog = ADDON_CATALOG[addonCode];
+        if (!catalog) {
+            throw new InvalidInputException('subscription.addon_not_found');
+        }
+        if (quantity < 1) {
+            throw new InvalidInputException('subscription.addon_quantity_invalid');
+        }
+
+        const subscription = await this.prisma.professionalSubscription.findUnique({
+            where: {memberId},
+        });
+
+        if (!subscription || subscription.status !== 'ACTIVE') {
+            throw new ResourceNotFoundException('subscription.not_found', memberId);
+        }
+
+        const {year, month} = this.currentPeriod();
+        const now = new Date();
+        const pricePaidBrl = catalog.priceMonthlyBrl * quantity;
+
+        const existing = await this.prisma.subscriptionAddon.findUnique({
+            where: {subscription_addon_member_code_period_unique: {memberId, addonCode, periodYear: year, periodMonth: month}},
+        });
+
+        if (existing) {
+            await this.prisma.subscriptionAddon.update({
+                where: {id: existing.id},
+                data: {quantity: existing.quantity + quantity, pricePaidBrl: existing.pricePaidBrl + pricePaidBrl, updatedAt: now},
+            });
+        } else {
+            await this.prisma.subscriptionAddon.create({
+                data: {
+                    id: randomUUID(),
+                    clinicId,
+                    memberId,
+                    subscriptionId: subscription.id,
+                    addonCode,
+                    quantity,
+                    periodYear: year,
+                    periodMonth: month,
+                    pricePaidBrl,
+                    grantedByMemberId,
+                    createdAt: now,
+                    updatedAt: now,
+                },
+            });
+        }
+
+        this.invalidateAddonCache(memberId);
+
+        this.eventEmitter.emit(AddonPurchasedEvent.type, {
+            payload: new AddonPurchasedEvent({
+                data: {memberId, clinicId, addonCode, quantity, periodYear: year, periodMonth: month, pricePaidBrl},
+            }),
+        });
+
+        return this.getCurrentUsage(memberId, clinicId);
+    }
+
+    /**
+     * Returns active add-ons for the current month with full detail for the HTTP response.
+     */
+    async getActiveAddonDetails(memberId: string, _clinicId: string): Promise<AddonDetail[]> {
+        const {year, month} = this.currentPeriod();
+        const expiresAt = this.periodEndIso(year, month);
+
+        const rows = await this.prisma.subscriptionAddon.findMany({
+            where: {memberId, periodYear: year, periodMonth: month},
+            select: {addonCode: true, quantity: true},
+        });
+
+        return rows
+            .filter((r) => r.addonCode in ADDON_CATALOG)
+            .map((r) => {
+                const code = r.addonCode as AddonCode;
+                const catalog = ADDON_CATALOG[code];
+                const grantsTotal: AddonGrants = {};
+                if (catalog.grants.docsPerMonth !== undefined) grantsTotal.docsPerMonth = catalog.grants.docsPerMonth * r.quantity;
+                if (catalog.grants.chatMessagesPerMonth !== undefined) grantsTotal.chatMessagesPerMonth = catalog.grants.chatMessagesPerMonth * r.quantity;
+                if (catalog.grants.clinicalImagesPerMonth !== undefined) grantsTotal.clinicalImagesPerMonth = catalog.grants.clinicalImagesPerMonth * r.quantity;
+                if (catalog.grants.storageHotGb !== undefined) grantsTotal.storageHotGb = catalog.grants.storageHotGb * r.quantity;
+                return {code, name: catalog.name, quantity: r.quantity, grantsTotal, expiresAt};
+            });
+    }
+
+    /**
+     * Returns all active add-ons in a clinic for the current month, grouped by member.
+     */
+    async getClinicActiveAddons(clinicId: string): Promise<{memberId: string; addons: AddonDetail[]}[]> {
+        const {year, month} = this.currentPeriod();
+        const expiresAt = this.periodEndIso(year, month);
+
+        const rows = await this.prisma.subscriptionAddon.findMany({
+            where: {clinicId, periodYear: year, periodMonth: month},
+            select: {memberId: true, addonCode: true, quantity: true},
+            orderBy: {memberId: 'asc'},
+        });
+
+        const byMember = new Map<string, AddonDetail[]>();
+
+        for (const row of rows) {
+            if (!(row.addonCode in ADDON_CATALOG)) continue;
+            const code = row.addonCode as AddonCode;
+            const catalog = ADDON_CATALOG[code];
+            const grantsTotal: AddonGrants = {};
+            if (catalog.grants.docsPerMonth !== undefined) grantsTotal.docsPerMonth = catalog.grants.docsPerMonth * row.quantity;
+            if (catalog.grants.chatMessagesPerMonth !== undefined) grantsTotal.chatMessagesPerMonth = catalog.grants.chatMessagesPerMonth * row.quantity;
+            if (catalog.grants.clinicalImagesPerMonth !== undefined) grantsTotal.clinicalImagesPerMonth = catalog.grants.clinicalImagesPerMonth * row.quantity;
+            if (catalog.grants.storageHotGb !== undefined) grantsTotal.storageHotGb = catalog.grants.storageHotGb * row.quantity;
+            const detail: AddonDetail = {code, name: catalog.name, quantity: row.quantity, grantsTotal, expiresAt};
+
+            const existing = byMember.get(row.memberId);
+            if (existing) {
+                existing.push(detail);
+            } else {
+                byMember.set(row.memberId, [detail]);
+            }
+        }
+
+        return Array.from(byMember.entries()).map(([memberId, addons]) => ({memberId, addons}));
     }
 
     /**

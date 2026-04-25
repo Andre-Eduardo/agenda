@@ -15,6 +15,7 @@ import {patientFormEvents} from '../patient-form/events';
 import {personEvents} from '../person/events';
 import {professionalEvents} from '../professional/events';
 import {recordEvents} from '../record/events';
+import {subscriptionEvents} from '../subscription/events';
 import {userEvents} from '../user/events';
 
 export const eventTypes = [
@@ -35,6 +36,7 @@ export const eventTypes = [
     clinicPatientAccessEvents,
     documentPermissionEvents,
     draftEvolutionEvents,
+    subscriptionEvents,
 ];
 
 export type DomainEventType = TupleToUnion<TupleToUnion<typeof eventTypes>>;
