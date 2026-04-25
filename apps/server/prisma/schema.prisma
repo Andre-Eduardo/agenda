@@ -130,6 +130,8 @@ model Clinic {
   insurancePlans      InsurancePlan[]
   reminderConfig      ClinicReminderConfig?
   reminders           AppointmentReminder[]
+  recordAmendments    RecordAmendment[]
+  draftEvolutions     DraftEvolution[]
 
   @@map("clinic")
 }
@@ -198,6 +200,8 @@ model ClinicMember {
   createdAppointments      Appointment[]            @relation("AppointmentCreatedBy")
   attendedAppointments     Appointment[]            @relation("AppointmentAttendedBy")
   createdRecords           Record[]                 @relation("RecordCreatedBy")
+  signedRecords            Record[]                 @relation("RecordSignedBy")
+  requestedAmendments      RecordAmendment[]        @relation("AmendmentRequestedBy")
   createdFiles             File[]
   createdImportedDocuments ImportedDocument[]
   createdClinicalProfiles  ClinicalProfile[]        @relation("ClinicalProfileCreatedBy")
@@ -208,6 +212,8 @@ model ClinicMember {
   contextSnapshots         PatientContextSnapshot[]
   events                   Event[]
   createdAgentProposals    AgentProposal[]          @relation("AgentProposalCreatedBy")
+  createdDraftEvolutions   DraftEvolution[]         @relation("DraftCreatedBy")
+  approvedDraftEvolutions  DraftEvolution[]         @relation("DraftApprovedBy")
 
   @@unique([clinicId, userId], name: "clinic_member_clinic_user_unique")
   @@index([clinicId], name: "clinic_member_clinic_idx")
@@ -395,6 +401,7 @@ model Patient {
   contextChunks     PatientContextChunk[]
   address           PatientAddress?
   reminders         AppointmentReminder[]
+  draftEvolutions   DraftEvolution[]
 
   @@unique([documentId, clinicId], name: "patient_document_clinic_unique")
   @@index([clinicId], name: "patient_clinic_idx")
@@ -475,6 +482,15 @@ enum ImportStatus {
   FAILED
 
   @@map("import_status")
+}
+
+enum DraftEvolutionStatus {
+  DRAFT
+  PENDING_REVIEW
+  APPROVED
+  REJECTED
+
+  @@map("draft_evolution_status")
 }
 
 enum AttendanceType {
@@ -688,6 +704,11 @@ model Record {
   importedDocument   ImportedDocument? @relation(fields: [importedDocumentId], references: [id])
   wasHumanEdited     Boolean           @default(false) @map("was_human_edited")
 
+  isLocked         Boolean       @default(false) @map("is_locked")
+  signedAt         DateTime?     @map("signed_at")
+  signedByMemberId String?       @map("signed_by_member_id") @db.Uuid
+  signedBy         ClinicMember? @relation("RecordSignedBy", fields: [signedByMemberId], references: [id])
+
   patientFormId String?      @unique @map("patient_form_id") @db.Uuid
   patientForm   PatientForm? @relation("RecordPatientForm", fields: [patientFormId], references: [id])
 
@@ -695,9 +716,31 @@ model Record {
   updatedAt DateTime  @map("updated_at")
   deletedAt DateTime? @map("deleted_at")
 
+  amendments     RecordAmendment[]
+  draftEvolution DraftEvolution?
+
   @@index([clinicId], name: "record_clinic_idx")
   @@index([patientId], name: "record_patient_idx")
   @@map("record")
+}
+
+model RecordAmendment {
+  id                  String       @id @db.Uuid
+  clinicId            String       @map("clinic_id") @db.Uuid
+  clinic              Clinic       @relation(fields: [clinicId], references: [id])
+  recordId            String       @map("record_id") @db.Uuid
+  record              Record       @relation(fields: [recordId], references: [id])
+  requestedByMemberId String       @map("requested_by_member_id") @db.Uuid
+  requestedBy         ClinicMember @relation("AmendmentRequestedBy", fields: [requestedByMemberId], references: [id])
+  justification       String       @db.Text
+  reopenedAt          DateTime     @map("reopened_at")
+  relockedAt          DateTime?    @map("relocked_at")
+  createdAt           DateTime     @map("created_at")
+  updatedAt           DateTime     @map("updated_at")
+
+  @@index([clinicId])
+  @@index([recordId])
+  @@map("record_amendment")
 }
 
 /// MUDANÇAS: clinicId + createdByMemberId (auditoria de upload).
@@ -721,6 +764,50 @@ model File {
 
   @@index([clinicId], name: "file_clinic_idx")
   @@map("file")
+}
+
+model DraftEvolution {
+  id                   String               @id @db.Uuid
+  clinicId             String               @map("clinic_id") @db.Uuid
+  clinic               Clinic               @relation(fields: [clinicId], references: [id])
+  patientId            String               @map("patient_id") @db.Uuid
+  patient              Patient              @relation(fields: [patientId], references: [id])
+  createdByMemberId    String               @map("created_by_member_id") @db.Uuid
+  createdBy            ClinicMember         @relation("DraftCreatedBy", fields: [createdByMemberId], references: [id])
+
+  importedDocumentId   String?              @unique @map("imported_document_id") @db.Uuid
+  importedDocument     ImportedDocument?    @relation(fields: [importedDocumentId], references: [id])
+
+  templateType         EvolutionTemplateType? @map("template_type")
+  title                String?
+  attendanceType       AttendanceType?        @map("attendance_type")
+  clinicalStatus       ClinicalStatusTag?     @map("clinical_status")
+  conductTags          ConductTag[]           @map("conduct_tags")
+  subjective           String?
+  objective            String?
+  assessment           String?
+  plan                 String?
+  freeNotes            String?                @map("free_notes")
+  eventDate            DateTime?              @map("event_date")
+  overallConfidence    Float?                 @map("overall_confidence")
+
+  status               DraftEvolutionStatus   @default(DRAFT) @map("status")
+  wasHumanEdited       Boolean                @default(false) @map("was_human_edited")
+  reviewRequired       Boolean                @default(true) @map("review_required")
+
+  approvedByMemberId   String?                @map("approved_by_member_id") @db.Uuid
+  approvedBy           ClinicMember?          @relation("DraftApprovedBy", fields: [approvedByMemberId], references: [id])
+  approvedAt           DateTime?              @map("approved_at")
+
+  recordId             String?                @unique @map("record_id") @db.Uuid
+  record               Record?                @relation(fields: [recordId], references: [id])
+
+  createdAt            DateTime               @map("created_at")
+  updatedAt            DateTime               @map("updated_at")
+
+  @@index([clinicId])
+  @@index([patientId])
+  @@map("draft_evolution")
 }
 
 /// MUDANÇAS:
@@ -754,6 +841,7 @@ model ImportedDocument {
 
   extractedFields ExtractedField[]
   records         Record[]
+  draft           DraftEvolution?
 
   @@index([clinicId], name: "imported_document_clinic_idx")
   @@map("imported_document")

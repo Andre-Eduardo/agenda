@@ -11,9 +11,10 @@ import type {ClinicId} from '../../clinic/entities';
 import type {ClinicMemberId} from '../../clinic-member/entities';
 import type {ProfessionalId} from '../../professional/entities';
 import type {AppointmentId} from '../../appointment/entities';
-import {RecordCreatedEvent, RecordChangedEvent, RecordDeletedEvent, RecordSavedEvent} from '../events';
+import {RecordCreatedEvent, RecordChangedEvent, RecordDeletedEvent, RecordSavedEvent, RecordSignedEvent, RecordReopenedEvent} from '../events';
 import type {File} from './file.entity';
 import {ImportedDocumentId} from './imported-document.entity';
+import {PreconditionException} from '../../@shared/exceptions';
 
 export enum EvolutionTemplateType {
     SOAP = 'SOAP',
@@ -80,6 +81,9 @@ export class Record extends AggregateRoot<RecordId> {
     importedDocumentId: ImportedDocumentId | null;
     wasHumanEdited: boolean;
     patientFormId: string | null;
+    isLocked: boolean;
+    signedAt: Date | null;
+    signedByMemberId: ClinicMemberId | null;
 
     constructor(props: AllEntityProps<Record>) {
         super(props);
@@ -105,6 +109,9 @@ export class Record extends AggregateRoot<RecordId> {
         this.importedDocumentId = props.importedDocumentId ?? null;
         this.wasHumanEdited = props.wasHumanEdited ?? false;
         this.patientFormId = props.patientFormId ?? null;
+        this.isLocked = props.isLocked ?? false;
+        this.signedAt = props.signedAt ?? null;
+        this.signedByMemberId = props.signedByMemberId ?? null;
         this.validate();
     }
 
@@ -132,6 +139,9 @@ export class Record extends AggregateRoot<RecordId> {
             importedDocumentId: props.importedDocumentId ?? null,
             wasHumanEdited: props.wasHumanEdited ?? false,
             patientFormId: props.patientFormId ?? null,
+            isLocked: false,
+            signedAt: null,
+            signedByMemberId: null,
             createdAt: now,
             updatedAt: now,
             deletedAt: null,
@@ -141,6 +151,28 @@ export class Record extends AggregateRoot<RecordId> {
         record.addEvent(new RecordSavedEvent({recordId: record.id, patientId: record.patientId, action: 'CREATED', timestamp: now}));
 
         return record;
+    }
+
+    sign(memberId: ClinicMemberId): void {
+        if (this.isLocked) {
+            throw new PreconditionException('RECORD_ALREADY_LOCKED');
+        }
+        const now = new Date();
+        this.isLocked = true;
+        this.signedAt = now;
+        this.signedByMemberId = memberId;
+        this.updatedAt = now;
+        this.addEvent(new RecordSignedEvent({recordId: this.id, signedByMemberId: memberId, timestamp: now}));
+    }
+
+    unlock(requestedByMemberId: ClinicMemberId): void {
+        if (!this.isLocked) {
+            throw new PreconditionException('RECORD_NOT_LOCKED');
+        }
+        const now = new Date();
+        this.isLocked = false;
+        this.updatedAt = now;
+        this.addEvent(new RecordReopenedEvent({recordId: this.id, requestedByMemberId, timestamp: now}));
     }
 
     delete(): void {
@@ -249,6 +281,9 @@ export class Record extends AggregateRoot<RecordId> {
             importedDocumentId: this.importedDocumentId?.toJSON() ?? null,
             wasHumanEdited: this.wasHumanEdited,
             patientFormId: this.patientFormId,
+            isLocked: this.isLocked,
+            signedAt: this.signedAt?.toJSON() ?? null,
+            signedByMemberId: this.signedByMemberId?.toJSON() ?? null,
             createdAt: this.createdAt.toJSON(),
             updatedAt: this.updatedAt.toJSON(),
             deletedAt: this.deletedAt?.toJSON() ?? null,

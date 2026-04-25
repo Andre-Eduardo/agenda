@@ -2,5 +2,8 @@ export * from './create-record.dto';
 export * from './get-record.dto';
 export * from './pre-evolution.dto';
 export * from './record.dto';
+export * from './record-amendment.dto';
+export * from './reopen-record.dto';
 export * from './search-records.dto';
+export * from './sign-record.dto';
 export * from './update-record.dto';

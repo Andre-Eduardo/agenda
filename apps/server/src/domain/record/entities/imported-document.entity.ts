@@ -80,6 +80,11 @@ export class ImportedDocument extends AggregateRoot<ImportedDocumentId> {
         });
     }
 
+    updateStatus(status: ImportStatus): void {
+        this.status = status;
+        this.updatedAt = new Date();
+    }
+
     toJSON(): EntityJson<ImportedDocument> {
         return {
             id: this.id.toJSON(),

@@ -49,6 +49,9 @@ export class RecordMapper extends MapperWithoutDto<Record, RecordModel> {
             source: model.source ? toEnum(RecordSource, model.source) : RecordSource.MANUAL,
             importedDocumentId: model.importedDocumentId ? ImportedDocumentId.from(model.importedDocumentId) : null,
             wasHumanEdited: model.wasHumanEdited ?? false,
+            isLocked: model.isLocked ?? false,
+            signedAt: model.signedAt ?? null,
+            signedByMemberId: model.signedByMemberId ? ClinicMemberId.from(model.signedByMemberId) : null,
             files:
                 model.files?.map(
                     (file) =>
@@ -88,6 +91,9 @@ export class RecordMapper extends MapperWithoutDto<Record, RecordModel> {
             source: toEnum(PrismaClient.RecordSource, entity.source),
             importedDocumentId: entity.importedDocumentId?.toString() ?? null,
             wasHumanEdited: entity.wasHumanEdited,
+            isLocked: entity.isLocked,
+            signedAt: entity.signedAt ?? null,
+            signedByMemberId: entity.signedByMemberId?.toString() ?? null,
             createdAt: entity.createdAt,
             updatedAt: entity.updatedAt,
             deletedAt: entity.deletedAt ?? null,

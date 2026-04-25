@@ -28,6 +28,9 @@ import {PersonRepository} from '../../../domain/person/person.repository';
 import {MemberBlockRepository} from '../../../domain/professional/member-block.repository';
 import {ProfessionalRepository} from '../../../domain/professional/professional.repository';
 import {WorkingHoursRepository} from '../../../domain/professional/working-hours.repository';
+import {DraftEvolutionRepository} from '../../../domain/draft-evolution/draft-evolution.repository';
+import {ImportedDocumentRepository} from '../../../domain/record/imported-document.repository';
+import {RecordAmendmentRepository} from '../../../domain/record/record-amendment.repository';
 import {RecordRepository} from '../../../domain/record/record.repository';
 import {UserRepository} from '../../../domain/user/user.repository';
 import {MapperModule} from '../../mappers';
@@ -58,6 +61,9 @@ import {PatientContextSnapshotPrismaRepository} from '../patient-context-snapsho
 import {PatientFormPrismaRepository} from '../patient-form.prisma.repository';
 import {PersonPrismaRepository} from '../person.prisma.repository';
 import {ProfessionalPrismaRepository} from '../professional.prisma.repository';
+import {DraftEvolutionPrismaRepository} from '../draft-evolution.prisma.repository';
+import {ImportedDocumentPrismaRepository} from '../imported-document.prisma.repository';
+import {RecordAmendmentPrismaRepository} from '../record-amendment.prisma.repository';
 import {RecordPrismaRepository} from '../record.prisma.repository';
 import {UploadFilePrismaRepository} from '../upload-file.prisma.repository';
 import {UserPrismaRepository} from '../user.prisma.repository';
@@ -87,6 +93,9 @@ const repositories: Provider[] = [
     {provide: MemberBlockRepository, useClass: MemberBlockPrismaRepository},
     // Clinical
     {provide: RecordRepository, useClass: RecordPrismaRepository},
+    {provide: RecordAmendmentRepository, useClass: RecordAmendmentPrismaRepository},
+    {provide: ImportedDocumentRepository, useClass: ImportedDocumentPrismaRepository},
+    {provide: DraftEvolutionRepository, useClass: DraftEvolutionPrismaRepository},
     {provide: UploadFileRepository, useClass: UploadFilePrismaRepository},
     {provide: ClinicalProfileRepository, useClass: ClinicalProfilePrismaRepository},
     {provide: PatientAlertRepository, useClass: PatientAlertPrismaRepository},
