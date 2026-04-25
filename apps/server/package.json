@@ -29,7 +29,8 @@
     "prepare-env": "node scripts/create-env.mjs",
     "postinstall": "pnpm prisma:generate",
     "ingest:knowledge": "ts-node --swc scripts/ingest-knowledge.ts",
-    "validate:agent": "ts-node --swc scripts/validate-agent.ts"
+    "validate:agent": "ts-node --swc scripts/validate-agent.ts",
+    "backfill:costs": "ts-node --swc src/application/billing/backfill-costs.command.ts"
   },
   "prisma": {
     "seed": "ts-node prisma/seed.ts"

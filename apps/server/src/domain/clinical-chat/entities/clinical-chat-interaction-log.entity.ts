@@ -50,6 +50,7 @@ export class ClinicalChatInteractionLog extends AggregateRoot<ClinicalChatIntera
     promptTokens: number | null;
     completionTokens: number | null;
     totalTokens: number | null;
+    costUsd: number | null;
 
     // Performance
     latencyMs: number | null;
@@ -86,6 +87,7 @@ export class ClinicalChatInteractionLog extends AggregateRoot<ClinicalChatIntera
         this.promptTokens = props.promptTokens ?? null;
         this.completionTokens = props.completionTokens ?? null;
         this.totalTokens = props.totalTokens ?? null;
+        this.costUsd = props.costUsd ?? null;
         this.latencyMs = props.latencyMs ?? null;
         this.status = props.status ?? ChatInteractionStatus.PENDING;
         this.errorCode = props.errorCode ?? null;
@@ -119,6 +121,7 @@ export class ClinicalChatInteractionLog extends AggregateRoot<ClinicalChatIntera
             promptTokens: props.promptTokens ?? null,
             completionTokens: props.completionTokens ?? null,
             totalTokens: props.totalTokens ?? null,
+            costUsd: props.costUsd ?? null,
             latencyMs: props.latencyMs ?? null,
             status: props.status ?? ChatInteractionStatus.PENDING,
             errorCode: props.errorCode ?? null,
@@ -194,6 +197,7 @@ export class ClinicalChatInteractionLog extends AggregateRoot<ClinicalChatIntera
             promptTokens: this.promptTokens,
             completionTokens: this.completionTokens,
             totalTokens: this.totalTokens,
+            costUsd: this.costUsd,
             latencyMs: this.latencyMs,
             status: this.status,
             errorCode: this.errorCode,
