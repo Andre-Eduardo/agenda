@@ -1,5 +1,6 @@
 import {AggregateRoot, type AllEntityProps, type EntityJson, type EntityProps, type CreateEntity} from '../../@shared/entity';
 import {EntityId} from '../../@shared/entity/id';
+import type {ClinicId} from '../../clinic/entities';
 import type {PatientChatSessionId} from './patient-chat-session.entity';
 import type {AiAgentProfileId} from './ai-agent-profile.entity';
 import type {PatientContextSnapshotId} from './patient-context-snapshot.entity';
@@ -25,6 +26,7 @@ export type CreateClinicalChatInteractionLog = CreateEntity<ClinicalChatInteract
  * Permite auditoria completa sem poluir a entidade de mensagem com dados técnicos.
  */
 export class ClinicalChatInteractionLog extends AggregateRoot<ClinicalChatInteractionLogId> {
+    clinicId: ClinicId;
     sessionId: PatientChatSessionId;
     /** ID da PatientChatMessage do usuário que originou esta interação */
     userMessageId: string;
@@ -70,6 +72,7 @@ export class ClinicalChatInteractionLog extends AggregateRoot<ClinicalChatIntera
 
     constructor(props: AllEntityProps<ClinicalChatInteractionLog>) {
         super(props);
+        this.clinicId = props.clinicId;
         this.sessionId = props.sessionId;
         this.userMessageId = props.userMessageId;
         this.assistantMessageId = props.assistantMessageId ?? null;
@@ -102,6 +105,7 @@ export class ClinicalChatInteractionLog extends AggregateRoot<ClinicalChatIntera
         return new ClinicalChatInteractionLog({
             ...props,
             id: ClinicalChatInteractionLogId.generate(),
+            clinicId: props.clinicId!,
             sessionId: props.sessionId!,
             userMessageId: props.userMessageId!,
             assistantMessageId: props.assistantMessageId ?? null,
@@ -176,6 +180,7 @@ export class ClinicalChatInteractionLog extends AggregateRoot<ClinicalChatIntera
     toJSON(): EntityJson<ClinicalChatInteractionLog> {
         return {
             id: this.id.toJSON(),
+            clinicId: this.clinicId.toJSON(),
             sessionId: this.sessionId.toJSON(),
             userMessageId: this.userMessageId,
             assistantMessageId: this.assistantMessageId,

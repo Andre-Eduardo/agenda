@@ -1,5 +1,6 @@
 import {AggregateRoot, type AllEntityProps, type EntityJson, type EntityProps, type CreateEntity} from '../../@shared/entity';
 import {EntityId} from '../../@shared/entity/id';
+import type {ClinicId} from '../../clinic/entities';
 import type {Specialty} from '../../form-template/entities';
 
 export type KnowledgeChunkMetadata = {
@@ -13,8 +14,8 @@ export type KnowledgeChunkProps = EntityProps<KnowledgeChunk>;
 export type CreateKnowledgeChunk = CreateEntity<KnowledgeChunk>;
 
 export class KnowledgeChunk extends AggregateRoot<KnowledgeChunkId> {
-    /** null = chunk global; preenchido = chunk scoped para uma empresa */
-    companyId: string | null;
+    /** null = chunk global; preenchido = chunk scoped para uma clínica */
+    clinicId: ClinicId | null;
     specialty: Specialty | null;
     /** "protocolo" | "cid" | "faq" | "manual" | "diretriz" */
     category: string;
@@ -27,7 +28,7 @@ export class KnowledgeChunk extends AggregateRoot<KnowledgeChunkId> {
 
     constructor(props: AllEntityProps<KnowledgeChunk>) {
         super(props);
-        this.companyId = props.companyId ?? null;
+        this.clinicId = props.clinicId ?? null;
         this.specialty = props.specialty ?? null;
         this.category = props.category;
         this.content = props.content;
@@ -44,7 +45,7 @@ export class KnowledgeChunk extends AggregateRoot<KnowledgeChunkId> {
         return new KnowledgeChunk({
             ...props,
             id: KnowledgeChunkId.generate(),
-            companyId: props.companyId ?? null,
+            clinicId: props.clinicId ?? null,
             specialty: props.specialty ?? null,
             category: props.category!,
             content: props.content!,
@@ -67,7 +68,7 @@ export class KnowledgeChunk extends AggregateRoot<KnowledgeChunkId> {
     toJSON(): EntityJson<KnowledgeChunk> {
         return {
             id: this.id.toJSON(),
-            companyId: this.companyId,
+            clinicId: this.clinicId?.toJSON() ?? null,
             specialty: this.specialty,
             category: this.category,
             content: this.content,

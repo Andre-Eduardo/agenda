@@ -1,11 +1,13 @@
 import {PaginatedList, Pagination} from '../@shared/repository';
+import type {ClinicId} from '../clinic/entities';
+import type {ClinicMemberId} from '../clinic-member/entities';
 import type {PatientId} from '../patient/entities';
-import type {ProfessionalId} from '../professional/entities';
 import type {PatientChatSession, PatientChatSessionId, ChatSessionStatus} from './entities';
 
 export type PatientChatSessionFilter = {
+    clinicId?: ClinicId;
     patientId?: PatientId;
-    professionalId?: ProfessionalId;
+    memberId?: ClinicMemberId;
     status?: ChatSessionStatus;
 };
 
