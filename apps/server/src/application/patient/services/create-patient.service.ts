@@ -30,10 +30,24 @@ export class CreatePatientService implements ApplicationService<CreatePatientDto
             email: payload.email ?? null,
             emergencyContactName: payload.emergencyContactName ?? null,
             emergencyContactPhone: payload.emergencyContactPhone ?? null,
+            address: payload.address
+                ? {
+                      street: payload.address.street ?? null,
+                      number: payload.address.number ?? null,
+                      complement: payload.address.complement ?? null,
+                      neighborhood: payload.address.neighborhood ?? null,
+                      city: payload.address.city ?? null,
+                      state: payload.address.state ?? null,
+                      zipCode: payload.address.zipCode ?? null,
+                      country: payload.address.country ?? null,
+                  }
+                : null,
+            insurancePlanId: payload.insurancePlanId ?? null,
+            insuranceCardNumber: payload.insuranceCardNumber ?? null,
+            insuranceValidUntil: payload.insuranceValidUntil ?? null,
         });
 
-        // PatientPrismaRepository persists Person + Patient atomically in a
-        // transaction, so a separate personRepository.save() is no longer needed.
+        // PatientPrismaRepository persists Person + Patient + PatientAddress atomically.
         await this.patientRepository.save(patient);
 
         this.eventDispatcher.dispatch(actor, patient);

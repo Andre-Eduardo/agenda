@@ -3,13 +3,20 @@ import {ApiTags} from '@nestjs/swagger';
 import {z} from 'zod';
 import {Actor} from '../../../domain/@shared/actor';
 import {ClinicId} from '../../../domain/clinic/entities';
+import {InsurancePlanPermission} from '../../../domain/auth';
+import {Authorize} from '../../@shared/auth';
 import {BypassClinicMember} from '../../@shared/auth/bypass-clinic-member.decorator';
 import {RequestActor} from '../../@shared/auth/request-actor.decorator';
 import {ApiOperation} from '../../@shared/openapi/decorators';
 import {entityIdParam} from '../../@shared/openapi/params';
 import {ValidatedParam} from '../../@shared/validation';
-import {ClinicDto, CreateClinicDto} from '../dtos';
-import {CreateClinicService, GetClinicService} from '../services';
+import {ClinicDto, CreateClinicDto, CreateInsurancePlanDto, InsurancePlanDto} from '../dtos';
+import {
+    CreateClinicService,
+    CreateInsurancePlanService,
+    GetClinicService,
+    ListInsurancePlansService,
+} from '../services';
 
 @ApiTags('Clinic')
 @Controller('clinics')
@@ -17,6 +24,8 @@ export class ClinicController {
     constructor(
         private readonly createClinicService: CreateClinicService,
         private readonly getClinicService: GetClinicService,
+        private readonly createInsurancePlanService: CreateInsurancePlanService,
+        private readonly listInsurancePlansService: ListInsurancePlansService,
     ) {}
 
     @ApiOperation({
@@ -41,5 +50,36 @@ export class ClinicController {
         clinicId: ClinicId,
     ): Promise<ClinicDto> {
         return this.getClinicService.execute({actor, payload: {clinicId}});
+    }
+
+    @ApiOperation({
+        summary: 'List insurance plans for a clinic',
+        parameters: [entityIdParam('Clinic ID', 'clinicId')],
+        responses: [{status: 200, description: 'Insurance plans', type: [InsurancePlanDto]}],
+    })
+    @Authorize(InsurancePlanPermission.VIEW)
+    @Get(':clinicId/insurance-plans')
+    async listInsurancePlans(
+        @RequestActor() actor: Actor,
+        @ValidatedParam('clinicId', z.string().uuid().transform((v) => ClinicId.from(v)))
+        clinicId: ClinicId,
+    ): Promise<InsurancePlanDto[]> {
+        return this.listInsurancePlansService.execute({actor, payload: {clinicId}});
+    }
+
+    @ApiOperation({
+        summary: 'Create an insurance plan for a clinic',
+        parameters: [entityIdParam('Clinic ID', 'clinicId')],
+        responses: [{status: 201, description: 'Insurance plan created', type: InsurancePlanDto}],
+    })
+    @Authorize(InsurancePlanPermission.CREATE)
+    @Post(':clinicId/insurance-plans')
+    async createInsurancePlan(
+        @RequestActor() actor: Actor,
+        @ValidatedParam('clinicId', z.string().uuid().transform((v) => ClinicId.from(v)))
+        clinicId: ClinicId,
+        @Body() payload: CreateInsurancePlanDto,
+    ): Promise<InsurancePlanDto> {
+        return this.createInsurancePlanService.execute({actor, payload: {...payload, clinicId}});
     }
 }
