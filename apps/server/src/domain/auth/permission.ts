@@ -27,6 +27,17 @@ export enum AppointmentPermission {
     UPDATE = 'appointment:update',
     CANCEL = 'appointment:cancel',
     DELETE = 'appointment:delete',
+    CHECKIN = 'appointment:checkin',
+    CALL = 'appointment:call',
+}
+
+export enum AppointmentReminderPermission {
+    VIEW = 'appointment-reminder:view',
+}
+
+export enum ClinicReminderConfigPermission {
+    VIEW = 'clinic-reminder-config:view',
+    MANAGE = 'clinic-reminder-config:manage',
 }
 
 export enum RecordPermission {
@@ -103,6 +114,8 @@ const PERMISSIONS = [
     ...Object.values(PatientFormPermission),
     ...Object.values(InsurancePlanPermission),
     ...Object.values(ClinicalChatPermission),
+    ...Object.values(AppointmentReminderPermission),
+    ...Object.values(ClinicReminderConfigPermission),
 ];
 
 export type Permission = (typeof PERMISSIONS)[number];
