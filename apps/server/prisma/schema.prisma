@@ -136,6 +136,7 @@ model Clinic {
   clinicalDocumentTemplates ClinicalDocumentTemplate[]
   professionalSubscriptions ProfessionalSubscription[]
   usageRecords              UsageRecord[]
+  appointmentPayments       AppointmentPayment[]
 
   @@map("clinic")
 }
@@ -223,6 +224,7 @@ model ClinicMember {
   createdDraftEvolutions   DraftEvolution[]         @relation("DraftCreatedBy")
   approvedDraftEvolutions  DraftEvolution[]         @relation("DraftApprovedBy")
   createdClinicalDocuments ClinicalDocument[]
+  registeredPayments       AppointmentPayment[] @relation("AppointmentPaymentRegisteredBy")
 
   @@unique([clinicId, userId], name: "clinic_member_clinic_user_unique")
   @@index([clinicId], name: "clinic_member_clinic_idx")
@@ -413,6 +415,7 @@ model Patient {
   reminders             AppointmentReminder[]
   draftEvolutions       DraftEvolution[]
   clinicalDocuments     ClinicalDocument[]
+  appointmentPayments   AppointmentPayment[]
 
   @@unique([documentId, clinicId], name: "patient_document_clinic_unique")
   @@index([clinicId], name: "patient_clinic_idx")
@@ -455,7 +458,8 @@ model InsurancePlan {
   updatedAt DateTime  @map("updated_at")
   deletedAt DateTime? @map("deleted_at")
 
-  patients  Patient[]
+  patients            Patient[]
+  appointmentPayments AppointmentPayment[]
 
   @@index([clinicId], name: "insurance_plan_clinic_idx")
   @@map("insurance_plan")
@@ -573,6 +577,27 @@ enum AppointmentStatus {
   @@map("appointment_status")
 }
 
+enum PaymentMethod {
+  CASH
+  PIX
+  CREDIT_CARD
+  DEBIT_CARD
+  BANK_TRANSFER
+  INSURANCE
+  COURTESY
+
+  @@map("payment_method")
+}
+
+enum AppointmentPaymentStatus {
+  PENDING
+  PAID
+  EXEMPT
+  REFUNDED
+
+  @@map("appointment_payment_status")
+}
+
 enum ReminderChannel {
   WHATSAPP
   SMS
@@ -638,10 +663,43 @@ model Appointment {
   records           Record[]
   reminders         AppointmentReminder[]
   clinicalDocuments ClinicalDocument[]
+  payment           AppointmentPayment?
 
   @@index([clinicId], name: "appointment_clinic_idx")
   @@index([attendedByMemberId], name: "appointment_attended_by_idx")
   @@map("appointment")
+}
+
+/// Registro de pagamento vinculado ao atendimento clínico.
+/// Pagamento registrado manualmente pela recepção ou profissional após atendimento concluído.
+model AppointmentPayment {
+  id                   String                   @id @db.Uuid
+  clinicId             String                   @map("clinic_id") @db.Uuid
+  clinic               Clinic                   @relation(fields: [clinicId], references: [id])
+  appointmentId        String                   @unique @map("appointment_id") @db.Uuid
+  appointment          Appointment              @relation(fields: [appointmentId], references: [id])
+  patientId            String                   @map("patient_id") @db.Uuid
+  patient              Patient                  @relation(fields: [patientId], references: [id])
+  registeredByMemberId String                   @map("registered_by_member_id") @db.Uuid
+  registeredBy         ClinicMember             @relation("AppointmentPaymentRegisteredBy", fields: [registeredByMemberId], references: [id])
+
+  paymentMethod        PaymentMethod            @map("payment_method")
+  status               AppointmentPaymentStatus @default(PENDING) @map("status")
+  amountBrl            Float                    @map("amount_brl")
+  paidAt               DateTime?                @map("paid_at")
+
+  insurancePlanId      String?                  @map("insurance_plan_id") @db.Uuid
+  insurancePlan        InsurancePlan?           @relation(fields: [insurancePlanId], references: [id])
+  insuranceAuthCode    String?                  @map("insurance_auth_code")
+
+  notes                String?                  @db.Text
+  createdAt            DateTime                 @map("created_at")
+  updatedAt            DateTime                 @map("updated_at")
+
+  @@index([clinicId], name: "appointment_payment_clinic_idx")
+  @@index([patientId], name: "appointment_payment_patient_idx")
+  @@index([paidAt], name: "appointment_payment_paid_at_idx")
+  @@map("appointment_payment")
 }
 
 /// MUDANÇA: professionalId → clinicMemberId (apenas membros PROFESSIONAL devem ter)

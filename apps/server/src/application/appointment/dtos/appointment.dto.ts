@@ -1,6 +1,7 @@
 import {ApiProperty, ApiSchema} from '@nestjs/swagger';
 import type {Appointment} from '../../../domain/appointment/entities';
 import {AppointmentStatus, AppointmentType} from '../../../domain/appointment/entities';
+import {AppointmentPaymentStatus} from '../../../domain/appointment-payment/entities';
 import {EntityDto} from '../../@shared/dto';
 
 @ApiSchema({name: 'Appointment'})
@@ -47,7 +48,10 @@ export class AppointmentDto extends EntityDto {
     @ApiProperty({format: 'date-time', nullable: true, description: 'When the patient was called to the room'})
     calledAt: string | null;
 
-    constructor(appointment: Appointment) {
+    @ApiProperty({enum: AppointmentPaymentStatus, nullable: true, description: 'Financial status of the appointment payment, null if no payment registered'})
+    paymentStatus: AppointmentPaymentStatus | null;
+
+    constructor(appointment: Appointment, paymentStatus: AppointmentPaymentStatus | null = null) {
         super(appointment);
         this.clinicId = appointment.clinicId.toString();
         this.patientId = appointment.patientId.toString();
@@ -63,5 +67,6 @@ export class AppointmentDto extends EntityDto {
         this.note = appointment.note;
         this.arrivedAt = appointment.arrivedAt?.toISOString() ?? null;
         this.calledAt = appointment.calledAt?.toISOString() ?? null;
+        this.paymentStatus = paymentStatus;
     }
 }

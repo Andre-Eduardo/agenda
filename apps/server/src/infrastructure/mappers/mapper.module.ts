@@ -1,5 +1,6 @@
 import {Global, Module} from '@nestjs/common';
 import {AgentProposalMapper} from './agent-proposal.mapper';
+import {AppointmentPaymentMapper} from './appointment-payment.mapper';
 import {ClinicalDocumentMapper} from './clinical-document.mapper';
 import {ClinicalDocumentTemplateMapper} from './clinical-document-template.mapper';
 import {AiAgentProfileMapper} from './ai-agent-profile.mapper';
@@ -47,6 +48,7 @@ const mappers = [
     InsurancePlanMapper,
     // Schedule
     AppointmentMapper,
+    AppointmentPaymentMapper,
     AppointmentReminderMapper,
     ClinicReminderConfigMapper,
     WorkingHoursMapper,

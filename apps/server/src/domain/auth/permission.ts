@@ -129,6 +129,16 @@ export enum PaymentPermission {
     VIEW = 'payment:view',
 }
 
+export enum AppointmentPaymentPermission {
+    REGISTER = 'appointment-payment:register',
+    UPDATE = 'appointment-payment:update',
+    VIEW = 'appointment-payment:view',
+}
+
+export enum FinancialReportPermission {
+    VIEW = 'financial-report:view',
+}
+
 const PERMISSIONS = [
     ...Object.values(UserPermission),
     ...Object.values(ProfessionalPermission),
@@ -150,6 +160,8 @@ const PERMISSIONS = [
     ...Object.values(SubscriptionPermission),
     ...Object.values(BillingPermission),
     ...Object.values(PaymentPermission),
+    ...Object.values(AppointmentPaymentPermission),
+    ...Object.values(FinancialReportPermission),
 ];
 
 export type Permission = (typeof PERMISSIONS)[number];

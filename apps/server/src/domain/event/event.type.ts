@@ -1,5 +1,6 @@
 import type {TupleToUnion} from 'type-fest';
 import {appointmentEvents} from '../appointment/events';
+import {appointmentPaymentEvents} from '../appointment-payment/events';
 import {clinicEvents} from '../clinic/events';
 import {clinicMemberEvents} from '../clinic-member/events';
 import {clinicPatientAccessEvents} from '../clinic-patient-access/events';
@@ -20,6 +21,7 @@ export const eventTypes = [
     userEvents,
     professionalEvents,
     appointmentEvents,
+    appointmentPaymentEvents,
     recordEvents,
     patientEvents,
     personEvents,
