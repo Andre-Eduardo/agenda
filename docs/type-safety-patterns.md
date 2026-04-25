@@ -199,15 +199,15 @@ Quando um objeto tem formato conhecido mas não tipado (ex: eventos genéricos, 
 
 ```typescript
 // ❌ acesso dinâmico via cast
-const {professionalId} = domainEvent as any;
+const {clinicMemberId} = domainEvent as any;
 
 // ✅ guard + conversão validada
-private extractProfessionalId(domainEvent: DomainEvent): ProfessionalId | null {
-    if (!('professionalId' in domainEvent)) return null;
-    const candidate = (domainEvent as {professionalId: unknown}).professionalId;
-    if (candidate instanceof ProfessionalId) return candidate;
+private extractClinicMemberId(domainEvent: DomainEvent): ClinicMemberId | null {
+    if (!('clinicMemberId' in domainEvent)) return null;
+    const candidate = (domainEvent as {clinicMemberId: unknown}).clinicMemberId;
+    if (candidate instanceof ClinicMemberId) return candidate;
     if (typeof candidate === 'string' && candidate.length > 0) {
-        return ProfessionalId.from(candidate);
+        return ClinicMemberId.from(candidate);
     }
     return null;
 }

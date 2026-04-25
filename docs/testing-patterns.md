@@ -71,7 +71,7 @@ describe('A create-entity service', () => {
 
     it('should create an entity', async () => {
         const payload: CreateEntityDto = {
-            companyId: CompanyId.generate(),
+            clinicId: ClinicId.generate(),
             name: 'Test Entity',
             relatedId: RelatedId.generate(),
         };
@@ -97,7 +97,7 @@ describe('A create-entity service', () => {
 
     it('should throw when related entity does not exist', async () => {
         const payload: CreateEntityDto = {
-            companyId: CompanyId.generate(),
+            clinicId: ClinicId.generate(),
             name: 'Test Entity',
             relatedId: RelatedId.generate(),
         };
@@ -137,7 +137,7 @@ describe('An entity controller', () => {
     describe('when creating an entity', () => {
         it('should delegate to CreateEntityService', async () => {
             const payload: CreateEntityDto = {
-                companyId: CompanyId.generate(),
+                clinicId: ClinicId.generate(),
                 name: 'Test',
                 relatedId: RelatedId.generate(),
             };
@@ -197,7 +197,7 @@ Each domain has fake data factories for tests:
 export const fakeEntity = (overrides: Partial<EntityProps> = {}): Entity => {
     return new Entity({
         id: EntityId.generate(),
-        companyId: CompanyId.generate(),
+        clinicId: ClinicId.generate(),
         name: 'Fake Entity',
         createdAt: new Date(),
         updatedAt: new Date(),
@@ -272,7 +272,7 @@ export default {
 describe('Entity', () => {
     describe('create', () => {
         it('should create with correct properties', () => {
-            const props = {companyId: CompanyId.generate(), name: 'Test'};
+            const props = {clinicId: ClinicId.generate(), name: 'Test'};
             const entity = Entity.create(props);
 
             expect(entity.name).toBe('Test');

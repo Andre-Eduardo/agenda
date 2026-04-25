@@ -95,7 +95,7 @@ The following are registered globally:
 |------|------|---------|
 | Guard | `AuthGuard` | JWT validation + permission check |
 | Pipe | `ZodValidationPipe` | Validates body/query/params via Zod schema |
-| Pipe | `CompanyInjectorPipe` | Auto-injects `companyId` from signed cookie |
+| Pipe | `ClinicMemberInjectorPipe` | Auto-injects `clinicId` from signed cookie |
 | Filter | `ApiExceptionFilter` | Handles domain exceptions → RFC 9457 response |
 | Filter | `HttpExceptionFilter` | Handles NestJS `HttpException` |
 | Filter | `ZodExceptionFilter` | Handles `ZodError` from validation |
@@ -107,7 +107,7 @@ A per-request context is maintained via `nestjs-cls`. It stores:
 
 ```typescript
 interface RequestContext extends ClsStore {
-    companyId: string | undefined;  // From signed cookie
+    clinicId: string | undefined;  // From signed cookie
     actor: MaybeAuthenticatedActor; // Populated by AuthGuard
 }
 ```
@@ -127,13 +127,13 @@ Events are only dispatched **after** the main operation succeeds. If `handle()` 
 
 ## Multi-Tenancy
 
-The system is multi-tenant via `companyId`:
+The system is multi-tenant via `clinicId`:
 
-- A signed cookie carries `companyId` per request
-- `CompanyInjectorPipe` automatically adds it to all DTOs
-- `@AuthorizeCompany(paramKey)` enforces company access at the controller level
-- All entities have `companyId` as a required field
-- Repository queries always scope by `companyId`
+- A signed cookie carries `clinicId` per request
+- `ClinicMemberInjectorPipe` automatically adds it to all DTOs
+- `@AuthorizeClinic(paramKey)` enforces company access at the controller level
+- All entities have `clinicId` as a required field
+- Repository queries always scope by `clinicId`
 
 ## Technology Stack Summary
 
