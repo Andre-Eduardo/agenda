@@ -1,5 +1,6 @@
 import {Body, Controller, Get, HttpCode, HttpStatus, Patch, Post, Query} from '@nestjs/common';
 import {ApiTags} from '@nestjs/swagger';
+import {UseUsageLimit} from '../../subscription/decorators/use-usage-limit.decorator';
 import {Actor} from '../../../domain/@shared/actor';
 import {
     PatientChatSessionId,
@@ -180,6 +181,7 @@ export class ClinicalChatController {
         responses: [{status: 200, description: 'User message + assistant response', type: SendChatMessageResponseDto}],
     })
     @Authorize(ClinicalChatPermission.CREATE)
+    @UseUsageLimit('chat')
     @HttpCode(HttpStatus.OK)
     @Post('sessions/:id/chat')
     async sendChatMessage(

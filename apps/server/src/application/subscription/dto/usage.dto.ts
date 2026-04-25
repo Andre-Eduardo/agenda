@@ -1,5 +1,5 @@
 import {ApiProperty, ApiSchema} from '@nestjs/swagger';
-import type {CurrentUsageResult} from '../subscription.service';
+import type {ClinicMemberUsageEntry, CurrentUsageResult, MetricStatus, UsageAlert} from '../subscription.service';
 import {PLAN_LIMITS} from '../subscription-plans.config';
 
 export class UsageMetricDto {
@@ -15,11 +15,32 @@ export class UsageMetricDto {
     @ApiProperty({nullable: true, description: 'null = unlimited'})
     remaining: number | null;
 
-    constructor(props: UsageMetricDto) {
+    @ApiProperty({enum: ['OK', 'WARNING', 'EXCEEDED', 'NOT_INCLUDED']})
+    status: MetricStatus;
+
+    constructor(props: Omit<UsageMetricDto, never>) {
         this.used = props.used;
         this.limit = props.limit;
         this.percent = props.percent;
         this.remaining = props.remaining;
+        this.status = props.status;
+    }
+}
+
+export class UsageAlertDto {
+    @ApiProperty()
+    metric: string;
+
+    @ApiProperty({enum: ['WARNING', 'EXCEEDED']})
+    type: 'WARNING' | 'EXCEEDED';
+
+    @ApiProperty()
+    message: string;
+
+    constructor(props: UsageAlert) {
+        this.metric = props.metric;
+        this.type = props.type;
+        this.message = props.message;
     }
 }
 
@@ -57,6 +78,23 @@ export class UsageBreakdownDto {
     }
 }
 
+export class SubscriptionInfoDto {
+    @ApiProperty()
+    status: string;
+
+    @ApiProperty({format: 'date-time'})
+    currentPeriodStart: string;
+
+    @ApiProperty({format: 'date-time'})
+    currentPeriodEnd: string;
+
+    constructor(props: SubscriptionInfoDto) {
+        this.status = props.status;
+        this.currentPeriodStart = props.currentPeriodStart;
+        this.currentPeriodEnd = props.currentPeriodEnd;
+    }
+}
+
 @ApiSchema({name: 'CurrentUsage'})
 export class CurrentUsageDto {
     @ApiProperty({enum: Object.keys(PLAN_LIMITS)})
@@ -67,6 +105,9 @@ export class CurrentUsageDto {
 
     @ApiProperty({type: UsagePeriodDto})
     period: UsagePeriodDto;
+
+    @ApiProperty({format: 'date-time', description: 'ISO timestamp of the next monthly reset'})
+    resetAt: string;
 
     @ApiProperty({type: UsageBreakdownDto})
     usage: UsageBreakdownDto;
@@ -80,10 +121,17 @@ export class CurrentUsageDto {
     @ApiProperty({type: [String], description: 'Metrics that have reached their limit'})
     limitsReached: string[];
 
+    @ApiProperty({type: [UsageAlertDto]})
+    alerts: UsageAlertDto[];
+
+    @ApiProperty({type: SubscriptionInfoDto})
+    subscription: SubscriptionInfoDto;
+
     constructor(result: CurrentUsageResult) {
         this.planCode = result.planCode;
         this.planName = result.planName;
         this.period = new UsagePeriodDto(result.period);
+        this.resetAt = result.resetAt;
         this.usage = new UsageBreakdownDto({
             docs: new UsageMetricDto(result.usage.docs),
             chat: new UsageMetricDto(result.usage.chat),
@@ -93,9 +141,73 @@ export class CurrentUsageDto {
         this.isAnyLimitReached = result.isAnyLimitReached;
         this.warningThreshold = result.warningThreshold;
         this.limitsReached = result.limitsReached;
+        this.alerts = result.alerts.map((a) => new UsageAlertDto(a));
+        this.subscription = new SubscriptionInfoDto(result.subscription);
     }
 }
 
+export class MemberUsageSummaryItemDto {
+    @ApiProperty({format: 'uuid'})
+    memberId: string;
+
+    @ApiProperty()
+    displayName: string;
+
+    @ApiProperty({enum: Object.keys(PLAN_LIMITS)})
+    planCode: string;
+
+    @ApiProperty({type: UsageBreakdownDto})
+    usage: UsageBreakdownDto;
+
+    @ApiProperty()
+    hasAnyWarning: boolean;
+
+    @ApiProperty()
+    hasAnyExceeded: boolean;
+
+    constructor(entry: ClinicMemberUsageEntry) {
+        this.memberId = entry.memberId;
+        this.displayName = entry.displayName;
+        this.planCode = entry.planCode;
+        this.usage = new UsageBreakdownDto({
+            docs: new UsageMetricDto(entry.usage.usage.docs),
+            chat: new UsageMetricDto(entry.usage.usage.chat),
+            images: new UsageMetricDto(entry.usage.usage.images),
+            storageHotGb: new UsageMetricDto(entry.usage.usage.storageHotGb),
+        });
+        const statuses = [
+            entry.usage.usage.docs.status,
+            entry.usage.usage.chat.status,
+            entry.usage.usage.images.status,
+            entry.usage.usage.storageHotGb.status,
+        ];
+        this.hasAnyWarning = statuses.includes('WARNING');
+        this.hasAnyExceeded = statuses.includes('EXCEEDED');
+    }
+}
+
+export class ClinicMembersUsageSummaryDto {
+    @ApiProperty({type: UsagePeriodDto})
+    period: UsagePeriodDto;
+
+    @ApiProperty({type: [MemberUsageSummaryItemDto]})
+    members: MemberUsageSummaryItemDto[];
+
+    @ApiProperty()
+    summary: {totalMembers: number; membersWithWarning: number; membersExceeded: number};
+
+    constructor(period: {year: number; month: number}, entries: ClinicMemberUsageEntry[]) {
+        this.period = new UsagePeriodDto(period);
+        this.members = entries.map((e) => new MemberUsageSummaryItemDto(e));
+        this.summary = {
+            totalMembers: entries.length,
+            membersWithWarning: this.members.filter((m) => m.hasAnyWarning).length,
+            membersExceeded: this.members.filter((m) => m.hasAnyExceeded).length,
+        };
+    }
+}
+
+/** @deprecated Use MemberUsageSummaryItemDto — kept for backward compatibility with old /clinics/:id/usage */
 @ApiSchema({name: 'MemberUsageSummary'})
 export class MemberUsageSummaryDto {
     @ApiProperty({format: 'uuid'})

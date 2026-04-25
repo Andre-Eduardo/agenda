@@ -8,6 +8,7 @@ import {RequestActor} from '../../@shared/auth/request-actor.decorator';
 import {ApiOperation} from '../../@shared/openapi/decorators';
 import {entityIdParam} from '../../@shared/openapi/params';
 import {ValidatedParam} from '../../@shared/validation';
+import {UseUsageLimit} from '../../subscription/decorators/use-usage-limit.decorator';
 import {DraftEvolutionDto, GetDraftDto, UpdateDraftBodyDto, getDraftSchema, updateDraftBodySchema} from '../dtos';
 import {ApproveDraftService, GetOrCreateDraftService, UpdateDraftService} from '../services';
 
@@ -55,6 +56,7 @@ export class ImportedDocumentController {
         responses: [{status: 200, description: 'Draft approved and Record created', type: DraftEvolutionDto}],
     })
     @Authorize(ImportedDocumentPermission.UPDATE)
+    @UseUsageLimit('docs')
     @Post(':id/approve')
     async approveDraft(
         @RequestActor() actor: Actor,

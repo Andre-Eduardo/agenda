@@ -17,6 +17,7 @@ import {FileId} from '../../../../../domain/record/entities/file.entity';
 import {Record, RecordSource} from '../../../../../domain/record/entities/record.entity';
 import type {RecordRepository} from '../../../../../domain/record/record.repository';
 import {UserId} from '../../../../../domain/user/entities';
+import type {SubscriptionService} from '../../../../subscription/subscription.service';
 import {ApproveDraftService} from '../approve-draft.service';
 
 function fakeProfessional(clinicMemberId: ClinicMemberId): Pick<Professional, 'id' | 'clinicMemberId'> {
@@ -88,6 +89,7 @@ describe('ApproveDraftService', () => {
     const recordRepository = mock<RecordRepository>();
     const professionalRepository = mock<ProfessionalRepository>();
     const eventDispatcher = mock<EventDispatcher>();
+    const subscriptionService = mock<SubscriptionService>();
 
     const service = new ApproveDraftService(
         importedDocumentRepository,
@@ -95,6 +97,7 @@ describe('ApproveDraftService', () => {
         recordRepository,
         professionalRepository,
         eventDispatcher,
+        subscriptionService,
     );
 
     const clinicId = ClinicId.generate();
@@ -113,6 +116,7 @@ describe('ApproveDraftService', () => {
     beforeEach(() => {
         jest.useFakeTimers({now});
         jest.clearAllMocks();
+        subscriptionService.incrementUsage.mockResolvedValue(undefined as never);
     });
 
     afterEach(() => {

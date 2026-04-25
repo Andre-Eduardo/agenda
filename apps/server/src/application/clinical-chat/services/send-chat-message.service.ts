@@ -1,6 +1,7 @@
-import {Inject, Injectable, Optional} from '@nestjs/common';
+import {Inject, Injectable, Logger, Optional} from '@nestjs/common';
 import {ResourceNotFoundException, PreconditionException} from '../../../domain/@shared/exceptions';
 import {AgentLoopService} from '../../agent/core/agent-loop.service';
+import {SubscriptionService} from '../../subscription/subscription.service';
 
 /**
  * Filtra uma lista de strings arbitrárias mantendo apenas aquelas que são
@@ -88,6 +89,8 @@ export type SendChatMessageOutput = {
 export class SendChatMessageService
     implements ApplicationService<SendChatMessageInput, SendChatMessageOutput>
 {
+    private readonly logger = new Logger(SendChatMessageService.name);
+
     constructor(
         private readonly sessionRepository: PatientChatSessionRepository,
         private readonly messageRepository: PatientChatMessageRepository,
@@ -98,6 +101,7 @@ export class SendChatMessageService
         private readonly retrieveChunksService: RetrievePatientChunksService,
         private readonly contextPolicyService: ContextPolicyService,
         @Optional() @Inject(AgentLoopService) private readonly agentLoop: AgentLoopService | null,
+        @Optional() private readonly subscriptionService: SubscriptionService | null,
     ) {}
 
     async execute({payload, actor}: Command<SendChatMessageInput>): Promise<SendChatMessageOutput> {
@@ -340,6 +344,15 @@ export class SendChatMessageService
                 totalDurationMs: Date.now() - startedAt,
             });
             await this.interactionLogRepository.save(interactionLog);
+
+            // Fire-and-forget: increment chat usage counter; failure must not break the operation
+            if (this.subscriptionService) {
+                void this.subscriptionService
+                    .incrementUsage(memberId.toString(), clinicId.toString(), 'chat')
+                    .catch((err: unknown) => {
+                        this.logger.error('Failed to increment chat usage', err);
+                    });
+            }
 
             return {userMessage, assistantMessage, interactionLog};
         } catch (error) {
