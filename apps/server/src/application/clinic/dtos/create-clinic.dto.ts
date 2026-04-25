@@ -1,4 +1,4 @@
-import {createZodDto} from 'nestjs-zod';
+import {createZodDto} from '../../@shared/validation/dto';
 import {z} from 'zod';
 
 export const createClinicSchema = z.object({

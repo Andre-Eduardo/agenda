@@ -27,8 +27,7 @@ export function createZodDto<TOutput = unknown, TDef extends ZodTypeDef = ZodTyp
      */
     /* istanbul ignore next */
     // @ts-expect-error Workaround so NestJS Swagger plays nicely with Zod schemas.
-    AugmentedZodDto[METADATA_FACTORY_NAME] = () =>
-        generateNestSwaggerSchema(schema, ['clinicId', 'clinicMemberId']);
+    AugmentedZodDto[METADATA_FACTORY_NAME] = () => generateNestSwaggerSchema(schema, ['clinicId', 'clinicMemberId']);
 
     return AugmentedZodDto as unknown as ZodDto<TOutput, TDef, TOutput>;
 }

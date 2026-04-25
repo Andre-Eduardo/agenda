@@ -1,5 +1,6 @@
 import {Body, Controller, Get, Post} from '@nestjs/common';
 import {ApiTags} from '@nestjs/swagger';
+import {z} from 'zod';
 import {Actor} from '../../../domain/@shared/actor';
 import {ClinicId} from '../../../domain/clinic/entities';
 import {BypassClinicMember} from '../../@shared/auth/bypass-clinic-member.decorator';
@@ -30,12 +31,14 @@ export class ClinicController {
 
     @ApiOperation({
         summary: 'Get clinic by id',
+        parameters: [entityIdParam('Clinic ID', 'clinicId')],
         responses: [{status: 200, description: 'Clinic', type: ClinicDto}],
     })
     @Get(':clinicId')
     async getClinic(
         @RequestActor() actor: Actor,
-        @ValidatedParam(...entityIdParam('clinicId', ClinicId)) clinicId: ClinicId,
+        @ValidatedParam('clinicId', z.string().uuid().transform((v) => ClinicId.from(v)))
+        clinicId: ClinicId,
     ): Promise<ClinicDto> {
         return this.getClinicService.execute({actor, payload: {clinicId}});
     }

@@ -103,9 +103,17 @@ export class ClinicalChatController {
     @Post('sessions')
     async createSession(
         @RequestActor() actor: Actor,
-        @Body() payload: CreateChatSessionDto
+        @Body() payload: CreateChatSessionDto,
     ): Promise<PatientChatSessionDto> {
-        const result = await this.createSessionService.execute({actor, payload});
+        const result = await this.createSessionService.execute({
+            actor,
+            payload: {
+                clinicId: actor.clinicId,
+                memberId: actor.clinicMemberId,
+                patientId: payload.patientId,
+                title: payload.title ?? null,
+            },
+        });
         return new PatientChatSessionDto(result.session, result.resolvedAgent);
     }
 
@@ -290,8 +298,8 @@ export class ClinicalChatController {
     @Authorize(ClinicalChatPermission.VIEW)
     @Get('context/retrieve')
     async retrieveChunks(
-        @RequestActor() _actor: Actor,
-        @Query(new ZodValidationPipe(retrieveChunksSchema)) query: RetrieveChunksDto
+        @RequestActor() actor: Actor,
+        @Query(new ZodValidationPipe(retrieveChunksSchema)) query: RetrieveChunksDto,
     ): Promise<{chunks: PatientContextChunkDto[]; snapshotAvailable: boolean; totalChunks: number}> {
         const result = await this.retrieveChunksService.execute({
             patientId: query.patientId,
@@ -308,6 +316,7 @@ export class ClinicalChatController {
                 sourceId: c.sourceId,
                 metadata: c.metadata,
                 score: c.score,
+                clinicId: actor.clinicId.toString(),
                 patientId: c.patientId,
                 chunkIndex: c.chunkIndex,
                 contentHash: c.contentHash,
@@ -327,13 +336,14 @@ export class ClinicalChatController {
     @Authorize(ClinicalChatPermission.VIEW)
     @Get('context/snapshot/:patientId')
     async getSnapshot(
-        @RequestActor() _actor: Actor,
+        @RequestActor() actor: Actor,
         @ValidatedParam('patientId', z.string().uuid().transform((v) => PatientId.from(v)))
-        patientId: PatientId
+        patientId: PatientId,
     ): Promise<{snapshot: PatientContextSnapshotDto | null; wasRebuilt: boolean; isStale: boolean}> {
         const result = await this.getSnapshotService.execute({
+            clinicId: actor.clinicId,
             patientId,
-            autoRebuildIfStale: false, // Na consulta direta, não reconstrói automaticamente
+            autoRebuildIfStale: false, // Direct lookup never rebuilds — explicit rebuild endpoint exists.
         });
         return {
             snapshot: result.snapshot ? new PatientContextSnapshotDto(result.snapshot) : null,

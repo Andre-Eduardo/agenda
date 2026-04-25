@@ -1,5 +1,5 @@
 import { PaginatedList, Pagination } from '@domain/@shared/repository';
-import type {Gender, Person, PersonId, PersonProfile} from './entities';
+import type {Gender, Person, PersonId} from './entities';
 import { Phone } from '@domain/@shared/value-objects';
 
 
@@ -9,7 +9,6 @@ export type PersonSearchFilter = {
     documentId?: string;
     phone?: Phone;
     gender?: Gender;
-    profiles?: PersonProfile[];
 };
 export type PersonSortOptions = [
     'name',

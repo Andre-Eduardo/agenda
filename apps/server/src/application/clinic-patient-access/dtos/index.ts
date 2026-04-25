@@ -1,5 +1,5 @@
 import {ApiProperty, ApiSchema} from '@nestjs/swagger';
-import {createZodDto} from 'nestjs-zod';
+import {createZodDto} from '../../@shared/validation/dto';
 import {z} from 'zod';
 import {
     ClinicPatientAccess,
