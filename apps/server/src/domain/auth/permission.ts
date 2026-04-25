@@ -143,6 +143,10 @@ export enum FinancialReportPermission {
     VIEW = 'financial-report:view',
 }
 
+export enum WorkingHoursPermission {
+    MANAGE = 'working-hours:manage',
+}
+
 const PERMISSIONS = [
     ...Object.values(UserPermission),
     ...Object.values(ProfessionalPermission),
@@ -167,6 +171,7 @@ const PERMISSIONS = [
     ...Object.values(PaymentPermission),
     ...Object.values(AppointmentPaymentPermission),
     ...Object.values(FinancialReportPermission),
+    ...Object.values(WorkingHoursPermission),
 ];
 
 export type Permission = (typeof PERMISSIONS)[number];

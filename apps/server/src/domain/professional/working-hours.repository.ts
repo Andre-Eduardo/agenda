@@ -4,6 +4,8 @@ import type {WorkingHours, WorkingHoursId} from './entities';
 export interface WorkingHoursRepository {
     findById(id: WorkingHoursId): Promise<WorkingHours | null>;
 
+    findByMember(clinicMemberId: ClinicMemberId): Promise<WorkingHours[]>;
+
     findByMemberAndDay(clinicMemberId: ClinicMemberId, dayOfWeek: number): Promise<WorkingHours[]>;
 
     save(workingHours: WorkingHours): Promise<void>;
