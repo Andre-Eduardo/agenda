@@ -12,6 +12,10 @@ import {ExceptionLoggerInterceptor, RequestLoggerMiddleware} from './@shared/log
 import {ZodValidationPipe} from './@shared/validation';
 import {AppointmentModule} from './appointment/appointment.module';
 import {AuthModule} from './auth/auth.module';
+import {ClinicModule} from './clinic/clinic.module';
+import {ClinicMemberModule} from './clinic-member/clinic-member.module';
+import {ClinicPatientAccessModule} from './clinic-patient-access/clinic-patient-access.module';
+import {DocumentPermissionModule} from './document-permission/document-permission.module';
 import {ClinicalProfileModule} from './clinical-profile/clinical-profile.module';
 import {EventModule} from './event/event.module';
 import {PatientAlertModule} from './patient-alert/patient-alert.module';
@@ -61,7 +65,7 @@ const guards: Provider[] = [
         useFactory: (configService: EnvConfigService, tokenProvider: TokenProvider, userRepository: UserRepository) =>
             new AuthGuard(
                 configService.auth.cookieName,
-                configService.company.cookieName,
+                configService.clinicMember.cookieName,
                 tokenProvider,
                 new MultiAuthorizer(new GlobalAuthorizer(userRepository)),
                 new Reflector()
@@ -75,6 +79,10 @@ const guards: Provider[] = [
         InfrastructureModule,
         EventModule,
         AuthModule,
+        ClinicModule,
+        ClinicMemberModule,
+        ClinicPatientAccessModule,
+        DocumentPermissionModule,
         UserModule,
         ProfessionalModule,
         PatientModule,

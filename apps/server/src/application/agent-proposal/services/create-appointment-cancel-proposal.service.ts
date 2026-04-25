@@ -3,13 +3,11 @@ import {AgentProposal, AgentProposalType} from '../../../domain/agent-proposal/e
 import {AgentProposalRepository} from '../../../domain/agent-proposal/agent-proposal.repository';
 import {AppointmentRepository} from '../../../domain/appointment/appointment.repository';
 import {AppointmentId} from '../../../domain/appointment/entities';
-import {ProfessionalId} from '../../../domain/professional/entities';
 import {ResourceNotFoundException} from '../../../domain/@shared/exceptions';
 import type {Command} from '../../@shared/application.service';
 
 export type CreateAppointmentCancelProposalInput = {
     appointmentId: string;
-    professionalId: string;
     reason?: string;
     sessionId?: string;
     messageId?: string;
@@ -28,7 +26,7 @@ export class CreateAppointmentCancelProposalService {
         private readonly appointmentRepository: AppointmentRepository,
     ) {}
 
-    async execute({payload}: Command<CreateAppointmentCancelProposalInput>): Promise<AppointmentCancelProposalResult> {
+    async execute({actor, payload}: Command<CreateAppointmentCancelProposalInput>): Promise<AppointmentCancelProposalResult> {
         const appointment = await this.appointmentRepository.findById(AppointmentId.from(payload.appointmentId));
         if (!appointment) {
             throw new ResourceNotFoundException('Appointment not found.', payload.appointmentId);
@@ -42,7 +40,8 @@ export class CreateAppointmentCancelProposalService {
         };
 
         const proposal = AgentProposal.create({
-            professionalId: ProfessionalId.from(payload.professionalId),
+            clinicId: actor.clinicId,
+            createdByMemberId: actor.clinicMemberId,
             patientId: appointment.patientId.toString(),
             sessionId: payload.sessionId ?? null,
             messageId: payload.messageId ?? null,

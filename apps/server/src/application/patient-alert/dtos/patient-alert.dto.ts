@@ -5,11 +5,14 @@ import {EntityDto} from '../../@shared/dto';
 
 @ApiSchema({name: 'PatientAlert'})
 export class PatientAlertDto extends EntityDto {
+    @ApiProperty({format: 'uuid', description: 'The clinic this alert belongs to'})
+    clinicId: string;
+
     @ApiProperty({format: 'uuid', description: 'The patient ID'})
     patientId: string;
 
-    @ApiProperty({format: 'uuid', description: 'The professional ID'})
-    professionalId: string;
+    @ApiProperty({format: 'uuid', description: 'ClinicMember who created the alert'})
+    createdByMemberId: string;
 
     @ApiProperty({description: 'Alert title'})
     title: string;
@@ -25,8 +28,9 @@ export class PatientAlertDto extends EntityDto {
 
     constructor(alert: PatientAlert) {
         super(alert);
+        this.clinicId = alert.clinicId.toString();
         this.patientId = alert.patientId.toString();
-        this.professionalId = alert.professionalId.toString();
+        this.createdByMemberId = alert.createdByMemberId.toString();
         this.title = alert.title;
         this.description = alert.description;
         this.severity = alert.severity;

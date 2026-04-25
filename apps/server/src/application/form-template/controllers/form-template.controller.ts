@@ -3,7 +3,6 @@ import {ApiTags} from '@nestjs/swagger';
 import {Actor} from '../../../domain/@shared/actor';
 import {FormTemplateId} from '../../../domain/form-template/entities';
 import {FormTemplateVersionId} from '../../../domain/form-template-version/entities';
-import {ProfessionalId} from '../../../domain/professional/entities';
 import {FormTemplatePermission} from '../../../domain/auth';
 import {Authorize} from '../../@shared/auth';
 import {RequestActor} from '../../@shared/auth/request-actor.decorator';
@@ -38,7 +37,6 @@ import {z} from 'zod';
 const cloneBodySchema = z.object({
     code: z.string().min(3).max(100),
     name: z.string().min(1).max(255).optional(),
-    professionalId: entityId(ProfessionalId),
 });
 
 @ApiTags('FormTemplate')

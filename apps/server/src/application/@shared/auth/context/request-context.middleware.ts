@@ -2,17 +2,17 @@ import {Inject, Injectable, NestMiddleware} from '@nestjs/common';
 import {CookieOptions, NextFunction, Request, Response} from 'express';
 import {unknownActor} from '../../../../domain/@shared/actor';
 import {ExpressContextActions} from '../../../../infrastructure/auth';
-import {AUTH_COOKIE, COMPANY_COOKIE, COOKIE_OPTIONS} from '../../../../infrastructure/auth/auth.module';
+import {AUTH_COOKIE, CLINIC_MEMBER_COOKIE, COOKIE_OPTIONS} from '../../../../infrastructure/auth/auth.module';
 
 @Injectable()
 export class RequestContextMiddleware implements NestMiddleware {
     constructor(
         @Inject(AUTH_COOKIE)
         private readonly authCookie: string,
-        @Inject(COMPANY_COOKIE)
-        private readonly companyCookie: string,
+        @Inject(CLINIC_MEMBER_COOKIE)
+        private readonly clinicMemberCookie: string,
         @Inject(COOKIE_OPTIONS)
-        private readonly cookieOptions: CookieOptions
+        private readonly cookieOptions: CookieOptions,
     ) {}
 
     use(request: Request, response: Response, next: NextFunction): void {
@@ -24,13 +24,13 @@ export class RequestContextMiddleware implements NestMiddleware {
         };
 
         if (request.method === 'GET') {
-            request.query.professionalId ??= this.getProfessionalFromRequest(request);
+            request.query.clinicMemberId ??= this.getClinicMemberFromRequest(request);
         } else if (request.body && typeof request.body === 'object') {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access -- This is a safe access
-            request.body.professionalId ??= this.getProfessionalFromRequest(request);
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+            request.body.clinicMemberId ??= this.getClinicMemberFromRequest(request);
         }
 
-        response.actions = new ExpressContextActions(response, this.authCookie, this.companyCookie, {
+        response.actions = new ExpressContextActions(response, this.authCookie, this.clinicMemberCookie, {
             ...this.cookieOptions,
             domain: request.hostname,
         });
@@ -38,9 +38,8 @@ export class RequestContextMiddleware implements NestMiddleware {
         next();
     }
 
-    private getProfessionalFromRequest(request: Request): string | undefined {
+    private getClinicMemberFromRequest(request: Request): string | undefined {
         const signedCookies = request.signedCookies as Record<string, string> | undefined;
-
-        return signedCookies?.[this.companyCookie];
+        return signedCookies?.[this.clinicMemberCookie];
     }
 }

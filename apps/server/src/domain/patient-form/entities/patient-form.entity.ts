@@ -1,6 +1,8 @@
 import {AggregateRoot, type AllEntityProps, type CreateEntity} from '../../@shared/entity';
 import {EntityId} from '../../@shared/entity/id';
 import {PreconditionException} from '../../@shared/exceptions';
+import type {ClinicId} from '../../clinic/entities';
+import type {ClinicMemberId} from '../../clinic-member/entities';
 import type {PatientId} from '../../patient/entities';
 import type {ProfessionalId} from '../../professional/entities';
 import type {FormTemplateId} from '../../form-template/entities';
@@ -18,8 +20,12 @@ export enum FormResponseStatus {
 export type CreatePatientForm = CreateEntity<PatientForm>;
 
 export class PatientForm extends AggregateRoot<PatientFormId> {
+    clinicId: ClinicId;
     patientId: PatientId;
-    professionalId: ProfessionalId;
+    /** Membro que aplicou/preencheu o formulário. */
+    createdByMemberId: ClinicMemberId;
+    /** Profissional clinicamente responsável (opcional para forms aplicados por SECRETARY). */
+    responsibleProfessionalId: ProfessionalId | null;
     templateId: FormTemplateId;
     versionId: FormTemplateVersionId;
     status: FormResponseStatus;
@@ -30,8 +36,10 @@ export class PatientForm extends AggregateRoot<PatientFormId> {
 
     constructor(props: AllEntityProps<PatientForm>) {
         super(props);
+        this.clinicId = props.clinicId;
         this.patientId = props.patientId;
-        this.professionalId = props.professionalId;
+        this.createdByMemberId = props.createdByMemberId;
+        this.responsibleProfessionalId = props.responsibleProfessionalId ?? null;
         this.templateId = props.templateId;
         this.versionId = props.versionId;
         this.status = props.status ?? FormResponseStatus.IN_PROGRESS;
@@ -46,6 +54,7 @@ export class PatientForm extends AggregateRoot<PatientFormId> {
         return new PatientForm({
             ...props,
             id: PatientFormId.generate(),
+            responsibleProfessionalId: props.responsibleProfessionalId ?? null,
             status: props.status ?? FormResponseStatus.IN_PROGRESS,
             responseJson: props.responseJson ?? {answers: []},
             computedJson: null,
@@ -101,8 +110,10 @@ export class PatientForm extends AggregateRoot<PatientFormId> {
     toJSON() {
         return {
             id: this.id.toJSON(),
+            clinicId: this.clinicId.toJSON(),
             patientId: this.patientId.toJSON(),
-            professionalId: this.professionalId.toJSON(),
+            createdByMemberId: this.createdByMemberId.toJSON(),
+            responsibleProfessionalId: this.responsibleProfessionalId?.toJSON() ?? null,
             templateId: this.templateId.toJSON(),
             versionId: this.versionId.toJSON(),
             status: this.status,

@@ -1,10 +1,10 @@
 import {Injectable} from '@nestjs/common';
-import {ResourceNotFoundException, InvalidInputException, PreconditionException} from '../../../domain/@shared/exceptions';
+import {InvalidInputException, PreconditionException, ResourceNotFoundException} from '../../../domain/@shared/exceptions';
 import {AppointmentRepository} from '../../../domain/appointment/appointment.repository';
-import {WorkingHoursRepository} from '../../../domain/professional/working-hours.repository';
-import {ProfessionalBlockRepository} from '../../../domain/professional/professional-block.repository';
 import {UpdateAppointment} from '../../../domain/appointment/entities';
 import {EventDispatcher} from '../../../domain/event';
+import {MemberBlockRepository} from '../../../domain/professional/member-block.repository';
+import {WorkingHoursRepository} from '../../../domain/professional/working-hours.repository';
 import {ApplicationService, Command} from '../../@shared/application.service';
 import {AppointmentDto, UpdateAppointmentDto} from '../dtos';
 
@@ -13,8 +13,8 @@ export class UpdateAppointmentService implements ApplicationService<UpdateAppoin
     constructor(
         private readonly appointmentRepository: AppointmentRepository,
         private readonly workingHoursRepository: WorkingHoursRepository,
-        private readonly professionalBlockRepository: ProfessionalBlockRepository,
-        private readonly eventDispatcher: EventDispatcher
+        private readonly memberBlockRepository: MemberBlockRepository,
+        private readonly eventDispatcher: EventDispatcher,
     ) {}
 
     async execute({actor, payload: {id, ...props}}: Command<UpdateAppointmentDto>): Promise<AppointmentDto> {
@@ -41,26 +41,26 @@ export class UpdateAppointmentService implements ApplicationService<UpdateAppoin
                 ]);
             }
 
-            const {professionalId} = appointment;
+            const {attendedByMemberId} = appointment;
 
-            // Verificar WorkingHours
+            // Working hours
             const dayOfWeek = startAt.getDay();
-            const workingHours = await this.workingHoursRepository.findByProfessionalAndDay(professionalId, dayOfWeek);
+            const workingHours = await this.workingHoursRepository.findByMemberAndDay(attendedByMemberId, dayOfWeek);
             if (workingHours.length > 0) {
                 const coversInterval = workingHours.some((wh) => wh.coversInterval(startAt, endAt));
                 if (!coversInterval) {
-                    throw new PreconditionException('Appointment is outside the professional working hours.');
+                    throw new PreconditionException('Appointment is outside the member working hours.');
                 }
             }
 
-            // Verificar ProfessionalBlocks
-            const blocks = await this.professionalBlockRepository.findOverlapping(professionalId, startAt, endAt);
+            // Member blocks
+            const blocks = await this.memberBlockRepository.findOverlapping(attendedByMemberId, startAt, endAt);
             if (blocks.length > 0) {
-                throw new PreconditionException('Professional has a block during this time period.');
+                throw new PreconditionException('Member has a block during this time period.');
             }
 
-            // Verificar conflitos, excluindo o próprio agendamento
-            const conflicts = await this.appointmentRepository.findConflicts(professionalId, startAt, endAt, id);
+            // Conflicts (excluding the appointment itself)
+            const conflicts = await this.appointmentRepository.findConflicts(attendedByMemberId, startAt, endAt, id);
             if (conflicts.length > 0) {
                 throw new PreconditionException('There is a scheduling conflict with an existing appointment.');
             }

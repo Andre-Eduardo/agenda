@@ -1,5 +1,6 @@
 import {Injectable} from '@nestjs/common';
 import {createHash} from 'crypto';
+import {ClinicId} from '../../../domain/clinic/entities';
 import {PatientId} from '../../../domain/patient/entities';
 import {PatientContextChunk, ContextChunkSourceType} from '../../../domain/clinical-chat/entities';
 import {PatientContextChunkRepository} from '../../../domain/clinical-chat/patient-context-chunk.repository';
@@ -7,6 +8,7 @@ import {AiProviderRegistry} from '../../../domain/clinical-chat/ports/ai-provide
 import type {PatientContextOutput} from './build-patient-context.service';
 
 export type IndexPatientChunksInput = {
+    clinicId: ClinicId;
     patientId: PatientId;
     context: PatientContextOutput;
     /** Se true, remove chunks existentes das fontes antes de re-indexar */
@@ -36,14 +38,14 @@ export class IndexPatientChunksService {
     ) {}
 
     async execute(input: IndexPatientChunksInput): Promise<IndexPatientChunksOutput> {
-        const {patientId, context, reindex = false} = input;
+        const {clinicId, patientId, context, reindex = false} = input;
 
         const newChunks: PatientContextChunk[] = [];
         const skippedCount = {value: 0};
 
         // Indexar records
         for (const record of context.recentRecords) {
-            const recordChunks = this.chunkRecord(patientId, record);
+            const recordChunks = this.chunkRecord(clinicId, patientId, record);
 
             if (reindex) {
                 await this.chunkRepository.deleteBySource(
@@ -58,7 +60,7 @@ export class IndexPatientChunksService {
 
         // Indexar formulários
         for (const form of context.relevantForms) {
-            const formChunks = this.chunkForm(patientId, form);
+            const formChunks = this.chunkForm(clinicId, patientId, form);
 
             if (reindex) {
                 await this.chunkRepository.deleteBySource(
@@ -105,8 +107,9 @@ export class IndexPatientChunksService {
      * Cada seção vira um chunk separado para melhor granularidade de recuperação.
      */
     private chunkRecord(
+        clinicId: ClinicId,
         patientId: PatientId,
-        record: PatientContextOutput['recentRecords'][number]
+        record: PatientContextOutput['recentRecords'][number],
     ): PatientContextChunk[] {
         const chunks: PatientContextChunk[] = [];
 
@@ -131,6 +134,7 @@ export class IndexPatientChunksService {
 
             chunks.push(
                 PatientContextChunk.create({
+                    clinicId,
                     patientId,
                     sourceType: ContextChunkSourceType.RECORD,
                     sourceId: record.id,
@@ -145,7 +149,7 @@ export class IndexPatientChunksService {
                     },
                     chunkIndex,
                     contentHash,
-                })
+                }),
             );
 
             chunkIndex++;
@@ -159,8 +163,9 @@ export class IndexPatientChunksService {
      * Agrupa campos em blocos para evitar chunks muito pequenos.
      */
     private chunkForm(
+        clinicId: ClinicId,
         patientId: PatientId,
-        form: PatientContextOutput['relevantForms'][number]
+        form: PatientContextOutput['relevantForms'][number],
     ): PatientContextChunk[] {
         const chunks: PatientContextChunk[] = [];
 
@@ -182,6 +187,7 @@ export class IndexPatientChunksService {
 
             chunks.push(
                 PatientContextChunk.create({
+                    clinicId,
                     patientId,
                     sourceType: ContextChunkSourceType.PATIENT_FORM,
                     sourceId: form.id,
@@ -193,7 +199,7 @@ export class IndexPatientChunksService {
                     },
                     chunkIndex: Math.floor(i / fieldBatchSize),
                     contentHash,
-                })
+                }),
             );
         }
 

@@ -18,16 +18,11 @@ export enum Gender {
     FEMALE = 'FEMALE',
     OTHER = 'OTHER',
 }
-export enum PersonProfile {
-    PATIENT = 'PATIENT',
-    PROFESSIONAL = 'PROFESSIONAL',
-}
 export class Person extends AggregateRoot<PersonId> {
     name: string;
     documentId: DocumentId;
     phone: Phone | null;
     gender: Gender | null;
-    profiles: Set<PersonProfile>;
     personType: PersonType;
     constructor(props: AllEntityProps<Person>) {
         super(props);
@@ -36,21 +31,14 @@ export class Person extends AggregateRoot<PersonId> {
         this.documentId = props.documentId;
         this.phone = props.phone ?? null;
         this.gender = props.gender ?? null;
-        this.profiles = props.profiles;
         this.personType = props.personType ?? PersonType.NATURAL;
         this.validate();
     }
-
-
 
     protected change(props: UpdatePerson): void {
         if (props.name !== undefined) {
             this.name = props.name;
             this.validate('name');
-        }
-
-        if (props.profiles !== undefined) {
-            this.profiles = props.profiles;
         }
 
         if (props.documentId !== undefined) {
@@ -67,10 +55,9 @@ export class Person extends AggregateRoot<PersonId> {
         }
     }
 
-    
+
     delete(): void {
         super.delete();
-        this.profiles.clear();
 
         this.addEvent(new PersonDeletedEvent({person: this, timestamp: this.deletedAt ?? undefined}));
     }
@@ -79,7 +66,6 @@ export class Person extends AggregateRoot<PersonId> {
     toJSON(): EntityJson<Person> {
         return {
             id: this.id.toJSON(),
-            profiles: Array.from(this.profiles),
             name: this.name,
             gender: this.gender ?? null,
             documentId: this.documentId.toJSON(),
@@ -95,11 +81,6 @@ export class Person extends AggregateRoot<PersonId> {
         if (fields.length === 0 || fields.includes('name')) {
             if (this.name.length < 1) {
                 throw new InvalidInputException('Person name must be at least 1 character long.');
-            }
-        }
-                if (fields.length === 0 || fields.includes('profiles')) {
-            if (this.profiles.size === 0) {
-                throw new InvalidInputException("Person must have at least one profile.");
             }
         }
 

@@ -1,6 +1,8 @@
 import {Injectable} from '@nestjs/common';
 import * as PrismaClient from '@prisma/client';
 import {toEnum} from '../../domain/@shared/utils';
+import {ClinicId} from '../../domain/clinic/entities';
+import {ClinicMemberId} from '../../domain/clinic-member/entities';
 import {PatientForm, PatientFormId, FormResponseStatus} from '../../domain/patient-form/entities';
 import {PatientId} from '../../domain/patient/entities';
 import {ProfessionalId} from '../../domain/professional/entities';
@@ -16,8 +18,12 @@ export class PatientFormMapper extends MapperWithoutDto<PatientForm, PatientForm
     toDomain(model: PatientFormModel): PatientForm {
         return new PatientForm({
             id: PatientFormId.from(model.id),
+            clinicId: ClinicId.from(model.clinicId),
             patientId: PatientId.from(model.patientId),
-            professionalId: ProfessionalId.from(model.professionalId),
+            createdByMemberId: ClinicMemberId.from(model.createdByMemberId),
+            responsibleProfessionalId: model.responsibleProfessionalId
+                ? ProfessionalId.from(model.responsibleProfessionalId)
+                : null,
             templateId: FormTemplateId.from(model.templateId),
             versionId: FormTemplateVersionId.from(model.versionId),
             status: toEnum(FormResponseStatus, model.status),
@@ -34,8 +40,10 @@ export class PatientFormMapper extends MapperWithoutDto<PatientForm, PatientForm
     toPersistence(entity: PatientForm): PatientFormModel {
         return {
             id: entity.id.toString(),
+            clinicId: entity.clinicId.toString(),
             patientId: entity.patientId.toString(),
-            professionalId: entity.professionalId.toString(),
+            createdByMemberId: entity.createdByMemberId.toString(),
+            responsibleProfessionalId: entity.responsibleProfessionalId?.toString() ?? null,
             templateId: entity.templateId.toString(),
             versionId: entity.versionId.toString(),
             status: toEnum(PrismaClient.FormResponseStatus, entity.status),

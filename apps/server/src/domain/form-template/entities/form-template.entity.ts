@@ -1,6 +1,7 @@
 import {AggregateRoot, type AllEntityProps, type CreateEntity, type EntityProps, type EntityJson} from '../../@shared/entity';
 import {EntityId} from '../../@shared/entity/id';
-import type {ProfessionalId} from '../../professional/entities';
+import type {ClinicId} from '../../clinic/entities';
+import type {ClinicMemberId} from '../../clinic-member/entities';
 
 export enum Specialty {
     PSICOLOGIA = 'PSICOLOGIA',
@@ -22,7 +23,10 @@ export class FormTemplate extends AggregateRoot<FormTemplateId> {
     description: string | null;
     specialty: Specialty;
     isPublic: boolean;
-    professionalId: ProfessionalId | null;
+    /** Null para templates globais (isPublic=true). */
+    clinicId: ClinicId | null;
+    /** Membro que criou o template (null para templates globais). */
+    createdByMemberId: ClinicMemberId | null;
 
     constructor(props: AllEntityProps<FormTemplate>) {
         super(props);
@@ -31,7 +35,8 @@ export class FormTemplate extends AggregateRoot<FormTemplateId> {
         this.description = props.description ?? null;
         this.specialty = props.specialty;
         this.isPublic = props.isPublic ?? false;
-        this.professionalId = props.professionalId ?? null;
+        this.clinicId = props.clinicId ?? null;
+        this.createdByMemberId = props.createdByMemberId ?? null;
     }
 
     static create(props: CreateFormTemplate): FormTemplate {
@@ -41,7 +46,8 @@ export class FormTemplate extends AggregateRoot<FormTemplateId> {
             id: FormTemplateId.generate(),
             description: props.description ?? null,
             isPublic: props.isPublic ?? false,
-            professionalId: props.professionalId ?? null,
+            clinicId: props.clinicId ?? null,
+            createdByMemberId: props.createdByMemberId ?? null,
             createdAt: now,
             updatedAt: now,
             deletedAt: null,
@@ -67,7 +73,8 @@ export class FormTemplate extends AggregateRoot<FormTemplateId> {
             description: this.description,
             specialty: this.specialty,
             isPublic: this.isPublic,
-            professionalId: this.professionalId?.toJSON() ?? null,
+            clinicId: this.clinicId?.toJSON() ?? null,
+            createdByMemberId: this.createdByMemberId?.toJSON() ?? null,
             createdAt: this.createdAt.toJSON(),
             updatedAt: this.updatedAt.toJSON(),
             deletedAt: this.deletedAt?.toJSON() ?? null,

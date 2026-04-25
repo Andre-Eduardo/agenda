@@ -1,7 +1,8 @@
 import {AggregateRoot, type AllEntityProps, type EntityJson, type EntityProps, type CreateEntity} from '../../@shared/entity';
 import {EntityId} from '../../@shared/entity/id';
+import type {ClinicId} from '../../clinic/entities';
+import type {ClinicMemberId} from '../../clinic-member/entities';
 import type {PatientId} from '../../patient/entities';
-import type {ProfessionalId} from '../../professional/entities';
 import type {AiAgentProfileId} from './ai-agent-profile.entity';
 
 export enum ChatSessionStatus {
@@ -14,8 +15,10 @@ export type PatientChatSessionProps = EntityProps<PatientChatSession>;
 export type CreatePatientChatSession = CreateEntity<PatientChatSession>;
 
 export class PatientChatSession extends AggregateRoot<PatientChatSessionId> {
+    clinicId: ClinicId;
     patientId: PatientId;
-    professionalId: ProfessionalId;
+    /** Membro dono da sessão (substitui professionalId). */
+    memberId: ClinicMemberId;
     agentProfileId: AiAgentProfileId | null;
     title: string | null;
     status: ChatSessionStatus;
@@ -23,8 +26,9 @@ export class PatientChatSession extends AggregateRoot<PatientChatSessionId> {
 
     constructor(props: AllEntityProps<PatientChatSession>) {
         super(props);
+        this.clinicId = props.clinicId;
         this.patientId = props.patientId;
-        this.professionalId = props.professionalId;
+        this.memberId = props.memberId;
         this.agentProfileId = props.agentProfileId ?? null;
         this.title = props.title ?? null;
         this.status = props.status ?? ChatSessionStatus.ACTIVE;
@@ -37,8 +41,9 @@ export class PatientChatSession extends AggregateRoot<PatientChatSessionId> {
         return new PatientChatSession({
             ...props,
             id: PatientChatSessionId.generate(),
+            clinicId: props.clinicId!,
             patientId: props.patientId!,
-            professionalId: props.professionalId!,
+            memberId: props.memberId!,
             agentProfileId: props.agentProfileId ?? null,
             title: props.title ?? null,
             status: ChatSessionStatus.ACTIVE,
@@ -68,8 +73,9 @@ export class PatientChatSession extends AggregateRoot<PatientChatSessionId> {
     toJSON(): EntityJson<PatientChatSession> {
         return {
             id: this.id.toJSON(),
+            clinicId: this.clinicId.toJSON(),
             patientId: this.patientId.toJSON(),
-            professionalId: this.professionalId.toJSON(),
+            memberId: this.memberId.toJSON(),
             agentProfileId: this.agentProfileId?.toJSON() ?? null,
             title: this.title,
             status: this.status,

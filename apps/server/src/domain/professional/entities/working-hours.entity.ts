@@ -1,12 +1,12 @@
 import {type AllEntityProps, type EntityProps, type CreateEntity, Entity} from '../../@shared/entity';
 import {EntityId} from '../../@shared/entity/id';
-import type {ProfessionalId} from './professional.entity';
+import type {ClinicMemberId} from '../../clinic-member/entities';
 
 export type WorkingHoursProps = EntityProps<WorkingHours>;
 export type CreateWorkingHours = CreateEntity<WorkingHours>;
 
 export class WorkingHours extends Entity<WorkingHoursId> {
-    professionalId: ProfessionalId;
+    clinicMemberId: ClinicMemberId;
     dayOfWeek: number;
     startTime: string;
     endTime: string;
@@ -15,7 +15,7 @@ export class WorkingHours extends Entity<WorkingHoursId> {
 
     constructor(props: AllEntityProps<WorkingHours>) {
         super(props);
-        this.professionalId = props.professionalId;
+        this.clinicMemberId = props.clinicMemberId;
         this.dayOfWeek = props.dayOfWeek;
         this.startTime = props.startTime;
         this.endTime = props.endTime;
@@ -39,7 +39,7 @@ export class WorkingHours extends Entity<WorkingHoursId> {
     toJSON() {
         return {
             id: this.id.toJSON(),
-            professionalId: this.professionalId.toJSON(),
+            clinicMemberId: this.clinicMemberId.toJSON(),
             dayOfWeek: this.dayOfWeek,
             startTime: this.startTime,
             endTime: this.endTime,

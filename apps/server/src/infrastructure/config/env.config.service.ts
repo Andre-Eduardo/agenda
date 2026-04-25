@@ -26,8 +26,8 @@ const envConfig = z.object({
             secret: z.string().default('super-secret'),
         }),
     }),
-    company: z.object({
-        cookieName: z.string().default('current.company'),
+    clinicMember: z.object({
+        cookieName: z.string().default('current.clinic_member'),
     }),
     storage: z.object({
         type: z.nativeEnum(FileStorageType).default(FileStorageType.LOCAL),
@@ -76,8 +76,8 @@ export class EnvConfigService {
         return this.configService.getOrThrow('auth', {infer: true});
     }
 
-    get company(): EnvConfig['company'] {
-        return this.configService.getOrThrow('company', {infer: true});
+    get clinicMember(): EnvConfig['clinicMember'] {
+        return this.configService.getOrThrow('clinicMember', {infer: true});
     }
 
     get storage(): EnvConfig['storage'] {
@@ -113,8 +113,8 @@ export class EnvConfigService {
                     secret: process.env.AUTH_TOKEN_SECRET,
                 },
             },
-            company: {
-                cookieName: process.env.COMPANY_COOKIE_NAME,
+            clinicMember: {
+                cookieName: process.env.CLINIC_MEMBER_COOKIE_NAME ?? process.env.COMPANY_COOKIE_NAME,
             },
             storage: {
                 type: process.env.STORAGE_TYPE,

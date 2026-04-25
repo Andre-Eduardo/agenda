@@ -178,7 +178,9 @@ O arquivo `test/support/parser.ts` implementa um motor de resolução de referê
 | Expressão | Resolve para |
 |-----------|-------------|
 | `${ref:id:user:john_doe}` | UUID do usuário com chave `john_doe` |
-| `${ref:id:professional:dr_house}` | UUID do profissional com chave `dr_house` |
+| `${ref:id:clinic:primary}` | UUID da clínica com chave `primary` |
+| `${ref:id:clinicMember:dr_house}` | UUID do membro com chave `dr_house` |
+| `${ref:id:professional:dr_house}` | UUID do profissional com chave `dr_house` (extensão 1:1 do membro) |
 | `${ref:var:contextId}` | Valor do `contextId` do cenário atual |
 
 #### Exemplo de uso em feature
@@ -282,7 +284,7 @@ Given a user "john_doe" exists with password "J0hn.Do3!"
 
 # Autentica
 Given I am signed in as "john_doe"
-Given I am signed in as "john_doe" with professional "${ref:id:professional:dr_house}"
+Given I am signed in as "john_doe" with clinic member "${ref:id:clinicMember:dr_house}"
 
 # Verifica sessão
 Then I should be signed in as "john_doe"

@@ -31,7 +31,6 @@ export class ProposePatientAlertTool implements AgentTool<Input, PatientAlertPro
             actor: context.actor,
             payload: {
                 patientId: input.patientId,
-                professionalId: context.professionalId?.toString() ?? context.actor.userId.toString(),
                 title: input.title,
                 description: input.description,
                 severity: input.severity,

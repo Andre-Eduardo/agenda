@@ -27,6 +27,8 @@ class ConsoleErrorLogger extends Logger {
 // ---------------------------------------------------------------------------
 export type VariableIdType =
     | 'user'
+    | 'clinic'
+    | 'clinicMember'
     | 'professional'
     | 'patient'
     | 'appointment'
@@ -44,6 +46,8 @@ export type Variables = {
     /** Named entity IDs collected during a scenario (e.g., after a POST /user/sign-up). */
     ids: {
         user: Record<string, string>;
+        clinic: Record<string, string>;
+        clinicMember: Record<string, string>;
         professional: Record<string, string>;
         patient: Record<string, string>;
         appointment: Record<string, string>;
@@ -63,6 +67,8 @@ export class Context extends World {
         contextId: randomBytes(4).toString('hex'),
         ids: {
             user: {},
+            clinic: {},
+            clinicMember: {},
             professional: {},
             patient: {},
             appointment: {},

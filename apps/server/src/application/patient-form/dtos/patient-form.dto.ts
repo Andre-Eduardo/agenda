@@ -6,10 +6,16 @@ import {EntityDto} from '../../@shared/dto';
 @ApiSchema({name: 'PatientForm'})
 export class PatientFormDto extends EntityDto {
     @ApiProperty({format: 'uuid'})
-    patientId: string;
+    clinicId: string;
 
     @ApiProperty({format: 'uuid'})
-    professionalId: string;
+    patientId: string;
+
+    @ApiProperty({format: 'uuid', description: 'ClinicMember who applied/filled the form'})
+    createdByMemberId: string;
+
+    @ApiProperty({format: 'uuid', nullable: true, description: 'Professional clinically responsible'})
+    responsibleProfessionalId: string | null;
 
     @ApiProperty({format: 'uuid'})
     templateId: string;
@@ -34,8 +40,10 @@ export class PatientFormDto extends EntityDto {
 
     constructor(form: PatientForm) {
         super(form);
+        this.clinicId = form.clinicId.toString();
         this.patientId = form.patientId.toString();
-        this.professionalId = form.professionalId.toString();
+        this.createdByMemberId = form.createdByMemberId.toString();
+        this.responsibleProfessionalId = form.responsibleProfessionalId?.toString() ?? null;
         this.templateId = form.templateId.toString();
         this.versionId = form.versionId.toString();
         this.status = form.status;

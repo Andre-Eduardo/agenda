@@ -1,11 +1,13 @@
 import type {PaginatedList, Pagination} from '../@shared/repository';
+import type {ClinicId} from '../clinic/entities';
+import type {ClinicMemberId} from '../clinic-member/entities';
 import type {PatientId} from '../patient/entities';
-import type {ProfessionalId} from '../professional/entities';
 import type {PatientAlert, PatientAlertId} from './entities';
 
 export type PatientAlertSearchFilter = {
+    clinicId?: ClinicId;
     patientId?: PatientId;
-    professionalId?: ProfessionalId;
+    createdByMemberId?: ClinicMemberId;
     isActive?: boolean;
 };
 

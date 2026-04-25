@@ -1,7 +1,7 @@
 import {Injectable} from '@nestjs/common';
-import {ResourceNotFoundException, PreconditionException} from '../../../domain/@shared/exceptions';
+import {PreconditionException} from '../../../domain/@shared/exceptions';
+import {ClinicMemberId} from '../../../domain/clinic-member/entities';
 import {ProfessionalRepository} from '../../../domain/professional/professional.repository';
-import {ProfessionalId} from '../../../domain/professional/entities';
 import {AiAgentProfile} from '../../../domain/clinical-chat/entities';
 import {AiAgentProfileRepository} from '../../../domain/clinical-chat/ai-agent-profile.repository';
 import {
@@ -11,37 +11,41 @@ import {
 } from '../../../domain/clinical-chat/agent-resolution.config';
 
 /**
- * Task 12 — Serviço de resolução automática de agente por profissão do profissional.
+ * Resolves the appropriate AiAgentProfile for a member based on the
+ * Professional record they extend (when role=PROFESSIONAL).
  *
- * Resolve o AiAgentProfile adequado com base no perfil de especialidade do profissional
- * cadastrado no sistema, sem exigir seleção manual pelo usuário.
+ * Resolution chain:
+ * 1. Match by profession (specialtyNormalized) + specialty text pattern
+ * 2. Match by profession alone (default agent for the area)
+ * 3. Generic agent (specialty=null)
+ * 4. PreconditionException — no agent mapped
  *
- * Cadeia de fallback:
- * 1. Correspondência por profissão (specialtyNormalized) + padrão de texto de especialidade
- * 2. Correspondência por profissão (specialtyNormalized) — agente padrão da área
- * 3. Agente genérico (specialty = null)
- * 4. PreconditionException — nenhum agente mapeado encontrado
+ * Members without a linked Professional (SECRETARY/ADMIN/OWNER/VIEWER) fall
+ * straight through to step 3 (generic agent).
  */
 @Injectable()
 export class AgentResolutionService {
     constructor(
         private readonly professionalRepository: ProfessionalRepository,
-        private readonly agentProfileRepository: AiAgentProfileRepository
+        private readonly agentProfileRepository: AiAgentProfileRepository,
     ) {}
 
     /**
-     * Resolve o AiAgentProfile mais adequado para o profissional informado.
+     * Resolve the AiAgentProfile for a given clinic member.
      *
-     * @param professionalId - ID do profissional logado
-     * @returns AiAgentProfile resolvido (nunca null — lança exceção se não encontrado)
-     * @throws ResourceNotFoundException se o profissional não existir
-     * @throws PreconditionException se nenhum agente mapeado estiver disponível
+     * @throws ResourceNotFoundException — member has role=PROFESSIONAL but Professional record is missing
+     * @throws PreconditionException — no mapped agent available
      */
-    async resolveForProfessional(professionalId: ProfessionalId): Promise<AiAgentProfile> {
-        // 1. Carrega o profissional e seu perfil de especialidade
-        const professional = await this.professionalRepository.findById(professionalId);
-        if (!professional) {
-            throw new ResourceNotFoundException('Professional not found.', professionalId.toString());
+    async resolveForMember(memberId: ClinicMemberId): Promise<AiAgentProfile> {
+        // Members without a Professional record (e.g. SECRETARY) get the generic agent.
+        const professional = await this.professionalRepository.findByClinicMemberId(memberId);
+
+        if (professional === null) {
+            const genericAgent = await this.resolveGenericAgent();
+            if (genericAgent) return genericAgent;
+            throw new PreconditionException(
+                'No AI agent available for this clinic member. Configure agents in the system before starting a chat.',
+            );
         }
 
         const specialtyNormalized = professional.specialtyNormalized;
@@ -49,18 +53,17 @@ export class AgentResolutionService {
             ? normalizeSpecialtyText(professional.specialty)
             : null;
 
-        // 2. Filtra regras ativas e ordena por prioridade (maior primeiro)
         const activeRules = AGENT_MAPPING_RULES.filter((r) => r.isActive).sort(
-            (a, b) => b.priority - a.priority
+            (a, b) => b.priority - a.priority,
         );
 
-        // 3. Tenta correspondência por profissão + texto de especialidade
+        // 1. Match by profession + specialty text pattern
         if (specialtyNormalized && specialtyText) {
             const specificRule = activeRules.find(
                 (r) =>
                     r.professionType === specialtyNormalized &&
                     r.specialtyTextPattern !== undefined &&
-                    specialtyText.includes(r.specialtyTextPattern)
+                    specialtyText.includes(r.specialtyTextPattern),
             );
             if (specificRule) {
                 const agent = await this.findAgentByCode(specificRule.agentCode);
@@ -68,12 +71,10 @@ export class AgentResolutionService {
             }
         }
 
-        // 4. Fallback: correspondência por profissão (regra padrão da área, sem specialtyTextPattern)
+        // 2. Default rule for this profession
         if (specialtyNormalized) {
             const defaultRule = activeRules.find(
-                (r) =>
-                    r.professionType === specialtyNormalized &&
-                    r.specialtyTextPattern === undefined
+                (r) => r.professionType === specialtyNormalized && r.specialtyTextPattern === undefined,
             );
             if (defaultRule) {
                 const agent = await this.findAgentByCode(defaultRule.agentCode);
@@ -81,23 +82,17 @@ export class AgentResolutionService {
             }
         }
 
-        // 5. Fallback final: agente genérico (specialty = null)
+        // 3. Generic fallback
         const genericAgent = await this.resolveGenericAgent();
         if (genericAgent) return genericAgent;
 
-        // 6. Nenhum agente disponível — erro controlado
         throw new PreconditionException(
-            'Nenhum agente de IA disponível para o perfil profissional cadastrado. ' +
-                'Verifique se a especialidade do profissional está configurada e se há agentes ativos no sistema.'
+            'No AI agent matched the member\'s profile and no generic agent is configured.',
         );
     }
 
-    /**
-     * Retorna o nome do agente resolvido para exibição contextual na interface.
-     * Formato: "Agente ativo: {nome}"
-     */
-    async resolveAgentDisplayName(professionalId: ProfessionalId): Promise<string> {
-        const agent = await this.resolveForProfessional(professionalId);
+    async resolveAgentDisplayName(memberId: ClinicMemberId): Promise<string> {
+        const agent = await this.resolveForMember(memberId);
         return agent.name;
     }
 
@@ -108,14 +103,9 @@ export class AgentResolutionService {
 
     private async resolveGenericAgent(): Promise<AiAgentProfile | null> {
         const allActive = await this.agentProfileRepository.findAllActive();
-        // Prefer specialty=null (generic) agent; fallback to first active
         return allActive.find((p) => p.specialty === null) ?? allActive[0] ?? null;
     }
 
-    /**
-     * Retorna todas as regras de mapeamento ativas, ordenadas por prioridade.
-     * Útil para diagnóstico e documentação da resolução.
-     */
     listActiveMappingRules(): AgentMappingRule[] {
         return AGENT_MAPPING_RULES.filter((r) => r.isActive).sort((a, b) => b.priority - a.priority);
     }

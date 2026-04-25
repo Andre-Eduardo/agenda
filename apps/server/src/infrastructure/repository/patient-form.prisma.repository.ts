@@ -46,8 +46,10 @@ export class PatientFormPrismaRepository extends PrismaRepository implements Pat
         filter: PatientFormFilter = {}
     ): Promise<PaginatedList<PatientForm>> {
         const where: PrismaClient.Prisma.PatientFormWhereInput = {
+            clinicId: filter.clinicId?.toString(),
             patientId: filter.patientId?.toString(),
-            professionalId: filter.professionalId?.toString(),
+            createdByMemberId: filter.createdByMemberId?.toString(),
+            responsibleProfessionalId: filter.responsibleProfessionalId?.toString(),
             templateId: filter.templateId?.toString(),
             status: toEnumOrNull(PrismaClient.FormResponseStatus, filter.status) ?? undefined,
             template: filter.specialty

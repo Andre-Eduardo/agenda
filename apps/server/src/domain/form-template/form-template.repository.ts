@@ -1,11 +1,13 @@
 import type {PaginatedList, Pagination} from '../@shared/repository';
-import type {ProfessionalId} from '../professional/entities';
+import type {ClinicId} from '../clinic/entities';
+import type {ClinicMemberId} from '../clinic-member/entities';
 import type {FormTemplate, FormTemplateId, Specialty} from './entities';
 
 export type FormTemplateFilter = {
     specialty?: Specialty;
     isPublic?: boolean;
-    professionalId?: ProfessionalId | null;
+    clinicId?: ClinicId | null;
+    createdByMemberId?: ClinicMemberId | null;
     includeDeleted?: boolean;
 };
 

@@ -4,7 +4,7 @@ import type {AgentTool} from '../../interfaces';
 import {AGENT_TOOL_TOKEN} from '../../interfaces';
 import type {ToolContext} from '../../interfaces';
 import {AppointmentRepository} from '../../../../domain/appointment/appointment.repository';
-import {AppointmentId, AppointmentStatus} from '../../../../domain/appointment/entities';
+import {AppointmentStatus} from '../../../../domain/appointment/entities';
 import type {AppointmentView} from '../../mappers/appointment-view.mapper';
 import {toAppointmentView} from '../../mappers/appointment-view.mapper';
 
@@ -38,7 +38,7 @@ export class ListAppointmentsTool implements AgentTool<Input, Output> {
         const result = await this.appointmentRepository.search(
             {page: 1, limit: input.limit ?? 20, sort: [{key: 'startAt', direction: 'asc'}]},
             {
-                professionalId: context.professionalId,
+                clinicId: context.clinicId,
                 dateFrom,
                 dateTo,
                 status: input.status,

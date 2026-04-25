@@ -1,8 +1,9 @@
 import {Injectable} from '@nestjs/common';
 import * as PrismaClient from '@prisma/client';
 import {Appointment, AppointmentId, AppointmentStatus, AppointmentType} from '../../domain/appointment/entities';
+import {ClinicId} from '../../domain/clinic/entities';
+import {ClinicMemberId} from '../../domain/clinic-member/entities';
 import {PatientId} from '../../domain/patient/entities';
-import {ProfessionalId} from '../../domain/professional/entities';
 import {MapperWithoutDto} from './mapper';
 
 export type AppointmentModel = PrismaClient.Appointment;
@@ -13,8 +14,10 @@ export class AppointmentMapper extends MapperWithoutDto<Appointment, Appointment
         return new Appointment({
             ...model,
             id: AppointmentId.from(model.id),
+            clinicId: ClinicId.from(model.clinicId),
             patientId: PatientId.from(model.patientId),
-            professionalId: ProfessionalId.from(model.professionalId),
+            attendedByMemberId: ClinicMemberId.from(model.attendedByMemberId),
+            createdByMemberId: ClinicMemberId.from(model.createdByMemberId),
             startAt: model.startAt,
             endAt: model.endAt,
             durationMinutes: model.durationMinutes,
@@ -29,8 +32,10 @@ export class AppointmentMapper extends MapperWithoutDto<Appointment, Appointment
     toPersistence(entity: Appointment): AppointmentModel {
         return {
             id: entity.id.toString(),
+            clinicId: entity.clinicId.toString(),
             patientId: entity.patientId.toString(),
-            professionalId: entity.professionalId.toString(),
+            attendedByMemberId: entity.attendedByMemberId.toString(),
+            createdByMemberId: entity.createdByMemberId.toString(),
             startAt: entity.startAt,
             endAt: entity.endAt,
             durationMinutes: entity.durationMinutes,

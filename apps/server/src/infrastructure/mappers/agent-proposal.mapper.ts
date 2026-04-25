@@ -1,8 +1,14 @@
 import {Injectable} from '@nestjs/common';
 import * as PrismaClient from '@prisma/client';
 import {toEnum} from '../../domain/@shared/utils';
-import {ProfessionalId} from '../../domain/professional/entities';
-import {AgentProposal, AgentProposalId, AgentProposalType, AgentProposalStatus} from '../../domain/agent-proposal/entities';
+import {ClinicId} from '../../domain/clinic/entities';
+import {ClinicMemberId} from '../../domain/clinic-member/entities';
+import {
+    AgentProposal,
+    AgentProposalId,
+    AgentProposalType,
+    AgentProposalStatus,
+} from '../../domain/agent-proposal/entities';
 import {MapperWithoutDto} from './mapper';
 
 export type AgentProposalModel = PrismaClient.AgentProposal;
@@ -12,10 +18,11 @@ export class AgentProposalMapper extends MapperWithoutDto<AgentProposal, AgentPr
     toDomain(model: AgentProposalModel): AgentProposal {
         return new AgentProposal({
             id: AgentProposalId.from(model.id),
+            clinicId: ClinicId.from(model.clinicId),
+            createdByMemberId: ClinicMemberId.from(model.createdByMemberId),
             sessionId: model.sessionId ?? null,
             messageId: model.messageId ?? null,
             patientId: model.patientId ?? null,
-            professionalId: ProfessionalId.from(model.professionalId),
             type: toEnum(AgentProposalType, model.proposalType),
             status: toEnum(AgentProposalStatus, model.status),
             payload: model.payload as Record<string, unknown>,
@@ -37,10 +44,11 @@ export class AgentProposalMapper extends MapperWithoutDto<AgentProposal, AgentPr
     toPersistence(entity: AgentProposal): AgentProposalModel {
         return {
             id: entity.id.toString(),
+            clinicId: entity.clinicId.toString(),
+            createdByMemberId: entity.createdByMemberId.toString(),
             sessionId: entity.sessionId,
             messageId: entity.messageId,
             patientId: entity.patientId,
-            professionalId: entity.professionalId.toString(),
             proposalType: toEnum(PrismaClient.AgentProposalType, entity.type),
             status: toEnum(PrismaClient.AgentProposalStatus, entity.status),
             payload: entity.payload as PrismaClient.Prisma.JsonValue,

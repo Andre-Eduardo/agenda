@@ -1,12 +1,13 @@
 import {z} from 'zod';
+import {Specialty} from '../../../domain/form-template/entities';
 import {ProfessionalId} from '../../../domain/professional/entities';
-import {UserId} from '../../../domain/user/entities';
 import {createZodDto} from '../../@shared/validation/dto';
 import {entityId} from '../../@shared/validation/schemas';
 
 const updateProfessionalInputSchema = z.object({
-    specialty: z.string().min(1).optional().openapi({example: 'Neurology'}),
-    userId: entityId(UserId).nullish(),
+    registrationNumber: z.string().nullish().openapi({example: 'CRM-SP 12345'}),
+    specialty: z.string().nullish().openapi({example: 'Neurology'}),
+    specialtyNormalized: z.nativeEnum(Specialty).nullish(),
 });
 
 export class UpdateProfessionalInputDto extends createZodDto(updateProfessionalInputSchema) {}

@@ -1,7 +1,8 @@
 import {AggregateRoot, type AllEntityProps, type EntityJson, type EntityProps, type CreateEntity} from '../../@shared/entity';
 import {EntityId} from '../../@shared/entity/id';
 import type {PatientId} from '../../patient/entities';
-import type {ProfessionalId} from '../../professional/entities';
+import type {ClinicId} from '../../clinic/entities';
+import type {ClinicMemberId} from '../../clinic-member/entities';
 
 export enum ContextSnapshotStatus {
     PENDING = 'PENDING',
@@ -50,9 +51,10 @@ export type ContextSnapshotProps = EntityProps<PatientContextSnapshot>;
 export type CreateContextSnapshot = CreateEntity<PatientContextSnapshot>;
 
 export class PatientContextSnapshot extends AggregateRoot<PatientContextSnapshotId> {
+    clinicId: ClinicId;
     patientId: PatientId;
-    /** null = snapshot genérico; preenchido = snapshot com perspectiva de um profissional */
-    professionalId: ProfessionalId | null;
+    /** null = snapshot genérico; preenchido = snapshot com perspectiva de um membro */
+    memberId: ClinicMemberId | null;
     /** Facts estruturados do paciente — base para construção de contexto de IA */
     patientFacts: PatientFacts;
     /** Alertas e informações críticas que devem sempre aparecer no contexto */
@@ -66,8 +68,9 @@ export class PatientContextSnapshot extends AggregateRoot<PatientContextSnapshot
 
     constructor(props: AllEntityProps<PatientContextSnapshot>) {
         super(props);
+        this.clinicId = props.clinicId;
         this.patientId = props.patientId;
-        this.professionalId = props.professionalId ?? null;
+        this.memberId = props.memberId ?? null;
         this.patientFacts = props.patientFacts;
         this.criticalContext = props.criticalContext ?? null;
         this.timelineSummary = props.timelineSummary ?? null;
@@ -82,8 +85,9 @@ export class PatientContextSnapshot extends AggregateRoot<PatientContextSnapshot
         return new PatientContextSnapshot({
             ...props,
             id: PatientContextSnapshotId.generate(),
+            clinicId: props.clinicId!,
             patientId: props.patientId!,
-            professionalId: props.professionalId ?? null,
+            memberId: props.memberId ?? null,
             patientFacts: props.patientFacts!,
             criticalContext: props.criticalContext ?? null,
             timelineSummary: props.timelineSummary ?? null,
@@ -115,8 +119,9 @@ export class PatientContextSnapshot extends AggregateRoot<PatientContextSnapshot
     toJSON(): EntityJson<PatientContextSnapshot> {
         return {
             id: this.id.toJSON(),
+            clinicId: this.clinicId.toJSON(),
             patientId: this.patientId.toJSON(),
-            professionalId: this.professionalId?.toJSON() ?? null,
+            memberId: this.memberId?.toJSON() ?? null,
             patientFacts: this.patientFacts,
             criticalContext: this.criticalContext,
             timelineSummary: this.timelineSummary,

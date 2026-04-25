@@ -1,7 +1,8 @@
 import {EntityId} from '../../@shared/entity/id';
 import {AggregateRoot, type AllEntityProps, type EntityJson, type CreateEntity} from '../../@shared/entity';
+import type {ClinicId} from '../../clinic/entities';
+import type {ClinicMemberId} from '../../clinic-member/entities';
 import {PersonId} from '../../person/entities/person.entity';
-import type {ProfessionalId} from '../../professional/entities';
 import type {FileId} from './file.entity';
 
 export enum ImportStatus {
@@ -19,8 +20,10 @@ export enum ImportStatus {
 }
 
 export class ImportedDocument extends AggregateRoot<ImportedDocumentId> {
+    clinicId: ClinicId;
     patientId: PersonId;
-    professionalId: ProfessionalId;
+    /** Membro que importou o documento (substitui professionalId). */
+    createdByMemberId: ClinicMemberId;
     fileId: FileId;
     
     // Campos de metadados da IA/OCR
@@ -38,8 +41,9 @@ export class ImportedDocument extends AggregateRoot<ImportedDocumentId> {
 
     constructor(props: AllEntityProps<ImportedDocument>) {
         super(props);
+        this.clinicId = props.clinicId;
         this.patientId = props.patientId;
-        this.professionalId = props.professionalId;
+        this.createdByMemberId = props.createdByMemberId;
         this.fileId = props.fileId;
         this.documentType = props.documentType ?? null;
         this.qualityLabel = props.qualityLabel ?? null;
@@ -57,8 +61,9 @@ export class ImportedDocument extends AggregateRoot<ImportedDocumentId> {
         return new ImportedDocument({
             ...props,
             id: ImportedDocumentId.generate(),
+            clinicId: props.clinicId!,
             patientId: props.patientId!,
-            professionalId: props.professionalId!,
+            createdByMemberId: props.createdByMemberId!,
             fileId: props.fileId!,
             status: props.status ?? ImportStatus.UPLOADED,
             reviewRequired: props.reviewRequired ?? true,
@@ -78,8 +83,9 @@ export class ImportedDocument extends AggregateRoot<ImportedDocumentId> {
     toJSON(): EntityJson<ImportedDocument> {
         return {
             id: this.id.toJSON(),
+            clinicId: this.clinicId.toJSON(),
             patientId: this.patientId.toJSON(),
-            professionalId: this.professionalId.toJSON(),
+            createdByMemberId: this.createdByMemberId.toJSON(),
             fileId: this.fileId.toJSON(),
             status: this.status,
             reviewRequired: this.reviewRequired,

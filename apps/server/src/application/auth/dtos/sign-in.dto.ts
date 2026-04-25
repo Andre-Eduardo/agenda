@@ -1,10 +1,10 @@
 import {z} from 'zod';
-import {ProfessionalId} from '../../../domain/professional/entities';
+import {ClinicMemberId} from '../../../domain/clinic-member/entities';
 import {createZodDto} from '../../@shared/validation/dto';
 import {entityId, username} from '../../@shared/validation/schemas';
 
 const signInSchema = z.object({
-    professionalId: entityId(ProfessionalId).nullish(),
+    clinicMemberId: entityId(ClinicMemberId).nullish(),
     username,
     password: z.string().min(1).openapi({example: 'J0hn@d03'}),
 });

@@ -17,7 +17,8 @@ import {randomUUID} from 'crypto';
 
 const prisma = new PrismaClient();
 
-const PROFESSIONAL_ID = '00000000-0000-0000-0000-000000000004';
+const CLINIC_ID = '00000000-0000-0000-0000-000000000010';
+const CLINIC_MEMBER_ID = '00000000-0000-0000-0000-000000000011';
 const PATIENT_IDS = {
     ana: '00000000-0000-0000-0001-000000000001',
     carlos: '00000000-0000-0000-0001-000000000002',
@@ -110,7 +111,9 @@ export async function main() {
         await prisma.appointment.create({
             data: {
                 id: randomUUID(),
-                professionalId: PROFESSIONAL_ID,
+                clinicId: CLINIC_ID,
+                attendedByMemberId: CLINIC_MEMBER_ID,
+                createdByMemberId: CLINIC_MEMBER_ID,
                 patientId: appt.patientId,
                 startAt: appt.startAt,
                 endAt: appt.endAt,

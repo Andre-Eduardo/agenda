@@ -1,7 +1,7 @@
 /**
  * Seed: Horários de atendimento do profissional admin.
  *
- * Depende de: professional.seed (professionalId fixo)
+ * Depende de: professional.seed (clinicMemberId fixo)
  *
  * Cria horários segunda a sexta:
  *   - Manhã:  08:00–12:00 (slots de 50 min)
@@ -14,7 +14,7 @@ import {randomUUID} from 'crypto';
 
 const prisma = new PrismaClient();
 
-const PROFESSIONAL_ID = '00000000-0000-0000-0000-000000000004';
+const CLINIC_MEMBER_ID = '00000000-0000-0000-0000-000000000011';
 
 // dayOfWeek: 0 = domingo, 1 = segunda, ..., 5 = sexta, 6 = sábado
 const SCHEDULES = [
@@ -36,10 +36,10 @@ export async function main() {
     const now = new Date();
 
     for (const s of SCHEDULES) {
-        // Usa upsert por professionalId+dayOfWeek+startTime para idempotência
+        // Usa upsert por clinicMemberId+dayOfWeek+startTime para idempotência
         const existing = await prisma.workingHours.findFirst({
             where: {
-                professionalId: PROFESSIONAL_ID,
+                clinicMemberId: CLINIC_MEMBER_ID,
                 dayOfWeek: s.day,
                 startTime: s.start,
             },
@@ -54,7 +54,7 @@ export async function main() {
             await prisma.workingHours.create({
                 data: {
                     id: randomUUID(),
-                    professionalId: PROFESSIONAL_ID,
+                    clinicMemberId: CLINIC_MEMBER_ID,
                     dayOfWeek: s.day,
                     startTime: s.start,
                     endTime: s.end,

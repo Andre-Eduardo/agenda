@@ -1,8 +1,10 @@
+import type {ClinicMemberId} from '../clinic-member/entities';
 import { PaginatedList, Pagination } from '../@shared/repository';
 import type {Professional, ProfessionalId} from './entities';
 
 export type ProfessionalSearchFilter = {
     ids?: ProfessionalId[];
+    clinicMemberId?: ClinicMemberId;
     term?: string;
 };
 
@@ -13,7 +15,8 @@ export type ProfessionalSortOptions = [
 
 export interface ProfessionalRepository {
     findById(id: ProfessionalId): Promise<Professional | null>;
-    
+    findByClinicMemberId(clinicMemberId: ClinicMemberId): Promise<Professional | null>;
+
     delete(id: ProfessionalId): Promise<void>;
 
     search(

@@ -1,6 +1,6 @@
 import type {MaybeAuthenticatedActor} from '../@shared/actor';
 import type {PaginatedList, Pagination} from '../@shared/repository';
-import type {ProfessionalId} from '../professional/entities';
+import type {ClinicId} from '../clinic/entities';
 import type {DomainEvent, Event} from './event';
 import type {EventType} from './event.type';
 import type {EventModel} from './models/event.model';
@@ -13,7 +13,7 @@ export type EventSortOptions = ['type', 'timestamp'];
 
 export interface EventRepository {
     search<T extends EventType>(
-        professionalId: ProfessionalId,
+        clinicId: ClinicId,
         pagination: Pagination<EventSortOptions>,
         filter?: EventSearchFilter<T>
     ): Promise<PaginatedList<EventModel<T>>>;

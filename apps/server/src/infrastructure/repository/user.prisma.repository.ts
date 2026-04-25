@@ -2,8 +2,7 @@ import {Injectable} from '@nestjs/common';
 import {Prisma} from '@prisma/client';
 import {Email} from '../../domain/@shared/value-objects';
 import {GlobalRole} from '../../domain/auth';
-import {PersonId} from '../../domain/person/entities';
-import {ProfessionalId} from '../../domain/professional/entities';
+import {ClinicMemberId} from '../../domain/clinic-member/entities';
 import {User, UserId} from '../../domain/user/entities';
 import {DuplicateEmailException, DuplicateUsernameException} from '../../domain/user/user.exceptions';
 import {UserRepository, UserSearchFilter, UserSortOptions} from '../../domain/user/user.repository';
@@ -14,7 +13,7 @@ import {PrismaRepository} from './prisma.repository';
 
 const userSelect = Prisma.validator<Prisma.UserDefaultArgs>()({
     include: {
-        professionals: true,
+        members: true,
     },
 });
 
@@ -33,7 +32,7 @@ export class UserPrismaRepository extends PrismaRepository implements UserReposi
             username: Username.create(user.username),
             email: user.email === null ? null : Email.create(user.email),
             password: ObfuscatedPassword.decode(user.password),
-            professionals: user.professionals.map((professional) => ProfessionalId.from(professional.id)),
+            clinicMembers: user.members.map((member) => ClinicMemberId.from(member.id)),
             name: user.name,
             globalRole: GlobalRole[user.globalRole],
             createdAt: user.createdAt,
@@ -42,7 +41,7 @@ export class UserPrismaRepository extends PrismaRepository implements UserReposi
         });
     }
 
-    private static denormalize(user: User): Omit<UserModel, 'professionals'> & {professionals: Array<{id: string}>} {
+    private static denormalize(user: User): Omit<UserModel, 'members'> {
         return {
             id: user.id.toString(),
             username: user.username.toString(),
@@ -54,79 +53,41 @@ export class UserPrismaRepository extends PrismaRepository implements UserReposi
             createdAt: user.createdAt,
             updatedAt: user.updatedAt,
             deletedAt: user.deletedAt ?? null,
-            professionals: user.professionals.map((professionalId) => ({id: professionalId.toString()})),
         };
     }
 
     async findById(id: UserId): Promise<User | null> {
         const user = await this.prisma.user.findUnique({
-            where: {
-                id: id.toString(),
-            },
+            where: {id: id.toString()},
             ...userSelect,
         });
-
         return user === null ? null : UserPrismaRepository.normalize(user);
     }
 
     async findByUsername(username: Username): Promise<User | null> {
         const user = await this.prisma.user.findUnique({
-            where: {
-                username: username.toString(),
-            },
+            where: {username: username.toString()},
             ...userSelect,
         });
-
         return user === null ? null : UserPrismaRepository.normalize(user);
     }
 
     async findByEmail(email: Email): Promise<User | null> {
         const user = await this.prisma.user.findUnique({
-            where: {
-                email: email.toString(),
-            },
+            where: {email: email.toString()},
             ...userSelect,
         });
-
-        return user === null ? null : UserPrismaRepository.normalize(user);
-    }
-
-    async findByEmployeeId(employeeId: PersonId): Promise<User | null> {
-        const user = await this.prisma.user.findFirst({
-            where: {
-                professionals: {
-                    some: {
-                        personId: employeeId.toString(),
-                    },
-                },
-            },
-            ...userSelect,
-        });
-
         return user === null ? null : UserPrismaRepository.normalize(user);
     }
 
     async save(user: User): Promise<void> {
-        const {professionals, ...userModel} = UserPrismaRepository.denormalize(user);
-        const professionalIds = user.professionals.map((id) => ({id: id.toString()}));
+        const userModel = UserPrismaRepository.denormalize(user);
 
         try {
             await this.prisma.user.upsert({
-                where: {
-                    id: userModel.id,
-                },
-                create: {
-                    ...userModel,
-                    professionals: {
-                        connect: professionalIds,
-                    },
-                },
-                update: {
-                    ...userModel,
-                    professionals: {
-                        set: professionalIds,
-                    },
-                },
+                where: {id: userModel.id},
+                create: userModel,
+                update: userModel,
             });
         } catch (e) {
             if (this.checkUniqueViolation(e, 'username')) {
@@ -143,7 +104,7 @@ export class UserPrismaRepository extends PrismaRepository implements UserReposi
 
     async search(
         pagination: Pagination<UserSortOptions>,
-        filter: UserSearchFilter = {}
+        filter: UserSearchFilter = {},
     ): Promise<PaginatedList<User>> {
         const where: Prisma.UserWhereInput = {
             id: filter.ids ? {in: filter.ids.map((id) => id.toString())} : undefined,
@@ -172,10 +133,6 @@ export class UserPrismaRepository extends PrismaRepository implements UserReposi
     }
 
     async delete(id: UserId): Promise<void> {
-        await this.prisma.user.delete({
-            where: {
-                id: id.toString(),
-            },
-        });
+        await this.prisma.user.delete({where: {id: id.toString()}});
     }
 }

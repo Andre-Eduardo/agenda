@@ -4,11 +4,17 @@ import {EntityDto} from '../../@shared/dto';
 
 @ApiSchema({name: 'ClinicalProfile'})
 export class ClinicalProfileDto extends EntityDto {
+    @ApiProperty({format: 'uuid', description: 'The clinic this profile belongs to'})
+    clinicId: string;
+
     @ApiProperty({format: 'uuid', description: 'The patient ID'})
     patientId: string;
 
-    @ApiProperty({format: 'uuid', description: 'The professional ID'})
-    professionalId: string;
+    @ApiProperty({format: 'uuid', description: 'ClinicMember who created/edited the profile'})
+    createdByMemberId: string;
+
+    @ApiProperty({format: 'uuid', description: 'Professional clinically responsible'})
+    responsibleProfessionalId: string;
 
     @ApiProperty({nullable: true, description: 'Known allergies'})
     allergies: string | null;
@@ -33,8 +39,10 @@ export class ClinicalProfileDto extends EntityDto {
 
     constructor(profile: ClinicalProfile) {
         super(profile);
+        this.clinicId = profile.clinicId.toString();
         this.patientId = profile.patientId.toString();
-        this.professionalId = profile.professionalId.toString();
+        this.createdByMemberId = profile.createdByMemberId.toString();
+        this.responsibleProfessionalId = profile.responsibleProfessionalId.toString();
         this.allergies = profile.allergies;
         this.chronicConditions = profile.chronicConditions;
         this.currentMedications = profile.currentMedications;

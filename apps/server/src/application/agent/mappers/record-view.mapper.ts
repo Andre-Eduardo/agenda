@@ -2,8 +2,10 @@ import type {Record} from '../../../domain/record/entities';
 
 export type RecordView = {
     id: string;
+    clinicId: string;
     patientId: string;
-    professionalId: string;
+    createdByMemberId: string;
+    responsibleProfessionalId: string;
     title: string | null;
     description: string | null;
     attendanceType: string | null;
@@ -23,8 +25,10 @@ export type RecordView = {
 export function toRecordView(r: Record): RecordView {
     return {
         id: r.id.toString(),
+        clinicId: r.clinicId.toString(),
         patientId: r.patientId.toString(),
-        professionalId: r.professionalId.toString(),
+        createdByMemberId: r.createdByMemberId.toString(),
+        responsibleProfessionalId: r.responsibleProfessionalId.toString(),
         title: r.title,
         description: r.description,
         attendanceType: r.attendanceType,

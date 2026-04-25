@@ -1,7 +1,7 @@
 import {Injectable} from '@nestjs/common';
 import * as PrismaClient from '@prisma/client';
+import {ClinicMemberId} from '../../domain/clinic-member/entities';
 import {WorkingHours, WorkingHoursId} from '../../domain/professional/entities';
-import {ProfessionalId} from '../../domain/professional/entities';
 import {MapperWithoutDto} from './mapper';
 
 export type WorkingHoursModel = PrismaClient.WorkingHours;
@@ -11,7 +11,7 @@ export class WorkingHoursMapper extends MapperWithoutDto<WorkingHours, WorkingHo
     toDomain(model: WorkingHoursModel): WorkingHours {
         return new WorkingHours({
             id: WorkingHoursId.from(model.id),
-            professionalId: ProfessionalId.from(model.professionalId),
+            clinicMemberId: ClinicMemberId.from(model.clinicMemberId),
             dayOfWeek: model.dayOfWeek,
             startTime: model.startTime,
             endTime: model.endTime,
@@ -26,7 +26,7 @@ export class WorkingHoursMapper extends MapperWithoutDto<WorkingHours, WorkingHo
     toPersistence(entity: WorkingHours): WorkingHoursModel {
         return {
             id: entity.id.toString(),
-            professionalId: entity.professionalId.toString(),
+            clinicMemberId: entity.clinicMemberId.toString(),
             dayOfWeek: entity.dayOfWeek,
             startTime: entity.startTime,
             endTime: entity.endTime,

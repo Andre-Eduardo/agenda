@@ -1,12 +1,12 @@
 import {Injectable} from '@nestjs/common';
+import {ClinicMemberId} from '../../../domain/clinic-member/entities';
 import {PatientId} from '../../../domain/patient/entities';
-import {ProfessionalId} from '../../../domain/professional/entities';
 import {ContextSnapshotStatus} from '../../../domain/clinical-chat/entities';
 import {PatientContextSnapshotRepository} from '../../../domain/clinical-chat/patient-context-snapshot.repository';
 
 export type InvalidateSnapshotInput = {
     patientId: PatientId;
-    professionalId?: ProfessionalId | null;
+    memberId?: ClinicMemberId | null;
     /** Razão da invalidação, para fins de rastreabilidade */
     reason?: string;
 };
@@ -40,9 +40,9 @@ export class InvalidateSnapshotService {
     constructor(private readonly snapshotRepository: PatientContextSnapshotRepository) {}
 
     async execute(input: InvalidateSnapshotInput): Promise<InvalidateSnapshotOutput> {
-        const {patientId, professionalId = null} = input;
+        const {patientId, memberId = null} = input;
 
-        const snapshot = await this.snapshotRepository.findByPatient(patientId, professionalId);
+        const snapshot = await this.snapshotRepository.findByPatient(patientId, memberId);
 
         if (!snapshot) {
             return {invalidated: false, previousStatus: null};

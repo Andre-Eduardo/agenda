@@ -16,15 +16,16 @@ export class CreatePatientAlertService implements ApplicationService<CreatePatie
     ) {}
 
     async execute({actor, payload}: Command<CreatePatientAlertDto>): Promise<PatientAlertDto> {
-        const patient = await this.patientRepository.findById(payload.patientId);
+        const patient = await this.patientRepository.findById(payload.patientId, actor.clinicId);
 
         if (!patient) {
             throw new ResourceNotFoundException('Patient not found.', payload.patientId.toString());
         }
 
         const alert = PatientAlert.create({
+            clinicId: actor.clinicId,
             patientId: payload.patientId,
-            professionalId: payload.professionalId,
+            createdByMemberId: actor.clinicMemberId,
             title: payload.title,
             description: payload.description ?? null,
             severity: payload.severity,

@@ -31,7 +31,6 @@ export class ProposeRescheduleAppointmentTool implements AgentTool<Input, Appoin
             actor: context.actor,
             payload: {
                 appointmentId: input.appointmentId,
-                professionalId: context.professionalId?.toString() ?? context.actor.userId.toString(),
                 newStartAt: new Date(input.newStartAt),
                 newEndAt: new Date(input.newEndAt),
                 reason: input.reason,

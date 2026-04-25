@@ -1,6 +1,6 @@
 import {ApiProperty, ApiSchema} from '@nestjs/swagger';
 import type {Patient} from '../../../domain/patient/entities';
-import {Gender, PersonProfile, PersonType} from '../../../domain/person/entities';
+import {Gender, PersonType} from '../../../domain/person/entities';
 import {EntityDto} from '../../@shared/dto';
 
 @ApiSchema({name: 'Patient'})
@@ -20,11 +20,8 @@ export class PatientDto extends EntityDto {
     @ApiProperty({enum: PersonType, description: 'The person type'})
     personType: PersonType;
 
-    @ApiProperty({enum: PersonProfile, isArray: true, description: 'The patient profiles'})
-    profiles: PersonProfile[];
-
-    @ApiProperty({format: 'uuid', nullable: true, description: 'The associated professional ID'})
-    professionalId: string | null;
+    @ApiProperty({format: 'uuid', description: 'The clinic this patient belongs to'})
+    clinicId: string;
 
     @ApiProperty({format: 'date-time', nullable: true, description: 'The patient birth date'})
     birthDate: string | null;
@@ -45,8 +42,7 @@ export class PatientDto extends EntityDto {
         this.phone = patient.phone?.toString() ?? null;
         this.gender = patient.gender;
         this.personType = patient.personType;
-        this.profiles = Array.from(patient.profiles);
-        this.professionalId = patient.professionalId?.toString() ?? null;
+        this.clinicId = patient.clinicId.toString();
         this.birthDate = patient.birthDate?.toISOString() ?? null;
         this.email = patient.email;
         this.emergencyContactName = patient.emergencyContactName;

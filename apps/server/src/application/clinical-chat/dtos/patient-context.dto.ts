@@ -1,8 +1,8 @@
 import {ApiProperty, ApiSchema} from '@nestjs/swagger';
 import {z} from 'zod';
-import {PatientId} from '../../../domain/patient/entities';
-import {ProfessionalId} from '../../../domain/professional/entities';
+import {ClinicMemberId} from '../../../domain/clinic-member/entities';
 import {ContextChunkSourceType} from '../../../domain/clinical-chat/entities';
+import {PatientId} from '../../../domain/patient/entities';
 import {entityId} from '../../@shared/validation/schemas';
 import {createZodDto} from '../../@shared/validation/dto';
 import type {PatientContextSnapshot, PatientContextChunk} from '../../../domain/clinical-chat/entities';
@@ -11,18 +11,21 @@ import {EntityDto} from '../../@shared/dto';
 @ApiSchema({name: 'PatientContextSnapshot'})
 export class PatientContextSnapshotDto extends EntityDto {
     @ApiProperty({format: 'uuid'})
+    clinicId: string;
+
+    @ApiProperty({format: 'uuid'})
     patientId: string;
 
-    @ApiProperty({format: 'uuid', nullable: true})
-    professionalId: string | null;
+    @ApiProperty({format: 'uuid', nullable: true, description: 'Member-specific snapshot (null = generic)'})
+    memberId: string | null;
 
-    @ApiProperty({description: 'Facts estruturados do paciente'})
+    @ApiProperty({description: 'Structured patient facts'})
     patientFacts: Record<string, unknown>;
 
     @ApiProperty({nullable: true})
     criticalContext: unknown[] | null;
 
-    @ApiProperty({nullable: true, description: 'Timeline resumida de eventos clínicos'})
+    @ApiProperty({nullable: true, description: 'Summarized clinical timeline'})
     timelineSummary: unknown[] | null;
 
     @ApiProperty()
@@ -36,8 +39,9 @@ export class PatientContextSnapshotDto extends EntityDto {
 
     constructor(entity: PatientContextSnapshot) {
         super(entity);
+        this.clinicId = entity.clinicId.toString();
         this.patientId = entity.patientId.toString();
-        this.professionalId = entity.professionalId?.toString() ?? null;
+        this.memberId = entity.memberId?.toString() ?? null;
         this.patientFacts = entity.patientFacts as Record<string, unknown>;
         this.criticalContext = entity.criticalContext as unknown[];
         this.timelineSummary = entity.timelineSummary as unknown[];
@@ -49,6 +53,9 @@ export class PatientContextSnapshotDto extends EntityDto {
 
 @ApiSchema({name: 'PatientContextChunk'})
 export class PatientContextChunkDto extends EntityDto {
+    @ApiProperty({format: 'uuid'})
+    clinicId: string;
+
     @ApiProperty({format: 'uuid'})
     patientId: string;
 
@@ -70,11 +77,12 @@ export class PatientContextChunkDto extends EntityDto {
     @ApiProperty()
     contentHash: string;
 
-    @ApiProperty({nullable: true, description: 'Score de relevância (0–1). 1.0 quando sem embedding ativo.'})
+    @ApiProperty({nullable: true, description: 'Relevance score (0–1). 1.0 when no embedding available.'})
     score?: number;
 
     constructor(entity: PatientContextChunk, score?: number) {
         super(entity);
+        this.clinicId = entity.clinicId.toString();
         this.patientId = entity.patientId.toString();
         this.sourceType = entity.sourceType;
         this.sourceId = entity.sourceId;
@@ -90,7 +98,8 @@ export class PatientContextChunkDto extends EntityDto {
 
 export const rebuildContextSchema = z.object({
     patientId: entityId(PatientId),
-    professionalId: entityId(ProfessionalId).optional(),
+    /** Optional: build a member-scoped snapshot. Defaults to generic (null). */
+    memberId: entityId(ClinicMemberId).optional(),
     reindex: z.boolean().default(true),
 });
 

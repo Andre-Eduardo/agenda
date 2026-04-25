@@ -4,7 +4,7 @@ import {EntityId} from '../../@shared/entity/id';
 import {AccessDeniedException, AccessDeniedReason, InvalidInputException} from '../../@shared/exceptions';
 import type {Email} from '../../@shared/value-objects';
 import {GlobalRole} from '../../auth';
-import type {ProfessionalId} from '../../professional/entities';
+import type {ClinicMemberId} from '../../clinic-member/entities';
 import {
     UserSignedUpEvent,
     UserChangedEvent,
@@ -13,15 +13,15 @@ import {
     UserSignedInEvent,
     UserSignedOutEvent,
     UserCreatedEvent,
-    UserProfessionalAddedEvent,
-    UserProfessionalRemovedEvent,
+    UserClinicMemberAddedEvent,
+    UserClinicMemberRemovedEvent,
 } from '../events';
 import type {Username} from '../value-objects';
 import {ObfuscatedPassword} from '../value-objects';
 
 export type UserProps = EntityProps<User>;
 export type CreateUser = Override<Omit<CreateEntity<User>, 'globalRole'>, {email?: Email; password: string}>;
-export type SignUpUser = Override<Omit<CreateUser, 'professionals'>, {email: Email}>;
+export type SignUpUser = Override<Omit<CreateUser, 'clinicMembers'>, {email: Email}>;
 export type UpdateUser = Override<Omit<Partial<UserProps>, 'password'>, {email?: Email}>;
 
 export class User extends AggregateRoot<UserId> {
@@ -30,7 +30,7 @@ export class User extends AggregateRoot<UserId> {
     password: ObfuscatedPassword;
     name: string;
     globalRole: GlobalRole;
-    professionals: ProfessionalId[];
+    clinicMembers: ClinicMemberId[];
 
     constructor(props: AllEntityProps<User>) {
         super(props);
@@ -39,7 +39,7 @@ export class User extends AggregateRoot<UserId> {
         this.password = props.password;
         this.name = props.name;
         this.globalRole = props.globalRole;
-        this.professionals = props.professionals;
+        this.clinicMembers = props.clinicMembers;
         this.validate();
     }
 
@@ -53,7 +53,7 @@ export class User extends AggregateRoot<UserId> {
             password: await ObfuscatedPassword.obfuscate(props.password),
             name: props.name,
             globalRole: GlobalRole.OWNER,
-            professionals: [],
+            clinicMembers: [],
             createdAt: now,
             updatedAt: now,
             deletedAt: null,
@@ -75,7 +75,7 @@ export class User extends AggregateRoot<UserId> {
             password: await ObfuscatedPassword.obfuscate(props.password),
             name: props.name,
             globalRole: GlobalRole.NONE,
-            professionals: [],
+            clinicMembers: [],
             createdAt: now,
             updatedAt: now,
             deletedAt: null,
@@ -123,24 +123,24 @@ export class User extends AggregateRoot<UserId> {
         this.addEvent(new UserPasswordChangedEvent({userId: this.id}));
     }
 
-    addToProfessional(professionalId: ProfessionalId): void {
-        if (this.professionals.some((id) => id.equals(professionalId))) {
+    addClinicMember(clinicMemberId: ClinicMemberId): void {
+        if (this.clinicMembers.some((id) => id.equals(clinicMemberId))) {
             return;
         }
 
-        this.professionals.push(professionalId);
-        this.addEvent(new UserProfessionalAddedEvent({userId: this.id, professionalId}));
+        this.clinicMembers.push(clinicMemberId);
+        this.addEvent(new UserClinicMemberAddedEvent({userId: this.id, clinicMemberId}));
     }
 
-    removeFromProfessional(professionalId: ProfessionalId): void {
-        const index = this.professionals.findIndex((id) => id.equals(professionalId));
+    removeClinicMember(clinicMemberId: ClinicMemberId): void {
+        const index = this.clinicMembers.findIndex((id) => id.equals(clinicMemberId));
 
         if (index === -1) {
             return;
         }
 
-        this.professionals.splice(index, 1);
-        this.addEvent(new UserProfessionalRemovedEvent({userId: this.id, professionalId}));
+        this.clinicMembers.splice(index, 1);
+        this.addEvent(new UserClinicMemberRemovedEvent({userId: this.id, clinicMemberId}));
     }
 
     delete(): void {
@@ -154,7 +154,7 @@ export class User extends AggregateRoot<UserId> {
             email: this.email?.toJSON() ?? null,
             name: this.name,
             globalRole: this.globalRole,
-            professionals: this.professionals.map((professionalId) => professionalId.toJSON()),
+            clinicMembers: this.clinicMembers.map((clinicMemberId) => clinicMemberId.toJSON()),
             createdAt: this.createdAt.toJSON(),
             updatedAt: this.updatedAt.toJSON(),
             deletedAt: this.deletedAt?.toJSON() ?? null,

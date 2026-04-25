@@ -29,11 +29,13 @@ export class ProposeAppointmentTool implements AgentTool<Input, AppointmentPropo
     constructor(private readonly createProposalService: CreateAppointmentProposalService) {}
 
     async execute(input: Input, context: ToolContext): Promise<AppointmentProposalResult> {
+        // Member that will attend defaults to the chat session's owning member.
+        const attendedByMemberId = (context.memberId ?? context.actor.clinicMemberId).toString();
         return this.createProposalService.execute({
             actor: context.actor,
             payload: {
                 patientId: input.patientId,
-                professionalId: context.professionalId?.toString() ?? context.actor.userId.toString(),
+                attendedByMemberId,
                 startAt: new Date(input.startAt),
                 endAt: new Date(input.endAt),
                 type: input.type,

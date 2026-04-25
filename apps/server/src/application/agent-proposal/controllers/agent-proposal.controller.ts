@@ -27,7 +27,7 @@ export class AgentProposalController {
     ) {}
 
     @ApiOperation({
-        summary: 'List pending proposals for the logged-in professional',
+        summary: 'List pending proposals for the actor\'s current clinic',
         responses: [{status: 200, description: 'List of pending proposals'}],
     })
     @Authorize(RecordPermission.VIEW)
@@ -35,7 +35,7 @@ export class AgentProposalController {
     async listPending(@RequestActor() actor: Actor) {
         return this.listPendingProposals.execute({
             actor,
-            payload: {professionalId: actor.userId.toString()},
+            payload: {clinicId: actor.clinicId.toString()},
         });
     }
 

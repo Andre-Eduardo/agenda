@@ -18,7 +18,6 @@ export class PersonMapper extends MapperWithoutDto<Person, PersonModel> {
             gender: toEnumOrNull(Gender, model.gender),
             phone: model.phone === null ? null : Phone.create(model.phone),
             personType: toEnum(PersonType, model.personType),
-            profiles: new Set(),
             deletedAt: model.deletedAt ?? null,
         });
     }

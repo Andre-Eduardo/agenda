@@ -1,6 +1,8 @@
 import {Injectable} from '@nestjs/common';
 import * as PrismaClient from '@prisma/client';
 import {toEnum} from '../../domain/@shared/utils';
+import {ClinicId} from '../../domain/clinic/entities';
+import {ClinicMemberId} from '../../domain/clinic-member/entities';
 import {
     PatientContextSnapshot,
     PatientContextSnapshotId,
@@ -10,7 +12,6 @@ import {
     type TimelineEntry,
 } from '../../domain/clinical-chat/entities';
 import {PatientId} from '../../domain/patient/entities';
-import {ProfessionalId} from '../../domain/professional/entities';
 import {MapperWithoutDto} from './mapper';
 
 export type PatientContextSnapshotModel = PrismaClient.PatientContextSnapshot;
@@ -20,8 +21,9 @@ export class PatientContextSnapshotMapper extends MapperWithoutDto<PatientContex
     toDomain(model: PatientContextSnapshotModel): PatientContextSnapshot {
         return new PatientContextSnapshot({
             id: PatientContextSnapshotId.from(model.id),
+            clinicId: ClinicId.from(model.clinicId),
             patientId: PatientId.from(model.patientId),
-            professionalId: model.professionalId ? ProfessionalId.from(model.professionalId) : null,
+            memberId: model.memberId ? ClinicMemberId.from(model.memberId) : null,
             patientFacts: model.patientFacts as PatientFacts,
             criticalContext: model.criticalContext as CriticalContextEntry[] | null,
             timelineSummary: model.timelineSummary as TimelineEntry[] | null,
@@ -37,8 +39,9 @@ export class PatientContextSnapshotMapper extends MapperWithoutDto<PatientContex
     toPersistence(entity: PatientContextSnapshot): PatientContextSnapshotModel {
         return {
             id: entity.id.toString(),
+            clinicId: entity.clinicId.toString(),
             patientId: entity.patientId.toString(),
-            professionalId: entity.professionalId?.toString() ?? null,
+            memberId: entity.memberId?.toString() ?? null,
             patientFacts: entity.patientFacts as PrismaClient.Prisma.JsonValue,
             criticalContext: entity.criticalContext as PrismaClient.Prisma.JsonValue,
             timelineSummary: entity.timelineSummary as PrismaClient.Prisma.JsonValue,

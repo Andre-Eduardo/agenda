@@ -16,7 +16,7 @@ export class RejectProposalService {
             throw new ResourceNotFoundException('Proposal not found.', payload.proposalId);
         }
 
-        if (proposal.professionalId.toString() !== actor.userId.toString()) {
+        if (!proposal.clinicId.equals(actor.clinicId)) {
             throw new PreconditionException('You are not authorized to reject this proposal.');
         }
 

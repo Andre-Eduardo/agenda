@@ -1,4 +1,5 @@
 import {Injectable} from '@nestjs/common';
+import {ClinicId} from '../../../domain/clinic/entities';
 import {AiProviderRegistry} from '../../../domain/clinical-chat/ports/ai-provider-registry.port';
 import type {Specialty} from '../../../domain/form-template/entities';
 import {KnowledgeChunk} from '../../../domain/knowledge-base/entities';
@@ -9,7 +10,8 @@ export type IngestKnowledgeDocumentInput = {
     content: string;
     category: string;
     specialty?: Specialty;
-    companyId?: string;
+    /** null = global chunk; ClinicId = clinic-private. */
+    clinicId?: ClinicId | null;
     sourceFile?: string;
     metadata?: Record<string, unknown>;
 };
@@ -47,7 +49,7 @@ export class IngestKnowledgeDocumentService {
 
             newChunks.push(
                 KnowledgeChunk.create({
-                    companyId: input.companyId ?? null,
+                    clinicId: input.clinicId ?? null,
                     specialty: input.specialty ?? null,
                     category: input.category,
                     content: textChunk.content,

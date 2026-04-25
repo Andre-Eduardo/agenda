@@ -1,3 +1,4 @@
+import type {ClinicId} from '../clinic/entities';
 import type {Specialty} from '../form-template/entities';
 import type {KnowledgeChunk, KnowledgeChunkId} from './entities';
 
@@ -5,7 +6,7 @@ export type KnowledgeChunkSearchFilter = {
     queryEmbedding: number[];
     specialty?: Specialty;
     category?: string;
-    companyId?: string;
+    clinicId?: ClinicId | null;
     topK?: number;
     minScore?: number;
 };
@@ -24,11 +25,11 @@ export interface KnowledgeChunkRepository {
 
     saveBatch(chunks: KnowledgeChunk[]): Promise<void>;
 
-    deleteByCategory(category: string, companyId?: string): Promise<void>;
+    deleteByCategory(category: string, clinicId?: ClinicId | null): Promise<void>;
 
-    deleteBySourceFile(sourceFile: string, companyId?: string): Promise<void>;
+    deleteBySourceFile(sourceFile: string, clinicId?: ClinicId | null): Promise<void>;
 
-    countByCategory(category: string, companyId?: string): Promise<number>;
+    countByCategory(category: string, clinicId?: ClinicId | null): Promise<number>;
 
     findByContentHash(contentHash: string): Promise<KnowledgeChunk | null>;
 }

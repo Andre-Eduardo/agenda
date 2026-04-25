@@ -7,7 +7,12 @@ import {createZodDto} from '../../@shared/validation/dto';
 import {entityId} from '../../@shared/validation/schemas';
 
 const startPatientFormSchema = z.object({
-    professionalId: entityId(ProfessionalId),
+    /**
+     * Professional clinically responsible. Optional because secretaries can
+     * apply forms (e.g. intake questionnaires) without a clinically responsible
+     * professional yet attached.
+     */
+    responsibleProfessionalId: entityId(ProfessionalId).nullish(),
     templateId: entityId(FormTemplateId),
     versionId: entityId(FormTemplateVersionId).optional(),
     appliedAt: z.coerce.date().optional(),

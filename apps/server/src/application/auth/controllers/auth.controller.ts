@@ -3,13 +3,13 @@ import {ApiTags} from '@nestjs/swagger';
 import {Response} from 'express';
 import {Actor, UnauthenticatedActor} from '../../../domain/@shared/actor';
 import {Public} from '../../@shared/auth';
-import {BypassProfessional} from '../../@shared/auth/bypass-professional.decorator';
+import {BypassClinicMember} from '../../@shared/auth/bypass-clinic-member.decorator';
 import {RequestActor} from '../../@shared/auth/request-actor.decorator';
 import {ApiOperation} from '../../@shared/openapi/decorators';
 import {SignInDto} from '../dtos';
 import {SignInService, SignOutService} from '../services';
 
-@BypassProfessional()
+@BypassClinicMember()
 @ApiTags('Auth')
 @Controller('auth')
 export class AuthController {
@@ -41,12 +41,12 @@ export class AuthController {
         @Body() payload: SignInDto,
         @Res({passthrough: true}) response: Response
     ): Promise<void> {
-        const {token, professionalId} = await this.signInService.execute({actor, payload});
+        const {token, clinicMemberId} = await this.signInService.execute({actor, payload});
 
         response.actions.setToken(token);
 
-        if (professionalId !== undefined) {
-            response.actions.setProfessional(professionalId);
+        if (clinicMemberId !== undefined) {
+            response.actions.setClinicMember(clinicMemberId);
         }
     }
 

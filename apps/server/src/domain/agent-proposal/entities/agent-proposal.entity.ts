@@ -1,7 +1,8 @@
 import {AggregateRoot, type AllEntityProps, type CreateEntity} from '../../@shared/entity';
 import {EntityId} from '../../@shared/entity/id';
 import {PreconditionException} from '../../@shared/exceptions';
-import type {ProfessionalId} from '../../professional/entities';
+import type {ClinicId} from '../../clinic/entities';
+import type {ClinicMemberId} from '../../clinic-member/entities';
 
 export enum AgentProposalType {
     APPOINTMENT = 'APPOINTMENT',
@@ -22,7 +23,9 @@ export type AgentProposalProps = {
     sessionId: string | null;
     messageId: string | null;
     patientId: string | null;
-    professionalId: ProfessionalId;
+    clinicId: ClinicId;
+    /** Membro autor da proposta — sempre o ClinicMember dono da sessão. */
+    createdByMemberId: ClinicMemberId;
     type: AgentProposalType;
     status: AgentProposalStatus;
     payload: Record<string, unknown>;
@@ -48,7 +51,9 @@ export class AgentProposal extends AggregateRoot<AgentProposalId> {
     sessionId: string | null;
     messageId: string | null;
     patientId: string | null;
-    professionalId: ProfessionalId;
+    clinicId: ClinicId;
+    /** Membro autor da proposta — sempre o ClinicMember dono da sessão. */
+    createdByMemberId: ClinicMemberId;
     type: AgentProposalType;
     status: AgentProposalStatus;
     payload: Record<string, unknown>;
@@ -67,7 +72,8 @@ export class AgentProposal extends AggregateRoot<AgentProposalId> {
         this.sessionId = props.sessionId ?? null;
         this.messageId = props.messageId ?? null;
         this.patientId = props.patientId ?? null;
-        this.professionalId = props.professionalId;
+        this.clinicId = props.clinicId;
+        this.createdByMemberId = props.createdByMemberId;
         this.type = props.type;
         this.status = props.status ?? AgentProposalStatus.PENDING;
         this.payload = props.payload;
@@ -157,7 +163,8 @@ export class AgentProposal extends AggregateRoot<AgentProposalId> {
             sessionId: this.sessionId,
             messageId: this.messageId,
             patientId: this.patientId,
-            professionalId: this.professionalId.toJSON(),
+            clinicId: this.clinicId.toJSON(),
+            createdByMemberId: this.createdByMemberId.toJSON(),
             type: this.type,
             status: this.status,
             payload: this.payload,

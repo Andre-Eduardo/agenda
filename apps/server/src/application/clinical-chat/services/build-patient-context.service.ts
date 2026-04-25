@@ -1,9 +1,10 @@
 import {Injectable} from '@nestjs/common';
 import {createHash} from 'crypto';
 import {ResourceNotFoundException} from '../../../domain/@shared/exceptions';
+import {ClinicId} from '../../../domain/clinic/entities';
+import {ClinicMemberId} from '../../../domain/clinic-member/entities';
 import {PatientRepository} from '../../../domain/patient/patient.repository';
 import {PatientId} from '../../../domain/patient/entities';
-import {ProfessionalId} from '../../../domain/professional/entities';
 import {RecordRepository} from '../../../domain/record/record.repository';
 import {ClinicalProfileRepository} from '../../../domain/clinical-profile/clinical-profile.repository';
 import {PatientAlertRepository} from '../../../domain/patient-alert/patient-alert.repository';
@@ -26,12 +27,13 @@ import type {PatientAlert} from '../../../domain/patient-alert/entities';
 import {AlertSeverity} from '../../../domain/patient-alert/entities';
 
 export type BuildPatientContextInput = {
+    clinicId: ClinicId;
     patientId: PatientId;
-    /** null = contexto genérico sem perspectiva profissional */
-    professionalId?: ProfessionalId | null;
-    /** Número máximo de records a incluir na timeline (padrão: 20) */
+    /** null = generic context (no member-specific perspective). */
+    memberId?: ClinicMemberId | null;
+    /** Max records in the timeline (default: 20) */
     maxRecords?: number;
-    /** Número máximo de formulários a incluir (padrão: 10) */
+    /** Max forms (default: 10) */
     maxForms?: number;
 };
 
@@ -96,9 +98,9 @@ export class BuildPatientContextService {
     ) {}
 
     async execute(input: BuildPatientContextInput): Promise<PatientContextOutput> {
-        const {patientId, professionalId = null, maxRecords = 20, maxForms = 10} = input;
+        const {clinicId, patientId, memberId = null, maxRecords = 20, maxForms = 10} = input;
 
-        const patient = await this.patientRepository.findById(patientId);
+        const patient = await this.patientRepository.findById(patientId, clinicId);
         if (!patient) {
             throw new ResourceNotFoundException('Patient not found.', patientId.toString());
         }
@@ -150,8 +152,8 @@ export class BuildPatientContextService {
             generatedAt: new Date().toISOString(),
         };
 
-        // Persistir ou atualizar snapshot
-        await this.persistSnapshot(patientId, professionalId, output, contentHash);
+        // Persist or update snapshot
+        await this.persistSnapshot(clinicId, patientId, memberId, output, contentHash);
 
         return output;
     }
@@ -294,15 +296,15 @@ export class BuildPatientContextService {
     }
 
     private async persistSnapshot(
+        clinicId: ClinicId,
         patientId: PatientId,
-        professionalId: ProfessionalId | null,
+        memberId: ClinicMemberId | null,
         output: PatientContextOutput,
-        contentHash: string
+        contentHash: string,
     ): Promise<void> {
-        const existing = await this.snapshotRepository.findByPatient(patientId, professionalId);
+        const existing = await this.snapshotRepository.findByPatient(patientId, memberId);
 
         if (existing) {
-            // Atualizar snapshot existente
             existing.patientFacts = output.patientFacts;
             existing.criticalContext = output.criticalContext;
             existing.timelineSummary = output.timeline;
@@ -310,10 +312,10 @@ export class BuildPatientContextService {
             existing.markReady();
             await this.snapshotRepository.save(existing);
         } else {
-            // Criar novo snapshot
             const snapshot = PatientContextSnapshot.create({
+                clinicId,
                 patientId,
-                professionalId,
+                memberId,
                 patientFacts: output.patientFacts,
                 criticalContext: output.criticalContext,
                 timelineSummary: output.timeline,

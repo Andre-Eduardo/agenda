@@ -1,4 +1,6 @@
 import type {PaginatedList, Pagination} from '../@shared/repository';
+import type {ClinicId} from '../clinic/entities';
+import type {ClinicMemberId} from '../clinic-member/entities';
 import type {PatientId} from '../patient/entities';
 import type {ProfessionalId} from '../professional/entities';
 import type {FormTemplateId} from '../form-template/entities';
@@ -6,8 +8,10 @@ import type {Specialty} from '../form-template/entities';
 import type {PatientForm, PatientFormId, FormResponseStatus} from './entities';
 
 export type PatientFormFilter = {
+    clinicId?: ClinicId;
     patientId?: PatientId;
-    professionalId?: ProfessionalId;
+    createdByMemberId?: ClinicMemberId;
+    responsibleProfessionalId?: ProfessionalId;
     templateId?: FormTemplateId;
     status?: FormResponseStatus;
     specialty?: Specialty;

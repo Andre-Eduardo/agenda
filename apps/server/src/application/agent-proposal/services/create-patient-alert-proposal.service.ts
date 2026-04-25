@@ -3,13 +3,11 @@ import {AgentProposal, AgentProposalType} from '../../../domain/agent-proposal/e
 import {AgentProposalRepository} from '../../../domain/agent-proposal/agent-proposal.repository';
 import {PatientRepository} from '../../../domain/patient/patient.repository';
 import {PatientId} from '../../../domain/patient/entities';
-import {ProfessionalId} from '../../../domain/professional/entities';
 import {ResourceNotFoundException} from '../../../domain/@shared/exceptions';
 import type {Command} from '../../@shared/application.service';
 
 export type CreatePatientAlertProposalInput = {
     patientId: string;
-    professionalId: string;
     title: string;
     description?: string;
     severity: 'LOW' | 'MEDIUM' | 'HIGH';
@@ -30,11 +28,10 @@ export class CreatePatientAlertProposalService {
         private readonly patientRepository: PatientRepository,
     ) {}
 
-    async execute({payload}: Command<CreatePatientAlertProposalInput>): Promise<PatientAlertProposalResult> {
+    async execute({actor, payload}: Command<CreatePatientAlertProposalInput>): Promise<PatientAlertProposalResult> {
         const patientId = PatientId.from(payload.patientId);
-        const professionalId = ProfessionalId.from(payload.professionalId);
 
-        const patient = await this.patientRepository.findById(patientId);
+        const patient = await this.patientRepository.findById(patientId, actor.clinicId);
         if (!patient) {
             throw new ResourceNotFoundException('Patient not found.', payload.patientId);
         }
@@ -48,14 +45,14 @@ export class CreatePatientAlertProposalService {
         };
 
         const proposal = AgentProposal.create({
-            professionalId,
+            clinicId: actor.clinicId,
+            createdByMemberId: actor.clinicMemberId,
             patientId: payload.patientId,
             sessionId: payload.sessionId ?? null,
             messageId: payload.messageId ?? null,
             type: AgentProposalType.PATIENT_ALERT,
             payload: {
                 patientId: payload.patientId,
-                professionalId: payload.professionalId,
                 title: payload.title,
                 description: payload.description,
                 severity: payload.severity,

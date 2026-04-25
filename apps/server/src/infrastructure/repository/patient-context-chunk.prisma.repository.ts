@@ -17,6 +17,7 @@ import type {PatientId} from '../../domain/patient/entities';
 /** Shape retornado pelo $queryRaw de similaridade (colunas em snake_case do PostgreSQL) */
 type RawChunkRow = {
     id: string;
+    clinic_id: string;
     patient_id: string;
     source_type: string;
     source_id: string;
@@ -104,6 +105,7 @@ export class PatientContextChunkPrismaRepository
         const rows = await this.prisma.$queryRaw<RawChunkRow[]>`
             SELECT
                 id,
+                clinic_id,
                 patient_id,
                 source_type,
                 source_id,

@@ -36,7 +36,7 @@ export class SearchKnowledgeTool implements AgentTool<Input, Output> {
             topK: input.topK ?? 5,
             specialty: input.specialty,
             category: input.category,
-            companyId: context.companyId,
+            clinicId: context.clinicId ?? null,
             minScore: input.minScore ?? 0.3,
         });
         return {

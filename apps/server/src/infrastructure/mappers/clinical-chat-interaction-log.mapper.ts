@@ -1,6 +1,7 @@
 import {Injectable} from '@nestjs/common';
 import * as PrismaClient from '@prisma/client';
 import {toEnum} from '../../domain/@shared/utils';
+import {ClinicId} from '../../domain/clinic/entities';
 import {
     ClinicalChatInteractionLog,
     ClinicalChatInteractionLogId,
@@ -21,6 +22,7 @@ export class ClinicalChatInteractionLogMapper extends MapperWithoutDto<
     toDomain(model: ClinicalChatInteractionLogModel): ClinicalChatInteractionLog {
         return new ClinicalChatInteractionLog({
             id: ClinicalChatInteractionLogId.from(model.id),
+            clinicId: ClinicId.from(model.clinicId),
             sessionId: PatientChatSessionId.from(model.sessionId),
             userMessageId: model.userMessageId,
             assistantMessageId: model.assistantMessageId ?? null,
@@ -54,6 +56,7 @@ export class ClinicalChatInteractionLogMapper extends MapperWithoutDto<
     toPersistence(entity: ClinicalChatInteractionLog): ClinicalChatInteractionLogModel {
         return {
             id: entity.id.toString(),
+            clinicId: entity.clinicId.toString(),
             sessionId: entity.sessionId.toString(),
             userMessageId: entity.userMessageId,
             assistantMessageId: entity.assistantMessageId ?? null,

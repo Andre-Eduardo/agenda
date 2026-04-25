@@ -1,4 +1,6 @@
 import {PaginatedList, Pagination} from '../@shared/repository';
+import type {ClinicId} from '../clinic/entities';
+import type {ClinicMemberId} from '../clinic-member/entities';
 import type {PatientId} from '../patient/entities';
 import type {ProfessionalId} from '../professional/entities';
 import type {AppointmentId} from '../appointment/entities';
@@ -7,8 +9,10 @@ import type {Record, RecordId, AttendanceType, ClinicalStatusTag, RecordSource} 
 export type RecordSearchFilter = {
     ids?: RecordId[];
     term?: string;
+    clinicId?: ClinicId;
     patientId?: PatientId;
-    professionalId?: ProfessionalId;
+    createdByMemberId?: ClinicMemberId;
+    responsibleProfessionalId?: ProfessionalId;
     appointmentId?: AppointmentId;
     attendanceType?: AttendanceType;
     clinicalStatus?: ClinicalStatusTag;

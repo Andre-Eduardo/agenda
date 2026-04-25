@@ -9,6 +9,13 @@ datasource db {
   extensions = [citext, pgvector(map: "vector")]
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// 1. IDENTIDADE & AUTENTICAÇÃO
+// ─────────────────────────────────────────────────────────────────────────────
+
+/// User é apenas autenticação. Toda atuação dentro de uma clínica passa por ClinicMember.
+/// Decisão: um User opera em apenas uma clínica. Se a mesma pessoa atua em duas clínicas,
+/// ela tem dois logins distintos.
 model User {
   id         String     @id(map: "user_pk") @db.Uuid
   username   String     @unique @db.Citext()
@@ -21,7 +28,7 @@ model User {
   updatedAt  DateTime   @map("updated_at")
   deletedAt  DateTime?  @map("deleted_at")
 
-  professionals Professional[]
+  members ClinicMember[]
 
   @@map("user")
 }
@@ -42,13 +49,6 @@ enum Gender {
   @@map("gender")
 }
 
-enum PersonProfile {
-  PROFESSIONAL
-  PATIENT
-
-  @@map("person_profile")
-}
-
 enum PersonType {
   NATURAL
   LEGAL
@@ -56,93 +56,330 @@ enum PersonType {
   @@map("person_type")
 }
 
+/// Person continua como entidade reutilizável de dados pessoais para Patient.
+/// Antes também era usada por Professional — esses dados agora vivem em
+/// User (login/contato) + ClinicMember (atuação) + Professional (regulatório).
 model Person {
-  id           String        @id(map: "person_pk") @db.Uuid
-  name         String
-  documentId   String        @map("document_id")
-  phone        String?
-  gender       Gender?
-  personType   PersonType    @map("person_type")
-  createdAt    DateTime      @map("created_at")
-  updatedAt    DateTime      @map("updated_at")
-  deletedAt    DateTime?     @map("deleted_at")
-  professional Professional?
-  patients     Patient[]
+  id         String     @id(map: "person_pk") @db.Uuid
+  name       String
+  documentId String     @map("document_id")
+  phone      String?
+  gender     Gender?
+  personType PersonType @map("person_type")
+  createdAt  DateTime   @map("created_at")
+  updatedAt  DateTime   @map("updated_at")
+  deletedAt  DateTime?  @map("deleted_at")
+
+  patients Patient[]
 
   @@map("person")
 }
 
-// 🔑 Professional com config 1:1 (igual Company)
-model Professional {
-  id        String             @id(map: "professional_pk") @db.Uuid
-  personId  String             @unique @map("person_id") @db.Uuid
-  person    Person             @relation(fields: [personId], references: [id])
-  configId  String             @unique(map: "professional_config_id_key") @map("config_id") @db.Uuid
-  config    ProfessionalConfig @relation(references: [id], fields: [configId])
-  userId    String             @map("user_id") @db.Uuid
-  user      User               @relation(fields: [userId], references: [id])
-  specialty           String?
-  specialtyNormalized Specialty? @map("specialty_normalized")
-  createdAt           DateTime   @map("created_at")
-  updatedAt           DateTime   @map("updated_at")
-  deletedAt           DateTime?  @map("deleted_at")
+// ─────────────────────────────────────────────────────────────────────────────
+// 2. CLÍNICA — TENANT RAIZ
+// ─────────────────────────────────────────────────────────────────────────────
 
-  appointments       Appointment[]
-  records            Record[]
-  patients           Patient[]
-  workingHours       WorkingHours[]
-  professionalBlocks ProfessionalBlock[]
-  clinicalProfiles   ClinicalProfile[]
-  patientAlerts      PatientAlert[]
-  ImportedDocument   ImportedDocument[]
-  formTemplates      FormTemplate[]
-  patientForms       PatientForm[]
-  chatSessions       PatientChatSession[]
-  contextSnapshots   PatientContextSnapshot[]
-  agentProposals     AgentProposal[]
+/// Toda entidade de dado clínico pertence a uma Clinic. Boundary de isolamento:
+/// nenhum dado vaza entre clínicas. Para profissional autônomo, uma Clinic é criada
+/// automaticamente com isPersonalClinic = true (front esconde menus de equipe).
+model Clinic {
+  id               String    @id(map: "clinic_pk") @db.Uuid
+  name             String
+  documentId       String?   @map("document_id")
+  phone            String?
+  email            String?   @db.Citext()
+  /// true = autônomo usando o sistema sem clínica real. Front simplifica UI.
+  isPersonalClinic Boolean   @default(false) @map("is_personal_clinic")
+  createdAt        DateTime  @map("created_at")
+  updatedAt        DateTime  @map("updated_at")
+  deletedAt        DateTime? @map("deleted_at")
 
-  @@map("professional")
+  members             ClinicMember[]
+  patients            Patient[]
+  patientAccesses     ClinicPatientAccess[]
+  documentPermissions DocumentPermission[]
+  appointments        Appointment[]
+  records             Record[]
+  files               File[]
+  importedDocuments   ImportedDocument[]
+  clinicalProfiles    ClinicalProfile[]
+  patientAlerts       PatientAlert[]
+  formTemplates       FormTemplate[]
+  patientForms        PatientForm[]
+  chatSessions        PatientChatSession[]
+  contextSnapshots    PatientContextSnapshot[]
+  contextChunks       PatientContextChunk[]
+  chatInteractionLogs ClinicalChatInteractionLog[]
+  events              Event[]
+  agentProposals      AgentProposal[]
+  knowledgeChunks     KnowledgeChunk[]
+
+  @@map("clinic")
 }
 
-model ProfessionalConfig {
-  id        String    @id(map: "professional_config_pk") @db.Uuid
-  color     String?
+// ─────────────────────────────────────────────────────────────────────────────
+// 3. MEMBRO DA CLÍNICA — ATOR CENTRAL
+// ─────────────────────────────────────────────────────────────────────────────
+
+/// Roles definem o TETO de capacidade. As permissões granulares por paciente
+/// e por documento vivem em ClinicPatientAccess e DocumentPermission.
+enum ClinicMemberRole {
+  /// Acesso total. Gerencia membros e permissões. Único membro inicial em isPersonalClinic.
+  OWNER
+  /// Gerencia membros (exceto OWNER) e permissões. Não pode se auto-promover a OWNER.
+  ADMIN
+  /// Profissional de saúde. Cria prontuários, evoluções. Exige Professional vinculado.
+  PROFESSIONAL
+  /// Cadastra pacientes, agenda, faz upload. Acesso a dados clínicos depende de permissão.
+  SECRETARY
+  /// Somente leitura onde tiver permissão explícita.
+  VIEWER
+
+  @@map("clinic_member_role")
+}
+
+/// Pivô central do sistema. Toda ação registra o ClinicMember responsável
+/// via createdByMemberId para auditoria.
+///
+/// Quando role = PROFESSIONAL, existe um Professional 1:1 com dados regulatórios.
+/// Para SECRETARY, ADMIN, VIEWER, professional é null.
+///
+/// Absorveu o antigo ProfessionalConfig (campo color) e o vínculo com User
+/// que antes ficava em Professional.
+model ClinicMember {
+  id                String           @id(map: "clinic_member_pk") @db.Uuid
+  clinicId          String           @map("clinic_id") @db.Uuid
+  clinic            Clinic           @relation(fields: [clinicId], references: [id])
+  userId            String           @map("user_id") @db.Uuid
+  user              User             @relation(fields: [userId], references: [id])
+  role              ClinicMemberRole
+  /// Como o membro aparece na UI da clínica (ex: "Dr. João Silva")
+  displayName       String?          @map("display_name")
+  /// Cor na agenda (substitui ProfessionalConfig.color)
+  color             String?
+  isActive          Boolean          @default(true) @map("is_active")
+  /// Auditoria de onboarding. Null para o OWNER inicial da clínica.
+  invitedByMemberId String?          @map("invited_by_member_id") @db.Uuid
+  invitedBy         ClinicMember?    @relation("MemberInvites", fields: [invitedByMemberId], references: [id])
+  invitedMembers    ClinicMember[]   @relation("MemberInvites")
+
   createdAt DateTime  @map("created_at")
   updatedAt DateTime  @map("updated_at")
   deletedAt DateTime? @map("deleted_at")
 
+  // Extensão profissional (apenas quando role = PROFESSIONAL)
   professional Professional?
 
-  @@map("professional_config")
+  // Acesso e configurações pessoais
+  patientAccesses            ClinicPatientAccess[]
+  grantedDocumentPermissions DocumentPermission[]  @relation("PermissionGrantedTo")
+  permissionsAuthored        DocumentPermission[]  @relation("PermissionGrantedBy")
+  workingHours               WorkingHours[]
+  blocks                     MemberBlock[]
+
+  // Auditoria — quem criou cada coisa
+  createdAppointments      Appointment[]            @relation("AppointmentCreatedBy")
+  attendedAppointments     Appointment[]            @relation("AppointmentAttendedBy")
+  createdRecords           Record[]                 @relation("RecordCreatedBy")
+  createdFiles             File[]
+  createdImportedDocuments ImportedDocument[]
+  createdClinicalProfiles  ClinicalProfile[]        @relation("ClinicalProfileCreatedBy")
+  createdPatientAlerts     PatientAlert[]
+  createdFormTemplates     FormTemplate[]
+  createdPatientForms      PatientForm[]            @relation("PatientFormCreatedBy")
+  chatSessions             PatientChatSession[]
+  contextSnapshots         PatientContextSnapshot[]
+  events                   Event[]
+  createdAgentProposals    AgentProposal[]          @relation("AgentProposalCreatedBy")
+
+  @@unique([clinicId, userId], name: "clinic_member_clinic_user_unique")
+  @@index([clinicId], name: "clinic_member_clinic_idx")
+  @@index([userId], name: "clinic_member_user_idx")
+  @@map("clinic_member")
 }
 
-model Patient {
-  id                    String             @id(map: "patient_pk") @db.Uuid
-  person                Person             @relation(fields: [id], references: [id], onDelete: Cascade)
-  documentId            String             @map("document_id") @db.Citext()
-  birthDate             DateTime?          @map("birth_date")
-  email                 String?            @db.Citext()
-  emergencyContactName  String?            @map("emergency_contact_name")
-  emergencyContactPhone String?            @map("emergency_contact_phone")
-  createdAt             DateTime           @map("created_at")
-  updatedAt             DateTime           @map("updated_at")
-  deletedAt             DateTime?          @map("deleted_at")
-  appointments          Appointment[]
-  records               Record[]
-  professional          Professional?      @relation(fields: [professionalId], references: [id])
-  professionalId        String?            @map("professional_id") @db.Uuid
-  clinicalProfile       ClinicalProfile?
-  alerts                PatientAlert[]
-  patientFiles          File[]
-  ImportedDocument      ImportedDocument[]
-  patientForms          PatientForm[]
-  chatSessions          PatientChatSession[]
-  contextSnapshots      PatientContextSnapshot[]
-  contextChunks         PatientContextChunk[]
+// ─────────────────────────────────────────────────────────────────────────────
+// 4. PROFISSIONAL DE SAÚDE — EXTENSÃO 1:1 DO MEMBRO
+// ─────────────────────────────────────────────────────────────────────────────
 
-  @@unique([documentId, professionalId], name: "patient_document_id_professional_key")
+enum Specialty {
+  PSICOLOGIA
+  MEDICINA
+  FISIOTERAPIA
+  FONOAUDIOLOGIA
+  NUTRICAO
+  TERAPIA_OCUPACIONAL
+  ENFERMAGEM
+  OUTROS
+
+  @@map("specialty")
+}
+
+/// Dados regulatórios e clínicos do profissional de saúde.
+/// Existe apenas quando ClinicMember.role = PROFESSIONAL.
+///
+/// MUDANÇAS:
+/// - Não tem mais relação direta com User (vai via ClinicMember)
+/// - Não tem mais relação direta com Person (dados pessoais ficam no User)
+/// - Não tem mais ProfessionalConfig (color migrou para ClinicMember)
+/// - Aparece nas relações de "responsabilidade clínica", separado de "quem digitou"
+model Professional {
+  id                  String       @id(map: "professional_pk") @db.Uuid
+  clinicMemberId      String       @unique @map("clinic_member_id") @db.Uuid
+  clinicMember        ClinicMember @relation(fields: [clinicMemberId], references: [id])
+  registrationNumber  String?      @map("registration_number")
+  specialty           String?
+  specialtyNormalized Specialty?   @map("specialty_normalized")
+  createdAt           DateTime     @map("created_at")
+  updatedAt           DateTime     @map("updated_at")
+  deletedAt           DateTime?    @map("deleted_at")
+
+  // Relações como profissional clinicamente responsável (≠ quem digitou)
+  responsibleRecords          Record[]          @relation("RecordResponsibleProfessional")
+  responsibleClinicalProfiles ClinicalProfile[] @relation("ClinicalProfileResponsibleProfessional")
+  responsiblePatientForms     PatientForm[]     @relation("PatientFormResponsibleProfessional")
+
+  @@map("professional")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 5. PERMISSÕES — ACESSO A PACIENTE E A DOCUMENTO
+// ─────────────────────────────────────────────────────────────────────────────
+
+enum PatientAccessLevel {
+  /// Acesso total ao paciente: ver dados, criar e editar registros.
+  FULL
+  /// Pode ver dados clínicos do paciente, mas não pode criar/editar.
+  READ_ONLY
+  /// Pode cadastrar/atualizar dados básicos e fazer upload, mas não pode ler
+  /// documentos clínicos. Caso típico: secretária durante o cadastro inicial.
+  REGISTER_ONLY
+  /// Sem acesso. Usado para revogação explícita.
+  NONE
+
+  @@map("patient_access_level")
+}
+
+/// Acesso de um membro a um paciente dentro da clínica.
+/// Resolução de permissão (em ordem):
+///   1. Role no ClinicMember (teto funcional)
+///   2. ClinicPatientAccess (acesso ao paciente)
+///   3. DocumentPermission (override por documento, se existir)
+///
+/// OWNER e ADMIN ignoram esse check (acesso total por definição).
+/// Pode ser criado automaticamente ao primeiro contato (Appointment, Record)
+/// ou explicitamente pelo OWNER/ADMIN.
+model ClinicPatientAccess {
+  id          String             @id(map: "clinic_patient_access_pk") @db.Uuid
+  clinicId    String             @map("clinic_id") @db.Uuid
+  clinic      Clinic             @relation(fields: [clinicId], references: [id])
+  memberId    String             @map("member_id") @db.Uuid
+  member      ClinicMember       @relation(fields: [memberId], references: [id])
+  patientId   String             @map("patient_id") @db.Uuid
+  patient     Patient            @relation(fields: [patientId], references: [id])
+  accessLevel PatientAccessLevel @map("access_level")
+  /// Justificativa opcional registrada pelo gestor ao conceder/restringir.
+  reason      String?
+  createdAt   DateTime           @map("created_at")
+  updatedAt   DateTime           @map("updated_at")
+  deletedAt   DateTime?          @map("deleted_at")
+
+  @@unique([memberId, patientId], name: "clinic_patient_access_member_patient_unique")
+  @@index([clinicId], name: "clinic_patient_access_clinic_idx")
+  @@index([patientId], name: "clinic_patient_access_patient_idx")
+  @@map("clinic_patient_access")
+}
+
+/// Tipo de entidade alvo de uma permissão por documento.
+/// Modelo polimórfico: a FK não é formal (sem relation no Prisma) — a integridade
+/// é garantida pela aplicação. Vantagem: uma única tabela cobre todos os tipos
+/// de documento sem explosão de JOINs.
+enum DocumentEntityType {
+  RECORD
+  FILE
+  IMPORTED_DOCUMENT
+  PATIENT_FORM
+  CLINICAL_PROFILE
+  PATIENT_ALERT
+
+  @@map("document_entity_type")
+}
+
+/// Permissão granular por documento. Sobrescreve ClinicPatientAccess.
+///
+/// Exemplos de uso:
+/// - Secretária tem acesso REGISTER_ONLY ao paciente, mas a clínica concede
+///   canView=true em FILEs específicos (exames que ela mesma cadastrou).
+/// - Médico A criou um Record. Médico B tem FULL no paciente, mas a clínica
+///   restringiu canView=false neste Record específico.
+///
+/// Quando NÃO existe registro para (membro, documento), o acesso herda de
+/// ClinicPatientAccess. Quando existe, prevalece o que está aqui.
+model DocumentPermission {
+  id            String             @id(map: "document_permission_pk") @db.Uuid
+  clinicId      String             @map("clinic_id") @db.Uuid
+  clinic        Clinic             @relation(fields: [clinicId], references: [id])
+  memberId      String             @map("member_id") @db.Uuid
+  member        ClinicMember       @relation("PermissionGrantedTo", fields: [memberId], references: [id])
+  entityType    DocumentEntityType @map("entity_type")
+  entityId      String             @map("entity_id") @db.Uuid
+  canView       Boolean            @map("can_view")
+  /// Quem concedeu/revogou (auditoria de mudanças de permissão)
+  grantedByMemberId String?        @map("granted_by_member_id") @db.Uuid
+  grantedBy     ClinicMember?      @relation("PermissionGrantedBy", fields: [grantedByMemberId], references: [id])
+  reason        String?
+  createdAt     DateTime           @map("created_at")
+  updatedAt     DateTime           @map("updated_at")
+
+  @@unique([memberId, entityType, entityId], name: "document_permission_member_entity_unique")
+  @@index([entityType, entityId], name: "document_permission_entity_idx")
+  @@index([clinicId], name: "document_permission_clinic_idx")
+  @@map("document_permission")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 6. PACIENTE
+// ─────────────────────────────────────────────────────────────────────────────
+
+/// Patient agora pertence à Clinic, não ao Professional.
+/// MUDANÇAS:
+/// - professionalId removido (acesso vem via ClinicPatientAccess)
+/// - clinicId adicionado (boundary de tenant)
+/// - unique constraint mudou: era (documentId, professionalId), agora (documentId, clinicId)
+model Patient {
+  id                    String    @id(map: "patient_pk") @db.Uuid
+  person                Person    @relation(fields: [id], references: [id], onDelete: Cascade)
+  clinicId              String    @map("clinic_id") @db.Uuid
+  clinic                Clinic    @relation(fields: [clinicId], references: [id])
+  documentId            String    @map("document_id") @db.Citext()
+  birthDate             DateTime? @map("birth_date")
+  email                 String?   @db.Citext()
+  emergencyContactName  String?   @map("emergency_contact_name")
+  emergencyContactPhone String?   @map("emergency_contact_phone")
+  createdAt             DateTime  @map("created_at")
+  updatedAt             DateTime  @map("updated_at")
+  deletedAt             DateTime? @map("deleted_at")
+
+  accesses          ClinicPatientAccess[]
+  appointments      Appointment[]
+  records           Record[]
+  clinicalProfile   ClinicalProfile?
+  alerts            PatientAlert[]
+  patientFiles      File[]
+  importedDocuments ImportedDocument[]
+  patientForms      PatientForm[]
+  chatSessions      PatientChatSession[]
+  contextSnapshots  PatientContextSnapshot[]
+  contextChunks     PatientContextChunk[]
+
+  @@unique([documentId, clinicId], name: "patient_document_clinic_unique")
+  @@index([clinicId], name: "patient_clinic_idx")
   @@map("patient")
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 7. ENUMS CLÍNICOS (inalterados em relação ao schema original)
+// ─────────────────────────────────────────────────────────────────────────────
 
 enum EvolutionTemplateType {
   SOAP
@@ -214,19 +451,6 @@ enum AlertSeverity {
   @@map("alert_severity")
 }
 
-enum Specialty {
-  PSICOLOGIA
-  MEDICINA
-  FISIOTERAPIA
-  FONOAUDIOLOGIA
-  NUTRICAO
-  TERAPIA_OCUPACIONAL
-  ENFERMAGEM
-  OUTROS
-
-  @@map("specialty")
-}
-
 enum FormStatus {
   DRAFT
   PUBLISHED
@@ -264,32 +488,49 @@ enum AppointmentType {
   @@map("appointment_type")
 }
 
-model Appointment {
-  id              String            @id(map: "appointment_pk") @db.Uuid
-  professionalId  String            @map("professional_id") @db.Uuid
-  professional    Professional      @relation(fields: [professionalId], references: [id], onDelete: Cascade)
-  patientId       String            @map("patient_id") @db.Uuid
-  patient         Patient           @relation(fields: [patientId], references: [id], onDelete: Cascade)
-  startAt         DateTime          @map("start_at")
-  endAt           DateTime          @map("end_at")
-  durationMinutes Int               @map("duration_minutes")
-  type            AppointmentType   @map("type")
-  status          AppointmentStatus @map("status")
-  canceledAt      DateTime?         @map("canceled_at")
-  canceledReason  String?           @map("canceled_reason")
-  note            String?
-  createdAt       DateTime          @map("created_at")
-  updatedAt       DateTime          @map("updated_at")
-  deletedAt       DateTime?         @map("deleted_at")
-  records         Record[]
+// ─────────────────────────────────────────────────────────────────────────────
+// 8. AGENDA
+// ─────────────────────────────────────────────────────────────────────────────
 
+/// MUDANÇAS:
+/// - clinicId adicionado
+/// - professionalId substituído por attendedByMemberId (membro que atende)
+///   + createdByMemberId (membro que agendou — pode ser secretária)
+model Appointment {
+  id                  String            @id(map: "appointment_pk") @db.Uuid
+  clinicId            String            @map("clinic_id") @db.Uuid
+  clinic              Clinic            @relation(fields: [clinicId], references: [id])
+  /// Membro que atende (deve ter role PROFESSIONAL)
+  attendedByMemberId  String            @map("attended_by_member_id") @db.Uuid
+  attendedBy          ClinicMember      @relation("AppointmentAttendedBy", fields: [attendedByMemberId], references: [id])
+  /// Membro que registrou o agendamento (pode ser secretária ou o próprio profissional)
+  createdByMemberId   String            @map("created_by_member_id") @db.Uuid
+  createdBy           ClinicMember      @relation("AppointmentCreatedBy", fields: [createdByMemberId], references: [id])
+  patientId           String            @map("patient_id") @db.Uuid
+  patient             Patient           @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  startAt             DateTime          @map("start_at")
+  endAt               DateTime          @map("end_at")
+  durationMinutes     Int               @map("duration_minutes")
+  type                AppointmentType   @map("type")
+  status              AppointmentStatus @map("status")
+  canceledAt          DateTime?         @map("canceled_at")
+  canceledReason      String?           @map("canceled_reason")
+  note                String?
+  createdAt           DateTime          @map("created_at")
+  updatedAt           DateTime          @map("updated_at")
+  deletedAt           DateTime?         @map("deleted_at")
+  records             Record[]
+
+  @@index([clinicId], name: "appointment_clinic_idx")
+  @@index([attendedByMemberId], name: "appointment_attended_by_idx")
   @@map("appointment")
 }
 
+/// MUDANÇA: professionalId → clinicMemberId (apenas membros PROFESSIONAL devem ter)
 model WorkingHours {
   id             String       @id(map: "working_hours_pk") @db.Uuid
-  professionalId String       @map("professional_id") @db.Uuid
-  professional   Professional @relation(fields: [professionalId], references: [id], onDelete: Cascade)
+  clinicMemberId String       @map("clinic_member_id") @db.Uuid
+  clinicMember   ClinicMember @relation(fields: [clinicMemberId], references: [id], onDelete: Cascade)
   dayOfWeek      Int          @map("day_of_week")
   startTime      String       @map("start_time")
   endTime        String       @map("end_time")
@@ -301,63 +542,86 @@ model WorkingHours {
   @@map("working_hours")
 }
 
-model ProfessionalBlock {
-  id             String       @id(map: "professional_block_pk") @db.Uuid
-  professionalId String       @map("professional_id") @db.Uuid
-  professional   Professional @relation(fields: [professionalId], references: [id], onDelete: Cascade)
+/// MUDANÇA: ProfessionalBlock renomeado para MemberBlock (semanticamente mais
+/// correto agora que o ator é o membro). professionalId → clinicMemberId.
+model MemberBlock {
+  id             String       @id(map: "member_block_pk") @db.Uuid
+  clinicMemberId String       @map("clinic_member_id") @db.Uuid
+  clinicMember   ClinicMember @relation(fields: [clinicMemberId], references: [id], onDelete: Cascade)
   startAt        DateTime     @map("start_at")
   endAt          DateTime     @map("end_at")
   reason         String?
   createdAt      DateTime     @map("created_at")
   updatedAt      DateTime     @map("updated_at")
 
-  @@map("professional_block")
+  @@map("member_block")
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// 9. PRONTUÁRIO E DOCUMENTOS
+// ─────────────────────────────────────────────────────────────────────────────
+
+/// MUDANÇAS:
+/// - clinicId adicionado
+/// - professionalId substituído por:
+///     * createdByMemberId (quem digitou — auditoria)
+///     * responsibleProfessionalId (profissional clinicamente responsável)
+///   Em geral são iguais, mas podem divergir (ex: secretária digitando dictado).
 model Record {
-  id             String                 @id(map: "record_pk") @db.Uuid
-  professionalId String                 @map("professional_id") @db.Uuid
-  professional   Professional           @relation(fields: [professionalId], references: [id], onDelete: Cascade)
-  patientId      String                 @map("patient_id") @db.Uuid
-  patient        Patient                @relation(fields: [patientId], references: [id])
-  description    String?
-  templateType   EvolutionTemplateType? @map("template_type")
-  title          String?
-  attendanceType AttendanceType?        @map("attendance_type")
-  clinicalStatus ClinicalStatusTag?     @map("clinical_status")
-  conductTags    ConductTag[]           @map("conduct_tags")
-  subjective     String?
-  objective      String?
-  assessment     String?
-  plan           String?
-  freeNotes      String?                @map("free_notes")
-  eventDate      DateTime?              @map("event_date")
-  appointmentId  String?                @map("appointment_id") @db.Uuid
-  appointment    Appointment?           @relation(fields: [appointmentId], references: [id])
-  files          File[]
+  id                       String                 @id(map: "record_pk") @db.Uuid
+  clinicId                 String                 @map("clinic_id") @db.Uuid
+  clinic                   Clinic                 @relation(fields: [clinicId], references: [id])
+  createdByMemberId        String                 @map("created_by_member_id") @db.Uuid
+  createdBy                ClinicMember           @relation("RecordCreatedBy", fields: [createdByMemberId], references: [id])
+  responsibleProfessionalId String                @map("responsible_professional_id") @db.Uuid
+  responsibleProfessional  Professional           @relation("RecordResponsibleProfessional", fields: [responsibleProfessionalId], references: [id])
+  patientId                String                 @map("patient_id") @db.Uuid
+  patient                  Patient                @relation(fields: [patientId], references: [id])
+  description              String?
+  templateType             EvolutionTemplateType? @map("template_type")
+  title                    String?
+  attendanceType           AttendanceType?        @map("attendance_type")
+  clinicalStatus           ClinicalStatusTag?     @map("clinical_status")
+  conductTags              ConductTag[]           @map("conduct_tags")
+  subjective               String?
+  objective                String?
+  assessment               String?
+  plan                     String?
+  freeNotes                String?                @map("free_notes")
+  eventDate                DateTime?              @map("event_date")
+  appointmentId            String?                @map("appointment_id") @db.Uuid
+  appointment              Appointment?           @relation(fields: [appointmentId], references: [id])
+  files                    File[]
 
   source             RecordSource      @default(MANUAL) @map("source")
   importedDocumentId String?           @map("imported_document_id") @db.Uuid
   importedDocument   ImportedDocument? @relation(fields: [importedDocumentId], references: [id])
   wasHumanEdited     Boolean           @default(false) @map("was_human_edited")
 
-  patientFormId String?     @unique @map("patient_form_id") @db.Uuid
+  patientFormId String?      @unique @map("patient_form_id") @db.Uuid
   patientForm   PatientForm? @relation("RecordPatientForm", fields: [patientFormId], references: [id])
 
   createdAt DateTime  @map("created_at")
   updatedAt DateTime  @map("updated_at")
   deletedAt DateTime? @map("deleted_at")
 
+  @@index([clinicId], name: "record_clinic_idx")
+  @@index([patientId], name: "record_patient_idx")
   @@map("record")
 }
 
+/// MUDANÇAS: clinicId + createdByMemberId (auditoria de upload).
 model File {
   id                String             @id(map: "file_pk") @db.Uuid
+  clinicId          String             @map("clinic_id") @db.Uuid
+  clinic            Clinic             @relation(fields: [clinicId], references: [id])
+  createdByMemberId String             @map("created_by_member_id") @db.Uuid
+  createdBy         ClinicMember       @relation(fields: [createdByMemberId], references: [id])
   recordId          String?            @map("record_id") @db.Uuid
   record            Record?            @relation(fields: [recordId], references: [id])
   patientId         String?            @map("patient_id") @db.Uuid
   patient           Patient?           @relation(fields: [patientId], references: [id])
-  fileName          String   @map("file_name")
+  fileName          String
   url               String
   description       String
   createdAt         DateTime           @map("created_at")
@@ -365,17 +629,24 @@ model File {
   deletedAt         DateTime?          @map("deleted_at")
   importedDocuments ImportedDocument[]
 
+  @@index([clinicId], name: "file_clinic_idx")
   @@map("file")
 }
 
+/// MUDANÇAS:
+/// - clinicId adicionado
+/// - professionalId → createdByMemberId (qualquer membro pode importar; tipicamente
+///   secretária faz upload e profissional revisa depois)
 model ImportedDocument {
-  id             String       @id(map: "imported_document_pk") @db.Uuid
-  patientId      String       @map("patient_id") @db.Uuid
-  patient        Patient      @relation(fields: [patientId], references: [id])
-  professionalId String       @map("professional_id") @db.Uuid
-  professional   Professional @relation(fields: [professionalId], references: [id])
-  fileId         String       @map("file_id") @db.Uuid
-  file           File         @relation(fields: [fileId], references: [id])
+  id                String       @id(map: "imported_document_pk") @db.Uuid
+  clinicId          String       @map("clinic_id") @db.Uuid
+  clinic            Clinic       @relation(fields: [clinicId], references: [id])
+  createdByMemberId String       @map("created_by_member_id") @db.Uuid
+  createdBy         ClinicMember @relation(fields: [createdByMemberId], references: [id])
+  patientId         String       @map("patient_id") @db.Uuid
+  patient           Patient      @relation(fields: [patientId], references: [id])
+  fileId            String       @map("file_id") @db.Uuid
+  file              File         @relation(fields: [fileId], references: [id])
 
   documentType      String? @map("document_type")
   qualityLabel      String? @map("quality_label")
@@ -394,9 +665,11 @@ model ImportedDocument {
   extractedFields ExtractedField[]
   records         Record[]
 
+  @@index([clinicId], name: "imported_document_clinic_idx")
   @@map("imported_document")
 }
 
+/// Inalterado.
 model ExtractedField {
   id                 String           @id(map: "extracted_field_pk") @db.Uuid
   importedDocumentId String           @map("imported_document_id") @db.Uuid
@@ -415,41 +688,55 @@ model ExtractedField {
   @@map("extracted_field")
 }
 
+/// MUDANÇAS: clinicId + responsibleProfessionalId + createdByMemberId.
 model ClinicalProfile {
-  id                 String       @id(map: "clinical_profile_pk") @db.Uuid
-  patientId          String       @unique @map("patient_id") @db.Uuid
-  patient            Patient      @relation(fields: [patientId], references: [id])
-  professionalId     String       @map("professional_id") @db.Uuid
-  professional       Professional @relation(fields: [professionalId], references: [id])
-  allergies          String?
-  chronicConditions  String?      @map("chronic_conditions")
-  currentMedications String?      @map("current_medications")
-  surgicalHistory    String?      @map("surgical_history")
-  familyHistory      String?      @map("family_history")
-  socialHistory      String?      @map("social_history")
-  generalNotes       String?      @map("general_notes")
-  createdAt          DateTime     @map("created_at")
-  updatedAt          DateTime     @map("updated_at")
+  id                       String       @id(map: "clinical_profile_pk") @db.Uuid
+  clinicId                 String       @map("clinic_id") @db.Uuid
+  clinic                   Clinic       @relation(fields: [clinicId], references: [id])
+  patientId                String       @unique @map("patient_id") @db.Uuid
+  patient                  Patient      @relation(fields: [patientId], references: [id])
+  responsibleProfessionalId String      @map("responsible_professional_id") @db.Uuid
+  responsibleProfessional  Professional @relation("ClinicalProfileResponsibleProfessional", fields: [responsibleProfessionalId], references: [id])
+  createdByMemberId        String       @map("created_by_member_id") @db.Uuid
+  createdBy                ClinicMember @relation("ClinicalProfileCreatedBy", fields: [createdByMemberId], references: [id])
+  allergies                String?
+  chronicConditions        String?      @map("chronic_conditions")
+  currentMedications       String?      @map("current_medications")
+  surgicalHistory          String?      @map("surgical_history")
+  familyHistory            String?      @map("family_history")
+  socialHistory            String?      @map("social_history")
+  generalNotes             String?      @map("general_notes")
+  createdAt                DateTime     @map("created_at")
+  updatedAt                DateTime     @map("updated_at")
 
+  @@index([clinicId], name: "clinical_profile_clinic_idx")
   @@map("clinical_profile")
 }
 
+/// MUDANÇAS: clinicId + createdByMemberId.
 model PatientAlert {
-  id             String        @id(map: "patient_alert_pk") @db.Uuid
-  patientId      String        @map("patient_id") @db.Uuid
-  patient        Patient       @relation(fields: [patientId], references: [id])
-  professionalId String        @map("professional_id") @db.Uuid
-  professional   Professional  @relation(fields: [professionalId], references: [id])
-  title          String
-  description    String?
-  severity       AlertSeverity
-  isActive       Boolean       @default(true) @map("is_active")
-  createdAt      DateTime      @map("created_at")
-  updatedAt      DateTime      @map("updated_at")
-  deletedAt      DateTime?     @map("deleted_at")
+  id                String        @id(map: "patient_alert_pk") @db.Uuid
+  clinicId          String        @map("clinic_id") @db.Uuid
+  clinic            Clinic        @relation(fields: [clinicId], references: [id])
+  patientId         String        @map("patient_id") @db.Uuid
+  patient           Patient       @relation(fields: [patientId], references: [id])
+  createdByMemberId String        @map("created_by_member_id") @db.Uuid
+  createdBy         ClinicMember  @relation(fields: [createdByMemberId], references: [id])
+  title             String
+  description       String?
+  severity          AlertSeverity
+  isActive          Boolean       @default(true) @map("is_active")
+  createdAt         DateTime      @map("created_at")
+  updatedAt         DateTime      @map("updated_at")
+  deletedAt         DateTime?     @map("deleted_at")
 
+  @@index([clinicId], name: "patient_alert_clinic_idx")
   @@map("patient_alert")
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 10. UPLOAD & EVENTOS
+// ─────────────────────────────────────────────────────────────────────────────
 
 enum FilePromotionStatus {
   PENDING
@@ -460,6 +747,7 @@ enum FilePromotionStatus {
   @@map("file_promotion_status")
 }
 
+/// Inalterado — é uma fila técnica de promoção de arquivos.
 model UploadFile {
   id                String              @id @db.Uuid
   tempPath          String              @map("temp_path")
@@ -475,37 +763,54 @@ model UploadFile {
   @@map("upload_file")
 }
 
+/// MUDANÇAS: clinicId + memberId (substitui userId/professionalId soltos).
 model Event {
-  id             Int      @id @default(autoincrement())
-  type           String
-  payload        Json     @db.JsonB
-  userIp         String   @map("user_ip") @db.Inet
-  userId         String?  @map("user_id") @db.Uuid
-  professionalId String?  @map("professional_id") @db.Uuid
-  timestamp      DateTime
+  id        Int           @id @default(autoincrement())
+  clinicId  String?       @map("clinic_id") @db.Uuid
+  clinic    Clinic?       @relation(fields: [clinicId], references: [id])
+  memberId  String?       @map("member_id") @db.Uuid
+  member    ClinicMember? @relation(fields: [memberId], references: [id])
+  type      String
+  payload   Json          @db.JsonB
+  userIp    String        @map("user_ip") @db.Inet
+  timestamp DateTime
 
+  @@index([clinicId], name: "event_clinic_idx")
   @@map("event")
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// 11. FORMULÁRIOS
+// ─────────────────────────────────────────────────────────────────────────────
+
+/// MUDANÇAS:
+/// - professionalId removido. Templates "privados" agora pertencem a uma clínica.
+/// - clinicId opcional + isPublic: quando isPublic=true e clinicId=null, é template
+///   global do sistema (compartilhado entre clínicas).
+/// - createdByMemberId para auditoria.
 model FormTemplate {
-  id             String        @id(map: "form_template_pk") @db.Uuid
-  code           String        @unique(map: "form_template_code_key")
-  name           String
-  description    String?
-  specialty      Specialty
-  isPublic       Boolean       @default(false) @map("is_public")
-  professionalId String?       @map("professional_id") @db.Uuid
-  professional   Professional? @relation(fields: [professionalId], references: [id])
-  createdAt      DateTime      @map("created_at")
-  updatedAt      DateTime      @map("updated_at")
-  deletedAt      DateTime?     @map("deleted_at")
+  id                String        @id(map: "form_template_pk") @db.Uuid
+  code              String        @unique(map: "form_template_code_key")
+  name              String
+  description       String?
+  specialty         Specialty
+  isPublic          Boolean       @default(false) @map("is_public")
+  clinicId          String?       @map("clinic_id") @db.Uuid
+  clinic            Clinic?       @relation(fields: [clinicId], references: [id])
+  createdByMemberId String?       @map("created_by_member_id") @db.Uuid
+  createdBy         ClinicMember? @relation(fields: [createdByMemberId], references: [id])
+  createdAt         DateTime      @map("created_at")
+  updatedAt         DateTime      @map("updated_at")
+  deletedAt         DateTime?     @map("deleted_at")
 
   versions     FormTemplateVersion[]
   patientForms PatientForm[]
 
+  @@index([clinicId], name: "form_template_clinic_idx")
   @@map("form_template")
 }
 
+/// Inalterado.
 model FormTemplateVersion {
   id             String       @id(map: "form_template_version_pk") @db.Uuid
   templateId     String       @map("template_id") @db.Uuid
@@ -524,30 +829,41 @@ model FormTemplateVersion {
   @@map("form_template_version")
 }
 
+/// MUDANÇAS:
+/// - clinicId adicionado
+/// - professionalId substituído por:
+///     * createdByMemberId (quem aplicou — pode ser secretária)
+///     * responsibleProfessionalId (profissional responsável pela leitura clínica)
 model PatientForm {
-  id             String              @id(map: "patient_form_pk") @db.Uuid
-  patientId      String              @map("patient_id") @db.Uuid
-  patient        Patient             @relation(fields: [patientId], references: [id])
-  professionalId String              @map("professional_id") @db.Uuid
-  professional   Professional        @relation(fields: [professionalId], references: [id])
-  templateId     String              @map("template_id") @db.Uuid
-  template       FormTemplate        @relation(fields: [templateId], references: [id])
-  versionId      String              @map("version_id") @db.Uuid
-  version        FormTemplateVersion @relation(fields: [versionId], references: [id])
-  status         FormResponseStatus  @default(IN_PROGRESS) @map("status")
-  responseJson   Json                @map("response_json") @db.JsonB
-  computedJson   Json?               @map("computed_json") @db.JsonB
-  appliedAt      DateTime            @map("applied_at")
-  completedAt    DateTime?           @map("completed_at")
-  createdAt      DateTime            @map("created_at")
-  updatedAt      DateTime            @map("updated_at")
+  id                       String              @id(map: "patient_form_pk") @db.Uuid
+  clinicId                 String              @map("clinic_id") @db.Uuid
+  clinic                   Clinic              @relation(fields: [clinicId], references: [id])
+  patientId                String              @map("patient_id") @db.Uuid
+  patient                  Patient             @relation(fields: [patientId], references: [id])
+  createdByMemberId        String              @map("created_by_member_id") @db.Uuid
+  createdBy                ClinicMember        @relation("PatientFormCreatedBy", fields: [createdByMemberId], references: [id])
+  responsibleProfessionalId String?            @map("responsible_professional_id") @db.Uuid
+  responsibleProfessional  Professional?       @relation("PatientFormResponsibleProfessional", fields: [responsibleProfessionalId], references: [id])
+  templateId               String              @map("template_id") @db.Uuid
+  template                 FormTemplate        @relation(fields: [templateId], references: [id])
+  versionId                String              @map("version_id") @db.Uuid
+  version                  FormTemplateVersion @relation(fields: [versionId], references: [id])
+  status                   FormResponseStatus  @default(IN_PROGRESS) @map("status")
+  responseJson             Json                @map("response_json") @db.JsonB
+  computedJson             Json?               @map("computed_json") @db.JsonB
+  appliedAt                DateTime            @map("applied_at")
+  completedAt              DateTime?           @map("completed_at")
+  createdAt                DateTime            @map("created_at")
+  updatedAt                DateTime            @map("updated_at")
 
   record     Record?          @relation("RecordPatientForm")
   fieldIndex FormFieldIndex[]
 
+  @@index([clinicId], name: "patient_form_clinic_idx")
   @@map("patient_form")
 }
 
+/// Inalterado.
 model FormFieldIndex {
   id            String      @id(map: "form_field_index_pk") @db.Uuid
   patientFormId String      @map("patient_form_id") @db.Uuid
@@ -573,7 +889,9 @@ model FormFieldIndex {
   @@map("form_field_index")
 }
 
-// ─── Clinical Chat & RAG ──────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────────────────────
+// 12. CHAT CLÍNICO & RAG
+// ─────────────────────────────────────────────────────────────────────────────
 
 enum ChatSessionStatus {
   ACTIVE
@@ -587,7 +905,6 @@ enum ChatMessageRole {
   USER
   ASSISTANT
   SYSTEM
-  /// Mensagem interna de pipeline (ex: contexto injetado, trace). Não exibida ao usuário.
   INTERNAL
 
   @@map("chat_message_role")
@@ -606,64 +923,52 @@ enum ContextChunkSourceType {
 enum ContextSnapshotStatus {
   PENDING
   READY
-  /// Snapshot desatualizado — novos records/formulários foram criados depois
   STALE
   FAILED
 
   @@map("context_snapshot_status")
 }
 
-/// Perfil de agente clínico por profissão/especialidade.
-/// Catálogo versionado e configurável — carregado pelo ChatService sem hardcode.
+/// Catálogo global de agentes de IA — não pertence a nenhuma clínica.
+/// Inalterado em estrutura.
 model AiAgentProfile {
-  id               String     @id(map: "ai_agent_profile_pk") @db.Uuid
-  name             String
-  /// Identificador programático em snake_case, ex: "medico_geral", "psicologia_clinica"
-  code             String?    @unique(map: "ai_agent_profile_code_key")
-  /// Identificador único legível por humanos, ex: "psicologia-adulto"
-  slug             String     @unique(map: "ai_agent_profile_slug_key")
-  /// Grupo de especialidade, ex: "medicina", "psicologia"
-  specialtyGroup   String?    @map("specialty_group")
-  /// null = agente genérico; preenchido = agente especialista
-  specialty        Specialty?
-  description      String?
-  /// Instruções base para o prompt do agente (system prompt).
-  baseInstructions String?    @map("base_instructions") @db.Text
-  /// Tipos de fonte que este agente pode usar (ex: ["RECORD","CLINICAL_PROFILE"])
-  allowedSources   String[]   @map("allowed_sources")
-  /// Configuração de prioridade de contexto por tipo de dado (JsonB livre)
-  contextPriority  Json?      @map("context_priority") @db.JsonB
-  /// Campos específicos de JSONB clínico que têm maior peso na análise
-  priorityFields   Json?      @map("priority_fields") @db.JsonB
-  /// Objetivos de análise do agente (ex: ["summary", "hypotheses", "next_steps"])
-  analysisGoals    String[]   @map("analysis_goals")
-  /// Campos de PatientFacts bloqueados para este agente — removidos do prompt enviado ao LLM.
-  /// Ex: ["documentId"] para agentes que não precisam do identificador administrativo.
-  blacklistedFields String[]  @default([]) @map("blacklisted_fields")
-  /// Restrições comportamentais do agente (guardrails de segurança clínica)
-  guardrails       String?    @db.Text
-  /// Estilo de resposta preferido (ex: formato, tom, estrutura)
-  responseStyle    String?    @map("response_style") @db.Text
-  /// Modelo fixo a ser usado por este agente no OpenRouter (ex: "openai/o1-mini").
-  /// Quando null, o sistema usa o modelo padrão da especialidade (specialty-model-defaults).
-  /// O valor "openrouter/auto" é bloqueado — o comportamento de roteamento automático não é permitido.
-  providerModelId  String?    @map("provider_model_id")
-  isActive         Boolean    @default(true) @map("is_active")
-  createdAt        DateTime   @map("created_at")
-  updatedAt        DateTime   @map("updated_at")
+  id                String     @id(map: "ai_agent_profile_pk") @db.Uuid
+  name              String
+  code              String?    @unique(map: "ai_agent_profile_code_key")
+  slug              String     @unique(map: "ai_agent_profile_slug_key")
+  specialtyGroup    String?    @map("specialty_group")
+  specialty         Specialty?
+  description       String?
+  baseInstructions  String?    @map("base_instructions") @db.Text
+  allowedSources    String[]   @map("allowed_sources")
+  contextPriority   Json?      @map("context_priority") @db.JsonB
+  priorityFields    Json?      @map("priority_fields") @db.JsonB
+  analysisGoals     String[]   @map("analysis_goals")
+  blacklistedFields String[]   @default([]) @map("blacklisted_fields")
+  guardrails        String?    @db.Text
+  responseStyle     String?    @map("response_style") @db.Text
+  providerModelId   String?    @map("provider_model_id")
+  isActive          Boolean    @default(true) @map("is_active")
+  createdAt         DateTime   @map("created_at")
+  updatedAt         DateTime   @map("updated_at")
 
   sessions PatientChatSession[]
 
   @@map("ai_agent_profile")
 }
 
-/// Sessão de chat clínico entre um profissional e o contexto de um paciente.
+/// MUDANÇAS:
+/// - clinicId adicionado (tenant)
+/// - professionalId substituído por memberId (qualquer membro com acesso ao paciente
+///   pode iniciar uma sessão; o role do membro é checado na aplicação)
 model PatientChatSession {
   id             String            @id(map: "patient_chat_session_pk") @db.Uuid
+  clinicId       String            @map("clinic_id") @db.Uuid
+  clinic         Clinic            @relation(fields: [clinicId], references: [id])
   patientId      String            @map("patient_id") @db.Uuid
   patient        Patient           @relation(fields: [patientId], references: [id])
-  professionalId String            @map("professional_id") @db.Uuid
-  professional   Professional      @relation(fields: [professionalId], references: [id])
+  memberId       String            @map("member_id") @db.Uuid
+  member         ClinicMember      @relation(fields: [memberId], references: [id])
   agentProfileId String?           @map("agent_profile_id") @db.Uuid
   agentProfile   AiAgentProfile?   @relation(fields: [agentProfileId], references: [id])
   title          String?
@@ -673,25 +978,23 @@ model PatientChatSession {
   updatedAt      DateTime          @map("updated_at")
   deletedAt      DateTime?         @map("deleted_at")
 
-  messages         PatientChatMessage[]
-  interactionLogs  ClinicalChatInteractionLog[]
+  messages        PatientChatMessage[]
+  interactionLogs ClinicalChatInteractionLog[]
 
+  @@index([clinicId], name: "patient_chat_session_clinic_idx")
   @@index([patientId], name: "patient_chat_session_patient_idx")
-  @@index([professionalId], name: "patient_chat_session_professional_idx")
+  @@index([memberId], name: "patient_chat_session_member_idx")
   @@map("patient_chat_session")
 }
 
-/// Mensagem individual de uma sessão de chat clínico.
-/// Nesta etapa não há resposta real de IA — a estrutura está pronta para plugar um LLM.
+/// Inalterado.
 model PatientChatMessage {
   id        String             @id(map: "patient_chat_message_pk") @db.Uuid
   sessionId String             @map("session_id") @db.Uuid
   session   PatientChatSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
   role      ChatMessageRole    @map("role")
   content   String             @db.Text
-  /// Metadados opcionais (ex: modelo utilizado, latência, flags)
   metadata  Json?              @db.JsonB
-  /// IDs dos PatientContextChunks usados como contexto nesta mensagem (rastreabilidade RAG)
   chunkIds  String[]           @map("chunk_ids")
   createdAt DateTime           @map("created_at")
   updatedAt DateTime           @map("updated_at")
@@ -700,75 +1003,128 @@ model PatientChatMessage {
   @@map("patient_chat_message")
 }
 
-/// Snapshot consolidado do contexto clínico de um paciente.
-/// Usado para economizar tokens em sessões de chat futuras — serve como cache semântico.
+/// MUDANÇAS: clinicId + memberId (substitui professionalId opcional).
 model PatientContextSnapshot {
-  id             String                @id(map: "patient_context_snapshot_pk") @db.Uuid
-  patientId      String                @map("patient_id") @db.Uuid
-  patient        Patient               @relation(fields: [patientId], references: [id])
-  /// null = snapshot genérico; preenchido = snapshot com perspectiva de um profissional
-  professionalId String?               @map("professional_id") @db.Uuid
-  professional   Professional?         @relation(fields: [professionalId], references: [id])
-  /// Facts estruturados do paciente (dados demográficos, condições, medicamentos, etc.)
-  patientFacts   Json                  @map("patient_facts") @db.JsonB
-  /// Alertas e informações críticas (alergias, contraindicações)
-  criticalContext Json?                @map("critical_context") @db.JsonB
-  /// Timeline resumida dos últimos records e formulários
-  timelineSummary Json?               @map("timeline_summary") @db.JsonB
-  /// Hash dos dados usados para detectar quando o snapshot ficou stale
-  contentHash    String                @map("content_hash")
-  status         ContextSnapshotStatus @default(PENDING) @map("status")
-  builtAt        DateTime?             @map("built_at")
-  createdAt      DateTime              @map("created_at")
-  updatedAt      DateTime              @map("updated_at")
+  id              String                @id(map: "patient_context_snapshot_pk") @db.Uuid
+  clinicId        String                @map("clinic_id") @db.Uuid
+  clinic          Clinic                @relation(fields: [clinicId], references: [id])
+  patientId       String                @map("patient_id") @db.Uuid
+  patient         Patient               @relation(fields: [patientId], references: [id])
+  memberId        String?               @map("member_id") @db.Uuid
+  member          ClinicMember?         @relation(fields: [memberId], references: [id])
+  patientFacts    Json                  @map("patient_facts") @db.JsonB
+  criticalContext Json?                 @map("critical_context") @db.JsonB
+  timelineSummary Json?                 @map("timeline_summary") @db.JsonB
+  contentHash     String                @map("content_hash")
+  status          ContextSnapshotStatus @default(PENDING) @map("status")
+  builtAt         DateTime?             @map("built_at")
+  createdAt       DateTime              @map("created_at")
+  updatedAt       DateTime              @map("updated_at")
 
-  @@unique([patientId, professionalId], name: "patient_context_snapshot_unique")
+  @@unique([patientId, memberId], name: "patient_context_snapshot_unique")
+  @@index([clinicId], name: "patient_context_snapshot_clinic_idx")
   @@index([patientId], name: "patient_context_snapshot_patient_idx")
   @@map("patient_context_snapshot")
 }
 
-/// Chunk indexável para RAG — representa um pedaço de conteúdo clínico do paciente.
-///
-/// EMBEDDING: O campo `embedding` é um placeholder para vetorização.
-/// Quando pgvector for ativado:
-///   1. Adicionar ao datasource: extensions = [pgvector(map: "vector")]
-///   2. Substituir `Json?` por `Unsupported("vector(1536)")`
-///   3. Adicionar índice: @@index([embedding], type: Hnsw, ops: VectorCosineOps)
+/// MUDANÇA: clinicId adicionado.
 model PatientContextChunk {
-  id         String                 @id(map: "patient_context_chunk_pk") @db.Uuid
-  patientId  String                 @map("patient_id") @db.Uuid
-  patient    Patient                @relation(fields: [patientId], references: [id])
-  sourceType ContextChunkSourceType @map("source_type")
-  /// ID da entidade de origem (Record.id, PatientForm.id, etc.)
-  sourceId   String                 @map("source_id") @db.Uuid
-  content    String                 @db.Text
-  /// Metadados do chunk (título do record, data, specialty, etc.)
-  metadata   Json?                  @db.JsonB
-  chunkIndex Int                    @default(0) @map("chunk_index")
-  /// Embedding vetorial do chunk para busca semântica via pgvector.
-  /// Gerado pelo EmbeddingProvider (nunca pelo ChatProvider).
-  embedding  Unsupported("vector(1536)")?  @map("embedding")
-  /// Hash do conteúdo — permite detectar se a fonte mudou e re-indexar
-  contentHash String               @map("content_hash")
-  createdAt  DateTime               @map("created_at")
-  updatedAt  DateTime               @map("updated_at")
+  id          String                       @id(map: "patient_context_chunk_pk") @db.Uuid
+  clinicId    String                       @map("clinic_id") @db.Uuid
+  clinic      Clinic                       @relation(fields: [clinicId], references: [id])
+  patientId   String                       @map("patient_id") @db.Uuid
+  patient     Patient                      @relation(fields: [patientId], references: [id])
+  sourceType  ContextChunkSourceType       @map("source_type")
+  sourceId    String                       @map("source_id") @db.Uuid
+  content     String                       @db.Text
+  metadata    Json?                        @db.JsonB
+  chunkIndex  Int                          @default(0) @map("chunk_index")
+  embedding   Unsupported("vector(1536)")? @map("embedding")
+  contentHash String                       @map("content_hash")
+  createdAt   DateTime                     @map("created_at")
+  updatedAt   DateTime                     @map("updated_at")
 
   @@unique([patientId, sourceType, sourceId, chunkIndex], name: "patient_context_chunk_unique")
+  @@index([clinicId], name: "patient_context_chunk_clinic_idx")
   @@index([patientId], name: "patient_context_chunk_patient_idx")
   @@index([sourceType, sourceId], name: "patient_context_chunk_source_idx")
-  // Nota: índice HNSW (embedding vector_cosine_ops) é criado via migration SQL —
-  // Prisma v6 não suporta a sintaxe @@index para tipos pgvector.
   @@map("patient_context_chunk")
 }
 
-// ─── Knowledge Base RAG ───────────────────────────────────────────────────────
+enum ChatInteractionStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  FALLBACK
 
-/// Chunk de conhecimento global (manuais, protocolos, CIDs, diretrizes).
-/// Separado do PatientContextChunk — sem patientId, filtrado por specialty/category.
+  @@map("chat_interaction_status")
+}
+
+/// MUDANÇA: clinicId adicionado para isolamento de tenant.
+model ClinicalChatInteractionLog {
+  id                 String                @id(map: "clinical_chat_interaction_log_pk") @db.Uuid
+  clinicId           String                @map("clinic_id") @db.Uuid
+  clinic             Clinic                @relation(fields: [clinicId], references: [id])
+  sessionId          String                @map("session_id") @db.Uuid
+  session            PatientChatSession    @relation(fields: [sessionId], references: [id])
+  userMessageId      String                @map("user_message_id") @db.Uuid
+  assistantMessageId String?               @map("assistant_message_id") @db.Uuid
+
+  providerId     String? @map("provider_id")
+  modelId        String? @map("model_id")
+  agentProfileId String? @map("agent_profile_id") @db.Uuid
+  agentSlug      String? @map("agent_slug")
+
+  snapshotId        String?  @map("snapshot_id") @db.Uuid
+  snapshotVersion   String?  @map("snapshot_version")
+  retrievedChunkIds String[] @map("retrieved_chunk_ids")
+
+  promptTokens     Int? @map("prompt_tokens")
+  completionTokens Int? @map("completion_tokens")
+  totalTokens      Int? @map("total_tokens")
+
+  latencyMs Int? @map("latency_ms")
+
+  status       ChatInteractionStatus @default(PENDING) @map("status")
+  errorCode    String?               @map("error_code")
+  errorMessage String?               @map("error_message") @db.Text
+
+  usedFallback Boolean @default(false) @map("used_fallback")
+
+  // ─── Agent observability ────────────────────────────────────────────────────
+  /// Names of agent tools called during this interaction
+  toolNames       String[] @default([]) @map("tool_names")
+  /// IDs of AgentProposals created during this interaction
+  proposalIds     String[] @default([]) @map("proposal_ids")
+  /// Number of agent loop iterations performed
+  totalIterations Int?     @map("total_iterations")
+  /// Number of RAG chunks used as context
+  ragChunksUsed   Int?     @map("rag_chunks_used")
+  /// Average similarity score of retrieved RAG chunks
+  avgTopKScore    Float?   @map("avg_top_k_score")
+  /// Total wall-clock duration including all tool calls (ms)
+  totalDurationMs Int?     @map("total_duration_ms")
+
+  createdAt DateTime @map("created_at")
+  updatedAt DateTime @map("updated_at")
+
+  @@index([clinicId], name: "clinical_chat_interaction_log_clinic_idx")
+  @@index([sessionId], name: "clinical_chat_interaction_log_session_idx")
+  @@map("clinical_chat_interaction_log")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 13. KNOWLEDGE BASE — RAG GLOBAL/POR CLÍNICA
+// ─────────────────────────────────────────────────────────────────────────────
+
+/// Knowledge chunks usados pelo RAG do agente clínico.
+/// `clinicId` null = chunk global compartilhado entre todas as clínicas.
+/// `clinicId` preenchido = chunk privado de uma clínica.
 model KnowledgeChunk {
   id          String     @id(map: "knowledge_chunk_pk") @db.Uuid
-  /// null = chunk global; preenchido = scoped para uma empresa
-  companyId   String?    @map("company_id") @db.Uuid
+  /// null = chunk global; preenchido = scoped para uma clínica
+  clinicId    String?    @map("clinic_id") @db.Uuid
+  clinic      Clinic?    @relation(fields: [clinicId], references: [id])
   specialty   Specialty? @map("specialty")
   /// "protocolo" | "cid" | "faq" | "manual" | "diretriz"
   category    String     @map("category")
@@ -781,97 +1137,21 @@ model KnowledgeChunk {
   /// Gerado pelo EmbeddingProvider (nunca pelo ChatProvider).
   embedding   Unsupported("vector(1536)")?
   /// Hash SHA-256 do content — detecta mudanças para re-indexação
-  contentHash String     @map("content_hash") @unique
+  contentHash String     @unique @map("content_hash")
 
-  createdAt   DateTime   @map("created_at")
-  updatedAt   DateTime   @map("updated_at")
+  createdAt DateTime @map("created_at")
+  updatedAt DateTime @map("updated_at")
 
-  @@index([companyId], name: "knowledge_chunk_company_idx")
+  @@index([clinicId], name: "knowledge_chunk_clinic_idx")
   @@index([specialty], name: "knowledge_chunk_specialty_idx")
   @@index([category], name: "knowledge_chunk_category_idx")
   // Nota: índice HNSW criado via migration SQL (Prisma v6 não suporta sintaxe pgvector).
   @@map("knowledge_chunk")
 }
 
-/// Status de uma interação de chat com IA.
-enum ChatInteractionStatus {
-  PENDING
-  COMPLETED
-  FAILED
-  /// Resposta gerada por fallback (ex: provider indisponível, usado mock)
-  FALLBACK
-
-  @@map("chat_interaction_status")
-}
-
-/// Log de auditoria de uma interação de chat clínico com IA.
-/// Separa os dados de execução/rastreabilidade das mensagens em si.
-/// Permite auditoria completa de: provider usado, tokens, latência, chunks recuperados.
-model ClinicalChatInteractionLog {
-  id                 String               @id(map: "clinical_chat_interaction_log_pk") @db.Uuid
-  sessionId          String               @map("session_id") @db.Uuid
-  session            PatientChatSession   @relation(fields: [sessionId], references: [id])
-  /// ID da mensagem do usuário que originou esta interação
-  userMessageId      String               @map("user_message_id") @db.Uuid
-  /// ID da mensagem do assistente gerada (null se a geração falhou)
-  assistantMessageId String?              @map("assistant_message_id") @db.Uuid
-
-  // ─── Provider & Model ───────────────────────────────────────────────────────
-  /// Identificador do provider usado (ex: "openai", "anthropic", "mock")
-  providerId         String?              @map("provider_id")
-  /// Identificador do modelo usado (ex: "gpt-4o", "claude-3-5-sonnet", "mock-clinical-assistant-v1")
-  modelId            String?              @map("model_id")
-  agentProfileId     String?              @map("agent_profile_id") @db.Uuid
-  /// Slug do agente usado, para leitura humana sem JOIN
-  agentSlug          String?              @map("agent_slug")
-
-  // ─── Rastreabilidade de contexto ────────────────────────────────────────────
-  /// ID do snapshot usado como contexto base
-  snapshotId         String?              @map("snapshot_id") @db.Uuid
-  /// Hash do snapshot no momento da interação (detecta se estava stale)
-  snapshotVersion    String?              @map("snapshot_version")
-  /// IDs dos PatientContextChunks recuperados via RAG para esta interação
-  retrievedChunkIds  String[]             @map("retrieved_chunk_ids")
-
-  // ─── Uso de tokens ──────────────────────────────────────────────────────────
-  promptTokens       Int?                 @map("prompt_tokens")
-  completionTokens   Int?                 @map("completion_tokens")
-  totalTokens        Int?                 @map("total_tokens")
-
-  // ─── Performance ────────────────────────────────────────────────────────────
-  latencyMs          Int?                 @map("latency_ms")
-
-  // ─── Status & erros ─────────────────────────────────────────────────────────
-  status             ChatInteractionStatus @default(PENDING) @map("status")
-  errorCode          String?              @map("error_code")
-  errorMessage       String?              @map("error_message") @db.Text
-
-  // ─── Flags ──────────────────────────────────────────────────────────────────
-  /// true se a resposta foi gerada por um provider de fallback
-  usedFallback       Boolean              @default(false) @map("used_fallback")
-
-  // ─── Agent observability ────────────────────────────────────────────────────
-  /// Names of agent tools called during this interaction
-  toolNames          String[]             @default([]) @map("tool_names")
-  /// IDs of AgentProposals created during this interaction
-  proposalIds        String[]             @default([]) @map("proposal_ids")
-  /// Number of agent loop iterations performed
-  totalIterations    Int?                 @map("total_iterations")
-  /// Number of RAG chunks used as context
-  ragChunksUsed      Int?                 @map("rag_chunks_used")
-  /// Average similarity score of retrieved RAG chunks
-  avgTopKScore       Float?               @map("avg_top_k_score")
-  /// Total wall-clock duration including all tool calls (ms)
-  totalDurationMs    Int?                 @map("total_duration_ms")
-
-  createdAt          DateTime             @map("created_at")
-  updatedAt          DateTime             @map("updated_at")
-
-  @@index([sessionId], name: "clinical_chat_interaction_log_session_idx")
-  @@map("clinical_chat_interaction_log")
-}
-
-// ─── Agent Proposal ───────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────────────────────
+// 14. AGENT PROPOSAL — MUTAÇÕES PROPOSTAS PELO AGENTE IA
+// ─────────────────────────────────────────────────────────────────────────────
 
 enum AgentProposalType {
   APPOINTMENT
@@ -893,32 +1173,39 @@ enum AgentProposalStatus {
 
 /// A proposal created by the AI agent that requires human confirmation before executing.
 /// Mutations never write to domain entities directly — they always go through AgentProposal first.
+///
+/// MUDANÇA: professionalId removido. Agora rastreia clinicId (tenant) +
+/// createdByMemberId (autor da proposta — sempre o ClinicMember dono da sessão).
 model AgentProposal {
-  id              String              @id(map: "agent_proposal_pk") @db.Uuid
-  sessionId       String?             @map("session_id") @db.Uuid
-  messageId       String?             @map("message_id") @db.Uuid
-  patientId       String?             @map("patient_id") @db.Uuid
-  professionalId  String              @map("professional_id") @db.Uuid
-  professional    Professional        @relation(fields: [professionalId], references: [id])
-  proposalType    AgentProposalType   @map("type")
-  status          AgentProposalStatus @default(PENDING) @map("status")
+  id                 String              @id(map: "agent_proposal_pk") @db.Uuid
+  clinicId           String              @map("clinic_id") @db.Uuid
+  clinic             Clinic              @relation(fields: [clinicId], references: [id])
+  createdByMemberId  String              @map("created_by_member_id") @db.Uuid
+  createdByMember    ClinicMember        @relation("AgentProposalCreatedBy", fields: [createdByMemberId], references: [id])
+  sessionId          String?             @map("session_id") @db.Uuid
+  messageId          String?             @map("message_id") @db.Uuid
+  patientId          String?             @map("patient_id") @db.Uuid
+  proposalType       AgentProposalType   @map("type")
+  status             AgentProposalStatus @default(PENDING) @map("status")
   /// Payload for creating the target entity when confirmed
-  payload         Json                @db.JsonB
+  payload            Json                @db.JsonB
   /// Simplified preview for frontend rendering
-  preview         Json                @db.JsonB
-  rationale       String?             @db.Text
-  confidence      Float?
+  preview            Json                @db.JsonB
+  rationale          String?             @db.Text
+  confidence         Float?
   /// ID of the entity created upon confirmation
-  resultEntityId  String?             @map("result_entity_id") @db.Uuid
-  expiresAt       DateTime?           @map("expires_at")
-  confirmedAt     DateTime?           @map("confirmed_at")
-  confirmedBy     String?             @map("confirmed_by") @db.Uuid
-  rejectedAt      DateTime?           @map("rejected_at")
-  rejectionReason String?             @map("rejection_reason") @db.Text
-  createdAt       DateTime            @map("created_at")
-  updatedAt       DateTime            @map("updated_at")
+  resultEntityId     String?             @map("result_entity_id") @db.Uuid
+  expiresAt          DateTime?           @map("expires_at")
+  confirmedAt        DateTime?           @map("confirmed_at")
+  confirmedBy        String?             @map("confirmed_by") @db.Uuid
+  rejectedAt         DateTime?           @map("rejected_at")
+  rejectionReason    String?             @map("rejection_reason") @db.Text
 
-  @@index([professionalId, status], name: "agent_proposal_professional_status_idx")
+  createdAt DateTime @map("created_at")
+  updatedAt DateTime @map("updated_at")
+
+  @@index([clinicId, status], name: "agent_proposal_clinic_status_idx")
+  @@index([createdByMemberId], name: "agent_proposal_created_by_member_idx")
   @@index([patientId], name: "agent_proposal_patient_idx")
   @@map("agent_proposal")
 }

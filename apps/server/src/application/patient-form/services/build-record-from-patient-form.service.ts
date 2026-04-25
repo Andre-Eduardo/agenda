@@ -11,7 +11,12 @@ export type RecordPayloadFromForm = {
     plan?: string;
     patientFormId: string;
     patientId: string;
-    professionalId: string;
+    /**
+     * Professional clinically responsible. Null if the form was applied by a
+     * non-professional member (typical for intake/secretary-applied forms);
+     * caller must assign a responsible professional before persisting a Record.
+     */
+    responsibleProfessionalId: string | null;
 };
 
 /**
@@ -56,7 +61,7 @@ export class BuildRecordFromPatientFormService {
             plan,
             patientFormId: form.id.toString(),
             patientId: form.patientId.toString(),
-            professionalId: form.professionalId.toString(),
+            responsibleProfessionalId: form.responsibleProfessionalId?.toString() ?? null,
         };
     }
 

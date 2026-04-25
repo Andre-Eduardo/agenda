@@ -20,14 +20,17 @@ type Output = {hasConflict: boolean; conflicts: AppointmentView[]};
 export class CheckScheduleConflictsTool implements AgentTool<Input, Output> {
     readonly name = 'check_schedule_conflicts';
     readonly description =
-        "Check whether a proposed time slot conflicts with the current professional's existing appointments.";
+        "Check whether a proposed time slot conflicts with the current member's existing appointments.";
     readonly domain = 'agenda' as const;
     readonly inputSchema = schema;
 
     constructor(private readonly appointmentRepository: AppointmentRepository) {}
 
     async execute(input: Input, context: ToolContext): Promise<Output> {
-        if (!context.professionalId) {
+        // Conflicts are scoped to the attending member — fall back to the
+        // session/actor member when the call site doesn't override.
+        const memberId = context.memberId ?? context.actor.clinicMemberId;
+        if (!memberId) {
             return {hasConflict: false, conflicts: []};
         }
 
@@ -37,7 +40,7 @@ export class CheckScheduleConflictsTool implements AgentTool<Input, Output> {
             : undefined;
 
         const conflicts = await this.appointmentRepository.findConflicts(
-            context.professionalId,
+            memberId,
             new Date(input.startAt),
             new Date(input.endAt),
             excludeId,

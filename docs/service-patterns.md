@@ -161,9 +161,9 @@ export class SomeDomainService {
         private readonly entityBRepository: EntityBRepository,
     ) {}
 
-    async validateBusinessRule(entityId: EntityAId, companyId: CompanyId): Promise<void> {
+    async validateBusinessRule(entityId: EntityAId, clinicId: ClinicId): Promise<void> {
         const entity = await this.entityARepository.findById(entityId);
-        if (!entity || !entity.companyId.equals(companyId)) {
+        if (!entity || !entity.clinicId.equals(clinicId)) {
             throw new ResourceNotFoundException(EntityExceptions.not_found, entityId.toString());
         }
         // Further validation...
@@ -259,7 +259,7 @@ export class EntityMapper extends MapperWithDto<Entity, EntityModel, EntityDto> 
     toDomain(model: EntityModel): Entity {
         return new Entity({
             id: EntityId.from(model.id),
-            companyId: CompanyId.from(model.companyId),
+            clinicId: ClinicId.from(model.clinicId),
             name: model.name,
             createdAt: model.createdAt,
             updatedAt: model.updatedAt,
@@ -271,7 +271,7 @@ export class EntityMapper extends MapperWithDto<Entity, EntityModel, EntityDto> 
     toPersistence(entity: Entity): EntityModel {
         return {
             id: entity.id.toString(),
-            companyId: entity.companyId.toString(),
+            clinicId: entity.clinicId.toString(),
             name: entity.name,
             createdAt: entity.createdAt,
             updatedAt: entity.updatedAt,
@@ -283,7 +283,7 @@ export class EntityMapper extends MapperWithDto<Entity, EntityModel, EntityDto> 
     toDto(entity: Entity): EntityDto {
         return {
             id: entity.id.toString(),
-            companyId: entity.companyId.toString(),
+            clinicId: entity.clinicId.toString(),
             name: entity.name,
             createdAt: entity.createdAt.toISOString(),
             updatedAt: entity.updatedAt.toISOString(),
@@ -297,12 +297,12 @@ export class EntityMapper extends MapperWithDto<Entity, EntityModel, EntityDto> 
 
 ```typescript
 export class Entity extends AggregateRoot<EntityId> {
-    readonly companyId: CompanyId;
+    readonly clinicId: ClinicId;
     name: string;
 
     constructor(props: EntityProps) {
         super(props);
-        this.companyId = props.companyId;
+        this.clinicId = props.clinicId;
         this.name = props.name;
     }
 
@@ -330,7 +330,7 @@ export class Entity extends AggregateRoot<EntityId> {
     toJSON(): EntityJson<Entity> {
         return {
             id: this.id.toString(),
-            companyId: this.companyId.toString(),
+            clinicId: this.clinicId.toString(),
             name: this.name,
             createdAt: this.createdAt,
             updatedAt: this.updatedAt,
@@ -345,7 +345,7 @@ export class Entity extends AggregateRoot<EntityId> {
 // domain/[domain]/repositories/entity.repository.ts
 export interface EntityRepository {
     findById(id: EntityId): Promise<Entity | null>;
-    findByCompanyId(companyId: CompanyId): Promise<Entity[]>;
+    findByClinicId(clinicId: ClinicId): Promise<Entity[]>;
     list(filter: ListEntityDto): Promise<{data: Entity[]; totalCount: number}>;
     save(entity: Entity): Promise<void>;
     delete(entity: Entity): Promise<void>;
@@ -376,9 +376,9 @@ export class PrismaEntityRepository extends PrismaRepository implements EntityRe
         return model ? this.mapper.toDomain(model) : null;
     }
 
-    async list({companyId, limit, page, sort}: ListEntityDto): Promise<{data: Entity[]; totalCount: number}> {
+    async list({clinicId, limit, page, sort}: ListEntityDto): Promise<{data: Entity[]; totalCount: number}> {
         const pagination = this.normalizePagination({limit, page, sort});
-        const where = {companyId: companyId.toString(), deletedAt: null};
+        const where = {clinicId: clinicId.toString(), deletedAt: null};
 
         const [data, totalCount] = await this.prisma.$transaction([
             this.prisma.entity.findMany({where, ...pagination}),

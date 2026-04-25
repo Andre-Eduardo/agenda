@@ -1,15 +1,15 @@
 import {Injectable} from '@nestjs/common';
 import {AgentProposalRepository} from '../../../domain/agent-proposal/agent-proposal.repository';
 import {AgentProposalId, AgentProposalType} from '../../../domain/agent-proposal/entities';
+import {Appointment, AppointmentId, AppointmentType} from '../../../domain/appointment/entities';
 import {AppointmentRepository} from '../../../domain/appointment/appointment.repository';
-import {PatientRepository} from '../../../domain/patient/patient.repository';
-import {PatientAlertRepository} from '../../../domain/patient-alert/patient-alert.repository';
-import {PatientAlert, AlertSeverity} from '../../../domain/patient-alert/entities';
-import {Appointment, AppointmentType} from '../../../domain/appointment/entities';
-import {PatientId} from '../../../domain/patient/entities';
-import {ProfessionalId} from '../../../domain/professional/entities';
+import {ClinicMemberId} from '../../../domain/clinic-member/entities';
 import {EventDispatcher} from '../../../domain/event';
-import {ResourceNotFoundException, PreconditionException} from '../../../domain/@shared/exceptions';
+import {PatientAlert, AlertSeverity} from '../../../domain/patient-alert/entities';
+import {PatientAlertRepository} from '../../../domain/patient-alert/patient-alert.repository';
+import {PatientId} from '../../../domain/patient/entities';
+import {PatientRepository} from '../../../domain/patient/patient.repository';
+import {PreconditionException, ResourceNotFoundException} from '../../../domain/@shared/exceptions';
 import {toEnum} from '../../../domain/@shared/utils';
 import type {Command} from '../../@shared/application.service';
 
@@ -32,7 +32,11 @@ export class ConfirmProposalService {
             throw new ResourceNotFoundException('Proposal not found.', payload.proposalId);
         }
 
-        if (proposal.professionalId.toString() !== actor.userId.toString()) {
+        // Authorization: the actor's clinic must match the proposal's clinic.
+        // The original author (createdByMemberId) does NOT need to be the
+        // confirmer — that's the whole point of human-in-the-loop: any member
+        // with permission in the same clinic can review and confirm.
+        if (!proposal.clinicId.equals(actor.clinicId)) {
             throw new PreconditionException('You are not authorized to confirm this proposal.');
         }
 
@@ -45,14 +49,20 @@ export class ConfirmProposalService {
         if (proposal.type === AgentProposalType.APPOINTMENT) {
             const p = proposal.payload;
             const patientId = PatientId.from(p.patientId as string);
-            const professionalId = ProfessionalId.from(p.professionalId as string);
+            // Member that will attend — typically the same member that owned
+            // the chat session that generated the proposal.
+            const attendedByMemberId = ClinicMemberId.from(
+                (p.attendedByMemberId as string | undefined) ?? proposal.createdByMemberId.toString(),
+            );
             const startAt = new Date(p.startAt as string);
             const endAt = new Date(p.endAt as string);
             const durationMinutes = Math.round((endAt.getTime() - startAt.getTime()) / 60000);
 
             const appointment = Appointment.create({
+                clinicId: proposal.clinicId,
                 patientId,
-                professionalId,
+                attendedByMemberId,
+                createdByMemberId: actor.clinicMemberId,
                 startAt,
                 endAt,
                 durationMinutes,
@@ -65,7 +75,7 @@ export class ConfirmProposalService {
         } else if (proposal.type === AgentProposalType.APPOINTMENT_CANCEL) {
             const p = proposal.payload;
             const appointment = await this.appointmentRepository.findById(
-                (await import('../../../domain/appointment/entities')).AppointmentId.from(p.appointmentId as string),
+                AppointmentId.from(p.appointmentId as string),
             );
             if (!appointment) {
                 throw new ResourceNotFoundException('Appointment not found.', p.appointmentId as string);
@@ -77,8 +87,9 @@ export class ConfirmProposalService {
         } else if (proposal.type === AgentProposalType.PATIENT_ALERT) {
             const p = proposal.payload;
             const alert = PatientAlert.create({
+                clinicId: proposal.clinicId,
                 patientId: PatientId.from(p.patientId as string),
-                professionalId: ProfessionalId.from(p.professionalId as string),
+                createdByMemberId: actor.clinicMemberId,
                 title: p.title as string,
                 description: (p.description as string | undefined) ?? null,
                 severity: toEnum(AlertSeverity, (p.severity as string) ?? 'MEDIUM'),

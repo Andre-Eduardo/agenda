@@ -27,7 +27,7 @@ export class GetPatientTool implements AgentTool<Input, Output> {
     async execute(input: Input, context: ToolContext): Promise<Output> {
         const patient = await this.patientRepository.findById(
             PatientId.from(input.patientId),
-            context.professionalId,
+            context.clinicId,
         );
         return {patient: patient ? toPatientView(patient) : null};
     }

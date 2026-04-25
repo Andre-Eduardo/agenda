@@ -1,9 +1,9 @@
 import {Injectable} from '@nestjs/common';
 import * as PrismaClient from '@prisma/client';
+import {ClinicId} from '../../domain/clinic/entities';
 import {Patient, PatientId} from '../../domain/patient/entities';
 import {PatientRepository, PatientSearchFilter, PatientSortOptions} from '../../domain/patient/patient.repository';
 import {PaginatedList, Pagination} from '../../domain/@shared/repository';
-import {ProfessionalId} from '../../domain/professional/entities';
 import {PatientMapper} from '../mappers/patient.mapper';
 import {PrismaProvider} from './prisma/prisma.provider';
 import {PrismaRepository} from './prisma.repository';
@@ -19,11 +19,11 @@ export class PatientPrismaRepository extends PrismaRepository implements Patient
         super(prismaProvider);
     }
 
-    async findById(id: PatientId, professionalId?: ProfessionalId): Promise<Patient | null> {
+    async findById(id: PatientId, clinicId?: ClinicId): Promise<Patient | null> {
         const patient = await this.prisma.patient.findFirst({
             where: {
                 id: id.toString(),
-                ...(professionalId ? {professionalId: professionalId.toString()} : {}),
+                ...(clinicId ? {clinicId: clinicId.toString()} : {}),
             },
             include: {
                 person: true,
@@ -47,7 +47,7 @@ export class PatientPrismaRepository extends PrismaRepository implements Patient
     ): Promise<PaginatedList<Patient>> {
         const where: PrismaClient.Prisma.PatientWhereInput = {
             id: filter.ids ? {in: filter.ids.map((id) => id.toString())} : undefined,
-            professionalId: filter.professionalId ? filter.professionalId.toString() : undefined,
+            clinicId: filter.clinicId ? filter.clinicId.toString() : undefined,
             OR: filter.term
                 ? [
                       {person: {name: {contains: filter.term, mode: 'insensitive'}}},
@@ -73,11 +73,19 @@ export class PatientPrismaRepository extends PrismaRepository implements Patient
 
     async save(patient: Patient): Promise<void> {
         const data = this.mapper.toPersistence(patient);
-        const {person, ...patientModel} = data;
-        await this.prisma.patient.upsert({
-            where: {id: patientModel.id},
-            create: patientModel,
-            update: patientModel,
+        const {person, clinicId, ...patientFields} = data;
+
+        await this.prisma.$transaction(async (tx) => {
+            await tx.person.upsert({
+                where: {id: person.id},
+                create: person,
+                update: person,
+            });
+            await tx.patient.upsert({
+                where: {id: patientFields.id},
+                create: {...patientFields, clinicId},
+                update: {...patientFields, clinicId},
+            });
         });
     }
 }

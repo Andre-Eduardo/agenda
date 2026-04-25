@@ -4,20 +4,20 @@ import {Request} from 'express';
 import {AccessDeniedException, AccessDeniedReason, UnauthenticatedException} from '@domain/@shared/exceptions';
 import {Permission} from '@domain/auth';
 import {Authorizer} from '@domain/auth/authorizer';
-import {ProfessionalId} from '@domain/professional/entities';
+import {ClinicMemberId} from '@domain/clinic-member/entities';
 import {Token, TokenProvider, TokenScope} from '@domain/user/token';
 import {AUTHORIZE_KEY} from './authorize.decorator';
-import {BYPASS_PROFESSIONAL} from './bypass-professional.decorator';
+import {BYPASS_CLINIC_MEMBER} from './bypass-clinic-member.decorator';
 import {IS_PUBLIC_KEY} from './public.decorator';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
     constructor(
         private readonly authCookie: string,
-        private readonly professionalCookie: string,
+        private readonly clinicMemberCookie: string,
         private readonly tokenProvider: TokenProvider,
         private readonly authorizer: Authorizer,
-        private readonly reflector: Reflector
+        private readonly reflector: Reflector,
     ) {}
 
     async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -45,26 +45,29 @@ export class AuthGuard implements CanActivate {
             throw new UnauthenticatedException('Invalid token.');
         }
 
-        const professionalId = this.getProfessionalFromRequest(request);
-        const shouldBypassProfessional = this.reflector.getAllAndOverride<boolean>(BYPASS_PROFESSIONAL, [
+        const clinicMemberId = this.getClinicMemberFromRequest(request);
+        const shouldBypassClinicMember = this.reflector.getAllAndOverride<boolean>(BYPASS_CLINIC_MEMBER, [
             context.getHandler(),
             context.getClass(),
         ]);
 
-        if (
-            !shouldBypassProfessional &&
-            (professionalId === null || !token.professionals.some((id) => id.equals(professionalId)))
-        ) {
+        const matchingMember =
+            clinicMemberId === null
+                ? null
+                : token.clinicMembers.find((m) => m.clinicMemberId.equals(clinicMemberId)) ?? null;
+
+        if (!shouldBypassClinicMember && matchingMember === null) {
             throw new AccessDeniedException(
-                'Token does not have access to the requested professional.',
-                AccessDeniedReason.NOT_ALLOWED
+                'Token does not have access to the requested clinic member.',
+                AccessDeniedReason.NOT_ALLOWED,
             );
         }
 
         request.actor = {
             ...request.actor,
             userId: token.userId,
-            professionalId: professionalId ?? null,
+            clinicId: matchingMember?.clinicId ?? null,
+            clinicMemberId: matchingMember?.clinicMemberId ?? null,
         };
 
         const permissions = this.reflector.get<Permission[] | undefined>(AUTHORIZE_KEY, context.getHandler());
@@ -74,14 +77,14 @@ export class AuthGuard implements CanActivate {
         }
 
         for (const permission of permissions) {
-            if (await this.authorizer.validate(professionalId, token.userId, permission)) {
+            if (await this.authorizer.validate(clinicMemberId, token.userId, permission)) {
                 return true;
             }
         }
 
         throw new AccessDeniedException(
             `The user "${token.userId}" does not have the required permissions: [${permissions.join(', ')}]`,
-            AccessDeniedReason.INSUFFICIENT_PERMISSIONS
+            AccessDeniedReason.INSUFFICIENT_PERMISSIONS,
         );
     }
 
@@ -100,15 +103,14 @@ export class AuthGuard implements CanActivate {
         }
     }
 
-    private getProfessionalFromRequest(request: Request): ProfessionalId | null {
-        // Keeping 'companyCookie' name for now if it's injected config key, but logic uses ProfessionalId
+    private getClinicMemberFromRequest(request: Request): ClinicMemberId | null {
         const signedCookies = request.signedCookies as Record<string, string> | undefined;
-        const cookie = signedCookies?.[this.professionalCookie];
+        const cookie = signedCookies?.[this.clinicMemberCookie];
 
         if (!cookie) {
             return null;
         }
 
-        return ProfessionalId.from(cookie);
+        return ClinicMemberId.from(cookie);
     }
 }

@@ -21,12 +21,13 @@ export function createZodDto<TOutput = unknown, TDef extends ZodTypeDef = ZodTyp
     }
 
     /**
-     * Omit the `companyId` field from the schema, since we don't want to expose it in the OpenAPI schema as a parameter.
-     * The `companyId` will be extracted from the cookies and will be injected into every request.
+     * Omit tenant-injected fields from the schema — they are populated by
+     * RequestContextMiddleware from signed cookies and should never appear
+     * as request parameters in OpenAPI.
      */
     /* istanbul ignore next */
-    // @ts-expect-error This is a workaround to make the NestJS Swagger module work easily with Zod schemas.
-    AugmentedZodDto[METADATA_FACTORY_NAME] = () => generateNestSwaggerSchema(schema, ['companyId']);
+    // @ts-expect-error Workaround so NestJS Swagger plays nicely with Zod schemas.
+    AugmentedZodDto[METADATA_FACTORY_NAME] = () => generateNestSwaggerSchema(schema, ['clinicId', 'clinicMemberId']);
 
     return AugmentedZodDto as unknown as ZodDto<TOutput, TDef, TOutput>;
 }

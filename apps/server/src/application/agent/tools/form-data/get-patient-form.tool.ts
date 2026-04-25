@@ -13,8 +13,10 @@ const schema = z.object({
 type Input = z.infer<typeof schema>;
 type Output = {
     id: string;
+    clinicId: string;
     patientId: string;
-    professionalId: string;
+    createdByMemberId: string;
+    responsibleProfessionalId: string | null;
     templateId: string;
     status: string;
     appliedAt: string;
@@ -35,8 +37,10 @@ export class GetPatientFormTool implements AgentTool<Input, Output> {
         if (!form) return null;
         return {
             id: form.id.toString(),
+            clinicId: form.clinicId.toString(),
             patientId: form.patientId.toString(),
-            professionalId: form.professionalId.toString(),
+            createdByMemberId: form.createdByMemberId.toString(),
+            responsibleProfessionalId: form.responsibleProfessionalId?.toString() ?? null,
             templateId: form.templateId.toString(),
             status: form.status,
             appliedAt: form.appliedAt.toISOString(),

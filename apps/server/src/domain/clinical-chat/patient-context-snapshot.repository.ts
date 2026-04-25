@@ -1,14 +1,14 @@
+import type {ClinicMemberId} from '../clinic-member/entities';
 import type {PatientId} from '../patient/entities';
-import type {ProfessionalId} from '../professional/entities';
 import type {PatientContextSnapshot, PatientContextSnapshotId} from './entities';
 
 export interface PatientContextSnapshotRepository {
     findById(id: PatientContextSnapshotId): Promise<PatientContextSnapshot | null>;
 
-    /** Retorna o snapshot mais recente de um paciente, opcionalmente filtrado por profissional. */
+    /** Retorna o snapshot mais recente de um paciente, opcionalmente filtrado por membro. */
     findByPatient(
         patientId: PatientId,
-        professionalId?: ProfessionalId | null
+        memberId?: ClinicMemberId | null
     ): Promise<PatientContextSnapshot | null>;
 
     save(snapshot: PatientContextSnapshot): Promise<void>;

@@ -1,9 +1,11 @@
 import type {PaginatedList, Pagination} from '../@shared/repository';
-import type {ProfessionalId} from '../professional/entities';
+import type {ClinicId} from '../clinic/entities';
+import type {ClinicMemberId} from '../clinic-member/entities';
 import type {AgentProposal, AgentProposalId, AgentProposalStatus} from './entities';
 
 export type AgentProposalSearchFilter = {
-    professionalId?: ProfessionalId;
+    clinicId?: ClinicId;
+    createdByMemberId?: ClinicMemberId;
     patientId?: string;
     status?: AgentProposalStatus;
 };

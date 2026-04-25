@@ -1,5 +1,6 @@
 import {AggregateRoot, type AllEntityProps, type EntityJson, type EntityProps, type CreateEntity} from '../../@shared/entity';
 import {EntityId} from '../../@shared/entity/id';
+import type {ClinicId} from '../../clinic/entities';
 import type {PatientId} from '../../patient/entities';
 
 export enum ContextChunkSourceType {
@@ -41,6 +42,7 @@ export type CreateContextChunk = CreateEntity<PatientContextChunk>;
  * 4. Usar busca por similaridade coseno via `@@index([embedding], type: Hnsw)`
  */
 export class PatientContextChunk extends AggregateRoot<PatientContextChunkId> {
+    clinicId: ClinicId;
     patientId: PatientId;
     /** Tipo da fonte de onde o chunk foi extraído */
     sourceType: ContextChunkSourceType;
@@ -63,6 +65,7 @@ export class PatientContextChunk extends AggregateRoot<PatientContextChunkId> {
 
     constructor(props: AllEntityProps<PatientContextChunk>) {
         super(props);
+        this.clinicId = props.clinicId;
         this.patientId = props.patientId;
         this.sourceType = props.sourceType;
         this.sourceId = props.sourceId;
@@ -79,6 +82,7 @@ export class PatientContextChunk extends AggregateRoot<PatientContextChunkId> {
         return new PatientContextChunk({
             ...props,
             id: PatientContextChunkId.generate(),
+            clinicId: props.clinicId!,
             patientId: props.patientId!,
             sourceType: props.sourceType!,
             sourceId: props.sourceId!,
@@ -102,6 +106,7 @@ export class PatientContextChunk extends AggregateRoot<PatientContextChunkId> {
     toJSON(): EntityJson<PatientContextChunk> {
         return {
             id: this.id.toJSON(),
+            clinicId: this.clinicId.toJSON(),
             patientId: this.patientId.toJSON(),
             sourceType: this.sourceType,
             sourceId: this.sourceId,

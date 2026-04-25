@@ -1,12 +1,12 @@
 import type {CookieOptions, Response} from 'express';
-import type {ProfessionalId} from '../../domain/professional/entities';
+import type {ClinicMemberId} from '../../domain/clinic-member/entities';
 import type {Token} from '../../domain/user/token';
 
 export class ExpressContextActions {
     public constructor(
         private readonly response: Response,
         private readonly authCookie: string,
-        private readonly professionalCookie: string,
+        private readonly clinicMemberCookie: string,
         private readonly cookieOptions: CookieOptions
     ) {}
 
@@ -25,18 +25,18 @@ export class ExpressContextActions {
         this.response.cookie(this.authCookie, token.toString(), cookieOptions);
     }
 
-    public setProfessional(professionalId: ProfessionalId | null): void {
+    public setClinicMember(clinicMemberId: ClinicMemberId | null): void {
         const cookieOptions: CookieOptions = {
             ...this.cookieOptions,
-            maxAge: professionalId === null ? undefined : 7 * 24 * 3600 * 1000, // 1 week
+            maxAge: clinicMemberId === null ? undefined : 7 * 24 * 3600 * 1000, // 1 week
         };
 
-        if (professionalId === null) {
-            this.response.clearCookie(this.professionalCookie, cookieOptions);
+        if (clinicMemberId === null) {
+            this.response.clearCookie(this.clinicMemberCookie, cookieOptions);
 
             return;
         }
 
-        this.response.cookie(this.professionalCookie, professionalId.toString(), cookieOptions);
+        this.response.cookie(this.clinicMemberCookie, clinicMemberId.toString(), cookieOptions);
     }
 }

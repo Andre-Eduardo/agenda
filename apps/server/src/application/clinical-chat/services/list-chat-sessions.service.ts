@@ -1,6 +1,7 @@
 import {Injectable} from '@nestjs/common';
+import {Actor} from '../../../domain/@shared/actor';
+import {ClinicMemberId} from '../../../domain/clinic-member/entities';
 import {PatientId} from '../../../domain/patient/entities';
-import {ProfessionalId} from '../../../domain/professional/entities';
 import {ChatSessionStatus} from '../../../domain/clinical-chat/entities';
 import {PatientChatSessionRepository} from '../../../domain/clinical-chat/patient-chat-session.repository';
 import {PaginatedList, Pagination} from '../../../domain/@shared/repository';
@@ -9,7 +10,7 @@ import type {PatientChatSession} from '../../../domain/clinical-chat/entities';
 
 export type ListChatSessionsInput = Pagination<['createdAt', 'updatedAt', 'lastActivityAt']> & {
     patientId?: PatientId;
-    professionalId?: ProfessionalId;
+    memberId?: ClinicMemberId;
     status?: ChatSessionStatus;
 };
 
@@ -19,9 +20,14 @@ export class ListChatSessionsService
 {
     constructor(private readonly sessionRepository: PatientChatSessionRepository) {}
 
-    async execute({payload}: Command<ListChatSessionsInput>): Promise<PaginatedList<PatientChatSession>> {
-        const {patientId, professionalId, status, ...pagination} = payload;
+    async execute({actor, payload}: Command<ListChatSessionsInput, Actor>): Promise<PaginatedList<PatientChatSession>> {
+        const {patientId, memberId, status, ...pagination} = payload;
 
-        return this.sessionRepository.search(pagination, {patientId, professionalId, status});
+        return this.sessionRepository.search(pagination, {
+            clinicId: actor.clinicId,
+            patientId,
+            memberId,
+            status,
+        });
     }
 }

@@ -1,8 +1,6 @@
 import {Injectable} from '@nestjs/common';
 import {Prisma} from '@prisma/client';
-import * as PrismaClient from '@prisma/client';
-import {toEnum, toEnumOrNull} from '../../domain/@shared/utils';
-import {Specialty} from '../../domain/form-template/entities';
+import {ClinicId} from '../../domain/clinic/entities';
 import {KnowledgeChunk, KnowledgeChunkId} from '../../domain/knowledge-base/entities';
 import {
     KnowledgeChunkRepository,
@@ -15,7 +13,7 @@ import {PrismaRepository} from './prisma.repository';
 
 type RawKnowledgeChunkRow = {
     id: string;
-    company_id: string | null;
+    clinic_id: string | null;
     specialty: string | null;
     category: string;
     content: string;
@@ -66,14 +64,14 @@ export class KnowledgeChunkPrismaRepository
             ? Prisma.sql`AND category = ${filter.category}`
             : Prisma.empty;
 
-        const companyClause = filter.companyId
-            ? Prisma.sql`AND (company_id = ${filter.companyId}::uuid OR company_id IS NULL)`
+        const clinicClause = filter.clinicId
+            ? Prisma.sql`AND (clinic_id = ${filter.clinicId.toString()}::uuid OR clinic_id IS NULL)`
             : Prisma.empty;
 
         const rows = await this.prisma.$queryRaw<RawKnowledgeChunkRow[]>`
             SELECT
                 id,
-                company_id,
+                clinic_id,
                 specialty::text,
                 category,
                 content,
@@ -88,7 +86,7 @@ export class KnowledgeChunkPrismaRepository
             WHERE embedding IS NOT NULL
               ${specialtyClause}
               ${categoryClause}
-              ${companyClause}
+              ${clinicClause}
             ORDER BY embedding <=> ${vectorLiteral}::vector
             LIMIT ${limit}
         `;
@@ -130,29 +128,29 @@ export class KnowledgeChunkPrismaRepository
         await Promise.all(chunks.map((chunk) => this.save(chunk)));
     }
 
-    async deleteByCategory(category: string, companyId?: string): Promise<void> {
+    async deleteByCategory(category: string, clinicId?: ClinicId | null): Promise<void> {
         await this.prisma.knowledgeChunk.deleteMany({
             where: {
                 category,
-                companyId: companyId ?? undefined,
+                clinicId: clinicId ? clinicId.toString() : undefined,
             },
         });
     }
 
-    async deleteBySourceFile(sourceFile: string, companyId?: string): Promise<void> {
+    async deleteBySourceFile(sourceFile: string, clinicId?: ClinicId | null): Promise<void> {
         await this.prisma.knowledgeChunk.deleteMany({
             where: {
                 sourceFile,
-                companyId: companyId ?? undefined,
+                clinicId: clinicId ? clinicId.toString() : undefined,
             },
         });
     }
 
-    async countByCategory(category: string, companyId?: string): Promise<number> {
+    async countByCategory(category: string, clinicId?: ClinicId | null): Promise<number> {
         return this.prisma.knowledgeChunk.count({
             where: {
                 category,
-                companyId: companyId ?? undefined,
+                clinicId: clinicId ? clinicId.toString() : undefined,
             },
         });
     }
