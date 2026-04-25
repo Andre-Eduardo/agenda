@@ -124,6 +124,11 @@ export enum BillingPermission {
     VIEW_CLINIC = 'billing:view-clinic',
 }
 
+export enum PaymentPermission {
+    MANAGE = 'payment:manage',
+    VIEW = 'payment:view',
+}
+
 const PERMISSIONS = [
     ...Object.values(UserPermission),
     ...Object.values(ProfessionalPermission),
@@ -144,6 +149,7 @@ const PERMISSIONS = [
     ...Object.values(ClinicReminderConfigPermission),
     ...Object.values(SubscriptionPermission),
     ...Object.values(BillingPermission),
+    ...Object.values(PaymentPermission),
 ];
 
 export type Permission = (typeof PERMISSIONS)[number];

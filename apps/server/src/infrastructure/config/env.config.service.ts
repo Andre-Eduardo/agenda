@@ -48,6 +48,11 @@ const envConfig = z.object({
         username: z.string().optional(),
         password: z.string().optional(),
     }),
+    asaas: z.object({
+        apiKey: z.string().default(''),
+        env: z.enum(['sandbox', 'production']).default('sandbox'),
+        webhookToken: z.string().default(''),
+    }),
 });
 
 export type EnvConfig = z.infer<typeof envConfig>;
@@ -86,6 +91,10 @@ export class EnvConfigService {
 
     get mqtt(): EnvConfig['mqtt'] {
         return this.configService.getOrThrow('mqtt', {infer: true});
+    }
+
+    get asaas(): EnvConfig['asaas'] {
+        return this.configService.getOrThrow('asaas', {infer: true});
     }
 
     get isProd(): boolean {
@@ -133,6 +142,11 @@ export class EnvConfigService {
                 brokerUrl: process.env.MQTT_BROKER_URL,
                 username: process.env.MQTT_USERNAME,
                 password: process.env.MQTT_PASSWORD,
+            },
+            asaas: {
+                apiKey: process.env.ASAAS_API_KEY,
+                env: process.env.ASAAS_ENV,
+                webhookToken: process.env.ASAAS_WEBHOOK_TOKEN,
             },
         } satisfies EnvParse);
     }

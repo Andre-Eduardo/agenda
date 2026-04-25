@@ -41,6 +41,13 @@ export class UsageLimitGuard implements CanActivate {
             });
         }
 
+        if (usage.subscription.status === 'SUSPENDED') {
+            throw new ForbiddenException({
+                code: 'SUBSCRIPTION_SUSPENDED',
+                message: 'Assinatura suspensa por pagamento pendente.',
+            });
+        }
+
         const metricDetail = usage.usage[metric];
 
         if (metricDetail.remaining !== null && metricDetail.remaining <= 0) {

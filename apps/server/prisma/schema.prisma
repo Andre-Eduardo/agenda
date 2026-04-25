@@ -1559,6 +1559,17 @@ enum SubscriptionStatus {
   @@map("subscription_status")
 }
 
+enum PaymentStatus {
+  PENDING
+  CONFIRMED
+  RECEIVED
+  OVERDUE
+  REFUNDED
+  FAILED
+
+  @@map("payment_status")
+}
+
 /// Assinatura ativa de um profissional. Cada ClinicMember com role PROFESSIONAL
 /// tem no máximo uma assinatura (relação 1:1 garantida pelo @unique em memberId).
 /// Os limites NÃO ficam aqui — estão em subscription-plans.config.ts (config estática).
@@ -1575,15 +1586,47 @@ model ProfessionalSubscription {
   previousPlanCode   PlanCode?          @map("previous_plan_code")
   planChangedAt      DateTime?          @map("plan_changed_at")
 
+  /// IDs externos do Asaas — nulos até a assinatura ser ativada via gateway
+  asaasCustomerId     String?       @map("asaas_customer_id")
+  asaasSubscriptionId String?       @map("asaas_subscription_id")
+  lastPaymentStatus   PaymentStatus? @map("last_payment_status")
+  lastPaymentAt       DateTime?     @map("last_payment_at")
+  nextDueDate         DateTime?     @map("next_due_date")
+
   createdAt DateTime  @map("created_at")
   updatedAt DateTime  @map("updated_at")
   deletedAt DateTime? @map("deleted_at")
 
-  usageRecords UsageRecord[]
+  usageRecords  UsageRecord[]
+  paymentEvents PaymentEvent[]
 
   @@index([clinicId], name: "professional_subscription_clinic_idx")
   @@index([planCode], name: "professional_subscription_plan_code_idx")
   @@map("professional_subscription")
+}
+
+/// Log imutável de todos os eventos de pagamento recebidos via webhook do Asaas.
+/// Nunca deletar ou atualizar registros existentes — append-only.
+model PaymentEvent {
+  id                  String                   @id @db.Uuid
+  clinicId            String                   @map("clinic_id") @db.Uuid
+  memberId            String                   @map("member_id") @db.Uuid
+  subscriptionId      String                   @map("subscription_id") @db.Uuid
+  subscription        ProfessionalSubscription @relation(fields: [subscriptionId], references: [id])
+  asaasPaymentId      String?                  @map("asaas_payment_id")
+  asaasSubscriptionId String?                  @map("asaas_subscription_id")
+  eventType           String                   @map("event_type")
+  amount              Float?
+  paymentMethod       String?                  @map("payment_method")
+  status              PaymentStatus
+  rawPayload          Json                     @map("raw_payload") @db.JsonB
+  processedAt         DateTime?                @map("processed_at")
+  createdAt           DateTime                 @map("created_at")
+
+  @@index([memberId], name: "payment_event_member_idx")
+  @@index([subscriptionId], name: "payment_event_subscription_idx")
+  @@index([asaasPaymentId], name: "payment_event_asaas_payment_idx")
+  @@map("payment_event")
 }
 
 /// Contadores de uso mensal por profissional.
