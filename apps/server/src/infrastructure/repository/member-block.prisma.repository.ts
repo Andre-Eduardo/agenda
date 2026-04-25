@@ -22,6 +22,21 @@ export class MemberBlockPrismaRepository extends PrismaRepository implements Mem
         return record === null ? null : this.mapper.toDomain(record);
     }
 
+    async findByMember(
+        clinicMemberId: ClinicMemberId,
+        filters?: {startAt?: Date; endAt?: Date},
+    ): Promise<MemberBlock[]> {
+        const records = await this.prisma.memberBlock.findMany({
+            where: {
+                clinicMemberId: clinicMemberId.toString(),
+                ...(filters?.startAt !== undefined && {endAt: {gt: filters.startAt}}),
+                ...(filters?.endAt !== undefined && {startAt: {lt: filters.endAt}}),
+            },
+            orderBy: {startAt: 'asc'},
+        });
+        return records.map((r) => this.mapper.toDomain(r));
+    }
+
     async findOverlapping(
         clinicMemberId: ClinicMemberId,
         startAt: Date,

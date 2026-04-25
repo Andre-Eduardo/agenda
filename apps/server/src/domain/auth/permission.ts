@@ -147,6 +147,12 @@ export enum WorkingHoursPermission {
     MANAGE = 'working-hours:manage',
 }
 
+export enum MemberBlockPermission {
+    CREATE = 'member-block:create',
+    LIST = 'member-block:list',
+    DELETE = 'member-block:delete',
+}
+
 const PERMISSIONS = [
     ...Object.values(UserPermission),
     ...Object.values(ProfessionalPermission),
@@ -172,6 +178,7 @@ const PERMISSIONS = [
     ...Object.values(AppointmentPaymentPermission),
     ...Object.values(FinancialReportPermission),
     ...Object.values(WorkingHoursPermission),
+    ...Object.values(MemberBlockPermission),
 ];
 
 export type Permission = (typeof PERMISSIONS)[number];
