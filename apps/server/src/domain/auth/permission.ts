@@ -114,6 +114,11 @@ export enum ClinicalDocumentPermission {
     MANAGE_TEMPLATES = 'clinical-document:manage-templates',
 }
 
+export enum SubscriptionPermission {
+    VIEW_CLINIC = 'subscription:view-clinic',
+    MANAGE = 'subscription:manage',
+}
+
 const PERMISSIONS = [
     ...Object.values(UserPermission),
     ...Object.values(ProfessionalPermission),
@@ -132,6 +137,7 @@ const PERMISSIONS = [
     ...Object.values(ClinicalDocumentPermission),
     ...Object.values(AppointmentReminderPermission),
     ...Object.values(ClinicReminderConfigPermission),
+    ...Object.values(SubscriptionPermission),
 ];
 
 export type Permission = (typeof PERMISSIONS)[number];

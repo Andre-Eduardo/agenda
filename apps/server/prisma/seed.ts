@@ -23,36 +23,41 @@ import {main as seedAppointments} from './seeds/appointments.seed';
 import {main as seedFormTemplates} from './seeds/form-templates.seed';
 import {main as seedAiAgentProfiles} from './seeds/ai-agent-profiles.seed';
 import {main as seedClinicalDocumentTemplates} from './seeds/clinical-document-templates.seed';
+import {main as seedSubscriptions} from './seeds/subscriptions.seed';
 
 async function main() {
     console.log('=== Iniciando seeds de desenvolvimento ===\n');
 
-    console.log('--- [1/7] Clínica + admin ---');
+    console.log('--- [1/8] Clínica + admin ---');
     await seedClinic();
     console.log('');
 
-    console.log('--- [2/7] Pacientes ---');
+    console.log('--- [2/8] Pacientes ---');
     await seedPatients();
     console.log('');
 
-    console.log('--- [3/7] Horários de atendimento ---');
+    console.log('--- [3/8] Horários de atendimento ---');
     await seedWorkingHours();
     console.log('');
 
-    console.log('--- [4/7] Consultas ---');
+    console.log('--- [4/8] Consultas ---');
     await seedAppointments();
     console.log('');
 
-    console.log('--- [5/7] Templates de formulários ---');
+    console.log('--- [5/8] Templates de formulários ---');
     await seedFormTemplates();
     console.log('');
 
-    console.log('--- [6/7] Perfis de agentes de IA ---');
+    console.log('--- [6/8] Perfis de agentes de IA ---');
     await seedAiAgentProfiles();
     console.log('');
 
-    console.log('--- [7/7] Templates de documentos clínicos ---');
+    console.log('--- [7/8] Templates de documentos clínicos ---');
     await seedClinicalDocumentTemplates();
+    console.log('');
+
+    console.log('--- [8/8] Assinaturas de profissionais ---');
+    await seedSubscriptions();
     console.log('');
 
     console.log('=== Seeds concluídos com sucesso! ===');
