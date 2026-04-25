@@ -32,6 +32,7 @@ import {RetrievePatientChunksService} from './retrieve-patient-chunks.service';
 import {ContextPolicyService} from './context-policy.service';
 import {ApplicationService, Command} from '../../@shared/application.service';
 import {getDefaultModelForSpecialty} from '../../../domain/clinical-chat/specialty-model-defaults';
+import {calculateCostUsd} from '../../../ai/pricing/ai-pricing.config';
 
 // ─── Política padrão de contexto (Task 15) ───────────────────────────────────
 /** Limite máximo de tokens do contexto enviado ao modelo. */
@@ -344,6 +345,29 @@ export class SendChatMessageService
                 totalDurationMs: Date.now() - startedAt,
             });
             await this.interactionLogRepository.save(interactionLog);
+
+            // Fire-and-forget: calculate and persist cost; failure must not break the operation
+            if (
+                interactionLog.modelId &&
+                interactionLog.promptTokens != null &&
+                interactionLog.completionTokens != null
+            ) {
+                const costUsd = calculateCostUsd(
+                    interactionLog.modelId,
+                    interactionLog.promptTokens,
+                    interactionLog.completionTokens,
+                );
+                if (costUsd === null) {
+                    this.logger.warn(
+                        `[billing] No pricing found for model "${interactionLog.modelId}" — costUsd not recorded`,
+                    );
+                } else {
+                    interactionLog.costUsd = costUsd;
+                    void this.interactionLogRepository.save(interactionLog).catch((err: unknown) => {
+                        this.logger.error('[billing] Failed to persist costUsd', err);
+                    });
+                }
+            }
 
             // Fire-and-forget: increment chat usage counter; failure must not break the operation
             if (this.subscriptionService) {

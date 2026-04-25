@@ -119,6 +119,11 @@ export enum SubscriptionPermission {
     MANAGE = 'subscription:manage',
 }
 
+export enum BillingPermission {
+    VIEW_MEMBER = 'billing:view-member',
+    VIEW_CLINIC = 'billing:view-clinic',
+}
+
 const PERMISSIONS = [
     ...Object.values(UserPermission),
     ...Object.values(ProfessionalPermission),
@@ -138,6 +143,7 @@ const PERMISSIONS = [
     ...Object.values(AppointmentReminderPermission),
     ...Object.values(ClinicReminderConfigPermission),
     ...Object.values(SubscriptionPermission),
+    ...Object.values(BillingPermission),
 ];
 
 export type Permission = (typeof PERMISSIONS)[number];
