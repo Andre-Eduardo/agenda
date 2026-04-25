@@ -1,4 +1,5 @@
-import type {ProfessionalId} from '@domain/professional/entities';
+import type {ClinicId} from '@domain/clinic/entities';
+import type {ClinicMemberId} from '@domain/clinic-member/entities';
 import type {UserId} from '../entities';
 
 export enum TokenScope {
@@ -7,10 +8,22 @@ export enum TokenScope {
     EMAIL_VERIFICATION = 'EMAIL_VERIFICATION',
 }
 
+/**
+ * Membro autorizado pelo token — uma entry por ClinicMember acessível ao User.
+ * O ClinicMember atualmente "ativo" no contexto da request é selecionado pelo
+ * cookie `current.company` (que armazena o clinicMemberId).
+ */
+export type TokenClinicMember = {
+    clinicMemberId: ClinicMemberId;
+    clinicId: ClinicId;
+};
+
 export type TokenData = {
     readonly userId: UserId;
-    readonly professionals: ProfessionalId[];
-    readonly professionalId: ProfessionalId | null;
+    /** Lista de membros clínicos a que o User tem acesso. */
+    readonly clinicMembers: TokenClinicMember[];
+    /** Membro selecionado para a request atual (via cookie); null para tokens sem contexto. */
+    readonly clinicMemberId: ClinicMemberId | null;
     readonly issueTime: Date;
     readonly expirationTime: Date;
     readonly scope: readonly TokenScope[];
@@ -20,9 +33,9 @@ export type TokenData = {
 export abstract class Token implements TokenData {
     readonly userId: UserId;
 
-    readonly professionals: ProfessionalId[];
+    readonly clinicMembers: TokenClinicMember[];
 
-    readonly professionalId: ProfessionalId | null;
+    readonly clinicMemberId: ClinicMemberId | null;
 
     readonly issueTime: Date;
 
@@ -34,8 +47,8 @@ export abstract class Token implements TokenData {
 
     protected constructor(metadata: TokenData) {
         this.userId = metadata.userId;
-        this.professionals = metadata.professionals;
-        this.professionalId = metadata.professionalId;
+        this.clinicMembers = metadata.clinicMembers;
+        this.clinicMemberId = metadata.clinicMemberId;
         this.issueTime = metadata.issueTime;
         this.expirationTime = metadata.expirationTime;
         this.scope = metadata.scope;
@@ -45,8 +58,8 @@ export abstract class Token implements TokenData {
     toJSON(): TokenData {
         return {
             userId: this.userId,
-            professionals: this.professionals,
-            professionalId: this.professionalId,
+            clinicMembers: this.clinicMembers,
+            clinicMemberId: this.clinicMemberId,
             issueTime: this.issueTime,
             expirationTime: this.expirationTime,
             scope: this.scope,
@@ -67,13 +80,13 @@ export type TokenOptions = {
      */
     scope?: TokenScope[];
     /**
-     * The professional that the token will have access to.
+     * The clinic member that the token is currently scoped to (via cookie).
      */
-    professionalId?: ProfessionalId;
+    clinicMemberId?: ClinicMemberId;
     /**
-     * The professionals that the token will have access to.
+     * The clinic members that the token has access to.
      */
-    professionals?: ProfessionalId[];
+    clinicMembers?: TokenClinicMember[];
     /**
      * Additional metadata to include in the token.
      */
