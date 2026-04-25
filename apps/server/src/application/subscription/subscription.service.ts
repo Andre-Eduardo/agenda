@@ -13,17 +13,27 @@ import {
 
 export type UsageMetric = 'docs' | 'chat' | 'images';
 
+export type MetricStatus = 'OK' | 'WARNING' | 'EXCEEDED' | 'NOT_INCLUDED';
+
 type UsageMetricDetail = {
     used: number;
     limit: number | null;
     percent: number;
     remaining: number | null;
+    status: MetricStatus;
+};
+
+export type UsageAlert = {
+    metric: string;
+    type: 'WARNING' | 'EXCEEDED';
+    message: string;
 };
 
 export type CurrentUsageResult = {
     planCode: PlanCode;
     planName: string;
     period: {year: number; month: number};
+    resetAt: string;
     usage: {
         docs: UsageMetricDetail;
         chat: UsageMetricDetail;
@@ -33,9 +43,29 @@ export type CurrentUsageResult = {
     isAnyLimitReached: boolean;
     warningThreshold: number;
     limitsReached: string[];
+    alerts: UsageAlert[];
+    subscription: {
+        status: string;
+        currentPeriodStart: string;
+        currentPeriodEnd: string;
+    };
+};
+
+export type ClinicMemberUsageEntry = {
+    memberId: string;
+    displayName: string;
+    planCode: PlanCode;
+    usage: CurrentUsageResult;
 };
 
 const WARNING_THRESHOLD = 80;
+
+const METRIC_LABELS: Record<string, string> = {
+    docs: 'documentos',
+    chat: 'mensagens de chat',
+    images: 'imagens clínicas',
+    storageHotGb: 'armazenamento',
+};
 
 @Injectable()
 export class SubscriptionService {
@@ -59,12 +89,46 @@ export class SubscriptionService {
         return new Date(year, month, 0, 23, 59, 59, 999);
     }
 
+    private periodResetAt(year: number, month: number): string {
+        // First day of the next month (month is 1-based; Date constructor is 0-based → month index = next month)
+        return new Date(year, month, 1).toISOString();
+    }
+
     private calcMetric(used: number, limit: number | null): UsageMetricDetail {
         if (limit === null) {
-            return {used, limit: null, percent: 0, remaining: null};
+            return {used, limit: null, percent: 0, remaining: null, status: 'OK'};
         }
-        const percent = limit === 0 ? 0 : Math.min(100, Math.round((used / limit) * 100));
-        return {used, limit, percent, remaining: Math.max(0, limit - used)};
+        if (limit === 0) {
+            return {used, limit: 0, percent: 0, remaining: 0, status: 'NOT_INCLUDED'};
+        }
+        const percent = Math.min(100, Math.round((used / limit) * 100));
+        const remaining = Math.max(0, limit - used);
+        const status: MetricStatus = remaining === 0 ? 'EXCEEDED' : percent >= WARNING_THRESHOLD ? 'WARNING' : 'OK';
+        return {used, limit, percent, remaining, status};
+    }
+
+    private buildAlerts(usage: CurrentUsageResult['usage']): UsageAlert[] {
+        const alerts: UsageAlert[] = [];
+        const metrics = ['docs', 'chat', 'images', 'storageHotGb'] as const;
+
+        for (const metric of metrics) {
+            const detail = usage[metric];
+            if (detail.status === 'WARNING') {
+                alerts.push({
+                    metric,
+                    type: 'WARNING',
+                    message: `Você usou ${detail.percent}% dos ${METRIC_LABELS[metric] ?? metric} do mês.`,
+                });
+            } else if (detail.status === 'EXCEEDED') {
+                alerts.push({
+                    metric,
+                    type: 'EXCEEDED',
+                    message: `Limite de ${METRIC_LABELS[metric] ?? metric} atingido para este mês.`,
+                });
+            }
+        }
+
+        return alerts;
     }
 
     /**
@@ -148,20 +212,31 @@ export class SubscriptionService {
         const images = this.calcMetric(record.clinicalImages, limits.clinicalImagesPerMonth);
         const storageHotGb = this.calcMetric(record.storageHotGbUsed, limits.storageHotGb);
 
+        const usage = {docs, chat, images, storageHotGb};
+
         const limitsReached: string[] = [];
-        if (docs.limit !== null && docs.remaining === 0) limitsReached.push('docs');
-        if (chat.limit !== null && chat.remaining === 0) limitsReached.push('chat');
-        if (images.limit !== null && images.remaining === 0) limitsReached.push('images');
-        if (storageHotGb.limit !== null && storageHotGb.remaining === 0) limitsReached.push('storageHotGb');
+        if (docs.limit !== null && docs.remaining === 0 && docs.status !== 'NOT_INCLUDED') limitsReached.push('docs');
+        if (chat.limit !== null && chat.remaining === 0 && chat.status !== 'NOT_INCLUDED') limitsReached.push('chat');
+        if (images.limit !== null && images.remaining === 0 && images.status !== 'NOT_INCLUDED') limitsReached.push('images');
+        if (storageHotGb.limit !== null && storageHotGb.remaining === 0 && storageHotGb.status !== 'NOT_INCLUDED') limitsReached.push('storageHotGb');
+
+        const alerts = this.buildAlerts(usage);
 
         return {
             planCode,
             planName: PLAN_LIMITS[planCode].name,
             period: {year, month},
-            usage: {docs, chat, images, storageHotGb},
+            resetAt: this.periodResetAt(year, month),
+            usage,
             isAnyLimitReached: limitsReached.length > 0,
             warningThreshold: WARNING_THRESHOLD,
             limitsReached,
+            alerts,
+            subscription: {
+                status: subscription.status,
+                currentPeriodStart: subscription.currentPeriodStart.toISOString(),
+                currentPeriodEnd: subscription.currentPeriodEnd.toISOString(),
+            },
         };
     }
 
@@ -264,17 +339,24 @@ export class SubscriptionService {
     }
 
     /**
-     * Returns all professionals' current usage for the given clinic.
+     * Returns all professionals' current usage for the given clinic, with display names.
      * Used by the clinic admin/owner view.
      */
-    async getClinicUsage(clinicId: string): Promise<{memberId: string; usage: CurrentUsageResult}[]> {
+    async getClinicUsage(clinicId: string): Promise<ClinicMemberUsageEntry[]> {
         const subscriptions = await this.prisma.professionalSubscription.findMany({
             where: {clinicId, deletedAt: null},
+            include: {
+                member: {
+                    include: {user: true},
+                },
+            },
         });
 
         return Promise.all(
             subscriptions.map(async (sub) => ({
                 memberId: sub.memberId,
+                displayName: sub.member.user.name,
+                planCode: toEnum(PlanCodeRecord, sub.planCode),
                 usage: await this.getCurrentUsage(sub.memberId, clinicId),
             })),
         );

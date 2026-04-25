@@ -8,7 +8,11 @@ import {RequestActor} from '../@shared/auth/request-actor.decorator';
 import {ApiOperation} from '../@shared/openapi/decorators';
 import {entityIdParam} from '../@shared/openapi/params';
 import {SubscriptionDto} from './dto/subscription.dto';
-import {CurrentUsageDto, MemberUsageSummaryDto} from './dto/usage.dto';
+import {
+    ClinicMembersUsageSummaryDto,
+    CurrentUsageDto,
+    MemberUsageSummaryDto,
+} from './dto/usage.dto';
 import {ChangePlanDto} from './dto/change-plan.dto';
 import {PlanCodeRecord} from './subscription-plans.config';
 import {SubscriptionService} from './subscription.service';
@@ -55,6 +59,26 @@ export class SubscriptionController {
         return new CurrentUsageDto(usage);
     }
 
+    @ApiOperation({
+        summary: 'Get current usage for all professionals in a clinic with per-member details (admin/owner only)',
+        parameters: [entityIdParam('Clinic ID', 'clinicId')],
+        responses: [{status: 200, description: 'Clinic-wide usage breakdown', type: ClinicMembersUsageSummaryDto}],
+    })
+    @Authorize(SubscriptionPermission.VIEW_CLINIC)
+    @Get('clinics/:clinicId/members/usage')
+    async getClinicMembersUsage(
+        @RequestActor() _actor: Actor,
+        @Param('clinicId') clinicId: string,
+    ): Promise<ClinicMembersUsageSummaryDto> {
+        const entries = await this.subscriptionService.getClinicUsage(clinicId);
+        const now = new Date();
+        const period = {year: now.getFullYear(), month: now.getMonth() + 1};
+        return new ClinicMembersUsageSummaryDto(period, entries);
+    }
+
+    /**
+     * @deprecated Use GET /clinics/:clinicId/members/usage for the full breakdown.
+     */
     @ApiOperation({
         summary: 'Get current usage for all professionals in a clinic (admin/owner only)',
         parameters: [entityIdParam('Clinic ID', 'clinicId')],

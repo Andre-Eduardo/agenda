@@ -1,4 +1,4 @@
-import {Injectable} from '@nestjs/common';
+import {Injectable, Logger} from '@nestjs/common';
 import {PreconditionException, ResourceNotFoundException} from '../../../domain/@shared/exceptions';
 import {DraftEvolutionRepository} from '../../../domain/draft-evolution/draft-evolution.repository';
 import {EventDispatcher} from '../../../domain/event';
@@ -8,16 +8,20 @@ import {ImportStatus} from '../../../domain/record/entities/imported-document.en
 import {ImportedDocumentRepository} from '../../../domain/record/imported-document.repository';
 import {RecordRepository} from '../../../domain/record/record.repository';
 import {ApplicationService, Command} from '../../@shared/application.service';
+import {SubscriptionService} from '../../subscription/subscription.service';
 import {DraftEvolutionDto, GetDraftDto} from '../dtos';
 
 @Injectable()
 export class ApproveDraftService implements ApplicationService<GetDraftDto, DraftEvolutionDto> {
+    private readonly logger = new Logger(ApproveDraftService.name);
+
     constructor(
         private readonly importedDocumentRepository: ImportedDocumentRepository,
         private readonly draftEvolutionRepository: DraftEvolutionRepository,
         private readonly recordRepository: RecordRepository,
         private readonly professionalRepository: ProfessionalRepository,
         private readonly eventDispatcher: EventDispatcher,
+        private readonly subscriptionService: SubscriptionService,
     ) {}
 
     async execute({actor, payload}: Command<GetDraftDto>): Promise<DraftEvolutionDto> {
@@ -67,6 +71,13 @@ export class ApproveDraftService implements ApplicationService<GetDraftDto, Draf
 
         this.eventDispatcher.dispatch(actor, record);
         this.eventDispatcher.dispatch(actor, draft);
+
+        // Fire-and-forget: increment docs usage counter; failure must not break the operation
+        void this.subscriptionService
+            .incrementUsage(actor.clinicMemberId.toString(), actor.clinicId.toString(), 'docs')
+            .catch((err: unknown) => {
+                this.logger.error('Failed to increment docs usage', err);
+            });
 
         return new DraftEvolutionDto(draft);
     }
