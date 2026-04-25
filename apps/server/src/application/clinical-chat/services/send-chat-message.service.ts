@@ -1,7 +1,8 @@
-import {Injectable} from '@nestjs/common';
+import {Inject, Injectable, Optional} from '@nestjs/common';
 import {ResourceNotFoundException, PreconditionException} from '../../../domain/@shared/exceptions';
 import type {PatientId} from '../../../domain/patient/entities';
 import type {ProfessionalId} from '../../../domain/professional/entities';
+import {AgentLoopService} from '../../agent/core/agent-loop.service';
 
 /**
  * Filtra uma lista de strings arbitrárias mantendo apenas aquelas que são
@@ -98,9 +99,10 @@ export class SendChatMessageService
         private readonly getSnapshotService: GetContextSnapshotService,
         private readonly retrieveChunksService: RetrievePatientChunksService,
         private readonly contextPolicyService: ContextPolicyService,
+        @Optional() @Inject(AgentLoopService) private readonly agentLoop: AgentLoopService | null,
     ) {}
 
-    async execute({payload}: Command<SendChatMessageInput>): Promise<SendChatMessageOutput> {
+    async execute({payload, actor}: Command<SendChatMessageInput>): Promise<SendChatMessageOutput> {
         const startedAt = Date.now();
 
         // ─── 1. Validar sessão ───────────────────────────────────────────────
@@ -213,6 +215,8 @@ export class SendChatMessageService
             retrievedChunkIds,
             status: ChatInteractionStatus.PENDING,
             usedFallback: false,
+            toolNames: [],
+            proposalIds: [],
         });
 
         // ─── 8. Persistir mensagem do usuário ────────────────────────────────
@@ -235,28 +239,71 @@ export class SendChatMessageService
             getDefaultModelForSpecialty(agentProfile?.specialty ?? null);
 
         const provider = this.aiProviderRegistry.getChatProvider();
+        const useAgentTools =
+            process.env['AGENT_ENABLE_TOOLS'] === 'true' && this.agentLoop != null;
+
         let replyContent: string;
         let replyMetadata: Record<string, unknown>;
         let usedFallback = false;
+        let replyUsage: {promptTokens: number | null; completionTokens: number | null; totalTokens: number | null} = {
+            promptTokens: null,
+            completionTokens: null,
+            totalTokens: null,
+        };
+        let agentToolNames: string[] = [];
+        let agentProposalIds: string[] = [];
+        let agentTotalIterations: number | undefined;
+        let agentAvgTopKScore: number | undefined;
 
         try {
-            const reply = await provider.generateChatReply({
-                messages,
-                maxTokens: 1024,
-                modelOverride: resolvedModel,
-            });
-
-            replyContent = reply.content || '(sem resposta gerada)';
-            replyMetadata = {
-                provider: provider.providerId,
-                model: resolvedModel,
-                finishReason: reply.finishReason,
-                usage: reply.usage,
-                agentSlug: agentProfile?.slug ?? null,
-                snapshotVersion: snapshot?.contentHash ?? null,
-                chunksUsed: retrievedChunkIds.length,
-                mock: provider.providerId === 'mock',
-            };
+            if (useAgentTools && this.agentLoop) {
+                const agentReply = await this.agentLoop.run({
+                    messages,
+                    context: {
+                        actor,
+                        professionalId,
+                        patientId,
+                        sessionId: payload.sessionId,
+                    },
+                    modelOverride: resolvedModel,
+                });
+                replyContent = agentReply.answer || '(sem resposta gerada)';
+                agentToolNames = agentReply.toolCalls.map((tc) => tc.tool);
+                agentProposalIds = agentReply.proposalIds;
+                agentTotalIterations = agentReply.totalIterations;
+                const scores = policyFilteredChunks.map((c) => c.score).filter((s) => s > 0);
+                agentAvgTopKScore = scores.length > 0 ? scores.reduce((a, b) => a + b, 0) / scores.length : undefined;
+                replyMetadata = {
+                    provider: provider.providerId,
+                    model: resolvedModel,
+                    finishReason: agentReply.finishReason,
+                    agentSlug: agentProfile?.slug ?? null,
+                    snapshotVersion: snapshot?.contentHash ?? null,
+                    chunksUsed: retrievedChunkIds.length,
+                    toolCalls: agentReply.toolCalls.length,
+                    proposalIds: agentReply.proposalIds,
+                    totalIterations: agentReply.totalIterations,
+                    agentEnabled: true,
+                };
+            } else {
+                const reply = await provider.generateChatReply({
+                    messages,
+                    maxTokens: 1024,
+                    modelOverride: resolvedModel,
+                });
+                replyContent = reply.content || '(sem resposta gerada)';
+                replyUsage = reply.usage;
+                replyMetadata = {
+                    provider: provider.providerId,
+                    model: resolvedModel,
+                    finishReason: reply.finishReason,
+                    usage: reply.usage,
+                    agentSlug: agentProfile?.slug ?? null,
+                    snapshotVersion: snapshot?.contentHash ?? null,
+                    chunksUsed: retrievedChunkIds.length,
+                    mock: provider.providerId === 'mock',
+                };
+            }
 
             // ─── 10. Persistir mensagem do assistente ─────────────────────────
             const assistantMessage = PatientChatMessage.create({
@@ -278,11 +325,17 @@ export class SendChatMessageService
                 assistantMessageId: assistantMessage.id.toString(),
                 providerId: provider.providerId,
                 modelId: resolvedModel,
-                promptTokens: reply.usage.promptTokens,
-                completionTokens: reply.usage.completionTokens,
-                totalTokens: reply.usage.totalTokens,
+                promptTokens: replyUsage.promptTokens,
+                completionTokens: replyUsage.completionTokens,
+                totalTokens: replyUsage.totalTokens,
                 latencyMs,
                 usedFallback,
+                toolNames: agentToolNames,
+                proposalIds: agentProposalIds,
+                totalIterations: agentTotalIterations,
+                ragChunksUsed: policyFilteredChunks.length,
+                avgTopKScore: agentAvgTopKScore,
+                totalDurationMs: Date.now() - startedAt,
             });
             await this.interactionLogRepository.save(interactionLog);
 

@@ -21,7 +21,7 @@ Feature: User update and password change (PUT/PATCH)
         When I send a "PUT" request to "/api/v1/user/${ref:id:user:john_doe}" with:
             | name            | John Updated  |
             | currentPassword | wrong-pass    |
-        Then the request should fail with a 401 status code
+        Then the request should fail with a 403 status code
 
     Scenario: Change password with correct old password
         Given I am signed in as "john_doe"
@@ -35,4 +35,4 @@ Feature: User update and password change (PUT/PATCH)
         When I send a "PATCH" request to "/api/v1/user/change-password" with:
             | oldPassword | wrong-pass  |
             | newPassword | N3wPass!1   |
-        Then the request should fail with a 401 status code
+        Then the request should fail with a 403 status code

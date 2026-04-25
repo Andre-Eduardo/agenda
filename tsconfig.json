@@ -13,6 +13,7 @@
     "noUnusedParameters": true,
     "strictBindCallApply": true,
     "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "noFallthroughCasesInSwitch": true,
     /* Emit */

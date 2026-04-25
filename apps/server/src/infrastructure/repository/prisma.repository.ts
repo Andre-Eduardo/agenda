@@ -43,7 +43,9 @@ export abstract class PrismaRepository {
         });
 
         if (extraSort) {
-            normalizedSort.push(extraSort);
+            for (const [key, direction] of Object.entries(extraSort)) {
+                normalizedSort.push({[key]: direction as Prisma.SortOrder});
+            }
         }
 
         return normalizedSort;

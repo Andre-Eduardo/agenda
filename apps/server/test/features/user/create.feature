@@ -22,7 +22,7 @@ Feature: User sign-up (POST)
             | username | john_doe_${ref:var:contextId}             |
             | email    | other_${ref:var:contextId}@example.com    |
             | password | J0hn.Do3!                                 |
-        Then the request should fail with a 422 status code
+        Then the request should fail with a 409 status code
 
     Scenario: Sign-up with invalid email
         When I send a "POST" request to "/api/v1/user/sign-up" with:

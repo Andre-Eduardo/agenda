@@ -30,12 +30,45 @@ import type {
  * - `OpenRouterChatProvider` — API OpenAI-compatible
  * ─────────────────────────────────────────────────────────────────────────────
  */
+/**
+ * Configures the MockChatProvider to simulate a specific tool call on the
+ * next invocation of generateChatReply. Used in unit/integration tests only.
+ *
+ * @example
+ * const mock = new MockChatProvider();
+ * mock.queueToolCall('get_todays_appointments', {}, 'tc-1');
+ */
+export type MockToolCallConfig = {
+    name: string;
+    arguments: Record<string, unknown>;
+    id?: string;
+};
+
 @Injectable()
 export class MockChatProvider implements ChatModelProvider {
     readonly providerId = 'mock';
     readonly modelId = 'mock-clinical-assistant-v1';
 
+    private readonly pendingToolCalls: MockToolCallConfig[] = [];
+
+    queueToolCall(name: string, args: Record<string, unknown> = {}, id?: string): void {
+        this.pendingToolCalls.push({name, arguments: args, id: id ?? `tc-${Date.now()}`});
+    }
+
     async generateChatReply(input: ChatReplyInput): Promise<ChatReplyOutput> {
+        if (this.pendingToolCalls.length > 0) {
+            const toolCalls = this.pendingToolCalls.splice(0);
+            return {
+                content: '',
+                finishReason: 'tool_use',
+                toolCalls: toolCalls.map((tc) => ({
+                    id: tc.id ?? `tc-${Date.now()}`,
+                    name: tc.name,
+                    arguments: tc.arguments,
+                })),
+                usage: {promptTokens: 10, completionTokens: 10, totalTokens: 20},
+            };
+        }
         const lastUserMessage = input.messages.filter((m) => m.role === 'user').at(-1);
         const questionPreview = lastUserMessage?.content?.slice(0, 100) ?? '(sem mensagem)';
         const isTruncated = (lastUserMessage?.content?.length ?? 0) > 100;
@@ -44,7 +77,8 @@ export class MockChatProvider implements ChatModelProvider {
         await this.simulateLatency(200, 600);
 
         const systemMessage = input.messages.find((m) => m.role === 'system');
-        const hasContext = systemMessage && systemMessage.content.length > 50;
+        const hasContext = systemMessage && (systemMessage as {role: 'system'; content: string}).content.length > 50;
+        const hasTools = input.tools && input.tools.length > 0;
 
         const content = [
             `[ASSISTENTE CLÍNICO — MODO DESENVOLVIMENTO]`,
@@ -56,15 +90,16 @@ export class MockChatProvider implements ChatModelProvider {
             `"${questionPreview}${isTruncated ? '...' : ''}"`,
             ``,
             hasContext
-                ? `Contexto clínico detectado: ${systemMessage!.content.length} caracteres de contexto injetado.`
+                ? `Contexto clínico detectado: ${(systemMessage as {role: 'system'; content: string}).content.length} caracteres de contexto injetado.`
                 : `Nenhum contexto clínico detectado no sistema.`,
+            ...(hasTools ? [``, `${input.tools!.length} ferramenta(s) disponível(is): ${input.tools!.map((t) => t.name).join(', ')}.`] : []),
             ``,
             `Para ativar um provider real, consulte:`,
             `infrastructure/ai-provider/ai-provider.tokens.ts`,
             `infrastructure/ai-provider/ai-provider.module.ts`,
         ].join('\n');
 
-        const promptTokens = this.estimateTokenCount(input.messages.map((m) => m.content).join(' '));
+        const promptTokens = this.estimateTokenCount(input.messages.map((m) => m.content ?? '').join(' '));
         const completionTokens = Math.ceil(content.length / 4);
 
         return {
@@ -85,7 +120,7 @@ export class MockChatProvider implements ChatModelProvider {
     }
 
     async estimateUsage(input: ChatReplyInput): Promise<UsageEstimate> {
-        const text = input.messages.map((m) => m.content).join(' ');
+        const text = input.messages.map((m) => m.content ?? '').join(' ');
         const estimatedPromptTokens = this.estimateTokenCount(text);
         const estimatedCompletionTokens = Math.round(estimatedPromptTokens * 0.3);
 

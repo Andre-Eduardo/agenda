@@ -23,16 +23,13 @@ Feature: Clinical record listing and retrieval (GET)
             | description    | List seed record                |
         Then the request should succeed with a 201 status code
         When I send a "GET" request to "/api/v1/records" with the query:
-            | page | 1  |
-            | size | 10 |
+            | limit | 10 |
         Then the request should succeed with a 200 status code
         And the response should match:
             """JSON
             {
-              "data": "__array__",
-              "total": "__number__",
-              "page": 1,
-              "size": 10
+              "data": "_.isArray",
+              "totalCount": "_.isNumber"
             }
             """
 
@@ -44,8 +41,7 @@ Feature: Clinical record listing and retrieval (GET)
         Then the request should succeed with a 201 status code
         When I send a "GET" request to "/api/v1/records" with the query:
             | patientId | ${ref:id:patient:rec_patient} |
-            | page      | 1                             |
-            | size      | 10                            |
+            | limit     | 10                            |
         Then the request should succeed with a 200 status code
 
     Scenario: List records without authentication

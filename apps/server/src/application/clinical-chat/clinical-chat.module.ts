@@ -1,5 +1,6 @@
 import {Module} from '@nestjs/common';
 import {InfrastructureModule} from '../../infrastructure/infrastructure.module';
+import {AgentModule} from '../agent/agent.module';
 import {ClinicalChatController} from './controllers/clinical-chat.controller';
 import {AgentsController} from './controllers/agents.controller';
 import {
@@ -26,9 +27,11 @@ import {
     // Task 8: Main chat orchestrator
     SendChatMessageService,
 } from './services';
+import {ReindexOnRecordSavedHandler} from './handlers/reindex-on-record-saved.handler';
+import {ReindexOnFormCompletedHandler} from './handlers/reindex-on-form-completed.handler';
 
 @Module({
-    imports: [InfrastructureModule],
+    imports: [InfrastructureModule, AgentModule],
     controllers: [ClinicalChatController, AgentsController],
     providers: [
         // ─── Task 14: Context policy rules ───────────────────────────────────
@@ -59,6 +62,10 @@ import {
 
         // ─── Task 8: Main chat orchestrator ──────────────────────────────────
         SendChatMessageService,
+
+        // ─── Phase 4: Auto re-index handlers ─────────────────────────────────
+        ReindexOnRecordSavedHandler,
+        ReindexOnFormCompletedHandler,
     ],
 })
 export class ClinicalChatModule {}

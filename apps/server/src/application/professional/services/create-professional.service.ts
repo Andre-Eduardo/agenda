@@ -29,7 +29,7 @@ export class CreateProfessionalService implements ApplicationService<CreateProfe
             profiles: new Set([PersonProfile.PROFESSIONAL]),
             specialty: payload.specialty,
             configId: config.id,
-            userId: payload.userId ?? null,
+            userId: payload.userId ?? actor.userId,
         });
 
         await this.prismaProvider.client.professionalConfig.create({

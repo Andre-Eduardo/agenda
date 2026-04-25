@@ -22,7 +22,7 @@ Feature: Appointment update and cancellation (PUT/PATCH)
             | professionalId | ${ref:id:professional:dr_house} |
             | startAt        | 2027-01-10T09:00:00.000Z        |
             | endAt          | 2027-01-10T10:00:00.000Z        |
-            | type           | CONSULTATION                    |
+            | type           | FIRST_VISIT                     |
         Then the request should succeed with a 201 status code
         And I save the response field "id" as "appointment" id for "to_update"
         When I send a "PUT" request to "/api/v1/appointments/${ref:id:appointment:to_update}" with:
@@ -35,7 +35,7 @@ Feature: Appointment update and cancellation (PUT/PATCH)
 
     Scenario: Update appointment with unknown ID
         When I send a "PUT" request to "/api/v1/appointments/01900000-0000-7000-8000-000000000000" with:
-            | type | CONSULTATION |
+            | type | FIRST_VISIT |
         Then the request should fail with a 404 status code
 
     Scenario: Cancel an appointment with a reason
@@ -44,7 +44,7 @@ Feature: Appointment update and cancellation (PUT/PATCH)
             | professionalId | ${ref:id:professional:dr_house} |
             | startAt        | 2027-02-01T09:00:00.000Z        |
             | endAt          | 2027-02-01T10:00:00.000Z        |
-            | type           | CONSULTATION                    |
+            | type           | FIRST_VISIT                     |
         Then the request should succeed with a 201 status code
         And I save the response field "id" as "appointment" id for "to_cancel"
         When I send a "PATCH" request to "/api/v1/appointments/${ref:id:appointment:to_cancel}/cancel" with:
@@ -59,7 +59,7 @@ Feature: Appointment update and cancellation (PUT/PATCH)
             | professionalId | ${ref:id:professional:dr_house} |
             | startAt        | 2027-03-01T09:00:00.000Z        |
             | endAt          | 2027-03-01T10:00:00.000Z        |
-            | type           | CONSULTATION                    |
+            | type           | FIRST_VISIT                     |
         Then the request should succeed with a 201 status code
         And I save the response field "id" as "appointment" id for "cancel_no_reason"
         When I send a "PATCH" request to "/api/v1/appointments/${ref:id:appointment:cancel_no_reason}/cancel" with:

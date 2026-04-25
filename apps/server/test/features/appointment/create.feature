@@ -22,10 +22,10 @@ Feature: Appointment creation (POST)
             | professionalId | ${ref:id:professional:dr_house} |
             | startAt        | 2026-06-01T09:00:00.000Z        |
             | endAt          | 2026-06-01T10:00:00.000Z        |
-            | type           | CONSULTATION                    |
+            | type           | FIRST_VISIT                     |
         Then the request should succeed with a 201 status code
         And the response should contain:
-            | type | CONSULTATION |
+            | type | FIRST_VISIT |
 
     Scenario: Create an appointment with a note
         When I send a "POST" request to "/api/v1/appointments" with:
@@ -53,5 +53,5 @@ Feature: Appointment creation (POST)
             | professionalId | ${ref:id:professional:dr_house} |
             | startAt        | 2026-09-01T09:00:00.000Z        |
             | endAt          | 2026-09-01T10:00:00.000Z        |
-            | type           | CONSULTATION                    |
+            | type           | FIRST_VISIT                     |
         Then the request should fail with a 401 status code

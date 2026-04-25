@@ -1,3 +1,5 @@
+export * from './agent/agent';
+export * from './agent-proposals/agent-proposals';
 export * from './agents/agents';
 export * from './appointment/appointment';
 export * from './auth/auth';
@@ -6,6 +8,7 @@ export * from './clinical-profile/clinical-profile';
 export * from './form-ai-context/form-ai-context';
 export * from './form-field-index/form-field-index';
 export * from './form-template/form-template';
+export * from './knowledge/knowledge';
 export * from './patient/patient';
 export * from './patient-alert/patient-alert';
 export * from './patient-form/patient-form';

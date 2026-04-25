@@ -60,6 +60,14 @@ export class ClinicalChatInteractionLog extends AggregateRoot<ClinicalChatIntera
     // Flags
     usedFallback: boolean;
 
+    // Agent observability
+    toolNames: string[];
+    proposalIds: string[];
+    totalIterations: number | null;
+    ragChunksUsed: number | null;
+    avgTopKScore: number | null;
+    totalDurationMs: number | null;
+
     constructor(props: AllEntityProps<ClinicalChatInteractionLog>) {
         super(props);
         this.sessionId = props.sessionId;
@@ -80,6 +88,12 @@ export class ClinicalChatInteractionLog extends AggregateRoot<ClinicalChatIntera
         this.errorCode = props.errorCode ?? null;
         this.errorMessage = props.errorMessage ?? null;
         this.usedFallback = props.usedFallback ?? false;
+        this.toolNames = props.toolNames ?? [];
+        this.proposalIds = props.proposalIds ?? [];
+        this.totalIterations = props.totalIterations ?? null;
+        this.ragChunksUsed = props.ragChunksUsed ?? null;
+        this.avgTopKScore = props.avgTopKScore ?? null;
+        this.totalDurationMs = props.totalDurationMs ?? null;
     }
 
     static create(props: CreateClinicalChatInteractionLog): ClinicalChatInteractionLog {
@@ -106,6 +120,12 @@ export class ClinicalChatInteractionLog extends AggregateRoot<ClinicalChatIntera
             errorCode: props.errorCode ?? null,
             errorMessage: props.errorMessage ?? null,
             usedFallback: props.usedFallback ?? false,
+            toolNames: props.toolNames ?? [],
+            proposalIds: props.proposalIds ?? [],
+            totalIterations: props.totalIterations ?? null,
+            ragChunksUsed: props.ragChunksUsed ?? null,
+            avgTopKScore: props.avgTopKScore ?? null,
+            totalDurationMs: props.totalDurationMs ?? null,
             createdAt: now,
             updatedAt: now,
             deletedAt: null,
@@ -121,6 +141,12 @@ export class ClinicalChatInteractionLog extends AggregateRoot<ClinicalChatIntera
         totalTokens: number | null;
         latencyMs: number;
         usedFallback?: boolean;
+        toolNames?: string[];
+        proposalIds?: string[];
+        totalIterations?: number;
+        ragChunksUsed?: number;
+        avgTopKScore?: number;
+        totalDurationMs?: number;
     }): void {
         this.assistantMessageId = params.assistantMessageId;
         this.providerId = params.providerId;
@@ -130,6 +156,12 @@ export class ClinicalChatInteractionLog extends AggregateRoot<ClinicalChatIntera
         this.totalTokens = params.totalTokens;
         this.latencyMs = params.latencyMs;
         this.usedFallback = params.usedFallback ?? false;
+        this.toolNames = params.toolNames ?? [];
+        this.proposalIds = params.proposalIds ?? [];
+        this.totalIterations = params.totalIterations ?? null;
+        this.ragChunksUsed = params.ragChunksUsed ?? null;
+        this.avgTopKScore = params.avgTopKScore ?? null;
+        this.totalDurationMs = params.totalDurationMs ?? null;
         this.status = params.usedFallback ? ChatInteractionStatus.FALLBACK : ChatInteractionStatus.COMPLETED;
         this.update();
     }
@@ -162,6 +194,12 @@ export class ClinicalChatInteractionLog extends AggregateRoot<ClinicalChatIntera
             errorCode: this.errorCode,
             errorMessage: this.errorMessage,
             usedFallback: this.usedFallback,
+            toolNames: this.toolNames,
+            proposalIds: this.proposalIds,
+            totalIterations: this.totalIterations,
+            ragChunksUsed: this.ragChunksUsed,
+            avgTopKScore: this.avgTopKScore,
+            totalDurationMs: this.totalDurationMs,
             createdAt: this.createdAt.toJSON(),
             updatedAt: this.updatedAt.toJSON(),
             deletedAt: null,

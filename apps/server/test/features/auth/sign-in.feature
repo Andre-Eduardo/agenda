@@ -17,11 +17,11 @@ Feature: Sign in
         When I send a "POST" request to "/api/v1/auth/sign-in" with:
             | username | john_doe_${ref:var:contextId} |
             | password | wrong-password                |
-        Then the request should fail with a 401 status code
+        Then the request should fail with a 403 status code
         And I should be signed out
 
     Scenario: Signing in with unknown username
         When I send a "POST" request to "/api/v1/auth/sign-in" with:
             | username | nobody_${ref:var:contextId} |
             | password | J0hn.Do3!                   |
-        Then the request should fail with a 401 status code
+        Then the request should fail with a 403 status code

@@ -22,7 +22,7 @@ Feature: Appointment deletion (DELETE)
             | professionalId | ${ref:id:professional:dr_house} |
             | startAt        | 2027-04-01T09:00:00.000Z        |
             | endAt          | 2027-04-01T10:00:00.000Z        |
-            | type           | CONSULTATION                    |
+            | type           | FIRST_VISIT                     |
         Then the request should succeed with a 201 status code
         And I save the response field "id" as "appointment" id for "to_delete"
         When I send a "DELETE" request to "/api/v1/appointments/${ref:id:appointment:to_delete}"

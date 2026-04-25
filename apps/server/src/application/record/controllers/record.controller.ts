@@ -8,14 +8,13 @@ import {RequestActor} from '../../@shared/auth/request-actor.decorator';
 import {PaginatedDto} from '../../@shared/dto';
 import {ApiOperation} from '../../@shared/openapi/decorators';
 import {entityIdParam} from '../../@shared/openapi/params';
-import {ValidatedParam, ZodValidationPipe} from '../../@shared/validation';
+import {ValidatedParam} from '../../@shared/validation';
 import {
     CreateRecordDto,
     RecordDto,
     SearchRecordsDto,
     UpdateRecordInputDto,
     getRecordSchema,
-    searchRecordsSchema,
     updateRecordSchema,
 } from '../dtos';
 import {
@@ -55,7 +54,7 @@ export class RecordController {
     @Get()
     async searchRecords(
         @RequestActor() actor: Actor,
-        @Query(new ZodValidationPipe(searchRecordsSchema)) query: SearchRecordsDto
+        @Query() query: SearchRecordsDto
     ): Promise<PaginatedDto<RecordDto>> {
         return this.searchRecordsService.execute({actor, payload: query});
     }

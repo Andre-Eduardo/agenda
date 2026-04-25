@@ -19,6 +19,8 @@ import {PatientChatMessageMapper} from './patient-chat-message.mapper';
 import {PatientContextSnapshotMapper} from './patient-context-snapshot.mapper';
 import {PatientContextChunkMapper} from './patient-context-chunk.mapper';
 import {ClinicalChatInteractionLogMapper} from './clinical-chat-interaction-log.mapper';
+import {KnowledgeChunkMapper} from './knowledge-chunk.mapper';
+import {AgentProposalMapper} from './agent-proposal.mapper';
 
 const mappers = [
     PersonMapper,
@@ -42,6 +44,10 @@ const mappers = [
     PatientContextSnapshotMapper,
     PatientContextChunkMapper,
     ClinicalChatInteractionLogMapper,
+    // Knowledge Base
+    KnowledgeChunkMapper,
+    // Agent Proposal
+    AgentProposalMapper,
 ];
 
 @Global()

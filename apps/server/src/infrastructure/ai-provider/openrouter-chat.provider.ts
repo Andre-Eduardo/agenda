@@ -3,6 +3,7 @@ import type {
     ChatModelProvider,
     ChatReplyInput,
     ChatReplyOutput,
+    LLMToolCall,
     UsageEstimate,
     ProviderCapabilities,
     HealthCheckResult,
@@ -22,10 +23,18 @@ export type OpenRouterConfig = {
 /** Formato da requisição para a API OpenRouter (compatível com OpenAI) */
 type OpenRouterRequest = {
     model: string;
-    messages: Array<{role: string; content: string}>;
+    messages: Array<{role: string; content: string | null; tool_call_id?: string; tool_calls?: OpenRouterToolCall[]}>;
     max_tokens?: number;
     temperature?: number;
     stop?: string[];
+    tools?: Array<{type: 'function'; function: {name: string; description: string; parameters: Record<string, unknown>}}>;
+    tool_choice?: 'auto' | 'none';
+};
+
+type OpenRouterToolCall = {
+    id: string;
+    type: 'function';
+    function: {name: string; arguments: string};
 };
 
 /** Formato da resposta da API OpenRouter (compatível com OpenAI) */
@@ -33,7 +42,7 @@ type OpenRouterResponse = {
     id: string;
     model: string;
     choices: Array<{
-        message: {role: string; content: string};
+        message: {role: string; content: string | null; tool_calls?: OpenRouterToolCall[]};
         finish_reason: string;
         index: number;
     }>;
@@ -111,7 +120,11 @@ export class OpenRouterChatProvider implements ChatModelProvider {
 
         const requestBody: OpenRouterRequest = {
             model: effectiveModel,
-            messages: input.messages.map((m) => ({role: m.role, content: m.content})),
+            messages: input.messages.map((m) =>
+                m.role === 'tool'
+                    ? {role: 'tool', content: m.content, tool_call_id: m.toolCallId}
+                    : {role: m.role, content: m.content}
+            ),
             max_tokens: input.maxTokens ?? this.defaultMaxTokens,
         };
 
@@ -120,6 +133,13 @@ export class OpenRouterChatProvider implements ChatModelProvider {
         }
         if (input.stop && input.stop.length > 0) {
             requestBody.stop = input.stop;
+        }
+        if (input.tools && input.tools.length > 0) {
+            requestBody.tools = input.tools.map((t) => ({
+                type: 'function',
+                function: {name: t.name, description: t.description, parameters: t.parameters},
+            }));
+            requestBody.tool_choice = input.toolChoice ?? 'auto';
         }
 
         this.logger.debug(
@@ -164,16 +184,32 @@ export class OpenRouterChatProvider implements ChatModelProvider {
         }
 
         const content = choice.message?.content ?? '';
-        const finishReason = choice.finish_reason ?? 'stop';
+        const rawFinishReason = choice.finish_reason ?? 'stop';
+        // OpenRouter returns 'tool_calls' for tool invocations; normalize to 'tool_use'
+        const finishReason = rawFinishReason === 'tool_calls' ? 'tool_use' : rawFinishReason;
         const usage = rawResponse.usage;
 
         this.logger.debug(
             `OpenRouter reply — finish_reason: ${finishReason}, tokens: ${usage?.total_tokens ?? 'N/A'}`
         );
 
+        let toolCalls: LLMToolCall[] | undefined;
+        if (finishReason === 'tool_use' && choice.message?.tool_calls?.length) {
+            toolCalls = choice.message.tool_calls.map((tc) => {
+                let args: Record<string, unknown> = {};
+                try {
+                    args = JSON.parse(tc.function.arguments) as Record<string, unknown>;
+                } catch {
+                    // leave empty on parse error
+                }
+                return {id: tc.id, name: tc.function.name, arguments: args};
+            });
+        }
+
         return {
             content,
             finishReason,
+            toolCalls,
             usage: {
                 promptTokens: usage?.prompt_tokens ?? null,
                 completionTokens: usage?.completion_tokens ?? null,

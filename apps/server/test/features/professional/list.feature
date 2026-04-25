@@ -12,16 +12,13 @@ Feature: Professional listing and retrieval (GET)
 
     Scenario: List professionals returns paginated results
         When I send a "GET" request to "/api/v1/professionals" with the query:
-            | page | 1  |
-            | size | 10 |
+            | limit | 10 |
         Then the request should succeed with a 200 status code
         And the response should match:
             """JSON
             {
-              "data": "__array__",
-              "total": "__number__",
-              "page": 1,
-              "size": 10
+              "data": "_.isArray",
+              "totalCount": "_.isNumber"
             }
             """
 

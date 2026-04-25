@@ -22,16 +22,13 @@ Feature: Patient alert listing (GET)
             | title          | List seed alert                 |
         Then the request should succeed with a 201 status code
         When I send a "GET" request to "/api/v1/patients/${ref:id:patient:alert_patient}/alerts" with the query:
-            | page | 1  |
-            | size | 10 |
+            | limit | 10 |
         Then the request should succeed with a 200 status code
         And the response should match:
             """JSON
             {
-              "data": "__array__",
-              "total": "__number__",
-              "page": 1,
-              "size": 10
+              "data": "_.isArray",
+              "totalCount": "_.isNumber"
             }
             """
 

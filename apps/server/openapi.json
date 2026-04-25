@@ -3594,6 +3594,219 @@
           "Agents"
         ]
       }
+    },
+    "/api/v1/agent/ask": {
+      "post": {
+        "operationId": "ask",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AgentAskDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Agent response with answer and tool call audit trail"
+          },
+          "default": {
+            "description": "Request failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Ask the clinical agent (tool-enabled)",
+        "tags": [
+          "Agent"
+        ]
+      }
+    },
+    "/api/v1/agent/metrics": {
+      "get": {
+        "operationId": "getMetrics",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Aggregated metrics"
+          },
+          "default": {
+            "description": "Request failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Agent observability metrics aggregated over a time range",
+        "tags": [
+          "Agent"
+        ]
+      }
+    },
+    "/api/v1/knowledge/search": {
+      "post": {
+        "operationId": "searchKnowledge",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SearchKnowledgeDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Matching chunks with scores"
+          },
+          "default": {
+            "description": "Request failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          }
+        },
+        "summary": "[DEV ONLY] Search knowledge chunks for RAG debugging",
+        "tags": [
+          "Knowledge"
+        ]
+      }
+    },
+    "/api/v1/agent-proposals": {
+      "get": {
+        "operationId": "listPending",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "List of pending proposals"
+          },
+          "default": {
+            "description": "Request failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          }
+        },
+        "summary": "List pending proposals for the logged-in professional",
+        "tags": [
+          "Agent Proposals"
+        ]
+      }
+    },
+    "/api/v1/agent-proposals/{id}/confirm": {
+      "post": {
+        "operationId": "confirm",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Proposal confirmed and action executed"
+          },
+          "403": {
+            "description": "Not authorized"
+          },
+          "404": {
+            "description": "Proposal not found"
+          },
+          "409": {
+            "description": "Proposal is not confirmable"
+          },
+          "default": {
+            "description": "Request failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Confirm a proposal and execute the action",
+        "tags": [
+          "Agent Proposals"
+        ]
+      }
+    },
+    "/api/v1/agent-proposals/{id}/reject": {
+      "post": {
+        "operationId": "reject",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RejectProposalDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Proposal rejected"
+          },
+          "403": {
+            "description": "Not authorized"
+          },
+          "404": {
+            "description": "Proposal not found"
+          },
+          "default": {
+            "description": "Request failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Reject a proposal",
+        "tags": [
+          "Agent Proposals"
+        ]
+      }
     }
   },
   "info": {
@@ -6447,6 +6660,96 @@
       "ProfessionalId": {
         "type": "object",
         "properties": {}
+      },
+      "AgentAskDto": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 4000,
+            "description": "The user message or clinical question."
+          },
+          "systemPrompt": {
+            "type": "string",
+            "maxLength": 4000,
+            "description": "Optional system prompt override."
+          },
+          "patientId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Optional patient UUID for patient-scoped context."
+          },
+          "sessionId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Optional chat session UUID."
+          },
+          "modelOverride": {
+            "type": "string",
+            "description": "Optional model override for this call."
+          },
+          "maxIterations": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 10
+          }
+        },
+        "required": [
+          "message"
+        ]
+      },
+      "SearchKnowledgeDto": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1000
+          },
+          "topK": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 20
+          },
+          "specialty": {
+            "type": "string",
+            "enum": [
+              "PSICOLOGIA",
+              "MEDICINA",
+              "FISIOTERAPIA",
+              "FONOAUDIOLOGIA",
+              "NUTRICAO",
+              "TERAPIA_OCUPACIONAL",
+              "ENFERMAGEM",
+              "OUTROS"
+            ]
+          },
+          "category": {
+            "type": "string"
+          },
+          "minScore": {
+            "type": "number",
+            "nullable": true,
+            "minimum": 0,
+            "maximum": 1
+          }
+        },
+        "required": [
+          "query"
+        ]
+      },
+      "RejectProposalDto": {
+        "type": "object",
+        "properties": {
+          "reason": {
+            "type": "string",
+            "maxLength": 500
+          }
+        },
+        "required": [
+          "reason"
+        ]
       }
     }
   }

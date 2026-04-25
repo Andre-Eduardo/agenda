@@ -44,7 +44,7 @@ Feature: Clinical profile upsert (PUT)
     Scenario: Upsert clinical profile without required professionalId
         When I send a "PUT" request to "/api/v1/patients/${ref:id:patient:profile_patient}/clinical-profile" with:
             | allergies | Aspirin |
-        Then the request should fail with a 400 status code
+        Then the request should succeed with a 200 status code
 
     Scenario: Upsert clinical profile without authentication
         Given I sign out

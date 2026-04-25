@@ -99,6 +99,7 @@ model Professional {
   patientForms       PatientForm[]
   chatSessions       PatientChatSession[]
   contextSnapshots   PatientContextSnapshot[]
+  agentProposals     AgentProposal[]
 
   @@map("professional")
 }
@@ -356,7 +357,7 @@ model File {
   record            Record?            @relation(fields: [recordId], references: [id])
   patientId         String?            @map("patient_id") @db.Uuid
   patient           Patient?           @relation(fields: [patientId], references: [id])
-  fileName          String
+  fileName          String   @map("file_name")
   url               String
   description       String
   createdAt         DateTime           @map("created_at")
@@ -760,6 +761,38 @@ model PatientContextChunk {
   @@map("patient_context_chunk")
 }
 
+// ─── Knowledge Base RAG ───────────────────────────────────────────────────────
+
+/// Chunk de conhecimento global (manuais, protocolos, CIDs, diretrizes).
+/// Separado do PatientContextChunk — sem patientId, filtrado por specialty/category.
+model KnowledgeChunk {
+  id          String     @id(map: "knowledge_chunk_pk") @db.Uuid
+  /// null = chunk global; preenchido = scoped para uma empresa
+  companyId   String?    @map("company_id") @db.Uuid
+  specialty   Specialty? @map("specialty")
+  /// "protocolo" | "cid" | "faq" | "manual" | "diretriz"
+  category    String     @map("category")
+  content     String     @db.Text
+  /// {title, section, tags, originalFormat}
+  metadata    Json?      @db.JsonB
+  sourceFile  String?    @map("source_file")
+  sourcePage  Int?       @map("source_page")
+  /// Embedding vetorial para busca semântica via pgvector.
+  /// Gerado pelo EmbeddingProvider (nunca pelo ChatProvider).
+  embedding   Unsupported("vector(1536)")?
+  /// Hash SHA-256 do content — detecta mudanças para re-indexação
+  contentHash String     @map("content_hash") @unique
+
+  createdAt   DateTime   @map("created_at")
+  updatedAt   DateTime   @map("updated_at")
+
+  @@index([companyId], name: "knowledge_chunk_company_idx")
+  @@index([specialty], name: "knowledge_chunk_specialty_idx")
+  @@index([category], name: "knowledge_chunk_category_idx")
+  // Nota: índice HNSW criado via migration SQL (Prisma v6 não suporta sintaxe pgvector).
+  @@map("knowledge_chunk")
+}
+
 /// Status de uma interação de chat com IA.
 enum ChatInteractionStatus {
   PENDING
@@ -817,9 +850,75 @@ model ClinicalChatInteractionLog {
   /// true se a resposta foi gerada por um provider de fallback
   usedFallback       Boolean              @default(false) @map("used_fallback")
 
+  // ─── Agent observability ────────────────────────────────────────────────────
+  /// Names of agent tools called during this interaction
+  toolNames          String[]             @default([]) @map("tool_names")
+  /// IDs of AgentProposals created during this interaction
+  proposalIds        String[]             @default([]) @map("proposal_ids")
+  /// Number of agent loop iterations performed
+  totalIterations    Int?                 @map("total_iterations")
+  /// Number of RAG chunks used as context
+  ragChunksUsed      Int?                 @map("rag_chunks_used")
+  /// Average similarity score of retrieved RAG chunks
+  avgTopKScore       Float?               @map("avg_top_k_score")
+  /// Total wall-clock duration including all tool calls (ms)
+  totalDurationMs    Int?                 @map("total_duration_ms")
+
   createdAt          DateTime             @map("created_at")
   updatedAt          DateTime             @map("updated_at")
 
   @@index([sessionId], name: "clinical_chat_interaction_log_session_idx")
   @@map("clinical_chat_interaction_log")
+}
+
+// ─── Agent Proposal ───────────────────────────────────────────────────────────
+
+enum AgentProposalType {
+  APPOINTMENT
+  APPOINTMENT_CANCEL
+  APPOINTMENT_RESCHEDULE
+  PATIENT_ALERT
+
+  @@map("agent_proposal_type")
+}
+
+enum AgentProposalStatus {
+  PENDING
+  CONFIRMED
+  REJECTED
+  EXPIRED
+
+  @@map("agent_proposal_status")
+}
+
+/// A proposal created by the AI agent that requires human confirmation before executing.
+/// Mutations never write to domain entities directly — they always go through AgentProposal first.
+model AgentProposal {
+  id              String              @id(map: "agent_proposal_pk") @db.Uuid
+  sessionId       String?             @map("session_id") @db.Uuid
+  messageId       String?             @map("message_id") @db.Uuid
+  patientId       String?             @map("patient_id") @db.Uuid
+  professionalId  String              @map("professional_id") @db.Uuid
+  professional    Professional        @relation(fields: [professionalId], references: [id])
+  proposalType    AgentProposalType   @map("type")
+  status          AgentProposalStatus @default(PENDING) @map("status")
+  /// Payload for creating the target entity when confirmed
+  payload         Json                @db.JsonB
+  /// Simplified preview for frontend rendering
+  preview         Json                @db.JsonB
+  rationale       String?             @db.Text
+  confidence      Float?
+  /// ID of the entity created upon confirmation
+  resultEntityId  String?             @map("result_entity_id") @db.Uuid
+  expiresAt       DateTime?           @map("expires_at")
+  confirmedAt     DateTime?           @map("confirmed_at")
+  confirmedBy     String?             @map("confirmed_by") @db.Uuid
+  rejectedAt      DateTime?           @map("rejected_at")
+  rejectionReason String?             @map("rejection_reason") @db.Text
+  createdAt       DateTime            @map("created_at")
+  updatedAt       DateTime            @map("updated_at")
+
+  @@index([professionalId, status], name: "agent_proposal_professional_status_idx")
+  @@index([patientId], name: "agent_proposal_patient_idx")
+  @@map("agent_proposal")
 }
