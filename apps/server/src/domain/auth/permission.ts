@@ -92,6 +92,10 @@ export enum PatientFormPermission {
     DELETE = 'patient-form:delete',
 }
 
+export enum ClinicPermission {
+    UPDATE = 'clinic:update',
+}
+
 export enum InsurancePlanPermission {
     VIEW = 'insurance-plan:view',
     CREATE = 'insurance-plan:create',
@@ -152,6 +156,7 @@ const PERMISSIONS = [
     ...Object.values(PatientAlertPermission),
     ...Object.values(FormTemplatePermission),
     ...Object.values(PatientFormPermission),
+    ...Object.values(ClinicPermission),
     ...Object.values(InsurancePlanPermission),
     ...Object.values(ClinicalChatPermission),
     ...Object.values(ClinicalDocumentPermission),
