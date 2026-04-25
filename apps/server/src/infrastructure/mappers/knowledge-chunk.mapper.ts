@@ -1,6 +1,7 @@
 import {Injectable} from '@nestjs/common';
 import * as PrismaClient from '@prisma/client';
 import {toEnum, toEnumOrNull} from '../../domain/@shared/utils';
+import {ClinicId} from '../../domain/clinic/entities';
 import {Specialty} from '../../domain/form-template/entities';
 import {KnowledgeChunk, KnowledgeChunkId, type KnowledgeChunkMetadata} from '../../domain/knowledge-base/entities';
 import {MapperWithoutDto} from './mapper';
@@ -9,7 +10,7 @@ export type KnowledgeChunkModel = PrismaClient.KnowledgeChunk;
 
 export type KnowledgeChunkRawRow = {
     id: string;
-    company_id: string | null;
+    clinic_id: string | null;
     specialty: string | null;
     category: string;
     content: string;
@@ -27,7 +28,7 @@ export class KnowledgeChunkMapper extends MapperWithoutDto<KnowledgeChunk, Knowl
     toDomain(model: KnowledgeChunkModel): KnowledgeChunk {
         return new KnowledgeChunk({
             id: KnowledgeChunkId.from(model.id),
-            companyId: model.companyId,
+            clinicId: model.clinicId === null ? null : ClinicId.from(model.clinicId),
             specialty: toEnumOrNull(Specialty, model.specialty),
             category: model.category,
             content: model.content,
@@ -45,7 +46,7 @@ export class KnowledgeChunkMapper extends MapperWithoutDto<KnowledgeChunk, Knowl
     toDomainFromRaw(row: KnowledgeChunkRawRow): KnowledgeChunk {
         return new KnowledgeChunk({
             id: KnowledgeChunkId.from(row.id),
-            companyId: row.company_id,
+            clinicId: row.clinic_id === null ? null : ClinicId.from(row.clinic_id),
             specialty: toEnumOrNull(Specialty, row.specialty),
             category: row.category,
             content: row.content,
@@ -63,10 +64,8 @@ export class KnowledgeChunkMapper extends MapperWithoutDto<KnowledgeChunk, Knowl
     toPersistence(entity: KnowledgeChunk): Omit<KnowledgeChunkModel, 'embedding'> {
         return {
             id: entity.id.toString(),
-            companyId: entity.companyId,
-            specialty: entity.specialty
-                ? toEnum(PrismaClient.Specialty, entity.specialty)
-                : null,
+            clinicId: entity.clinicId?.toString() ?? null,
+            specialty: entity.specialty ? toEnum(PrismaClient.Specialty, entity.specialty) : null,
             category: entity.category,
             content: entity.content,
             metadata: entity.metadata as PrismaClient.Prisma.JsonValue,

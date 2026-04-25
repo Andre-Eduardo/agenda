@@ -1,6 +1,8 @@
 import {Injectable} from '@nestjs/common';
 import * as PrismaClient from '@prisma/client';
 import {toEnum, toEnumOrNull, toEnumArray} from '../../domain/@shared/utils';
+import {ClinicId} from '../../domain/clinic/entities';
+import {ClinicMemberId} from '../../domain/clinic-member/entities';
 import {PatientId} from '../../domain/patient/entities';
 import {ProfessionalId} from '../../domain/professional/entities';
 import {AppointmentId} from '../../domain/appointment/entities';
@@ -27,8 +29,10 @@ export class RecordMapper extends MapperWithoutDto<Record, RecordModel> {
         return new Record({
             ...model,
             id: RecordId.from(model.id),
+            clinicId: ClinicId.from(model.clinicId),
             patientId: PatientId.from(model.patientId),
-            professionalId: ProfessionalId.from(model.professionalId),
+            createdByMemberId: ClinicMemberId.from(model.createdByMemberId),
+            responsibleProfessionalId: ProfessionalId.from(model.responsibleProfessionalId),
             description: model.description ?? null,
             templateType: toEnumOrNull(EvolutionTemplateType, model.templateType),
             title: model.title ?? null,
@@ -51,6 +55,8 @@ export class RecordMapper extends MapperWithoutDto<Record, RecordModel> {
                         new File({
                             ...file,
                             id: FileId.from(file.id),
+                            clinicId: ClinicId.from(file.clinicId),
+                            createdByMemberId: ClinicMemberId.from(file.createdByMemberId),
                             recordId: file.recordId ? RecordId.from(file.recordId) : null,
                             patientId: file.patientId ? PatientId.from(file.patientId) : null,
                             deletedAt: file.deletedAt ?? null,
@@ -62,8 +68,10 @@ export class RecordMapper extends MapperWithoutDto<Record, RecordModel> {
     toPersistence(entity: Record): RecordModel {
         return {
             id: entity.id.toString(),
+            clinicId: entity.clinicId.toString(),
             patientId: entity.patientId.toString(),
-            professionalId: entity.professionalId.toString(),
+            createdByMemberId: entity.createdByMemberId.toString(),
+            responsibleProfessionalId: entity.responsibleProfessionalId.toString(),
             description: entity.description,
             templateType: toEnumOrNull(PrismaClient.EvolutionTemplateType, entity.templateType),
             title: entity.title,
@@ -86,6 +94,8 @@ export class RecordMapper extends MapperWithoutDto<Record, RecordModel> {
             patientFormId: entity.patientFormId,
             files: entity.files.map((file) => ({
                 id: file.id.toString(),
+                clinicId: file.clinicId.toString(),
+                createdByMemberId: file.createdByMemberId.toString(),
                 recordId: file.recordId?.toString() ?? null,
                 patientId: file.patientId?.toString() ?? null,
                 fileName: file.fileName,

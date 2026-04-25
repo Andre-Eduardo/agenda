@@ -1,5 +1,7 @@
 import {Injectable} from '@nestjs/common';
 import * as PrismaClient from '@prisma/client';
+import {ClinicId} from '../../domain/clinic/entities';
+import {ClinicMemberId} from '../../domain/clinic-member/entities';
 import {PatientId} from '../../domain/patient/entities';
 import {ProfessionalId} from '../../domain/professional/entities';
 import {ClinicalProfile, ClinicalProfileId} from '../../domain/clinical-profile/entities';
@@ -13,8 +15,10 @@ export class ClinicalProfileMapper extends MapperWithoutDto<ClinicalProfile, Cli
         return new ClinicalProfile({
             ...model,
             id: ClinicalProfileId.from(model.id),
+            clinicId: ClinicId.from(model.clinicId),
             patientId: PatientId.from(model.patientId),
-            professionalId: ProfessionalId.from(model.professionalId),
+            createdByMemberId: ClinicMemberId.from(model.createdByMemberId),
+            responsibleProfessionalId: ProfessionalId.from(model.responsibleProfessionalId),
             allergies: model.allergies ?? null,
             chronicConditions: model.chronicConditions ?? null,
             currentMedications: model.currentMedications ?? null,
@@ -29,8 +33,10 @@ export class ClinicalProfileMapper extends MapperWithoutDto<ClinicalProfile, Cli
     toPersistence(entity: ClinicalProfile): ClinicalProfileModel {
         return {
             id: entity.id.toString(),
+            clinicId: entity.clinicId.toString(),
             patientId: entity.patientId.toString(),
-            professionalId: entity.professionalId.toString(),
+            createdByMemberId: entity.createdByMemberId.toString(),
+            responsibleProfessionalId: entity.responsibleProfessionalId.toString(),
             allergies: entity.allergies,
             chronicConditions: entity.chronicConditions,
             currentMedications: entity.currentMedications,

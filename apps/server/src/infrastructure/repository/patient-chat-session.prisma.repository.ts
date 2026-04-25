@@ -36,8 +36,9 @@ export class PatientChatSessionPrismaRepository
         filter: PatientChatSessionFilter = {}
     ): Promise<PaginatedList<PatientChatSession>> {
         const where: PrismaClient.Prisma.PatientChatSessionWhereInput = {
+            clinicId: filter.clinicId?.toString(),
             patientId: filter.patientId?.toString(),
-            professionalId: filter.professionalId?.toString(),
+            memberId: filter.memberId?.toString(),
             status: toEnumOrNull(PrismaClient.ChatSessionStatus, filter.status) ?? undefined,
             deletedAt: null,
         };

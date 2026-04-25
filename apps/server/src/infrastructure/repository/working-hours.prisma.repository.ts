@@ -1,6 +1,7 @@
 import {Injectable} from '@nestjs/common';
+import {ClinicMemberId} from '../../domain/clinic-member/entities';
 import {WorkingHoursRepository} from '../../domain/professional/working-hours.repository';
-import {WorkingHours, WorkingHoursId, ProfessionalId} from '../../domain/professional/entities';
+import {WorkingHours, WorkingHoursId} from '../../domain/professional/entities';
 import {WorkingHoursMapper} from '../mappers/working-hours.mapper';
 import {PrismaProvider} from './prisma/prisma.provider';
 import {PrismaRepository} from './prisma.repository';
@@ -9,7 +10,7 @@ import {PrismaRepository} from './prisma.repository';
 export class WorkingHoursPrismaRepository extends PrismaRepository implements WorkingHoursRepository {
     constructor(
         readonly prismaProvider: PrismaProvider,
-        private readonly mapper: WorkingHoursMapper
+        private readonly mapper: WorkingHoursMapper,
     ) {
         super(prismaProvider);
     }
@@ -18,19 +19,17 @@ export class WorkingHoursPrismaRepository extends PrismaRepository implements Wo
         const record = await this.prisma.workingHours.findUnique({
             where: {id: id.toString()},
         });
-
         return record === null ? null : this.mapper.toDomain(record);
     }
 
-    async findByProfessionalAndDay(professionalId: ProfessionalId, dayOfWeek: number): Promise<WorkingHours[]> {
+    async findByMemberAndDay(clinicMemberId: ClinicMemberId, dayOfWeek: number): Promise<WorkingHours[]> {
         const records = await this.prisma.workingHours.findMany({
             where: {
-                professionalId: professionalId.toString(),
+                clinicMemberId: clinicMemberId.toString(),
                 dayOfWeek,
                 active: true,
             },
         });
-
         return records.map((r) => this.mapper.toDomain(r));
     }
 
@@ -44,8 +43,6 @@ export class WorkingHoursPrismaRepository extends PrismaRepository implements Wo
     }
 
     async delete(id: WorkingHoursId): Promise<void> {
-        await this.prisma.workingHours.delete({
-            where: {id: id.toString()},
-        });
+        await this.prisma.workingHours.delete({where: {id: id.toString()}});
     }
 }

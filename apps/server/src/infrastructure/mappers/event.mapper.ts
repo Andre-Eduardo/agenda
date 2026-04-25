@@ -4,7 +4,6 @@ import type {MaybeAuthenticatedActor} from '../../domain/@shared/actor';
 import type {DomainEvent, Event} from '../../domain/event';
 import type {EventType} from '../../domain/event/event.type';
 import type {EventModel as EventDomainModel, EventPayloadMap} from '../../domain/event/models/event.model';
-import {ProfessionalDomainEvent} from '../../domain/professional/events';
 import {MapperWithoutDto} from './mapper';
 
 export type EventDbModel = PrismaClient.Event;
@@ -24,17 +23,14 @@ export class EventMapper extends MapperWithoutDto<unknown, unknown> {
 
     toPersistence(event: Event<DomainEvent, MaybeAuthenticatedActor>): EventModel {
         const {actor, payload: domainEvent} = event;
-        const {type, timestamp, professionalId, ...payload} =
-            domainEvent instanceof ProfessionalDomainEvent
-                ? domainEvent
-                : (domainEvent as DomainEvent & {professionalId: undefined});
+        const {type, timestamp, ...payload} = domainEvent;
 
         return {
             type,
             payload: JSON.parse(JSON.stringify(payload)) as EventModel['payload'],
             userIp: actor.ip,
-            userId: actor.userId?.toString() ?? null,
-            professionalId: professionalId?.toJSON() ?? null,
+            clinicId: actor.clinicId?.toString() ?? null,
+            memberId: actor.clinicMemberId?.toString() ?? null,
             timestamp,
         };
     }

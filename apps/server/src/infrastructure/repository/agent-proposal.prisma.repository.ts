@@ -44,7 +44,8 @@ export class AgentProposalPrismaRepository extends PrismaRepository implements A
         filter: AgentProposalSearchFilter = {},
     ): Promise<PaginatedList<AgentProposal>> {
         const where: PrismaClient.Prisma.AgentProposalWhereInput = {
-            professionalId: filter.professionalId ? filter.professionalId.toString() : undefined,
+            clinicId: filter.clinicId ? filter.clinicId.toString() : undefined,
+            createdByMemberId: filter.createdByMemberId ? filter.createdByMemberId.toString() : undefined,
             patientId: filter.patientId ?? undefined,
             status: filter.status ? toEnum(PrismaClient.AgentProposalStatus, filter.status) : undefined,
         };

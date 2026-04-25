@@ -45,8 +45,9 @@ export class PatientAlertPrismaRepository extends PrismaRepository implements Pa
         filter: PatientAlertSearchFilter = {}
     ): Promise<PaginatedList<PatientAlert>> {
         const where: PrismaClient.Prisma.PatientAlertWhereInput = {
+            clinicId: filter.clinicId ? filter.clinicId.toString() : undefined,
             patientId: filter.patientId ? filter.patientId.toString() : undefined,
-            professionalId: filter.professionalId ? filter.professionalId.toString() : undefined,
+            createdByMemberId: filter.createdByMemberId ? filter.createdByMemberId.toString() : undefined,
             isActive: filter.isActive !== undefined ? filter.isActive : undefined,
             deletedAt: null,
         };

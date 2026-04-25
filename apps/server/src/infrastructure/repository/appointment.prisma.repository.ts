@@ -1,9 +1,13 @@
 import {Injectable} from '@nestjs/common';
 import * as PrismaClient from '@prisma/client';
-import {AppointmentRepository, AppointmentSearchFilter, AppointmentSortOptions} from '../../domain/appointment/appointment.repository';
+import {
+    AppointmentRepository,
+    AppointmentSearchFilter,
+    AppointmentSortOptions,
+} from '../../domain/appointment/appointment.repository';
 import {PaginatedList, Pagination} from '../../domain/@shared/repository';
 import {Appointment, AppointmentId} from '../../domain/appointment/entities';
-import {ProfessionalId} from '../../domain/professional/entities';
+import {ClinicMemberId} from '../../domain/clinic-member/entities';
 import {AppointmentMapper} from '../mappers/appointment.mapper';
 import {PrismaProvider} from './prisma/prisma.provider';
 import {PrismaRepository} from './prisma.repository';
@@ -14,44 +18,37 @@ export type AppointmentModel = PrismaClient.Appointment;
 export class AppointmentPrismaRepository extends PrismaRepository implements AppointmentRepository {
     constructor(
         readonly prismaProvider: PrismaProvider,
-        private readonly mapper: AppointmentMapper
+        private readonly mapper: AppointmentMapper,
     ) {
         super(prismaProvider);
     }
 
     async findById(id: AppointmentId): Promise<Appointment | null> {
         const appointment = await this.prisma.appointment.findUnique({
-            where: {
-                id: id.toString(),
-            },
+            where: {id: id.toString()},
         });
-
         return appointment === null ? null : this.mapper.toDomain(appointment);
     }
 
     async delete(id: AppointmentId): Promise<void> {
-        await this.prisma.appointment.delete({
-            where: {
-                id: id.toString(),
-            },
-        });
+        await this.prisma.appointment.delete({where: {id: id.toString()}});
     }
 
     async search(
         pagination: Pagination<AppointmentSortOptions>,
-        filter: AppointmentSearchFilter = {}
+        filter: AppointmentSearchFilter = {},
     ): Promise<PaginatedList<Appointment>> {
         const where: PrismaClient.Prisma.AppointmentWhereInput = {
             id: filter.ids ? {in: filter.ids.map((id) => id.toString())} : undefined,
-            professionalId: filter.professionalId ? filter.professionalId.toString() : undefined,
+            clinicId: filter.clinicId ? filter.clinicId.toString() : undefined,
+            attendedByMemberId: filter.attendedByMemberId ? filter.attendedByMemberId.toString() : undefined,
+            createdByMemberId: filter.createdByMemberId ? filter.createdByMemberId.toString() : undefined,
             patientId: filter.patientId ? filter.patientId.toString() : undefined,
             status: filter.status ? {in: filter.status} : undefined,
-            startAt: filter.dateFrom || filter.dateTo
-                ? {
-                      gte: filter.dateFrom,
-                      lte: filter.dateTo,
-                  }
-                : undefined,
+            startAt:
+                filter.dateFrom || filter.dateTo
+                    ? {gte: filter.dateFrom, lte: filter.dateTo}
+                    : undefined,
             note: filter.term ? {contains: filter.term, mode: 'insensitive'} : undefined,
             deletedAt: null,
         };
@@ -80,14 +77,14 @@ export class AppointmentPrismaRepository extends PrismaRepository implements App
     }
 
     async findConflicts(
-        professionalId: ProfessionalId,
+        attendedByMemberId: ClinicMemberId,
         startAt: Date,
         endAt: Date,
-        excludeId?: AppointmentId
+        excludeId?: AppointmentId,
     ): Promise<Appointment[]> {
         const records = await this.prisma.appointment.findMany({
             where: {
-                professionalId: professionalId.toString(),
+                attendedByMemberId: attendedByMemberId.toString(),
                 id: excludeId ? {not: excludeId.toString()} : undefined,
                 status: {in: ['SCHEDULED', 'CONFIRMED']},
                 startAt: {lt: endAt},

@@ -2,9 +2,9 @@ import {Injectable} from '@nestjs/common';
 import * as PrismaClient from '@prisma/client';
 import {DocumentId, Phone} from '../../domain/@shared/value-objects';
 import {toEnum, toEnumOrNull} from '../../domain/@shared/utils';
+import {ClinicId} from '../../domain/clinic/entities';
 import {Patient, PatientId} from '../../domain/patient/entities';
-import {Gender, PersonType, PersonProfile} from '../../domain/person/entities/person.entity';
-import {ProfessionalId} from '../../domain/professional/entities';
+import {Gender, PersonType} from '../../domain/person/entities/person.entity';
 import {MapperWithoutDto} from './mapper';
 
 export type PatientModel = PrismaClient.Patient & {person: PrismaClient.Person};
@@ -18,12 +18,11 @@ export class PatientMapper extends MapperWithoutDto<Patient, PatientModel> {
             ...patientModel,
             ...person,
             id: PatientId.from(patientModel.id),
-            professionalId: patientModel.professionalId ? ProfessionalId.from(patientModel.professionalId) : null,
+            clinicId: ClinicId.from(patientModel.clinicId),
             documentId: DocumentId.create(patientModel.documentId),
             gender: toEnumOrNull(Gender, person.gender),
             personType: toEnum(PersonType, person.personType),
             phone: person.phone ? Phone.create(person.phone) : null,
-            profiles: new Set([PersonProfile.PATIENT]),
             deletedAt: patientModel.deletedAt ?? null,
             birthDate: patientModel.birthDate ?? null,
             email: patientModel.email ?? null,
@@ -35,7 +34,7 @@ export class PatientMapper extends MapperWithoutDto<Patient, PatientModel> {
     toPersistence(entity: Patient): PatientModel {
         return {
             id: entity.id.toString(),
-            professionalId: entity.professionalId?.toString() ?? null,
+            clinicId: entity.clinicId.toString(),
             documentId: entity.documentId.toString(),
             birthDate: entity.birthDate ?? null,
             email: entity.email ?? null,

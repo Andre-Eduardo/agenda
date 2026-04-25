@@ -50,8 +50,12 @@ export class RecordPrismaRepository extends PrismaRepository implements RecordRe
         const where: PrismaClient.Prisma.RecordWhereInput = {
             id: filter.ids ? {in: filter.ids.map((id) => id.toString())} : undefined,
             description: filter.term ? {contains: filter.term, mode: 'insensitive'} : undefined,
+            clinicId: filter.clinicId ? filter.clinicId.toString() : undefined,
             patientId: filter.patientId ? filter.patientId.toString() : undefined,
-            professionalId: filter.professionalId ? filter.professionalId.toString() : undefined,
+            createdByMemberId: filter.createdByMemberId ? filter.createdByMemberId.toString() : undefined,
+            responsibleProfessionalId: filter.responsibleProfessionalId
+                ? filter.responsibleProfessionalId.toString()
+                : undefined,
             appointmentId: filter.appointmentId ? filter.appointmentId.toString() : undefined,
             attendanceType: toEnumOrNull(PrismaClient.AttendanceType, filter.attendanceType) ?? undefined,
             clinicalStatus: toEnumOrNull(PrismaClient.ClinicalStatusTag, filter.clinicalStatus) ?? undefined,

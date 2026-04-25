@@ -1,6 +1,7 @@
 import {Injectable} from '@nestjs/common';
 import * as PrismaClient from '@prisma/client';
 import {toEnum} from '../../domain/@shared/utils';
+import {ClinicId} from '../../domain/clinic/entities';
 import {PatientContextChunk, PatientContextChunkId, ContextChunkSourceType, type ChunkMetadata} from '../../domain/clinical-chat/entities';
 import {PatientId} from '../../domain/patient/entities';
 import {MapperWithoutDto} from './mapper';
@@ -13,6 +14,7 @@ export type PatientContextChunkModel = PrismaClient.PatientContextChunk;
  */
 export type PatientContextChunkRawRow = {
     id: string;
+    clinic_id: string;
     patient_id: string;
     source_type: string;
     source_id: string;
@@ -30,6 +32,7 @@ export class PatientContextChunkMapper extends MapperWithoutDto<PatientContextCh
     toDomain(model: PatientContextChunkModel): PatientContextChunk {
         return new PatientContextChunk({
             id: PatientContextChunkId.from(model.id),
+            clinicId: ClinicId.from(model.clinicId),
             patientId: PatientId.from(model.patientId),
             sourceType: toEnum(ContextChunkSourceType, model.sourceType),
             sourceId: model.sourceId,
@@ -49,6 +52,7 @@ export class PatientContextChunkMapper extends MapperWithoutDto<PatientContextCh
     toDomainFromRaw(row: PatientContextChunkRawRow): PatientContextChunk {
         return new PatientContextChunk({
             id: PatientContextChunkId.from(row.id),
+            clinicId: ClinicId.from(row.clinic_id),
             patientId: PatientId.from(row.patient_id),
             sourceType: toEnum(ContextChunkSourceType, row.source_type),
             sourceId: row.source_id,
@@ -67,6 +71,7 @@ export class PatientContextChunkMapper extends MapperWithoutDto<PatientContextCh
     toPersistence(entity: PatientContextChunk): Omit<PatientContextChunkModel, 'embedding'> {
         return {
             id: entity.id.toString(),
+            clinicId: entity.clinicId.toString(),
             patientId: entity.patientId.toString(),
             sourceType: toEnum(PrismaClient.ContextChunkSourceType, entity.sourceType),
             sourceId: entity.sourceId,
