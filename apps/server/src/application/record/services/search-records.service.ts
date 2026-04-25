@@ -20,7 +20,7 @@ export class SearchRecordsService implements ApplicationService<SearchRecordsDto
             {
                 term: term ?? undefined,
                 patientId: patientId ?? undefined,
-                professionalId: actor.professionalId ?? undefined,
+                professionalId: actor.clinicMemberId ?? undefined,
                 attendanceType: attendanceType ?? undefined,
                 clinicalStatus: clinicalStatus ?? undefined,
                 dateStart: dateStart ?? undefined,

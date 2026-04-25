@@ -10,7 +10,7 @@ export class GetPatientService implements ApplicationService<GetPatientDto, Pati
     constructor(private readonly patientRepository: PatientRepository) {}
 
     async execute({actor, payload}: Command<GetPatientDto, Actor>): Promise<PatientDto> {
-        const patient = await this.patientRepository.findById(payload.id, actor.professionalId ?? undefined);
+        const patient = await this.patientRepository.findById(payload.id, actor.clinicMemberId ?? undefined);
 
         if (patient === null) {
             throw new ResourceNotFoundException('Patient not found.', payload.id.toString());

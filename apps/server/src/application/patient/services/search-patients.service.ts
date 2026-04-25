@@ -19,7 +19,7 @@ export class SearchPatientsService implements ApplicationService<SearchPatientsD
             },
             {
                 term: term ?? undefined,
-                professionalId: actor.professionalId ?? undefined,
+                professionalId: actor.clinicMemberId ?? undefined,
             }
         );
 

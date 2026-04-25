@@ -52,7 +52,7 @@ export class AgentAskController {
             messages,
             context: {
                 actor,
-                professionalId: actor.professionalId ?? undefined,
+                professionalId: actor.clinicMemberId ?? undefined,
                 patientId: dto.patientId ? PatientId.from(dto.patientId) : undefined,
                 sessionId: dto.sessionId ? PatientChatSessionId.from(dto.sessionId) : undefined,
             },
