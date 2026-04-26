@@ -1,6 +1,5 @@
 {
   "permissions": {
-    "defaultMode": "bypassPermissions",
     "allow": [
       "Bash(grep \"from ''../../@shared/dto''\" \"e:/agenda/apps/server/src/application/@shared/dto/index.ts\")",
       "Bash(ls -la /e/agenda/apps/server/src/application/*.ts)",
@@ -70,12 +69,16 @@
       "Bash(grep -v \"//.*enum:\")",
       "Bash(grep -v \"//\")",
       "Bash(grep -v \"import\\\\|//\")",
-      "Bash(grep -v \"__tests__\\\\|//\")"
+      "Bash(grep -v \"__tests__\\\\|//\")",
+      "Bash(grep -E \"\\(\\\\.\\(css|json\\)$|\\\\.config\\)\")",
+      "Bash(npx shadcn@latest add button card badge input select textarea label form dialog sheet dropdown-menu separator skeleton tooltip avatar tabs sonner progress command popover table scroll-area --yes --overwrite)",
+      "Bash(awk ' *)"
     ],
     "defaultMode": "bypassPermissions",
     "additionalDirectories": [
       "\\tmp",
-      "c:\\Users\\marya\\.claude"
+      "c:\\Users\\marya\\.claude",
+      "C:\\Users\\marya\\Documents\\agenda\\apps\\web\\src\\views\\modules\\auth"
     ]
   },
   "hooks": {
