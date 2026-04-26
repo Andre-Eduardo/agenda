@@ -1,5 +1,6 @@
 import {type AllEntityProps, type EntityProps, type CreateEntity, Entity} from '../../@shared/entity';
 import {EntityId} from '../../@shared/entity/id';
+import type {ClinicId} from '../../clinic/entities';
 import type {ClinicMemberId} from '../../clinic-member/entities';
 
 export type MemberBlockProps = EntityProps<MemberBlock>;
@@ -7,10 +8,11 @@ export type CreateMemberBlock = CreateEntity<MemberBlock>;
 
 /**
  * Bloqueio de agenda de um membro da clínica.
- * Substitui o antigo ProfessionalBlock — agora referencia ClinicMember
- * (que pode ou não ter Professional associado).
+ * Substituiu ProfessionalBlock — agora referencia ClinicMember.
  */
 export class MemberBlock extends Entity<MemberBlockId> {
+    /** Desnormalizado para isolamento de tenant (Bloco 6). */
+    clinicId: ClinicId;
     clinicMemberId: ClinicMemberId;
     startAt: Date;
     endAt: Date;
@@ -18,6 +20,7 @@ export class MemberBlock extends Entity<MemberBlockId> {
 
     constructor(props: AllEntityProps<MemberBlock>) {
         super(props);
+        this.clinicId = props.clinicId;
         this.clinicMemberId = props.clinicMemberId;
         this.startAt = props.startAt;
         this.endAt = props.endAt;
@@ -37,9 +40,15 @@ export class MemberBlock extends Entity<MemberBlockId> {
         });
     }
 
+    softDelete(): void {
+        this.deletedAt = new Date();
+        this.updatedAt = new Date();
+    }
+
     toJSON() {
         return {
             id: this.id.toJSON(),
+            clinicId: this.clinicId.toJSON(),
             clinicMemberId: this.clinicMemberId.toJSON(),
             startAt: this.startAt.toJSON(),
             endAt: this.endAt.toJSON(),

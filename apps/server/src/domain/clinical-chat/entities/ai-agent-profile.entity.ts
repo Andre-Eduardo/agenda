@@ -1,6 +1,6 @@
 import {AggregateRoot, type AllEntityProps, type EntityJson, type EntityProps, type CreateEntity} from '../../@shared/entity';
 import {EntityId} from '../../@shared/entity/id';
-import type {Specialty} from '../../form-template/entities';
+import type {AiSpecialtyGroup} from '../../form-template/entities';
 
 export type AiAgentProfileProps = EntityProps<AiAgentProfile>;
 export type CreateAiAgentProfile = CreateEntity<AiAgentProfile>;
@@ -12,10 +12,8 @@ export class AiAgentProfile extends AggregateRoot<AiAgentProfileId> {
     code: string | null;
     /** Identificador único legível, ex: "psicologia-adulto" */
     slug: string;
-    /** Grupo de especialidade, ex: "medicina", "psicologia" */
-    specialtyGroup: string | null;
-    /** null = agente genérico; preenchido = agente especialista por Specialty */
-    specialty: Specialty | null;
+    /** Grupo de especialidade para roteamento de IA. Substituiu o campo specialty: Specialty. */
+    specialtyGroup: AiSpecialtyGroup | null;
     description: string | null;
     /** Instruções base que serão passadas como system prompt ao LLM. */
     baseInstructions: string | null;
@@ -30,7 +28,6 @@ export class AiAgentProfile extends AggregateRoot<AiAgentProfileId> {
     /**
      * Campos de PatientFacts bloqueados para este agente.
      * Esses campos são removidos antes de montar o contexto enviado ao LLM.
-     * Ex: ["documentId"] para agentes que não precisam do CPF/RG no prompt.
      */
     blacklistedFields: string[];
     /** Restrições comportamentais do agente (guardrails de segurança clínica). */
@@ -39,8 +36,7 @@ export class AiAgentProfile extends AggregateRoot<AiAgentProfileId> {
     responseStyle: string | null;
     /**
      * Modelo fixo a ser usado por este agente no OpenRouter (ex: "openai/o1-mini").
-     * Quando null, o sistema aplica o padrão da especialidade definido em specialty-model-defaults.
-     * O valor "openrouter/auto" é explicitamente proibido.
+     * Quando null, o sistema aplica o padrão da especialidade.
      */
     providerModelId: string | null;
     isActive: boolean;
@@ -51,7 +47,6 @@ export class AiAgentProfile extends AggregateRoot<AiAgentProfileId> {
         this.code = props.code ?? null;
         this.slug = props.slug;
         this.specialtyGroup = props.specialtyGroup ?? null;
-        this.specialty = props.specialty ?? null;
         this.description = props.description ?? null;
         this.baseInstructions = props.baseInstructions ?? null;
         this.allowedSources = props.allowedSources ?? [];
@@ -75,7 +70,6 @@ export class AiAgentProfile extends AggregateRoot<AiAgentProfileId> {
             code: props.code ?? null,
             slug: props.slug!,
             specialtyGroup: props.specialtyGroup ?? null,
-            specialty: props.specialty ?? null,
             description: props.description ?? null,
             baseInstructions: props.baseInstructions ?? null,
             allowedSources: props.allowedSources ?? [],
@@ -110,7 +104,6 @@ export class AiAgentProfile extends AggregateRoot<AiAgentProfileId> {
             code: this.code,
             slug: this.slug,
             specialtyGroup: this.specialtyGroup,
-            specialty: this.specialty,
             description: this.description,
             baseInstructions: this.baseInstructions,
             allowedSources: this.allowedSources,

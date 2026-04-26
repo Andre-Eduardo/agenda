@@ -1,5 +1,6 @@
 {
   "permissions": {
+    "defaultMode": "bypassPermissions",
     "allow": [
       "Bash(grep \"from ''../../@shared/dto''\" \"e:/agenda/apps/server/src/application/@shared/dto/index.ts\")",
       "Bash(ls -la /e/agenda/apps/server/src/application/*.ts)",

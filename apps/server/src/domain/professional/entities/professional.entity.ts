@@ -7,7 +7,7 @@ import {
 } from '../../@shared/entity';
 import {EntityId} from '../../@shared/entity/id';
 import type {ClinicMemberId} from '../../clinic-member/entities';
-import type {Specialty} from '../../form-template/entities';
+import type {AiSpecialtyGroup} from '../../form-template/entities';
 import {ProfessionalCreatedEvent, ProfessionalChangedEvent, ProfessionalDeletedEvent} from '../events';
 
 export type ProfessionalProps = EntityProps<Professional>;
@@ -22,13 +22,15 @@ export type UpdateProfessional = Partial<ProfessionalProps>;
  * - Não tem mais relação direta com User (vai via ClinicMember)
  * - Não tem mais ProfessionalConfig (color migrou para ClinicMember)
  * - Aparece nas relações de "responsabilidade clínica" (responsibleProfessionalId)
+ * - specialtyNormalized migrou de Specialty → AiSpecialtyGroup (Bloco 1)
  */
 export class Professional extends AggregateRoot<ProfessionalId> {
     clinicMemberId: ClinicMemberId;
     registrationNumber: string | null;
+    /** Campo livre — "Neuropsicologia", "Ortopedia Pediátrica", etc. */
     specialty: string | null;
-    /** Especialidade normalizada como enum, derivada do campo `specialty` no cadastro. */
-    specialtyNormalized: Specialty | null;
+    /** Grupo de IA derivado do campo `specialty`. Usado para roteamento do agente. */
+    specialtyNormalized: AiSpecialtyGroup | null;
 
     constructor(props: AllEntityProps<Professional>) {
         super(props);

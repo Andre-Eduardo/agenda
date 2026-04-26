@@ -55,4 +55,8 @@ export class DocumentPermissionPrismaRepository
             update: data,
         });
     }
+
+    async deleteMany(entityType: DocumentEntityType, entityId: string): Promise<void> {
+        await this.prisma.documentPermission.deleteMany({where: {entityType, entityId}});
+    }
 }

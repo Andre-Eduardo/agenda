@@ -1,3 +1,4 @@
+export {DocumentPermissionCleanupService} from './document-permission-cleanup.service';
 import {Injectable} from '@nestjs/common';
 import {ClinicId} from '../../../domain/clinic/entities';
 import {ClinicMemberId} from '../../../domain/clinic-member/entities';

@@ -1,7 +1,7 @@
 import {Entity, type AllEntityProps, type CreateEntity} from '../../@shared/entity';
 import {EntityId} from '../../@shared/entity/id';
 import type {PatientFormId} from '../../patient-form/entities';
-import type {Specialty} from '../../form-template/entities';
+import type {AiSpecialtyGroup} from '../../form-template/entities';
 
 export type CreateFormFieldIndex = CreateEntity<FormFieldIndex>;
 
@@ -15,7 +15,7 @@ export class FormFieldIndex extends Entity<FormFieldIndexId> {
     valueBoolean: boolean | null;
     valueDate: Date | null;
     valueJson: unknown | null;
-    specialty: Specialty;
+    specialtyGroup: AiSpecialtyGroup | null;
     confidence: number | null;
 
     constructor(props: AllEntityProps<FormFieldIndex>) {
@@ -29,7 +29,7 @@ export class FormFieldIndex extends Entity<FormFieldIndexId> {
         this.valueBoolean = props.valueBoolean ?? null;
         this.valueDate = props.valueDate ?? null;
         this.valueJson = props.valueJson ?? null;
-        this.specialty = props.specialty;
+        this.specialtyGroup = props.specialtyGroup ?? null;
         this.confidence = props.confidence ?? null;
     }
 
@@ -45,6 +45,7 @@ export class FormFieldIndex extends Entity<FormFieldIndexId> {
             valueBoolean: props.valueBoolean ?? null,
             valueDate: props.valueDate ?? null,
             valueJson: props.valueJson ?? null,
+            specialtyGroup: props.specialtyGroup ?? null,
             confidence: props.confidence ?? null,
             createdAt: now,
             updatedAt: now,
@@ -63,7 +64,7 @@ export class FormFieldIndex extends Entity<FormFieldIndexId> {
             valueBoolean: this.valueBoolean,
             valueDate: this.valueDate?.toJSON() ?? null,
             valueJson: this.valueJson,
-            specialty: this.specialty,
+            specialtyGroup: this.specialtyGroup,
             confidence: this.confidence,
             createdAt: this.createdAt.toJSON(),
             updatedAt: this.updatedAt.toJSON(),

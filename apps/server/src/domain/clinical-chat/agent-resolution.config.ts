@@ -1,4 +1,4 @@
-import {Specialty} from '../form-template/entities';
+import {AiSpecialtyGroup} from '../form-template/entities';
 
 /**
  * Regra de mapeamento entre perfil profissional e agente clínico.
@@ -10,8 +10,8 @@ import {Specialty} from '../form-template/entities';
  * 4. Erro controlado (se nenhuma regra existir)
  */
 export type AgentMappingRule = {
-    /** Tipo de profissão normalizado (enum Specialty). Vem do campo specialtyNormalized do Professional. */
-    professionType: Specialty;
+    /** Grupo de especialidade normalizado (AiSpecialtyGroup). Vem do campo specialtyNormalized do Professional. */
+    professionType: AiSpecialtyGroup;
     /**
      * Padrão de texto normalizado da especialidade específica (lowercase, sem acentos).
      * Quando presente, é comparado com o campo `specialty` do Professional (normalizado).
@@ -29,141 +29,148 @@ export type AgentMappingRule = {
  * Regras de mapeamento estáticas: perfil do profissional → agente clínico.
  *
  * Estrutura em dois níveis:
- * - Nível específico (priority ≥ 10): profissão + texto da especialidade → agente especialista
- * - Nível padrão (priority = 1): profissão → agente padrão da área
+ * - Nível específico (priority ≥ 10): grupo + texto da especialidade → agente especialista
+ * - Nível padrão (priority = 1): grupo → agente padrão da área
  *
  * Para adicionar um novo agente especialista:
  * 1. Certifique-se de que o `agentCode` existe em AiAgentProfile (seed ou DB).
  * 2. Adicione uma regra com `priority: 10` e o `specialtyTextPattern` normalizado.
  */
 export const AGENT_MAPPING_RULES: AgentMappingRule[] = [
-    // ─── Medicina — especialidades específicas (prioridade alta) ─────────────────
+    // ─── Medicina Geral — especialidades específicas (prioridade alta) ───────────
     {
-        professionType: Specialty.MEDICINA,
+        professionType: AiSpecialtyGroup.MEDICINA_GERAL,
         specialtyTextPattern: 'neurologia',
         agentCode: 'neurologia',
         isActive: true,
         priority: 10,
     },
     {
-        professionType: Specialty.MEDICINA,
-        specialtyTextPattern: 'psiquiatria',
-        agentCode: 'psiquiatria',
-        isActive: true,
-        priority: 10,
-    },
-    {
-        professionType: Specialty.MEDICINA,
+        professionType: AiSpecialtyGroup.MEDICINA_GERAL,
         specialtyTextPattern: 'pediatria',
         agentCode: 'pediatria',
         isActive: true,
         priority: 10,
     },
     {
-        professionType: Specialty.MEDICINA,
+        professionType: AiSpecialtyGroup.MEDICINA_GERAL,
         specialtyTextPattern: 'medicina familiar',
         agentCode: 'medicina_familiar',
         isActive: true,
         priority: 10,
     },
     {
-        professionType: Specialty.MEDICINA,
+        professionType: AiSpecialtyGroup.MEDICINA_GERAL,
         specialtyTextPattern: 'medicina de familia',
         agentCode: 'medicina_familiar',
         isActive: true,
         priority: 10,
     },
     {
-        professionType: Specialty.MEDICINA,
+        professionType: AiSpecialtyGroup.MEDICINA_GERAL,
         specialtyTextPattern: 'medicina de familia e comunidade',
         agentCode: 'medicina_familiar',
         isActive: true,
         priority: 10,
     },
 
-    // ─── Medicina — padrão para médico geral ────────────────────────────────────
+    // ─── Medicina Especializada — especialidades específicas ─────────────────────
     {
-        professionType: Specialty.MEDICINA,
+        professionType: AiSpecialtyGroup.MEDICINA_ESPECIALIZADA,
+        specialtyTextPattern: 'neurologia',
+        agentCode: 'neurologia',
+        isActive: true,
+        priority: 10,
+    },
+    {
+        professionType: AiSpecialtyGroup.MEDICINA_ESPECIALIZADA,
+        specialtyTextPattern: 'psiquiatria',
+        agentCode: 'psiquiatria',
+        isActive: true,
+        priority: 10,
+    },
+
+    // ─── Medicina Geral — padrão ─────────────────────────────────────────────────
+    {
+        professionType: AiSpecialtyGroup.MEDICINA_GERAL,
         agentCode: 'medico_geral',
         isActive: true,
         priority: 1,
     },
 
-    // ─── Psicologia — especialidades específicas ─────────────────────────────────
+    // ─── Medicina Especializada — padrão ─────────────────────────────────────────
     {
-        professionType: Specialty.PSICOLOGIA,
+        professionType: AiSpecialtyGroup.MEDICINA_ESPECIALIZADA,
+        agentCode: 'medico_geral',
+        isActive: true,
+        priority: 1,
+    },
+
+    // ─── Saúde Mental — especialidades específicas ───────────────────────────────
+    {
+        professionType: AiSpecialtyGroup.SAUDE_MENTAL,
         specialtyTextPattern: 'neuropsicologia',
         agentCode: 'neuropsicologia',
         isActive: true,
         priority: 10,
     },
     {
-        professionType: Specialty.PSICOLOGIA,
+        professionType: AiSpecialtyGroup.SAUDE_MENTAL,
         specialtyTextPattern: 'psicopedagogia',
         agentCode: 'psicopedagogia',
         isActive: true,
         priority: 10,
     },
     {
-        professionType: Specialty.PSICOLOGIA,
+        professionType: AiSpecialtyGroup.SAUDE_MENTAL,
         specialtyTextPattern: 'psicologia do desenvolvimento',
         agentCode: 'psicologia_desenvolvimento',
         isActive: true,
         priority: 10,
     },
     {
-        professionType: Specialty.PSICOLOGIA,
+        professionType: AiSpecialtyGroup.SAUDE_MENTAL,
         specialtyTextPattern: 'psicologia desenvolvimento',
         agentCode: 'psicologia_desenvolvimento',
         isActive: true,
         priority: 10,
     },
 
-    // ─── Psicologia — padrão para psicólogo clínico ─────────────────────────────
+    // ─── Saúde Mental — padrão ───────────────────────────────────────────────────
     {
-        professionType: Specialty.PSICOLOGIA,
+        professionType: AiSpecialtyGroup.SAUDE_MENTAL,
         agentCode: 'psicologia_clinica',
         isActive: true,
         priority: 1,
     },
 
-    // ─── Fisioterapia ────────────────────────────────────────────────────────────
+    // ─── Reabilitação (fisioterapia, fonoaudiologia, TO) ─────────────────────────
     {
-        professionType: Specialty.FISIOTERAPIA,
+        professionType: AiSpecialtyGroup.REABILITACAO,
         agentCode: 'fisioterapia',
         isActive: true,
         priority: 1,
     },
 
-    // ─── Nutrição ────────────────────────────────────────────────────────────────
+    // ─── Nutrição e Dietética ────────────────────────────────────────────────────
     {
-        professionType: Specialty.NUTRICAO,
+        professionType: AiSpecialtyGroup.NUTRICAO_DIETETICA,
         agentCode: 'nutricao',
         isActive: true,
         priority: 1,
     },
 
-    // ─── Demais especialidades → agente genérico ─────────────────────────────────
+    // ─── Enfermagem ──────────────────────────────────────────────────────────────
     {
-        professionType: Specialty.FONOAUDIOLOGIA,
+        professionType: AiSpecialtyGroup.ENFERMAGEM,
         agentCode: 'agente_generico',
         isActive: true,
         priority: 1,
     },
+
+    // ─── Outros → agente genérico ────────────────────────────────────────────────
     {
-        professionType: Specialty.TERAPIA_OCUPACIONAL,
-        agentCode: 'agente_generico',
-        isActive: true,
-        priority: 1,
-    },
-    {
-        professionType: Specialty.ENFERMAGEM,
-        agentCode: 'agente_generico',
-        isActive: true,
-        priority: 1,
-    },
-    {
-        professionType: Specialty.OUTROS,
+        professionType: AiSpecialtyGroup.OUTROS,
         agentCode: 'agente_generico',
         isActive: true,
         priority: 1,
@@ -181,7 +188,7 @@ export function normalizeSpecialtyText(text: string): string {
     return text
         .toLowerCase()
         .normalize('NFD')
-        .replace(/[\u0300-\u036f]/g, '') // remove diacríticos
+        .replace(/[̀-ͯ]/g, '') // remove diacríticos
         .replace(/[^a-z0-9\s]/g, ' ')    // remove pontuação, mantém espaços
         .replace(/\s+/g, ' ')            // colapsa espaços múltiplos
         .trim();

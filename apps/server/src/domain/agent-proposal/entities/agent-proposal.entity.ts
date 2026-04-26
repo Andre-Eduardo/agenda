@@ -35,7 +35,7 @@ export type AgentProposalProps = {
     resultEntityId: string | null;
     expiresAt: Date | null;
     confirmedAt: Date | null;
-    confirmedBy: string | null;
+    confirmedByMemberId: string | null;
     rejectedAt: Date | null;
     rejectionReason: string | null;
     createdAt: Date;
@@ -44,7 +44,7 @@ export type AgentProposalProps = {
 
 export type CreateAgentProposal = Omit<
     CreateEntity<AgentProposal>,
-    'status' | 'confirmedAt' | 'confirmedBy' | 'rejectedAt' | 'rejectionReason' | 'resultEntityId'
+    'status' | 'confirmedAt' | 'confirmedByMemberId' | 'rejectedAt' | 'rejectionReason' | 'resultEntityId'
 >;
 
 export class AgentProposal extends AggregateRoot<AgentProposalId> {
@@ -63,7 +63,7 @@ export class AgentProposal extends AggregateRoot<AgentProposalId> {
     resultEntityId: string | null;
     expiresAt: Date | null;
     confirmedAt: Date | null;
-    confirmedBy: string | null;
+    confirmedByMemberId: string | null;
     rejectedAt: Date | null;
     rejectionReason: string | null;
 
@@ -83,7 +83,7 @@ export class AgentProposal extends AggregateRoot<AgentProposalId> {
         this.resultEntityId = props.resultEntityId ?? null;
         this.expiresAt = props.expiresAt ?? null;
         this.confirmedAt = props.confirmedAt ?? null;
-        this.confirmedBy = props.confirmedBy ?? null;
+        this.confirmedByMemberId = props.confirmedByMemberId ?? null;
         this.rejectedAt = props.rejectedAt ?? null;
         this.rejectionReason = props.rejectionReason ?? null;
     }
@@ -103,7 +103,7 @@ export class AgentProposal extends AggregateRoot<AgentProposalId> {
             status: AgentProposalStatus.PENDING,
             resultEntityId: null,
             confirmedAt: null,
-            confirmedBy: null,
+            confirmedByMemberId: null,
             rejectedAt: null,
             rejectionReason: null,
             expiresAt: props.expiresAt ?? expiresAt,
@@ -123,7 +123,7 @@ export class AgentProposal extends AggregateRoot<AgentProposalId> {
         return true;
     }
 
-    confirm(confirmedBy: string, resultEntityId?: string): void {
+    confirm(confirmedByMemberId: string, resultEntityId?: string): void {
         if (!this.isConfirmable()) {
             throw new PreconditionException(
                 `Proposal cannot be confirmed: status=${this.status}${this.expiresAt && this.expiresAt < new Date() ? ', expired' : ''}`,
@@ -132,7 +132,7 @@ export class AgentProposal extends AggregateRoot<AgentProposalId> {
         const now = new Date();
         this.status = AgentProposalStatus.CONFIRMED;
         this.confirmedAt = now;
-        this.confirmedBy = confirmedBy;
+        this.confirmedByMemberId = confirmedByMemberId;
         this.resultEntityId = resultEntityId ?? null;
         this.updatedAt = now;
     }
@@ -174,7 +174,7 @@ export class AgentProposal extends AggregateRoot<AgentProposalId> {
             resultEntityId: this.resultEntityId,
             expiresAt: this.expiresAt?.toJSON() ?? null,
             confirmedAt: this.confirmedAt?.toJSON() ?? null,
-            confirmedBy: this.confirmedBy,
+            confirmedByMemberId: this.confirmedByMemberId,
             rejectedAt: this.rejectedAt?.toJSON() ?? null,
             rejectionReason: this.rejectionReason,
             createdAt: this.createdAt.toJSON(),

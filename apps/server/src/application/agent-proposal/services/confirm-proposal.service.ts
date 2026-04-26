@@ -100,7 +100,7 @@ export class ConfirmProposalService {
             resultEntityId = alert.id.toString();
         }
 
-        proposal.confirm(actor.userId.toString(), resultEntityId ?? undefined);
+        proposal.confirm(actor.clinicMemberId.toString(), resultEntityId ?? undefined);
         await this.proposalRepository.save(proposal);
 
         return {proposalId: proposal.id.toString(), resultEntityId, type: proposal.type};

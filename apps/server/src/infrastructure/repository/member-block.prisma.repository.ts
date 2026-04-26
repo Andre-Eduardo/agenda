@@ -29,6 +29,7 @@ export class MemberBlockPrismaRepository extends PrismaRepository implements Mem
         const records = await this.prisma.memberBlock.findMany({
             where: {
                 clinicMemberId: clinicMemberId.toString(),
+                deletedAt: null,
                 ...(filters?.startAt !== undefined && {endAt: {gt: filters.startAt}}),
                 ...(filters?.endAt !== undefined && {startAt: {lt: filters.endAt}}),
             },
@@ -45,6 +46,7 @@ export class MemberBlockPrismaRepository extends PrismaRepository implements Mem
         const records = await this.prisma.memberBlock.findMany({
             where: {
                 clinicMemberId: clinicMemberId.toString(),
+                deletedAt: null,
                 startAt: {lt: endAt},
                 endAt: {gt: startAt},
             },

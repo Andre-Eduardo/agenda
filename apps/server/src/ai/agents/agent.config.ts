@@ -1,6 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import {Specialty} from '../../domain/form-template/entities';
+import {AiSpecialtyGroup} from '../../domain/form-template/entities';
 
 export type AgentConfig = {
     slug: string;
@@ -155,13 +155,12 @@ export const AGENT_REGISTRY = {
  * Alterar AGENT_GP_MODEL=openai/gpt-4o no .env e reiniciar usa o novo modelo
  * sem migration ou alteração de código.
  */
-export const SPECIALTY_AGENT_MAP: Record<Specialty, keyof typeof AGENT_REGISTRY> = {
-    [Specialty.MEDICINA]: 'general-practitioner',
-    [Specialty.PSICOLOGIA]: 'psychologist',
-    [Specialty.FISIOTERAPIA]: 'physiotherapist',
-    [Specialty.FONOAUDIOLOGIA]: 'speech-therapist',
-    [Specialty.NUTRICAO]: 'nutritionist',
-    [Specialty.TERAPIA_OCUPACIONAL]: 'occupational-therapist',
-    [Specialty.ENFERMAGEM]: 'nurse',
-    [Specialty.OUTROS]: 'general-practitioner',
+export const SPECIALTY_AGENT_MAP: Record<AiSpecialtyGroup, keyof typeof AGENT_REGISTRY> = {
+    [AiSpecialtyGroup.MEDICINA_GERAL]: 'general-practitioner',
+    [AiSpecialtyGroup.MEDICINA_ESPECIALIZADA]: 'general-practitioner',
+    [AiSpecialtyGroup.SAUDE_MENTAL]: 'psychologist',
+    [AiSpecialtyGroup.REABILITACAO]: 'physiotherapist',
+    [AiSpecialtyGroup.NUTRICAO_DIETETICA]: 'nutritionist',
+    [AiSpecialtyGroup.ENFERMAGEM]: 'nurse',
+    [AiSpecialtyGroup.OUTROS]: 'general-practitioner',
 };

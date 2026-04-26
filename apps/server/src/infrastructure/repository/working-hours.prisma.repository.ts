@@ -24,7 +24,7 @@ export class WorkingHoursPrismaRepository extends PrismaRepository implements Wo
 
     async findByMember(clinicMemberId: ClinicMemberId): Promise<WorkingHours[]> {
         const records = await this.prisma.workingHours.findMany({
-            where: {clinicMemberId: clinicMemberId.toString()},
+            where: {clinicMemberId: clinicMemberId.toString(), deletedAt: null},
             orderBy: {dayOfWeek: 'asc'},
         });
         return records.map((r) => this.mapper.toDomain(r));
@@ -36,6 +36,7 @@ export class WorkingHoursPrismaRepository extends PrismaRepository implements Wo
                 clinicMemberId: clinicMemberId.toString(),
                 dayOfWeek,
                 active: true,
+                deletedAt: null,
             },
         });
         return records.map((r) => this.mapper.toDomain(r));

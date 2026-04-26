@@ -2,7 +2,7 @@ import {Injectable} from '@nestjs/common';
 import * as PrismaClient from '@prisma/client';
 import {toEnum, toEnumOrNull} from '../../domain/@shared/utils';
 import {ClinicId} from '../../domain/clinic/entities';
-import {Specialty} from '../../domain/form-template/entities';
+import {AiAiSpecialtyGroupGroup} from '../../domain/form-template/entities';
 import {KnowledgeChunk, KnowledgeChunkId, type KnowledgeChunkMetadata} from '../../domain/knowledge-base/entities';
 import {MapperWithoutDto} from './mapper';
 
@@ -29,7 +29,7 @@ export class KnowledgeChunkMapper extends MapperWithoutDto<KnowledgeChunk, Knowl
         return new KnowledgeChunk({
             id: KnowledgeChunkId.from(model.id),
             clinicId: model.clinicId === null ? null : ClinicId.from(model.clinicId),
-            specialty: toEnumOrNull(Specialty, model.specialty),
+            specialty: toEnumOrNull(AiSpecialtyGroup, model.specialty),
             category: model.category,
             content: model.content,
             metadata: model.metadata as KnowledgeChunkMetadata | null,
@@ -47,7 +47,7 @@ export class KnowledgeChunkMapper extends MapperWithoutDto<KnowledgeChunk, Knowl
         return new KnowledgeChunk({
             id: KnowledgeChunkId.from(row.id),
             clinicId: row.clinic_id === null ? null : ClinicId.from(row.clinic_id),
-            specialty: toEnumOrNull(Specialty, row.specialty),
+            specialty: toEnumOrNull(AiSpecialtyGroup, row.specialty),
             category: row.category,
             content: row.content,
             metadata: row.metadata as KnowledgeChunkMetadata | null,
@@ -65,7 +65,7 @@ export class KnowledgeChunkMapper extends MapperWithoutDto<KnowledgeChunk, Knowl
         return {
             id: entity.id.toString(),
             clinicId: entity.clinicId?.toString() ?? null,
-            specialty: entity.specialty ? toEnum(PrismaClient.Specialty, entity.specialty) : null,
+            specialty: entity.specialty ? toEnum(PrismaClient.AiSpecialtyGroup, entity.specialty) : null,
             category: entity.category,
             content: entity.content,
             metadata: entity.metadata as PrismaClient.Prisma.JsonValue,

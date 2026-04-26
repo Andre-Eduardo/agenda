@@ -62,7 +62,6 @@ enum PersonType {
 model Person {
   id         String     @id(map: "person_pk") @db.Uuid
   name       String
-  documentId String     @map("document_id")
   phone      String?
   gender     Gender?
   personType PersonType @map("person_type")
@@ -101,8 +100,8 @@ model Clinic {
   country          String?    @default("BR")
   /// URL da logo da clínica
   logoUrl          String?    @map("logo_url")
-  /// Especialidades atendidas pela clínica
-  clinicSpecialties Specialty[] @map("clinic_specialties")
+  /// Grupos de especialidade atendidos pela clínica
+  clinicSpecialties AiSpecialtyGroup[] @map("clinic_specialties")
   createdAt        DateTime   @map("created_at")
   updatedAt        DateTime   @map("updated_at")
   deletedAt        DateTime?  @map("deleted_at")
@@ -138,6 +137,10 @@ model Clinic {
   usageRecords              UsageRecord[]
   subscriptionAddons        SubscriptionAddon[]
   appointmentPayments       AppointmentPayment[]
+  paymentEvents             PaymentEvent[]
+  chatMessages              PatientChatMessage[]
+  workingHoursEntries       WorkingHours[]
+  memberBlocks              MemberBlock[]
 
   @@map("clinic")
 }
@@ -171,6 +174,10 @@ enum ClinicMemberRole {
 ///
 /// Absorveu o antigo ProfessionalConfig (campo color) e o vínculo com User
 /// que antes ficava em Professional.
+///
+/// Decisão de unicidade (Opção B): um User pode ser ClinicMember em múltiplas clínicas.
+/// A unique constraint é (clinicId, userId) — não userId sozinho.
+/// Caso de uso: profissional que atua em mais de uma clínica mantém um único login.
 model ClinicMember {
   id                String           @id(map: "clinic_member_pk") @db.Uuid
   clinicId          String           @map("clinic_id") @db.Uuid
@@ -228,6 +235,8 @@ model ClinicMember {
   registeredPayments       AppointmentPayment[] @relation("AppointmentPaymentRegisteredBy")
   subscriptionAddons       SubscriptionAddon[]  @relation("AddonMember")
   grantedAddons            SubscriptionAddon[]  @relation("AddonGrantedBy")
+  paymentEvents            PaymentEvent[]       @relation("PaymentEventMember")
+  confirmedProposals       AgentProposal[]      @relation("AgentProposalConfirmedBy")
 
   @@unique([clinicId, userId], name: "clinic_member_clinic_user_unique")
   @@index([clinicId], name: "clinic_member_clinic_idx")
@@ -239,17 +248,16 @@ model ClinicMember {
 // 4. PROFISSIONAL DE SAÚDE — EXTENSÃO 1:1 DO MEMBRO
 // ─────────────────────────────────────────────────────────────────────────────
 
-enum Specialty {
-  PSICOLOGIA
-  MEDICINA
-  FISIOTERAPIA
-  FONOAUDIOLOGIA
-  NUTRICAO
-  TERAPIA_OCUPACIONAL
+enum AiSpecialtyGroup {
+  SAUDE_MENTAL
+  REABILITACAO
+  MEDICINA_GERAL
+  MEDICINA_ESPECIALIZADA
+  NUTRICAO_DIETETICA
   ENFERMAGEM
   OUTROS
 
-  @@map("specialty")
+  @@map("ai_specialty_group")
 }
 
 /// Dados regulatórios e clínicos do profissional de saúde.
@@ -264,9 +272,9 @@ model Professional {
   id                  String       @id(map: "professional_pk") @db.Uuid
   clinicMemberId      String       @unique @map("clinic_member_id") @db.Uuid
   clinicMember        ClinicMember @relation(fields: [clinicMemberId], references: [id])
-  registrationNumber  String?      @map("registration_number")
+  registrationNumber  String?           @map("registration_number")
   specialty           String?
-  specialtyNormalized Specialty?   @map("specialty_normalized")
+  specialtyNormalized AiSpecialtyGroup? @map("specialty_normalized")
   createdAt           DateTime     @map("created_at")
   updatedAt           DateTime     @map("updated_at")
   deletedAt           DateTime?    @map("deleted_at")
@@ -419,6 +427,7 @@ model Patient {
   draftEvolutions       DraftEvolution[]
   clinicalDocuments     ClinicalDocument[]
   appointmentPayments   AppointmentPayment[]
+  agentProposals        AgentProposal[]      @relation("AgentProposalPatient")
 
   @@unique([documentId, clinicId], name: "patient_document_clinic_unique")
   @@index([clinicId], name: "patient_clinic_idx")
@@ -698,6 +707,7 @@ model AppointmentPayment {
   notes                String?                  @db.Text
   createdAt            DateTime                 @map("created_at")
   updatedAt            DateTime                 @map("updated_at")
+  deletedAt            DateTime?                @map("deleted_at")
 
   @@index([clinicId], name: "appointment_payment_clinic_idx")
   @@index([patientId], name: "appointment_payment_patient_idx")
@@ -705,9 +715,11 @@ model AppointmentPayment {
   @@map("appointment_payment")
 }
 
-/// MUDANÇA: professionalId → clinicMemberId (apenas membros PROFESSIONAL devem ter)
 model WorkingHours {
   id             String       @id(map: "working_hours_pk") @db.Uuid
+  /// Desnormalizado para isolamento de tenant (Bloco 6).
+  clinicId       String       @map("clinic_id") @db.Uuid
+  clinic         Clinic       @relation(fields: [clinicId], references: [id])
   clinicMemberId String       @map("clinic_member_id") @db.Uuid
   clinicMember   ClinicMember @relation(fields: [clinicMemberId], references: [id], onDelete: Cascade)
   dayOfWeek      Int          @map("day_of_week")
@@ -717,14 +729,17 @@ model WorkingHours {
   active         Boolean      @default(true)
   createdAt      DateTime     @map("created_at")
   updatedAt      DateTime     @map("updated_at")
+  deletedAt      DateTime?    @map("deleted_at")
 
+  @@index([clinicId], name: "working_hours_clinic_idx")
   @@map("working_hours")
 }
 
-/// MUDANÇA: ProfessionalBlock renomeado para MemberBlock (semanticamente mais
-/// correto agora que o ator é o membro). professionalId → clinicMemberId.
 model MemberBlock {
   id             String       @id(map: "member_block_pk") @db.Uuid
+  /// Desnormalizado para isolamento de tenant (Bloco 6).
+  clinicId       String       @map("clinic_id") @db.Uuid
+  clinic         Clinic       @relation(fields: [clinicId], references: [id])
   clinicMemberId String       @map("clinic_member_id") @db.Uuid
   clinicMember   ClinicMember @relation(fields: [clinicMemberId], references: [id], onDelete: Cascade)
   startAt        DateTime     @map("start_at")
@@ -732,7 +747,9 @@ model MemberBlock {
   reason         String?
   createdAt      DateTime     @map("created_at")
   updatedAt      DateTime     @map("updated_at")
+  deletedAt      DateTime?    @map("deleted_at")
 
+  @@index([clinicId], name: "member_block_clinic_idx")
   @@map("member_block")
 }
 
@@ -1043,12 +1060,13 @@ model Event {
 ///   global do sistema (compartilhado entre clínicas).
 /// - createdByMemberId para auditoria.
 model FormTemplate {
-  id                String        @id(map: "form_template_pk") @db.Uuid
-  code              String        @unique(map: "form_template_code_key")
+  id                String            @id(map: "form_template_pk") @db.Uuid
+  code              String            @unique(map: "form_template_code_key")
   name              String
   description       String?
-  specialty         Specialty
-  isPublic          Boolean       @default(false) @map("is_public")
+  specialtyGroup    AiSpecialtyGroup? @map("specialty_group")
+  specialtyLabel    String?           @map("specialty_label")
+  isPublic          Boolean           @default(false) @map("is_public")
   clinicId          String?       @map("clinic_id") @db.Uuid
   clinic            Clinic?       @relation(fields: [clinicId], references: [id])
   createdByMemberId String?       @map("created_by_member_id") @db.Uuid
@@ -1129,14 +1147,14 @@ model FormFieldIndex {
   valueNumber   Float?      @map("value_number")
   valueBoolean  Boolean?    @map("value_boolean")
   valueDate     DateTime?   @map("value_date")
-  valueJson     Json?       @map("value_json") @db.JsonB
-  specialty     Specialty
-  confidence    Float?
+  valueJson      Json?             @map("value_json") @db.JsonB
+  specialtyGroup AiSpecialtyGroup? @map("specialty_group")
+  confidence     Float?
   createdAt     DateTime    @map("created_at")
   updatedAt     DateTime    @map("updated_at")
 
   @@unique([patientFormId, fieldId], name: "form_field_index_unique")
-  @@index([specialty], name: "form_field_index_specialty_idx")
+  @@index([specialtyGroup], name: "form_field_index_specialty_group_idx")
   @@index([fieldId], name: "form_field_index_field_id_idx")
   @@index([valueText], name: "form_field_index_value_text_idx")
   @@index([valueNumber], name: "form_field_index_value_number_idx")
@@ -1190,8 +1208,7 @@ model AiAgentProfile {
   name              String
   code              String?    @unique(map: "ai_agent_profile_code_key")
   slug              String     @unique(map: "ai_agent_profile_slug_key")
-  specialtyGroup    String?    @map("specialty_group")
-  specialty         Specialty?
+  specialtyGroup    AiSpecialtyGroup? @map("specialty_group")
   description       String?
   baseInstructions  String?    @map("base_instructions") @db.Text
   allowedSources    String[]   @map("allowed_sources")
@@ -1234,6 +1251,7 @@ model PatientChatSession {
 
   messages        PatientChatMessage[]
   interactionLogs ClinicalChatInteractionLog[]
+  agentProposals  AgentProposal[]
 
   @@index([clinicId], name: "patient_chat_session_clinic_idx")
   @@index([patientId], name: "patient_chat_session_patient_idx")
@@ -1241,9 +1259,10 @@ model PatientChatSession {
   @@map("patient_chat_session")
 }
 
-/// Inalterado.
 model PatientChatMessage {
   id        String             @id(map: "patient_chat_message_pk") @db.Uuid
+  clinicId  String             @map("clinic_id") @db.Uuid
+  clinic    Clinic             @relation(fields: [clinicId], references: [id])
   sessionId String             @map("session_id") @db.Uuid
   session   PatientChatSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
   role      ChatMessageRole    @map("role")
@@ -1253,6 +1272,11 @@ model PatientChatMessage {
   createdAt DateTime           @map("created_at")
   updatedAt DateTime           @map("updated_at")
 
+  proposalsTriggedByMessage      AgentProposal[]              @relation("AgentProposalMessage")
+  interactionLogsAsUserMessage   ClinicalChatInteractionLog[] @relation("InteractionUserMessage")
+  interactionLogsAsAssistantMsg  ClinicalChatInteractionLog[] @relation("InteractionAssistantMessage")
+
+  @@index([clinicId], name: "patient_chat_message_clinic_idx")
   @@index([sessionId], name: "patient_chat_message_session_idx")
   @@map("patient_chat_message")
 }
@@ -1322,7 +1346,9 @@ model ClinicalChatInteractionLog {
   sessionId          String                @map("session_id") @db.Uuid
   session            PatientChatSession    @relation(fields: [sessionId], references: [id])
   userMessageId      String                @map("user_message_id") @db.Uuid
+  userMessage        PatientChatMessage    @relation("InteractionUserMessage", fields: [userMessageId], references: [id])
   assistantMessageId String?               @map("assistant_message_id") @db.Uuid
+  assistantMessage   PatientChatMessage?   @relation("InteractionAssistantMessage", fields: [assistantMessageId], references: [id])
 
   providerId     String? @map("provider_id")
   modelId        String? @map("model_id")
@@ -1378,9 +1404,9 @@ model ClinicalChatInteractionLog {
 model KnowledgeChunk {
   id          String     @id(map: "knowledge_chunk_pk") @db.Uuid
   /// null = chunk global; preenchido = scoped para uma clínica
-  clinicId    String?    @map("clinic_id") @db.Uuid
-  clinic      Clinic?    @relation(fields: [clinicId], references: [id])
-  specialty   Specialty? @map("specialty")
+  clinicId    String?           @map("clinic_id") @db.Uuid
+  clinic      Clinic?           @relation(fields: [clinicId], references: [id])
+  specialty   AiSpecialtyGroup? @map("specialty")
   /// "protocolo" | "cid" | "faq" | "manual" | "diretriz"
   category    String     @map("category")
   content     String     @db.Text
@@ -1398,7 +1424,7 @@ model KnowledgeChunk {
   updatedAt DateTime @map("updated_at")
 
   @@index([clinicId], name: "knowledge_chunk_clinic_idx")
-  @@index([specialty], name: "knowledge_chunk_specialty_idx")
+  @@index([specialty], name: "knowledge_chunk_specialty_group_idx")
   @@index([category], name: "knowledge_chunk_category_idx")
   // Nota: índice HNSW criado via migration SQL (Prisma v6 não suporta sintaxe pgvector).
   @@map("knowledge_chunk")
@@ -1428,33 +1454,34 @@ enum AgentProposalStatus {
 
 /// A proposal created by the AI agent that requires human confirmation before executing.
 /// Mutations never write to domain entities directly — they always go through AgentProposal first.
-///
-/// MUDANÇA: professionalId removido. Agora rastreia clinicId (tenant) +
-/// createdByMemberId (autor da proposta — sempre o ClinicMember dono da sessão).
 model AgentProposal {
-  id                 String              @id(map: "agent_proposal_pk") @db.Uuid
-  clinicId           String              @map("clinic_id") @db.Uuid
-  clinic             Clinic              @relation(fields: [clinicId], references: [id])
-  createdByMemberId  String              @map("created_by_member_id") @db.Uuid
-  createdByMember    ClinicMember        @relation("AgentProposalCreatedBy", fields: [createdByMemberId], references: [id])
-  sessionId          String?             @map("session_id") @db.Uuid
-  messageId          String?             @map("message_id") @db.Uuid
-  patientId          String?             @map("patient_id") @db.Uuid
-  proposalType       AgentProposalType   @map("type")
-  status             AgentProposalStatus @default(PENDING) @map("status")
+  id                    String              @id(map: "agent_proposal_pk") @db.Uuid
+  clinicId              String              @map("clinic_id") @db.Uuid
+  clinic                Clinic              @relation(fields: [clinicId], references: [id])
+  createdByMemberId     String              @map("created_by_member_id") @db.Uuid
+  createdByMember       ClinicMember        @relation("AgentProposalCreatedBy", fields: [createdByMemberId], references: [id])
+  sessionId             String?             @map("session_id") @db.Uuid
+  session               PatientChatSession? @relation(fields: [sessionId], references: [id])
+  messageId             String?             @map("message_id") @db.Uuid
+  message               PatientChatMessage? @relation("AgentProposalMessage", fields: [messageId], references: [id])
+  patientId             String?             @map("patient_id") @db.Uuid
+  patient               Patient?            @relation("AgentProposalPatient", fields: [patientId], references: [id])
+  proposalType          AgentProposalType   @map("type")
+  status                AgentProposalStatus @default(PENDING) @map("status")
   /// Payload for creating the target entity when confirmed
-  payload            Json                @db.JsonB
+  payload               Json                @db.JsonB
   /// Simplified preview for frontend rendering
-  preview            Json                @db.JsonB
-  rationale          String?             @db.Text
-  confidence         Float?
+  preview               Json                @db.JsonB
+  rationale             String?             @db.Text
+  confidence            Float?
   /// ID of the entity created upon confirmation
-  resultEntityId     String?             @map("result_entity_id") @db.Uuid
-  expiresAt          DateTime?           @map("expires_at")
-  confirmedAt        DateTime?           @map("confirmed_at")
-  confirmedBy        String?             @map("confirmed_by") @db.Uuid
-  rejectedAt         DateTime?           @map("rejected_at")
-  rejectionReason    String?             @map("rejection_reason") @db.Text
+  resultEntityId        String?             @map("result_entity_id") @db.Uuid
+  expiresAt             DateTime?           @map("expires_at")
+  confirmedAt           DateTime?           @map("confirmed_at")
+  confirmedByMemberId   String?             @map("confirmed_by_member_id") @db.Uuid
+  confirmedByMember     ClinicMember?       @relation("AgentProposalConfirmedBy", fields: [confirmedByMemberId], references: [id])
+  rejectedAt            DateTime?           @map("rejected_at")
+  rejectionReason       String?             @map("rejection_reason") @db.Text
 
   createdAt DateTime @map("created_at")
   updatedAt DateTime @map("updated_at")
@@ -1552,7 +1579,9 @@ model ClinicalDocumentTemplate {
 
   documents ClinicalDocument[]
 
-  @@unique([clinicId, type], name: "clinical_document_template_clinic_type_unique")
+  // NOTE: uniqueness is enforced via two partial indexes in migration SQL:
+  //   UNIQUE INDEX WHERE clinic_id IS NOT NULL  → one template per (clinic, type)
+  //   UNIQUE INDEX WHERE clinic_id IS NULL      → one global default per type
   @@index([clinicId], name: "clinical_document_template_clinic_idx")
   @@map("clinical_document_template")
 }
@@ -1672,7 +1701,9 @@ model ProfessionalSubscription {
 model PaymentEvent {
   id                  String                   @id @db.Uuid
   clinicId            String                   @map("clinic_id") @db.Uuid
+  clinic              Clinic                   @relation(fields: [clinicId], references: [id])
   memberId            String                   @map("member_id") @db.Uuid
+  member              ClinicMember             @relation("PaymentEventMember", fields: [memberId], references: [id])
   subscriptionId      String                   @map("subscription_id") @db.Uuid
   subscription        ProfessionalSubscription @relation(fields: [subscriptionId], references: [id])
   asaasPaymentId      String?                  @map("asaas_payment_id")
