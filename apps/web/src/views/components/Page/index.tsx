@@ -1,30 +1,42 @@
-import { Box, Title, Text, Group } from '@mantine/core';
-import type { ReactNode } from 'react';
+import type { ReactNode } from "react";
+import { cn } from "@/lib/utils";
 
 interface PageProps {
   title: string;
   subtitle?: string;
   actions?: ReactNode;
+  responsiveActions?: boolean;
   children: ReactNode;
+  className?: string;
 }
 
-export function Page({ title, subtitle, actions, children }: PageProps) {
+export function Page({
+  title,
+  subtitle,
+  actions,
+  responsiveActions = false,
+  children,
+  className,
+}: PageProps) {
   return (
-    <Box>
-      <Group justify="space-between" align="flex-start" mb="lg">
-        <Box>
-          <Title order={2} style={{ fontWeight: 700, lineHeight: 1.2 }}>
+    <div className={cn("flex flex-col p-6 bg-(--color-bg-page)", className)}>
+      <header
+        className={cn(
+          "mb-6 flex gap-4",
+          responsiveActions
+            ? "flex-col sm:flex-row sm:items-start sm:justify-between"
+            : "items-start justify-between",
+        )}
+      >
+        <div className="flex flex-col gap-1">
+          <h1 className="text-2xl leading-[1.2] font-medium text-(--color-text-primary) font-sans">
             {title}
-          </Title>
-          {subtitle && (
-            <Text size="sm" c="brand.4" mt={4}>
-              {subtitle}
-            </Text>
-          )}
-        </Box>
-        {actions && <Group gap="sm">{actions}</Group>}
-      </Group>
-      {children}
-    </Box>
+          </h1>
+          {subtitle && <p className="text-sm text-(--color-text-secondary)">{subtitle}</p>}
+        </div>
+        {actions && <div className="flex items-center gap-3">{actions}</div>}
+      </header>
+      <main className="flex-1">{children}</main>
+    </div>
   );
 }

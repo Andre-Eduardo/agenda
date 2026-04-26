@@ -1,5 +1,6 @@
-import { Button, Group } from '@mantine/core';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from "react-i18next";
+import { Button } from "@/components/ui/button";
+import { useCan, type Permission } from "@/hooks/useCan";
 
 interface FormActionsProps {
   onCancel?: () => void;
@@ -8,7 +9,8 @@ interface FormActionsProps {
   isDirty?: boolean;
   submitLabel?: string;
   cancelLabel?: string;
-  submitType?: 'submit' | 'button';
+  submitType?: "submit" | "button";
+  submitPermission?: Permission;
 }
 
 export function FormActions({
@@ -18,24 +20,27 @@ export function FormActions({
   isDirty = true,
   submitLabel,
   cancelLabel,
-  submitType = 'submit',
+  submitType = "submit",
+  submitPermission,
 }: FormActionsProps) {
   const { t } = useTranslation();
+  const allowed = useCan(submitPermission ? { has: submitPermission } : undefined);
+  const submitDisabled = !isDirty || isSubmitting || !allowed;
+
   return (
-    <Group justify="flex-end" mt="xl">
+    <div className="flex justify-end gap-3">
       {onCancel && (
-        <Button variant="default" onClick={onCancel} disabled={isSubmitting}>
-          {cancelLabel ?? t('actions.cancel')}
+        <Button type="button" variant="outline" onClick={onCancel} disabled={isSubmitting}>
+          {cancelLabel ?? t("actions.cancel")}
         </Button>
       )}
       <Button
         type={submitType}
-        onClick={submitType === 'button' ? onSubmit : undefined}
-        loading={isSubmitting}
-        disabled={!isDirty || isSubmitting}
+        onClick={submitType === "button" ? onSubmit : undefined}
+        disabled={submitDisabled}
       >
-        {submitLabel ?? t('actions.save')}
+        {submitLabel ?? t("actions.save")}
       </Button>
-    </Group>
+    </div>
   );
 }

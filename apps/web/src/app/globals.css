@@ -1,0 +1,169 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme {
+  /* Fontes */
+  --font-sans: "Inter Variable", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono Variable", monospace;
+
+  /* Escala tipográfica */
+  --text-2xs: 11px;
+  --text-xs: 12px;
+  --text-sm: 13px;
+  --text-sm-body: 14px;
+  --text-base: 16px;
+  --text-sub: 16px;
+  --text-lead: 18px;
+  --text-xl: 24px;
+  --text-2xl: 36px;
+
+  /* Raios */
+  --radius-card: 14px;
+  --radius-card-sm: 10px;
+  --radius-button: 8px;
+  --radius-input: 8px;
+  --radius-data: 8px;
+  --radius-badge: 20px;
+  --radius-modal: 14px;
+  --radius-dropdown: 10px;
+  --radius: 8px; /* shadcn base */
+
+  /* Motion */
+  --duration-fast: 120ms;
+  --duration-base: 200ms;
+  --duration-slow: 300ms;
+  --ease: ease-out;
+
+  /* Sombras */
+  --shadow-focus: 0 0 0 2px #2563eb;
+  --shadow-dropdown: 0 4px 12px rgba(0, 0, 0, 0.08);
+
+  /* Espaçamento — modo confortável (padrão) */
+  --padding-card: 16px;
+  --padding-section: 12px;
+  --padding-data-block: 10px;
+  --gap-elements: 12px;
+}
+
+@layer base {
+  :root {
+    /* ── Superfícies ── */
+    --color-bg-page: #f8fafc;
+    --color-bg-surface: #f1f5f9;
+    --color-bg-card: #ffffff;
+
+    /* ── Bordas ── */
+    --color-border: #e2e8f0;
+    --color-border-hover: #cbd5e1;
+
+    /* ── Texto ── */
+    --color-text-primary: #0f172a;
+    --color-text-secondary: #64748b;
+    --color-text-tertiary: #94a3b8;
+
+    /* ── Primária — azul clínico ── */
+    --color-primary: #2563eb;
+    --color-primary-hover: #1d4ed8;
+    --color-primary-surface: #eff6ff;
+    --color-primary-border: #bfdbfe;
+    --color-primary-text: #1e40af;
+
+    /* ── Accent IA — teal ── */
+    --color-ai-bg: #f0fdfa;
+    --color-ai-border: #0d9488;
+    --color-ai-text: #115e59;
+    --color-ai-badge-bg: #0d9488;
+    --color-ai-badge-text: #ffffff;
+
+    /* ── Semânticas ── */
+    --color-success: #10b981;
+    --color-success-surface: #ecfdf5;
+    --color-warning: #f59e0b;
+    --color-warning-surface: #fffbeb;
+    --color-danger: #ef4444;
+    --color-danger-surface: #fef2f2;
+    --color-info: #06b6d4;
+    --color-info-surface: #ecfeff;
+
+    /* ── Confiança IA ── */
+    --color-confidence-high: #10b981;
+    --color-confidence-mid: #f59e0b;
+    --color-confidence-low: #ef4444;
+
+    /* ── shadcn compatibility ── */
+    --background: #f8fafc;
+    --foreground: #0f172a;
+    --card: #ffffff;
+    --card-foreground: #0f172a;
+    --popover: #ffffff;
+    --popover-foreground: #0f172a;
+    --muted: #f1f5f9;
+    --muted-foreground: #64748b;
+    --accent: #f1f5f9;
+    --accent-foreground: #0f172a;
+    --destructive: #ef4444;
+    --destructive-foreground: #ffffff;
+    --border: #e2e8f0;
+    --input: #e2e8f0;
+    --primary: #2563eb;
+    --primary-foreground: #ffffff;
+    --secondary: #f1f5f9;
+    --secondary-foreground: #0f172a;
+    --ring: #2563eb;
+  }
+
+  .dark {
+    /* ── Superfícies ── */
+    --color-bg-page: #020617;
+    --color-bg-surface: #0f172a;
+    --color-bg-card: #1e293b;
+
+    /* ── Bordas ── */
+    --color-border: #334155;
+    --color-border-hover: #475569;
+
+    /* ── Texto ── */
+    --color-text-primary: #f8fafc;
+    --color-text-secondary: #94a3b8;
+    --color-text-tertiary: #475569;
+
+    /* ── Primária dark ── */
+    --color-primary-surface: #1e3a8a;
+    --color-primary-border: #2563eb;
+    --color-primary-text: #93c5fd;
+
+    /* ── Accent IA dark ── */
+    --color-ai-bg: #134e4a;
+    --color-ai-text: #5eead4;
+
+    /* ── shadcn compatibility ── */
+    --background: #020617;
+    --foreground: #f8fafc;
+    --card: #1e293b;
+    --card-foreground: #f8fafc;
+    --popover: #1e293b;
+    --popover-foreground: #f8fafc;
+    --muted: #0f172a;
+    --muted-foreground: #94a3b8;
+    --accent: #0f172a;
+    --accent-foreground: #f8fafc;
+    --destructive: #ef4444;
+    --destructive-foreground: #ffffff;
+    --border: #334155;
+    --input: #334155;
+    --primary: #2563eb;
+    --primary-foreground: #ffffff;
+    --secondary: #0f172a;
+    --secondary-foreground: #f8fafc;
+    --ring: #2563eb;
+  }
+
+  body {
+    background-color: var(--color-bg-page);
+    color: var(--color-text-primary);
+    font-family: var(--font-sans);
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  }
+}

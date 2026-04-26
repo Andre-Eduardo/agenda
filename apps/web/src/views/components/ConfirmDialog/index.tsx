@@ -1,5 +1,13 @@
-import { Modal, Text, Button, Group } from '@mantine/core';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from "react-i18next";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 
 interface ConfirmDialogProps {
   opened: boolean;
@@ -25,29 +33,28 @@ export function ConfirmDialog({
   isLoading = false,
 }: ConfirmDialogProps) {
   const { t } = useTranslation();
+
   return (
-    <Modal
-      opened={opened}
-      onClose={onCancel}
-      title={title ?? t('confirm.deleteTitle')}
-      centered
-      size="sm"
-    >
-      <Text size="sm" mb="lg">
-        {message ?? t('confirm.deleteMessage')}
-      </Text>
-      <Group justify="flex-end">
-        <Button variant="default" onClick={onCancel} disabled={isLoading}>
-          {cancelLabel ?? t('actions.cancel')}
-        </Button>
-        <Button
-          color={danger ? 'danger' : 'brand'}
-          onClick={onConfirm}
-          loading={isLoading}
-        >
-          {confirmLabel ?? t('actions.confirm')}
-        </Button>
-      </Group>
-    </Modal>
+    <Dialog open={opened} onOpenChange={(open) => !open && onCancel()}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>{title ?? t("confirm.deleteTitle")}</DialogTitle>
+          <DialogDescription>{message ?? t("confirm.deleteMessage")}</DialogDescription>
+        </DialogHeader>
+        <DialogFooter>
+          <Button type="button" variant="outline" onClick={onCancel} disabled={isLoading}>
+            {cancelLabel ?? t("actions.cancel")}
+          </Button>
+          <Button
+            type="button"
+            variant={danger ? "destructive" : "default"}
+            onClick={onConfirm}
+            disabled={isLoading}
+          >
+            {confirmLabel ?? t("actions.confirm")}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }

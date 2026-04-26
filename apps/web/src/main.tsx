@@ -1,10 +1,13 @@
-import { StrictMode } from 'react';
-import { createRoot } from 'react-dom/client';
-import '@mantine/core/styles.css';
-import { App } from './App';
+import { StrictMode } from "react";
+import { createRoot } from "react-dom/client";
+import "@fontsource-variable/inter";
+import "@fontsource-variable/jetbrains-mono";
+import "./app/globals.css";
+import { App } from "./App";
 
-const rootElement = document.getElementById('root');
-if (!rootElement) throw new Error('Root element #root not found');
+const rootElement = document.getElementById("root");
+
+if (!rootElement) throw new Error("Root element #root not found");
 
 createRoot(rootElement).render(
   <StrictMode>

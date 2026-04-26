@@ -1,211 +1,250 @@
-import { Outlet, Link, useRouterState, useNavigate, createFileRoute } from '@tanstack/react-router';
-import { Box, Text, Badge } from '@mantine/core';
-import { useTranslation } from 'react-i18next';
-import { useGetCurrentUser, useSignOut } from '@agenda-app/client';
-import { useAppStore } from '../../../store/appStore';
+import { useMemo, useState } from "react";
+import { Outlet, Link, useRouterState, useNavigate, createFileRoute } from "@tanstack/react-router";
+import { useTranslation } from "react-i18next";
 import {
-  rootStyle,
-  sidebarStyle,
-  sidebarBrandStyle,
-  brandIconStyle,
-  sidebarNavStyle,
-  navSectionLabelStyle,
-  navItemStyle,
-  navItemActiveStyle,
-  navItemIconStyle,
-  sidebarFooterStyle,
-  userAvatarStyle,
-  mainStyle,
-  topbarStyle,
-  contentStyle,
-  notifBtnStyle,
-  notifDotStyle,
-} from './styles';
+  Calendar,
+  ClipboardList,
+  FileText,
+  Home,
+  LogOut,
+  Menu,
+  Moon,
+  Stethoscope,
+  Sun,
+  Users,
+  type LucideIcon,
+} from "lucide-react";
+import { useAppStore } from "@/store/appStore";
+import { useCan, type Permission } from "@/hooks/useCan";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
-export const Route = createFileRoute('/_stackedLayout')({
+interface NavItem {
+  icon: LucideIcon;
+  labelKey: string;
+  path: string;
+  permission?: Permission;
+}
+
+interface NavGroup {
+  labelKey: string;
+  items: NavItem[];
+}
+
+const NAV_GROUPS: NavGroup[] = [
+  {
+    labelKey: "nav.menu",
+    items: [
+      { icon: Home, labelKey: "nav.dashboard", path: "/" },
+      { icon: Calendar, labelKey: "nav.appointments", path: "/appointments" },
+      { icon: Users, labelKey: "nav.patients", path: "/patients" },
+      { icon: Stethoscope, labelKey: "nav.professionals", path: "/professionals" },
+    ],
+  },
+  {
+    labelKey: "nav.system",
+    items: [
+      { icon: ClipboardList, labelKey: "nav.forms", path: "/form-templates" },
+      { icon: FileText, labelKey: "nav.chat", path: "/chat" },
+    ],
+  },
+];
+
+export const Route = createFileRoute("/_stackedLayout")({
+  // TODO: re-enable auth guard once /auth/login route is registered in routes.ts
+  // beforeLoad: ({ context, location }) => {
+  //   if (!context?.auth) {
+  //     throw redirect({
+  //       to: '/auth/login',
+  //       search: { redirect: location.pathname },
+  //     });
+  //   }
+  // },
   component: StackedLayout,
 });
 
-interface NavItem {
-  icon: string;
-  labelKey: string;
-  path: string;
+function getInitials(name: string | undefined | null): string {
+  if (!name) return "??";
+  const parts = name.trim().split(/\s+/);
+
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+
+  return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase();
 }
 
-const primaryNav: NavItem[] = [
-  { icon: 'home', labelKey: 'nav.dashboard', path: '/' },
-  { icon: 'calendar_month', labelKey: 'nav.appointments', path: '/appointments' },
-  { icon: 'people', labelKey: 'nav.patients', path: '/patients' },
-  { icon: 'medical_services', labelKey: 'nav.professionals', path: '/professionals' },
-];
+interface NavLinkProps {
+  item: NavItem;
+  currentPath: string;
+  onClick?: () => void;
+}
 
-const secondaryNav: NavItem[] = [
-  { icon: 'description', labelKey: 'nav.forms', path: '/form-templates' },
-];
-
-function NavEntry({ item, currentPath }: { item: NavItem; currentPath: string }) {
+function NavLink({ item, currentPath, onClick }: NavLinkProps) {
   const { t } = useTranslation();
-  const isActive = item.path === '/' ? currentPath === '/' : currentPath.startsWith(item.path);
+  const allowed = useCan(item.permission ? { has: item.permission } : undefined);
+  const isActive = item.path === "/" ? currentPath === "/" : currentPath.startsWith(item.path);
+  const Icon = item.icon;
+
+  if (!allowed) return null;
+
   return (
     <Link
       to={item.path}
-      style={isActive ? navItemActiveStyle : navItemStyle}
+      onClick={onClick}
+      className={cn(
+        "flex items-center gap-3 rounded-(--radius-button) px-3 py-2 text-sm-body font-medium transition-colors",
+        isActive
+          ? "bg-(--color-primary-surface) text-(--color-primary-text)"
+          : "text-(--color-text-secondary) hover:bg-(--color-bg-surface) hover:text-(--color-text-primary)",
+      )}
     >
-      <span className="material-symbols-outlined" style={navItemIconStyle}>
-        {item.icon}
-      </span>
+      <Icon aria-hidden className="size-5" />
       {t(item.labelKey)}
     </Link>
   );
 }
 
-function getInitials(name: string | undefined): string {
-  if (!name) return '??';
-  const parts = name.trim().split(/\s+/);
-  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
-  return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase();
+interface NavSectionProps {
+  group: NavGroup;
+  currentPath: string;
+  onNavigate?: () => void;
 }
 
-export function StackedLayout() {
+function NavSection({ group, currentPath, onNavigate }: NavSectionProps) {
+  const { t } = useTranslation();
+
+  return (
+    <div className="flex flex-col gap-1">
+      <p className="px-3 pb-1 pt-2 text-2xs uppercase tracking-wider text-(--color-text-tertiary)">
+        {t(group.labelKey)}
+      </p>
+      {group.items.map((item) => (
+        <NavLink key={item.path} item={item} currentPath={currentPath} onClick={onNavigate} />
+      ))}
+    </div>
+  );
+}
+
+function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
   const { t } = useTranslation();
   const routerState = useRouterState();
   const currentPath = routerState.location.pathname;
   const navigate = useNavigate();
   const setAuth = useAppStore((s) => s.setAuth);
-
-  const { data: user } = useGetCurrentUser({
-    query: { retry: false, staleTime: 60_000 },
-  });
-  const signOutMutation = useSignOut();
-
-  const initials = getInitials(user?.name);
-  const displayName = user?.name ?? user?.username ?? '—';
+  const colorMode = useAppStore((s) => s.colorMode);
+  const setColorMode = useAppStore((s) => s.setColorMode);
 
   const handleLogout = () => {
-    signOutMutation.mutate(undefined, {
-      onSettled: () => {
-        setAuth(false, null);
-        navigate({ to: '/auth/login' });
-      },
+    setAuth(false, null);
+    onNavigate?.();
+    navigate({ to: "/auth/login" }).catch((error: unknown) => {
+      // eslint-disable-next-line no-console -- defensive logging; navigate rejection here means the router is in an unrecoverable state
+      console.error("Logout navigation failed", error);
     });
   };
 
   return (
-    <Box style={rootStyle}>
-      <Box style={sidebarStyle}>
-        <Box style={sidebarBrandStyle}>
-          <Box style={brandIconStyle}>
-            <span className="material-symbols-outlined" style={{ fontSize: '22px' }}>
-              clinical_notes
-            </span>
-          </Box>
-          <Box>
-            <Text fw={800} size="sm" c="white" lh={1.2}>
-              Agenda Saúde
-            </Text>
-            <Text size="xs" style={{ color: 'rgba(255,255,255,0.45)' }}>
-              Gestão Clínica
-            </Text>
-          </Box>
-        </Box>
-
-        <Box style={sidebarNavStyle}>
-          <Text style={navSectionLabelStyle}>{t('nav.menu')}</Text>
-          {primaryNav.map((item) => (
-            <NavEntry key={item.path} item={item} currentPath={currentPath} />
-          ))}
-
-          <Text style={{ ...navSectionLabelStyle, marginTop: '8px' }}>{t('nav.system')}</Text>
-          {secondaryNav.map((item) => (
-            <NavEntry key={item.path} item={item} currentPath={currentPath} />
-          ))}
-        </Box>
-
-        <Box style={sidebarFooterStyle}>
-          <Box style={userAvatarStyle}>{initials}</Box>
-          <Box style={{ flex: 1, minWidth: 0 }}>
-            <Text fw={600} size="xs" c="white" truncate>
-              {displayName}
-            </Text>
-            <Text size="xs" style={{ color: 'rgba(255,255,255,0.45)' }} truncate>
-              {String(user?.email ?? '')}
-            </Text>
-          </Box>
-          <span
-            className="material-symbols-outlined"
-            onClick={handleLogout}
-            title={t('nav.logout')}
-            style={{
-              fontSize: '18px',
-              color: 'rgba(255,255,255,0.35)',
-              cursor: 'pointer',
-            }}
-          >
-            logout
+    <div className="flex h-full flex-col gap-6 p-4">
+      <div className="flex items-center gap-3 px-2">
+        <div className="flex size-9 items-center justify-center rounded-(--radius-button) bg-(--color-primary) text-(--color-primary-foreground)">
+          <Stethoscope aria-hidden className="size-5" />
+        </div>
+        <div className="flex flex-col">
+          <span className="text-sub font-medium leading-tight text-(--color-text-primary)">
+            Agenda Saúde
           </span>
-        </Box>
-      </Box>
+          <span className="text-2xs text-(--color-text-tertiary)">Gestão Clínica</span>
+        </div>
+      </div>
 
-      <Box style={mainStyle}>
-        <Box style={topbarStyle}>
-          <Box style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span
-              className="material-symbols-outlined"
-              style={{ fontSize: '20px', color: 'var(--mantine-color-brand-3)' }}
-            >
-              chevron_right
-            </span>
-            <Text size="sm" fw={600} c="brand.8">
-              {getPageTitle(currentPath, t)}
-            </Text>
-          </Box>
+      <nav className="flex flex-1 flex-col gap-3 overflow-y-auto">
+        {NAV_GROUPS.map((group) => (
+          <NavSection
+            key={group.labelKey}
+            group={group}
+            currentPath={currentPath}
+            onNavigate={onNavigate}
+          />
+        ))}
+      </nav>
 
-          <Box style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <Box style={notifBtnStyle}>
-              <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>
-                notifications
-              </span>
-              <Box style={notifDotStyle} />
-            </Box>
-
-            <Box
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                padding: '4px 12px 4px 4px',
-                borderRadius: '20px',
-                backgroundColor: 'var(--mantine-color-brand-0)',
-                border: '1px solid var(--mantine-color-brand-1)',
-                cursor: 'pointer',
-              }}
-            >
-              <Box style={{ ...userAvatarStyle, width: '28px', height: '28px', fontSize: '11px' }}>
-                {initials}
-              </Box>
-              <Text size="xs" fw={600} c="brand.8">
-                {displayName}
-              </Text>
-              <Badge size="xs" color="green" variant="light">
-                {t('user.online')}
-              </Badge>
-            </Box>
-          </Box>
-        </Box>
-
-        <Box style={contentStyle}>
-          <Outlet />
-        </Box>
-      </Box>
-    </Box>
+      <div className="flex flex-col gap-2 border-t border-(--color-border) pt-4">
+        <Button
+          type="button"
+          variant="ghost"
+          className="justify-start gap-3 text-(--color-text-secondary) hover:text-(--color-text-primary)"
+          onClick={() => setColorMode(colorMode === "dark" ? "light" : "dark")}
+        >
+          {colorMode === "dark" ? (
+            <Sun aria-hidden className="size-5" />
+          ) : (
+            <Moon aria-hidden className="size-5" />
+          )}
+          {colorMode === "dark" ? t("theme.light") : t("theme.dark")}
+        </Button>
+        <Button
+          type="button"
+          variant="ghost"
+          className="justify-start gap-3 text-(--color-text-secondary) hover:text-(--color-text-primary)"
+          onClick={handleLogout}
+        >
+          <LogOut aria-hidden className="size-5" />
+          {t("nav.logout")}
+        </Button>
+      </div>
+    </div>
   );
 }
 
-function getPageTitle(path: string, t: (key: string) => string): string {
-  if (path === '/') return t('nav.dashboard');
-  if (path.startsWith('/appointments')) return t('nav.appointments');
-  if (path.startsWith('/patients')) return t('nav.patients');
-  if (path.startsWith('/professionals')) return t('nav.professionals');
-  if (path.startsWith('/form-templates')) return t('nav.forms');
-  return 'Agenda Saúde';
+export function StackedLayout() {
+  const { t } = useTranslation();
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const userName = useMemo(() => "User", []);
+  const initials = getInitials(userName);
+
+  return (
+    <div className="flex min-h-screen bg-(--color-bg-page)">
+      <aside className="hidden w-64 shrink-0 border-r border-(--color-border) bg-(--color-bg-surface) lg:block">
+        <SidebarContent />
+      </aside>
+
+      <div className="flex flex-1 flex-col">
+        <header className="flex items-center justify-between border-b border-(--color-border) bg-(--color-bg-card) px-4 py-3 lg:px-6">
+          <div className="flex items-center gap-3">
+            <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
+              <SheetTrigger asChild>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="lg:hidden"
+                  aria-label={t("nav.menu")}
+                >
+                  <Menu aria-hidden className="size-5" />
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="left" className="w-72 p-0 bg-(--color-bg-surface)">
+                <SheetTitle className="sr-only">{t("nav.menu")}</SheetTitle>
+                <SidebarContent onNavigate={() => setMobileOpen(false)} />
+              </SheetContent>
+            </Sheet>
+          </div>
+
+          {/* TODO: link this to /user-profile once that route is registered */}
+          <div className="flex items-center gap-2 rounded-(--radius-button) px-2 py-1">
+            <Avatar className="size-8">
+              <AvatarFallback className="bg-(--color-primary-surface) text-(--color-primary-text) text-xs font-medium">
+                {initials}
+              </AvatarFallback>
+            </Avatar>
+          </div>
+        </header>
+
+        <main className="flex-1 overflow-auto">
+          <Outlet />
+        </main>
+      </div>
+    </div>
+  );
 }

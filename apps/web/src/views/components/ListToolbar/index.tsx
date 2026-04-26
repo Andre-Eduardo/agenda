@@ -1,5 +1,6 @@
-import { Group, TextInput } from '@mantine/core';
-import type { ReactNode } from 'react';
+import type { ReactNode } from "react";
+import { Search } from "lucide-react";
+import { Input } from "@/components/ui/input";
 
 interface ListToolbarProps {
   searchValue?: string;
@@ -10,31 +11,32 @@ interface ListToolbarProps {
 }
 
 export function ListToolbar({
-  searchValue = '',
+  searchValue = "",
   onSearchChange,
-  searchPlaceholder = 'Buscar...',
+  searchPlaceholder = "Buscar...",
   filters,
   actions,
 }: ListToolbarProps) {
   return (
-    <Group justify="space-between" align="center" mb="md" wrap="wrap">
-      <Group gap="sm" style={{ flex: 1, minWidth: 280 }} wrap="nowrap">
+    <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+      <div className="flex flex-1 min-w-70 items-center gap-3">
         {onSearchChange && (
-          <TextInput
-            placeholder={searchPlaceholder}
-            value={searchValue}
-            onChange={(e) => onSearchChange(e.currentTarget.value)}
-            leftSection={
-              <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>
-                search
-              </span>
-            }
-            style={{ flex: 1, maxWidth: 420 }}
-          />
+          <div className="relative flex-1 max-w-105">
+            <Search
+              aria-hidden
+              className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-(--color-text-tertiary)"
+            />
+            <Input
+              placeholder={searchPlaceholder}
+              value={searchValue}
+              onChange={(e) => onSearchChange(e.target.value)}
+              className="pl-9"
+            />
+          </div>
         )}
         {filters}
-      </Group>
-      {actions && <Group gap="sm">{actions}</Group>}
-    </Group>
+      </div>
+      {actions && <div className="flex items-center gap-3">{actions}</div>}
+    </div>
   );
 }

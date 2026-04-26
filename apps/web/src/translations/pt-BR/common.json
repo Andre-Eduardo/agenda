@@ -36,5 +36,9 @@
   },
   "user": {
     "online": "Online"
+  },
+  "theme": {
+    "light": "Modo claro",
+    "dark": "Modo escuro"
   }
 }

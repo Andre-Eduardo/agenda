@@ -1,53 +1,27 @@
-import { Box, Text } from '@mantine/core';
-import type { ReactNode } from 'react';
-import { useTranslation } from 'react-i18next';
+import type { ReactNode } from "react";
+import { Inbox, type LucideIcon } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 interface EmptyStateProps {
-  icon?: string;
+  icon?: LucideIcon;
   title?: string;
   message?: string;
   action?: ReactNode;
 }
 
-export function EmptyState({ icon = 'inbox', title, message, action }: EmptyStateProps) {
+export function EmptyState({ icon: Icon = Inbox, title, message, action }: EmptyStateProps) {
   const { t } = useTranslation();
+
   return (
-    <Box
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: '48px 24px',
-        textAlign: 'center',
-      }}
-    >
-      <Box
-        style={{
-          width: 64,
-          height: 64,
-          borderRadius: '50%',
-          backgroundColor: 'var(--mantine-color-brand-0)',
-          color: 'var(--mantine-color-brand-4)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          marginBottom: 16,
-        }}
-      >
-        <span className="material-symbols-outlined" style={{ fontSize: 32 }}>
-          {icon}
-        </span>
-      </Box>
-      <Text fw={600} size="md" mb={4}>
-        {title ?? t('states.empty')}
-      </Text>
-      {message && (
-        <Text size="sm" c="brand.4" mb={action ? 'md' : 0}>
-          {message}
-        </Text>
-      )}
+    <div className="flex flex-col items-center justify-center px-6 py-12 text-center">
+      <div className="mb-4 flex size-16 items-center justify-center rounded-full bg-(--color-bg-surface) text-(--color-text-secondary)">
+        <Icon aria-hidden className="size-8" />
+      </div>
+      <p className="mb-1 text-sub font-medium text-(--color-text-primary)">
+        {title ?? t("states.empty")}
+      </p>
+      {message && <p className="mb-4 text-sm text-(--color-text-secondary)">{message}</p>}
       {action}
-    </Box>
+    </div>
   );
 }

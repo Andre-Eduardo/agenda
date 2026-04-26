@@ -1,4 +1,4 @@
-import { Skeleton, Stack } from '@mantine/core';
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface LoadingSkeletonProps {
   rows?: number;
@@ -6,11 +6,17 @@ interface LoadingSkeletonProps {
 }
 
 export function LoadingSkeleton({ rows = 5, height = 48 }: LoadingSkeletonProps) {
+  // Skeletons are placeholders with no identity — index-based keys are safe.
   return (
-    <Stack gap="xs">
+    <div className="flex flex-col gap-2">
       {Array.from({ length: rows }).map((_, i) => (
-        <Skeleton key={i} height={height} radius="md" />
+        <Skeleton
+          // eslint-disable-next-line react/no-array-index-key -- skeleton placeholders have no identity; index keys are stable here
+          key={`row-${i}`}
+          className="rounded-(--radius-card-sm) w-full"
+          style={{ height }}
+        />
       ))}
-    </Stack>
+    </div>
   );
 }
