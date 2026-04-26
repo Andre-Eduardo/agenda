@@ -16,9 +16,11 @@ type SchemaObjectForMetadataFactory = ApiPropertyOptions & {
 };
 
 export function generateOpenApiSchema(zodDto: AnyZodObject, hideDefinitions?: string[]): OpenApiSchema {
-    const filteredSchema = zodDto
-        .omit(hideDefinitions?.reduce((acc, key) => ({...acc, [key]: true}), {}) ?? {})
-        .openapi({...zodDto._def.openapi?.metadata});
+    const hideKeys = hideDefinitions?.reduce((acc, key) => ({...acc, [key]: true}), {}) ?? {};
+    const canOmit = typeof (zodDto as unknown as Record<string, unknown>).omit === 'function';
+    const filteredSchema = canOmit
+        ? zodDto.omit(hideKeys).openapi({...zodDto._def.openapi?.metadata})
+        : zodDto.openapi({...zodDto._def.openapi?.metadata});
 
     const refId = 'schema';
 
@@ -31,9 +33,22 @@ export function generateOpenApiSchema(zodDto: AnyZodObject, hideDefinitions?: st
 }
 
 export function generateNestSwaggerSchema(zodDto: AnyZodObject, hideDefinitions?: string[]): SchemasObject {
-    const generatedSchema = generateOpenApiSchema(zodDto, hideDefinitions);
+    const hideKeys = hideDefinitions?.reduce((acc, key) => ({...acc, [key]: true}), {}) ?? {};
+    const canOmit = typeof (zodDto as unknown as Record<string, unknown>).omit === 'function';
+    const filteredSchema = canOmit
+        ? zodDto.omit(hideKeys).openapi({...zodDto._def.openapi?.metadata})
+        : zodDto.openapi({...zodDto._def.openapi?.metadata});
 
-    convertSchemaObject(generatedSchema);
+    const refId = 'schema';
+
+    const registry = new OpenAPIRegistry();
+    registry.register(refId, filteredSchema);
+    const generator = new OpenApiGeneratorV3(registry.definitions);
+    const allSchemas = generator.generateComponents().components.schemas ?? {};
+
+    const generatedSchema = allSchemas[refId];
+
+    convertSchemaObject(generatedSchema, allSchemas);
 
     return generatedSchema.properties;
 }
@@ -47,9 +62,17 @@ export function generateNestSwaggerSchema(zodDto: AnyZodObject, hideDefinitions?
  * sub-schemas (array items, allOf/oneOf/anyOf, additionalProperties) are emitted verbatim,
  * so they must retain OpenAPI's `required: string[]` array form to stay spec-compliant.
  *
+ * $ref pointers in direct properties are resolved inline so NestJS Swagger never sees
+ * them — it would otherwise try to look up the ref name as a class type and fail with
+ * a circular-dependency error when the name matches an enum value.
+ *
  * Based on: https://github.com/anatine/zod-plugins/blob/main/packages/zod-nestjs/src/lib/create-zod-dto.ts
  */
-function convertSchemaObject(schemaObject: OpenApiSchema, required?: boolean): void {
+function convertSchemaObject(
+    schemaObject: OpenApiSchema,
+    allSchemas: Record<string, OpenApiSchema> = {},
+    required?: boolean,
+): void {
     if ('$ref' in schemaObject) {
         return;
     }
@@ -60,6 +83,13 @@ function convertSchemaObject(schemaObject: OpenApiSchema, required?: boolean): v
 
     for (const [key, subSchemaObject] of Object.entries(properties)) {
         if ('$ref' in subSchemaObject) {
+            // Resolve the $ref inline so NestJS Swagger receives a plain schema instead
+            // of a $ref pointer it cannot dereference without the full component registry.
+            const refName = (subSchemaObject.$ref as string).split('/').pop() ?? '';
+            const resolved = allSchemas[refName];
+            if (resolved && !('$ref' in resolved)) {
+                properties[key] = {...resolved};
+            }
             continue;
         }
 

@@ -23,7 +23,7 @@ export class ClinicalDocumentDto extends EntityDto {
     @ApiPropertyOptional({format: 'uuid', nullable: true})
     templateId: string | null;
 
-    @ApiProperty()
+    @ApiProperty({type: 'object', additionalProperties: true})
     contentJson: unknown;
 
     @ApiPropertyOptional({format: 'uuid', nullable: true})

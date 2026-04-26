@@ -58,7 +58,7 @@ export const createDraftSchema = z.object({
     type: z.nativeEnum(ClinicalDocumentType),
     patientId: entityId(PatientId),
     responsibleProfessionalId: entityId(ProfessionalId),
-    contentJson: contentJsonSchema,
+    contentJson: z.record(z.unknown()),
     appointmentId: entityId(AppointmentId).optional(),
     recordId: z.string().uuid().optional(),
 });

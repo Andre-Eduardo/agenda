@@ -156,6 +156,47 @@ Given(
 );
 
 /**
+ * Signs in as a previously created user using a professional's associated clinic-member context.
+ * Both professional and clinicMember are stored under the same key by the "a professional X exists"
+ * step, so we reverse-lookup the clinicMemberId from the professional ID.
+ *
+ * Example:
+ *   Given I am signed in as "dr_house" with professional "${ref:id:professional:dr_house}"
+ */
+Given(
+    'I am signed in as {string} with professional {string}',
+    async function (this: Context, username: string, professionalRef: string) {
+        this.clearAgent();
+
+        const professionalId = resolveReferences(this, professionalRef);
+
+        // Both professional and clinicMember are keyed by the same alias (e.g. "dr_house")
+        // so we reverse-lookup the key from the professional ID to find the clinicMemberId.
+        const profIds = (this.variables.ids as Record<string, Record<string, string>>)['professional'] ?? {};
+        const matchKey = Object.entries(profIds).find(([, id]) => id === professionalId)?.[0];
+
+        if (!matchKey) {
+            throw new Error(
+                `No clinicMember found matching professional "${professionalRef}". ` +
+                `Use "a professional X exists with specialty Y" before this step.`,
+            );
+        }
+
+        const clinicMemberId = this.getVariableId('clinicMember', matchKey);
+
+        const response = await this.agent
+            .post('/api/v1/auth/sign-in')
+            .send({
+                username: this.getUniqueValue(username),
+                password: getPassword(username),
+                clinicMemberId,
+            });
+
+        chai.expect(response.error, `Sign-in failed for "${username}": ${JSON.stringify(response.body)}`).to.be.false;
+    }
+);
+
+/**
  * Signs out the current user.
  *
  * Example:
