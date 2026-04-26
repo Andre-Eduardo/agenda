@@ -2,7 +2,7 @@ import {Injectable} from '@nestjs/common';
 import * as PrismaClient from '@prisma/client';
 import {toEnum, toEnumOrNull} from '../../domain/@shared/utils';
 import {ClinicId} from '../../domain/clinic/entities';
-import {AiAiSpecialtyGroupGroup} from '../../domain/form-template/entities';
+import {AiSpecialtyGroup} from '../../domain/form-template/entities';
 import {KnowledgeChunk, KnowledgeChunkId, type KnowledgeChunkMetadata} from '../../domain/knowledge-base/entities';
 import {MapperWithoutDto} from './mapper';
 

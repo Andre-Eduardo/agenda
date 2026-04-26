@@ -55,12 +55,8 @@ export class PatientContextSnapshotPrismaRepository
                     ? Prisma.JsonNull
                     : (data.timelineSummary as Prisma.InputJsonValue),
         };
-        const compoundUnique = {
-            patientId: data.patientId,
-            memberId: data.memberId as string,
-        };
         await this.prisma.patientContextSnapshot.upsert({
-            where: {patient_context_snapshot_unique: compoundUnique},
+            where: {id: data.id},
             create: writeData,
             update: writeData,
         });

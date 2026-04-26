@@ -7,13 +7,13 @@ import {createZodDto} from '../../@shared/validation/dto';
 import {RecordPermission} from '../../../domain/auth';
 import {ApiOperation} from '../../@shared/openapi/decorators';
 import type {Actor} from '../../../domain/@shared/actor';
-import {Specialty} from '../../../domain/form-template/entities';
+import {AiSpecialtyGroup} from '../../../domain/form-template/entities';
 import {RetrieveKnowledgeChunksService} from '../services/retrieve-knowledge-chunks.service';
 
 const searchKnowledgeSchema = z.object({
     query: z.string().min(1).max(1000),
     topK: z.coerce.number().int().min(1).max(20).optional(),
-    specialty: z.nativeEnum(Specialty).optional(),
+    specialty: z.nativeEnum(AiSpecialtyGroup).optional(),
     category: z.string().optional(),
     minScore: z.coerce.number().min(0).max(1).optional(),
 });

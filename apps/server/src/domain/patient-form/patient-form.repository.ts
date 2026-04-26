@@ -3,8 +3,7 @@ import type {ClinicId} from '../clinic/entities';
 import type {ClinicMemberId} from '../clinic-member/entities';
 import type {PatientId} from '../patient/entities';
 import type {ProfessionalId} from '../professional/entities';
-import type {FormTemplateId} from '../form-template/entities';
-import type {Specialty} from '../form-template/entities';
+import type {FormTemplateId, AiSpecialtyGroup} from '../form-template/entities';
 import type {PatientForm, PatientFormId, FormResponseStatus} from './entities';
 
 export type PatientFormFilter = {
@@ -14,7 +13,7 @@ export type PatientFormFilter = {
     responsibleProfessionalId?: ProfessionalId;
     templateId?: FormTemplateId;
     status?: FormResponseStatus;
-    specialty?: Specialty;
+    specialty?: AiSpecialtyGroup;
 };
 
 export type PatientFormSortOptions = ['appliedAt', 'createdAt', 'updatedAt', 'completedAt'];

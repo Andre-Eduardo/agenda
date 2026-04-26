@@ -8,7 +8,7 @@ import {
 import {EntityId} from '../../@shared/entity/id';
 import {InvalidInputException} from '../../@shared/exceptions';
 import type {DocumentId, Email, Phone} from '../../@shared/value-objects';
-import type {Specialty} from '../../form-template/entities';
+import type {AiSpecialtyGroup} from '../../form-template/entities';
 import {ClinicCreatedEvent, ClinicChangedEvent, ClinicDeletedEvent} from '../events';
 
 export type ClinicProps = EntityProps<Clinic>;
@@ -31,7 +31,7 @@ export class Clinic extends AggregateRoot<ClinicId> {
     zipCode: string | null;
     country: string | null;
     logoUrl: string | null;
-    clinicSpecialties: Specialty[];
+    clinicSpecialties: AiSpecialtyGroup[];
 
     constructor(props: AllEntityProps<Clinic>) {
         super(props);

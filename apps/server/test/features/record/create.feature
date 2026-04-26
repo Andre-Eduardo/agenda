@@ -12,14 +12,14 @@ Feature: Clinical record creation (POST)
         When I send a "POST" request to "/api/v1/patients" with:
             | name           | Record Patient                  |
             | documentId     | 200.300.400-50                  |
-            | professionalId | ${ref:id:professional:dr_house} |
+            | responsibleProfessionalId | ${ref:id:professional:dr_house} |
         Then the request should succeed with a 201 status code
         And I save the response field "id" as "patient" id for "rec_patient"
 
     Scenario: Create a record with free-text description
         When I send a "POST" request to "/api/v1/records" with:
             | patientId      | ${ref:id:patient:rec_patient}   |
-            | professionalId | ${ref:id:professional:dr_house} |
+            | responsibleProfessionalId | ${ref:id:professional:dr_house} |
             | description    | General clinical note           |
         Then the request should succeed with a 201 status code
         And the response should contain:
@@ -29,7 +29,7 @@ Feature: Clinical record creation (POST)
     Scenario: Create a SOAP record with structured fields
         When I send a "POST" request to "/api/v1/records" with:
             | patientId      | ${ref:id:patient:rec_patient}                     |
-            | professionalId | ${ref:id:professional:dr_house}                   |
+            | responsibleProfessionalId | ${ref:id:professional:dr_house}                   |
             | title          | Follow-up consultation                             |
             | subjective     | Patient reports persistent headache for 3 days    |
             | objective      | BP 120/80, no fever                               |
@@ -43,7 +43,7 @@ Feature: Clinical record creation (POST)
 
     Scenario: Create a record without required fields (no patientId)
         When I send a "POST" request to "/api/v1/records" with:
-            | professionalId | ${ref:id:professional:dr_house} |
+            | responsibleProfessionalId | ${ref:id:professional:dr_house} |
             | description    | Orphan note                     |
         Then the request should fail with a 400 status code
 
@@ -51,6 +51,6 @@ Feature: Clinical record creation (POST)
         Given I sign out
         When I send a "POST" request to "/api/v1/records" with:
             | patientId      | ${ref:id:patient:rec_patient}   |
-            | professionalId | ${ref:id:professional:dr_house} |
+            | responsibleProfessionalId | ${ref:id:professional:dr_house} |
             | description    | Unauthorised note               |
         Then the request should fail with a 401 status code

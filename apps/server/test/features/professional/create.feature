@@ -4,33 +4,32 @@ Feature: Professional creation (POST)
 
     Background:
         Given the following users exist:
-            | Name     | Username | Email                   | Password  |
-            | Dr. House | dr_house | house@example.com       | H0use.Dr! |
+            | Name       | Username  | Email                  | Password  |
+            | Dr. House  | dr_house  | house@example.com      | H0use.Dr! |
+            | Dr. Smith  | dr_smith  | smith@example.com      | Sm1th.Dr! |
         And I am signed in as "dr_house"
         And a professional "dr_house" exists with specialty "MEDICINA"
         And I am signed in as "dr_house" with professional "${ref:id:professional:dr_house}"
+        And a clinic member "dr_smith" with role "PROFESSIONAL" in clinic "${ref:id:clinic:dr_house}"
 
     Scenario: Create a professional with valid data
         When I send a "POST" request to "/api/v1/professionals" with:
-            | name       | Dra. Smith           |
-            | specialty  | PSICOLOGIA           |
-            | documentId | 111.222.333-44       |
+            | clinicMemberId | ${ref:id:clinicMember:dr_smith} |
+            | specialty      | PSICOLOGIA                      |
         Then the request should succeed with a 201 status code
         And the response should contain:
-            | name      | Dra. Smith |
             | specialty | PSICOLOGIA |
         And I save the response field "id" as "professional" id for "dr_smith"
 
-    Scenario: Create a professional without required field (name)
+    Scenario: Create a professional with an invalid clinicMemberId returns 400
         When I send a "POST" request to "/api/v1/professionals" with:
-            | specialty  | FISIOTERAPIA |
-            | documentId | 222.333.444-55 |
+            | clinicMemberId | not-a-valid-uuid |
+            | specialty      | FISIOTERAPIA     |
         Then the request should fail with a 400 status code
 
     Scenario: Create a professional without authentication
         Given I sign out
         When I send a "POST" request to "/api/v1/professionals" with:
-            | name      | No Auth Prof |
-            | specialty | MEDICINA     |
-            | documentId | 333.444.555-66 |
+            | clinicMemberId | ${ref:id:clinicMember:dr_smith} |
+            | specialty      | MEDICINA                        |
         Then the request should fail with a 401 status code

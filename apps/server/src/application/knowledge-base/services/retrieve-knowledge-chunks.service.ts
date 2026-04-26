@@ -1,14 +1,14 @@
 import {Injectable} from '@nestjs/common';
 import {ClinicId} from '../../../domain/clinic/entities';
 import {AiProviderRegistry} from '../../../domain/clinical-chat/ports/ai-provider-registry.port';
-import type {Specialty} from '../../../domain/form-template/entities';
+import type {AiSpecialtyGroup} from '../../../domain/form-template/entities';
 import type {KnowledgeChunk} from '../../../domain/knowledge-base/entities';
 import {KnowledgeChunkRepository} from '../../../domain/knowledge-base/knowledge-chunk.repository';
 
 export type RetrieveKnowledgeChunksInput = {
     query: string;
     topK?: number;
-    specialty?: Specialty;
+    specialty?: AiSpecialtyGroup;
     category?: string;
     /** null = global chunks only; ClinicId = clinic-private + global. */
     clinicId?: ClinicId | null;
@@ -19,7 +19,7 @@ export type RetrievedKnowledgeChunk = {
     id: string;
     content: string;
     category: string;
-    specialty: Specialty | null;
+    specialty: AiSpecialtyGroup | null;
     sourceFile: string | null;
     score: number;
 };

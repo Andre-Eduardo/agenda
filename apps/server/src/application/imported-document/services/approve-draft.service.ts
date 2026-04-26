@@ -59,6 +59,7 @@ export class ApproveDraftService implements ApplicationService<GetDraftDto, Draf
             source: RecordSource.IMPORT,
             importedDocumentId: draft.importedDocumentId,
             wasHumanEdited: draft.wasHumanEdited,
+            isLocked: false,
             files: [],
         });
 

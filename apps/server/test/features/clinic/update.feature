@@ -20,7 +20,7 @@ Feature: Clinic update (PATCH)
     Scenario: Update clinic full address
         When I send a "PATCH" request to "/api/v1/clinics/${ref:id:clinic:dr_house}" with:
             | street       | Rua das Flores |
-            | number       | 123            |
+            | number       | 123A           |
             | complement   | Apto 4         |
             | neighborhood | Centro         |
             | city         | São Paulo      |
@@ -30,7 +30,7 @@ Feature: Clinic update (PATCH)
         Then the request should succeed with a 200 status code
         And the response should contain:
             | street | Rua das Flores |
-            | number | 123            |
+            | number | 123A           |
             | city   | São Paulo      |
             | state  | SP             |
 
@@ -44,12 +44,15 @@ Feature: Clinic update (PATCH)
     Scenario: Update clinic specialties
         When I send a "PATCH" request to "/api/v1/clinics/${ref:id:clinic:dr_house}" with body:
             """JSON
-            {"clinicSpecialties": ["CARDIOLOGIA", "NEUROLOGIA"]}
+            {"clinicSpecialties": ["MEDICINA_ESPECIALIZADA", "SAUDE_MENTAL"]}
             """
         Then the request should succeed with a 200 status code
 
     Scenario: Update attempt without clinic member context returns 403
-        Given I am signed in as "dr_house"
+        Given the following users exist:
+            | Name          | Username    | Email                    | Password    |
+            | No Member     | no_member   | nomember@example.com     | N0Member.!  |
+        And I am signed in as "no_member"
         When I send a "PATCH" request to "/api/v1/clinics/${ref:id:clinic:dr_house}" with:
             | name | New Name |
         Then the request should fail with a 403 status code

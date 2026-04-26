@@ -12,14 +12,14 @@ Feature: Clinical record deletion (DELETE)
         When I send a "POST" request to "/api/v1/patients" with:
             | name           | Record Patient                  |
             | documentId     | 200.300.400-50                  |
-            | professionalId | ${ref:id:professional:dr_house} |
+            | responsibleProfessionalId | ${ref:id:professional:dr_house} |
         Then the request should succeed with a 201 status code
         And I save the response field "id" as "patient" id for "rec_patient"
 
     Scenario: Delete record
         When I send a "POST" request to "/api/v1/records" with:
             | patientId      | ${ref:id:patient:rec_patient}   |
-            | professionalId | ${ref:id:professional:dr_house} |
+            | responsibleProfessionalId | ${ref:id:professional:dr_house} |
             | description    | To be deleted                   |
         Then the request should succeed with a 201 status code
         And I save the response field "id" as "record" id for "to_delete"

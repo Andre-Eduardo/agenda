@@ -72,6 +72,7 @@ export class DraftRecordEvolutionTool implements AgentTool<Input, Output> {
             files: [],
             source: RecordSource.IMPORT,
             wasHumanEdited: false,
+            isLocked: false,
         });
 
         await this.recordRepository.save(record);

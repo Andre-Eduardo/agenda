@@ -1,4 +1,4 @@
-import {Body, Controller, Get, Param, Post} from '@nestjs/common';
+import {Body, Controller, Get, HttpCode, Param, Post} from '@nestjs/common';
 import {ApiTags} from '@nestjs/swagger';
 import {z} from 'zod';
 import {Authorize} from '../../@shared/auth';
@@ -49,6 +49,7 @@ export class AgentProposalController {
         ],
     })
     @Authorize(RecordPermission.CREATE)
+    @HttpCode(200)
     @Post(':id/confirm')
     async confirm(@RequestActor() actor: Actor, @Param('id') id: string) {
         return this.confirmProposal.execute({actor, payload: {proposalId: id}});
@@ -63,6 +64,7 @@ export class AgentProposalController {
         ],
     })
     @Authorize(RecordPermission.VIEW)
+    @HttpCode(200)
     @Post(':id/reject')
     async reject(@RequestActor() actor: Actor, @Param('id') id: string, @Body() dto: RejectProposalDto) {
         await this.rejectProposal.execute({actor, payload: {proposalId: id, reason: dto.reason}});

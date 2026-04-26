@@ -1,6 +1,6 @@
 import {ApiProperty, ApiSchema} from '@nestjs/swagger';
 import type {FormFieldIndex} from '../../../domain/form-field-index/entities';
-import {Specialty} from '../../../domain/form-template/entities';
+import {AiSpecialtyGroup} from '../../../domain/form-template/entities';
 
 @ApiSchema({name: 'FormFieldIndex'})
 export class FormFieldIndexDto {
@@ -34,8 +34,8 @@ export class FormFieldIndexDto {
     @ApiProperty({nullable: true})
     valueJson: unknown | null;
 
-    @ApiProperty({enum: Specialty})
-    specialty: Specialty;
+    @ApiProperty({enum: AiSpecialtyGroup, nullable: true})
+    specialtyGroup: AiSpecialtyGroup | null;
 
     @ApiProperty({nullable: true})
     confidence: number | null;
@@ -51,7 +51,7 @@ export class FormFieldIndexDto {
         this.valueBoolean = entry.valueBoolean;
         this.valueDate = entry.valueDate?.toISOString() ?? null;
         this.valueJson = entry.valueJson;
-        this.specialty = entry.specialty;
+        this.specialtyGroup = entry.specialtyGroup;
         this.confidence = entry.confidence;
     }
 }

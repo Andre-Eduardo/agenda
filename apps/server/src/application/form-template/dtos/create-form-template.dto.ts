@@ -1,5 +1,4 @@
 import {z} from 'zod';
-import {Specialty} from '../../../domain/form-template/entities';
 import {createZodDto} from '../../@shared/validation/dto';
 
 const createFormTemplateInputSchema = z.object({
@@ -11,7 +10,7 @@ const createFormTemplateInputSchema = z.object({
         .openapi({example: 'psico_anamnese_inicial'}),
     name: z.string().min(1).max(255).openapi({example: 'Anamnese Inicial'}),
     description: z.string().max(1000).nullish().openapi({example: 'Formulário de anamnese para primeira consulta'}),
-    specialty: z.nativeEnum(Specialty).openapi({example: Specialty.PSICOLOGIA}),
+    specialty: z.string().min(1).max(100).openapi({example: 'PSICOLOGIA'}),
     /**
      * Public templates have null clinicId (system-wide). Private templates are
      * scoped to the actor's current clinic via the request-context middleware.

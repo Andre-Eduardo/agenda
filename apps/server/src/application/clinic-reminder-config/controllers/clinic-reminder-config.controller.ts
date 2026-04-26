@@ -11,7 +11,7 @@ import {entityIdParam} from '../../@shared/openapi/params';
 import {ValidatedParam} from '../../@shared/validation';
 import {ClinicReminderConfigDto, UpsertReminderConfigDto} from '../dtos/clinic-reminder-config.dto';
 import {GetReminderConfigService} from '../services/get-reminder-config.service';
-import {UpsertReminderConfigService} from '../services/upsert-reminder-config.service';
+import {UpsertReminderConfigService, UpsertReminderConfigCommand} from '../services/upsert-reminder-config.service';
 
 @ApiTags('Clinic Reminder Config')
 @Controller('clinics')
@@ -49,6 +49,6 @@ export class ClinicReminderConfigController {
         clinicId: ClinicId,
         @Body() payload: UpsertReminderConfigDto,
     ): Promise<ClinicReminderConfigDto> {
-        return this.upsertReminderConfigService.execute({actor, payload: {...payload, clinicId}});
+        return this.upsertReminderConfigService.execute({actor, payload: {...payload, clinicId} satisfies UpsertReminderConfigCommand});
     }
 }

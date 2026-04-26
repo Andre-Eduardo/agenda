@@ -1,6 +1,6 @@
 import {Injectable, NotFoundException} from '@nestjs/common';
 import {AGENT_REGISTRY, SPECIALTY_AGENT_MAP, type AgentConfig} from './agent.config';
-import {Specialty} from '../../domain/form-template/entities';
+import {AiSpecialtyGroup} from '../../domain/form-template/entities';
 
 /**
  * Resolve agentes clínicos a partir do AGENT_REGISTRY estático.
@@ -10,15 +10,7 @@ import {Specialty} from '../../domain/form-template/entities';
  */
 @Injectable()
 export class AgentResolverService {
-    /**
-     * Retorna o AgentConfig para a especialidade informada.
-     * Usa SPECIALTY_AGENT_MAP para mapear Specialty → slug → AGENT_REGISTRY.
-     *
-     * @example
-     * resolveAgentBySpecialty(Specialty.PSICOLOGIA)
-     * // retorna config do agente 'psychologist' com providerModelId no formato OpenRouter
-     */
-    resolveAgentBySpecialty(specialty: Specialty): AgentConfig {
+    resolveAgentBySpecialty(specialty: AiSpecialtyGroup): AgentConfig {
         const slug = SPECIALTY_AGENT_MAP[specialty];
         return AGENT_REGISTRY[slug];
     }

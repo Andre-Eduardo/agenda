@@ -3,6 +3,7 @@ import {ApiTags} from '@nestjs/swagger';
 import {Actor} from '../../../domain/@shared/actor';
 import {ClinicId} from '../../../domain/clinic/entities';
 import {RequestActor} from '../../@shared/auth/request-actor.decorator';
+import {BypassClinicMember} from '../../@shared/auth/bypass-clinic-member.decorator';
 import {ApiOperation} from '../../@shared/openapi/decorators';
 import {ClinicMemberDto, CreateClinicMemberDto} from '../dtos';
 import {CreateClinicMemberService, ListClinicMembersService} from '../services';
@@ -19,6 +20,7 @@ export class ClinicMemberController {
         summary: 'Adds a new member to a clinic',
         responses: [{status: 201, description: 'Member created', type: ClinicMemberDto}],
     })
+    @BypassClinicMember()
     @Post()
     async createClinicMember(
         @RequestActor() actor: Actor,

@@ -1,11 +1,11 @@
-import type {Specialty} from '../form-template/entities';
+import type {AiSpecialtyGroup} from '../form-template/entities';
 import type {PatientFormId} from '../patient-form/entities';
 import type {FormFieldIndex, FormFieldIndexId} from './entities';
 
 export type FormFieldIndexFilter = {
     patientFormId?: PatientFormId;
     fieldId?: string;
-    specialty?: Specialty;
+    specialtyGroup?: AiSpecialtyGroup;
 };
 
 export interface FormFieldIndexRepository {

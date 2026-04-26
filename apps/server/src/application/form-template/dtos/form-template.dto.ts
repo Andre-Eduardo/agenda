@@ -1,6 +1,5 @@
 import {ApiProperty, ApiSchema} from '@nestjs/swagger';
 import type {FormTemplate} from '../../../domain/form-template/entities';
-import {Specialty} from '../../../domain/form-template/entities';
 import {EntityDto} from '../../@shared/dto';
 
 @ApiSchema({name: 'FormTemplate'})
@@ -14,8 +13,8 @@ export class FormTemplateDto extends EntityDto {
     @ApiProperty({nullable: true, description: 'Optional description'})
     description: string | null;
 
-    @ApiProperty({enum: Specialty, description: 'Target specialty'})
-    specialty: Specialty;
+    @ApiProperty({nullable: true, description: 'Target specialty label (free text)'})
+    specialty: string | null;
 
     @ApiProperty({description: 'Whether this is a public system template (clinicId is null)'})
     isPublic: boolean;
@@ -31,7 +30,7 @@ export class FormTemplateDto extends EntityDto {
         this.code = template.code;
         this.name = template.name;
         this.description = template.description;
-        this.specialty = template.specialty;
+        this.specialty = template.specialtyLabel;
         this.isPublic = template.isPublic;
         this.clinicId = template.clinicId?.toString() ?? null;
         this.createdByMemberId = template.createdByMemberId?.toString() ?? null;

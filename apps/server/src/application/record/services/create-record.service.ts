@@ -36,6 +36,7 @@ export class CreateRecordService implements ApplicationService<CreateRecordDto, 
             source: payload.source ?? RecordSource.MANUAL,
             importedDocumentId: payload.importedDocumentId ? ImportedDocumentId.from(payload.importedDocumentId) : null,
             wasHumanEdited: payload.wasHumanEdited ?? false,
+            isLocked: false,
             files: [],
         });
 

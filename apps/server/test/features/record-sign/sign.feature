@@ -12,14 +12,14 @@ Feature: Record sign and reopen (POST)
         When I send a "POST" request to "/api/v1/patients" with:
             | name           | Sign Patient                    |
             | documentId     | 333.444.555-66                  |
-            | professionalId | ${ref:id:professional:dr_house} |
+            | responsibleProfessionalId | ${ref:id:professional:dr_house} |
         Then the request should succeed with a 201 status code
         And I save the response field "id" as "patient" id for "sign_patient"
 
     Scenario: Sign a record — isLocked becomes true and signedAt is set
         When I send a "POST" request to "/api/v1/records" with:
             | patientId      | ${ref:id:patient:sign_patient}  |
-            | professionalId | ${ref:id:professional:dr_house} |
+            | responsibleProfessionalId | ${ref:id:professional:dr_house} |
             | description    | Consulta de rotina              |
         Then the request should succeed with a 201 status code
         And I save the response field "id" as "record" id for "to_sign"
@@ -31,7 +31,7 @@ Feature: Record sign and reopen (POST)
     Scenario: Reopen a signed record with justification creates a RecordAmendment
         When I send a "POST" request to "/api/v1/records" with:
             | patientId      | ${ref:id:patient:sign_patient}  |
-            | professionalId | ${ref:id:professional:dr_house} |
+            | responsibleProfessionalId | ${ref:id:professional:dr_house} |
             | description    | Evolução para reabrir           |
         Then the request should succeed with a 201 status code
         And I save the response field "id" as "record" id for "to_reopen"
@@ -46,7 +46,7 @@ Feature: Record sign and reopen (POST)
     Scenario: List amendments after reopening
         When I send a "POST" request to "/api/v1/records" with:
             | patientId      | ${ref:id:patient:sign_patient}  |
-            | professionalId | ${ref:id:professional:dr_house} |
+            | responsibleProfessionalId | ${ref:id:professional:dr_house} |
             | description    | Evolução com amendment          |
         Then the request should succeed with a 201 status code
         And I save the response field "id" as "record" id for "with_amendment"
@@ -61,7 +61,7 @@ Feature: Record sign and reopen (POST)
     Scenario: Reopen without justification returns 400
         When I send a "POST" request to "/api/v1/records" with:
             | patientId      | ${ref:id:patient:sign_patient}  |
-            | professionalId | ${ref:id:professional:dr_house} |
+            | responsibleProfessionalId | ${ref:id:professional:dr_house} |
             | description    | Evolução sem justificativa      |
         Then the request should succeed with a 201 status code
         And I save the response field "id" as "record" id for "no_justification"

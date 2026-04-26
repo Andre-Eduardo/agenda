@@ -132,7 +132,6 @@ export class Context extends World {
 
     public async stop(): Promise<void> {
         try {
-            await this.prisma.$disconnect();
             await this.app.close();
         } catch (error) {
             console.error('Failed to teardown test environment:', error);

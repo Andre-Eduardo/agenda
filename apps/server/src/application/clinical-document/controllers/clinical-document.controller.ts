@@ -144,7 +144,7 @@ export class DocumentTemplateController {
         summary: 'Create or update a document template for a clinic',
         parameters: [
             entityIdParam('Clinic ID', 'clinicId'),
-            {name: 'type', description: 'Document type', in: 'path', enum: Object.values(ClinicalDocumentType), type: 'string', required: true},
+            {name: 'type', description: 'Document type', enum: Object.values(ClinicalDocumentType), type: 'string', required: true},
         ],
         responses: [{status: 200, description: 'Template upserted', type: ClinicalDocumentTemplateDto}],
     })

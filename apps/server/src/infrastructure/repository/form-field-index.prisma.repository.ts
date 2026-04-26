@@ -49,7 +49,7 @@ export class FormFieldIndexPrismaRepository extends PrismaRepository implements 
         const where: PrismaClient.Prisma.FormFieldIndexWhereInput = {
             patientFormId: filter.patientFormId?.toString(),
             fieldId: filter.fieldId,
-            specialty: toEnumOrNull(PrismaClient.Specialty, filter.specialty) ?? undefined,
+            specialtyGroup: toEnumOrNull(PrismaClient.AiSpecialtyGroup, filter.specialtyGroup) ?? undefined,
         };
 
         const records = await this.prisma.formFieldIndex.findMany({where, orderBy: {createdAt: 'desc'}});

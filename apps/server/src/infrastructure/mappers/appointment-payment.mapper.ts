@@ -53,6 +53,7 @@ export class AppointmentPaymentMapper extends MapperWithoutDto<AppointmentPaymen
             notes: entity.notes,
             createdAt: entity.createdAt,
             updatedAt: entity.updatedAt,
+            deletedAt: entity.deletedAt ?? null,
         };
     }
 }

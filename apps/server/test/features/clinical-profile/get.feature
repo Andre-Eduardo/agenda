@@ -18,9 +18,9 @@ Feature: Clinical profile retrieval (GET)
 
     Scenario: Get clinical profile after creation
         When I send a "PUT" request to "/api/v1/patients/${ref:id:patient:profile_patient}/clinical-profile" with:
-            | professionalId | ${ref:id:professional:dr_house} |
-            | allergies      | Latex                           |
-            | surgicalHistory| Appendectomy 2010               |
+            | responsibleProfessionalId | ${ref:id:professional:dr_house} |
+            | allergies                 | Latex                           |
+            | surgicalHistory           | Appendectomy 2010               |
         Then the request should succeed with a 200 status code
         When I send a "GET" request to "/api/v1/patients/${ref:id:patient:profile_patient}/clinical-profile"
         Then the request should succeed with a 200 status code

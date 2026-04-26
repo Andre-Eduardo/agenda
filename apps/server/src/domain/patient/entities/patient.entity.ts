@@ -2,6 +2,7 @@ import type {ClinicId} from '@domain/clinic/entities';
 import {type AllEntityProps, type EntityJson, type EntityProps, type CreateEntity} from '../../@shared/entity';
 import {Person, PersonId, PersonType} from '../../person/entities/person.entity';
 import {PatientCreatedEvent, PatientChangedEvent, PatientDeletedEvent} from '../events';
+import type {DocumentId} from '../../@shared/value-objects';
 
 export type PatientAddressData = {
     street: string | null;
@@ -26,6 +27,7 @@ export type CreatePatient = CreateEntity<Patient>;
 export type UpdatePatient = Partial<PatientProps>;
 
 export class Patient extends Person {
+    declare documentId: DocumentId;
     clinicId: ClinicId;
     birthDate: Date | null;
     email: string | null;

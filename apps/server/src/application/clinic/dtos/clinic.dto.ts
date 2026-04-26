@@ -1,6 +1,6 @@
 import {ApiProperty, ApiSchema} from '@nestjs/swagger';
 import type {Clinic} from '../../../domain/clinic/entities';
-import {Specialty} from '../../../domain/form-template/entities';
+import {AiSpecialtyGroup} from '../../../domain/form-template/entities';
 import {EntityDto} from '../../@shared/dto';
 
 @ApiSchema({name: 'Clinic'})
@@ -47,8 +47,8 @@ export class ClinicDto extends EntityDto {
     @ApiProperty({nullable: true, description: 'Logo URL'})
     logoUrl: string | null;
 
-    @ApiProperty({enum: Specialty, isArray: true, description: 'Specialties offered by the clinic'})
-    clinicSpecialties: Specialty[];
+    @ApiProperty({enum: AiSpecialtyGroup, isArray: true, description: 'Specialties offered by the clinic'})
+    clinicSpecialties: AiSpecialtyGroup[];
 
     constructor(clinic: Clinic) {
         super(clinic);

@@ -20,7 +20,7 @@ export enum Gender {
 }
 export class Person extends AggregateRoot<PersonId> {
     name: string;
-    documentId: DocumentId;
+    documentId: DocumentId | null;
     phone: Phone | null;
     gender: Gender | null;
     personType: PersonType;
@@ -28,7 +28,7 @@ export class Person extends AggregateRoot<PersonId> {
         super(props);
 
         this.name = props.name;
-        this.documentId = props.documentId;
+        this.documentId = props.documentId ?? null;
         this.phone = props.phone ?? null;
         this.gender = props.gender ?? null;
         this.personType = props.personType ?? PersonType.NATURAL;
@@ -68,7 +68,7 @@ export class Person extends AggregateRoot<PersonId> {
             id: this.id.toJSON(),
             name: this.name,
             gender: this.gender ?? null,
-            documentId: this.documentId.toJSON(),
+            documentId: this.documentId?.toJSON() ?? null,
             phone: this.phone?.toJSON() ?? null,
             personType: this.personType,
             createdAt: this.createdAt.toJSON(),

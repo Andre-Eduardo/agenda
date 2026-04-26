@@ -43,7 +43,7 @@ export class PdfBuilderService {
     async generateBuffer(ctx: PdfBuildContext): Promise<Buffer> {
         const docDefinition = this.buildDocDefinition(ctx);
         // eslint-disable-next-line @typescript-eslint/no-require-imports
-        const pdfmake = require('pdfmake') as typeof import('pdfmake');
+        const pdfmake = require('pdfmake/build/pdfmake') as typeof import('pdfmake');
         // eslint-disable-next-line @typescript-eslint/no-require-imports
         const HelveticaFont = require('pdfmake/build/standard-fonts/Helvetica');
         pdfmake.addFontContainer(HelveticaFont);

@@ -48,7 +48,7 @@ export class SearchFormTemplatesService
         actor: Actor,
     ): Parameters<FormTemplateRepository['search']>[1] {
         const filter: Parameters<FormTemplateRepository['search']>[1] = {
-            specialty: payload.specialty,
+            specialtyLabel: payload.specialty,
         };
 
         if (payload.scope === 'public') {

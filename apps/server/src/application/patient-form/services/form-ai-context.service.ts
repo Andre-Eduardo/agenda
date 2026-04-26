@@ -6,13 +6,13 @@ import {FormTemplateRepository} from '../../../domain/form-template/form-templat
 import {FormTemplateVersionRepository} from '../../../domain/form-template-version/form-template-version.repository';
 import {FormFieldIndexRepository} from '../../../domain/form-field-index/form-field-index.repository';
 import {ResourceNotFoundException} from '../../../domain/@shared/exceptions';
-import type {Specialty} from '../../../domain/form-template/entities';
+import type {AiSpecialtyGroup} from '../../../domain/form-template/entities';
 import type {PatientForm} from '../../../domain/patient-form/entities';
 import {FormResponseStatus} from '../../../domain/patient-form/entities';
 import type {FormFieldIndex} from '../../../domain/form-field-index/entities';
 
 export type AiContextFilter = {
-    specialty?: Specialty;
+    specialty?: AiSpecialtyGroup;
     fromDate?: Date;
     toDate?: Date;
     onlyCompleted?: boolean;
@@ -143,7 +143,7 @@ export class FormAiContextService {
                 code: template?.code ?? '',
                 name: template?.name ?? '',
                 versionNumber: version?.versionNumber ?? 0,
-                specialty: template?.specialty ?? '',
+                specialty: template?.specialtyLabel ?? '',
             },
             appliedAt: form.appliedAt.toISOString(),
             completedAt: form.completedAt?.toISOString() ?? null,

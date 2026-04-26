@@ -86,7 +86,7 @@ export class ClinicalDocument extends AggregateRoot<ClinicalDocumentId> {
     responsibleProfessionalId: ProfessionalId;
     type: ClinicalDocumentType;
     templateId: ClinicalDocumentTemplateId | null;
-    contentJson: ClinicalDocumentContent;
+    contentJson: Record<string, unknown>;
     fileId: string | null;
     generatedAt: Date | null;
     status: ClinicalDocumentStatus;

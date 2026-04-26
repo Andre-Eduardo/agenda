@@ -4,17 +4,18 @@ Feature: Professional deletion (DELETE)
 
     Background:
         Given the following users exist:
-            | Name     | Username | Email                   | Password  |
-            | Dr. House | dr_house | house@example.com       | H0use.Dr! |
+            | Name       | Username  | Email                  | Password  |
+            | Dr. House  | dr_house  | house@example.com      | H0use.Dr! |
+            | Dr. Smith  | dr_smith  | smith@example.com      | Sm1th.Dr! |
         And I am signed in as "dr_house"
         And a professional "dr_house" exists with specialty "MEDICINA"
         And I am signed in as "dr_house" with professional "${ref:id:professional:dr_house}"
+        And a clinic member "dr_smith" with role "PROFESSIONAL" in clinic "${ref:id:clinic:dr_house}"
 
     Scenario: Delete professional
         When I send a "POST" request to "/api/v1/professionals" with:
-            | name       | To Be Deleted  |
-            | specialty  | MEDICINA       |
-            | documentId | 999.888.777-66 |
+            | clinicMemberId | ${ref:id:clinicMember:dr_smith} |
+            | specialty      | MEDICINA                        |
         Then the request should succeed with a 201 status code
         And I save the response field "id" as "professional" id for "to_delete"
         When I send a "DELETE" request to "/api/v1/professionals/${ref:id:professional:to_delete}"

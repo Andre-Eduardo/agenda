@@ -1,14 +1,11 @@
 import {ApiProperty, ApiSchema} from '@nestjs/swagger';
 import {z} from 'zod';
-import {ClinicId} from '../../../domain/clinic/entities';
 import {ReminderChannel} from '../../../domain/appointment-reminder/entities';
 import type {ClinicReminderConfig} from '../../../domain/clinic-reminder-config/entities';
 import {EntityDto} from '../../@shared/dto';
 import {createZodDto} from '../../@shared/validation/dto';
-import {entityId} from '../../@shared/validation/schemas';
 
 export const upsertReminderConfigSchema = z.object({
-    clinicId: entityId(ClinicId),
     enabledChannels: z.array(z.nativeEnum(ReminderChannel)).min(1),
     hoursBeforeList: z.array(z.number().int().positive()).min(1),
     isActive: z.boolean().optional(),

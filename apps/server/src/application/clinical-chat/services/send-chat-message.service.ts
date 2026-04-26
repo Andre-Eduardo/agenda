@@ -227,6 +227,7 @@ export class SendChatMessageService
 
         // ─── 8. Persistir mensagem do usuário ────────────────────────────────
         const userMessage = PatientChatMessage.create({
+            clinicId,
             sessionId: payload.sessionId,
             role: ChatMessageRole.USER,
             content: payload.content,
@@ -242,7 +243,7 @@ export class SendChatMessageService
         // Resolve o modelo: agentProfile.providerModelId → padrão da especialidade
         const resolvedModel =
             agentProfile?.providerModelId ??
-            getDefaultModelForSpecialty(agentProfile?.specialty ?? null);
+            getDefaultModelForSpecialty(agentProfile?.specialtyGroup ?? null);
 
         const provider = this.aiProviderRegistry.getChatProvider();
         const useAgentTools =
@@ -314,6 +315,7 @@ export class SendChatMessageService
 
             // ─── 10. Persistir mensagem do assistente ─────────────────────────
             const assistantMessage = PatientChatMessage.create({
+                clinicId,
                 sessionId: payload.sessionId,
                 role: ChatMessageRole.ASSISTANT,
                 content: replyContent,
@@ -452,7 +454,7 @@ export class SendChatMessageService
     /** Retorna o primeiro agente genérico ativo (specialty=null) ou o primeiro ativo encontrado. */
     private async resolveDefaultAgentProfile() {
         const profiles = await this.agentProfileRepository.findAllActive();
-        return profiles.find((p) => p.specialty === null) ?? profiles[0] ?? null;
+        return profiles.find((p) => p.specialtyGroup === null) ?? profiles[0] ?? null;
     }
 
     /**
