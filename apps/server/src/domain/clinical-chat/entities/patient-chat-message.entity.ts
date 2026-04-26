@@ -1,5 +1,6 @@
 import {AggregateRoot, type AllEntityProps, type EntityJson, type EntityProps, type CreateEntity} from '../../@shared/entity';
 import {EntityId} from '../../@shared/entity/id';
+import type {ClinicId} from '../../clinic/entities';
 import type {PatientChatSessionId} from './patient-chat-session.entity';
 
 export enum ChatMessageRole {
@@ -16,6 +17,8 @@ export type PatientChatMessageProps = EntityProps<PatientChatMessage>;
 export type CreatePatientChatMessage = CreateEntity<PatientChatMessage>;
 
 export class PatientChatMessage extends AggregateRoot<PatientChatMessageId> {
+    /** Desnormalizado para isolamento de tenant e filtros eficientes (Bloco 6). */
+    clinicId: ClinicId;
     sessionId: PatientChatSessionId;
     role: ChatMessageRole;
     content: string;
@@ -29,6 +32,7 @@ export class PatientChatMessage extends AggregateRoot<PatientChatMessageId> {
 
     constructor(props: AllEntityProps<PatientChatMessage>) {
         super(props);
+        this.clinicId = props.clinicId;
         this.sessionId = props.sessionId;
         this.role = props.role;
         this.content = props.content;
@@ -42,6 +46,7 @@ export class PatientChatMessage extends AggregateRoot<PatientChatMessageId> {
         return new PatientChatMessage({
             ...props,
             id: PatientChatMessageId.generate(),
+            clinicId: props.clinicId!,
             sessionId: props.sessionId!,
             role: props.role!,
             content: props.content!,
@@ -56,6 +61,7 @@ export class PatientChatMessage extends AggregateRoot<PatientChatMessageId> {
     toJSON(): EntityJson<PatientChatMessage> {
         return {
             id: this.id.toJSON(),
+            clinicId: this.clinicId.toJSON(),
             sessionId: this.sessionId.toJSON(),
             role: this.role,
             content: this.content,

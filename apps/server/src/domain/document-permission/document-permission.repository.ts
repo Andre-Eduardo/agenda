@@ -10,6 +10,7 @@ export interface DocumentPermissionRepository {
     ): Promise<DocumentPermission | null>;
     findByEntity(entityType: DocumentEntityType, entityId: string): Promise<DocumentPermission[]>;
     save(permission: DocumentPermission): Promise<void>;
+    deleteMany(entityType: DocumentEntityType, entityId: string): Promise<void>;
 }
 
 export abstract class DocumentPermissionRepository {}

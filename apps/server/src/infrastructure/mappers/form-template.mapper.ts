@@ -1,9 +1,9 @@
 import {Injectable} from '@nestjs/common';
 import * as PrismaClient from '@prisma/client';
-import {toEnum} from '../../domain/@shared/utils';
+import {toEnumOrNull} from '../../domain/@shared/utils';
 import {ClinicId} from '../../domain/clinic/entities';
 import {ClinicMemberId} from '../../domain/clinic-member/entities';
-import {FormTemplate, FormTemplateId, Specialty} from '../../domain/form-template/entities';
+import {AiSpecialtyGroup, FormTemplate, FormTemplateId} from '../../domain/form-template/entities';
 import {MapperWithoutDto} from './mapper';
 
 export type FormTemplateModel = PrismaClient.FormTemplate;
@@ -16,7 +16,8 @@ export class FormTemplateMapper extends MapperWithoutDto<FormTemplate, FormTempl
             code: model.code,
             name: model.name,
             description: model.description ?? null,
-            specialty: toEnum(Specialty, model.specialty),
+            specialtyGroup: toEnumOrNull(AiSpecialtyGroup, model.specialtyGroup),
+            specialtyLabel: model.specialtyLabel ?? null,
             isPublic: model.isPublic,
             clinicId: model.clinicId ? ClinicId.from(model.clinicId) : null,
             createdByMemberId: model.createdByMemberId ? ClinicMemberId.from(model.createdByMemberId) : null,
@@ -32,7 +33,10 @@ export class FormTemplateMapper extends MapperWithoutDto<FormTemplate, FormTempl
             code: entity.code,
             name: entity.name,
             description: entity.description,
-            specialty: toEnum(PrismaClient.Specialty, entity.specialty),
+            specialtyGroup: entity.specialtyGroup
+                ? toEnumOrNull(PrismaClient.AiSpecialtyGroup, entity.specialtyGroup)
+                : null,
+            specialtyLabel: entity.specialtyLabel,
             isPublic: entity.isPublic,
             clinicId: entity.clinicId?.toString() ?? null,
             createdByMemberId: entity.createdByMemberId?.toString() ?? null,

@@ -1,9 +1,9 @@
 import {Injectable} from '@nestjs/common';
 import * as PrismaClient from '@prisma/client';
-import {toEnum} from '../../domain/@shared/utils';
+import {toEnumOrNull} from '../../domain/@shared/utils';
 import {FormFieldIndex, FormFieldIndexId} from '../../domain/form-field-index/entities';
 import {PatientFormId} from '../../domain/patient-form/entities';
-import {Specialty} from '../../domain/form-template/entities';
+import {AiSpecialtyGroup} from '../../domain/form-template/entities';
 import {MapperWithoutDto} from './mapper';
 
 export type FormFieldIndexModel = PrismaClient.FormFieldIndex;
@@ -22,7 +22,7 @@ export class FormFieldIndexMapper extends MapperWithoutDto<FormFieldIndex, FormF
             valueBoolean: model.valueBoolean ?? null,
             valueDate: model.valueDate ?? null,
             valueJson: model.valueJson ?? null,
-            specialty: toEnum(Specialty, model.specialty),
+            specialtyGroup: toEnumOrNull(AiSpecialtyGroup, model.specialtyGroup),
             confidence: model.confidence ?? null,
             createdAt: model.createdAt,
             updatedAt: model.updatedAt,
@@ -41,7 +41,9 @@ export class FormFieldIndexMapper extends MapperWithoutDto<FormFieldIndex, FormF
             valueBoolean: entity.valueBoolean,
             valueDate: entity.valueDate ?? null,
             valueJson: entity.valueJson ? (entity.valueJson as PrismaClient.Prisma.JsonValue) : null,
-            specialty: toEnum(PrismaClient.Specialty, entity.specialty),
+            specialtyGroup: entity.specialtyGroup
+                ? toEnumOrNull(PrismaClient.AiSpecialtyGroup, entity.specialtyGroup)
+                : null,
             confidence: entity.confidence,
             createdAt: entity.createdAt,
             updatedAt: entity.updatedAt,

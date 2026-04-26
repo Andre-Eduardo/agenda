@@ -1,5 +1,6 @@
 import {Injectable} from '@nestjs/common';
 import * as PrismaClient from '@prisma/client';
+import {ClinicId} from '../../domain/clinic/entities';
 import {ClinicMemberId} from '../../domain/clinic-member/entities';
 import {WorkingHours, WorkingHoursId} from '../../domain/professional/entities';
 import {MapperWithoutDto} from './mapper';
@@ -11,6 +12,7 @@ export class WorkingHoursMapper extends MapperWithoutDto<WorkingHours, WorkingHo
     toDomain(model: WorkingHoursModel): WorkingHours {
         return new WorkingHours({
             id: WorkingHoursId.from(model.id),
+            clinicId: ClinicId.from(model.clinicId),
             clinicMemberId: ClinicMemberId.from(model.clinicMemberId),
             dayOfWeek: model.dayOfWeek,
             startTime: model.startTime,
@@ -19,13 +21,14 @@ export class WorkingHoursMapper extends MapperWithoutDto<WorkingHours, WorkingHo
             active: model.active,
             createdAt: model.createdAt,
             updatedAt: model.updatedAt,
-            deletedAt: null,
+            deletedAt: model.deletedAt ?? null,
         });
     }
 
     toPersistence(entity: WorkingHours): WorkingHoursModel {
         return {
             id: entity.id.toString(),
+            clinicId: entity.clinicId.toString(),
             clinicMemberId: entity.clinicMemberId.toString(),
             dayOfWeek: entity.dayOfWeek,
             startTime: entity.startTime,
@@ -34,6 +37,7 @@ export class WorkingHoursMapper extends MapperWithoutDto<WorkingHours, WorkingHo
             active: entity.active,
             createdAt: entity.createdAt,
             updatedAt: entity.updatedAt,
+            deletedAt: entity.deletedAt ?? null,
         };
     }
 }

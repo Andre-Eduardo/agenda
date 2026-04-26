@@ -1,5 +1,5 @@
 import {z} from 'zod';
-import {Specialty} from '../../../domain/form-template/entities';
+import {AiSpecialtyGroup} from '../../../domain/form-template/entities';
 import {ProfessionalId} from '../../../domain/professional/entities';
 import {createZodDto} from '../../@shared/validation/dto';
 import {entityId} from '../../@shared/validation/schemas';
@@ -7,7 +7,7 @@ import {entityId} from '../../@shared/validation/schemas';
 const updateProfessionalInputSchema = z.object({
     registrationNumber: z.string().nullish().openapi({example: 'CRM-SP 12345'}),
     specialty: z.string().nullish().openapi({example: 'Neurology'}),
-    specialtyNormalized: z.nativeEnum(Specialty).nullish(),
+    specialtyNormalized: z.nativeEnum(AiSpecialtyGroup).nullish(),
 });
 
 export class UpdateProfessionalInputDto extends createZodDto(updateProfessionalInputSchema) {}

@@ -2,17 +2,7 @@ import {AggregateRoot, type AllEntityProps, type CreateEntity, type EntityProps,
 import {EntityId} from '../../@shared/entity/id';
 import type {ClinicId} from '../../clinic/entities';
 import type {ClinicMemberId} from '../../clinic-member/entities';
-
-export enum Specialty {
-    PSICOLOGIA = 'PSICOLOGIA',
-    MEDICINA = 'MEDICINA',
-    FISIOTERAPIA = 'FISIOTERAPIA',
-    FONOAUDIOLOGIA = 'FONOAUDIOLOGIA',
-    NUTRICAO = 'NUTRICAO',
-    TERAPIA_OCUPACIONAL = 'TERAPIA_OCUPACIONAL',
-    ENFERMAGEM = 'ENFERMAGEM',
-    OUTROS = 'OUTROS',
-}
+import {AiSpecialtyGroup} from './ai-specialty-group';
 
 export type FormTemplateProps = EntityProps<FormTemplate>;
 export type CreateFormTemplate = CreateEntity<FormTemplate>;
@@ -21,7 +11,10 @@ export class FormTemplate extends AggregateRoot<FormTemplateId> {
     code: string;
     name: string;
     description: string | null;
-    specialty: Specialty;
+    /** Grupo de IA para roteamento semântico de templates. Substituiu o enum Specialty obrigatório. */
+    specialtyGroup: AiSpecialtyGroup | null;
+    /** Rótulo livre de exibição para o usuário (ex: "Neuropsicologia", "Ortopedia Pediátrica"). */
+    specialtyLabel: string | null;
     isPublic: boolean;
     /** Null para templates globais (isPublic=true). */
     clinicId: ClinicId | null;
@@ -33,7 +26,8 @@ export class FormTemplate extends AggregateRoot<FormTemplateId> {
         this.code = props.code;
         this.name = props.name;
         this.description = props.description ?? null;
-        this.specialty = props.specialty;
+        this.specialtyGroup = props.specialtyGroup ?? null;
+        this.specialtyLabel = props.specialtyLabel ?? null;
         this.isPublic = props.isPublic ?? false;
         this.clinicId = props.clinicId ?? null;
         this.createdByMemberId = props.createdByMemberId ?? null;
@@ -45,6 +39,8 @@ export class FormTemplate extends AggregateRoot<FormTemplateId> {
             ...props,
             id: FormTemplateId.generate(),
             description: props.description ?? null,
+            specialtyGroup: props.specialtyGroup ?? null,
+            specialtyLabel: props.specialtyLabel ?? null,
             isPublic: props.isPublic ?? false,
             clinicId: props.clinicId ?? null,
             createdByMemberId: props.createdByMemberId ?? null,
@@ -71,7 +67,8 @@ export class FormTemplate extends AggregateRoot<FormTemplateId> {
             code: this.code,
             name: this.name,
             description: this.description,
-            specialty: this.specialty,
+            specialtyGroup: this.specialtyGroup,
+            specialtyLabel: this.specialtyLabel,
             isPublic: this.isPublic,
             clinicId: this.clinicId?.toJSON() ?? null,
             createdByMemberId: this.createdByMemberId?.toJSON() ?? null,

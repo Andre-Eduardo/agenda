@@ -1,7 +1,7 @@
 import {AggregateRoot, type AllEntityProps, type EntityJson, type EntityProps, type CreateEntity} from '../../@shared/entity';
 import {EntityId} from '../../@shared/entity/id';
 import type {ClinicId} from '../../clinic/entities';
-import type {Specialty} from '../../form-template/entities';
+import type {AiSpecialtyGroup} from '../../form-template/entities';
 
 export type KnowledgeChunkMetadata = {
     title?: string | null;
@@ -16,7 +16,7 @@ export type CreateKnowledgeChunk = CreateEntity<KnowledgeChunk>;
 export class KnowledgeChunk extends AggregateRoot<KnowledgeChunkId> {
     /** null = chunk global; preenchido = chunk scoped para uma clínica */
     clinicId: ClinicId | null;
-    specialty: Specialty | null;
+    specialty: AiSpecialtyGroup | null;
     /** "protocolo" | "cid" | "faq" | "manual" | "diretriz" */
     category: string;
     content: string;

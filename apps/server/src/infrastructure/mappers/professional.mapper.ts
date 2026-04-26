@@ -4,7 +4,7 @@ import {ProfessionalDto} from '../../application/professional/dtos/professional.
 import {toEnumOrNull} from '../../domain/@shared/utils';
 import {ClinicMemberId} from '../../domain/clinic-member/entities';
 import {Professional, ProfessionalId} from '../../domain/professional/entities';
-import {Specialty} from '../../domain/form-template/entities';
+import {AiAiSpecialtyGroupGroup} from '../../domain/form-template/entities';
 import {MapperWithDto} from './mapper';
 
 export type ProfessionalReadModel = PrismaClient.Professional;
@@ -23,7 +23,7 @@ export class ProfessionalMapper extends MapperWithDto<
             clinicMemberId: ClinicMemberId.from(model.clinicMemberId),
             registrationNumber: model.registrationNumber,
             specialty: model.specialty,
-            specialtyNormalized: toEnumOrNull(Specialty, model.specialtyNormalized),
+            specialtyNormalized: toEnumOrNull(AiSpecialtyGroup, model.specialtyNormalized),
             createdAt: model.createdAt,
             updatedAt: model.updatedAt,
             deletedAt: model.deletedAt ?? null,
@@ -36,7 +36,7 @@ export class ProfessionalMapper extends MapperWithDto<
             clinicMemberId: entity.clinicMemberId.toString(),
             registrationNumber: entity.registrationNumber,
             specialty: entity.specialty,
-            specialtyNormalized: toEnumOrNull(PrismaClient.Specialty, entity.specialtyNormalized),
+            specialtyNormalized: toEnumOrNull(PrismaClient.AiSpecialtyGroup, entity.specialtyNormalized),
             createdAt: entity.createdAt,
             updatedAt: entity.updatedAt,
             deletedAt: entity.deletedAt ?? null,

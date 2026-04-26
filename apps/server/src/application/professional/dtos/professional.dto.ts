@@ -1,6 +1,6 @@
 import {ApiProperty, ApiSchema} from '@nestjs/swagger';
 import type {Professional} from '../../../domain/professional/entities';
-import {Specialty} from '../../../domain/form-template/entities';
+import {AiSpecialtyGroup} from '../../../domain/form-template/entities';
 import {EntityDto} from '../../@shared/dto';
 
 @ApiSchema({name: 'Professional'})
@@ -14,8 +14,8 @@ export class ProfessionalDto extends EntityDto {
     @ApiProperty({nullable: true, description: 'Free-form specialty', example: 'Cardiology'})
     specialty: string | null;
 
-    @ApiProperty({enum: Specialty, nullable: true, description: 'Normalized specialty enum'})
-    specialtyNormalized: Specialty | null;
+    @ApiProperty({enum: AiSpecialtyGroup, nullable: true, description: 'Normalized specialty group'})
+    specialtyNormalized: AiSpecialtyGroup | null;
 
     constructor(professional: Professional) {
         super(professional);
