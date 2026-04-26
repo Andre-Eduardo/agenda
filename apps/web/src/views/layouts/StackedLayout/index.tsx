@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { Outlet, Link, useRouterState, useNavigate, createFileRoute } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 import {
@@ -200,7 +200,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
 export function StackedLayout() {
   const { t } = useTranslation();
   const [mobileOpen, setMobileOpen] = useState(false);
-  const userName = useMemo(() => "User", []);
+  const userName = "User";
   const initials = getInitials(userName);
 
   return (

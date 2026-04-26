@@ -59,7 +59,7 @@ Sempre que a API do servidor mudar:
 |--------|-----------|
 | Backend | NestJS 11 + Prisma 6 + PostgreSQL |
 | Frontend | React 19 + TanStack Router v1 + React Query v5 + Zustand v5 |
-| UI | @ecxus/ui (Mantine 7 internamente) + CSS-in-JS via BoxStyle |
+| UI | Tailwind CSS v4 + shadcn/ui (sobre Radix UI) |
 | Forms | React Hook Form + Zod |
 | i18n | i18next (pt-BR padrão, en-US, es-ES) |
 | Testes | Jest (unit) + Cucumber.js BDD (integração) |

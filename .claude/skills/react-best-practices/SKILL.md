@@ -57,10 +57,10 @@ const [user, posts, comments] = await Promise.all([
 **Direct imports:**
 ```tsx
 // ❌ Loads entire library
-import { Check } from 'lucide-react'
+import { Button } from '@mui/material'
 
 // ✅ Loads only what you need
-import Check from 'lucide-react/dist/esm/icons/check'
+import Button from '@mui/material/Button'
 ```
 
 **Dynamic components:**
