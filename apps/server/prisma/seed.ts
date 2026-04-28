@@ -12,14 +12,19 @@
  *   2. patients                   — Pacientes vinculados à clínica
  *   3. working-hours              — Horários de atendimento do membro
  *   4. appointments               — Consultas (passadas e futuras)
- *   5. form-templates             — Templates públicos de formulários clínicos
- *   6. ai-agent-profiles          — Perfis de agentes de IA clínicos
- *   7. clinical-document-templates — Templates padrão de documentos clínicos
+ *   5. clinical-data              — Perfis clínicos e alertas dos pacientes
+ *   6. records                    — Evoluções clínicas (SOAP)
+ *   7. form-templates             — Templates públicos de formulários clínicos
+ *   8. ai-agent-profiles          — Perfis de agentes de IA clínicos
+ *   9. clinical-document-templates — Templates padrão de documentos clínicos
+ *  10. subscriptions              — Assinaturas de profissionais
  */
 import {main as seedClinic} from './seeds/clinic.seed';
 import {main as seedPatients} from './seeds/patients.seed';
 import {main as seedWorkingHours} from './seeds/working-hours.seed';
 import {main as seedAppointments} from './seeds/appointments.seed';
+import {main as seedClinicalData} from './seeds/clinical-data.seed';
+import {main as seedRecords} from './seeds/records.seed';
 import {main as seedFormTemplates} from './seeds/form-templates.seed';
 import {main as seedAiAgentProfiles} from './seeds/ai-agent-profiles.seed';
 import {main as seedClinicalDocumentTemplates} from './seeds/clinical-document-templates.seed';
@@ -28,35 +33,43 @@ import {main as seedSubscriptions} from './seeds/subscriptions.seed';
 async function main() {
     console.log('=== Iniciando seeds de desenvolvimento ===\n');
 
-    console.log('--- [1/8] Clínica + admin ---');
+    console.log('--- [1/10] Clínica + admin ---');
     await seedClinic();
     console.log('');
 
-    console.log('--- [2/8] Pacientes ---');
+    console.log('--- [2/10] Pacientes ---');
     await seedPatients();
     console.log('');
 
-    console.log('--- [3/8] Horários de atendimento ---');
+    console.log('--- [3/10] Horários de atendimento ---');
     await seedWorkingHours();
     console.log('');
 
-    console.log('--- [4/8] Consultas ---');
+    console.log('--- [4/10] Consultas ---');
     await seedAppointments();
     console.log('');
 
-    console.log('--- [5/8] Templates de formulários ---');
+    console.log('--- [5/10] Perfis clínicos e alertas ---');
+    await seedClinicalData();
+    console.log('');
+
+    console.log('--- [6/10] Evoluções clínicas ---');
+    await seedRecords();
+    console.log('');
+
+    console.log('--- [7/10] Templates de formulários ---');
     await seedFormTemplates();
     console.log('');
 
-    console.log('--- [6/8] Perfis de agentes de IA ---');
+    console.log('--- [8/10] Perfis de agentes de IA ---');
     await seedAiAgentProfiles();
     console.log('');
 
-    console.log('--- [7/8] Templates de documentos clínicos ---');
+    console.log('--- [9/10] Templates de documentos clínicos ---');
     await seedClinicalDocumentTemplates();
     console.log('');
 
-    console.log('--- [8/8] Assinaturas de profissionais ---');
+    console.log('--- [10/10] Assinaturas de profissionais ---');
     await seedSubscriptions();
     console.log('');
 

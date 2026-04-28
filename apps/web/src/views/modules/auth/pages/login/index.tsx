@@ -10,7 +10,7 @@ import { useSignIn } from "@agenda-app/client";
 import { useAppStore } from "@/store/appStore";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import * as S from "./styles";
 
 export const Route = createFileRoute("/_auth/auth/login")({
   validateSearch: (search: Record<string, unknown>): { redirect?: string } => ({
@@ -70,124 +70,88 @@ export function LoginPage() {
   const onSubmit = (values: LoginData) => signIn({ data: values });
 
   return (
-    <div className="grid min-h-screen grid-cols-1 lg:grid-cols-[1fr_1.1fr]">
+    <div className={S.login.root}>
       {/* Left: form */}
-      <div className="flex flex-col justify-between bg-(--color-bg-card) px-10 py-8">
+      <div className={S.leftPanel.root}>
         {/* Logo */}
-        <div className="flex items-center gap-2.5">
-          <div className="flex h-7 w-7 items-center justify-center rounded-[6px] bg-(--color-primary)">
+        <div className={S.leftPanel.logo}>
+          <div className={S.leftPanel.logoIcon}>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-              <path
-                d="M9 12h6M12 9v6"
-                stroke="#fff"
-                strokeWidth="2.2"
-                strokeLinecap="round"
-              />
+              <path d="M9 12h6M12 9v6" stroke="#fff" strokeWidth="2.2" strokeLinecap="round" />
             </svg>
           </div>
-          <span className="text-sm-body font-medium tracking-tight text-(--color-text-primary)">
-            Clínico
-          </span>
+          <span className={S.leftPanel.logoText}>Clínico</span>
         </div>
 
         {/* Form */}
         <div>
-          <h1 className="mb-1.5 text-xl font-medium tracking-tight text-(--color-text-primary)">
-            {t("auth.login.title")}
-          </h1>
-          <p className="mb-6 leading-relaxed text-sm text-(--color-text-secondary)">
-            {t("auth.login.subtitle")}
-          </p>
+          <h1 className={S.leftPanel.title}>{t("auth.login.title")}</h1>
+          <p className={S.leftPanel.subtitle}>{t("auth.login.subtitle")}</p>
 
-          <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-3.5" noValidate>
+          <form onSubmit={handleSubmit(onSubmit)} className={S.form} noValidate>
             {/* Username */}
             <div>
-              <label className="mb-1.5 block text-xs font-medium text-(--color-text-secondary)">
-                {t("auth.login.form.username")}
-              </label>
+              <label className={S.field.label}>{t("auth.login.form.username")}</label>
               <div className="relative">
-                <Mail
-                  size={13}
-                  className="absolute left-3 top-1/2 -translate-y-1/2 text-(--color-text-tertiary)"
-                />
+                <Mail size={13} className={S.field.icon} />
                 <Input
                   {...register("username")}
                   type="text"
                   autoComplete="username"
                   placeholder="dr.silva"
-                  className={cn("pl-9 text-sm", errors.username && "border-(--color-warning)")}
+                  className={S.usernameInput({ error: !!errors.username })}
                 />
               </div>
               {errors.username?.message && (
-                <p className="mt-1 text-2xs text-(--color-warning)">{errors.username.message}</p>
+                <p className={S.field.error}>{errors.username.message}</p>
               )}
             </div>
 
             {/* Password */}
             <div>
               <div className="mb-1.5 flex justify-between">
-                <label className="text-xs font-medium text-(--color-text-secondary)">
-                  {t("auth.login.form.password")}
-                </label>
-                <button
-                  type="button"
-                  className="cursor-pointer text-xs font-medium text-(--color-primary) hover:text-(--color-primary-hover)"
-                >
+                <label className={S.field.labelInline}>{t("auth.login.form.password")}</label>
+                <button type="button" className={S.field.forgotBtn}>
                   {t("auth.login.form.forgotPassword")}
                 </button>
               </div>
               <div className="relative">
-                <Lock
-                  size={13}
-                  className="absolute left-3 top-1/2 -translate-y-1/2 text-(--color-text-tertiary)"
-                />
+                <Lock size={13} className={S.field.icon} />
                 <Input
                   {...register("password")}
                   type={showPassword ? "text" : "password"}
                   autoComplete="current-password"
-                  className={cn(
-                    "pl-9 pr-10 text-sm",
-                    errors.password?.message && "border-(--color-warning)",
-                  )}
+                  className={S.passwordInput({ error: !!errors.password?.message })}
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword((v) => !v)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-(--color-text-tertiary) hover:text-(--color-text-secondary)"
+                  className={S.field.revealBtn}
                   aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}
                 >
                   {showPassword ? <EyeOff size={14} /> : <Eye size={14} />}
                 </button>
               </div>
               {errors.password?.message && (
-                <p className="mt-1 text-2xs text-(--color-warning)">{errors.password.message}</p>
+                <p className={S.field.error}>{errors.password.message}</p>
               )}
             </div>
 
             {/* Remember me */}
-            <label className="flex cursor-pointer items-center gap-2">
-              <input
-                type="checkbox"
-                className="h-3.5 w-3.5 cursor-pointer rounded-[3px] border border-(--color-border) accent-(--color-primary)"
-              />
-              <span className="text-xs text-(--color-text-secondary)">
-                {t("auth.login.form.rememberMe")}
-              </span>
+            <label className={S.field.rememberLabel}>
+              <input type="checkbox" className={S.field.checkbox} />
+              <span className={S.field.rememberText}>{t("auth.login.form.rememberMe")}</span>
             </label>
 
-            <Button
-              type="submit"
-              disabled={isPending}
-              className="mt-1 w-full bg-(--color-primary) text-sm font-medium hover:bg-(--color-primary-hover)"
-            >
+            <Button type="submit" disabled={isPending} className={S.field.submitBtn}>
               {isPending ? t("states.loading") : t("auth.login.form.submit")}
             </Button>
           </form>
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-between border-t border-(--color-border) pt-3.5 text-2xs text-(--color-text-tertiary)">
-          <div className="flex items-center gap-1.5">
+        <div className={S.leftPanel.footer}>
+          <div className={S.leftPanel.footerLeft}>
             <ShieldCheck size={11} />
             <span>{t("auth.login.footer.security")}</span>
           </div>
@@ -196,17 +160,15 @@ export function LoginPage() {
       </div>
 
       {/* Right: decorative panel */}
-      <div className="relative hidden overflow-hidden bg-[#0F172A] lg:block">
+      <div className={S.rightPanel.root}>
         <DecorativeArt />
-        <div className="absolute inset-0 z-10 flex flex-col justify-end p-10">
-          <h2 className="mb-2 text-xl font-medium leading-snug tracking-tight text-[#F8FAFC]">
+        <div className={S.rightPanel.overlay}>
+          <h2 className={S.rightPanel.title}>
             {t("auth.login.panel.title")}
             <br />
-            <span className="text-[#5EEAD4]">{t("auth.login.panel.highlight")}</span>
+            <span className={S.rightPanel.highlight}>{t("auth.login.panel.highlight")}</span>
           </h2>
-          <p className="text-xs leading-relaxed text-[#94A3B8]">
-            {t("auth.login.panel.description")}
-          </p>
+          <p className={S.rightPanel.description}>{t("auth.login.panel.description")}</p>
         </div>
       </div>
     </div>
@@ -226,15 +188,10 @@ function DecorativeArt() {
           <circle cx="1.5" cy="1.5" r="0.9" fill="#334155" />
         </pattern>
       </defs>
-
       <rect width="480" height="640" fill="url(#login-dot-grid)" opacity="0.5" />
-
-      {/* Color blobs */}
       <circle cx="420" cy="-20" r="200" fill="#0D9488" opacity="0.14" />
       <circle cx="-40" cy="600" r="230" fill="#2563EB" opacity="0.12" />
       <circle cx="400" cy="490" r="120" fill="#1E40AF" opacity="0.16" />
-
-      {/* ECG line */}
       <path
         d="M 0 320 L 80 320 L 96 296 L 112 348 L 128 264 L 146 356 L 162 316 L 186 320 L 480 320"
         stroke="#0D9488"
@@ -244,8 +201,6 @@ function DecorativeArt() {
         strokeLinecap="round"
         strokeLinejoin="round"
       />
-
-      {/* Concentric rings */}
       <g transform="translate(240, 310)">
         <circle r="175" stroke="#5EEAD4" strokeOpacity="0.07" strokeWidth="0.8" fill="none" />
         <circle r="138" stroke="#5EEAD4" strokeOpacity="0.13" strokeWidth="0.8" fill="none" />
@@ -255,16 +210,12 @@ function DecorativeArt() {
         <circle r="18" stroke="#5EEAD4" strokeOpacity="0.5" strokeWidth="0.8" fill="none" />
         <circle r="7" fill="#5EEAD4" />
       </g>
-
-      {/* Data points on rings */}
       <g transform="translate(240, 310)">
         <circle cx="104" cy="0" r="2.5" fill="#5EEAD4" opacity="0.85" />
         <circle cx="-70" cy="0" r="2" fill="#5EEAD4" opacity="0.7" />
         <circle cx="0" cy="-138" r="2" fill="#5EEAD4" opacity="0.5" />
         <circle cx="0" cy="104" r="2" fill="#5EEAD4" opacity="0.5" />
       </g>
-
-      {/* Scattered particles */}
       <circle cx="68" cy="130" r="1.8" fill="#5EEAD4" opacity="0.55" />
       <circle cx="425" cy="152" r="2.2" fill="#5EEAD4" opacity="0.4" />
       <circle cx="76" cy="520" r="1.8" fill="#3B82F6" opacity="0.6" />
@@ -273,8 +224,6 @@ function DecorativeArt() {
       <circle cx="265" cy="555" r="2.2" fill="#3B82F6" opacity="0.5" />
       <circle cx="42" cy="228" r="1.2" fill="#5EEAD4" opacity="0.35" />
       <circle cx="448" cy="284" r="1.2" fill="#5EEAD4" opacity="0.35" />
-
-      {/* Cross marks */}
       <g stroke="#5EEAD4" strokeWidth="1.2" strokeOpacity="0.55" strokeLinecap="round">
         <line x1="78" y1="210" x2="92" y2="210" />
         <line x1="85" y1="203" x2="85" y2="217" />

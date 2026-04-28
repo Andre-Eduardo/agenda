@@ -36,9 +36,73 @@ src/
         translations/
 ```
 
-## Estilização (Tailwind v4 + tokens CSS)
+## Estilização (Tailwind v4 + tokens CSS + styles.ts)
 
 Todos os tokens vivem em [`src/app/globals.css`](src/app/globals.css). **Nunca usar cores hardcoded** — sempre via tokens.
+
+### Padrão obrigatório: styles.ts co-localizado
+
+Todo componente com styling não-trivial deve ter um arquivo `styles.ts` na mesma pasta. **Nunca inline classes longas diretamente no JSX.**
+
+```
+pages/patients/detail/
+  index.tsx    ← JSX/lógica apenas
+  styles.ts    ← todas as classes Tailwind
+```
+
+**`styles.ts` — estrutura:**
+```ts
+import {cn} from '@/lib/utils';
+import {cva} from 'class-variance-authority';
+
+// String estática
+export const card = cn(
+  'rounded-(--radius-card) border border-(--color-border) bg-(--color-bg-card) p-4',
+);
+
+// Variante com cva
+export const badge = cva('inline-flex items-center rounded-(--radius-badge) px-2 py-0.5 text-xs', {
+  variants: {
+    severity: {
+      HIGH:   'bg-(--color-danger)/10 text-(--color-danger)',
+      MEDIUM: 'bg-(--color-warning)/10 text-(--color-warning)',
+      LOW:    'bg-(--color-text-secondary)/10 text-(--color-text-secondary)',
+    },
+  },
+});
+
+// Namespace para sub-elementos de componente complexo
+export const timeline = {
+  root: cn('relative flex flex-col gap-0'),
+  item: cn('relative flex gap-3 pb-6'),
+  dot:  cn('mt-1 h-2 w-2 rounded-full bg-(--color-primary) shrink-0'),
+};
+```
+
+**Uso no JSX:**
+```tsx
+// Poucos exports (≤ 5): named imports
+import {card, badge} from './styles';
+<div className={card}><span className={badge({severity: 'HIGH'})}>...</span></div>
+
+// Muitos exports (> 5): namespace
+import * as S from './styles';
+<div className={S.root}><header className={S.header}>...</header></div>
+
+// Classe dinâmica de runtime: cn() inline ainda é ok
+<div className={cn(S.card, isExpanded ? 'col-span-2' : 'col-span-1')}>
+```
+
+**Quando criar `styles.ts`:**
+
+| Condição | Criar? |
+|----------|--------|
+| Página (`views/modules/*/pages/`) | **Sempre** |
+| Componente com ≥ 5 classes em um elemento | Sim |
+| Classes condicionais ou variantes (`cva`) | Sim |
+| Componente puro de lógica (sem DOM visível) | Não — ex: `Can`, `ThemeProvider` |
+| Wrapper simples de 1-2 elementos | Não |
+| `components/ui/*` (shadcn) | **Nunca** — não tocar esses arquivos |
 
 ### Sintaxe canônica Tailwind v4
 
@@ -47,20 +111,8 @@ Todos os tokens vivem em [`src/app/globals.css`](src/app/globals.css). **Nunca u
 | Variável CSS de tema (cor, raio, etc.) | `utility-(--var-name)` (parênteses) | `bg-(--color-bg-card)`, `rounded-(--radius-card)` |
 | Token de tipografia em `@theme`        | utility nomeada (sem var)           | `text-sm`, `text-2xl`, `text-sub`, `text-lead`    |
 | Literal arbitrário (px, %, etc.)       | `utility-[valor]` (colchetes)       | `border-l-[3px]`, `leading-[1.2]`                 |
-| Cor inline (raro — preferir token)     | `utility-[#hex]`                    | evitar — sempre token                             |
 
-```tsx
-import {cn} from '@/lib/utils';
-
-// Composição típica:
-<div className={cn(
-  'rounded-(--radius-card) border border-(--color-border) bg-(--color-bg-card)',
-  isSelected && 'border-2 border-(--color-primary)',
-  isAI && 'border-l-[3px] border-l-(--color-ai-border) bg-(--color-ai-bg)',
-)} style={isAI ? {borderRadius: 0} : undefined}>
-```
-
-**Regra:** parênteses para variáveis CSS, colchetes apenas para valores literais que não são variáveis. Nunca `utility-[var(--x)]` — use `utility-(--x)`.
+**Regra:** parênteses para variáveis CSS, colchetes apenas para valores literais. Nunca `utility-[var(--x)]` — use `utility-(--x)`.
 
 ### Regras absolutas (resumo de design-system.md §15)
 

@@ -2,9 +2,127 @@
 
 ## Approach
 
-The app uses **shadcn/ui** (Tailwind CSS v4 + Radix UI primitives) as the component and styling system. Styles are written as **Tailwind utility classes** applied directly in JSX. CSS custom properties defined in `src/app/globals.css` serve as the design token layer.
+The app uses **shadcn/ui** (Tailwind CSS v4 + Radix UI primitives) as the component and styling system. Styles are written as **Tailwind utility classes** — but extracted to co-located **`styles.ts`** files rather than inlined directly in JSX. CSS custom properties defined in `src/app/globals.css` serve as the design token layer.
 
-There is **no CSS-in-JS**, no co-located `styles.ts` files, and no Mantine/Emotion.
+There is **no CSS-in-JS**, no CSS Modules, and no Mantine/Emotion.
+
+---
+
+## styles.ts — Co-located Style Files
+
+Every component that has non-trivial styling must have a co-located `styles.ts` file. The JSX file contains structure and logic; `styles.ts` contains all Tailwind class strings.
+
+### When to create `styles.ts`
+
+| Condition | Create styles.ts? |
+|-----------|------------------|
+| Page component (`views/modules/*/pages/`) | **Always** |
+| Component with ≥ 5 classes on any element | Yes |
+| Component with conditional classes (`cn(base, cond && x)`) | Yes |
+| Component with style variants (`cva`) | Yes |
+| Pure-logic component (no visible DOM) | No — e.g. `Can`, `ThemeProvider` |
+| Simple 1-2 element wrapper | No |
+| `components/ui/*` (shadcn) | **Never** — leave shadcn files untouched |
+
+### File structure
+
+```
+pages/patients/detail/
+  index.tsx       ← JSX structure + logic only
+  styles.ts       ← all Tailwind classes
+```
+
+### styles.ts anatomy
+
+```ts
+// styles.ts
+import { cn } from '@/lib/utils';
+import { cva } from 'class-variance-authority';
+
+// Static class strings — use cn() for readability even with a single value
+export const root = cn('flex flex-col gap-6 px-6 py-8');
+
+export const card = cn(
+  'rounded-(--radius-card) border border-(--color-border)',
+  'bg-(--color-bg-card) p-4',
+);
+
+export const sectionTitle = cn(
+  'text-xs font-medium uppercase tracking-wide',
+  'text-(--color-text-secondary)',
+);
+
+// Variants — use cva
+export const badge = cva(
+  'inline-flex items-center gap-1 rounded-(--radius-badge) px-2 py-0.5 text-xs font-medium',
+  {
+    variants: {
+      severity: {
+        HIGH:   'bg-(--color-danger)/10 text-(--color-danger)',
+        MEDIUM: 'bg-(--color-warning)/10 text-(--color-warning)',
+        LOW:    'bg-(--color-text-secondary)/10 text-(--color-text-secondary)',
+      },
+    },
+  },
+);
+
+// Namespace object for sub-elements of a complex component
+export const timeline = {
+  root:  cn('relative flex flex-col gap-0'),
+  item:  cn('relative flex gap-3 pb-6'),
+  dot:   cn('mt-1 h-2 w-2 rounded-full bg-(--color-primary) shrink-0'),
+  line:  cn('absolute left-[3px] top-3 h-full w-px bg-(--color-border)'),
+  title: cn('text-sm font-medium text-(--color-text-primary)'),
+  meta:  cn('text-xs text-(--color-text-secondary) font-mono tabular-nums'),
+};
+```
+
+### Usage in JSX
+
+```tsx
+// Few exports (≤ 5): named imports
+import { card, sectionTitle, badge } from './styles';
+
+<div className={card}>
+  <span className={sectionTitle}>Alertas</span>
+  <span className={badge({ severity: 'HIGH' })}>Alergia</span>
+</div>
+
+// Many exports (> 5): namespace import
+import * as S from './styles';
+
+<div className={S.root}>
+  <header className={S.header}>
+    <h1 className={S.title}>{name}</h1>
+  </header>
+</div>
+```
+
+### Dynamic classes still in JSX (acceptable)
+
+Classes that depend on runtime values not known at import time stay inline with `cn()`:
+
+```tsx
+import { card } from './styles';
+import { cn } from '@/lib/utils';
+
+// OK — runtime width depends on a prop
+<div className={cn(card, isExpanded ? 'col-span-2' : 'col-span-1')}>
+```
+
+### Naming conventions
+
+| Element | Export name |
+|---------|------------|
+| Component root | `root` |
+| Header area | `header` |
+| Content area | `body` or `content` |
+| Footer area | `footer` |
+| Generic card | `card` |
+| Title text | `title` |
+| Subtitle / meta | `meta` or `subtitle` |
+| Variant (cva) | element name — `badge`, `button`, `tag` |
+| Sub-element group | namespace object — `timeline.item`, `record.dot` |
 
 ---
 
