@@ -46,6 +46,7 @@ export class PatientContextChunkPrismaRepository
         const record = await this.prisma.patientContextChunk.findUnique({
             where: {id: id.toString()},
         });
+
         return record ? this.mapper.toDomain(record) : null;
     }
 
@@ -150,7 +151,7 @@ export class PatientContextChunkPrismaRepository
 
         return records.map((r) => ({
             chunk: this.mapper.toDomain(r),
-            score: 1.0,
+            score: 1,
         }));
     }
 
@@ -169,6 +170,7 @@ export class PatientContextChunkPrismaRepository
             ...data,
             metadata: data.metadata ?? Prisma.JsonNull,
         } satisfies Prisma.PatientContextChunkUncheckedCreateInput;
+
         await this.prisma.patientContextChunk.upsert({
             where: {
                 patient_context_chunk_unique: {
@@ -186,6 +188,7 @@ export class PatientContextChunkPrismaRepository
         // precisa de SQL raw para persistir o vetor após o upsert.
         if (chunk.embedding !== null && chunk.embedding !== undefined) {
             const vectorLiteral = `[${chunk.embedding.join(',')}]`;
+
             await this.prisma.$executeRaw`
                 UPDATE patient_context_chunk
                 SET embedding = ${vectorLiteral}::vector(1536)

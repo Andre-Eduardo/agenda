@@ -16,7 +16,8 @@ export class S3FileStorage implements FileStorage {
     private readonly bucket: string;
 
     constructor(private readonly config: EnvConfigService) {
-        const s3 = config.storage.s3;
+        const {s3} = config.storage;
+
         this.bucket = s3.bucket ?? '';
         this.client = new S3Client({
             region: s3.region,
@@ -58,7 +59,7 @@ export class S3FileStorage implements FileStorage {
             );
 
             const size = response.ContentLength ?? 0;
-            const checksum = response.ChecksumSHA256 ?? response.ETag?.replace(/"/g, '') ?? '';
+            const checksum = response.ChecksumSHA256 ?? response.ETag?.replaceAll(/"/g, '') ?? '';
 
             return {size, checksum};
         } catch {
@@ -80,6 +81,7 @@ export class S3FileStorage implements FileStorage {
             }),
         );
         const region = this.config.storage.s3.region ?? 'us-east-1';
+
         return `https://${this.bucket}.s3.${region}.amazonaws.com/${filePath}`;
     }
 }

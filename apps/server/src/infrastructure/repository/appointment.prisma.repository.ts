@@ -27,6 +27,7 @@ export class AppointmentPrismaRepository extends PrismaRepository implements App
         const appointment = await this.prisma.appointment.findUnique({
             where: {id: id.toString()},
         });
+
         return appointment === null ? null : this.mapper.toDomain(appointment);
     }
 
@@ -69,6 +70,7 @@ export class AppointmentPrismaRepository extends PrismaRepository implements App
 
     async save(appointment: Appointment): Promise<void> {
         const data = this.mapper.toPersistence(appointment);
+
         await this.prisma.appointment.upsert({
             where: {id: data.id},
             create: data,

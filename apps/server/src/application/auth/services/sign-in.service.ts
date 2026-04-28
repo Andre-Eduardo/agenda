@@ -50,8 +50,10 @@ export class SignInService implements ApplicationService<SignInDto, SignInRespon
         // If a ClinicMember row was deleted out from under the User aggregate,
         // drop it silently from the JWT instead of failing sign-in.
         const clinicMembers: TokenClinicMember[] = [];
+
         for (const memberId of user.clinicMembers) {
             const member = await this.clinicMemberRepository.findById(memberId);
+
             if (member !== null) {
                 clinicMembers.push({
                     clinicMemberId: member.id,
@@ -86,6 +88,7 @@ export class SignInService implements ApplicationService<SignInDto, SignInRespon
         if (clinicMemberId != null && user.clinicMembers.some((id) => id.equals(clinicMemberId))) {
             return clinicMemberId;
         }
+
         return user.clinicMembers.at(0);
     }
 }

@@ -25,6 +25,7 @@ export class RegisterPaymentService implements ApplicationService<RegisterPaymen
         const {appointmentId, paymentMethod, amountBrl, status, insurancePlanId, insuranceAuthCode, notes} = payload;
 
         const appointment = await this.appointmentRepository.findById(appointmentId);
+
         if (appointment === null) {
             throw new ResourceNotFoundException('Appointment not found.', appointmentId.toString());
         }
@@ -40,6 +41,7 @@ export class RegisterPaymentService implements ApplicationService<RegisterPaymen
         }
 
         const existing = await this.appointmentPaymentRepository.findByAppointmentId(appointmentId);
+
         if (existing !== null) {
             throw new PreconditionException('Payment already registered for this appointment.');
         }

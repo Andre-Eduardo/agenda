@@ -15,5 +15,6 @@ export function getDefaultModelForSpecialty(specialty: AiSpecialtyGroup | null):
     if (specialty === null) {
         return SPECIALTY_MODEL_DEFAULTS.generic;
     }
+
     return SPECIALTY_MODEL_DEFAULTS[specialty] ?? SPECIALTY_MODEL_DEFAULTS.generic;
 }

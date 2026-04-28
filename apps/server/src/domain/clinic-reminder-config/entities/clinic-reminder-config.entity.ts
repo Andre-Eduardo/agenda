@@ -27,6 +27,7 @@ export class ClinicReminderConfig extends AggregateRoot<ClinicReminderConfigId> 
     static create(props: CreateClinicReminderConfig): ClinicReminderConfig {
         const id = ClinicReminderConfigId.generate();
         const now = new Date();
+
         return new ClinicReminderConfig({
             id,
             clinicId: props.clinicId,
@@ -47,12 +48,15 @@ export class ClinicReminderConfig extends AggregateRoot<ClinicReminderConfigId> 
         if (props.enabledChannels !== undefined) {
             this.enabledChannels = props.enabledChannels;
         }
+
         if (props.hoursBeforeList !== undefined) {
             this.hoursBeforeList = props.hoursBeforeList;
         }
+
         if (props.isActive !== undefined) {
             this.isActive = props.isActive;
         }
+
         this.updatedAt = new Date();
     }
 

@@ -26,6 +26,7 @@ export class FormTemplatePrismaRepository extends PrismaRepository implements Fo
         const record = await this.prisma.formTemplate.findUnique({
             where: {id: id.toString(), deletedAt: null},
         });
+
         return record ? this.mapper.toDomain(record) : null;
     }
 
@@ -33,11 +34,13 @@ export class FormTemplatePrismaRepository extends PrismaRepository implements Fo
         const record = await this.prisma.formTemplate.findFirst({
             where: {code, deletedAt: null},
         });
+
         return record ? this.mapper.toDomain(record) : null;
     }
 
     async save(template: FormTemplate): Promise<void> {
         const data = this.mapper.toPersistence(template);
+
         await this.prisma.formTemplate.upsert({
             where: {id: data.id},
             create: data,
@@ -75,7 +78,9 @@ export class FormTemplatePrismaRepository extends PrismaRepository implements Fo
         value: ClinicId | ClinicMemberId | null | undefined,
     ): string | null | undefined {
         if (value === null) return null;
+
         if (value === undefined) return undefined;
+
         return value.toString();
     }
 }

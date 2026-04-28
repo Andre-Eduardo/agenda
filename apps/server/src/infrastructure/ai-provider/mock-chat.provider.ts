@@ -58,6 +58,7 @@ export class MockChatProvider implements ChatModelProvider {
     async generateChatReply(input: ChatReplyInput): Promise<ChatReplyOutput> {
         if (this.pendingToolCalls.length > 0) {
             const toolCalls = this.pendingToolCalls.splice(0);
+
             return {
                 content: '',
                 finishReason: 'tool_use',
@@ -69,6 +70,7 @@ export class MockChatProvider implements ChatModelProvider {
                 usage: {promptTokens: 10, completionTokens: 10, totalTokens: 20},
             };
         }
+
         const lastUserMessage = input.messages.filter((m) => m.role === 'user').at(-1);
         const questionPreview = lastUserMessage?.content?.slice(0, 100) ?? '(sem mensagem)';
         const isTruncated = (lastUserMessage?.content?.length ?? 0) > 100;
@@ -155,6 +157,7 @@ export class MockChatProvider implements ChatModelProvider {
 
     private async simulateLatency(minMs: number, maxMs: number): Promise<void> {
         const ms = minMs + Math.random() * (maxMs - minMs);
+
         return new Promise((resolve) => setTimeout(resolve, ms));
     }
 }

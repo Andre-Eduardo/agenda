@@ -19,6 +19,7 @@ export class GetPaymentByAppointmentService implements ApplicationService<GetPay
         const {appointmentId} = payload;
 
         const appointment = await this.appointmentRepository.findById(appointmentId);
+
         if (appointment === null) {
             throw new ResourceNotFoundException('Appointment not found.', appointmentId.toString());
         }
@@ -28,6 +29,7 @@ export class GetPaymentByAppointmentService implements ApplicationService<GetPay
         }
 
         const payment = await this.appointmentPaymentRepository.findByAppointmentId(appointmentId);
+
         if (payment === null) {
             throw new ResourceNotFoundException('Payment not found for this appointment.', appointmentId.toString());
         }

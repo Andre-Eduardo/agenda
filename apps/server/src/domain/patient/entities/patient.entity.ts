@@ -1,5 +1,5 @@
 import type {ClinicId} from '@domain/clinic/entities';
-import {type AllEntityProps, type EntityJson, type EntityProps, type CreateEntity} from '../../@shared/entity';
+import type {AllEntityProps, EntityJson, EntityProps, CreateEntity} from '../../@shared/entity';
 import {Person, PersonId, PersonType} from '../../person/entities/person.entity';
 import {PatientCreatedEvent, PatientChangedEvent, PatientDeletedEvent} from '../events';
 import type {DocumentId} from '../../@shared/value-objects';
@@ -94,15 +94,25 @@ export class Patient extends Person {
         const oldState = new Patient(this);
 
         if (props.name !== undefined) this.name = props.name;
+
         if (props.phone !== undefined) this.phone = props.phone;
+
         if (props.gender !== undefined) this.gender = props.gender;
+
         if (props.birthDate !== undefined) this.birthDate = props.birthDate;
+
         if (props.email !== undefined) this.email = props.email;
+
         if (props.emergencyContactName !== undefined) this.emergencyContactName = props.emergencyContactName;
+
         if (props.emergencyContactPhone !== undefined) this.emergencyContactPhone = props.emergencyContactPhone;
+
         if (props.address !== undefined) this.address = props.address;
+
         if (props.insurancePlanId !== undefined) this.insurancePlanId = props.insurancePlanId;
+
         if (props.insuranceCardNumber !== undefined) this.insuranceCardNumber = props.insuranceCardNumber;
+
         if (props.insuranceValidUntil !== undefined) this.insuranceValidUntil = props.insuranceValidUntil;
 
         this.validate();

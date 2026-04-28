@@ -33,6 +33,7 @@ export class GeneratePdfService implements ApplicationService<GeneratePdfDto, Cl
 
     async execute({actor, payload}: Command<GeneratePdfDto>): Promise<ClinicalDocumentDto> {
         const document = await this.clinicalDocumentRepository.findById(payload.documentId);
+
         if (!document || document.clinicId.toString() !== actor.clinicId.toString()) {
             throw new ResourceNotFoundException('Clinical document not found.', payload.documentId.toString());
         }
@@ -49,9 +50,11 @@ export class GeneratePdfService implements ApplicationService<GeneratePdfDto, Cl
         if (!clinic) {
             throw new ResourceNotFoundException('Clinic not found.', actor.clinicId.toString());
         }
+
         if (!professional) {
             throw new ResourceNotFoundException('Professional not found.', document.responsibleProfessionalId.toString());
         }
+
         if (!patient) {
             throw new ResourceNotFoundException('Patient not found.', document.patientId.toString());
         }

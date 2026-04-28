@@ -124,12 +124,15 @@ export class ContextPolicyService {
         // ─── 2. Filtrar por minDate usando metadata.eventDate ─────────────────
         if (policy.minDate !== null) {
             const minTime = policy.minDate.getTime();
+
             filtered = filtered.filter((c) => {
                 const rawDate = c.metadata?.['eventDate'];
+
                 if (rawDate == null) {
                     // Chunks sem data (ex: alertas, perfil clínico) são sempre mantidos
                     return true;
                 }
+
                 return new Date(String(rawDate)).getTime() >= minTime;
             });
         }
@@ -156,9 +159,11 @@ export class ContextPolicyService {
         }
 
         const sanitized: Record<string, unknown> = {...(facts as unknown as Record<string, unknown>)};
+
         for (const field of blacklistedFields) {
             delete sanitized[field];
         }
+
         return sanitized as PatientFacts;
     }
 }

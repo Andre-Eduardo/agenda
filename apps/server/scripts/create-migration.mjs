@@ -13,4 +13,4 @@ if (!response.migrationName) {
 }
 
 // Run the prisma command to create the migration
-execSync(`npx prisma migrate dev --create-only --name ${response.migrationName.replace(/ /g, '_')}`, {stdio: 'inherit'});
+execSync(`npx prisma migrate dev --create-only --name ${response.migrationName.replaceAll(/ /g, '_')}`, {stdio: 'inherit'});

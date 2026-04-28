@@ -19,9 +19,11 @@ export class ListWorkingHoursService implements ApplicationService<ListWorkingHo
         const {memberId} = payload;
 
         const member = await this.clinicMemberRepository.findById(memberId);
+
         if (member === null) {
             throw new ResourceNotFoundException('clinic_member.not_found', memberId.toString());
         }
+
         if (!member.clinicId.equals(actor.clinicId)) {
             throw new PreconditionException('Member does not belong to the current clinic.');
         }

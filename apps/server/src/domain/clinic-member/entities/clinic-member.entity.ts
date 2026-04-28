@@ -103,7 +103,7 @@ export class ClinicMember extends AggregateRoot<ClinicMemberId> {
     }
 
     private validate(): void {
-        if (this.displayName !== null && this.displayName.length < 1) {
+        if (this.displayName !== null && this.displayName.length === 0) {
             throw new InvalidInputException('Display name must be at least 1 character long when provided.');
         }
     }

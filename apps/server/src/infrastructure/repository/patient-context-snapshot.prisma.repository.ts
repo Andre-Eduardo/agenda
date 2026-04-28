@@ -24,6 +24,7 @@ export class PatientContextSnapshotPrismaRepository
         const record = await this.prisma.patientContextSnapshot.findUnique({
             where: {id: id.toString()},
         });
+
         return record ? this.mapper.toDomain(record) : null;
     }
 
@@ -38,6 +39,7 @@ export class PatientContextSnapshotPrismaRepository
             },
             orderBy: {updatedAt: 'desc'},
         });
+
         return record ? this.mapper.toDomain(record) : null;
     }
 
@@ -55,6 +57,7 @@ export class PatientContextSnapshotPrismaRepository
                     ? Prisma.JsonNull
                     : (data.timelineSummary as Prisma.InputJsonValue),
         };
+
         await this.prisma.patientContextSnapshot.upsert({
             where: {id: data.id},
             create: writeData,

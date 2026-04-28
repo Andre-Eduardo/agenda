@@ -106,6 +106,7 @@ export class PatientPrismaRepository extends PrismaRepository implements Patient
 
         if (existing === null) {
             const {randomUUID} = await import('node:crypto');
+
             await tx.patientAddress.create({
                 data: {
                     id: randomUUID(),

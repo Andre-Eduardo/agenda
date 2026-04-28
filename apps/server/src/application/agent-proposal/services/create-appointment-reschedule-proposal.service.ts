@@ -30,6 +30,7 @@ export class CreateAppointmentRescheduleProposalService {
 
     async execute({actor, payload}: Command<CreateAppointmentRescheduleProposalInput>): Promise<AppointmentRescheduleProposalResult> {
         const appointment = await this.appointmentRepository.findById(AppointmentId.from(payload.appointmentId));
+
         if (!appointment) {
             throw new ResourceNotFoundException('Appointment not found.', payload.appointmentId);
         }

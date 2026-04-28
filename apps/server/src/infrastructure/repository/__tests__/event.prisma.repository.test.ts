@@ -19,6 +19,7 @@ import {PrismaProvider} from '../prisma/prisma.provider';
 describe('EventPrismaRepository', () => {
     const prisma = mockDeep<PrismaService>();
     const prismaProvider = mockDeep<PrismaProvider>();
+
     Object.defineProperty(prismaProvider, 'client', {get: () => prisma});
 
     const mapper = new EventMapper();

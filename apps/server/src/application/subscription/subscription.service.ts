@@ -106,6 +106,7 @@ export class SubscriptionService {
 
     private currentPeriod(): {year: number; month: number} {
         const now = new Date();
+
         return {year: now.getFullYear(), month: now.getMonth() + 1};
     }
 
@@ -143,12 +144,15 @@ export class SubscriptionService {
         if (limit === null) {
             return {used, limit: null, percent: 0, remaining: null, status: 'OK'};
         }
+
         if (limit === 0) {
             return {used, limit: 0, percent: 0, remaining: 0, status: 'NOT_INCLUDED'};
         }
+
         const percent = Math.min(100, Math.round((used / limit) * 100));
         const remaining = Math.max(0, limit - used);
-        const status: MetricStatus = remaining === 0 ? 'EXCEEDED' : percent >= WARNING_THRESHOLD ? 'WARNING' : 'OK';
+        const status: MetricStatus = remaining === 0 ? 'EXCEEDED' : (percent >= WARNING_THRESHOLD ? 'WARNING' : 'OK');
+
         return {used, limit, percent, remaining, status};
     }
 
@@ -158,6 +162,7 @@ export class SubscriptionService {
 
         for (const metric of metrics) {
             const detail = usage[metric];
+
             if (detail.status === 'WARNING') {
                 alerts.push({
                     metric,
@@ -199,6 +204,7 @@ export class SubscriptionService {
             .map((r) => ({addonCode: r.addonCode as AddonCode, quantity: r.quantity}));
 
         this.addonCache.set(cacheKey, {addons, expiresAt: Date.now() + 60_000});
+
         return addons;
     }
 
@@ -253,9 +259,9 @@ export class SubscriptionService {
         const data =
             metric === 'docs'
                 ? {docsUploaded: {increment: amount}, updatedAt: new Date()}
-                : metric === 'chat'
+                : (metric === 'chat'
                   ? {chatMessages: {increment: amount}, updatedAt: new Date()}
-                  : {clinicalImages: {increment: amount}, updatedAt: new Date()};
+                  : {clinicalImages: {increment: amount}, updatedAt: new Date()});
 
         return this.prisma.usageRecord.update({where, data});
     }
@@ -288,9 +294,13 @@ export class SubscriptionService {
         const usage = {docs, chat, images, storageHotGb};
 
         const limitsReached: string[] = [];
+
         if (docs.limit !== null && docs.remaining === 0 && docs.status !== 'NOT_INCLUDED') limitsReached.push('docs');
+
         if (chat.limit !== null && chat.remaining === 0 && chat.status !== 'NOT_INCLUDED') limitsReached.push('chat');
+
         if (images.limit !== null && images.remaining === 0 && images.status !== 'NOT_INCLUDED') limitsReached.push('images');
+
         if (storageHotGb.limit !== null && storageHotGb.remaining === 0 && storageHotGb.status !== 'NOT_INCLUDED') limitsReached.push('storageHotGb');
 
         const alerts = this.buildAlerts(usage);
@@ -299,10 +309,15 @@ export class SubscriptionService {
         const addonDetails: AddonDetail[] = activeAddons.map(({addonCode, quantity}) => {
             const catalog = ADDON_CATALOG[addonCode];
             const grantsTotal: AddonGrants = {};
+
             if (catalog.grants.docsPerMonth !== undefined) grantsTotal.docsPerMonth = catalog.grants.docsPerMonth * quantity;
+
             if (catalog.grants.chatMessagesPerMonth !== undefined) grantsTotal.chatMessagesPerMonth = catalog.grants.chatMessagesPerMonth * quantity;
+
             if (catalog.grants.clinicalImagesPerMonth !== undefined) grantsTotal.clinicalImagesPerMonth = catalog.grants.clinicalImagesPerMonth * quantity;
+
             if (catalog.grants.storageHotGb !== undefined) grantsTotal.storageHotGb = catalog.grants.storageHotGb * quantity;
+
             return {code: addonCode, name: catalog.name, quantity, grantsTotal, expiresAt};
         });
 
@@ -338,9 +353,11 @@ export class SubscriptionService {
         grantedByMemberId: string,
     ): Promise<CurrentUsageResult> {
         const catalog = ADDON_CATALOG[addonCode];
+
         if (!catalog) {
             throw new InvalidInputException('subscription.addon_not_found');
         }
+
         if (quantity < 1) {
             throw new InvalidInputException('subscription.addon_quantity_invalid');
         }
@@ -414,10 +431,15 @@ export class SubscriptionService {
                 const code = r.addonCode as AddonCode;
                 const catalog = ADDON_CATALOG[code];
                 const grantsTotal: AddonGrants = {};
+
                 if (catalog.grants.docsPerMonth !== undefined) grantsTotal.docsPerMonth = catalog.grants.docsPerMonth * r.quantity;
+
                 if (catalog.grants.chatMessagesPerMonth !== undefined) grantsTotal.chatMessagesPerMonth = catalog.grants.chatMessagesPerMonth * r.quantity;
+
                 if (catalog.grants.clinicalImagesPerMonth !== undefined) grantsTotal.clinicalImagesPerMonth = catalog.grants.clinicalImagesPerMonth * r.quantity;
+
                 if (catalog.grants.storageHotGb !== undefined) grantsTotal.storageHotGb = catalog.grants.storageHotGb * r.quantity;
+
                 return {code, name: catalog.name, quantity: r.quantity, grantsTotal, expiresAt};
             });
     }
@@ -425,7 +447,7 @@ export class SubscriptionService {
     /**
      * Returns all active add-ons in a clinic for the current month, grouped by member.
      */
-    async getClinicActiveAddons(clinicId: string): Promise<{memberId: string; addons: AddonDetail[]}[]> {
+    async getClinicActiveAddons(clinicId: string): Promise<Array<{memberId: string; addons: AddonDetail[]}>> {
         const {year, month} = this.currentPeriod();
         const expiresAt = this.periodEndIso(year, month);
 
@@ -442,13 +464,18 @@ export class SubscriptionService {
             const code = row.addonCode as AddonCode;
             const catalog = ADDON_CATALOG[code];
             const grantsTotal: AddonGrants = {};
+
             if (catalog.grants.docsPerMonth !== undefined) grantsTotal.docsPerMonth = catalog.grants.docsPerMonth * row.quantity;
+
             if (catalog.grants.chatMessagesPerMonth !== undefined) grantsTotal.chatMessagesPerMonth = catalog.grants.chatMessagesPerMonth * row.quantity;
+
             if (catalog.grants.clinicalImagesPerMonth !== undefined) grantsTotal.clinicalImagesPerMonth = catalog.grants.clinicalImagesPerMonth * row.quantity;
+
             if (catalog.grants.storageHotGb !== undefined) grantsTotal.storageHotGb = catalog.grants.storageHotGb * row.quantity;
             const detail: AddonDetail = {code, name: catalog.name, quantity: row.quantity, grantsTotal, expiresAt};
 
             const existing = byMember.get(row.memberId);
+
             if (existing) {
                 existing.push(detail);
             } else {
@@ -456,7 +483,7 @@ export class SubscriptionService {
             }
         }
 
-        return Array.from(byMember.entries()).map(([memberId, addons]) => ({memberId, addons}));
+        return [...byMember.entries()].map(([memberId, addons]) => ({memberId, addons}));
     }
 
     /**

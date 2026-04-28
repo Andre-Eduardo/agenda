@@ -38,7 +38,7 @@ export abstract class PrismaRepository {
             const keys = key.split('.');
 
             return keys
-                .reverse()
+                .toReversed()
                 .reduce<OrderBy>((acc, curr, idx) => (idx === 0 ? {[curr]: direction} : {[curr]: acc}), {} as OrderBy);
         });
 

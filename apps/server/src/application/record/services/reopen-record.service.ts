@@ -22,11 +22,13 @@ export class ReopenRecordService implements ApplicationService<ReopenRecordDto, 
 
     async execute({actor, payload}: Command<ReopenRecordDto>): Promise<RecordDto> {
         const member = await this.clinicMemberRepository.findById(actor.clinicMemberId);
+
         if (member === null || !ALLOWED_ROLES.includes(member.role)) {
             throw new AccessDeniedException('RECORD_REOPEN_FORBIDDEN', AccessDeniedReason.INSUFFICIENT_PERMISSIONS);
         }
 
         const record = await this.recordRepository.findById(payload.id);
+
         if (record === null) {
             throw new ResourceNotFoundException('Record not found.', payload.id.toString());
         }

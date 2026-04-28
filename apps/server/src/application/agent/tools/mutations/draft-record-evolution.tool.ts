@@ -51,6 +51,7 @@ export class DraftRecordEvolutionTool implements AgentTool<Input, Output> {
         // If the member doesn't have a Professional 1:1 (e.g. SECRETARY chatting),
         // we can't draft a clinical record on their behalf — fail loudly.
         const professional = await this.professionalRepository.findByClinicMemberId(memberId);
+
         if (professional === null) {
             throw new PreconditionException(
                 'Cannot draft a clinical record on behalf of a non-PROFESSIONAL member.',

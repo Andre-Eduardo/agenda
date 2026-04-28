@@ -39,6 +39,7 @@ export class SearchKnowledgeTool implements AgentTool<Input, Output> {
             clinicId: context.clinicId ?? null,
             minScore: input.minScore ?? 0.3,
         });
+
         return {
             chunks: result.chunks.map((c) => ({
                 content: c.content,

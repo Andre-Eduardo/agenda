@@ -9,8 +9,10 @@ import {SubscriptionService} from '../../subscription/subscription.service';
  */
 function toContextChunkSourceTypes(sources: string[]): ContextChunkSourceType[] {
     const validValues = new Set<string>(Object.values(ContextChunkSourceType));
+
     return sources.filter((s): s is ContextChunkSourceType => validValues.has(s));
 }
+
 import {
     PatientChatSessionId,
     PatientChatMessage,
@@ -110,17 +112,19 @@ export class SendChatMessageService
 
         // ─── 1. Validar sessão ───────────────────────────────────────────────
         const session = await this.sessionRepository.findById(payload.sessionId);
+
         if (!session) {
             throw new ResourceNotFoundException('Chat session not found.', payload.sessionId.toString());
         }
+
         if (session.status !== ChatSessionStatus.ACTIVE) {
             throw new PreconditionException('Cannot send message to a non-active session.');
         }
 
-        const patientId = session.patientId;
+        const {patientId} = session;
         // memberId comes from the session — validated at creation time.
-        const memberId = session.memberId;
-        const clinicId = session.clinicId;
+        const {memberId} = session;
+        const {clinicId} = session;
 
         // ─── 2. Resolver perfil do agente ────────────────────────────────────
         const agentProfile = session.agentProfileId
@@ -234,6 +238,7 @@ export class SendChatMessageService
             metadata: null,
             chunkIds: [],
         });
+
         await this.messageRepository.save(userMessage);
 
         // Atualiza o log com o ID real da mensagem do usuário
@@ -251,7 +256,7 @@ export class SendChatMessageService
 
         let replyContent: string;
         let replyMetadata: Record<string, unknown>;
-        let usedFallback = false;
+        const usedFallback = false;
         let replyUsage: {promptTokens: number | null; completionTokens: number | null; totalTokens: number | null} = {
             promptTokens: null,
             completionTokens: null,
@@ -275,11 +280,13 @@ export class SendChatMessageService
                     },
                     modelOverride: resolvedModel,
                 });
+
                 replyContent = agentReply.answer || '(sem resposta gerada)';
                 agentToolNames = agentReply.toolCalls.map((tc) => tc.tool);
                 agentProposalIds = agentReply.proposalIds;
                 agentTotalIterations = agentReply.totalIterations;
                 const scores = policyFilteredChunks.map((c) => c.score).filter((s) => s > 0);
+
                 agentAvgTopKScore = scores.length > 0 ? scores.reduce((a, b) => a + b, 0) / scores.length : undefined;
                 replyMetadata = {
                     provider: provider.providerId,
@@ -299,6 +306,7 @@ export class SendChatMessageService
                     maxTokens: 1024,
                     modelOverride: resolvedModel,
                 });
+
                 replyContent = reply.content || '(sem resposta gerada)';
                 replyUsage = reply.usage;
                 replyMetadata = {
@@ -322,6 +330,7 @@ export class SendChatMessageService
                 metadata: replyMetadata,
                 chunkIds: retrievedChunkIds,
             });
+
             await this.messageRepository.save(assistantMessage);
 
             // ─── 11. Atualizar timestamp da sessão ───────────────────────────
@@ -330,6 +339,7 @@ export class SendChatMessageService
 
             // ─── 12. Completar log de auditoria ──────────────────────────────
             const latencyMs = Date.now() - startedAt;
+
             interactionLog.complete({
                 assistantMessageId: assistantMessage.id.toString(),
                 providerId: provider.providerId,
@@ -359,14 +369,15 @@ export class SendChatMessageService
                     interactionLog.promptTokens,
                     interactionLog.completionTokens,
                 );
+
                 if (costUsd === null) {
                     this.logger.warn(
                         `[billing] No pricing found for model "${interactionLog.modelId}" — costUsd not recorded`,
                     );
                 } else {
                     interactionLog.costUsd = costUsd;
-                    void this.interactionLogRepository.save(interactionLog).catch((err: unknown) => {
-                        this.logger.error('[billing] Failed to persist costUsd', err);
+                    void this.interactionLogRepository.save(interactionLog).catch((error: unknown) => {
+                        this.logger.error('[billing] Failed to persist costUsd', error);
                     });
                 }
             }
@@ -375,8 +386,8 @@ export class SendChatMessageService
             if (this.subscriptionService) {
                 void this.subscriptionService
                     .incrementUsage(memberId.toString(), clinicId.toString(), 'chat')
-                    .catch((err: unknown) => {
-                        this.logger.error('Failed to increment chat usage', err);
+                    .catch((error: unknown) => {
+                        this.logger.error('Failed to increment chat usage', error);
                     });
             }
 
@@ -384,6 +395,7 @@ export class SendChatMessageService
         } catch (error) {
             // ─── Tratamento de falha do provider ─────────────────────────────
             const errorMessage = error instanceof Error ? error.message : 'Unknown provider error';
+
             interactionLog.fail('PROVIDER_ERROR', errorMessage);
             await this.interactionLogRepository.save(interactionLog);
 
@@ -443,6 +455,7 @@ export class SendChatMessageService
 
         for (const msg of params.recentMessages) {
             const tokens = this.estimateTokens(msg.content);
+
             if (usedTokens + tokens > budget) break;
             usedTokens += tokens;
             kept.push(msg);
@@ -454,6 +467,7 @@ export class SendChatMessageService
     /** Retorna o primeiro agente genérico ativo (specialty=null) ou o primeiro ativo encontrado. */
     private async resolveDefaultAgentProfile() {
         const profiles = await this.agentProfileRepository.findAllActive();
+
         return profiles.find((p) => p.specialtyGroup === null) ?? profiles[0] ?? null;
     }
 
@@ -502,6 +516,7 @@ export class SendChatMessageService
             const criticalLines = params.criticalContext
                 .map((c) => `- [${c.severity}] ${c.title}${c.description ? ': ' + c.description : ''}`)
                 .join('\n');
+
             systemParts.push('# ATENÇÃO — Contexto Crítico\n' + criticalLines);
         }
 
@@ -511,13 +526,21 @@ export class SendChatMessageService
             const factsLines: string[] = [];
 
             if (facts.name) factsLines.push(`Nome: ${facts.name}`);
+
             if (facts.age !== null && facts.age !== undefined) factsLines.push(`Idade: ${facts.age} anos`);
+
             if (facts.gender) factsLines.push(`Gênero: ${facts.gender}`);
+
             if (facts.allergies) factsLines.push(`Alergias: ${facts.allergies}`);
+
             if (facts.chronicConditions) factsLines.push(`Condições crônicas: ${facts.chronicConditions}`);
+
             if (facts.currentMedications) factsLines.push(`Medicamentos em uso: ${facts.currentMedications}`);
+
             if (facts.surgicalHistory) factsLines.push(`Histórico cirúrgico: ${facts.surgicalHistory}`);
+
             if (facts.familyHistory) factsLines.push(`Histórico familiar: ${facts.familyHistory}`);
+
             if (facts.socialHistory) factsLines.push(`Histórico social: ${facts.socialHistory}`);
 
             if (factsLines.length > 0) {
@@ -531,6 +554,7 @@ export class SendChatMessageService
                 .slice(0, 5) // Limita para não explodir o contexto
                 .map((t) => `- [${t.date.split('T')[0]}] ${t.title ?? t.type}${t.summary ? ': ' + t.summary.slice(0, 120) : ''}`)
                 .join('\n');
+
             systemParts.push('# Eventos Recentes\n' + timelineLines);
         }
 
@@ -539,6 +563,7 @@ export class SendChatMessageService
             const chunksText = params.retrievedChunks
                 .map((c, i) => `[Fonte ${i + 1} — ${c.sourceType}]\n${c.content}`)
                 .join('\n\n---\n\n');
+
             systemParts.push('# Contexto Clínico Recuperado\n' + chunksText);
         }
 
@@ -547,7 +572,7 @@ export class SendChatMessageService
         const messages: ChatMessage[] = [{role: 'system', content: systemContent}];
 
         // Histórico recente (ordenado cronologicamente — mais antigo primeiro)
-        for (const msg of [...params.recentMessages].reverse()) {
+        for (const msg of [...params.recentMessages].toReversed()) {
             if (msg.role === ChatMessageRole.USER) {
                 messages.push({role: 'user', content: msg.content});
             } else if (msg.role === ChatMessageRole.ASSISTANT) {

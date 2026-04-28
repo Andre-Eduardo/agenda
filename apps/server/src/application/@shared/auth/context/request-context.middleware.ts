@@ -40,6 +40,7 @@ export class RequestContextMiddleware implements NestMiddleware {
 
     private getClinicMemberFromRequest(request: Request): string | undefined {
         const signedCookies = request.signedCookies as Record<string, string> | undefined;
+
         return signedCookies?.[this.clinicMemberCookie];
     }
 }

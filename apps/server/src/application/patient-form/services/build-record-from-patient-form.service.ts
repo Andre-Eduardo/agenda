@@ -33,6 +33,7 @@ export class BuildRecordFromPatientFormService {
 
     async execute(patientFormId: PatientFormId): Promise<RecordPayloadFromForm> {
         const form = await this.patientFormRepository.findById(patientFormId);
+
         if (!form) {
             throw new ResourceNotFoundException('Patient form not found.', 'PatientForm');
         }
@@ -79,6 +80,7 @@ export class BuildRecordFromPatientFormService {
             .map((a) => {
                 const label = fieldLabelMap.get(a.fieldId) ?? a.fieldId;
                 const value = a.valueText ?? a.valueNumber ?? a.valueBoolean ?? '—';
+
                 return `${label}: ${value}`;
             })
             .join('\n');

@@ -19,6 +19,7 @@ export class ClinicReminderConfigPrismaRepository extends PrismaRepository imple
         const record = await this.prisma.clinicReminderConfig.findUnique({
             where: {id: id.toString()},
         });
+
         return record === null ? null : this.mapper.toDomain(record);
     }
 
@@ -26,11 +27,13 @@ export class ClinicReminderConfigPrismaRepository extends PrismaRepository imple
         const record = await this.prisma.clinicReminderConfig.findUnique({
             where: {clinicId: clinicId.toString()},
         });
+
         return record === null ? null : this.mapper.toDomain(record);
     }
 
     async save(config: ClinicReminderConfig): Promise<void> {
         const data = this.mapper.toPersistence(config);
+
         await this.prisma.clinicReminderConfig.upsert({
             where: {id: data.id},
             create: data,

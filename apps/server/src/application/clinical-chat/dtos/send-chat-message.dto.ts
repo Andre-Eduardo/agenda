@@ -9,7 +9,7 @@ import {PatientChatMessageDto} from './patient-chat-message.dto';
 // ─── Input DTO ───────────────────────────────────────────────────────────────
 
 export const sendChatMessageSchema = z.object({
-    content: z.string().min(1, 'Message content cannot be empty').max(10000, 'Message too long'),
+    content: z.string().min(1, 'Message content cannot be empty').max(10_000, 'Message too long'),
     topK: z.coerce.number().int().min(1).max(20).optional().default(8),
     minScore: z.coerce.number().min(0).max(1).optional().default(0),
 });

@@ -51,6 +51,7 @@ export class PatientForm extends AggregateRoot<PatientFormId> {
 
     static create(props: CreatePatientForm): PatientForm {
         const now = new Date();
+
         return new PatientForm({
             ...props,
             id: PatientFormId.generate(),
@@ -70,9 +71,11 @@ export class PatientForm extends AggregateRoot<PatientFormId> {
         if (this.status === FormResponseStatus.COMPLETED) {
             throw new PreconditionException('Cannot edit a completed form.');
         }
+
         if (this.status === FormResponseStatus.CANCELLED) {
             throw new PreconditionException('Cannot edit a cancelled form.');
         }
+
         this.responseJson = responseJson;
         this.status = FormResponseStatus.DRAFT;
         this.updatedAt = new Date();
@@ -82,10 +85,13 @@ export class PatientForm extends AggregateRoot<PatientFormId> {
         if (this.status === FormResponseStatus.COMPLETED) {
             throw new PreconditionException('Form is already completed.');
         }
+
         if (this.status === FormResponseStatus.CANCELLED) {
             throw new PreconditionException('Cannot complete a cancelled form.');
         }
+
         const now = new Date();
+
         this.responseJson = responseJson;
         this.computedJson = computedJson ?? null;
         this.status = FormResponseStatus.COMPLETED;
@@ -98,6 +104,7 @@ export class PatientForm extends AggregateRoot<PatientFormId> {
         if (this.status === FormResponseStatus.COMPLETED) {
             throw new PreconditionException('Cannot cancel a completed form.');
         }
+
         this.status = FormResponseStatus.CANCELLED;
         this.updatedAt = new Date();
     }

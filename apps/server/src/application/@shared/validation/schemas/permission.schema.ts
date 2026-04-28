@@ -6,7 +6,7 @@ export const permission = z
     .transform((value, ctx) => {
         try {
             return Permission.of(value);
-        } catch (e) {
+        } catch {
             ctx.addIssue({
                 code: z.ZodIssueCode.custom,
                 message: 'Invalid permission',

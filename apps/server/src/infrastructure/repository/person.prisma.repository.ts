@@ -35,6 +35,7 @@ export class PersonPrismaRepository extends PrismaRepository implements PersonRe
             },
         });
     }
+
     async search(
         pagination: Pagination<PersonSortOptions>,
         filter: PersonSearchFilter = {}
@@ -62,6 +63,7 @@ export class PersonPrismaRepository extends PrismaRepository implements PersonRe
 
     async save(person: Person): Promise<void> {
         const data = this.mapper.toPersistence(person);
+
         await this.prisma.person.upsert({
             where: {id: data.id},
             create: data,

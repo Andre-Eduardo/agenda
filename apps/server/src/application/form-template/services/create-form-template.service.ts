@@ -11,6 +11,7 @@ export class CreateFormTemplateService implements ApplicationService<CreateFormT
 
     async execute({actor, payload}: Command<CreateFormTemplateDto>): Promise<FormTemplateDto> {
         const existing = await this.formTemplateRepository.findByCode(payload.code);
+
         if (existing) {
             throw new PreconditionException(`A template with code "${payload.code}" already exists.`);
         }

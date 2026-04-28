@@ -35,6 +35,7 @@ async function hashPassword(raw: string): Promise<string> {
     const KEY_SIZE = 64;
     const salt = crypto.randomBytes(16);
     const hash = (await scrypt(raw, salt, KEY_SIZE)) as Buffer;
+
     return `${KEY_SIZE}:${salt.toString('base64')}:${hash.toString('base64')}`;
 }
 
@@ -42,6 +43,7 @@ export async function main() {
     const now = new Date();
 
     const password = await hashPassword('Admin@123456');
+
     await prisma.user.upsert({
         where: {id: IDS.user},
         create: {
@@ -147,9 +149,9 @@ export async function main() {
     console.log('');
     console.log('  Login: admin@agenda.dev');
     console.log('  Senha: Admin@123456');
-    console.log('  Clinic ID:        ', IDS.clinic);
-    console.log('  ClinicMember ID:  ', IDS.clinicMember);
-    console.log('  Professional ID:  ', IDS.professional);
+    console.log('Clinic ID:', IDS.clinic);
+    console.log('ClinicMember ID:', IDS.clinicMember);
+    console.log('Professional ID:', IDS.professional);
 }
 
 if (require.main === module) {

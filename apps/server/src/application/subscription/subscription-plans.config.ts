@@ -139,20 +139,24 @@ export function getPlanLimits(planCode: PlanCode): PlanLimits {
 
 function applyAddonGrants(limits: PlanLimits, grants: AddonGrants, quantity: number): void {
     if (grants.docsPerMonth !== undefined) limits.docsPerMonth += grants.docsPerMonth * quantity;
+
     if (grants.chatMessagesPerMonth !== undefined) limits.chatMessagesPerMonth += grants.chatMessagesPerMonth * quantity;
+
     if (grants.clinicalImagesPerMonth !== undefined) limits.clinicalImagesPerMonth += grants.clinicalImagesPerMonth * quantity;
+
     if (grants.storageHotGb !== undefined) limits.storageHotGb += grants.storageHotGb * quantity;
 }
 
 export function getEffectiveLimits(
     planCode: PlanCode,
-    addons: {addonCode: AddonCode; quantity: number}[],
+    addons: Array<{addonCode: AddonCode; quantity: number}>,
 ): PlanLimits {
     const base = getPlanLimits(planCode);
     const effective: PlanLimits = {...base};
 
     for (const {addonCode, quantity} of addons) {
         const catalog = ADDON_CATALOG[addonCode];
+
         applyAddonGrants(effective, catalog.grants, quantity);
     }
 

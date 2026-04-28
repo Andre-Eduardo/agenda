@@ -61,6 +61,7 @@ export class UserPrismaRepository extends PrismaRepository implements UserReposi
             where: {id: id.toString()},
             ...userSelect,
         });
+
         return user === null ? null : UserPrismaRepository.normalize(user);
     }
 
@@ -69,6 +70,7 @@ export class UserPrismaRepository extends PrismaRepository implements UserReposi
             where: {username: username.toString()},
             ...userSelect,
         });
+
         return user === null ? null : UserPrismaRepository.normalize(user);
     }
 
@@ -77,6 +79,7 @@ export class UserPrismaRepository extends PrismaRepository implements UserReposi
             where: {email: email.toString()},
             ...userSelect,
         });
+
         return user === null ? null : UserPrismaRepository.normalize(user);
     }
 
@@ -89,16 +92,16 @@ export class UserPrismaRepository extends PrismaRepository implements UserReposi
                 create: userModel,
                 update: userModel,
             });
-        } catch (e) {
-            if (this.checkUniqueViolation(e, 'username')) {
+        } catch (error) {
+            if (this.checkUniqueViolation(error, 'username')) {
                 throw new DuplicateUsernameException('Duplicate username.');
             }
 
-            if (this.checkUniqueViolation(e, 'email')) {
+            if (this.checkUniqueViolation(error, 'email')) {
                 throw new DuplicateEmailException('Duplicate user email.');
             }
 
-            throw e;
+            throw error;
         }
     }
 

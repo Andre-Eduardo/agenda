@@ -53,8 +53,8 @@ export async function main() {
 
 if (require.main === module) {
     main()
-        .catch((e) => {
-            console.error(e);
+        .catch((error) => {
+            console.error(error);
             process.exit(1);
         })
         .finally(() => prisma.$disconnect());

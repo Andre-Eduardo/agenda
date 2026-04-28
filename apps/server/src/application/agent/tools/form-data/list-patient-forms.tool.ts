@@ -37,6 +37,7 @@ export class ListPatientFormsTool implements AgentTool<Input, Output> {
             {page: 1, limit: input.limit ?? 10, sort: [{key: 'appliedAt', direction: 'desc'}]},
             {patientId: PatientId.from(input.patientId), status: input.status}
         );
+
         return {
             forms: result.data.map((f) => ({
                 id: f.id.toString(),

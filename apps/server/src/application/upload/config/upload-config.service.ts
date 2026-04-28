@@ -14,11 +14,13 @@ export class UploadConfigService implements MulterOptionsFactory {
             storage: diskStorage({
                 destination: (_req, _file, cb) => {
                     const tempDir = path.join(this.config.storage.localUploadDir, 'temp');
+
                     fs.mkdirSync(tempDir, {recursive: true});
                     cb(null, tempDir);
                 },
                 filename: (req, _file, cb) => {
                     const tempPath: string = req.body?.tempPath ?? '';
+
                     cb(null, path.basename(tempPath));
                 },
             }),

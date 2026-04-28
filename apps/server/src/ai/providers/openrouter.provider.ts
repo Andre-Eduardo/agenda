@@ -47,12 +47,14 @@ export class OpenRouterProvider implements IAiProvider {
 
     constructor() {
         const apiKey = process.env.OPENROUTER_API_KEY;
+
         if (!apiKey) {
             throw new Error(
                 '[OpenRouterProvider] OPENROUTER_API_KEY não configurada. ' +
                     'Defina a variável de ambiente para ativar o provider real.',
             );
         }
+
         this.apiKey = apiKey;
         this.baseUrl = process.env.OPENROUTER_BASE_URL ?? DEFAULT_BASE_URL;
         this.appName = process.env.OPENROUTER_APP_NAME ?? 'Agenda — Chat Clínico';
@@ -77,6 +79,7 @@ export class OpenRouterProvider implements IAiProvider {
             'Content-Type': 'application/json',
             'X-Title': this.appName,
         };
+
         if (this.appUrl) {
             headers['HTTP-Referer'] = this.appUrl;
         }
@@ -98,6 +101,7 @@ export class OpenRouterProvider implements IAiProvider {
 
             if (!response.ok) {
                 const msg = raw.error?.message ?? `HTTP ${response.status}`;
+
                 this.logger.error(`OpenRouter API error: ${msg}`, {model: params.modelId});
                 throw new Error(`OpenRouter API error: ${msg}`);
             }
@@ -105,17 +109,20 @@ export class OpenRouterProvider implements IAiProvider {
             if (error instanceof Error && error.message.startsWith('OpenRouter API error:')) {
                 throw error;
             }
+
             const msg = error instanceof Error ? error.message : 'Network error';
+
             this.logger.error(`OpenRouter fetch failed: ${msg}`);
-            throw new Error(`OpenRouter fetch failed: ${msg}`);
+            throw new Error(`OpenRouter fetch failed: ${msg}`, { cause: error });
         }
 
         const choice = raw.choices?.[0];
+
         if (!choice) {
             throw new Error('OpenRouter returned no choices in response.');
         }
 
-        const usage = raw.usage;
+        const {usage} = raw;
 
         this.logger.debug(
             `OpenRouter reply — finish_reason: ${choice.finish_reason ?? 'stop'}, tokens: ${usage?.total_tokens ?? 'N/A'}`,
@@ -135,6 +142,7 @@ export class OpenRouterProvider implements IAiProvider {
     async *stream(params: AiChatParams): AsyncIterable<AiStreamChunk> {
         // Streaming não implementado neste adapter — delega ao chat não-streaming
         const response = await this.chat(params);
+
         yield {delta: response.content, done: true};
     }
 }

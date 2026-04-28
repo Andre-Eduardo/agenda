@@ -33,6 +33,7 @@ export class ClinicalProfilePrismaRepository extends PrismaRepository implements
 
     async save(profile: ClinicalProfile): Promise<void> {
         const data = this.mapper.toPersistence(profile);
+
         await this.prisma.clinicalProfile.upsert({
             where: {patientId: data.patientId},
             create: data,

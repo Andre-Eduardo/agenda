@@ -51,6 +51,7 @@ export class CreateChatSessionService
 
     async execute({payload}: Command<CreateChatSessionInput>): Promise<CreateChatSessionOutput> {
         const patient = await this.patientRepository.findById(payload.patientId, payload.clinicId);
+
         if (!patient) {
             throw new ResourceNotFoundException('Patient not found.', payload.patientId.toString());
         }
@@ -95,6 +96,7 @@ export class CreateChatSessionService
                     `AiAgentProfile com slug "${agentConfig.slug}" não encontrado no banco. ` +
                         'Execute "pnpm sync:agents" para sincronizar o registry com o banco.',
                 );
+
                 return this.fallbackToGenericAgent();
             }
 
@@ -104,12 +106,14 @@ export class CreateChatSessionService
                 `Falha ao resolver agente para membro ${memberId.toString()}: ` +
                     (error instanceof Error ? error.message : String(error)),
             );
+
             return null;
         }
     }
 
     private async fallbackToGenericAgent(): Promise<AiAgentProfile | null> {
         const allActive = await this.agentProfileRepository.findAllActive();
+
         return allActive.find((p) => p.specialtyGroup === null) ?? allActive[0] ?? null;
     }
 }

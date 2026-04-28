@@ -78,8 +78,10 @@ Given(
             name: `Clínica de ${key}`,
             isPersonalClinic: true,
         });
+
         chai.expect(clinicResp.status, JSON.stringify(clinicResp.body)).to.equal(201);
         const clinicId = clinicResp.body.id as string;
+
         this.setVariableId('clinic', key, clinicId);
 
         // 2. ClinicMember with role PROFESSIONAL
@@ -89,16 +91,19 @@ Given(
             role: 'PROFESSIONAL',
             displayName: key,
         });
+
         chai.expect(memberResp.status, JSON.stringify(memberResp.body)).to.equal(201);
         const clinicMemberId = memberResp.body.id as string;
+
         this.setVariableId('clinicMember', key, clinicMemberId);
 
         // 3. Professional record
         const profResp = await this.agent.post('/api/v1/professionals').send({
             clinicMemberId,
             specialty,
-            registrationNumber: `CRM-${Math.floor(Math.random() * 100000)}`,
+            registrationNumber: `CRM-${Math.floor(Math.random() * 100_000)}`,
         });
+
         chai.expect(profResp.status, JSON.stringify(profResp.body)).to.equal(201);
         this.setVariableId('professional', key, profResp.body.id as string);
 

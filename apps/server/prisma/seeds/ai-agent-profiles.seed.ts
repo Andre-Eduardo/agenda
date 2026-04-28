@@ -335,6 +335,7 @@ Foque em:
 
 export async function main() {
     const now = new Date();
+
     console.log('Seeding AI agent profiles (versioned catalog)...');
 
     for (const agent of agents) {
@@ -381,8 +382,8 @@ export async function main() {
 
 if (require.main === module) {
     main()
-        .catch((e) => {
-            console.error(e);
+        .catch((error) => {
+            console.error(error);
             process.exit(1);
         })
         .finally(() => {

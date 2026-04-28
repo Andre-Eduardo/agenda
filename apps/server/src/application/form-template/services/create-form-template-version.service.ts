@@ -20,6 +20,7 @@ export class CreateFormTemplateVersionService
 
     async execute({payload}: Command<CreateVersionPayload>): Promise<FormTemplateVersionDto> {
         const template = await this.formTemplateRepository.findById(payload.templateId);
+
         if (!template) {
             throw new ResourceNotFoundException('Form template not found.', 'FormTemplate');
         }

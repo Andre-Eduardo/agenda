@@ -19,17 +19,21 @@ export class DeleteMemberBlockService implements ApplicationService<DeleteMember
         const {memberId, blockId} = payload;
 
         const member = await this.clinicMemberRepository.findById(memberId);
+
         if (member === null) {
             throw new ResourceNotFoundException('clinic_member.not_found', memberId.toString());
         }
+
         if (!member.clinicId.equals(actor.clinicId)) {
             throw new PreconditionException('Member does not belong to the current clinic.');
         }
 
         const block = await this.memberBlockRepository.findById(blockId);
+
         if (block === null) {
             throw new ResourceNotFoundException('member_block.not_found', blockId.toString());
         }
+
         if (!block.clinicMemberId.equals(memberId)) {
             throw new PreconditionException('Block does not belong to the specified member.');
         }

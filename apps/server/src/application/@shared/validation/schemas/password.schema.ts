@@ -8,10 +8,10 @@ export const password = z
             ObfuscatedPassword.validate(value);
 
             return value;
-        } catch (e) {
+        } catch (error) {
             ctx.addIssue({
                 code: z.ZodIssueCode.custom,
-                message: e instanceof Error ? e.message : 'Invalid password format',
+                message: error instanceof Error ? error.message : 'Invalid password format',
             });
 
             return z.NEVER;

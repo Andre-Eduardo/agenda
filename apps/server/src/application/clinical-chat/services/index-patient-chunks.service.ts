@@ -97,6 +97,7 @@ export class IndexPatientChunksService {
         const embeddingProvider = this.aiProviderRegistry.getEmbeddingProvider();
         const texts = chunks.map((c) => c.content);
         const vectors = await embeddingProvider.generateEmbeddings(texts);
+
         for (let i = 0; i < chunks.length; i++) {
             chunks[i].setEmbedding(vectors[i]);
         }
@@ -128,6 +129,7 @@ export class IndexPatientChunksService {
             if (!section.content?.trim()) continue;
 
             const normalizedContent = this.normalizeText(section.content);
+
             if (!normalizedContent) continue;
 
             const contentHash = this.hashContent(normalizedContent);
@@ -173,6 +175,7 @@ export class IndexPatientChunksService {
 
         // Agrupar campos em blocos de 8 para tamanho razoável de chunk
         const fieldBatchSize = 8;
+
         for (let i = 0; i < form.indexedFields.length; i += fieldBatchSize) {
             const batch = form.indexedFields.slice(i, i + fieldBatchSize);
             const content = batch
@@ -209,8 +212,8 @@ export class IndexPatientChunksService {
     /** Remove espaços extras, quebras de linha múltiplas e whitespace desnecessário. */
     private normalizeText(text: string): string {
         return text
-            .replace(/\s+/g, ' ')
-            .replace(/\n{3,}/g, '\n\n')
+            .replaceAll(/\s+/g, ' ')
+            .replaceAll(/\n{3,}/g, '\n\n')
             .trim();
     }
 

@@ -33,6 +33,7 @@ export class RecordAmendment extends AggregateRoot<RecordAmendmentId> {
 
     static create(props: CreateRecordAmendment): RecordAmendment {
         const now = new Date();
+
         return new RecordAmendment({
             ...props,
             id: RecordAmendmentId.generate(),

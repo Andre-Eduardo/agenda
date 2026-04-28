@@ -18,7 +18,7 @@ describe('CreateFormTemplateService', () => {
 
     it('should create a template successfully', async () => {
         repository.findByCode.mockResolvedValue(null);
-        repository.save.mockResolvedValue(undefined);
+        repository.save.mockResolvedValue();
 
         const result = await service.execute({
             actor: mockActor,
@@ -38,6 +38,7 @@ describe('CreateFormTemplateService', () => {
 
     it('should throw PreconditionException if code already exists', async () => {
         const existingTemplate = {code: 'existing_code'} as any;
+
         repository.findByCode.mockResolvedValue(existingTemplate);
 
         await expect(

@@ -26,6 +26,7 @@ export class PatientAlertPrismaRepository extends PrismaRepository implements Pa
 
     async save(alert: PatientAlert): Promise<void> {
         const data = this.mapper.toPersistence(alert);
+
         await this.prisma.patientAlert.upsert({
             where: {id: data.id},
             create: data,

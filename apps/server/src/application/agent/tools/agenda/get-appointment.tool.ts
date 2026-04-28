@@ -26,6 +26,7 @@ export class GetAppointmentTool implements AgentTool<Input, Output> {
 
     async execute(input: Input, _context: ToolContext): Promise<Output> {
         const appointment = await this.appointmentRepository.findById(AppointmentId.from(input.appointmentId));
+
         return {appointment: appointment ? toAppointmentView(appointment) : null};
     }
 }

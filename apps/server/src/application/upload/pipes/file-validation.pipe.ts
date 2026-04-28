@@ -26,6 +26,7 @@ export class FileValidationPipe implements PipeTransform<Express.Multer.File, Ex
 
         if (file.size > this.config.storage.uploadFileMaxSize) {
             const maxMb = (this.config.storage.uploadFileMaxSize / (1024 * 1024)).toFixed(0);
+
             throw new InvalidInputException(UploadExceptions.file_size_exceeded, [
                 {field: 'file', reason: `File size exceeds the ${maxMb}MB limit.`},
             ]);

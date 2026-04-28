@@ -6,7 +6,7 @@ export const email = z
     .transform((value, ctx) => {
         try {
             return Email.create(value);
-        } catch (e) {
+        } catch {
             ctx.addIssue({
                 code: z.ZodIssueCode.custom,
                 message: 'Invalid email format',

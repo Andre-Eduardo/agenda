@@ -26,6 +26,7 @@ export class EventPrismaRepository extends PrismaRepository implements EventRepo
 
     async add(event: Event<DomainEvent, MaybeAuthenticatedActor>): Promise<void> {
         const eventModel = this.mapper.toPersistence(event);
+
         await this.prisma.event.create({
             data: eventModel,
         });

@@ -36,7 +36,7 @@ export class PatientChatMessageDto extends EntityDto {
 
 export const addChatMessageSchema = z.object({
     role: z.nativeEnum(ChatMessageRole),
-    content: z.string().min(1).max(10000),
+    content: z.string().min(1).max(10_000),
     metadata: z.record(z.unknown()).optional(),
     chunkIds: z.array(z.string().uuid()).optional().default([]),
 });

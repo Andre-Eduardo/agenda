@@ -16,11 +16,12 @@ export function pagination<U extends string, T extends [U, ...U[]]>(sortOptions:
                 .record(z.enum<U, T>(sortOptions), z.enum(['asc', 'desc']))
                 .nullish()
                 .transform((val) => {
-                    if (!val) return undefined;
+                    if (!val) return;
+
                     return Object.entries(val).map(([key, direction]) => ({
                         key: key as U,
                         direction: direction as 'asc' | 'desc',
-                    })) as Sort<T>[];
+                    })) as Array<Sort<T>>;
                 })
                 .openapi({description: 'The fields to sort by'}),
         })

@@ -59,6 +59,7 @@ export class FinancialReportController {
                 pageSize: pageSize ? parseInt(pageSize, 10) : 50,
             },
         );
+
         return new RevenueReportDto(report);
     }
 
@@ -100,6 +101,7 @@ export class FinancialReportController {
                 status: status as AppointmentPaymentStatus | undefined,
             },
         );
+
         return new RevenueSummaryReportDto(report);
     }
 }

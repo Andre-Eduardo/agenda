@@ -42,6 +42,7 @@ export class AsaasPaymentAdapter implements IPaymentProvider {
 
     constructor(private readonly configService: EnvConfigService) {
         const {apiKey, env} = this.configService.asaas;
+
         this.apiKey = apiKey;
         this.baseUrl =
             env === 'production' ? 'https://api.asaas.com/v3' : 'https://sandbox.asaas.com/api/v3';
@@ -60,6 +61,7 @@ export class AsaasPaymentAdapter implements IPaymentProvider {
 
         if (!response.ok) {
             const body = await response.text();
+
             this.logger.error(`Asaas API error [${response.status}] ${path}: ${body}`);
             throw new Error(`Asaas API error ${response.status}: ${body}`);
         }
@@ -77,6 +79,7 @@ export class AsaasPaymentAdapter implements IPaymentProvider {
                 cpfCnpj: data.cpfCnpj,
             }),
         });
+
         return {id: result.id, name: result.name, email: result.email};
     }
 
@@ -92,6 +95,7 @@ export class AsaasPaymentAdapter implements IPaymentProvider {
                 description: data.description,
             }),
         });
+
         return {
             id: result.id,
             customerId: result.customer,
@@ -109,6 +113,7 @@ export class AsaasPaymentAdapter implements IPaymentProvider {
         const result = await this.request<AsaasSubscriptionResponse>(
             `/subscriptions/${externalSubscriptionId}`,
         );
+
         return {id: result.id, status: result.status, nextDueDate: result.nextDueDate};
     }
 
@@ -123,6 +128,7 @@ export class AsaasPaymentAdapter implements IPaymentProvider {
                 description: data.description,
             }),
         });
+
         return {
             id: result.id,
             status: result.status,
@@ -138,6 +144,7 @@ export class AsaasPaymentAdapter implements IPaymentProvider {
             PIX: 'PIX',
             BOLETO: 'BOLETO',
         };
+
         return map[method] ?? 'PIX';
     }
 }

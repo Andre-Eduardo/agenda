@@ -17,11 +17,13 @@ export class StartPatientFormService implements ApplicationService<StartPatientF
 
     async execute({actor, payload}: Command<StartPatientFormDto>): Promise<PatientFormDto> {
         const template = await this.formTemplateRepository.findById(payload.templateId);
+
         if (!template) {
             throw new ResourceNotFoundException('Form template not found.', 'FormTemplate');
         }
 
         let version;
+
         if (payload.versionId) {
             version = await this.formTemplateVersionRepository.findById(payload.versionId);
         } else {

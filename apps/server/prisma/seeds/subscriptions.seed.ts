@@ -33,6 +33,7 @@ export async function main() {
 
     if (professionals.length === 0) {
         console.log('  Nenhum ClinicMember com role PROFESSIONAL encontrado — seed ignorado.');
+
         return;
     }
 

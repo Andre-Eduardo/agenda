@@ -22,6 +22,7 @@ export class UpdatePaymentStatusService implements ApplicationService<UpdatePaym
         const {appointmentId, status, paidAt, amountBrl, notes} = payload;
 
         const appointment = await this.appointmentRepository.findById(appointmentId);
+
         if (appointment === null) {
             throw new ResourceNotFoundException('Appointment not found.', appointmentId.toString());
         }
@@ -31,11 +32,13 @@ export class UpdatePaymentStatusService implements ApplicationService<UpdatePaym
         }
 
         const payment = await this.appointmentPaymentRepository.findByAppointmentId(appointmentId);
+
         if (payment === null) {
             throw new ResourceNotFoundException('Payment not found for this appointment.', appointmentId.toString());
         }
 
         const resolvedPaidAt = paidAt ?? (status === AppointmentPaymentStatus.PAID ? new Date() : payment.paidAt);
+
         payment.updateStatus(status, resolvedPaidAt ?? null);
 
         if (amountBrl !== undefined) {

@@ -14,6 +14,7 @@ export class UploadFilePrismaRepository extends PrismaRepository implements Uplo
 
     async findById(id: UploadFileId): Promise<UploadFile | null> {
         const model = await this.prisma.uploadFile.findUnique({where: {id: id.toString()}});
+
         return model ? this.toDomain(model) : null;
     }
 
@@ -21,6 +22,7 @@ export class UploadFilePrismaRepository extends PrismaRepository implements Uplo
         const models = await this.prisma.uploadFile.findMany({
             where: {status: {in: [PrismaFilePromotionStatus.PENDING, PrismaFilePromotionStatus.IN_PROGRESS]}},
         });
+
         return models.map((m) => this.toDomain(m));
     }
 
@@ -31,6 +33,7 @@ export class UploadFilePrismaRepository extends PrismaRepository implements Uplo
                 createdAt: {lt: before},
             },
         });
+
         return models.map((m) => this.toDomain(m));
     }
 

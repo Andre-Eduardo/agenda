@@ -22,6 +22,7 @@ export class PromoteFileService implements ApplicationService<PromoteFileDto, vo
 
     async execute({actor, payload}: Command<PromoteFileDto, MaybeAuthenticatedActor>): Promise<void> {
         const file = await this.uploadFileRepository.findById(payload.fileId);
+
         if (!file) return;
 
         if (file.status === FilePromotionStatus.READY || file.status === FilePromotionStatus.FAILED) return;

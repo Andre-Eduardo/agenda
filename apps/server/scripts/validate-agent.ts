@@ -51,8 +51,10 @@ type Result = {
 // ─── CLI args ─────────────────────────────────────────────────────────────────
 
 const args = process.argv.slice(2);
+
 const getArg = (name: string, fallback: string) => {
     const found = args.find((a) => a.startsWith(`--${name}=`));
+
     return found ? found.split('=').slice(1).join('=') : fallback;
 };
 
@@ -83,6 +85,7 @@ async function post(url: string, body: unknown, cookieHeader: string): Promise<{
             },
             (res) => {
                 let raw = '';
+
                 res.on('data', (chunk: Buffer) => (raw += chunk));
                 res.on('end', () => {
                     try {
@@ -93,8 +96,9 @@ async function post(url: string, body: unknown, cookieHeader: string): Promise<{
                 });
             },
         );
+
         req.on('error', reject);
-        req.setTimeout(30000, () => {
+        req.setTimeout(30_000, () => {
             req.destroy();
             reject(new Error('Request timed out'));
         });
@@ -107,12 +111,13 @@ async function post(url: string, body: unknown, cookieHeader: string): Promise<{
 
 async function main() {
     const questionsPath = path.join(__dirname, '../docs/agent-validation-questions.json');
+
     if (!fs.existsSync(questionsPath)) {
         console.error(`Questions file not found: ${questionsPath}`);
         process.exit(1);
     }
 
-    const allQuestions: Question[] = JSON.parse(fs.readFileSync(questionsPath, 'utf-8'));
+    const allQuestions: Question[] = JSON.parse(fs.readFileSync(questionsPath, 'utf8'));
     const questions = CATEGORY_FILTER
         ? allQuestions.filter((q) => q.category === CATEGORY_FILTER)
         : allQuestions;
@@ -166,13 +171,13 @@ async function main() {
                 category: q.category,
                 question: q.question,
                 passed: questionPassed,
-                answer: answer.substring(0, 120) + (answer.length > 120 ? '...' : ''),
+                answer: answer.slice(0, 120) + (answer.length > 120 ? '...' : ''),
                 matchedKeywords,
                 missedKeywords,
                 toolsUsed,
                 durationMs,
             };
-        } catch (err) {
+        } catch (error) {
             const durationMs = Date.now() - start;
             result = {
                 id: q.id,
@@ -184,14 +189,16 @@ async function main() {
                 missedKeywords: q.expectedKeywords,
                 toolsUsed: [],
                 durationMs,
-                error: err instanceof Error ? err.message : String(err),
+                error: error instanceof Error ? error.message : String(error),
             };
         }
 
         const icon = result.passed ? '✅' : '❌';
         const duration = `${result.durationMs}ms`.padStart(7);
         const tools = result.toolsUsed.length > 0 ? ` [${result.toolsUsed.join(', ')}]` : '';
+
         console.log(`${icon} [${result.category.padEnd(10)}] ${q.id.padEnd(14)} ${duration}${tools}`);
+
         if (!result.passed) {
             if (result.error) console.log(`   Error: ${result.error}`);
             else if (result.missedKeywords.length > 0)
@@ -210,15 +217,19 @@ async function main() {
     console.log(`\nResults: ${passed}/${total} passed (${Math.round(passRate * 100)}%) — avg ${avgDuration}ms/question`);
 
     const byCategory: Record<string, {passed: number; total: number}> = {};
+
     for (const r of results) {
         byCategory[r.category] ??= {passed: 0, total: 0};
         byCategory[r.category].total++;
+
         if (r.passed) byCategory[r.category].passed++;
     }
 
     console.log('\nBy category:');
+
     for (const [cat, stats] of Object.entries(byCategory)) {
         const icon = stats.passed === stats.total ? '✅' : '⚠️';
+
         console.log(`  ${icon} ${cat.padEnd(12)} ${stats.passed}/${stats.total}`);
     }
 
@@ -230,7 +241,7 @@ async function main() {
     }
 }
 
-main().catch((err) => {
-    console.error('Unexpected error:', err);
+main().catch((error) => {
+    console.error('Unexpected error:', error);
     process.exit(1);
 });

@@ -24,6 +24,7 @@ export class Person extends AggregateRoot<PersonId> {
     phone: Phone | null;
     gender: Gender | null;
     personType: PersonType;
+
     constructor(props: AllEntityProps<Person>) {
         super(props);
 
@@ -79,7 +80,7 @@ export class Person extends AggregateRoot<PersonId> {
 
     protected validate(...fields: Array<keyof PersonProps>): void {
         if (fields.length === 0 || fields.includes('name')) {
-            if (this.name.length < 1) {
+            if (this.name.length === 0) {
                 throw new InvalidInputException('Person name must be at least 1 character long.');
             }
         }

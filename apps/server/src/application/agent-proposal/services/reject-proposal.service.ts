@@ -12,6 +12,7 @@ export class RejectProposalService {
 
     async execute({actor, payload}: Command<RejectProposalInput>): Promise<void> {
         const proposal = await this.proposalRepository.findById(AgentProposalId.from(payload.proposalId));
+
         if (!proposal) {
             throw new ResourceNotFoundException('Proposal not found.', payload.proposalId);
         }

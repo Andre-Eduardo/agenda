@@ -157,7 +157,9 @@ export class Record extends AggregateRoot<RecordId> {
         if (this.isLocked) {
             throw new PreconditionException('RECORD_ALREADY_LOCKED');
         }
+
         const now = new Date();
+
         this.isLocked = true;
         this.signedAt = now;
         this.signedByMemberId = memberId;
@@ -169,7 +171,9 @@ export class Record extends AggregateRoot<RecordId> {
         if (!this.isLocked) {
             throw new PreconditionException('RECORD_NOT_LOCKED');
         }
+
         const now = new Date();
+
         this.isLocked = false;
         this.updatedAt = now;
         this.addEvent(new RecordReopenedEvent({recordId: this.id, requestedByMemberId, timestamp: now}));

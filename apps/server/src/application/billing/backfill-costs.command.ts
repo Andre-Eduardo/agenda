@@ -63,6 +63,7 @@ async function run(): Promise<void> {
                 // TypeScript guards: these are guaranteed non-null by the WHERE clause above
                 if (row.modelId == null || row.promptTokens == null || row.completionTokens == null) {
                     skipped.push(row.id);
+
                     continue;
                 }
 
@@ -105,7 +106,7 @@ async function run(): Promise<void> {
     }
 }
 
-run().catch((err: unknown) => {
-    console.error('[backfill] Fatal error:', err);
+run().catch((error: unknown) => {
+    console.error('[backfill] Fatal error:', error);
     process.exit(1);
 });

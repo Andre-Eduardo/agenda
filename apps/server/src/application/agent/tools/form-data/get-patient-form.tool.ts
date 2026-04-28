@@ -34,7 +34,9 @@ export class GetPatientFormTool implements AgentTool<Input, Output> {
 
     async execute(input: Input, _context: ToolContext): Promise<Output> {
         const form = await this.patientFormRepository.findById(PatientFormId.from(input.patientFormId));
+
         if (!form) return null;
+
         return {
             id: form.id.toString(),
             clinicId: form.clinicId.toString(),

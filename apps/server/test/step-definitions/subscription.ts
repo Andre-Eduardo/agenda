@@ -20,6 +20,7 @@ Given(
         const subscription = await this.prisma.professionalSubscription.findUnique({
             where: {memberId},
         });
+
         if (!subscription) {
             throw new Error(
                 `No subscription found for clinicMember "${memberKey}". ` +

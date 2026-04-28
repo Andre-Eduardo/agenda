@@ -1,6 +1,6 @@
 import {Injectable} from '@nestjs/common';
 import {EventEmitter2} from '@nestjs/event-emitter';
-import {type MaybeAuthenticatedActor} from '../../domain/@shared/actor';
+import type {MaybeAuthenticatedActor} from '../../domain/@shared/actor';
 import {AggregateRoot} from '../../domain/@shared/entity';
 import {EventDispatcher, Event, DomainEvent} from '../../domain/event';
 

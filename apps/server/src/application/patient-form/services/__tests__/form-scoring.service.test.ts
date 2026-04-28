@@ -60,6 +60,7 @@ describe('FormScoringService', () => {
             scoring: {enabled: false},
         };
         const result = service.compute(noScoring, [{fieldId: 'q1', valueText: 'often'}]);
+
         expect(result).toBeNull();
     });
 
@@ -69,6 +70,7 @@ describe('FormScoringService', () => {
             {fieldId: 'q1', valueText: 'often'},
             {fieldId: 'q2', valueText: 'sometimes'},
         ]);
+
         expect(result).not.toBeNull();
         expect(result!.totalScore).toBe(4);
     });
@@ -79,6 +81,7 @@ describe('FormScoringService', () => {
             {fieldId: 'q1', valueText: 'never'},
             {fieldId: 'q2', valueText: 'never'},
         ]);
+
         expect(result!.classification).toBe('Low');
         expect(result!.flags).toContain('LOW_RISK');
     });
@@ -89,6 +92,7 @@ describe('FormScoringService', () => {
             {fieldId: 'q1', valueText: 'often'},
             {fieldId: 'q2', valueText: 'often'},
         ]);
+
         expect(result!.classification).toBe('High');
     });
 
@@ -96,6 +100,7 @@ describe('FormScoringService', () => {
         const result = service.compute(definitionWithScoring, [
             {fieldId: 'q1', valueText: 'sometimes'},
         ]);
+
         expect(result!.scores).toHaveLength(1);
         expect(result!.scores![0].fieldId).toBe('q1');
         expect(result!.scores![0].value).toBe(1);

@@ -201,7 +201,7 @@ describe('An auth guard', () => {
                 userId: UserId.generate(),
                 companies: [CompanyId.generate()],
                 issueTime: new Date(2000),
-                expirationTime: new Date(Date.now() + 10000),
+                expirationTime: new Date(Date.now() + 10_000),
                 scope: [TokenScope.AUTH],
             },
             'invalid-secret'

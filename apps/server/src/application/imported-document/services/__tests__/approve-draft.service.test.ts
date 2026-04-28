@@ -172,6 +172,7 @@ describe('ApproveDraftService', () => {
         await service.execute({actor, payload: {id: document.id}});
 
         const savedRecord = recordRepository.save.mock.calls[0][0] as Record;
+
         expect(savedRecord.source).toBe(RecordSource.IMPORT);
         expect(savedRecord.wasHumanEdited).toBe(false);
         expect(savedRecord.importedDocumentId?.toString()).toBe(document.id.toString());

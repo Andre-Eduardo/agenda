@@ -20,11 +20,13 @@ export class RecordAmendmentPrismaRepository extends PrismaRepository implements
             where: {recordId: recordId.toString()},
             orderBy: {reopenedAt: 'desc'},
         });
+
         return amendments.map((a) => this.mapper.toDomain(a));
     }
 
     async save(amendment: RecordAmendment): Promise<void> {
         const data = this.mapper.toPersistence(amendment);
+
         await this.prisma.recordAmendment.upsert({
             where: {id: data.id},
             create: data,

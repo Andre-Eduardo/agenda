@@ -27,6 +27,7 @@ export class ProfessionalPrismaRepository extends PrismaRepository implements Pr
         const professional = await this.prisma.professional.findUnique({
             where: {id: id.toString()},
         });
+
         return professional === null ? null : this.mapper.toDomain(professional);
     }
 
@@ -34,6 +35,7 @@ export class ProfessionalPrismaRepository extends PrismaRepository implements Pr
         const professional = await this.prisma.professional.findUnique({
             where: {clinicMemberId: clinicMemberId.toString()},
         });
+
         return professional === null ? null : this.mapper.toDomain(professional);
     }
 
@@ -69,6 +71,7 @@ export class ProfessionalPrismaRepository extends PrismaRepository implements Pr
 
     async save(professional: Professional): Promise<void> {
         const data = this.mapper.toPersistence(professional);
+
         await this.prisma.professional.upsert({
             where: {id: data.id},
             create: data,

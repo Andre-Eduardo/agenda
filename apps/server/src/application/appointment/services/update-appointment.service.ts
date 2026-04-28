@@ -46,8 +46,10 @@ export class UpdateAppointmentService implements ApplicationService<UpdateAppoin
             // Working hours
             const dayOfWeek = startAt.getDay();
             const workingHours = await this.workingHoursRepository.findByMemberAndDay(attendedByMemberId, dayOfWeek);
+
             if (workingHours.length > 0) {
                 const coversInterval = workingHours.some((wh) => wh.coversInterval(startAt, endAt));
+
                 if (!coversInterval) {
                     throw new PreconditionException('Appointment is outside the member working hours.');
                 }
@@ -55,19 +57,21 @@ export class UpdateAppointmentService implements ApplicationService<UpdateAppoin
 
             // Member blocks
             const blocks = await this.memberBlockRepository.findOverlapping(attendedByMemberId, startAt, endAt);
+
             if (blocks.length > 0) {
                 throw new PreconditionException('Member has a block during this time period.');
             }
 
             // Conflicts (excluding the appointment itself)
             const conflicts = await this.appointmentRepository.findConflicts(attendedByMemberId, startAt, endAt, id);
+
             if (conflicts.length > 0) {
                 throw new PreconditionException('There is a scheduling conflict with an existing appointment.');
             }
 
             changeProps.startAt = startAt;
             changeProps.endAt = endAt;
-            changeProps.durationMinutes = Math.round((endAt.getTime() - startAt.getTime()) / 60000);
+            changeProps.durationMinutes = Math.round((endAt.getTime() - startAt.getTime()) / 60_000);
         }
 
         appointment.change(changeProps);

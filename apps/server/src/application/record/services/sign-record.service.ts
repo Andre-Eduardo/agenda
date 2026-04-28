@@ -20,11 +20,13 @@ export class SignRecordService implements ApplicationService<SignRecordDto, Reco
 
     async execute({actor, payload}: Command<SignRecordDto>): Promise<RecordDto> {
         const member = await this.clinicMemberRepository.findById(actor.clinicMemberId);
+
         if (member === null || !ALLOWED_ROLES.includes(member.role)) {
             throw new AccessDeniedException('RECORD_SIGN_FORBIDDEN', AccessDeniedReason.INSUFFICIENT_PERMISSIONS);
         }
 
         const record = await this.recordRepository.findById(payload.id);
+
         if (record === null) {
             throw new ResourceNotFoundException('Record not found.', payload.id.toString());
         }

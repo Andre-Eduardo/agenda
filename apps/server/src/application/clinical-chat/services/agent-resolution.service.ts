@@ -42,18 +42,19 @@ export class AgentResolutionService {
 
         if (professional === null) {
             const genericAgent = await this.resolveGenericAgent();
+
             if (genericAgent) return genericAgent;
             throw new PreconditionException(
                 'No AI agent available for this clinic member. Configure agents in the system before starting a chat.',
             );
         }
 
-        const specialtyNormalized = professional.specialtyNormalized;
+        const {specialtyNormalized} = professional;
         const specialtyText = professional.specialty
             ? normalizeSpecialtyText(professional.specialty)
             : null;
 
-        const activeRules = AGENT_MAPPING_RULES.filter((r) => r.isActive).sort(
+        const activeRules = AGENT_MAPPING_RULES.filter((r) => r.isActive).toSorted(
             (a, b) => b.priority - a.priority,
         );
 
@@ -65,8 +66,10 @@ export class AgentResolutionService {
                     r.specialtyTextPattern !== undefined &&
                     specialtyText.includes(r.specialtyTextPattern),
             );
+
             if (specificRule) {
                 const agent = await this.findAgentByCode(specificRule.agentCode);
+
                 if (agent) return agent;
             }
         }
@@ -76,14 +79,17 @@ export class AgentResolutionService {
             const defaultRule = activeRules.find(
                 (r) => r.professionType === specialtyNormalized && r.specialtyTextPattern === undefined,
             );
+
             if (defaultRule) {
                 const agent = await this.findAgentByCode(defaultRule.agentCode);
+
                 if (agent) return agent;
             }
         }
 
         // 3. Generic fallback
         const genericAgent = await this.resolveGenericAgent();
+
         if (genericAgent) return genericAgent;
 
         throw new PreconditionException(
@@ -93,20 +99,23 @@ export class AgentResolutionService {
 
     async resolveAgentDisplayName(memberId: ClinicMemberId): Promise<string> {
         const agent = await this.resolveForMember(memberId);
+
         return agent.name;
     }
 
     private async findAgentByCode(code: string): Promise<AiAgentProfile | null> {
         const allActive = await this.agentProfileRepository.findAllActive();
+
         return allActive.find((p) => p.code === code) ?? null;
     }
 
     private async resolveGenericAgent(): Promise<AiAgentProfile | null> {
         const allActive = await this.agentProfileRepository.findAllActive();
+
         return allActive.find((p) => p.specialtyGroup === null) ?? allActive[0] ?? null;
     }
 
     listActiveMappingRules(): AgentMappingRule[] {
-        return AGENT_MAPPING_RULES.filter((r) => r.isActive).sort((a, b) => b.priority - a.priority);
+        return AGENT_MAPPING_RULES.filter((r) => r.isActive).toSorted((a, b) => b.priority - a.priority);
     }
 }

@@ -28,7 +28,7 @@ export class UpdatePatientService implements ApplicationService<UpdatePatientDto
             emergencyContactName: props.emergencyContactName ?? undefined,
             emergencyContactPhone: props.emergencyContactPhone ?? undefined,
             address: props.address !== undefined
-                ? props.address
+                ? (props.address
                     ? {
                           street: props.address.street ?? null,
                           number: props.address.number ?? null,
@@ -39,7 +39,7 @@ export class UpdatePatientService implements ApplicationService<UpdatePatientDto
                           zipCode: props.address.zipCode ?? null,
                           country: props.address.country ?? null,
                       }
-                    : null
+                    : null)
                 : undefined,
             insurancePlanId: props.insurancePlanId !== undefined ? (props.insurancePlanId ?? null) : undefined,
             insuranceCardNumber: props.insuranceCardNumber !== undefined ? (props.insuranceCardNumber ?? null) : undefined,

@@ -81,6 +81,7 @@ export class DraftEvolution extends AggregateRoot<DraftEvolutionId> {
 
     static create(props: CreateEntity<DraftEvolution>): DraftEvolution {
         const now = new Date();
+
         return new DraftEvolution({
             ...props,
             id: DraftEvolutionId.generate(),
@@ -122,20 +123,31 @@ export class DraftEvolution extends AggregateRoot<DraftEvolutionId> {
         let changed = false;
 
         if (fields.templateType !== undefined) { this.templateType = fields.templateType; changed = true; }
+
         if (fields.title !== undefined) { this.title = fields.title; changed = true; }
+
         if (fields.attendanceType !== undefined) { this.attendanceType = fields.attendanceType; changed = true; }
+
         if (fields.clinicalStatus !== undefined) { this.clinicalStatus = fields.clinicalStatus; changed = true; }
+
         if (fields.conductTags !== undefined) { this.conductTags = fields.conductTags; changed = true; }
+
         if (fields.subjective !== undefined) { this.subjective = fields.subjective; changed = true; }
+
         if (fields.objective !== undefined) { this.objective = fields.objective; changed = true; }
+
         if (fields.assessment !== undefined) { this.assessment = fields.assessment; changed = true; }
+
         if (fields.plan !== undefined) { this.plan = fields.plan; changed = true; }
+
         if (fields.freeNotes !== undefined) { this.freeNotes = fields.freeNotes; changed = true; }
+
         if (fields.eventDate !== undefined) { this.eventDate = fields.eventDate; changed = true; }
 
         if (changed) {
             this.wasHumanEdited = true;
             this.updatedAt = new Date();
+
             if (this.status === DraftEvolutionStatus.DRAFT) {
                 this.status = DraftEvolutionStatus.PENDING_REVIEW;
             }
@@ -146,11 +158,13 @@ export class DraftEvolution extends AggregateRoot<DraftEvolutionId> {
         if (this.status === DraftEvolutionStatus.APPROVED) {
             throw new PreconditionException('DRAFT_ALREADY_APPROVED');
         }
+
         if (this.status === DraftEvolutionStatus.REJECTED) {
             throw new PreconditionException('DRAFT_ALREADY_REJECTED');
         }
 
         const now = new Date();
+
         this.status = DraftEvolutionStatus.APPROVED;
         this.approvedByMemberId = memberId;
         this.approvedAt = now;

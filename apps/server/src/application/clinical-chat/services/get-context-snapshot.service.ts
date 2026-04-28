@@ -50,6 +50,7 @@ export class GetContextSnapshotService {
         const {clinicId, patientId, memberId = null, autoRebuildIfStale = true} = input;
 
         const patient = await this.patientRepository.findById(patientId, clinicId);
+
         if (!patient) {
             throw new ResourceNotFoundException('Patient not found.', patientId.toString());
         }

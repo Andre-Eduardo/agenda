@@ -17,10 +17,10 @@ export class ReindexOnRecordSavedHandler {
                 actor,
                 payload: {patientId: payload.patientId, reindex: true},
             });
-        } catch (err) {
+        } catch (error) {
             this.logger.error(
                 `Failed to reindex context for patient ${payload.patientId.toString()} after record ${payload.action}`,
-                err instanceof Error ? err.stack : String(err),
+                error instanceof Error ? error.stack : String(error),
             );
         }
     }

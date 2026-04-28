@@ -20,6 +20,7 @@ export class ClinicMemberPrismaRepository extends PrismaRepository implements Cl
         const member = await this.prisma.clinicMember.findFirst({
             where: {id: id.toString()},
         });
+
         return member === null ? null : this.mapper.toDomain(member);
     }
 
@@ -31,6 +32,7 @@ export class ClinicMemberPrismaRepository extends PrismaRepository implements Cl
                 deletedAt: null,
             },
         });
+
         return member === null ? null : this.mapper.toDomain(member);
     }
 
@@ -38,6 +40,7 @@ export class ClinicMemberPrismaRepository extends PrismaRepository implements Cl
         const members = await this.prisma.clinicMember.findMany({
             where: {userId: userId.toString(), deletedAt: null},
         });
+
         return members.map((m) => this.mapper.toDomain(m));
     }
 
@@ -45,11 +48,13 @@ export class ClinicMemberPrismaRepository extends PrismaRepository implements Cl
         const members = await this.prisma.clinicMember.findMany({
             where: {clinicId: clinicId.toString(), deletedAt: null},
         });
+
         return members.map((m) => this.mapper.toDomain(m));
     }
 
     async save(member: ClinicMember): Promise<void> {
         const data = this.mapper.toPersistence(member);
+
         await this.prisma.clinicMember.upsert({
             where: {id: data.id},
             create: data,

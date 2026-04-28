@@ -100,6 +100,7 @@ export class OpenRouterChatProvider implements ChatModelProvider {
                     'Configure um modelo fixo em OPENROUTER_MODEL ou no providerModelId do AgentProfile.'
             );
         }
+
         this.apiKey = config.apiKey;
         this.modelId = config.modelId;
         this.maxContextTokens = config.maxContextTokens ?? 128_000;
@@ -139,9 +140,11 @@ export class OpenRouterChatProvider implements ChatModelProvider {
         if (input.temperature !== undefined) {
             requestBody.temperature = input.temperature;
         }
+
         if (input.stop && input.stop.length > 0) {
             requestBody.stop = input.stop;
         }
+
         if (input.tools && input.tools.length > 0) {
             requestBody.tools = input.tools.map((t) => ({
                 type: 'function',
@@ -162,6 +165,7 @@ export class OpenRouterChatProvider implements ChatModelProvider {
                 'Content-Type': 'application/json',
                 'X-Title': this.appName,
             };
+
             if (this.appUrl) {
                 headers['HTTP-Referer'] = this.appUrl;
             }
@@ -176,6 +180,7 @@ export class OpenRouterChatProvider implements ChatModelProvider {
 
             if (!response.ok) {
                 const errorMessage = rawResponse.error?.message ?? `HTTP ${response.status}`;
+
                 this.logger.error(`OpenRouter API error: ${errorMessage}`, {
                     status: response.status,
                     model: this.modelId,
@@ -186,12 +191,15 @@ export class OpenRouterChatProvider implements ChatModelProvider {
             if (error instanceof Error && error.message.startsWith('OpenRouter API error:')) {
                 throw error;
             }
+
             const message = error instanceof Error ? error.message : 'Network error';
+
             this.logger.error(`OpenRouter fetch failed: ${message}`);
-            throw new Error(`OpenRouter fetch failed: ${message}`);
+            throw new Error(`OpenRouter fetch failed: ${message}`, { cause: error });
         }
 
         const choice = rawResponse.choices?.[0];
+
         if (!choice) {
             throw new Error('OpenRouter returned no choices in response.');
         }
@@ -200,21 +208,24 @@ export class OpenRouterChatProvider implements ChatModelProvider {
         const rawFinishReason = choice.finish_reason ?? 'stop';
         // OpenRouter returns 'tool_calls' for tool invocations; normalize to 'tool_use'
         const finishReason = rawFinishReason === 'tool_calls' ? 'tool_use' : rawFinishReason;
-        const usage = rawResponse.usage;
+        const {usage} = rawResponse;
 
         this.logger.debug(
             `OpenRouter reply — finish_reason: ${finishReason}, tokens: ${usage?.total_tokens ?? 'N/A'}`
         );
 
         let toolCalls: LLMToolCall[] | undefined;
+
         if (finishReason === 'tool_use' && choice.message?.tool_calls?.length) {
             toolCalls = choice.message.tool_calls.map((tc) => {
                 let args: Record<string, unknown> = {};
+
                 try {
                     args = JSON.parse(tc.function.arguments) as Record<string, unknown>;
                 } catch {
                     // leave empty on parse error
                 }
+
                 return {id: tc.id, name: tc.function.name, arguments: args};
             });
         }
@@ -260,13 +271,14 @@ export class OpenRouterChatProvider implements ChatModelProvider {
     /** Verifica disponibilidade do OpenRouter com uma chamada mínima à API. */
     async healthCheck(): Promise<HealthCheckResult> {
         const start = Date.now();
+
         try {
             const response = await fetch(`${OPENROUTER_BASE_URL}/models`, {
                 method: 'GET',
                 headers: {
                     Authorization: `Bearer ${this.apiKey}`,
                 },
-                signal: AbortSignal.timeout(5_000),
+                signal: AbortSignal.timeout(5000),
             });
 
             const latencyMs = Date.now() - start;
@@ -286,6 +298,7 @@ export class OpenRouterChatProvider implements ChatModelProvider {
             };
         } catch (error) {
             const message = error instanceof Error ? error.message : 'Unknown error';
+
             return {
                 healthy: false,
                 latencyMs: Date.now() - start,

@@ -88,18 +88,31 @@ export class Clinic extends AggregateRoot<ClinicId> {
         const oldState = new Clinic(this);
 
         if (props.name !== undefined) this.name = props.name;
+
         if (props.documentId !== undefined) this.documentId = props.documentId;
+
         if (props.phone !== undefined) this.phone = props.phone;
+
         if (props.email !== undefined) this.email = props.email;
+
         if (props.street !== undefined) this.street = props.street;
+
         if (props.number !== undefined) this.number = props.number;
+
         if (props.complement !== undefined) this.complement = props.complement;
+
         if (props.neighborhood !== undefined) this.neighborhood = props.neighborhood;
+
         if (props.city !== undefined) this.city = props.city;
+
         if (props.state !== undefined) this.state = props.state;
+
         if (props.zipCode !== undefined) this.zipCode = props.zipCode;
+
         if (props.country !== undefined) this.country = props.country;
+
         if (props.logoUrl !== undefined) this.logoUrl = props.logoUrl;
+
         if (props.clinicSpecialties !== undefined) this.clinicSpecialties = props.clinicSpecialties;
 
         this.validate();
@@ -112,7 +125,7 @@ export class Clinic extends AggregateRoot<ClinicId> {
     }
 
     private validate(): void {
-        if (this.name.length < 1) {
+        if (this.name.length === 0) {
             throw new InvalidInputException('Clinic name must be at least 1 character long.');
         }
     }

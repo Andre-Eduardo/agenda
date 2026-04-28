@@ -30,9 +30,11 @@ function setLastPatientKey(context: Context, key: string): void {
 
 function getLastPatientKey(context: Context): string {
     const key = (context.variables as Record<string, unknown>).lastRagPatientKey;
+
     if (typeof key !== 'string') {
-        throw new Error('No patient created yet. Use "um paciente X com evolução Y" first.');
+        throw new TypeError('No patient created yet. Use "um paciente X com evolução Y" first.');
     }
+
     return key;
 }
 
@@ -42,9 +44,11 @@ function setLastChunksResponse(context: Context, response: RetrieveChunksRespons
 
 function getLastChunksResponse(context: Context): RetrieveChunksResponse {
     const resp = (context.variables as Record<string, unknown>).lastRagChunksResponse;
+
     if (!resp) {
         throw new Error('No chunk retrieval performed yet. Call a "consulto chunks" step first.');
     }
+
     return resp as RetrieveChunksResponse;
 }
 
@@ -73,6 +77,7 @@ Given(
             email,
             password,
         });
+
         chai.expect(
             userResp.status,
             `User creation failed: ${JSON.stringify(userResp.body)}`
@@ -84,6 +89,7 @@ Given(
             username: uniqueUsername,
             password,
         });
+
         chai.expect(
             signInResp.status,
             `Sign-in failed: ${JSON.stringify(signInResp.body)}`
@@ -96,6 +102,7 @@ Given(
             documentId: `000.000.000-0${Math.floor(Math.random() * 9)}`,
             userId: userResp.body.id,
         });
+
         chai.expect(
             profResp.status,
             `Professional creation failed: ${JSON.stringify(profResp.body)}`
@@ -109,6 +116,7 @@ Given(
             password,
             professionalId: profResp.body.id,
         });
+
         chai.expect(
             signInProfResp.status,
             `Professional sign-in failed: ${JSON.stringify(signInProfResp.body)}`
@@ -141,11 +149,13 @@ Given(
             documentId: `${String(Math.floor(Math.random() * 900) + 100)}.${String(Math.floor(Math.random() * 900) + 100)}.${String(Math.floor(Math.random() * 900) + 100)}-${String(Math.floor(Math.random() * 90) + 10)}`,
             professionalId: profId,
         });
+
         chai.expect(
             patientResp.status,
             `Patient creation failed for "${name}": ${JSON.stringify(patientResp.body)}`
         ).to.equal(201);
         const patientId = patientResp.body.id as string;
+
         this.setVariableId('patient', name, patientId);
         setLastPatientKey(this, name);
 
@@ -156,6 +166,7 @@ Given(
             freeNotes: evolution,
             eventDate: new Date().toISOString(),
         });
+
         chai.expect(
             recordResp.status,
             `Record creation failed for patient "${name}": ${JSON.stringify(recordResp.body)}`
@@ -165,6 +176,7 @@ Given(
         const rebuildResp = await this.agent
             .post('/api/v1/clinical-chat/context/rebuild')
             .send({patientId, reindex: true});
+
         chai.expect(
             rebuildResp.status,
             `Context rebuild failed for patient "${name}": ${JSON.stringify(rebuildResp.body)}`
@@ -186,6 +198,7 @@ Given('os chunks do paciente foram indexados', async function (this: Context) {
     const rebuildResp = await this.agent
         .post('/api/v1/clinical-chat/context/rebuild')
         .send({patientId, reindex: true});
+
     chai.expect(
         rebuildResp.status,
         `Re-index failed: ${JSON.stringify(rebuildResp.body)}`
@@ -212,6 +225,7 @@ When('consulto chunks com query {string}', async function (this: Context, query:
         topK: 5,
         minScore: 0,
     });
+
     chai.expect(
         response.status,
         `Chunk retrieval failed: ${JSON.stringify(response.body)}`
@@ -237,6 +251,7 @@ When(
             topK: 5,
             minScore: 0,
         });
+
         chai.expect(
             response.status,
             `Chunk retrieval failed for "${name}": ${JSON.stringify(response.body)}`

@@ -50,6 +50,7 @@ export class SubscriptionController {
         @Param('memberId') memberId: string,
     ): Promise<SubscriptionDto> {
         const sub = await this.subscriptionService.getSubscriptionByMemberId(memberId);
+
         return new SubscriptionDto(sub);
     }
 
@@ -70,6 +71,7 @@ export class SubscriptionController {
             memberId,
             actor.clinicId.toString(),
         );
+
         return new CurrentUsageDto(usage);
     }
 
@@ -97,6 +99,7 @@ export class SubscriptionController {
             payload.quantity,
             actor.clinicMemberId.toString(),
         );
+
         return new CurrentUsageDto(usage);
     }
 
@@ -114,6 +117,7 @@ export class SubscriptionController {
             memberId,
             actor.clinicId.toString(),
         );
+
         return addons.map((a) => new ActiveAddonDto(a));
     }
 
@@ -131,6 +135,7 @@ export class SubscriptionController {
         const entries = await this.subscriptionService.getClinicUsage(clinicId);
         const now = new Date();
         const period = {year: now.getFullYear(), month: now.getMonth() + 1};
+
         return new ClinicMembersUsageSummaryDto(period, entries);
     }
 
@@ -146,6 +151,7 @@ export class SubscriptionController {
         @Param('clinicId') clinicId: string,
     ): Promise<MemberActiveAddonsDto[]> {
         const groups = await this.subscriptionService.getClinicActiveAddons(clinicId);
+
         return groups.map((g) => new MemberActiveAddonsDto(g.memberId, g.addons));
     }
 
@@ -164,6 +170,7 @@ export class SubscriptionController {
         @Param('clinicId') clinicId: string,
     ): Promise<MemberUsageSummaryDto[]> {
         const entries = await this.subscriptionService.getClinicUsage(clinicId);
+
         return entries.map((e) => new MemberUsageSummaryDto(e.memberId, e.usage));
     }
 
@@ -185,6 +192,7 @@ export class SubscriptionController {
     ): Promise<SubscriptionDto> {
         const planCode = toEnum(PlanCodeRecord, payload.planCode);
         const sub = await this.subscriptionService.changePlan(memberId, planCode);
+
         return new SubscriptionDto(sub);
     }
 }

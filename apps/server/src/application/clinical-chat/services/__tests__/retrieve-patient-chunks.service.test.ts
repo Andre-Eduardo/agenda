@@ -30,7 +30,7 @@ function makeRankedChunk(
             sourceType,
             sourceId: PatientContextChunkId.generate().toString(),
             content,
-            contentHash: `hash_${content.slice(0, 8).replace(/\s/g, '_')}`,
+            contentHash: `hash_${content.slice(0, 8).replaceAll(/\s/g, '_')}`,
         }),
         score,
     };
@@ -102,6 +102,7 @@ describe('RetrievePatientChunksService — edge cases', () => {
 
     it('filters out all chunks when minScore is 1.0 and no chunk has perfect score', async () => {
         const {service, chunkRepository} = makeService();
+
         chunkRepository.searchSimilar.mockResolvedValue([
             makeRankedChunk('diabetes evolution', 0.8),
             makeRankedChunk('hypertension treatment', 0.6),
@@ -110,7 +111,7 @@ describe('RetrievePatientChunksService — edge cases', () => {
         const result = await service.execute({
             patientId: PATIENT_ID,
             query: 'high blood sugar',
-            minScore: 1.0,
+            minScore: 1,
         });
 
         expect(result.chunks).toHaveLength(0);
@@ -119,6 +120,7 @@ describe('RetrievePatientChunksService — edge cases', () => {
 
     it('returns chunks of all source types when sourceTypes is not specified', async () => {
         const {service, chunkRepository} = makeService();
+
         chunkRepository.searchSimilar.mockResolvedValue([
             makeRankedChunk('SOAP note content', 0.9, ContextChunkSourceType.RECORD),
             makeRankedChunk('form field values', 0.8, ContextChunkSourceType.PATIENT_FORM),
@@ -142,6 +144,7 @@ describe('RetrievePatientChunksService — edge cases', () => {
 
     it('propagates error when embedding provider is unavailable', async () => {
         const embeddingProvider = mock<EmbeddingProvider>();
+
         embeddingProvider.generateEmbedding.mockRejectedValue(
             new Error('OpenAI API unreachable'),
         );
@@ -158,6 +161,7 @@ describe('RetrievePatientChunksService — edge cases', () => {
 
     it('propagates repository error when pgvector dimension does not match', async () => {
         const chunkRepository = mock<PatientContextChunkRepository>();
+
         chunkRepository.searchSimilar.mockRejectedValue(
             new Error('wrong number of dimensions 512 should be 1536'),
         );

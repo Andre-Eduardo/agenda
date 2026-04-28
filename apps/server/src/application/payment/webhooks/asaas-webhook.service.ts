@@ -49,6 +49,7 @@ export class AsaasWebhookService {
 
         if (!payment) {
             this.logger.log(`Skipping Asaas event without payment: ${event}`);
+
             return;
         }
 
@@ -65,6 +66,7 @@ export class AsaasWebhookService {
             this.logger.warn(
                 `No subscription found for asaasSubscriptionId=${asaasSubscriptionId ?? 'none'}`,
             );
+
             return;
         }
 
@@ -72,8 +74,10 @@ export class AsaasWebhookService {
             const existing = await this.prisma.paymentEvent.findFirst({
                 where: {asaasPaymentId, eventType: event},
             });
+
             if (existing) {
                 this.logger.log(`Duplicate webhook skipped: paymentId=${asaasPaymentId} event=${event}`);
+
                 return;
             }
         }
@@ -83,6 +87,7 @@ export class AsaasWebhookService {
         const now = new Date();
 
         const eventId = randomUUID();
+
         await this.prisma.paymentEvent.create({
             data: {
                 id: eventId,
@@ -115,8 +120,8 @@ export class AsaasWebhookService {
                 where: {id: eventId},
                 data: {processedAt: new Date()},
             });
-        } catch (err) {
-            this.logger.error(`Failed to process Asaas event ${event}: ${String(err)}`);
+        } catch (error) {
+            this.logger.error(`Failed to process Asaas event ${event}: ${String(error)}`);
         }
     }
 
@@ -135,6 +140,7 @@ export class AsaasWebhookService {
                     PrismaClient.PaymentStatus,
                     event === 'PAYMENT_CONFIRMED' ? 'CONFIRMED' : 'RECEIVED',
                 );
+
                 await this.prisma.professionalSubscription.update({
                     where: {memberId},
                     data: {
@@ -149,6 +155,7 @@ export class AsaasWebhookService {
                     memberId,
                     clinicId,
                 );
+
                 break;
             }
 
@@ -174,6 +181,7 @@ export class AsaasWebhookService {
                         `Subscription suspended for member ${memberId} — overdue ${daysPastDue} days`,
                     );
                 }
+
                 break;
             }
 
@@ -182,6 +190,7 @@ export class AsaasWebhookService {
                     where: {memberId},
                     data: {lastPaymentStatus: 'FAILED', lastPaymentAt: now, updatedAt: now},
                 });
+
                 break;
             }
 
@@ -190,11 +199,13 @@ export class AsaasWebhookService {
                     where: {memberId},
                     data: {lastPaymentStatus: 'REFUNDED', lastPaymentAt: now, updatedAt: now},
                 });
+
                 break;
             }
 
-            default:
+            default: {
                 this.logger.log(`Unhandled Asaas event type: ${event}`);
+            }
         }
     }
 }

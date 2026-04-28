@@ -21,6 +21,7 @@ export class ClinicalChatInteractionLogPrismaRepository
         const record = await this.prisma.clinicalChatInteractionLog.findUnique({
             where: {id: id.toString()},
         });
+
         return record ? this.mapper.toDomain(record) : null;
     }
 
@@ -29,11 +30,13 @@ export class ClinicalChatInteractionLogPrismaRepository
             where: {sessionId: sessionId.toString()},
             orderBy: {createdAt: 'desc'},
         });
+
         return records.map((r) => this.mapper.toDomain(r));
     }
 
     async save(log: ClinicalChatInteractionLog): Promise<void> {
         const data = this.mapper.toPersistence(log);
+
         await this.prisma.clinicalChatInteractionLog.upsert({
             where: {id: data.id},
             create: data,

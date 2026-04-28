@@ -21,9 +21,10 @@ import {AiSpecialtyGroup} from '../../domain/form-template/entities';
 const prisma = new PrismaClient();
 
 function specialtyGroupForSlug(slug: string): AiSpecialtyGroup | null {
-    const entry = (Object.entries(SPECIALTY_AGENT_MAP) as [AiSpecialtyGroup, string][]).find(
+    const entry = (Object.entries(SPECIALTY_AGENT_MAP) as Array<[AiSpecialtyGroup, string]>).find(
         ([, s]) => s === slug,
     );
+
     return entry?.[0] ?? null;
 }
 
@@ -36,6 +37,7 @@ async function syncAgents(): Promise<void> {
         where: {agentProfileId: {not: null}},
         include: {agentProfile: {select: {slug: true}}},
     });
+
     for (const session of sessionsWithAgents) {
         if (session.agentProfile?.slug) {
             slugsWithSessions.add(session.agentProfile.slug);
@@ -55,12 +57,13 @@ async function syncAgents(): Promise<void> {
 
         if (!existing) {
             const now = new Date();
+
             await prisma.aiAgentProfile.create({
                 data: {
                     id: randomUUID(),
                     name: config.name,
                     slug: config.slug,
-                    code: config.slug.replace(/-/g, '_'),
+                    code: config.slug.replaceAll(/-/g, '_'),
                     specialtyGroup: specialtyGroup ?? null,
                     baseInstructions: config.baseInstructions,
                     guardrails: config.guardrails,
@@ -94,7 +97,9 @@ async function syncAgents(): Promise<void> {
                     },
                 });
                 const changes: string[] = [];
+
                 if (modelChanged) changes.push(`modelo: ${existing.providerModelId ?? 'null'} → ${config.providerModelId}`);
+
                 if (instructionsChanged) changes.push('instruções atualizadas');
                 console.log(`  [ATUALIZADO] ${config.slug}  (${changes.join(', ')})`);
                 updated++;
@@ -111,6 +116,7 @@ async function syncAgents(): Promise<void> {
         console.log(
             `\nNota: ${slugsWithSessions.size} agente(s) com sessões vinculadas foram preservados:`,
         );
+
         for (const slug of slugsWithSessions) {
             console.log(`  - ${slug}`);
         }

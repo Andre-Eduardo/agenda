@@ -28,6 +28,7 @@ export class CreateAppointmentCancelProposalService {
 
     async execute({actor, payload}: Command<CreateAppointmentCancelProposalInput>): Promise<AppointmentCancelProposalResult> {
         const appointment = await this.appointmentRepository.findById(AppointmentId.from(payload.appointmentId));
+
         if (!appointment) {
             throw new ResourceNotFoundException('Appointment not found.', payload.appointmentId);
         }

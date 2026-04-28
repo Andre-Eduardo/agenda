@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 interface AIBlockProps {
   children: ReactNode;
   label?: string;
+  footer?: ReactNode;
   className?: string;
 }
 
@@ -19,6 +20,7 @@ interface AIBlockProps {
 export function AIBlock({
   children,
   label = "Gerado por IA · aguarda revisão",
+  footer,
   className,
 }: AIBlockProps) {
   return (
@@ -37,6 +39,7 @@ export function AIBlock({
         <span className="text-(--color-ai-text)">{label}</span>
       </div>
       <div className="text-sm-body">{children}</div>
+      {footer && <div className="flex flex-wrap gap-2">{footer}</div>}
     </div>
   );
 }

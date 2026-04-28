@@ -48,6 +48,7 @@ export class AppointmentReminder extends AggregateRoot<AppointmentReminderId> {
     static create(props: CreateAppointmentReminder): AppointmentReminder {
         const id = AppointmentReminderId.generate();
         const now = new Date();
+
         return new AppointmentReminder({
             ...props,
             id,

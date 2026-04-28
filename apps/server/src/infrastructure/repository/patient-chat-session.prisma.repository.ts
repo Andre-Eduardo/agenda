@@ -28,6 +28,7 @@ export class PatientChatSessionPrismaRepository
         const record = await this.prisma.patientChatSession.findUnique({
             where: {id: id.toString()},
         });
+
         return record ? this.mapper.toDomain(record) : null;
     }
 
@@ -59,6 +60,7 @@ export class PatientChatSessionPrismaRepository
 
     async save(session: PatientChatSession): Promise<void> {
         const data = this.mapper.toPersistence(session);
+
         await this.prisma.patientChatSession.upsert({
             where: {id: data.id},
             create: data,

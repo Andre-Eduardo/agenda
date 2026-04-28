@@ -16,11 +16,13 @@ export class GetOrCreateDraftService implements ApplicationService<GetDraftDto, 
 
     async execute({actor, payload}: Command<GetDraftDto>): Promise<DraftEvolutionDto> {
         const document = await this.importedDocumentRepository.findById(payload.id);
+
         if (document === null) {
             throw new ResourceNotFoundException('ImportedDocument not found.', payload.id.toString());
         }
 
         const existing = await this.draftEvolutionRepository.findByImportedDocumentId(payload.id);
+
         if (existing !== null) {
             return new DraftEvolutionDto(existing);
         }

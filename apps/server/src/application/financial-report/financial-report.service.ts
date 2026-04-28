@@ -87,6 +87,7 @@ export class FinancialReportService {
         if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
             throw new InvalidInputException('Invalid date range');
         }
+
         if (startDate > endDate) {
             throw new InvalidInputException('startDate must be before or equal to endDate');
         }
@@ -98,11 +99,13 @@ export class FinancialReportService {
         this.validateDateRange(startDate, endDate);
 
         const clinic = await this.prisma.clinic.findUnique({where: {id: clinicId}});
+
         if (!clinic) {
             throw new ResourceNotFoundException('clinic.not_found', clinicId);
         }
 
         const actor = await this.prisma.clinicMember.findUnique({where: {id: actorMemberId}});
+
         if (!actor || actor.clinicId !== clinicId) {
             throw new PreconditionException('Member does not belong to this clinic.');
         }
@@ -169,11 +172,13 @@ export class FinancialReportService {
         this.validateDateRange(startDate, endDate);
 
         const clinic = await this.prisma.clinic.findUnique({where: {id: clinicId}});
+
         if (!clinic) {
             throw new ResourceNotFoundException('clinic.not_found', clinicId);
         }
 
         const actor = await this.prisma.clinicMember.findUnique({where: {id: actorMemberId}});
+
         if (!actor || actor.clinicId !== clinicId) {
             throw new PreconditionException('Member does not belong to this clinic.');
         }
@@ -208,7 +213,7 @@ export class FinancialReportService {
         };
     }
 
-    private computeSummary(payments: {amountBrl: number; status: string}[]): RevenueSummary {
+    private computeSummary(payments: Array<{amountBrl: number; status: string}>): RevenueSummary {
         let totalBrl = 0;
         let totalPaid = 0;
         let totalPending = 0;
@@ -217,6 +222,7 @@ export class FinancialReportService {
 
         for (const p of payments) {
             totalBrl += p.amountBrl;
+
             if (p.status === AppointmentPaymentStatus.PAID) totalPaid += p.amountBrl;
             else if (p.status === AppointmentPaymentStatus.PENDING) totalPending += p.amountBrl;
             else if (p.status === AppointmentPaymentStatus.EXEMPT) totalExempt += p.amountBrl;
@@ -237,17 +243,18 @@ export class FinancialReportService {
         };
     }
 
-    private groupByPaymentMethod(payments: {amountBrl: number; paymentMethod: string}[]): PaymentMethodSummary[] {
+    private groupByPaymentMethod(payments: Array<{amountBrl: number; paymentMethod: string}>): PaymentMethodSummary[] {
         const byMethod = new Map<string, {count: number; totalBrl: number}>();
 
         for (const p of payments) {
             const entry = byMethod.get(p.paymentMethod) ?? {count: 0, totalBrl: 0};
+
             entry.count += 1;
             entry.totalBrl += p.amountBrl;
             byMethod.set(p.paymentMethod, entry);
         }
 
-        return Array.from(byMethod.entries()).map(([method, data]) => ({
+        return [...byMethod.entries()].map(([method, data]) => ({
             method: method as PaymentMethod,
             count: data.count,
             totalBrl: Number(data.totalBrl.toFixed(2)),
@@ -255,7 +262,7 @@ export class FinancialReportService {
     }
 
     private groupByProfessional(
-        payments: {amountBrl: number; appointment: {attendedByMemberId: string; attendedBy: {displayName: string | null; user: {name: string}}}}[],
+        payments: Array<{amountBrl: number; appointment: {attendedByMemberId: string; attendedBy: {displayName: string | null; user: {name: string}}}}>,
     ): ProfessionalSummary[] {
         const byProfessional = new Map<string, {displayName: string; count: number; totalBrl: number}>();
 
@@ -263,12 +270,13 @@ export class FinancialReportService {
             const memberId = p.appointment.attendedByMemberId;
             const displayName = p.appointment.attendedBy.displayName ?? p.appointment.attendedBy.user.name;
             const entry = byProfessional.get(memberId) ?? {displayName, count: 0, totalBrl: 0};
+
             entry.count += 1;
             entry.totalBrl += p.amountBrl;
             byProfessional.set(memberId, entry);
         }
 
-        return Array.from(byProfessional.entries()).map(([memberId, data]) => ({
+        return [...byProfessional.entries()].map(([memberId, data]) => ({
             memberId,
             displayName: data.displayName,
             count: data.count,

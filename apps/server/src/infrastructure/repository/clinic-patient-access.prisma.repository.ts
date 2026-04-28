@@ -24,6 +24,7 @@ export class ClinicPatientAccessPrismaRepository
         const access = await this.prisma.clinicPatientAccess.findFirst({
             where: {id: id.toString()},
         });
+
         return access === null ? null : this.mapper.toDomain(access);
     }
 
@@ -38,6 +39,7 @@ export class ClinicPatientAccessPrismaRepository
                 deletedAt: null,
             },
         });
+
         return access === null ? null : this.mapper.toDomain(access);
     }
 
@@ -45,6 +47,7 @@ export class ClinicPatientAccessPrismaRepository
         const accesses = await this.prisma.clinicPatientAccess.findMany({
             where: {clinicId: clinicId.toString(), patientId: patientId.toString(), deletedAt: null},
         });
+
         return accesses.map((a) => this.mapper.toDomain(a));
     }
 
@@ -52,11 +55,13 @@ export class ClinicPatientAccessPrismaRepository
         const accesses = await this.prisma.clinicPatientAccess.findMany({
             where: {clinicId: clinicId.toString(), memberId: memberId.toString(), deletedAt: null},
         });
+
         return accesses.map((a) => this.mapper.toDomain(a));
     }
 
     async save(access: ClinicPatientAccess): Promise<void> {
         const data = this.mapper.toPersistence(access);
+
         await this.prisma.clinicPatientAccess.upsert({
             where: {id: data.id},
             create: data,

@@ -35,6 +35,7 @@ export class FormTemplate extends AggregateRoot<FormTemplateId> {
 
     static create(props: CreateFormTemplate): FormTemplate {
         const now = new Date();
+
         return new FormTemplate({
             ...props,
             id: FormTemplateId.generate(),
@@ -52,6 +53,7 @@ export class FormTemplate extends AggregateRoot<FormTemplateId> {
 
     change(props: Partial<Pick<FormTemplateProps, 'name' | 'description'>>): void {
         if (props.name !== undefined) this.name = props.name;
+
         if (props.description !== undefined) this.description = props.description;
         this.updatedAt = new Date();
     }

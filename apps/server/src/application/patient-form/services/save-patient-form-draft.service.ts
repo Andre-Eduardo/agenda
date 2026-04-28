@@ -19,11 +19,13 @@ export class SavePatientFormDraftService implements ApplicationService<SavePatie
 
     async execute({actor: _actor, payload}: Command<SavePatientFormDraftDto>): Promise<PatientFormDto> {
         const form = await this.patientFormRepository.findById(payload.patientFormId);
+
         if (!form) {
             throw new ResourceNotFoundException('Patient form not found.', 'PatientForm');
         }
 
         const version = await this.formTemplateVersionRepository.findById(form.versionId);
+
         if (!version) {
             throw new ResourceNotFoundException('Form template version not found.', 'FormTemplateVersion');
         }
@@ -31,6 +33,7 @@ export class SavePatientFormDraftService implements ApplicationService<SavePatie
         // Partial validation for drafts: skip required checks but type-check provided answers
         // Full validation happens on complete()
         const responseJson = {answers: payload.answers};
+
         form.saveDraft(responseJson);
 
         await this.patientFormRepository.save(form);

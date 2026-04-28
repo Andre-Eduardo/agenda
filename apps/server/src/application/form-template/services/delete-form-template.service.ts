@@ -12,6 +12,7 @@ export class DeleteFormTemplateService implements ApplicationService<DeleteFormT
 
     async execute({payload}: Command<DeleteFormTemplateDto>): Promise<void> {
         const template = await this.formTemplateRepository.findById(payload.templateId);
+
         if (!template) {
             throw new ResourceNotFoundException('Form template not found.', 'FormTemplate');
         }

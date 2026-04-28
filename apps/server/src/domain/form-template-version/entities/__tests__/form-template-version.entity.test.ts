@@ -29,6 +29,7 @@ describe('FormTemplateVersion entity', () => {
     describe('create()', () => {
         it('should create a version with DRAFT status by default', () => {
             const version = makeVersion();
+
             expect(version.status).toBe(FormStatus.DRAFT);
             expect(version.publishedAt).toBeNull();
             expect(version.id).toBeInstanceOf(FormTemplateVersionId);
@@ -36,6 +37,7 @@ describe('FormTemplateVersion entity', () => {
 
         it('should store the definition JSON', () => {
             const version = makeVersion();
+
             expect(version.definitionJson).toEqual(SAMPLE_DEFINITION);
         });
     });
@@ -43,6 +45,7 @@ describe('FormTemplateVersion entity', () => {
     describe('publish()', () => {
         it('should set status to PUBLISHED and set publishedAt', () => {
             const version = makeVersion();
+
             expect(version.isDraft()).toBe(true);
 
             version.publish();
@@ -54,6 +57,7 @@ describe('FormTemplateVersion entity', () => {
 
         it('should be idempotent (calling publish twice does not throw)', () => {
             const version = makeVersion();
+
             version.publish();
             const firstPublishedAt = version.publishedAt;
 
@@ -65,6 +69,7 @@ describe('FormTemplateVersion entity', () => {
     describe('deprecate()', () => {
         it('should set status to DEPRECATED', () => {
             const version = makeVersion();
+
             version.publish();
             version.deprecate();
 
@@ -73,6 +78,7 @@ describe('FormTemplateVersion entity', () => {
 
         it('should be idempotent', () => {
             const version = makeVersion();
+
             version.deprecate();
             expect(() => version.deprecate()).not.toThrow();
         });

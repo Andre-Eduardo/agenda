@@ -37,6 +37,7 @@ export class ListPatientRecordsTool implements AgentTool<Input, Output> {
                 dateEnd: input.dateEnd ? new Date(input.dateEnd) : undefined,
             }
         );
+
         return {records: result.data.map(toRecordView), total: result.totalCount};
     }
 }

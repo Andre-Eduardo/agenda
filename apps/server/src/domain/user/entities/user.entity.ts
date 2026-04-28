@@ -163,7 +163,7 @@ export class User extends AggregateRoot<UserId> {
 
     private validate(...fields: Array<keyof UserProps>): void {
         if (fields.length === 0 || fields.includes('name')) {
-            if (this.name.length < 1) {
+            if (this.name.length === 0) {
                 throw new InvalidInputException('Name must be at least 1 character long.');
             }
         }

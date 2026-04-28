@@ -19,11 +19,13 @@ export class ListFormTemplateVersionsService
 
     async execute({payload}: Command<ListVersionsDto>): Promise<FormTemplateVersionDto[]> {
         const template = await this.formTemplateRepository.findById(payload.templateId);
+
         if (!template) {
             throw new ResourceNotFoundException('Form template not found.', 'FormTemplate');
         }
 
         const versions = await this.formTemplateVersionRepository.listByTemplate(template.id);
+
         return versions.map((v) => new FormTemplateVersionDto(v));
     }
 }

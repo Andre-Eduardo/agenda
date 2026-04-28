@@ -16,16 +16,19 @@ export class LocalFileStorage implements FileStorage {
     async promote(tempPath: string, finalPath: string): Promise<void> {
         const src = this.resolvePath(tempPath);
         const dest = this.resolvePath(finalPath);
+
         fs.mkdirSync(path.dirname(dest), {recursive: true});
         fs.renameSync(src, dest);
     }
 
     async getFileInfo(filePath: string): Promise<{size: number; checksum: string} | null> {
         const resolved = this.resolvePath(filePath);
+
         try {
             const stat = fs.statSync(resolved);
             const buffer = fs.readFileSync(resolved);
             const checksum = crypto.createHash('sha256').update(buffer).digest('hex');
+
             return {size: stat.size, checksum};
         } catch {
             return null;
@@ -34,6 +37,7 @@ export class LocalFileStorage implements FileStorage {
 
     async delete(filePath: string): Promise<void> {
         const resolved = this.resolvePath(filePath);
+
         try {
             fs.unlinkSync(resolved);
         } catch {
@@ -43,8 +47,10 @@ export class LocalFileStorage implements FileStorage {
 
     async storeBuffer(filePath: string, buffer: Buffer, _mimeType: string): Promise<string> {
         const resolved = this.resolvePath(filePath);
+
         fs.mkdirSync(path.dirname(resolved), {recursive: true});
         fs.writeFileSync(resolved, buffer);
+
         return `${this.config.storage.publicBaseUrl}/uploads/${filePath}`;
     }
 

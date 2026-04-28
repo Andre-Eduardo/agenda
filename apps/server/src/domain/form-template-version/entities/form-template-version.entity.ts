@@ -31,6 +31,7 @@ export class FormTemplateVersion extends AggregateRoot<FormTemplateVersionId> {
 
     static create(props: CreateFormTemplateVersion): FormTemplateVersion {
         const now = new Date();
+
         return new FormTemplateVersion({
             ...props,
             id: FormTemplateVersionId.generate(),

@@ -41,6 +41,7 @@ export class CreateAppointmentProposalService {
         const attendedByMemberId = ClinicMemberId.from(payload.attendedByMemberId);
 
         const patient = await this.patientRepository.findById(patientId, actor.clinicId);
+
         if (!patient) {
             throw new ResourceNotFoundException('Patient not found.', payload.patientId);
         }

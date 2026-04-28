@@ -32,7 +32,7 @@ Given(
         const payload =
             proposalType === 'PATIENT_ALERT'
                 ? {message: 'Paciente com risco elevado de hipoglicemia', severity: 'HIGH'}
-                : proposalType === 'APPOINTMENT'
+                : (proposalType === 'APPOINTMENT'
                   ? {
                         patientId,
                         attendedByMemberId: memberId,
@@ -40,7 +40,7 @@ Given(
                         endAt: '2026-08-01T10:00:00.000Z',
                         type: 'FIRST_VISIT',
                     }
-                  : {};
+                  : {});
 
         const preview = {
             title: `Proposta: ${proposalType}`,

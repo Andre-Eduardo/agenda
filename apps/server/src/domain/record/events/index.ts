@@ -8,8 +8,8 @@ import {RecordReopenedEvent} from './record-reopened.event';
 export * from './record-changed.event';
 export * from './record-created.event';
 export * from './record-deleted.event';
-export * from './record-saved.event';
 export * from './record-signed.event';
+export * from './record-saved.event';
 export * from './record-reopened.event';
 
 export const recordEvents = [

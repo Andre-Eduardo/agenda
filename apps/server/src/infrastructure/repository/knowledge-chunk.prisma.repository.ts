@@ -42,6 +42,7 @@ export class KnowledgeChunkPrismaRepository
         const record = await this.prisma.knowledgeChunk.findUnique({
             where: {id: id.toString()},
         });
+
         return record ? this.mapper.toDomain(record) : null;
     }
 
@@ -49,6 +50,7 @@ export class KnowledgeChunkPrismaRepository
         const record = await this.prisma.knowledgeChunk.findUnique({
             where: {contentHash},
         });
+
         return record ? this.mapper.toDomain(record) : null;
     }
 
@@ -116,6 +118,7 @@ export class KnowledgeChunkPrismaRepository
 
         if (chunk.embedding !== null && chunk.embedding !== undefined) {
             const vectorLiteral = `[${chunk.embedding.join(',')}]`;
+
             await this.prisma.$executeRaw`
                 UPDATE knowledge_chunk
                 SET embedding = ${vectorLiteral}::vector(1536)

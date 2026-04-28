@@ -58,15 +58,17 @@ function readFile(filePath: string): string {
 
     if (ext === '.pdf') {
         console.warn(`[WARN] PDF not supported in MVP. Skipping: ${filePath}`);
+
         return '';
     }
 
     if (ext !== '.md' && ext !== '.txt') {
         console.warn(`[WARN] Unsupported extension "${ext}". Skipping: ${filePath}`);
+
         return '';
     }
 
-    return fs.readFileSync(filePath, 'utf-8');
+    return fs.readFileSync(filePath, 'utf8');
 }
 
 async function main() {
@@ -85,10 +87,12 @@ async function main() {
 
         if (!fs.existsSync(absolutePath)) {
             console.error(`[ERROR] File not found: ${absolutePath}`);
+
             continue;
         }
 
         const content = readFile(absolutePath);
+
         if (!content) continue;
 
         console.log(`Ingesting: ${absolutePath}`);
@@ -113,6 +117,7 @@ async function main() {
     }
 
     const elapsed = ((Date.now() - startTime) / 1000).toFixed(2);
+
     console.log(`\nDone: ${totalFiles} file(s), ${totalCreated} chunks created, ${totalDeduped} deduped in ${elapsed}s`);
 
     await app.close();

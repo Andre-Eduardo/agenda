@@ -146,16 +146,19 @@ export class RetrievePatientChunksService {
 
             if (typeof rawDate === 'string' && rawDate.length > 0) {
                 const t = new Date(rawDate).getTime();
+
                 if (!isNaN(t)) {
                     recencyScore = (t - minTime) / timeRange;
                 }
             }
 
             const combinedScore = rc.score * 0.7 + recencyScore * 0.3;
+
             return {rc, combinedScore};
         });
 
         withCombined.sort((a, b) => b.combinedScore - a.combinedScore);
+
         return withCombined.map(({rc}) => rc);
     }
 }

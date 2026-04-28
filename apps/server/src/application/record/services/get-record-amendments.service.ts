@@ -14,11 +14,13 @@ export class GetRecordAmendmentsService implements ApplicationService<GetRecordD
 
     async execute({payload}: Command<GetRecordDto>): Promise<RecordAmendmentDto[]> {
         const record = await this.recordRepository.findById(payload.id);
+
         if (record === null) {
             throw new ResourceNotFoundException('Record not found.', payload.id.toString());
         }
 
         const amendments = await this.recordAmendmentRepository.findAllByRecordId(payload.id);
+
         return amendments.map((a) => new RecordAmendmentDto(a));
     }
 }

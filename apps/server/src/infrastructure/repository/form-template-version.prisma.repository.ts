@@ -23,6 +23,7 @@ export class FormTemplateVersionPrismaRepository
         const record = await this.prisma.formTemplateVersion.findUnique({
             where: {id: id.toString()},
         });
+
         return record ? this.mapper.toDomain(record) : null;
     }
 
@@ -33,6 +34,7 @@ export class FormTemplateVersionPrismaRepository
         const record = await this.prisma.formTemplateVersion.findFirst({
             where: {templateId: templateId.toString(), versionNumber},
         });
+
         return record ? this.mapper.toDomain(record) : null;
     }
 
@@ -41,6 +43,7 @@ export class FormTemplateVersionPrismaRepository
             where: {templateId: templateId.toString(), status: 'PUBLISHED'},
             orderBy: {versionNumber: 'desc'},
         });
+
         return record ? this.mapper.toDomain(record) : null;
     }
 
@@ -50,6 +53,7 @@ export class FormTemplateVersionPrismaRepository
             orderBy: {versionNumber: 'desc'},
             select: {versionNumber: true},
         });
+
         return (latest?.versionNumber ?? 0) + 1;
     }
 
@@ -58,6 +62,7 @@ export class FormTemplateVersionPrismaRepository
             where: {templateId: templateId.toString()},
             orderBy: {versionNumber: 'desc'},
         });
+
         return records.map((r) => this.mapper.toDomain(r));
     }
 
@@ -69,6 +74,7 @@ export class FormTemplateVersionPrismaRepository
             definitionJson: data.definitionJson as Prisma.InputJsonValue,
             schemaJson: data.schemaJson === null ? Prisma.JsonNull : (data.schemaJson as Prisma.InputJsonValue),
         };
+
         await this.prisma.formTemplateVersion.upsert({
             where: {id: data.id},
             create: writeData,

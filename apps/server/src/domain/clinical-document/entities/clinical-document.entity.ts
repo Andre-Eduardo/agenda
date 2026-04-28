@@ -1,5 +1,5 @@
 import {AggregateRoot, type AllEntityProps, type EntityProps, type EntityJson} from '../../@shared/entity';
-import {type EntityProperties} from '../../@shared/entity/entity.types';
+import type {EntityProperties} from '../../@shared/entity/entity.types';
 import {EntityId} from '../../@shared/entity/id';
 import type {ClinicId} from '../../clinic/entities';
 import type {ClinicMemberId} from '../../clinic-member/entities';
@@ -111,6 +111,7 @@ export class ClinicalDocument extends AggregateRoot<ClinicalDocumentId> {
 
     static create(props: CreateClinicalDocument): ClinicalDocument {
         const now = new Date();
+
         return new ClinicalDocument({
             ...props,
             id: ClinicalDocumentId.generate(),
@@ -130,10 +131,13 @@ export class ClinicalDocument extends AggregateRoot<ClinicalDocumentId> {
         if (this.status === ClinicalDocumentStatus.CANCELLED) {
             throw new PreconditionException('CLINICAL_DOCUMENT_CANCELLED');
         }
+
         if (this.status === ClinicalDocumentStatus.GENERATED) {
             throw new PreconditionException('CLINICAL_DOCUMENT_ALREADY_GENERATED');
         }
+
         const now = new Date();
+
         this.fileId = fileId;
         this.templateId = templateId;
         this.generatedAt = now;
@@ -146,7 +150,9 @@ export class ClinicalDocument extends AggregateRoot<ClinicalDocumentId> {
         if (this.status === ClinicalDocumentStatus.CANCELLED) {
             throw new PreconditionException('CLINICAL_DOCUMENT_ALREADY_CANCELLED');
         }
+
         const now = new Date();
+
         this.status = ClinicalDocumentStatus.CANCELLED;
         this.deletedAt = now;
         this.updatedAt = now;

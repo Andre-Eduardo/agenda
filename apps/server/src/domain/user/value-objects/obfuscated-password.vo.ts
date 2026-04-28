@@ -81,7 +81,7 @@ export class ObfuscatedPassword {
                 parseInt(keySize, 10)
             );
         } catch {
-            throw Error('Invalid obfuscated password format.');
+            throw new Error('Invalid obfuscated password format.');
         }
     }
 

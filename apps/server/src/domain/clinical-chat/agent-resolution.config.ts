@@ -188,8 +188,8 @@ export function normalizeSpecialtyText(text: string): string {
     return text
         .toLowerCase()
         .normalize('NFD')
-        .replace(/[̀-ͯ]/g, '') // remove diacríticos
-        .replace(/[^a-z0-9\s]/g, ' ')    // remove pontuação, mantém espaços
-        .replace(/\s+/g, ' ')            // colapsa espaços múltiplos
+        .replaceAll(/[̀-ͯ]/g, '') // remove diacríticos
+        .replaceAll(/[^a-z0-9\s]/g, ' ')    // remove pontuação, mantém espaços
+        .replaceAll(/\s+/g, ' ')            // colapsa espaços múltiplos
         .trim();
 }

@@ -12,6 +12,7 @@ export class ListClinicMembersService implements ApplicationService<ListClinicMe
 
     async execute({payload}: Command<ListClinicMembersInput>): Promise<ClinicMemberDto[]> {
         const members = await this.clinicMemberRepository.findByClinicId(payload.clinicId);
+
         return members.map((m) => new ClinicMemberDto(m));
     }
 }

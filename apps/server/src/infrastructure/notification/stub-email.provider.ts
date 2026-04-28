@@ -10,6 +10,7 @@ export class StubEmailProvider extends NotificationProvider {
 
     async send(payload: NotificationPayload): Promise<NotificationResult> {
         this.logger.log(`[STUB] Email → ${payload.to}: ${payload.message}`);
+
         return {success: true, providerId: `stub-email-${Date.now()}`};
     }
 }

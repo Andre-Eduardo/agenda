@@ -69,6 +69,7 @@ export async function main() {
         }
 
         const dayNames = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+
         console.log(`✔ WorkingHours: ${dayNames[s.day]} ${s.start}–${s.end}`);
     }
 }

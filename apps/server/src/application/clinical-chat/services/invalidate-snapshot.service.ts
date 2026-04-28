@@ -54,6 +54,7 @@ export class InvalidateSnapshotService {
         }
 
         const previousStatus = snapshot.status;
+
         snapshot.markStale();
         await this.snapshotRepository.save(snapshot);
 

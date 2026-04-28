@@ -50,6 +50,7 @@ export class RevokeClinicPatientAccessService implements ApplicationService<Revo
 
     async execute({actor, payload}: Command<RevokeAccessInput>): Promise<void> {
         const access = await this.accessRepository.findByMemberAndPatient(payload.memberId, payload.patientId);
+
         if (access === null) return;
 
         access.revoke();

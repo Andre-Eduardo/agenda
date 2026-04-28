@@ -42,8 +42,10 @@ export class IngestKnowledgeDocumentService {
 
         for (const textChunk of textChunks) {
             const existing = await this.knowledgeChunkRepository.findByContentHash(textChunk.contentHash);
+
             if (existing) {
                 dedupedCount++;
+
                 continue;
             }
 
@@ -83,6 +85,7 @@ export class IngestKnowledgeDocumentService {
         const embeddingProvider = this.aiProviderRegistry.getEmbeddingProvider();
         const texts = chunks.map((c) => c.content);
         const vectors = await embeddingProvider.generateEmbeddings(texts);
+
         for (let i = 0; i < chunks.length; i++) {
             chunks[i].setEmbedding(vectors[i]);
         }

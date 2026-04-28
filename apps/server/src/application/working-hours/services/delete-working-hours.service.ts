@@ -19,17 +19,21 @@ export class DeleteWorkingHoursService implements ApplicationService<DeleteWorki
         const {memberId, hoursId} = payload;
 
         const member = await this.clinicMemberRepository.findById(memberId);
+
         if (member === null) {
             throw new ResourceNotFoundException('clinic_member.not_found', memberId.toString());
         }
+
         if (!member.clinicId.equals(actor.clinicId)) {
             throw new PreconditionException('Member does not belong to the current clinic.');
         }
 
         const workingHours = await this.workingHoursRepository.findById(hoursId);
+
         if (workingHours === null) {
             throw new ResourceNotFoundException('working_hours.not_found', hoursId.toString());
         }
+
         if (!workingHours.clinicMemberId.equals(memberId)) {
             throw new PreconditionException('Working hours do not belong to the specified member.');
         }

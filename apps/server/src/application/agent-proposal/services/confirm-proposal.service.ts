@@ -28,6 +28,7 @@ export class ConfirmProposalService {
 
     async execute({actor, payload}: Command<ConfirmProposalInput>): Promise<ConfirmProposalResult> {
         const proposal = await this.proposalRepository.findById(AgentProposalId.from(payload.proposalId));
+
         if (!proposal) {
             throw new ResourceNotFoundException('Proposal not found.', payload.proposalId);
         }
@@ -56,7 +57,7 @@ export class ConfirmProposalService {
             );
             const startAt = new Date(p.startAt as string);
             const endAt = new Date(p.endAt as string);
-            const durationMinutes = Math.round((endAt.getTime() - startAt.getTime()) / 60000);
+            const durationMinutes = Math.round((endAt.getTime() - startAt.getTime()) / 60_000);
 
             const appointment = Appointment.create({
                 clinicId: proposal.clinicId,
@@ -69,6 +70,7 @@ export class ConfirmProposalService {
                 type: toEnum(AppointmentType, (p.type as string) ?? 'FOLLOW_UP'),
                 note: (p.notes as string | undefined) ?? null,
             });
+
             await this.appointmentRepository.save(appointment);
             this.eventDispatcher.dispatch(actor, appointment);
             resultEntityId = appointment.id.toString();
@@ -77,9 +79,11 @@ export class ConfirmProposalService {
             const appointment = await this.appointmentRepository.findById(
                 AppointmentId.from(p.appointmentId as string),
             );
+
             if (!appointment) {
                 throw new ResourceNotFoundException('Appointment not found.', p.appointmentId as string);
             }
+
             appointment.cancel((p.reason as string | undefined) ?? '');
             await this.appointmentRepository.save(appointment);
             this.eventDispatcher.dispatch(actor, appointment);
@@ -95,6 +99,7 @@ export class ConfirmProposalService {
                 severity: toEnum(AlertSeverity, (p.severity as string) ?? 'MEDIUM'),
                 isActive: true,
             });
+
             await this.patientAlertRepository.save(alert);
             this.eventDispatcher.dispatch(actor, alert);
             resultEntityId = alert.id.toString();

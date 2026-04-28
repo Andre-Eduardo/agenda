@@ -72,8 +72,8 @@ describe('A formatter for Winston logger', () => {
 
     it('should format the log message', () => {
         const logger = createLogger((info: TransformableInfo) => {
-            expect(info.level).toBe('\x1b[32mINFO\x1b[39m');
-            expect(info[MESSAGE]).toBe('2021-01-01 00:00:00.000 \x1b[32mINFO\x1b[39m - This is an info message.');
+            expect(info.level).toBe('\u001b[32mINFO\u001b[39m');
+            expect(info[MESSAGE]).toBe('2021-01-01 00:00:00.000 \u001b[32mINFO\u001b[39m - This is an info message.');
         }, WinstonLogger.format());
 
         logger.info('This is an info message.');
@@ -106,15 +106,15 @@ describe('A formatter for Winston logger', () => {
     });
 
     it.each([
-        ['200', '\x1b[32m200\x1b[39m'],
-        ['300', '\x1b[36m300\x1b[39m'],
-        ['400', '\x1b[33m400\x1b[39m'],
-        ['500', '\x1b[31m500\x1b[39m'],
+        ['200', '\u001b[32m200\u001b[39m'],
+        ['300', '\u001b[36m300\u001b[39m'],
+        ['400', '\u001b[33m400\u001b[39m'],
+        ['500', '\u001b[31m500\u001b[39m'],
         ['600', '600'],
     ])('should colorize the HTTP status code %s', (statusCode, expected) => {
         const logger = createLogger((info: TransformableInfo) => {
             expect(info[MESSAGE]).toBe(
-                `2021-01-01 00:00:00.000 \x1b[32mINFO\x1b[39m - Status code: ${expected} - This is an info message.`
+                `2021-01-01 00:00:00.000 \u001b[32mINFO\u001b[39m - Status code: ${expected} - This is an info message.`
             );
         }, WinstonLogger.format(true));
 

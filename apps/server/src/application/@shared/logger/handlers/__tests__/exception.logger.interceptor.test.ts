@@ -31,7 +31,7 @@ describe('An exception logger interceptor', () => {
                         message: '[CustomClass] Object not found.',
                     });
 
-                    done(undefined);
+                    done();
                 },
             });
         }));
@@ -74,7 +74,7 @@ describe('An exception logger interceptor', () => {
                         },
                     });
 
-                    done(undefined);
+                    done();
                 },
             });
         }));
@@ -104,7 +104,7 @@ describe('An exception logger interceptor', () => {
                         details: expect.stringMatching('Unknown error.'),
                     });
 
-                    done(undefined);
+                    done();
                 },
             });
         }));

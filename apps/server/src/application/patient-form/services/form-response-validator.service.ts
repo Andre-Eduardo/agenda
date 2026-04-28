@@ -33,6 +33,7 @@ export class FormResponseValidatorService {
         for (const field of allFields) {
             const answer = answerMap.get(field.id);
             const fieldViolations = this.validateField(field, answer);
+
             violations.push(...fieldViolations);
         }
 
@@ -53,6 +54,7 @@ export class FormResponseValidatorService {
 
         if (field.required && !this.hasValue(answer)) {
             violations.push({field: field.id, reason: `Field "${field.label}" is required.`});
+
             return violations; // No point validating further if missing
         }
 
@@ -64,52 +66,62 @@ export class FormResponseValidatorService {
             case 'score': {
                 if (answer.valueNumber === undefined || answer.valueNumber === null) {
                     violations.push({field: field.id, reason: `Field "${field.label}" must be a number.`});
+
                     break;
                 }
+
                 if (field.validation?.min !== undefined && answer.valueNumber < field.validation.min) {
                     violations.push({
                         field: field.id,
                         reason: `Field "${field.label}" must be >= ${field.validation.min}.`,
                     });
                 }
+
                 if (field.validation?.max !== undefined && answer.valueNumber > field.validation.max) {
                     violations.push({
                         field: field.id,
                         reason: `Field "${field.label}" must be <= ${field.validation.max}.`,
                     });
                 }
+
                 break;
             }
             case 'text':
             case 'textarea': {
                 if (typeof answer.valueText !== 'string') {
                     violations.push({field: field.id, reason: `Field "${field.label}" must be text.`});
+
                     break;
                 }
+
                 if (field.validation?.minLength !== undefined && answer.valueText.length < field.validation.minLength) {
                     violations.push({
                         field: field.id,
                         reason: `Field "${field.label}" must have at least ${field.validation.minLength} characters.`,
                     });
                 }
+
                 if (field.validation?.maxLength !== undefined && answer.valueText.length > field.validation.maxLength) {
                     violations.push({
                         field: field.id,
                         reason: `Field "${field.label}" must have at most ${field.validation.maxLength} characters.`,
                     });
                 }
+
                 break;
             }
             case 'select':
             case 'radio': {
                 if (!field.options || field.options.length === 0) break;
                 const validValues = field.options.map((o) => o.value);
+
                 if (!validValues.includes(answer.valueText ?? '')) {
                     violations.push({
                         field: field.id,
                         reason: `Field "${field.label}" must be one of: ${validValues.join(', ')}.`,
                     });
                 }
+
                 break;
             }
             case 'multiselect':
@@ -117,6 +129,7 @@ export class FormResponseValidatorService {
                 if (!field.options || field.options.length === 0) break;
                 const validValues = field.options.map((o) => o.value);
                 const selected = Array.isArray(answer.valueJson) ? answer.valueJson : [];
+
                 for (const val of selected) {
                     if (!validValues.includes(val as string)) {
                         violations.push({
@@ -125,12 +138,14 @@ export class FormResponseValidatorService {
                         });
                     }
                 }
+
                 break;
             }
             case 'boolean': {
                 if (answer.valueBoolean === undefined || answer.valueBoolean === null) {
                     violations.push({field: field.id, reason: `Field "${field.label}" must be boolean.`});
                 }
+
                 break;
             }
             case 'date':
@@ -138,6 +153,7 @@ export class FormResponseValidatorService {
                 if (!answer.valueDate) {
                     violations.push({field: field.id, reason: `Field "${field.label}" must be a date.`});
                 }
+
                 break;
             }
         }
@@ -147,6 +163,7 @@ export class FormResponseValidatorService {
 
     private hasValue(answer: FormAnswer | undefined): boolean {
         if (!answer) return false;
+
         return (
             answer.valueText !== null && answer.valueText !== undefined ||
             answer.valueNumber !== null && answer.valueNumber !== undefined ||

@@ -68,7 +68,7 @@ async function main() {
     console.log('  Username: admin');
 }
 
-main().catch((err) => {
-    console.error('Erro ao executar seeds:', err);
+main().catch((error) => {
+    console.error('Erro ao executar seeds:', error);
     process.exit(1);
 });

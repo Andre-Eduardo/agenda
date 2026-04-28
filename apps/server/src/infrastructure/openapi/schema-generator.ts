@@ -42,6 +42,7 @@ export function generateNestSwaggerSchema(zodDto: AnyZodObject, hideDefinitions?
     const refId = 'schema';
 
     const registry = new OpenAPIRegistry();
+
     registry.register(refId, filteredSchema);
     const generator = new OpenApiGeneratorV3(registry.definitions);
     const allSchemas = generator.generateComponents().components.schemas ?? {};
@@ -87,9 +88,11 @@ function convertSchemaObject(
             // of a $ref pointer it cannot dereference without the full component registry.
             const refName = (subSchemaObject.$ref as string).split('/').pop() ?? '';
             const resolved = allSchemas[refName];
+
             if (resolved && !('$ref' in resolved)) {
                 properties[key] = {...resolved};
             }
+
             continue;
         }
 

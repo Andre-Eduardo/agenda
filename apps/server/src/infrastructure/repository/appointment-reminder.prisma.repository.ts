@@ -20,11 +20,13 @@ export class AppointmentReminderPrismaRepository extends PrismaRepository implem
         const record = await this.prisma.appointmentReminder.findUnique({
             where: {id: id.toString()},
         });
+
         return record === null ? null : this.mapper.toDomain(record);
     }
 
     async save(reminder: AppointmentReminder): Promise<void> {
         const data = this.mapper.toPersistence(reminder);
+
         await this.prisma.appointmentReminder.upsert({
             where: {id: data.id},
             create: data,
@@ -34,6 +36,7 @@ export class AppointmentReminderPrismaRepository extends PrismaRepository implem
 
     async saveMany(reminders: AppointmentReminder[]): Promise<void> {
         const data = reminders.map((r) => this.mapper.toPersistence(r));
+
         await this.prisma.appointmentReminder.createMany({data});
     }
 
@@ -44,6 +47,7 @@ export class AppointmentReminderPrismaRepository extends PrismaRepository implem
                 status: ReminderStatus.PENDING,
             },
         });
+
         return records.map((r) => this.mapper.toDomain(r));
     }
 
@@ -57,6 +61,7 @@ export class AppointmentReminderPrismaRepository extends PrismaRepository implem
             },
             orderBy: {scheduledAt: 'asc'},
         });
+
         return records.map((r) => this.mapper.toDomain(r));
     }
 

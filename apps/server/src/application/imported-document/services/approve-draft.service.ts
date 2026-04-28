@@ -26,16 +26,19 @@ export class ApproveDraftService implements ApplicationService<GetDraftDto, Draf
 
     async execute({actor, payload}: Command<GetDraftDto>): Promise<DraftEvolutionDto> {
         const document = await this.importedDocumentRepository.findById(payload.id);
+
         if (document === null) {
             throw new ResourceNotFoundException('ImportedDocument not found.', payload.id.toString());
         }
 
         const draft = await this.draftEvolutionRepository.findByImportedDocumentId(payload.id);
+
         if (draft === null) {
             throw new ResourceNotFoundException('Draft not found for this document.', payload.id.toString());
         }
 
         const professional = await this.professionalRepository.findByClinicMemberId(actor.clinicMemberId);
+
         if (professional === null) {
             throw new PreconditionException('DRAFT_APPROVAL_REQUIRES_PROFESSIONAL');
         }
@@ -76,8 +79,8 @@ export class ApproveDraftService implements ApplicationService<GetDraftDto, Draf
         // Fire-and-forget: increment docs usage counter; failure must not break the operation
         void this.subscriptionService
             .incrementUsage(actor.clinicMemberId.toString(), actor.clinicId.toString(), 'docs')
-            .catch((err: unknown) => {
-                this.logger.error('Failed to increment docs usage', err);
+            .catch((error: unknown) => {
+                this.logger.error('Failed to increment docs usage', error);
             });
 
         return new DraftEvolutionDto(draft);

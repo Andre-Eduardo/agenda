@@ -22,6 +22,7 @@ export class FormFieldIndexPrismaRepository extends PrismaRepository implements 
         const record = await this.prisma.formFieldIndex.findUnique({
             where: {id: id.toString()},
         });
+
         return record ? this.mapper.toDomain(record) : null;
     }
 
@@ -35,6 +36,7 @@ export class FormFieldIndexPrismaRepository extends PrismaRepository implements 
                 fieldId,
             },
         });
+
         return record ? this.mapper.toDomain(record) : null;
     }
 
@@ -42,6 +44,7 @@ export class FormFieldIndexPrismaRepository extends PrismaRepository implements 
         const records = await this.prisma.formFieldIndex.findMany({
             where: {patientFormId: patientFormId.toString()},
         });
+
         return records.map((r) => this.mapper.toDomain(r));
     }
 
@@ -53,6 +56,7 @@ export class FormFieldIndexPrismaRepository extends PrismaRepository implements 
         };
 
         const records = await this.prisma.formFieldIndex.findMany({where, orderBy: {createdAt: 'desc'}});
+
         return records.map((r) => this.mapper.toDomain(r));
     }
 
@@ -68,6 +72,7 @@ export class FormFieldIndexPrismaRepository extends PrismaRepository implements 
                     ...d,
                     valueJson,
                 } satisfies Prisma.FormFieldIndexUncheckedCreateInput;
+
                 return this.prisma.formFieldIndex.upsert({
                     where: {
                         form_field_index_unique: {

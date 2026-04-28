@@ -27,6 +27,7 @@ export class AgentMetricsController {
         const now = new Date();
         const to = parsed.to ? new Date(parsed.to) : now;
         const from = parsed.from ? new Date(parsed.from) : new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+
         return this.getAgentMetrics.execute(from, to);
     }
 }

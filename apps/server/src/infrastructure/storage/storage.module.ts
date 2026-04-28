@@ -14,6 +14,7 @@ import {S3FileStorage} from './s3-file.storage';
                 if (config.storage.type === FileStorageType.S3) {
                     return new S3FileStorage(config);
                 }
+
                 return new LocalFileStorage(config);
             },
             inject: [EnvConfigService],

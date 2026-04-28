@@ -48,6 +48,7 @@ export class AddChatMessageService
 
     async execute({payload}: Command<AddChatMessageInput>): Promise<PatientChatMessage> {
         const session = await this.sessionRepository.findById(payload.sessionId);
+
         if (!session) {
             throw new ResourceNotFoundException('Chat session not found.', payload.sessionId.toString());
         }

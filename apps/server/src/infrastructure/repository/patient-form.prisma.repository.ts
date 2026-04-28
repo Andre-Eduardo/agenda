@@ -22,6 +22,7 @@ export class PatientFormPrismaRepository extends PrismaRepository implements Pat
         const record = await this.prisma.patientForm.findUnique({
             where: {id: id.toString()},
         });
+
         return record ? this.mapper.toDomain(record) : null;
     }
 
@@ -34,6 +35,7 @@ export class PatientFormPrismaRepository extends PrismaRepository implements Pat
             responseJson: data.responseJson as Prisma.InputJsonValue,
             computedJson: data.computedJson === null ? Prisma.JsonNull : (data.computedJson as Prisma.InputJsonValue),
         };
+
         await this.prisma.patientForm.upsert({
             where: {id: data.id},
             create: writeData,

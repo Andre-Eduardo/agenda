@@ -22,7 +22,7 @@ export class QuotaHeadersInterceptor implements NestInterceptor {
         return next.handle().pipe(
             tap(() => {
                 const request = context.switchToHttp().getRequest<Request>();
-                const usageState = request.usageState;
+                const {usageState} = request;
 
                 if (!usageState) return;
 

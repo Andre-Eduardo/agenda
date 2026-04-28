@@ -22,8 +22,8 @@ export class UpdateClinicService implements ApplicationService<UpdateClinicDto, 
 
         clinic.change({
             name:              payload.name,
-            phone:             payload.phone === undefined ? undefined : payload.phone === null ? null : Phone.create(payload.phone),
-            email:             payload.email === undefined ? undefined : payload.email === null ? null : Email.create(payload.email),
+            phone:             payload.phone === undefined ? undefined : (payload.phone === null ? null : Phone.create(payload.phone)),
+            email:             payload.email === undefined ? undefined : (payload.email === null ? null : Email.create(payload.email)),
             street:            payload.street,
             number:            payload.number,
             complement:        payload.complement,

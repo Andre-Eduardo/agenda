@@ -12,6 +12,7 @@ import {AiSpecialtyGroup} from '../../domain/form-template/entities';
 export class AgentResolverService {
     resolveAgentBySpecialty(specialty: AiSpecialtyGroup): AgentConfig {
         const slug = SPECIALTY_AGENT_MAP[specialty];
+
         return AGENT_REGISTRY[slug];
     }
 
@@ -22,11 +23,13 @@ export class AgentResolverService {
      */
     resolveAgentBySlug(slug: string): AgentConfig {
         const config = AGENT_REGISTRY[slug as keyof typeof AGENT_REGISTRY];
+
         if (!config) {
             throw new NotFoundException(
                 `Agente com slug "${slug}" não encontrado no AGENT_REGISTRY.`,
             );
         }
+
         return config;
     }
 

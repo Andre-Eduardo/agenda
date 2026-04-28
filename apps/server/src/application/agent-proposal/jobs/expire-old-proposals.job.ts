@@ -11,6 +11,7 @@ export class ExpireOldProposalsJob {
     @Cron(CronExpression.EVERY_HOUR)
     async handle(): Promise<void> {
         const count = await this.agentProposalRepository.markExpired(new Date());
+
         if (count > 0) {
             this.logger.log(`Expired ${count} pending proposals`);
         }

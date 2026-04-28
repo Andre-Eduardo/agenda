@@ -26,6 +26,7 @@ export class PatientChatMessagePrismaRepository
         const record = await this.prisma.patientChatMessage.findUnique({
             where: {id: id.toString()},
         });
+
         return record ? this.mapper.toDomain(record) : null;
     }
 
@@ -57,6 +58,7 @@ export class PatientChatMessagePrismaRepository
             ...data,
             metadata: data.metadata ?? Prisma.JsonNull,
         } satisfies Prisma.PatientChatMessageUncheckedCreateInput;
+
         await this.prisma.patientChatMessage.upsert({
             where: {id: data.id},
             create: writeData,

@@ -20,6 +20,7 @@ export class AiAgentProfilePrismaRepository extends PrismaRepository implements 
         const record = await this.prisma.aiAgentProfile.findUnique({
             where: {id: id.toString()},
         });
+
         return record ? this.mapper.toDomain(record) : null;
     }
 
@@ -27,6 +28,7 @@ export class AiAgentProfilePrismaRepository extends PrismaRepository implements 
         const record = await this.prisma.aiAgentProfile.findUnique({
             where: {slug},
         });
+
         return record ? this.mapper.toDomain(record) : null;
     }
 
@@ -37,6 +39,7 @@ export class AiAgentProfilePrismaRepository extends PrismaRepository implements 
                 isActive: true,
             },
         });
+
         return record ? this.mapper.toDomain(record) : null;
     }
 
@@ -45,6 +48,7 @@ export class AiAgentProfilePrismaRepository extends PrismaRepository implements 
             where: {isActive: true},
             orderBy: {name: 'asc'},
         });
+
         return records.map((r) => this.mapper.toDomain(r));
     }
 
@@ -55,6 +59,7 @@ export class AiAgentProfilePrismaRepository extends PrismaRepository implements 
             contextPriority: data.contextPriority ?? Prisma.DbNull,
             priorityFields: data.priorityFields ?? Prisma.DbNull,
         };
+
         await this.prisma.aiAgentProfile.upsert({
             where: {id: data.id},
             create: {...data, ...jsonFields},

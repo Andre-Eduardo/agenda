@@ -26,6 +26,7 @@ export class ClinicalDocumentTemplate extends AggregateRoot<ClinicalDocumentTemp
 
     static create(props: CreateClinicalDocumentTemplate): ClinicalDocumentTemplate {
         const now = new Date();
+
         return new ClinicalDocumentTemplate({
             ...props,
             id: ClinicalDocumentTemplateId.generate(),
@@ -39,6 +40,7 @@ export class ClinicalDocumentTemplate extends AggregateRoot<ClinicalDocumentTemp
 
     change(props: Partial<Pick<ClinicalDocumentTemplate, 'name' | 'layoutJson'>>): void {
         if (props.name !== undefined) this.name = props.name;
+
         if (props.layoutJson !== undefined) this.layoutJson = props.layoutJson;
         this.updatedAt = new Date();
     }

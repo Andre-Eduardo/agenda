@@ -10,6 +10,7 @@ export class StubSmsProvider extends NotificationProvider {
 
     async send(payload: NotificationPayload): Promise<NotificationResult> {
         this.logger.log(`[STUB] SMS → ${payload.to}: ${payload.message}`);
+
         return {success: true, providerId: `stub-sms-${Date.now()}`};
     }
 }

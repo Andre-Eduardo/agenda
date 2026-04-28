@@ -231,6 +231,7 @@ export class MemberUsageSummaryItemDto {
             entry.usage.usage.images.status,
             entry.usage.usage.storageHotGb.status,
         ];
+
         this.hasAnyWarning = statuses.includes('WARNING');
         this.hasAnyExceeded = statuses.includes('EXCEEDED');
     }

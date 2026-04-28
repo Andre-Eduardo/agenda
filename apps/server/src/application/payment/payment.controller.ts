@@ -35,6 +35,7 @@ export class PaymentController {
         @Body() payload: ActivateSubscriptionDto,
     ) {
         const planCode = toEnum(PlanCodeRecord, payload.planCode);
+
         return this.paymentService.activateSubscription(
             memberId,
             actor.clinicId.toString(),
@@ -80,6 +81,7 @@ export class PaymentController {
         @Body() payload: ChangePaymentPlanDto,
     ) {
         const planCode = toEnum(PlanCodeRecord, payload.planCode);
+
         return this.paymentService.changePlanAndCharge(memberId, planCode, payload.paymentMethod);
     }
 
@@ -99,6 +101,7 @@ export class PaymentController {
         @Param('memberId') memberId: string,
     ): Promise<PaymentEventDto[]> {
         const events = await this.paymentService.listPayments(memberId);
+
         return events.map((e) => new PaymentEventDto(e));
     }
 }

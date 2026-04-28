@@ -19,7 +19,9 @@ export type AgentConfig = {
 /** Carrega arquivo .md de prompt se existir, senão retorna null */
 function loadPromptFile(name: string): string | null {
     const filePath = path.resolve(process.cwd(), `src/ai/agents/prompts/${name}.md`);
-    if (fs.existsSync(filePath)) return fs.readFileSync(filePath, 'utf-8');
+
+    if (fs.existsSync(filePath)) return fs.readFileSync(filePath, 'utf8');
+
     return null;
 }
 

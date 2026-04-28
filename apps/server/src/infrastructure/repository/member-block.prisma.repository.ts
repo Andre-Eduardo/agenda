@@ -19,6 +19,7 @@ export class MemberBlockPrismaRepository extends PrismaRepository implements Mem
         const record = await this.prisma.memberBlock.findUnique({
             where: {id: id.toString()},
         });
+
         return record === null ? null : this.mapper.toDomain(record);
     }
 
@@ -35,6 +36,7 @@ export class MemberBlockPrismaRepository extends PrismaRepository implements Mem
             },
             orderBy: {startAt: 'asc'},
         });
+
         return records.map((r) => this.mapper.toDomain(r));
     }
 
@@ -51,11 +53,13 @@ export class MemberBlockPrismaRepository extends PrismaRepository implements Mem
                 endAt: {gt: startAt},
             },
         });
+
         return records.map((r) => this.mapper.toDomain(r));
     }
 
     async save(block: MemberBlock): Promise<void> {
         const data = this.mapper.toPersistence(block);
+
         await this.prisma.memberBlock.upsert({
             where: {id: data.id},
             create: data,

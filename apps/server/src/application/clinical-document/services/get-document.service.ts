@@ -13,6 +13,7 @@ export class GetDocumentService implements ApplicationService<GetDocumentDto, Cl
 
     async execute({actor, payload}: Command<GetDocumentDto>): Promise<ClinicalDocumentDto> {
         const document = await this.clinicalDocumentRepository.findById(payload.documentId);
+
         if (!document || document.clinicId.toString() !== actor.clinicId.toString()) {
             throw new ResourceNotFoundException('Clinical document not found.', payload.documentId.toString());
         }

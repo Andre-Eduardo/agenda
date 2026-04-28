@@ -12,6 +12,7 @@ export class ListTemplatesService implements ApplicationService<ListTemplatesDto
 
     async execute({payload}: Command<ListTemplatesDto>): Promise<ClinicalDocumentTemplateDto[]> {
         const templates = await this.clinicalDocumentTemplateRepository.findAllByClinic(payload.clinicId);
+
         return templates.map((t) => new ClinicalDocumentTemplateDto(t));
     }
 }

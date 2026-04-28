@@ -30,7 +30,7 @@ export class UsageLimitGuard implements CanActivate {
         }
 
         const request = context.switchToHttp().getRequest<Request>();
-        const actor = request.actor;
+        const {actor} = request;
 
         if (!actor.clinicMemberId || !actor.clinicId) {
             throw new ForbiddenException({
@@ -43,6 +43,7 @@ export class UsageLimitGuard implements CanActivate {
         const clinicId = actor.clinicId.toString();
 
         let usage;
+
         try {
             // getCurrentUsage() resolves effective limits (plan base + active add-ons).
             // Active add-ons are cached for 60 s inside SubscriptionService.getActiveAddons().

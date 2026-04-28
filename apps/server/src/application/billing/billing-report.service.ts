@@ -83,9 +83,11 @@ export class BillingReportService {
         if (!Number.isInteger(year) || !Number.isInteger(month) || month < 1 || month > 12) {
             throw new InvalidInputException('billing.invalid_period');
         }
+
         const now = new Date();
         const requestedStart = new Date(year, month - 1, 1);
         const currentStart = new Date(now.getFullYear(), now.getMonth(), 1);
+
         if (requestedStart > currentStart) {
             throw new InvalidInputException('billing.future_period');
         }
@@ -142,6 +144,7 @@ export class BillingReportService {
         for (const log of interactionLogs) {
             if (!log.modelId) continue;
             const entry = byModel.get(log.modelId) ?? {messages: 0, costUsd: 0};
+
             entry.messages += 1;
             entry.costUsd += log.costUsd ?? 0;
             byModel.set(log.modelId, entry);
@@ -155,7 +158,7 @@ export class BillingReportService {
             ? Number((totalCostUsd / interactionCount).toFixed(8))
             : 0;
 
-        const modelBreakdown: ModelBreakdownEntry[] = Array.from(byModel.entries()).map(
+        const modelBreakdown: ModelBreakdownEntry[] = [...byModel.entries()].map(
             ([modelId, data]) => ({
                 modelId,
                 messages: data.messages,
@@ -206,6 +209,7 @@ export class BillingReportService {
         this.validatePeriod(year, month);
 
         const clinic = await this.prisma.clinic.findUnique({where: {id: clinicId}});
+
         if (!clinic) {
             throw new ResourceNotFoundException('clinic.not_found', clinicId);
         }
@@ -218,10 +222,11 @@ export class BillingReportService {
             subscriptions.map(async (sub) => {
                 try {
                     return await this.getMemberCostReport(sub.memberId, clinicId, year, month);
-                } catch (err: unknown) {
+                } catch (error: unknown) {
                     this.logger.warn(
-                        `[billing] Skipping member ${sub.memberId} in clinic report: ${err instanceof Error ? err.message : String(err)}`,
+                        `[billing] Skipping member ${sub.memberId} in clinic report: ${error instanceof Error ? error.message : String(error)}`,
                     );
+
                     return null;
                 }
             }),

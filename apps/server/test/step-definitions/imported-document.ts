@@ -24,6 +24,7 @@ Given(
 
         // Create a placeholder File record required by ImportedDocument.fileId
         const fileId = randomUUID();
+
         await this.prisma.file.create({
             data: {
                 id: fileId,
@@ -39,6 +40,7 @@ Given(
 
         // Create the ImportedDocument in READY_FOR_REVIEW status
         const importedDocId = randomUUID();
+
         await this.prisma.importedDocument.create({
             data: {
                 id: importedDocId,

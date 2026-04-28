@@ -33,16 +33,16 @@ export class UpdateUserService implements ApplicationService<UpdateUserDto, User
 
         try {
             await this.userRepository.save(user);
-        } catch (e) {
-            if (e instanceof DuplicateUsernameException) {
+        } catch (error) {
+            if (error instanceof DuplicateUsernameException) {
                 throw new PreconditionException('Cannot update the user with a username already in use.');
             }
 
-            if (e instanceof DuplicateEmailException) {
+            if (error instanceof DuplicateEmailException) {
                 throw new PreconditionException('Cannot update the user with an email already in use.');
             }
 
-            throw e;
+            throw error;
         }
 
         this.eventDispatcher.dispatch(actor, user);

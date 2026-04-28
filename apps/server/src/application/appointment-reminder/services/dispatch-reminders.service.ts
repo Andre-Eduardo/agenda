@@ -29,15 +29,19 @@ export class DispatchRemindersService {
 
     private async dispatch(reminder: AppointmentReminder): Promise<void> {
         const provider = this.providers.find((p) => p.channel === reminder.channel);
+
         if (!provider) return;
 
         let payload: NotificationPayload;
+
         try {
             payload = await this.buildPayload(reminder);
         } catch (error) {
             const message = error instanceof Error ? error.message : 'Failed to build payload';
+
             reminder.markFailed(new Date(), message);
             await this.reminderRepository.save(reminder);
+
             return;
         }
 
@@ -54,25 +58,30 @@ export class DispatchRemindersService {
 
     private async buildPayload(reminder: AppointmentReminder): Promise<NotificationPayload> {
         const appointment = await this.appointmentRepository.findById(reminder.appointmentId);
+
         if (appointment === null) {
             throw new Error(`Appointment ${reminder.appointmentId.toString()} not found`);
         }
 
         const patient = await this.patientRepository.findById(reminder.patientId, reminder.clinicId);
+
         if (patient === null) {
             throw new Error(`Patient ${reminder.patientId.toString()} not found`);
         }
 
         let to: string;
+
         if (reminder.channel === ReminderChannel.EMAIL) {
             if (!patient.email) {
                 throw new Error(`Patient ${reminder.patientId.toString()} has no email address`);
             }
+
             to = patient.email;
         } else {
             if (!patient.phone) {
                 throw new Error(`Patient ${reminder.patientId.toString()} has no phone number`);
             }
+
             to = patient.phone.toString();
         }
 

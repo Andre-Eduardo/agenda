@@ -21,11 +21,13 @@ export class CompletePatientFormService implements ApplicationService<CompletePa
 
     async execute({actor: _actor, payload}: Command<CompletePatientFormDto>): Promise<PatientFormDto> {
         const form = await this.patientFormRepository.findById(payload.patientFormId);
+
         if (!form) {
             throw new ResourceNotFoundException('Patient form not found.', 'PatientForm');
         }
 
         const version = await this.formTemplateVersionRepository.findById(form.versionId);
+
         if (!version) {
             throw new ResourceNotFoundException('Form template version not found.', 'FormTemplateVersion');
         }

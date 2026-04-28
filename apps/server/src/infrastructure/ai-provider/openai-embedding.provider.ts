@@ -80,6 +80,7 @@ export class OpenAiEmbeddingProvider implements EmbeddingProvider {
     /** Gera embedding para um único texto. */
     async generateEmbedding(text: string): Promise<number[]> {
         const results = await this.callApi([text]);
+
         return results[0];
     }
 
@@ -89,6 +90,7 @@ export class OpenAiEmbeddingProvider implements EmbeddingProvider {
      */
     async generateEmbeddings(texts: string[]): Promise<number[][]> {
         if (texts.length === 0) return [];
+
         return this.callApi(texts);
     }
 
@@ -98,8 +100,10 @@ export class OpenAiEmbeddingProvider implements EmbeddingProvider {
 
     async healthCheck(): Promise<{healthy: boolean; latencyMs?: number; message?: string}> {
         const start = Date.now();
+
         try {
             await this.generateEmbedding('health-check');
+
             return {
                 healthy: true,
                 latencyMs: Date.now() - start,
@@ -107,6 +111,7 @@ export class OpenAiEmbeddingProvider implements EmbeddingProvider {
             };
         } catch (error) {
             const message = error instanceof Error ? error.message : 'Unknown error';
+
             return {
                 healthy: false,
                 latencyMs: Date.now() - start,
@@ -147,12 +152,14 @@ export class OpenAiEmbeddingProvider implements EmbeddingProvider {
             raw = (await response.json()) as OpenAiEmbeddingResponse;
         } catch (error) {
             const message = error instanceof Error ? error.message : 'Network error';
+
             this.logger.error(`OpenAI embeddings fetch failed: ${message}`);
-            throw new Error(`OpenAI embeddings fetch failed: ${message}`);
+            throw new Error(`OpenAI embeddings fetch failed: ${message}`, { cause: error });
         }
 
         if (!response.ok) {
             const errorMessage = raw.error?.message ?? `HTTP ${response.status}`;
+
             this.logger.error(`OpenAI embeddings API error: ${errorMessage}`, {
                 status: response.status,
                 model: this.model,
@@ -166,7 +173,7 @@ export class OpenAiEmbeddingProvider implements EmbeddingProvider {
 
         // Ordenar por index para garantir que a ordem corresponde ao input
         return raw.data
-            .sort((a, b) => a.index - b.index)
+            .toSorted((a, b) => a.index - b.index)
             .map((item) => item.embedding);
     }
 }

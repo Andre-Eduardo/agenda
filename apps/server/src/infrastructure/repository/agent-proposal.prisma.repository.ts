@@ -22,6 +22,7 @@ export class AgentProposalPrismaRepository extends PrismaRepository implements A
         const record = await this.prisma.agentProposal.findUnique({
             where: {id: id.toString()},
         });
+
         return record === null ? null : this.mapper.toDomain(record);
     }
 
@@ -32,6 +33,7 @@ export class AgentProposalPrismaRepository extends PrismaRepository implements A
             payload: data.payload as Prisma.InputJsonValue,
             preview: data.preview as Prisma.InputJsonValue,
         };
+
         await this.prisma.agentProposal.upsert({
             where: {id: data.id},
             create: writeData,
@@ -75,6 +77,7 @@ export class AgentProposalPrismaRepository extends PrismaRepository implements A
                 updatedAt: new Date(),
             },
         });
+
         return result.count;
     }
 
@@ -104,6 +107,7 @@ export class AgentProposalPrismaRepository extends PrismaRepository implements A
         ]);
 
         const byType: Record<string, number> = {};
+
         for (const row of byTypeRows) {
             byType[row.proposalType] = row._count.id;
         }

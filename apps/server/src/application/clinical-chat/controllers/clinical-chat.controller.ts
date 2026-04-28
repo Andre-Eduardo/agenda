@@ -87,6 +87,7 @@ export class ClinicalChatController {
     @Get('agent-profiles')
     async listAgentProfiles(@RequestActor() _actor: Actor): Promise<AiAgentProfileDto[]> {
         const profiles = await this.agentProfileRepository.findAllActive();
+
         return profiles.map((p) => new AiAgentProfileDto(p));
     }
 
@@ -115,6 +116,7 @@ export class ClinicalChatController {
                 title: payload.title ?? null,
             },
         });
+
         return new PatientChatSessionDto(result.session, result.resolvedAgent);
     }
 
@@ -129,6 +131,7 @@ export class ClinicalChatController {
         @Query(new ZodValidationPipe(listChatSessionsSchema)) query: ListChatSessionsDto
     ): Promise<PaginatedDto<PatientChatSessionDto>> {
         const result = await this.listSessionsService.execute({actor, payload: query});
+
         return {
             data: result.data.map((s) => new PatientChatSessionDto(s)),
             totalCount: result.totalCount,
@@ -147,6 +150,7 @@ export class ClinicalChatController {
         @ValidatedParam('id', sessionIdSchema.shape.id) id: PatientChatSessionId
     ): Promise<PatientChatSessionDto> {
         const session = await this.getSessionService.execute({actor, payload: {sessionId: id}});
+
         return new PatientChatSessionDto(session);
     }
 
@@ -162,6 +166,7 @@ export class ClinicalChatController {
         @ValidatedParam('id', sessionIdSchema.shape.id) id: PatientChatSessionId
     ): Promise<PatientChatSessionDto> {
         const session = await this.closeSessionService.execute({actor, payload: {sessionId: id}});
+
         return new PatientChatSessionDto(session);
     }
 
@@ -229,6 +234,7 @@ export class ClinicalChatController {
                 chunkIds: payload.chunkIds ?? [],
             },
         });
+
         return new PatientChatMessageDto(message);
     }
 
@@ -247,6 +253,7 @@ export class ClinicalChatController {
             actor,
             payload: {...query, sessionId: id},
         });
+
         return {
             data: result.data.map((m) => new PatientChatMessageDto(m)),
             totalCount: result.totalCount,
@@ -267,6 +274,7 @@ export class ClinicalChatController {
         @Body() payload: RebuildContextDto
     ): Promise<{message: string; indexed: number}> {
         const result = await this.rebuildContextService.execute({actor, payload});
+
         return {
             message: 'Context rebuilt successfully.',
             indexed: result.indexing.indexed,
@@ -289,6 +297,7 @@ export class ClinicalChatController {
             patientId: payload.patientId,
             reason: 'Manual invalidation via API',
         });
+
         return {
             invalidated: result.invalidated,
             previousStatus: result.previousStatus,
@@ -312,6 +321,7 @@ export class ClinicalChatController {
             topK: query.topK,
             minScore: query.minScore,
         });
+
         return {
             chunks: result.chunks.map((c) => ({
                 id: c.id,
@@ -349,6 +359,7 @@ export class ClinicalChatController {
             patientId,
             autoRebuildIfStale: false, // Direct lookup never rebuilds — explicit rebuild endpoint exists.
         });
+
         return {
             snapshot: result.snapshot ? new PatientContextSnapshotDto(result.snapshot) : null,
             wasRebuilt: result.wasRebuilt,
@@ -376,7 +387,7 @@ export class ClinicalChatController {
             payload: {sessionId: id},
         });
 
-        const patientId = session.patientId;
+        const {patientId} = session;
 
         const [snapshot, totalIndexed, providerHealth] = await Promise.all([
             this.snapshotRepository.findByPatient(patientId),

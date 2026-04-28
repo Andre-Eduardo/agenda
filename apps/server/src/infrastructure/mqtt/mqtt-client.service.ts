@@ -30,7 +30,7 @@ export class MqttClientService implements OnModuleInit, OnModuleDestroy {
 
             this.client.on('connect', () => {
                 this.logger.info('Connected to MQTT broker');
-                resolve(undefined);
+                resolve();
             });
 
             this.client.on('error', (err) => {
@@ -102,7 +102,7 @@ export class MqttClientService implements OnModuleInit, OnModuleDestroy {
             username: this.config.mqtt.username,
             password: this.config.mqtt.password,
             clean: true,
-            reconnectPeriod: 5_000, // Wait 5 seconds before reconnecting
+            reconnectPeriod: 5000, // Wait 5 seconds before reconnecting
         };
     }
 }

@@ -38,6 +38,7 @@ export class AgentsController {
     @Get()
     async listAgents(@RequestActor() _actor: Actor): Promise<AiAgentProfileDto[]> {
         const profiles = await this.agentProfileRepository.findAllActive();
+
         return profiles.map((p) => new AiAgentProfileDto(p));
     }
 
@@ -65,6 +66,7 @@ export class AgentsController {
         clinicMemberId: ClinicMemberId,
     ): Promise<AiAgentProfileDto> {
         const agent = await this.agentResolutionService.resolveForMember(clinicMemberId);
+
         return new AiAgentProfileDto(agent);
     }
 

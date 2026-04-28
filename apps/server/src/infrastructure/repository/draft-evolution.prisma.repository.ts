@@ -19,6 +19,7 @@ export class DraftEvolutionPrismaRepository extends PrismaRepository implements 
         const model = await this.prisma.draftEvolution.findUnique({
             where: {id: id.toString()},
         });
+
         return model === null ? null : this.mapper.toDomain(model);
     }
 
@@ -26,11 +27,13 @@ export class DraftEvolutionPrismaRepository extends PrismaRepository implements 
         const model = await this.prisma.draftEvolution.findUnique({
             where: {importedDocumentId: importedDocumentId.toString()},
         });
+
         return model === null ? null : this.mapper.toDomain(model);
     }
 
     async save(draft: DraftEvolution): Promise<void> {
         const data = this.mapper.toPersistence(draft);
+
         await this.prisma.draftEvolution.upsert({
             where: {id: data.id},
             create: data,

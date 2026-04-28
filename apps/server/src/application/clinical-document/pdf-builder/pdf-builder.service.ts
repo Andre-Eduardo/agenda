@@ -46,8 +46,10 @@ export class PdfBuilderService {
         const pdfmake = require('pdfmake/build/pdfmake') as typeof import('pdfmake');
         // eslint-disable-next-line @typescript-eslint/no-require-imports
         const HelveticaFont = require('pdfmake/build/standard-fonts/Helvetica');
+
         pdfmake.addFontContainer(HelveticaFont);
         const pdf = pdfmake.createPdf(docDefinition);
+
         return pdf.getBuffer();
     }
 
@@ -185,12 +187,12 @@ export class PdfBuilderService {
                 signatureName: {fontSize: 10, bold: true, color: '#1a1a2e'},
                 signatureDetail: {fontSize: 9, color: '#666666'},
                 observations: {fontSize: 10, color: '#555555', italics: true, margin: [0, 8, 0, 0]},
-                ...(layoutOverrides.styles ?? {}),
+                ...layoutOverrides.styles,
             },
             defaultStyle: {
                 font: 'Helvetica',
                 fontSize: 10,
-                ...(layoutOverrides.defaultStyle ?? {}),
+                ...layoutOverrides.defaultStyle,
             },
         };
     }
@@ -203,20 +205,25 @@ export class PdfBuilderService {
             [ClinicalDocumentType.REFERRAL]: 'ENCAMINHAMENTO',
             [ClinicalDocumentType.EXAM_REQUEST]: 'SOLICITAÇÃO DE EXAMES',
         };
+
         return titles[type];
     }
 
     private buildContentSection(document: ClinicalDocument): Content {
         switch (document.type) {
             case ClinicalDocumentType.PRESCRIPTION:
-            case ClinicalDocumentType.PRESCRIPTION_SPECIAL:
+            case ClinicalDocumentType.PRESCRIPTION_SPECIAL: {
                 return this.buildPrescriptionContent(document.contentJson as PrescriptionContent);
-            case ClinicalDocumentType.MEDICAL_CERTIFICATE:
+            }
+            case ClinicalDocumentType.MEDICAL_CERTIFICATE: {
                 return this.buildCertificateContent(document.contentJson as MedicalCertificateContent);
-            case ClinicalDocumentType.REFERRAL:
+            }
+            case ClinicalDocumentType.REFERRAL: {
                 return this.buildReferralContent(document.contentJson as ReferralContent);
-            case ClinicalDocumentType.EXAM_REQUEST:
+            }
+            case ClinicalDocumentType.EXAM_REQUEST: {
                 return this.buildExamRequestContent(document.contentJson as ExamRequestContent);
+            }
         }
     }
 

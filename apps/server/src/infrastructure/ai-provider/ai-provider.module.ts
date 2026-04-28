@@ -51,6 +51,7 @@ import {AI_PROVIDER} from '../../ai/providers/ai-provider.token';
                                 'Defina a variável de ambiente ou use AI_CHAT_PROVIDER=mock.'
                         );
                     }
+
                     if (!modelId) {
                         throw new Error(
                             '[AiProviderModule] OPENROUTER_MODEL não configurada. ' +
@@ -79,6 +80,7 @@ import {AI_PROVIDER} from '../../ai/providers/ai-provider.token';
                 if ((process.env.AI_CHAT_PROVIDER ?? 'mock') !== 'openrouter') {
                     return null;
                 }
+
                 return new OpenRouterProvider();
             },
         },
@@ -92,12 +94,14 @@ import {AI_PROVIDER} from '../../ai/providers/ai-provider.token';
 
                 if (provider === 'openai') {
                     const apiKey = process.env.OPENAI_API_KEY;
+
                     if (!apiKey) {
                         throw new Error(
                             '[AiProviderModule] OPENAI_API_KEY não configurada. ' +
                                 'Defina a variável de ambiente ou use AI_EMBEDDING_PROVIDER=mock.'
                         );
                     }
+
                     return new OpenAiEmbeddingProvider({
                         apiKey,
                         model: process.env.OPENAI_EMBEDDING_MODEL,

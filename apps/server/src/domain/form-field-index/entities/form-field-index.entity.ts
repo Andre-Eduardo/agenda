@@ -35,6 +35,7 @@ export class FormFieldIndex extends Entity<FormFieldIndexId> {
 
     static create(props: CreateFormFieldIndex): FormFieldIndex {
         const now = new Date();
+
         return new FormFieldIndex({
             ...props,
             id: FormFieldIndexId.generate(),

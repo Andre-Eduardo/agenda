@@ -72,7 +72,14 @@
       "Bash(grep -v \"__tests__\\\\|//\")",
       "Bash(grep -E \"\\(\\\\.\\(css|json\\)$|\\\\.config\\)\")",
       "Bash(npx shadcn@latest add button card badge input select textarea label form dialog sheet dropdown-menu separator skeleton tooltip avatar tabs sonner progress command popover table scroll-area --yes --overwrite)",
-      "Bash(awk ' *)"
+      "Bash(awk ' *)",
+      "Bash(DATABASE_URL=\"postgresql://postgres:postgres@localhost:5433/agenda\" npx prisma *)",
+      "Bash(pnpm run *)",
+      "Bash(echo \"PID=$!\")",
+      "Bash(cp \"/home/andre/.claude/projects/-home-andre-Documentos-agenda/0e171ef2-6383-4fd0-b575-9942049cba55/tool-results/webfetch-1777383742491-nshq1b.bin\" /tmp/design.gz)",
+      "Bash(gunzip -f /tmp/design.gz)",
+      "Bash(cp \"/home/andre/.claude/projects/-home-andre-Documentos-agenda/0e171ef2-6383-4fd0-b575-9942049cba55/tool-results/webfetch-1777385750574-5tab57.bin\" /tmp/pacientes.gz)",
+      "Bash(gunzip -f /tmp/pacientes.gz)"
     ],
     "defaultMode": "bypassPermissions",
     "additionalDirectories": [

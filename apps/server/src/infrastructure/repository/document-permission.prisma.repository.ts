@@ -26,6 +26,7 @@ export class DocumentPermissionPrismaRepository
         const permission = await this.prisma.documentPermission.findFirst({
             where: {id: id.toString()},
         });
+
         return permission === null ? null : this.mapper.toDomain(permission);
     }
 
@@ -37,6 +38,7 @@ export class DocumentPermissionPrismaRepository
         const permission = await this.prisma.documentPermission.findFirst({
             where: {memberId: memberId.toString(), entityType, entityId},
         });
+
         return permission === null ? null : this.mapper.toDomain(permission);
     }
 
@@ -44,11 +46,13 @@ export class DocumentPermissionPrismaRepository
         const permissions = await this.prisma.documentPermission.findMany({
             where: {entityType, entityId},
         });
+
         return permissions.map((p) => this.mapper.toDomain(p));
     }
 
     async save(permission: DocumentPermission): Promise<void> {
         const data = this.mapper.toPersistence(permission);
+
         await this.prisma.documentPermission.upsert({
             where: {id: data.id},
             create: data,

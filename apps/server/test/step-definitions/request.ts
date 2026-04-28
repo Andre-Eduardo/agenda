@@ -75,6 +75,7 @@ When(
         const response = await (this.agent as any)[method.toLowerCase()](resolvedUrl)
             .set(requestContext.headers)
             .send(body);
+
         requestContext.response = response;
 
         this.variables.lastResponse = response.body;
@@ -98,6 +99,7 @@ When(
         const response = await (this.agent as any)[method.toLowerCase()](resolvedUrl)
             .set(requestContext.headers)
             .query(qs.stringify(query, {encode: false}));
+
         requestContext.response = response;
 
         this.variables.lastResponse = response.body;
@@ -122,6 +124,7 @@ When(
 
         const response = await (this.agent as any)[method.toLowerCase()](resolvedUrl)
             .set(requestContext.headers);
+
         requestContext.response = response;
 
         this.variables.lastResponse = response.body;
@@ -147,6 +150,7 @@ When(
         const response = await (this.agent as any)[method.toLowerCase()](resolvedUrl)
             .set(requestContext.headers)
             .send(body);
+
         requestContext.response = response;
 
         this.variables.lastResponse = response.body;

@@ -54,7 +54,9 @@ export class UploadFile extends Entity<UploadFileId> {
     markReady(finalPath: string, size?: number, checksum?: string): void {
         this.status = FilePromotionStatus.READY;
         this.finalPath = finalPath;
+
         if (size !== undefined) this.size = size;
+
         if (checksum !== undefined) this.checksum = checksum;
         this.update();
     }

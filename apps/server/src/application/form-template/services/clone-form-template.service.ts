@@ -23,6 +23,7 @@ export class CloneFormTemplateService implements ApplicationService<CloneFormTem
 
     async execute({actor, payload}: Command<CloneFormTemplateDto>): Promise<FormTemplateDto> {
         const source = await this.formTemplateRepository.findById(payload.templateId);
+
         if (!source) {
             throw new ResourceNotFoundException('Source form template not found.', 'FormTemplate');
         }
@@ -30,11 +31,13 @@ export class CloneFormTemplateService implements ApplicationService<CloneFormTem
         // Owners can clone any template they own; everyone can clone public ones.
         const sourceBelongsToActorClinic =
             source.clinicId !== null && source.clinicId.equals(actor.clinicId);
+
         if (!source.isPublic && !sourceBelongsToActorClinic) {
             throw new PreconditionException('Only public templates or templates from your clinic can be cloned.');
         }
 
         const existingCode = await this.formTemplateRepository.findByCode(payload.code);
+
         if (existingCode) {
             throw new PreconditionException(`A template with code "${payload.code}" already exists.`);
         }
@@ -55,6 +58,7 @@ export class CloneFormTemplateService implements ApplicationService<CloneFormTem
 
         // Clone the latest published version if it exists
         const sourceVersion = await this.formTemplateVersionRepository.findLatestPublished(source.id);
+
         if (sourceVersion) {
             const clonedVersion = FormTemplateVersion.create({
                 templateId: cloned.id,
@@ -63,6 +67,7 @@ export class CloneFormTemplateService implements ApplicationService<CloneFormTem
                 definitionJson: sourceVersion.definitionJson,
                 schemaJson: sourceVersion.schemaJson,
             });
+
             await this.formTemplateVersionRepository.save(clonedVersion);
         }
 

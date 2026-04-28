@@ -23,6 +23,7 @@ export class FormFieldIndexerService {
 
         for (const field of allFields) {
             const answer = answerMap.get(field.id);
+
             if (!answer) continue;
 
             const entry = FormFieldIndex.create({

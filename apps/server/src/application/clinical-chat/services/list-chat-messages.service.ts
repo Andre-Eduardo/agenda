@@ -24,6 +24,7 @@ export class ListChatMessagesService
         const {sessionId, ...pagination} = payload;
 
         const session = await this.sessionRepository.findById(sessionId);
+
         if (!session) {
             throw new ResourceNotFoundException('Chat session not found.', sessionId.toString());
         }

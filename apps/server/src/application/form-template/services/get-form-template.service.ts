@@ -13,9 +13,11 @@ export class GetFormTemplateService implements ApplicationService<GetFormTemplat
 
     async execute({payload}: Command<GetFormTemplateDto>): Promise<FormTemplateDto> {
         const template = await this.formTemplateRepository.findById(payload.templateId);
+
         if (!template) {
             throw new ResourceNotFoundException('Form template not found.', 'FormTemplate');
         }
+
         return new FormTemplateDto(template);
     }
 }

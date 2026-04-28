@@ -14,9 +14,7 @@ const REFERENCE_REGEX = /\$\{ref:[^}]+\}/g;
  * Non-string values pass through unchanged.
  */
 export function resolveReferences(context: Context, value: string): string {
-    return value.replace(REFERENCE_REGEX, (match) => {
-        return String(resolveReference(context, match));
-    });
+    return value.replace(REFERENCE_REGEX, (match) => String(resolveReference(context, match)));
 }
 
 /**
@@ -65,8 +63,9 @@ function resolveReference(context: Context, reference: string): string | number 
             return String(varValue);
         }
 
-        default:
+        default: {
             throw new Error(`Unknown reference type "${referenceType}" in "${reference}"`);
+        }
     }
 }
 
@@ -79,7 +78,9 @@ export function parseValue(context: Context, raw: string): unknown {
     const resolved = resolveReferences(context, raw);
 
     if (resolved === 'null') return null;
+
     if (resolved === 'true') return true;
+
     if (resolved === 'false') return false;
 
     // Only coerce to number for plain numeric strings (no leading +, spaces, or non-numeric chars)

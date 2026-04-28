@@ -18,9 +18,11 @@ export class ScheduleRemindersService {
 
     async scheduleRemindersForAppointment(appointmentId: AppointmentId): Promise<void> {
         const appointment = await this.appointmentRepository.findById(appointmentId);
+
         if (appointment === null) return;
 
         const config = await this.configRepository.findByClinicId(appointment.clinicId);
+
         if (config === null || !config.isActive) return;
 
         const reminders: AppointmentReminder[] = [];

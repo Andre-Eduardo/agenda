@@ -16,7 +16,7 @@ export abstract class EntityId<T extends string> extends Identifier<T> {
 
         try {
             UUID.parse(value);
-        } catch (error) {
+        } catch {
             throw new SyntaxError('The identifier must be a valid UUID.');
         }
 

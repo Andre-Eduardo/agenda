@@ -28,6 +28,7 @@ export class PrepareUploadService implements ApplicationService<PrepareUploadDto
 
         if (payload.size > this.config.storage.uploadFileMaxSize) {
             const maxMb = (this.config.storage.uploadFileMaxSize / (1024 * 1024)).toFixed(0);
+
             throw new InvalidInputException(UploadExceptions.file_size_exceeded, [
                 {field: 'size', reason: `File size exceeds the ${maxMb}MB limit.`},
             ]);

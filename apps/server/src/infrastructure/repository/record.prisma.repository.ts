@@ -87,6 +87,7 @@ export class RecordPrismaRepository extends PrismaRepository implements RecordRe
     async save(record: Record): Promise<void> {
         const data = this.mapper.toPersistence(record);
         const {files, ...recordData} = data;
+
         await this.prisma.record.upsert({
             where: {id: recordData.id},
             create: recordData,

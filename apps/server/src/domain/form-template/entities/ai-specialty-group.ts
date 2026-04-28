@@ -22,28 +22,34 @@ export function inferSpecialtyGroup(specialty: string): AiSpecialtyGroup {
     const normalized = specialty
         .toLowerCase()
         .normalize('NFD')
-        .replace(/[̀-ͯ]/g, '')
-        .replace(/[^a-z0-9\s]/g, ' ')
-        .replace(/\s+/g, ' ')
+        .replaceAll(/[̀-ͯ]/g, '')
+        .replaceAll(/[^a-z0-9\s]/g, ' ')
+        .replaceAll(/\s+/g, ' ')
         .trim();
 
     if (/psicolog|psiquiatr|neuropsicolog|terapeut|psicanali/.test(normalized)) {
         return AiSpecialtyGroup.SAUDE_MENTAL;
     }
+
     if (/fisioter|fonoaudio|terapia ocupac|reabilit/.test(normalized)) {
         return AiSpecialtyGroup.REABILITACAO;
     }
+
     if (/nutric|dietetic|nutricion/.test(normalized)) {
         return AiSpecialtyGroup.NUTRICAO_DIETETICA;
     }
+
     if (/enfermag|enfermei/.test(normalized)) {
         return AiSpecialtyGroup.ENFERMAGEM;
     }
+
     if (/clinica geral|medic(ina)? (de )?famil|medic(ina)? prevent/.test(normalized)) {
         return AiSpecialtyGroup.MEDICINA_GERAL;
     }
+
     if (/medic|cardiolog|dermatolog|ortoped|neurolog|pediatr|ginecolog|urologis|oftalm|otorrino/.test(normalized)) {
         return AiSpecialtyGroup.MEDICINA_ESPECIALIZADA;
     }
+
     return AiSpecialtyGroup.OUTROS;
 }

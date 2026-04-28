@@ -58,6 +58,7 @@ export class ImportedDocument extends AggregateRoot<ImportedDocumentId> {
 
     static create(props: CreateEntity<ImportedDocument>): ImportedDocument {
         const now = new Date();
+
         return new ImportedDocument({
             ...props,
             id: ImportedDocumentId.generate(),
@@ -112,6 +113,7 @@ export class ImportedDocumentId extends EntityId<'ImportedDocumentId'> {
     static from(value: string): ImportedDocumentId {
         return new ImportedDocumentId(value);
     }
+
     static generate(): ImportedDocumentId {
         return new ImportedDocumentId();
     }

@@ -17,11 +17,13 @@ export type EnumLike<TValue extends string = string> = Record<string, TValue>;
  */
 export function toEnum<T extends EnumLike>(enumType: T, value: string): T[keyof T] {
     const validValues = Object.values(enumType) as string[];
+
     if (!validValues.includes(value)) {
         throw new InvalidInputException(
             `Invalid enum value "${value}". Expected one of: ${validValues.join(', ')}.`,
         );
     }
+
     return value as T[keyof T];
 }
 
@@ -34,12 +36,13 @@ export function toEnumOrNull<T extends EnumLike>(
     value: string | null | undefined,
 ): T[keyof T] | null {
     if (value == null) return null;
+
     return toEnum(enumType, value);
 }
 
 /**
  * Variante para arrays: valida cada item e retorna o array tipado.
  */
-export function toEnumArray<T extends EnumLike>(enumType: T, values: readonly string[]): T[keyof T][] {
+export function toEnumArray<T extends EnumLike>(enumType: T, values: readonly string[]): Array<T[keyof T]> {
     return values.map((v) => toEnum(enumType, v));
 }

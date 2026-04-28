@@ -9,6 +9,7 @@ export class ListPendingRemindersService {
 
     async listDue(clinicId: ClinicId): Promise<AppointmentReminderDto[]> {
         const reminders = await this.reminderRepository.findDueForDispatch(clinicId, 10);
+
         return reminders.map((r) => new AppointmentReminderDto(r));
     }
 }

@@ -33,6 +33,7 @@ export class ClinicalDocumentPrismaRepository extends PrismaRepository implement
         const model = await this.prisma.clinicalDocument.findUnique({
             where: {id: id.toString()},
         });
+
         return model ? this.mapper.toDomain(model) : null;
     }
 
@@ -68,6 +69,7 @@ export class ClinicalDocumentPrismaRepository extends PrismaRepository implement
             ...data,
             contentJson: data.contentJson as Prisma.InputJsonValue,
         };
+
         await this.prisma.clinicalDocument.upsert({
             where: {id: data.id},
             create: writeData,
@@ -76,7 +78,8 @@ export class ClinicalDocumentPrismaRepository extends PrismaRepository implement
     }
 
     async saveWithGeneratedFile(document: ClinicalDocument, fileData: GeneratedFileData): Promise<string> {
-        const fileId = document.fileId;
+        const {fileId} = document;
+
         if (fileId === null) {
             throw new Error('Cannot save: document.fileId is null. Call markGenerated() before saveWithGeneratedFile().');
         }

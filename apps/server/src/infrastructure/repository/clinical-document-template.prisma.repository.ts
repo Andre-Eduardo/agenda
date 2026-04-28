@@ -29,6 +29,7 @@ export class ClinicalDocumentTemplatePrismaRepository
         const model = await this.prisma.clinicalDocumentTemplate.findUnique({
             where: {id: id.toString()},
         });
+
         return model ? this.mapper.toDomain(model) : null;
     }
 
@@ -42,6 +43,7 @@ export class ClinicalDocumentTemplatePrismaRepository
                 type: toEnum(PrismaClient.ClinicalDocumentType, type),
             },
         });
+
         return model ? this.mapper.toDomain(model) : null;
     }
 
@@ -53,6 +55,7 @@ export class ClinicalDocumentTemplatePrismaRepository
                 type: toEnum(PrismaClient.ClinicalDocumentType, type),
             },
         });
+
         return model ? this.mapper.toDomain(model) : null;
     }
 
@@ -61,6 +64,7 @@ export class ClinicalDocumentTemplatePrismaRepository
             where: {clinicId: clinicId.toString()},
             orderBy: {type: 'asc'},
         });
+
         return models.map((m) => this.mapper.toDomain(m));
     }
 
@@ -70,6 +74,7 @@ export class ClinicalDocumentTemplatePrismaRepository
             ...data,
             layoutJson: data.layoutJson as Prisma.InputJsonValue,
         };
+
         await this.prisma.clinicalDocumentTemplate.upsert({
             where: {id: data.id},
             create: writeData,

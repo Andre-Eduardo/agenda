@@ -26,6 +26,7 @@ export class GetRecordTool implements AgentTool<Input, Output> {
 
     async execute(input: Input, _context: ToolContext): Promise<Output> {
         const record = await this.recordRepository.findById(RecordId.from(input.recordId));
+
         return {record: record ? toRecordView(record) : null};
     }
 }

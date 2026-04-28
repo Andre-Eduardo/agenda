@@ -16,11 +16,13 @@ export class UpdateDraftService implements ApplicationService<UpdateDraftInput, 
 
     async execute({payload}: Command<UpdateDraftInput>): Promise<DraftEvolutionDto> {
         const document = await this.importedDocumentRepository.findById(payload.id);
+
         if (document === null) {
             throw new ResourceNotFoundException('ImportedDocument not found.', payload.id.toString());
         }
 
         const draft = await this.draftEvolutionRepository.findByImportedDocumentId(payload.id);
+
         if (draft === null) {
             throw new ResourceNotFoundException('Draft not found for this document.', payload.id.toString());
         }

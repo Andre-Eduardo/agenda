@@ -6,10 +6,10 @@ export const username = z
     .transform((value, ctx) => {
         try {
             return Username.create(value);
-        } catch (e) {
+        } catch (error) {
             ctx.addIssue({
                 code: z.ZodIssueCode.custom,
-                message: e instanceof Error ? e.message : 'Invalid username format',
+                message: error instanceof Error ? error.message : 'Invalid username format',
             });
 
             return z.NEVER;

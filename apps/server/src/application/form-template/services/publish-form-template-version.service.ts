@@ -15,9 +15,11 @@ export class PublishFormTemplateVersionService
 
     async execute({payload}: Command<PublishVersionDto>): Promise<FormTemplateVersionDto> {
         const version = await this.formTemplateVersionRepository.findById(payload.versionId);
+
         if (!version) {
             throw new ResourceNotFoundException('Form template version not found.', 'FormTemplateVersion');
         }
+
         if (version.isPublished()) {
             throw new PreconditionException('Version is already published.');
         }

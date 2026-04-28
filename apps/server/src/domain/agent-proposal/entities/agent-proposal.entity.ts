@@ -117,9 +117,11 @@ export class AgentProposal extends AggregateRoot<AgentProposalId> {
         if (this.status !== AgentProposalStatus.PENDING) {
             return false;
         }
+
         if (this.expiresAt !== null && this.expiresAt < new Date()) {
             return false;
         }
+
         return true;
     }
 
@@ -129,7 +131,9 @@ export class AgentProposal extends AggregateRoot<AgentProposalId> {
                 `Proposal cannot be confirmed: status=${this.status}${this.expiresAt && this.expiresAt < new Date() ? ', expired' : ''}`,
             );
         }
+
         const now = new Date();
+
         this.status = AgentProposalStatus.CONFIRMED;
         this.confirmedAt = now;
         this.confirmedByMemberId = confirmedByMemberId;
@@ -141,7 +145,9 @@ export class AgentProposal extends AggregateRoot<AgentProposalId> {
         if (this.status !== AgentProposalStatus.PENDING) {
             throw new PreconditionException(`Proposal cannot be rejected: status=${this.status}`);
         }
+
         const now = new Date();
+
         this.status = AgentProposalStatus.REJECTED;
         this.rejectedAt = now;
         this.rejectionReason = reason ?? null;
@@ -152,7 +158,9 @@ export class AgentProposal extends AggregateRoot<AgentProposalId> {
         if (this.status !== AgentProposalStatus.PENDING) {
             return;
         }
+
         const now = new Date();
+
         this.status = AgentProposalStatus.EXPIRED;
         this.updatedAt = now;
     }

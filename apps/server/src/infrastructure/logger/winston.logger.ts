@@ -39,22 +39,22 @@ export class WinstonLogger extends Logger {
     }
 
     private static colorizeHttpStatusCode(value: string): string {
-        return value.replace(/((?<=\s)[1-5][0-9][0-9](?=\s))/g, (match: string) => {
+        return value.replaceAll(/((?<=\s)[1-5][0-9][0-9](?=\s))/g, (match: string) => {
             const statusCode = parseInt(match.trim(), 10);
 
             if (statusCode >= 500) {
-                return `\x1b[31m${match}\x1b[39m`; // Red
+                return `\x1B[31m${match}\x1B[39m`; // Red
             }
 
             if (statusCode >= 400) {
-                return `\x1b[33m${match}\x1b[39m`; // Yellow
+                return `\x1B[33m${match}\x1B[39m`; // Yellow
             }
 
             if (statusCode >= 300) {
-                return `\x1b[36m${match}\x1b[39m`; // Cyan
+                return `\x1B[36m${match}\x1B[39m`; // Cyan
             }
 
-            return `\x1b[32m${match}\x1b[39m`; // Green
+            return `\x1B[32m${match}\x1B[39m`; // Green
         });
     }
 

@@ -19,6 +19,7 @@ export class WorkingHoursPrismaRepository extends PrismaRepository implements Wo
         const record = await this.prisma.workingHours.findUnique({
             where: {id: id.toString()},
         });
+
         return record === null ? null : this.mapper.toDomain(record);
     }
 
@@ -27,6 +28,7 @@ export class WorkingHoursPrismaRepository extends PrismaRepository implements Wo
             where: {clinicMemberId: clinicMemberId.toString(), deletedAt: null},
             orderBy: {dayOfWeek: 'asc'},
         });
+
         return records.map((r) => this.mapper.toDomain(r));
     }
 
@@ -39,11 +41,13 @@ export class WorkingHoursPrismaRepository extends PrismaRepository implements Wo
                 deletedAt: null,
             },
         });
+
         return records.map((r) => this.mapper.toDomain(r));
     }
 
     async save(workingHours: WorkingHours): Promise<void> {
         const data = this.mapper.toPersistence(workingHours);
+
         await this.prisma.workingHours.upsert({
             where: {id: data.id},
             create: data,

@@ -15,6 +15,7 @@ export class DeprecateFormTemplateVersionService
 
     async execute({payload}: Command<DeprecateVersionDto>): Promise<FormTemplateVersionDto> {
         const version = await this.formTemplateVersionRepository.findById(payload.versionId);
+
         if (!version) {
             throw new ResourceNotFoundException('Form template version not found.', 'FormTemplateVersion');
         }

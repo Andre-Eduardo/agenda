@@ -25,6 +25,7 @@ export class ChunkTextService {
         const {text, maxChunkSize = 800, overlapSize = 150} = input;
 
         const normalized = this.normalizeText(text);
+
         if (!normalized) return [];
 
         const paragraphs = normalized.split(/\n{2,}/);
@@ -34,6 +35,7 @@ export class ChunkTextService {
 
         for (const paragraph of paragraphs) {
             const trimmed = paragraph.trim();
+
             if (!trimmed) continue;
 
             if (buffer.length + trimmed.length + 1 > maxChunkSize && buffer.length > 0) {
@@ -42,10 +44,12 @@ export class ChunkTextService {
                 const words = buffer.split(' ');
                 const overlapWords: string[] = [];
                 let overlapLen = 0;
+
                 for (let i = words.length - 1; i >= 0 && overlapLen < overlapSize; i--) {
                     overlapWords.unshift(words[i]);
                     overlapLen += words[i].length + 1;
                 }
+
                 buffer = overlapWords.join(' ') + ' ' + trimmed;
             } else {
                 buffer = buffer ? buffer + '\n\n' + trimmed : trimmed;
@@ -69,10 +73,10 @@ export class ChunkTextService {
 
     private normalizeText(text: string): string {
         return text
-            .replace(/\r\n/g, '\n')
-            .replace(/\r/g, '\n')
-            .replace(/[ \t]+/g, ' ')
-            .replace(/\n{4,}/g, '\n\n\n')
+            .replaceAll(/\r\n/g, '\n')
+            .replaceAll(/\r/g, '\n')
+            .replaceAll(/[ \t]+/g, ' ')
+            .replaceAll(/\n{4,}/g, '\n\n\n')
             .trim();
     }
 }

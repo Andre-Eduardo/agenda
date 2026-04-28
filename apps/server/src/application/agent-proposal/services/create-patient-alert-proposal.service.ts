@@ -32,6 +32,7 @@ export class CreatePatientAlertProposalService {
         const patientId = PatientId.from(payload.patientId);
 
         const patient = await this.patientRepository.findById(patientId, actor.clinicId);
+
         if (!patient) {
             throw new ResourceNotFoundException('Patient not found.', payload.patientId);
         }

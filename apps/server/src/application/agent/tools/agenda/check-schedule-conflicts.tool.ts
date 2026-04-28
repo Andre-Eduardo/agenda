@@ -30,6 +30,7 @@ export class CheckScheduleConflictsTool implements AgentTool<Input, Output> {
         // Conflicts are scoped to the attending member — fall back to the
         // session/actor member when the call site doesn't override.
         const memberId = context.memberId ?? context.actor.clinicMemberId;
+
         if (!memberId) {
             return {hasConflict: false, conflicts: []};
         }

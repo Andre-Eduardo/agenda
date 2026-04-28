@@ -20,9 +20,11 @@ export class UpsertWorkingHoursService implements ApplicationService<UpsertWorki
         const {memberId, dayOfWeek, startTime, endTime, slotDuration, active} = payload;
 
         const member = await this.clinicMemberRepository.findById(memberId);
+
         if (member === null) {
             throw new ResourceNotFoundException('clinic_member.not_found', memberId.toString());
         }
+
         if (!member.clinicId.equals(actor.clinicId)) {
             throw new PreconditionException('Member does not belong to the current clinic.');
         }

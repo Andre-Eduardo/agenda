@@ -23,6 +23,7 @@ export class AppointmentPaymentPrismaRepository extends PrismaRepository impleme
         const record = await this.prisma.appointmentPayment.findUnique({
             where: {id: id.toString()},
         });
+
         return record === null ? null : this.mapper.toDomain(record);
     }
 
@@ -30,11 +31,13 @@ export class AppointmentPaymentPrismaRepository extends PrismaRepository impleme
         const record = await this.prisma.appointmentPayment.findUnique({
             where: {appointmentId: appointmentId.toString()},
         });
+
         return record === null ? null : this.mapper.toDomain(record);
     }
 
     async save(payment: AppointmentPayment): Promise<void> {
         const data = this.mapper.toPersistence(payment);
+
         await this.prisma.appointmentPayment.upsert({
             where: {id: data.id},
             create: data,
@@ -47,6 +50,7 @@ export class AppointmentPaymentPrismaRepository extends PrismaRepository impleme
         const records = await this.prisma.appointmentPayment.findMany({
             where: {appointmentId: {in: appointmentIds.map((id) => id.toString())}},
         });
+
         return records.map((r) => this.mapper.toDomain(r));
     }
 

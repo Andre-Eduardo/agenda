@@ -2,8 +2,8 @@ import * as fs from 'fs';
 import {dirname, join} from 'path';
 import {fileURLToPath} from 'url';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+const __filename = import.meta.filename;
+const __dirname = import.meta.dirname;
 
 function createEnv() {
     const envPath = join(__dirname, '..', '.env');

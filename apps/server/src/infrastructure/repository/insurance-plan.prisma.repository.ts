@@ -19,6 +19,7 @@ export class InsurancePlanPrismaRepository extends PrismaRepository implements I
         const plan = await this.prisma.insurancePlan.findFirst({
             where: {id: id.toString(), deletedAt: null},
         });
+
         return plan === null ? null : this.mapper.toDomain(plan);
     }
 
@@ -27,11 +28,13 @@ export class InsurancePlanPrismaRepository extends PrismaRepository implements I
             where: {clinicId: clinicId.toString(), deletedAt: null},
             orderBy: {name: 'asc'},
         });
+
         return plans.map((p) => this.mapper.toDomain(p));
     }
 
     async save(plan: InsurancePlan): Promise<void> {
         const data = this.mapper.toPersistence(plan);
+
         await this.prisma.insurancePlan.upsert({
             where: {id: data.id},
             create: data,

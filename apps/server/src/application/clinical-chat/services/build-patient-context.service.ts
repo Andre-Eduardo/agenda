@@ -101,6 +101,7 @@ export class BuildPatientContextService {
         const {clinicId, patientId, memberId = null, maxRecords = 20, maxForms = 10} = input;
 
         const patient = await this.patientRepository.findById(patientId, clinicId);
+
         if (!patient) {
             throw new ResourceNotFoundException('Patient not found.', patientId.toString());
         }
@@ -237,7 +238,7 @@ export class BuildPatientContextService {
         }
 
         // Ordenar cronologicamente (mais recente primeiro)
-        return entries.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+        return entries.toSorted((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
     }
 
     private mapRecordsForChunking(records: ClinicalRecord[]): PatientContextOutput['recentRecords'] {
@@ -263,6 +264,7 @@ export class BuildPatientContextService {
 
         for (const form of forms) {
             const indexedFields = await this.formFieldIndexRepository.listByPatientForm(form.id);
+
             result.push({
                 id: form.id.toString(),
                 templateCode: form.templateId.toString(),
@@ -289,9 +291,11 @@ export class BuildPatientContextService {
         const birth = new Date(birthDate);
         let age = today.getFullYear() - birth.getFullYear();
         const monthDiff = today.getMonth() - birth.getMonth();
+
         if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
             age--;
         }
+
         return age;
     }
 
@@ -323,6 +327,7 @@ export class BuildPatientContextService {
                 status: ContextSnapshotStatus.PENDING,
                 builtAt: null,
             });
+
             snapshot.markReady();
             await this.snapshotRepository.save(snapshot);
         }

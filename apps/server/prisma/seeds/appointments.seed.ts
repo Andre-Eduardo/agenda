@@ -29,8 +29,10 @@ const PATIENT_IDS = {
 /** Cria uma data relativa a hoje */
 function relativeDate(daysOffset: number, hour: number, minute = 0): Date {
     const d = new Date();
+
     d.setDate(d.getDate() + daysOffset);
     d.setHours(hour, minute, 0, 0);
+
     return d;
 }
 

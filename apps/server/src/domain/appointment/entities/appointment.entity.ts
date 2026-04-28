@@ -146,11 +146,13 @@ export class Appointment extends AggregateRoot<AppointmentId> {
             AppointmentStatus.CONFIRMED,
             AppointmentStatus.ARRIVED,
         ];
+
         if (!cancellableStatuses.includes(this.status)) {
             throw new PreconditionException(`Cannot cancel an appointment with status ${this.status}.`);
         }
 
         const oldState = new Appointment(this);
+
         this.status = AppointmentStatus.CANCELLED;
         this.canceledAt = new Date();
         this.canceledReason = reason;
@@ -164,6 +166,7 @@ export class Appointment extends AggregateRoot<AppointmentId> {
         }
 
         const oldState = new Appointment(this);
+
         this.status = AppointmentStatus.CONFIRMED;
         this.addEvent(new AppointmentChangedEvent({oldState, newState: this}));
     }
@@ -175,6 +178,7 @@ export class Appointment extends AggregateRoot<AppointmentId> {
         }
 
         const oldState = new Appointment(this);
+
         this.status = AppointmentStatus.COMPLETED;
         this.addEvent(new AppointmentChangedEvent({oldState, newState: this}));
     }
@@ -186,6 +190,7 @@ export class Appointment extends AggregateRoot<AppointmentId> {
         }
 
         const oldState = new Appointment(this);
+
         this.status = AppointmentStatus.NO_SHOW;
         this.addEvent(new AppointmentChangedEvent({oldState, newState: this}));
     }
@@ -196,6 +201,7 @@ export class Appointment extends AggregateRoot<AppointmentId> {
         }
 
         const oldState = new Appointment(this);
+
         this.status = AppointmentStatus.ARRIVED;
         this.arrivedAt = new Date();
 
@@ -209,6 +215,7 @@ export class Appointment extends AggregateRoot<AppointmentId> {
         }
 
         const oldState = new Appointment(this);
+
         this.status = AppointmentStatus.IN_PROGRESS;
         this.calledAt = new Date();
 

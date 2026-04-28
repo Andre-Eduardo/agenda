@@ -18,11 +18,13 @@ export class ImportedDocumentPrismaRepository extends PrismaRepository implement
         const model = await this.prisma.importedDocument.findUnique({
             where: {id: id.toString()},
         });
+
         return model === null ? null : this.mapper.toDomain(model);
     }
 
     async save(document: ImportedDocument): Promise<void> {
         const data = this.mapper.toPersistence(document);
+
         await this.prisma.importedDocument.update({
             where: {id: data.id},
             data,

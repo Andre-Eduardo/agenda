@@ -12,6 +12,7 @@ export class ListInsurancePlansService implements ApplicationService<ListInsuran
 
     async execute({payload}: Command<ListInsurancePlansInput>): Promise<InsurancePlanDto[]> {
         const plans = await this.insurancePlanRepository.findByClinicId(payload.clinicId);
+
         return plans.map((plan) => new InsurancePlanDto(plan));
     }
 }

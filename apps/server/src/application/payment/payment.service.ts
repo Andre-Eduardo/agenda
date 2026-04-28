@@ -23,6 +23,7 @@ export class PaymentService {
     private firstDayOfNextMonth(): string {
         const now = new Date();
         const next = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+
         return next.toISOString().slice(0, 10);
     }
 
@@ -44,6 +45,7 @@ export class PaymentService {
 
         const {user} = subscription.member;
         const userEmail = user.email;
+
         if (!userEmail) {
             throw new InvalidInputException('subscription.user_email_required');
         }
@@ -59,6 +61,7 @@ export class PaymentService {
                 phone: user.phone ?? undefined,
                 cpfCnpj,
             });
+
             asaasCustomerId = customer.id;
             await this.prisma.professionalSubscription.update({
                 where: {memberId},
@@ -119,7 +122,8 @@ export class PaymentService {
             throw new ResourceNotFoundException('subscription.not_found', memberId);
         }
 
-        const asaasCustomerId = subscription.asaasCustomerId;
+        const {asaasCustomerId} = subscription;
+
         if (!asaasCustomerId) {
             throw new InvalidInputException('subscription.no_payment_method');
         }
@@ -139,6 +143,7 @@ export class PaymentService {
         });
 
         const now = new Date();
+
         return this.prisma.professionalSubscription.update({
             where: {memberId},
             data: {
@@ -187,11 +192,13 @@ export class PaymentService {
         const subscription = await this.prisma.professionalSubscription.findUnique({
             where: {id: subscriptionId},
         });
+
         if (!subscription) return;
 
         const existing = await this.prisma.usageRecord.findUnique({
             where: {usage_record_member_period_unique: {memberId, periodYear: nextYear, periodMonth: nextMonth}},
         });
+
         if (existing) return;
 
         await this.prisma.usageRecord.create({

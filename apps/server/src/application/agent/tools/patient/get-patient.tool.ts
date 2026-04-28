@@ -29,6 +29,7 @@ export class GetPatientTool implements AgentTool<Input, Output> {
             PatientId.from(input.patientId),
             context.clinicId,
         );
+
         return {patient: patient ? toPatientView(patient) : null};
     }
 }

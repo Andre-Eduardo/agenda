@@ -63,6 +63,7 @@ export class FormAiContextService {
 
     async buildForPatient(patientId: PatientId, filter: AiContextFilter = {}): Promise<AiContextPayload> {
         const patient = await this.patientRepository.findById(patientId);
+
         if (!patient) {
             throw new ResourceNotFoundException('Patient not found.', 'Patient');
         }
@@ -108,11 +109,14 @@ export class FormAiContextService {
             lines.push(
                 `\n[${form.appliedAt.slice(0, 10)}] ${form.template.name} (${form.template.specialty}) — ${form.status}`
             );
+
             if (form.computed) {
                 lines.push(`  Computed: ${JSON.stringify(form.computed)}`);
             }
+
             for (const field of form.indexedFields) {
                 const val = field.value !== null && field.value !== undefined ? JSON.stringify(field.value) : '—';
+
                 lines.push(`  ${field.fieldLabel ?? field.fieldId}: ${val}`);
             }
         }
@@ -123,7 +127,9 @@ export class FormAiContextService {
     private applyDateFilter(forms: PatientForm[], filter: AiContextFilter): PatientForm[] {
         return forms.filter((f) => {
             if (filter.fromDate && f.appliedAt < filter.fromDate) return false;
+
             if (filter.toDate && f.appliedAt > filter.toDate) return false;
+
             return true;
         });
     }

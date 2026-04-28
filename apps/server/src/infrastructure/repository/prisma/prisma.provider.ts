@@ -132,9 +132,9 @@ async function runSubTransaction<T>(transaction: Prisma.TransactionClient, callb
         await transaction.$executeRawUnsafe(`RELEASE SAVEPOINT "${savepointName}";`);
 
         return result;
-    } catch (e) {
+    } catch (error) {
         await transaction.$executeRawUnsafe(`ROLLBACK TO "${savepointName}";`);
 
-        throw e;
+        throw error;
     }
 }

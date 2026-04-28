@@ -26,18 +26,21 @@ export class CreateAppointmentService implements ApplicationService<CreateAppoin
 
         // 1. Member who will attend must exist and belong to the actor's clinic.
         const attendedBy = await this.clinicMemberRepository.findById(attendedByMemberId);
+
         if (attendedBy === null) {
             throw new ResourceNotFoundException(
                 'clinic_member.not_found',
                 attendedByMemberId.toString(),
             );
         }
+
         if (!attendedBy.clinicId.equals(actor.clinicId)) {
             throw new PreconditionException('Member does not belong to the current clinic.');
         }
 
         // 2. Patient must exist and belong to the same clinic (tenant boundary).
         const patient = await this.patientRepository.findById(patientId, actor.clinicId);
+
         if (patient === null) {
             throw new ResourceNotFoundException('patient.not_found', patientId.toString());
         }
@@ -62,6 +65,7 @@ export class CreateAppointmentService implements ApplicationService<CreateAppoin
 
         if (workingHours.length > 0) {
             const coversInterval = workingHours.some((wh) => wh.coversInterval(startAt, endAt));
+
             if (!coversInterval) {
                 throw new PreconditionException('Appointment is outside the member working hours.');
             }
@@ -69,18 +73,20 @@ export class CreateAppointmentService implements ApplicationService<CreateAppoin
 
         // 6. Member must not have a block overlapping the interval.
         const blocks = await this.memberBlockRepository.findOverlapping(attendedByMemberId, startAt, endAt);
+
         if (blocks.length > 0) {
             throw new PreconditionException('Member has a block during this time period.');
         }
 
         // 7. No conflict with other active appointments for the same member.
         const conflicts = await this.appointmentRepository.findConflicts(attendedByMemberId, startAt, endAt);
+
         if (conflicts.length > 0) {
             throw new PreconditionException('There is a scheduling conflict with an existing appointment.');
         }
 
         // 8. Compute durationMinutes and persist.
-        const durationMinutes = Math.round((endAt.getTime() - startAt.getTime()) / 60000);
+        const durationMinutes = Math.round((endAt.getTime() - startAt.getTime()) / 60_000);
 
         const appointment = Appointment.create({
             clinicId: actor.clinicId,

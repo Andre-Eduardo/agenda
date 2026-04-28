@@ -17,6 +17,7 @@ export class CancelDocumentService implements ApplicationService<CancelDocumentD
 
     async execute({actor, payload}: Command<CancelDocumentDto>): Promise<ClinicalDocumentDto> {
         const document = await this.clinicalDocumentRepository.findById(payload.documentId);
+
         if (!document || document.clinicId.toString() !== actor.clinicId.toString()) {
             throw new ResourceNotFoundException('Clinical document not found.', payload.documentId.toString());
         }

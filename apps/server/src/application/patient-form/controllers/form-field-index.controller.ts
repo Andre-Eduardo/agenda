@@ -46,6 +46,7 @@ export class FormFieldIndexController {
             fieldId: query.fieldId,
             specialtyGroup: query.specialty,
         });
+
         return results.map((r) => new FormFieldIndexDto(r));
     }
 
@@ -64,6 +65,7 @@ export class FormFieldIndexController {
             fieldId: query.fieldId,
             specialtyGroup: query.specialty,
         });
+
         return results.map((r) => new FormFieldIndexDto(r));
     }
 }

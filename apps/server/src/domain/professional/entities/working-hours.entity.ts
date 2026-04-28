@@ -68,6 +68,7 @@ export class WorkingHours extends Entity<WorkingHoursId> {
     coversInterval(startAt: Date, endAt: Date): boolean {
         const start = toTimeString(startAt);
         const end = toTimeString(endAt);
+
         return start >= this.startTime && end <= this.endTime;
     }
 }
@@ -85,5 +86,6 @@ export class WorkingHoursId extends EntityId<'WorkingHoursId'> {
 function toTimeString(date: Date): string {
     const h = date.getUTCHours().toString().padStart(2, '0');
     const m = date.getUTCMinutes().toString().padStart(2, '0');
+
     return `${h}:${m}`;
 }

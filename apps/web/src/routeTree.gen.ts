@@ -11,7 +11,9 @@
 import { Route as rootRouteImport } from './views/root'
 import { Route as DotDotLayoutsStackedLayoutIndexRouteImport } from './views/layouts/StackedLayout/index'
 import { Route as DotDotLayoutsAuthLayoutIndexRouteImport } from './views/layouts/AuthLayout/index'
+import { Route as patientsPagesIndexIndexRouteImport } from './views/modules/patients/pages/index/index'
 import { Route as welcomePagesIndexIndexRouteImport } from './views/modules/welcome/pages/index/index'
+import { Route as patientsPagesDetailIndexRouteImport } from './views/modules/patients/pages/detail/index'
 import { Route as authPagesLoginIndexRouteImport } from './views/modules/auth/pages/login/index'
 
 const DotDotLayoutsStackedLayoutIndexRoute =
@@ -24,11 +26,22 @@ const DotDotLayoutsAuthLayoutIndexRoute =
     id: '/_auth',
     getParentRoute: () => rootRouteImport,
   } as any)
+const patientsPagesIndexIndexRoute = patientsPagesIndexIndexRouteImport.update({
+  id: '/patients',
+  path: '/patients',
+  getParentRoute: () => DotDotLayoutsStackedLayoutIndexRoute,
+} as any)
 const welcomePagesIndexIndexRoute = welcomePagesIndexIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => DotDotLayoutsStackedLayoutIndexRoute,
 } as any)
+const patientsPagesDetailIndexRoute =
+  patientsPagesDetailIndexRouteImport.update({
+    id: '/patients/$patientId',
+    path: '/patients/$patientId',
+    getParentRoute: () => DotDotLayoutsStackedLayoutIndexRoute,
+  } as any)
 const authPagesLoginIndexRoute = authPagesLoginIndexRouteImport.update({
   id: '/auth/login',
   path: '/auth/login',
@@ -37,30 +50,38 @@ const authPagesLoginIndexRoute = authPagesLoginIndexRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof welcomePagesIndexIndexRoute
+  '/patients': typeof patientsPagesIndexIndexRoute
   '/auth/login': typeof authPagesLoginIndexRoute
+  '/patients/$patientId': typeof patientsPagesDetailIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof welcomePagesIndexIndexRoute
+  '/patients': typeof patientsPagesIndexIndexRoute
   '/auth/login': typeof authPagesLoginIndexRoute
+  '/patients/$patientId': typeof patientsPagesDetailIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_auth': typeof DotDotLayoutsAuthLayoutIndexRouteWithChildren
   '/_stackedLayout': typeof DotDotLayoutsStackedLayoutIndexRouteWithChildren
   '/_stackedLayout/': typeof welcomePagesIndexIndexRoute
+  '/_stackedLayout/patients': typeof patientsPagesIndexIndexRoute
   '/_auth/auth/login': typeof authPagesLoginIndexRoute
+  '/_stackedLayout/patients/$patientId': typeof patientsPagesDetailIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/auth/login'
+  fullPaths: '/' | '/patients' | '/auth/login' | '/patients/$patientId'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth/login'
+  to: '/' | '/patients' | '/auth/login' | '/patients/$patientId'
   id:
     | '__root__'
     | '/_auth'
     | '/_stackedLayout'
     | '/_stackedLayout/'
+    | '/_stackedLayout/patients'
     | '/_auth/auth/login'
+    | '/_stackedLayout/patients/$patientId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -84,11 +105,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DotDotLayoutsAuthLayoutIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_stackedLayout/patients': {
+      id: '/_stackedLayout/patients'
+      path: '/patients'
+      fullPath: '/patients'
+      preLoaderRoute: typeof patientsPagesIndexIndexRouteImport
+      parentRoute: typeof DotDotLayoutsStackedLayoutIndexRoute
+    }
     '/_stackedLayout/': {
       id: '/_stackedLayout/'
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof welcomePagesIndexIndexRouteImport
+      parentRoute: typeof DotDotLayoutsStackedLayoutIndexRoute
+    }
+    '/_stackedLayout/patients/$patientId': {
+      id: '/_stackedLayout/patients/$patientId'
+      path: '/patients/$patientId'
+      fullPath: '/patients/$patientId'
+      preLoaderRoute: typeof patientsPagesDetailIndexRouteImport
       parentRoute: typeof DotDotLayoutsStackedLayoutIndexRoute
     }
     '/_auth/auth/login': {
@@ -117,11 +152,15 @@ const DotDotLayoutsAuthLayoutIndexRouteWithChildren =
 
 interface DotDotLayoutsStackedLayoutIndexRouteChildren {
   welcomePagesIndexIndexRoute: typeof welcomePagesIndexIndexRoute
+  patientsPagesIndexIndexRoute: typeof patientsPagesIndexIndexRoute
+  patientsPagesDetailIndexRoute: typeof patientsPagesDetailIndexRoute
 }
 
 const DotDotLayoutsStackedLayoutIndexRouteChildren: DotDotLayoutsStackedLayoutIndexRouteChildren =
   {
     welcomePagesIndexIndexRoute: welcomePagesIndexIndexRoute,
+    patientsPagesIndexIndexRoute: patientsPagesIndexIndexRoute,
+    patientsPagesDetailIndexRoute: patientsPagesDetailIndexRoute,
   }
 
 const DotDotLayoutsStackedLayoutIndexRouteWithChildren =
