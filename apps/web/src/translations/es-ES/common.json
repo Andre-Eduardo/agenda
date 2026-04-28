@@ -40,5 +40,37 @@
   "theme": {
     "light": "Modo claro",
     "dark": "Modo oscuro"
+  },
+  "auth": {
+    "login": {
+      "title": "Bienvenido de nuevo",
+      "subtitle": "Accede a tu cuenta profesional para continuar.",
+      "form": {
+        "username": "Usuario",
+        "password": "Contraseña",
+        "forgotPassword": "¿Olvidaste?",
+        "rememberMe": "Mantenerme conectado en este dispositivo",
+        "submit": "Entrar"
+      },
+      "validation": {
+        "username": {
+          "required": "El correo electrónico es obligatorio"
+        },
+        "password": {
+          "required": "La contraseña es obligatoria"
+        },
+        "credentials": {
+          "invalid": "Correo electrónico o contraseña incorrectos"
+        }
+      },
+      "panel": {
+        "title": "Historia clínica inteligente.",
+        "highlight": "Tu decisión.",
+        "description": "Importación por OCR, análisis asistido y revisión humana obligatoria en cada etapa del registro clínico."
+      },
+      "footer": {
+        "security": "Sistema seguro · Conformidad LGPD"
+      }
+    }
   }
 }

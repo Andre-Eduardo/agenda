@@ -37,6 +37,6 @@ sort: {
   lastActivityAt?: ListSessionsSortLastActivityAt;
 } | null;
 patientId: string;
-professionalId: string;
+memberId: string;
 status: ListSessionsStatus;
 };

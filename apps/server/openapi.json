@@ -77,6 +77,449 @@
         ]
       }
     },
+    "/api/v1/clinics": {
+      "post": {
+        "operationId": "createClinic",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateClinicDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Clinic created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Clinic"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Request failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Creates a new clinic",
+        "tags": [
+          "Clinic"
+        ]
+      }
+    },
+    "/api/v1/clinics/{clinicId}": {
+      "get": {
+        "operationId": "getClinic",
+        "parameters": [
+          {
+            "name": "clinicId",
+            "required": true,
+            "in": "path",
+            "description": "Clinic ID",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Clinic",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Clinic"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Request failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Get clinic by id",
+        "tags": [
+          "Clinic"
+        ]
+      },
+      "patch": {
+        "operationId": "updateClinic",
+        "parameters": [
+          {
+            "name": "clinicId",
+            "required": true,
+            "in": "path",
+            "description": "Clinic ID",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateClinicDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Clinic updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Clinic"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Request failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Update a clinic",
+        "tags": [
+          "Clinic"
+        ]
+      }
+    },
+    "/api/v1/clinics/{clinicId}/insurance-plans": {
+      "get": {
+        "operationId": "listInsurancePlans",
+        "parameters": [
+          {
+            "name": "clinicId",
+            "required": true,
+            "in": "path",
+            "description": "Clinic ID",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Insurance plans",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/InsurancePlan"
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Request failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          }
+        },
+        "summary": "List insurance plans for a clinic",
+        "tags": [
+          "Clinic"
+        ]
+      },
+      "post": {
+        "operationId": "createInsurancePlan",
+        "parameters": [
+          {
+            "name": "clinicId",
+            "required": true,
+            "in": "path",
+            "description": "Clinic ID",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateInsurancePlanDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Insurance plan created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InsurancePlan"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Request failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Create an insurance plan for a clinic",
+        "tags": [
+          "Clinic"
+        ]
+      }
+    },
+    "/api/v1/clinic-members": {
+      "post": {
+        "operationId": "createClinicMember",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateClinicMemberDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Member created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClinicMember"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Request failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Adds a new member to a clinic",
+        "tags": [
+          "ClinicMember"
+        ]
+      },
+      "get": {
+        "operationId": "listClinicMembers",
+        "parameters": [
+          {
+            "name": "clinicId",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Members list",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ClinicMember"
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Request failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          }
+        },
+        "summary": "List members of a clinic",
+        "tags": [
+          "ClinicMember"
+        ]
+      }
+    },
+    "/api/v1/clinic-patient-accesses": {
+      "post": {
+        "operationId": "grantAccess",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GrantClinicPatientAccessDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Access granted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClinicPatientAccess"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Request failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Grant clinic-patient access to a member",
+        "tags": [
+          "ClinicPatientAccess"
+        ]
+      }
+    },
+    "/api/v1/clinic-patient-accesses/{memberId}/{patientId}": {
+      "delete": {
+        "operationId": "revokeAccess",
+        "parameters": [
+          {
+            "name": "memberId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "patientId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Access revoked"
+          },
+          "default": {
+            "description": "Request failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Revoke a member's access to a patient",
+        "tags": [
+          "ClinicPatientAccess"
+        ]
+      }
+    },
+    "/api/v1/document-permissions": {
+      "post": {
+        "operationId": "grantPermission",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GrantDocumentPermissionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Permission granted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DocumentPermission"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Request failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Grant or revoke a per-document permission",
+        "tags": [
+          "DocumentPermission"
+        ]
+      }
+    },
     "/api/v1/user/sign-up": {
       "post": {
         "operationId": "signUp",
@@ -1140,6 +1583,268 @@
         ]
       }
     },
+    "/api/v1/appointments/{id}/checkin": {
+      "patch": {
+        "operationId": "checkinAppointment",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Appointment ID",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Patient checked in",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Appointment"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Request failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Checks in a patient at the reception (SCHEDULED/CONFIRMED → ARRIVED)",
+        "tags": [
+          "Appointment"
+        ]
+      }
+    },
+    "/api/v1/appointments/{id}/call": {
+      "patch": {
+        "operationId": "callAppointment",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Appointment ID",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Patient called",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Appointment"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Request failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Calls the patient to the room (ARRIVED → IN_PROGRESS)",
+        "tags": [
+          "Appointment"
+        ]
+      }
+    },
+    "/api/v1/clinics/{clinicId}/reminders/pending": {
+      "get": {
+        "operationId": "listPendingReminders",
+        "parameters": [
+          {
+            "name": "clinicId",
+            "required": true,
+            "in": "path",
+            "description": "Clinic ID",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Pending reminders",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AppointmentReminder"
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Request failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Lists pending reminders due within the next 10 minutes for a clinic",
+        "tags": [
+          "Appointment Reminder"
+        ]
+      }
+    },
+    "/api/v1/clinics/{clinicId}/reminders/dispatch": {
+      "post": {
+        "operationId": "dispatchReminders",
+        "parameters": [
+          {
+            "name": "clinicId",
+            "required": true,
+            "in": "path",
+            "description": "Clinic ID",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Dispatch triggered"
+          },
+          "default": {
+            "description": "Request failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Manually triggers reminder dispatch for a clinic (due within next 10 minutes)",
+        "tags": [
+          "Appointment Reminder"
+        ]
+      }
+    },
+    "/api/v1/clinics/{clinicId}/reminder-config": {
+      "get": {
+        "operationId": "getReminderConfig",
+        "parameters": [
+          {
+            "name": "clinicId",
+            "required": true,
+            "in": "path",
+            "description": "Clinic ID",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Reminder config",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClinicReminderConfig"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Request failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Get reminder configuration for a clinic",
+        "tags": [
+          "Clinic Reminder Config"
+        ]
+      },
+      "put": {
+        "operationId": "upsertReminderConfig",
+        "parameters": [
+          {
+            "name": "clinicId",
+            "required": true,
+            "in": "path",
+            "description": "Clinic ID",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpsertReminderConfigDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Reminder config updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClinicReminderConfig"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Request failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Create or update reminder configuration for a clinic",
+        "tags": [
+          "Clinic Reminder Config"
+        ]
+      }
+    },
     "/api/v1/records": {
       "post": {
         "operationId": "createRecord",
@@ -1471,6 +2176,148 @@
           }
         },
         "summary": "Deletes a record",
+        "tags": [
+          "Record"
+        ]
+      }
+    },
+    "/api/v1/records/{id}/sign": {
+      "post": {
+        "operationId": "signRecord",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Record ID",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Record signed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Record"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Request failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Signs and locks a record",
+        "tags": [
+          "Record"
+        ]
+      }
+    },
+    "/api/v1/records/{id}/reopen": {
+      "post": {
+        "operationId": "reopenRecord",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Record ID",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReopenRecordBodyDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Record reopened",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Record"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Request failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Reopens a locked record with justification",
+        "tags": [
+          "Record"
+        ]
+      }
+    },
+    "/api/v1/records/{id}/amendments": {
+      "get": {
+        "operationId": "getRecordAmendments",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Record ID",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Amendments list",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/RecordAmendment"
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Request failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Lists amendments (reopen history) for a record",
         "tags": [
           "Record"
         ]
@@ -1922,17 +2769,7 @@
             "required": false,
             "in": "query",
             "schema": {
-              "type": "string",
-              "enum": [
-                "PSICOLOGIA",
-                "MEDICINA",
-                "FISIOTERAPIA",
-                "FONOAUDIOLOGIA",
-                "NUTRICAO",
-                "TERAPIA_OCUPACIONAL",
-                "ENFERMAGEM",
-                "OUTROS"
-              ]
+              "type": "string"
             }
           },
           {
@@ -1947,16 +2784,6 @@
                 "mine",
                 "all"
               ]
-            }
-          },
-          {
-            "name": "professionalId",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "format": "uuid",
-              "example": "dc5782d4-ce8e-4f95-bb0b-d1a4e130aee8",
-              "type": "string"
             }
           },
           {
@@ -2391,12 +3218,11 @@
             "schema": {
               "type": "string",
               "enum": [
-                "PSICOLOGIA",
-                "MEDICINA",
-                "FISIOTERAPIA",
-                "FONOAUDIOLOGIA",
-                "NUTRICAO",
-                "TERAPIA_OCUPACIONAL",
+                "SAUDE_MENTAL",
+                "REABILITACAO",
+                "MEDICINA_GERAL",
+                "MEDICINA_ESPECIALIZADA",
+                "NUTRICAO_DIETETICA",
                 "ENFERMAGEM",
                 "OUTROS"
               ]
@@ -2975,7 +3801,7 @@
             }
           },
           {
-            "name": "professionalId",
+            "name": "memberId",
             "required": true,
             "in": "query",
             "schema": {
@@ -3493,7 +4319,7 @@
     },
     "/api/v1/agents": {
       "get": {
-        "description": "Returns the versioned catalog of active clinical AI agent profiles. O agente ativo de uma sessão é selecionado automaticamente pelo backend com base na especialidade do profissional — não há seleção manual pelo usuário.",
+        "description": "Returns the versioned catalog of active clinical AI agent profiles. The active agent for a session is selected automatically server-side based on the member's specialty.",
         "operationId": "listAgents",
         "parameters": [],
         "responses": {
@@ -3527,23 +4353,23 @@
         ]
       }
     },
-    "/api/v1/agents/resolve/{professionalId}": {
+    "/api/v1/agents/resolve/{clinicMemberId}": {
       "get": {
-        "description": "Pré-visualiza o agente que seria selecionado automaticamente para o profissional informado. Use este endpoint para exibir \"Agente ativo: {agentName}\" antes de iniciar o chat.",
-        "operationId": "resolveAgentForProfessional",
+        "description": "Previews which agent would be picked automatically for the given member. Use this to render \"Active agent: {agentName}\" before starting a chat session.",
+        "operationId": "resolveAgentForMember",
         "parameters": [
           {
-            "name": "professionalId",
+            "name": "clinicMemberId",
             "required": true,
             "in": "path",
             "schema": {
-              "$ref": "#/components/schemas/ProfessionalId"
+              "$ref": "#/components/schemas/ClinicMemberId"
             }
           }
         ],
         "responses": {
           "200": {
-            "description": "Resolved agent profile for the professional",
+            "description": "Resolved agent profile for the member",
             "content": {
               "application/json": {
                 "schema": {
@@ -3563,7 +4389,7 @@
             }
           }
         },
-        "summary": "Resolves the AI agent that would be used for a given professional",
+        "summary": "Resolve the AI agent for a given clinic member",
         "tags": [
           "Agents"
         ]
@@ -3571,7 +4397,7 @@
     },
     "/api/v1/agents/mapping-rules": {
       "get": {
-        "description": "Retorna as regras de correspondência entre especialidade profissional e agente clínico. Útil para diagnóstico e documentação da lógica de resolução automática.",
+        "description": "Returns the rules matching member specialty to clinical agent. Useful for debugging the auto-resolution logic.",
         "operationId": "listMappingRules",
         "parameters": [],
         "responses": {
@@ -3709,7 +4535,7 @@
             }
           }
         },
-        "summary": "List pending proposals for the logged-in professional",
+        "summary": "List pending proposals for the actor's current clinic",
         "tags": [
           "Agent Proposals"
         ]
@@ -3807,6 +4633,2015 @@
           "Agent Proposals"
         ]
       }
+    },
+    "/api/v1/addons/catalog": {
+      "get": {
+        "operationId": "getAddonCatalog",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Catalog list",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AddonCatalogItem"
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Request failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          }
+        },
+        "summary": "List available add-on packages with prices and grants (public)",
+        "tags": [
+          "Subscription"
+        ]
+      }
+    },
+    "/api/v1/members/{memberId}/subscription": {
+      "get": {
+        "operationId": "getSubscription",
+        "parameters": [
+          {
+            "name": "memberId",
+            "required": true,
+            "in": "path",
+            "description": "Member ID",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Subscription found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProfessionalSubscription"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Subscription not found"
+          },
+          "default": {
+            "description": "Request failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Get active subscription for a professional member",
+        "tags": [
+          "Subscription"
+        ]
+      },
+      "patch": {
+        "operationId": "changePlan",
+        "parameters": [
+          {
+            "name": "memberId",
+            "required": true,
+            "in": "path",
+            "description": "Member ID",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChangePlanDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Plan updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProfessionalSubscription"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Not an admin or owner"
+          },
+          "404": {
+            "description": "Subscription not found"
+          },
+          "default": {
+            "description": "Request failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Change the plan for a professional member (admin/owner only)",
+        "tags": [
+          "Subscription"
+        ]
+      },
+      "delete": {
+        "operationId": "cancelSubscription",
+        "parameters": [
+          {
+            "name": "memberId",
+            "required": true,
+            "in": "path",
+            "description": "Member ID",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Subscription cancelled"
+          },
+          "403": {
+            "description": "Not authorized"
+          },
+          "404": {
+            "description": "Subscription not found"
+          },
+          "default": {
+            "description": "Request failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Cancel the Asaas subscription for a professional member",
+        "tags": [
+          "Payment"
+        ]
+      }
+    },
+    "/api/v1/members/{memberId}/usage": {
+      "get": {
+        "operationId": "getMemberUsage",
+        "parameters": [
+          {
+            "name": "memberId",
+            "required": true,
+            "in": "path",
+            "description": "Member ID",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Usage data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CurrentUsage"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Subscription not found"
+          },
+          "default": {
+            "description": "Request failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Get current period usage for a professional member",
+        "tags": [
+          "Subscription"
+        ]
+      }
+    },
+    "/api/v1/members/{memberId}/addons": {
+      "post": {
+        "operationId": "purchaseAddon",
+        "parameters": [
+          {
+            "name": "memberId",
+            "required": true,
+            "in": "path",
+            "description": "Member ID",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PurchaseAddonDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Add-on purchased; returns updated usage",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CurrentUsage"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid addon code or quantity"
+          },
+          "403": {
+            "description": "Not an admin or owner"
+          },
+          "404": {
+            "description": "Subscription not found"
+          },
+          "default": {
+            "description": "Request failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Purchase an add-on package for a professional member (admin/owner only)",
+        "tags": [
+          "Subscription"
+        ]
+      },
+      "get": {
+        "operationId": "getMemberAddons",
+        "parameters": [
+          {
+            "name": "memberId",
+            "required": true,
+            "in": "path",
+            "description": "Member ID",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Active add-ons",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ActiveAddonDto"
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Request failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          }
+        },
+        "summary": "List active add-ons for a professional member in the current month",
+        "tags": [
+          "Subscription"
+        ]
+      }
+    },
+    "/api/v1/clinics/{clinicId}/members/usage": {
+      "get": {
+        "operationId": "getClinicMembersUsage",
+        "parameters": [
+          {
+            "name": "clinicId",
+            "required": true,
+            "in": "path",
+            "description": "Clinic ID",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Clinic-wide usage breakdown",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClinicMembersUsageSummaryDto"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Request failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Get current usage for all professionals in a clinic with per-member details (admin/owner only)",
+        "tags": [
+          "Subscription"
+        ]
+      }
+    },
+    "/api/v1/clinics/{clinicId}/addons": {
+      "get": {
+        "operationId": "getClinicAddons",
+        "parameters": [
+          {
+            "name": "clinicId",
+            "required": true,
+            "in": "path",
+            "description": "Clinic ID",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Clinic-wide add-on breakdown",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/MemberActiveAddons"
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Request failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          }
+        },
+        "summary": "List active add-ons for all members in a clinic (admin/owner only)",
+        "tags": [
+          "Subscription"
+        ]
+      }
+    },
+    "/api/v1/clinics/{clinicId}/usage": {
+      "get": {
+        "operationId": "getClinicUsage",
+        "parameters": [
+          {
+            "name": "clinicId",
+            "required": true,
+            "in": "path",
+            "description": "Clinic ID",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Usage list",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/MemberUsageSummary"
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Request failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Get current usage for all professionals in a clinic (admin/owner only)",
+        "tags": [
+          "Subscription"
+        ]
+      }
+    },
+    "/api/v1/imported-documents/{id}/draft": {
+      "get": {
+        "operationId": "getDraft",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "ImportedDocument ID",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Draft evolution",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DraftEvolution"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Request failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Gets or initializes the AI draft for an imported document",
+        "tags": [
+          "ImportedDocument"
+        ]
+      },
+      "patch": {
+        "operationId": "updateDraft",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "ImportedDocument ID",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateDraftBodyDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Draft updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DraftEvolution"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Request failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Saves professional edits to the draft",
+        "tags": [
+          "ImportedDocument"
+        ]
+      }
+    },
+    "/api/v1/imported-documents/{id}/approve": {
+      "post": {
+        "operationId": "approveDraft",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "ImportedDocument ID",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Draft approved and Record created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DraftEvolution"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Request failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Approves the draft and creates the official Record",
+        "tags": [
+          "ImportedDocument"
+        ]
+      }
+    },
+    "/api/v1/clinical-documents": {
+      "post": {
+        "operationId": "createDraft",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateDraftDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Draft created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClinicalDocument"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Request failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Create a clinical document draft",
+        "tags": [
+          "ClinicalDocuments"
+        ]
+      }
+    },
+    "/api/v1/clinical-documents/{id}/generate": {
+      "post": {
+        "operationId": "generatePdf",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Document ID",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "PDF generated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClinicalDocument"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Request failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Generate PDF for a clinical document",
+        "tags": [
+          "ClinicalDocuments"
+        ]
+      }
+    },
+    "/api/v1/clinical-documents/{id}": {
+      "get": {
+        "operationId": "getDocument",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Document ID",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Clinical document",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClinicalDocument"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Request failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Get a clinical document by ID",
+        "tags": [
+          "ClinicalDocuments"
+        ]
+      },
+      "delete": {
+        "operationId": "cancelDocument",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Document ID",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Document cancelled",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClinicalDocument"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Request failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Cancel a clinical document",
+        "tags": [
+          "ClinicalDocuments"
+        ]
+      }
+    },
+    "/api/v1/patients/{patientId}/clinical-documents": {
+      "get": {
+        "operationId": "searchDocuments",
+        "parameters": [
+          {
+            "name": "patientId",
+            "required": true,
+            "in": "path",
+            "description": "Patient ID",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "type",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "PRESCRIPTION",
+                "PRESCRIPTION_SPECIAL",
+                "MEDICAL_CERTIFICATE",
+                "REFERRAL",
+                "EXAM_REQUEST"
+              ]
+            }
+          },
+          {
+            "name": "status",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "DRAFT",
+                "GENERATED",
+                "CANCELLED"
+              ]
+            }
+          },
+          {
+            "name": "page",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "minimum": 0,
+              "exclusiveMinimum": true,
+              "default": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "name": "limit",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "minimum": 0,
+              "maximum": 100,
+              "exclusiveMinimum": true,
+              "default": 20,
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Paginated list of clinical documents"
+          },
+          "default": {
+            "description": "Request failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          }
+        },
+        "summary": "List clinical documents for a patient",
+        "tags": [
+          "ClinicalDocuments"
+        ]
+      }
+    },
+    "/api/v1/clinics/{clinicId}/document-templates": {
+      "get": {
+        "operationId": "listTemplates",
+        "parameters": [
+          {
+            "name": "clinicId",
+            "required": true,
+            "in": "path",
+            "description": "Clinic ID",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of document templates",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ClinicalDocumentTemplate"
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Request failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          }
+        },
+        "summary": "List document templates for a clinic",
+        "tags": [
+          "ClinicalDocuments"
+        ]
+      }
+    },
+    "/api/v1/clinics/{clinicId}/document-templates/{type}": {
+      "put": {
+        "operationId": "upsertTemplate",
+        "parameters": [
+          {
+            "name": "clinicId",
+            "required": true,
+            "in": "path",
+            "description": "Clinic ID",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "type",
+            "required": true,
+            "in": "path",
+            "description": "Document type",
+            "schema": {
+              "enum": [
+                "PRESCRIPTION",
+                "PRESCRIPTION_SPECIAL",
+                "MEDICAL_CERTIFICATE",
+                "REFERRAL",
+                "EXAM_REQUEST"
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpsertTemplateDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Template upserted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClinicalDocumentTemplate"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Request failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Create or update a document template for a clinic",
+        "tags": [
+          "ClinicalDocuments"
+        ]
+      }
+    },
+    "/api/v1/members/{memberId}/billing-report": {
+      "get": {
+        "operationId": "getMemberBillingReport",
+        "parameters": [
+          {
+            "name": "memberId",
+            "required": true,
+            "in": "path",
+            "description": "Member ID",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "year",
+            "required": true,
+            "in": "query",
+            "description": "Year (e.g. 2026)",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "month",
+            "required": true,
+            "in": "query",
+            "description": "Month 1-12",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Billing report",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MemberBillingReport"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid or future period"
+          },
+          "403": {
+            "description": "Not authorized to view this report"
+          },
+          "404": {
+            "description": "Member or subscription not found"
+          },
+          "default": {
+            "description": "Request failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Get billing cost report for a professional member",
+        "tags": [
+          "Billing"
+        ]
+      }
+    },
+    "/api/v1/clinics/{clinicId}/billing-report": {
+      "get": {
+        "operationId": "getClinicBillingReport",
+        "parameters": [
+          {
+            "name": "clinicId",
+            "required": true,
+            "in": "path",
+            "description": "Clinic ID",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "year",
+            "required": true,
+            "in": "query",
+            "description": "Year (e.g. 2026)",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "month",
+            "required": true,
+            "in": "query",
+            "description": "Month 1-12",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Clinic billing report",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClinicBillingReport"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid or future period"
+          },
+          "403": {
+            "description": "Not authorized to view clinic billing data"
+          },
+          "404": {
+            "description": "Clinic not found"
+          },
+          "default": {
+            "description": "Request failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Get aggregated billing cost report for all professionals in a clinic (admin/owner only)",
+        "tags": [
+          "Billing"
+        ]
+      }
+    },
+    "/api/v1/members/{memberId}/subscription/activate": {
+      "post": {
+        "operationId": "activateSubscription",
+        "parameters": [
+          {
+            "name": "memberId",
+            "required": true,
+            "in": "path",
+            "description": "Member ID",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ActivateSubscriptionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Subscription activated"
+          },
+          "403": {
+            "description": "Not authorized"
+          },
+          "404": {
+            "description": "Subscription not found"
+          },
+          "default": {
+            "description": "Request failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Activate a recurring subscription for a professional member via Asaas",
+        "tags": [
+          "Payment"
+        ]
+      }
+    },
+    "/api/v1/members/{memberId}/subscription/plan": {
+      "patch": {
+        "operationId": "changePlan",
+        "parameters": [
+          {
+            "name": "memberId",
+            "required": true,
+            "in": "path",
+            "description": "Member ID",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChangePaymentPlanDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Plan changed"
+          },
+          "403": {
+            "description": "Not authorized"
+          },
+          "404": {
+            "description": "Subscription not found"
+          },
+          "default": {
+            "description": "Request failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Change the plan for a member — cancels current Asaas subscription and creates new one",
+        "tags": [
+          "Payment"
+        ]
+      }
+    },
+    "/api/v1/members/{memberId}/subscription/payments": {
+      "get": {
+        "operationId": "listPayments",
+        "parameters": [
+          {
+            "name": "memberId",
+            "required": true,
+            "in": "path",
+            "description": "Member ID",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Payment history",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PaymentEvent"
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Not authorized"
+          },
+          "404": {
+            "description": "Subscription not found"
+          },
+          "default": {
+            "description": "Request failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          }
+        },
+        "summary": "List payment events for a professional member (most recent first)",
+        "tags": [
+          "Payment"
+        ]
+      }
+    },
+    "/api/v1/webhooks/asaas": {
+      "post": {
+        "operationId": "handleAsaasWebhook",
+        "parameters": [
+          {
+            "name": "asaas-access-token",
+            "required": true,
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Processed"
+          },
+          "401": {
+            "description": "Invalid webhook token"
+          },
+          "default": {
+            "description": "Request failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Asaas payment webhook receiver",
+        "tags": [
+          "Webhooks"
+        ]
+      }
+    },
+    "/api/v1/appointments/{id}/payment": {
+      "post": {
+        "operationId": "registerPayment",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Appointment ID",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterPaymentDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Payment registered",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AppointmentPayment"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input or INSURANCE without insurancePlanId"
+          },
+          "409": {
+            "description": "Payment already registered for this appointment"
+          },
+          "default": {
+            "description": "Request failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Register payment for a completed appointment",
+        "tags": [
+          "Appointment Payment"
+        ]
+      },
+      "patch": {
+        "operationId": "updatePaymentStatus",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Appointment ID",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdatePaymentStatusDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Payment updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AppointmentPayment"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Appointment or payment not found"
+          },
+          "default": {
+            "description": "Request failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Update payment status for an appointment",
+        "tags": [
+          "Appointment Payment"
+        ]
+      },
+      "get": {
+        "operationId": "getPaymentByAppointment",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Appointment ID",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Payment found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AppointmentPayment"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Appointment or payment not found"
+          },
+          "default": {
+            "description": "Request failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Get payment for an appointment",
+        "tags": [
+          "Appointment Payment"
+        ]
+      }
+    },
+    "/api/v1/clinics/{clinicId}/financial/report": {
+      "get": {
+        "operationId": "getRevenueReport",
+        "parameters": [
+          {
+            "name": "clinicId",
+            "required": true,
+            "in": "path",
+            "description": "Clinic ID",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "startDate",
+            "required": true,
+            "in": "query",
+            "description": "Start date ISO8601",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "endDate",
+            "required": true,
+            "in": "query",
+            "description": "End date ISO8601",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "professionalMemberId",
+            "required": false,
+            "in": "query",
+            "description": "Filter by professional member ID",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "paymentMethod",
+            "required": false,
+            "in": "query",
+            "description": "Filter by payment method",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "CASH",
+                "PIX",
+                "CREDIT_CARD",
+                "DEBIT_CARD",
+                "BANK_TRANSFER",
+                "INSURANCE",
+                "COURTESY"
+              ]
+            }
+          },
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "description": "Filter by payment status",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "PENDING",
+                "PAID",
+                "EXEMPT",
+                "REFUNDED"
+              ]
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "description": "Page number (default 1)",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "pageSize",
+            "required": false,
+            "in": "query",
+            "description": "Page size (default 50)",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Revenue report",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RevenueReport"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid date range"
+          },
+          "404": {
+            "description": "Clinic not found"
+          },
+          "default": {
+            "description": "Request failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Get revenue report for a clinic",
+        "tags": [
+          "Financial Report"
+        ]
+      }
+    },
+    "/api/v1/clinics/{clinicId}/financial/summary": {
+      "get": {
+        "operationId": "getRevenueSummary",
+        "parameters": [
+          {
+            "name": "clinicId",
+            "required": true,
+            "in": "path",
+            "description": "Clinic ID",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "startDate",
+            "required": true,
+            "in": "query",
+            "description": "Start date ISO8601",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "endDate",
+            "required": true,
+            "in": "query",
+            "description": "End date ISO8601",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "professionalMemberId",
+            "required": false,
+            "in": "query",
+            "description": "Filter by professional member ID",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "paymentMethod",
+            "required": false,
+            "in": "query",
+            "description": "Filter by payment method",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "CASH",
+                "PIX",
+                "CREDIT_CARD",
+                "DEBIT_CARD",
+                "BANK_TRANSFER",
+                "INSURANCE",
+                "COURTESY"
+              ]
+            }
+          },
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "description": "Filter by payment status",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "PENDING",
+                "PAID",
+                "EXEMPT",
+                "REFUNDED"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Revenue summary",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RevenueSummaryReport"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid date range"
+          },
+          "404": {
+            "description": "Clinic not found"
+          },
+          "default": {
+            "description": "Request failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Get revenue summary for a clinic (dashboard)",
+        "tags": [
+          "Financial Report"
+        ]
+      }
+    },
+    "/api/v1/members/{memberId}/working-hours": {
+      "post": {
+        "operationId": "upsert",
+        "parameters": [
+          {
+            "name": "memberId",
+            "required": true,
+            "in": "path",
+            "description": "Member ID",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpsertWorkingHoursDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Working hours upserted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkingHours"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Request failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Creates or updates the working hours for a day",
+        "tags": [
+          "WorkingHours"
+        ]
+      },
+      "get": {
+        "operationId": "list",
+        "parameters": [
+          {
+            "name": "memberId",
+            "required": true,
+            "in": "path",
+            "description": "Member ID",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Working hours list",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/WorkingHours"
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Request failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Lists all working hours for a member",
+        "tags": [
+          "WorkingHours"
+        ]
+      }
+    },
+    "/api/v1/members/{memberId}/working-hours/{hoursId}": {
+      "delete": {
+        "operationId": "delete",
+        "parameters": [
+          {
+            "name": "memberId",
+            "required": true,
+            "in": "path",
+            "description": "Member ID",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "hoursId",
+            "required": true,
+            "in": "path",
+            "description": "Working Hours ID",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Working hours deleted"
+          },
+          "default": {
+            "description": "Request failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Deletes a working hours entry",
+        "tags": [
+          "WorkingHours"
+        ]
+      }
+    },
+    "/api/v1/members/{memberId}/blocks": {
+      "post": {
+        "operationId": "create",
+        "parameters": [
+          {
+            "name": "memberId",
+            "required": true,
+            "in": "path",
+            "description": "Member ID",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateMemberBlockDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Block created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MemberBlock"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Request failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Creates a schedule block for a member",
+        "tags": [
+          "MemberBlock"
+        ]
+      },
+      "get": {
+        "operationId": "list",
+        "parameters": [
+          {
+            "name": "memberId",
+            "required": true,
+            "in": "path",
+            "description": "Member ID",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "startAt",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "nullable": true,
+              "type": "string"
+            }
+          },
+          {
+            "name": "endAt",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "nullable": true,
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of blocks",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/MemberBlock"
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Request failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Lists schedule blocks for a member",
+        "tags": [
+          "MemberBlock"
+        ]
+      }
+    },
+    "/api/v1/members/{memberId}/blocks/{blockId}": {
+      "delete": {
+        "operationId": "delete",
+        "parameters": [
+          {
+            "name": "memberId",
+            "required": true,
+            "in": "path",
+            "description": "Member ID",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "blockId",
+            "required": true,
+            "in": "path",
+            "description": "Block ID",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Block deleted"
+          },
+          "default": {
+            "description": "Request failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Deletes a schedule block",
+        "tags": [
+          "MemberBlock"
+        ]
+      }
     }
   },
   "info": {
@@ -3901,12 +6736,6 @@
       "SignInDto": {
         "type": "object",
         "properties": {
-          "professionalId": {
-            "type": "string",
-            "nullable": true,
-            "format": "uuid",
-            "example": "dc5782d4-ce8e-4f95-bb0b-d1a4e130aee8"
-          },
           "username": {
             "type": "string",
             "example": "john_doe"
@@ -3920,6 +6749,663 @@
         "required": [
           "username",
           "password"
+        ]
+      },
+      "CreateClinicDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 255
+          },
+          "documentId": {
+            "type": "string",
+            "nullable": true
+          },
+          "phone": {
+            "type": "string",
+            "nullable": true
+          },
+          "email": {
+            "type": "string",
+            "nullable": true,
+            "format": "email"
+          },
+          "isPersonalClinic": {
+            "type": "boolean",
+            "default": false
+          },
+          "street": {
+            "type": "string",
+            "nullable": true
+          },
+          "number": {
+            "type": "string",
+            "nullable": true
+          },
+          "complement": {
+            "type": "string",
+            "nullable": true
+          },
+          "neighborhood": {
+            "type": "string",
+            "nullable": true
+          },
+          "city": {
+            "type": "string",
+            "nullable": true
+          },
+          "state": {
+            "type": "string",
+            "nullable": true
+          },
+          "zipCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "country": {
+            "type": "string",
+            "nullable": true
+          },
+          "logoUrl": {
+            "type": "string",
+            "nullable": true,
+            "format": "uri"
+          },
+          "clinicSpecialties": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "SAUDE_MENTAL",
+                "REABILITACAO",
+                "MEDICINA_GERAL",
+                "MEDICINA_ESPECIALIZADA",
+                "NUTRICAO_DIETETICA",
+                "ENFERMAGEM",
+                "OUTROS"
+              ]
+            }
+          }
+        },
+        "required": [
+          "name"
+        ]
+      },
+      "Clinic": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "The unique identifier of the entity"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "The date and time the entity was created"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "The date and time the entity was last updated"
+          },
+          "name": {
+            "type": "string",
+            "description": "Clinic name",
+            "example": "Clínica Saúde Total"
+          },
+          "documentId": {
+            "type": "object",
+            "nullable": true,
+            "description": "CNPJ/CPF",
+            "example": "12.345.678/0001-90"
+          },
+          "phone": {
+            "type": "object",
+            "nullable": true,
+            "description": "Phone"
+          },
+          "email": {
+            "type": "object",
+            "nullable": true,
+            "description": "Email"
+          },
+          "isPersonalClinic": {
+            "type": "boolean",
+            "description": "true = autônomo (sem equipe). Front esconde menus de membros."
+          },
+          "street": {
+            "type": "object",
+            "nullable": true,
+            "description": "Street name"
+          },
+          "number": {
+            "type": "object",
+            "nullable": true,
+            "description": "Street number"
+          },
+          "complement": {
+            "type": "object",
+            "nullable": true,
+            "description": "Address complement"
+          },
+          "neighborhood": {
+            "type": "object",
+            "nullable": true,
+            "description": "Neighborhood"
+          },
+          "city": {
+            "type": "object",
+            "nullable": true,
+            "description": "City"
+          },
+          "state": {
+            "type": "object",
+            "nullable": true,
+            "description": "State"
+          },
+          "zipCode": {
+            "type": "object",
+            "nullable": true,
+            "description": "Zip code"
+          },
+          "country": {
+            "type": "object",
+            "nullable": true,
+            "description": "Country code",
+            "example": "BR"
+          },
+          "logoUrl": {
+            "type": "object",
+            "nullable": true,
+            "description": "Logo URL"
+          },
+          "clinicSpecialties": {
+            "type": "array",
+            "description": "Specialties offered by the clinic",
+            "items": {
+              "type": "string",
+              "enum": [
+                "SAUDE_MENTAL",
+                "REABILITACAO",
+                "MEDICINA_GERAL",
+                "MEDICINA_ESPECIALIZADA",
+                "NUTRICAO_DIETETICA",
+                "ENFERMAGEM",
+                "OUTROS"
+              ]
+            }
+          }
+        },
+        "required": [
+          "id",
+          "createdAt",
+          "updatedAt",
+          "name",
+          "documentId",
+          "phone",
+          "email",
+          "isPersonalClinic",
+          "street",
+          "number",
+          "complement",
+          "neighborhood",
+          "city",
+          "state",
+          "zipCode",
+          "country",
+          "logoUrl",
+          "clinicSpecialties"
+        ]
+      },
+      "UpdateClinicDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 255
+          },
+          "phone": {
+            "type": "string",
+            "nullable": true
+          },
+          "email": {
+            "type": "string",
+            "nullable": true,
+            "format": "email"
+          },
+          "street": {
+            "type": "string",
+            "nullable": true
+          },
+          "number": {
+            "type": "string",
+            "nullable": true
+          },
+          "complement": {
+            "type": "string",
+            "nullable": true
+          },
+          "neighborhood": {
+            "type": "string",
+            "nullable": true
+          },
+          "city": {
+            "type": "string",
+            "nullable": true
+          },
+          "state": {
+            "type": "string",
+            "nullable": true
+          },
+          "zipCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "country": {
+            "type": "string",
+            "nullable": true
+          },
+          "logoUrl": {
+            "type": "string",
+            "nullable": true,
+            "format": "uri"
+          },
+          "clinicSpecialties": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "SAUDE_MENTAL",
+                "REABILITACAO",
+                "MEDICINA_GERAL",
+                "MEDICINA_ESPECIALIZADA",
+                "NUTRICAO_DIETETICA",
+                "ENFERMAGEM",
+                "OUTROS"
+              ]
+            }
+          }
+        },
+        "required": [
+          "name",
+          "phone",
+          "email",
+          "street",
+          "number",
+          "complement",
+          "neighborhood",
+          "city",
+          "state",
+          "zipCode",
+          "country",
+          "logoUrl",
+          "clinicSpecialties"
+        ]
+      },
+      "InsurancePlan": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "The unique identifier of the entity"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "The date and time the entity was created"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "The date and time the entity was last updated"
+          },
+          "clinicId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Clinic this plan belongs to"
+          },
+          "name": {
+            "type": "string",
+            "description": "Plan name",
+            "example": "Unimed"
+          },
+          "code": {
+            "type": "object",
+            "nullable": true,
+            "description": "Internal or TISS code",
+            "example": "UNI-001"
+          },
+          "isActive": {
+            "type": "boolean",
+            "description": "Whether the plan is active"
+          }
+        },
+        "required": [
+          "id",
+          "createdAt",
+          "updatedAt",
+          "clinicId",
+          "name",
+          "code",
+          "isActive"
+        ]
+      },
+      "CreateInsurancePlanDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 255,
+            "example": "Unimed"
+          },
+          "code": {
+            "type": "string",
+            "nullable": true,
+            "example": "UNI-001"
+          }
+        },
+        "required": [
+          "name"
+        ]
+      },
+      "CreateClinicMemberDto": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "OWNER",
+              "ADMIN",
+              "PROFESSIONAL",
+              "SECRETARY",
+              "VIEWER"
+            ]
+          },
+          "displayName": {
+            "type": "string",
+            "nullable": true
+          },
+          "color": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "userId",
+          "role"
+        ]
+      },
+      "ClinicMember": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "The unique identifier of the entity"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "The date and time the entity was created"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "The date and time the entity was last updated"
+          },
+          "clinicId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Clinic id"
+          },
+          "userId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "User id"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "OWNER",
+              "ADMIN",
+              "PROFESSIONAL",
+              "SECRETARY",
+              "VIEWER"
+            ],
+            "description": "Role inside the clinic"
+          },
+          "displayName": {
+            "type": "object",
+            "nullable": true,
+            "description": "Display name (UI label)"
+          },
+          "color": {
+            "type": "object",
+            "nullable": true,
+            "description": "Calendar color"
+          },
+          "isActive": {
+            "type": "boolean",
+            "description": "Is the membership active"
+          },
+          "invitedByMemberId": {
+            "type": "object",
+            "format": "uuid",
+            "nullable": true,
+            "description": "Inviter member id"
+          }
+        },
+        "required": [
+          "id",
+          "createdAt",
+          "updatedAt",
+          "clinicId",
+          "userId",
+          "role",
+          "displayName",
+          "color",
+          "isActive",
+          "invitedByMemberId"
+        ]
+      },
+      "GrantClinicPatientAccessDto": {
+        "type": "object",
+        "properties": {
+          "memberId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "patientId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "accessLevel": {
+            "type": "string",
+            "enum": [
+              "FULL",
+              "READ_ONLY",
+              "REGISTER_ONLY",
+              "NONE"
+            ]
+          },
+          "reason": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "memberId",
+          "patientId",
+          "accessLevel"
+        ]
+      },
+      "ClinicPatientAccess": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "The unique identifier of the entity"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "The date and time the entity was created"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "The date and time the entity was last updated"
+          },
+          "clinicId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "memberId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "patientId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "accessLevel": {
+            "type": "string",
+            "enum": [
+              "FULL",
+              "READ_ONLY",
+              "REGISTER_ONLY",
+              "NONE"
+            ]
+          },
+          "reason": {
+            "type": "object",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "createdAt",
+          "updatedAt",
+          "clinicId",
+          "memberId",
+          "patientId",
+          "accessLevel",
+          "reason"
+        ]
+      },
+      "GrantDocumentPermissionDto": {
+        "type": "object",
+        "properties": {
+          "memberId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "entityType": {
+            "type": "string",
+            "enum": [
+              "RECORD",
+              "FILE",
+              "IMPORTED_DOCUMENT",
+              "PATIENT_FORM",
+              "CLINICAL_PROFILE",
+              "PATIENT_ALERT"
+            ]
+          },
+          "entityId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "canView": {
+            "type": "boolean"
+          },
+          "reason": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "memberId",
+          "entityType",
+          "entityId",
+          "canView"
+        ]
+      },
+      "DocumentPermission": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "The unique identifier of the entity"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "The date and time the entity was created"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "The date and time the entity was last updated"
+          },
+          "clinicId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "memberId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "entityType": {
+            "type": "string",
+            "enum": [
+              "RECORD",
+              "FILE",
+              "IMPORTED_DOCUMENT",
+              "PATIENT_FORM",
+              "CLINICAL_PROFILE",
+              "PATIENT_ALERT"
+            ]
+          },
+          "entityId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "canView": {
+            "type": "boolean"
+          },
+          "grantedByMemberId": {
+            "type": "object",
+            "format": "uuid",
+            "nullable": true
+          },
+          "reason": {
+            "type": "object",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "createdAt",
+          "updatedAt",
+          "clinicId",
+          "memberId",
+          "entityType",
+          "entityId",
+          "canView",
+          "grantedByMemberId",
+          "reason"
         ]
       },
       "SignUpUserDto": {
@@ -4049,58 +7535,34 @@
       "CreateProfessionalDto": {
         "type": "object",
         "properties": {
-          "name": {
-            "type": "string",
-            "minLength": 1,
-            "example": "Dr. Jane Smith"
-          },
-          "documentId": {
-            "type": "string",
-            "example": "123.456.789-00"
-          },
-          "phone": {
+          "registrationNumber": {
             "type": "string",
             "nullable": true,
-            "example": "(12) 94567-8912"
-          },
-          "gender": {
-            "type": "string",
-            "nullable": true,
-            "enum": [
-              "MALE",
-              "FEMALE",
-              "OTHER"
-            ]
-          },
-          "personType": {
-            "type": "string",
-            "enum": [
-              "NATURAL",
-              "LEGAL"
-            ]
+            "example": "CRM-SP 12345"
           },
           "specialty": {
             "type": "string",
-            "minLength": 1,
+            "nullable": true,
             "example": "Cardiology"
           },
-          "userId": {
+          "specialtyNormalized": {
             "type": "string",
             "nullable": true,
-            "format": "uuid",
-            "example": "dc5782d4-ce8e-4f95-bb0b-d1a4e130aee8"
-          },
-          "color": {
-            "type": "string",
-            "nullable": true,
-            "description": "Display color for the professional",
-            "example": "#3B82F6"
+            "enum": [
+              "SAUDE_MENTAL",
+              "REABILITACAO",
+              "MEDICINA_GERAL",
+              "MEDICINA_ESPECIALIZADA",
+              "NUTRICAO_DIETETICA",
+              "ENFERMAGEM",
+              "OUTROS"
+            ]
           }
         },
         "required": [
-          "name",
-          "documentId",
-          "specialty"
+          "registrationNumber",
+          "specialty",
+          "specialtyNormalized"
         ]
       },
       "Professional": {
@@ -4121,101 +7583,78 @@
             "format": "date-time",
             "description": "The date and time the entity was last updated"
           },
-          "name": {
+          "clinicMemberId": {
             "type": "string",
-            "description": "The professional name",
-            "example": "Dr. Jane Smith"
+            "format": "uuid",
+            "description": "The clinic member that owns this professional record"
           },
-          "documentId": {
-            "type": "string",
-            "description": "The professional document ID",
-            "example": "123.456.789-00"
-          },
-          "phone": {
+          "registrationNumber": {
             "type": "object",
             "nullable": true,
-            "description": "The professional phone",
-            "example": "(12) 94567-8912"
-          },
-          "gender": {
-            "type": "string",
-            "enum": [
-              "MALE",
-              "FEMALE",
-              "OTHER"
-            ],
-            "nullable": true,
-            "description": "The professional gender"
-          },
-          "personType": {
-            "type": "string",
-            "enum": [
-              "NATURAL",
-              "LEGAL"
-            ],
-            "description": "The person type"
-          },
-          "profiles": {
-            "type": "array",
-            "description": "The professional profiles",
-            "items": {
-              "type": "string",
-              "enum": [
-                "PATIENT",
-                "PROFESSIONAL"
-              ]
-            }
+            "description": "Professional registration number (CRM, CRP, etc.)"
           },
           "specialty": {
-            "type": "string",
-            "description": "The professional specialty",
+            "type": "object",
+            "nullable": true,
+            "description": "Free-form specialty",
             "example": "Cardiology"
           },
-          "configId": {
+          "specialtyNormalized": {
             "type": "string",
-            "format": "uuid",
-            "description": "The professional config ID"
-          },
-          "userId": {
-            "type": "object",
-            "format": "uuid",
+            "enum": [
+              "SAUDE_MENTAL",
+              "REABILITACAO",
+              "MEDICINA_GERAL",
+              "MEDICINA_ESPECIALIZADA",
+              "NUTRICAO_DIETETICA",
+              "ENFERMAGEM",
+              "OUTROS"
+            ],
             "nullable": true,
-            "description": "The associated user ID"
+            "description": "Normalized specialty group"
           }
         },
         "required": [
           "id",
           "createdAt",
           "updatedAt",
-          "name",
-          "documentId",
-          "phone",
-          "gender",
-          "personType",
-          "profiles",
+          "clinicMemberId",
+          "registrationNumber",
           "specialty",
-          "configId",
-          "userId"
+          "specialtyNormalized"
         ]
       },
       "UpdateProfessionalInputDto": {
         "type": "object",
         "properties": {
-          "specialty": {
-            "type": "string",
-            "minLength": 1,
-            "example": "Neurology"
-          },
-          "userId": {
+          "registrationNumber": {
             "type": "string",
             "nullable": true,
-            "format": "uuid",
-            "example": "dc5782d4-ce8e-4f95-bb0b-d1a4e130aee8"
+            "example": "CRM-SP 12345"
+          },
+          "specialty": {
+            "type": "string",
+            "nullable": true,
+            "example": "Neurology"
+          },
+          "specialtyNormalized": {
+            "type": "string",
+            "nullable": true,
+            "enum": [
+              "SAUDE_MENTAL",
+              "REABILITACAO",
+              "MEDICINA_GERAL",
+              "MEDICINA_ESPECIALIZADA",
+              "NUTRICAO_DIETETICA",
+              "ENFERMAGEM",
+              "OUTROS"
+            ]
           }
         },
         "required": [
+          "registrationNumber",
           "specialty",
-          "userId"
+          "specialtyNormalized"
         ]
       },
       "CreatePatientDto": {
@@ -4251,12 +7690,6 @@
               "LEGAL"
             ]
           },
-          "professionalId": {
-            "type": "string",
-            "nullable": true,
-            "format": "uuid",
-            "example": "dc5782d4-ce8e-4f95-bb0b-d1a4e130aee8"
-          },
           "birthDate": {
             "type": "string",
             "nullable": true,
@@ -4278,11 +7711,139 @@
             "type": "string",
             "nullable": true,
             "example": "(12) 94567-8912"
+          },
+          "address": {
+            "type": "object",
+            "nullable": true,
+            "properties": {
+              "street": {
+                "type": "string",
+                "nullable": true
+              },
+              "number": {
+                "type": "string",
+                "nullable": true
+              },
+              "complement": {
+                "type": "string",
+                "nullable": true
+              },
+              "neighborhood": {
+                "type": "string",
+                "nullable": true
+              },
+              "city": {
+                "type": "string",
+                "nullable": true
+              },
+              "state": {
+                "type": "string",
+                "nullable": true
+              },
+              "zipCode": {
+                "type": "string",
+                "nullable": true
+              },
+              "country": {
+                "type": "string",
+                "nullable": true
+              }
+            }
+          },
+          "insurancePlanId": {
+            "type": "string",
+            "nullable": true,
+            "format": "uuid"
+          },
+          "insuranceCardNumber": {
+            "type": "string",
+            "nullable": true
+          },
+          "insuranceValidUntil": {
+            "type": "string",
+            "nullable": true,
+            "format": "date-time",
+            "description": "A datetime in ISO 8601 format."
           }
         },
         "required": [
           "name",
           "documentId"
+        ]
+      },
+      "PatientAddressDto": {
+        "type": "object",
+        "properties": {
+          "street": {
+            "type": "object",
+            "nullable": true
+          },
+          "number": {
+            "type": "object",
+            "nullable": true
+          },
+          "complement": {
+            "type": "object",
+            "nullable": true
+          },
+          "neighborhood": {
+            "type": "object",
+            "nullable": true
+          },
+          "city": {
+            "type": "object",
+            "nullable": true
+          },
+          "state": {
+            "type": "object",
+            "nullable": true
+          },
+          "zipCode": {
+            "type": "object",
+            "nullable": true
+          },
+          "country": {
+            "type": "object",
+            "nullable": true,
+            "example": "BR"
+          }
+        },
+        "required": [
+          "street",
+          "number",
+          "complement",
+          "neighborhood",
+          "city",
+          "state",
+          "zipCode",
+          "country"
+        ]
+      },
+      "PatientInsurancePlanDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string",
+            "example": "Unimed"
+          },
+          "code": {
+            "type": "object",
+            "nullable": true,
+            "example": "UNI-001"
+          },
+          "isActive": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "code",
+          "isActive"
         ]
       },
       "Patient": {
@@ -4337,22 +7898,10 @@
             ],
             "description": "The person type"
           },
-          "profiles": {
-            "type": "array",
-            "description": "The patient profiles",
-            "items": {
-              "type": "string",
-              "enum": [
-                "PATIENT",
-                "PROFESSIONAL"
-              ]
-            }
-          },
-          "professionalId": {
-            "type": "object",
+          "clinicId": {
+            "type": "string",
             "format": "uuid",
-            "nullable": true,
-            "description": "The associated professional ID"
+            "description": "The clinic this patient belongs to"
           },
           "birthDate": {
             "type": "object",
@@ -4374,6 +7923,41 @@
             "type": "object",
             "nullable": true,
             "description": "Emergency contact phone"
+          },
+          "address": {
+            "nullable": true,
+            "description": "Patient address",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PatientAddressDto"
+              }
+            ]
+          },
+          "insurancePlanId": {
+            "type": "object",
+            "nullable": true,
+            "format": "uuid",
+            "description": "Insurance plan ID"
+          },
+          "insuranceCardNumber": {
+            "type": "object",
+            "nullable": true,
+            "description": "Insurance card number"
+          },
+          "insuranceValidUntil": {
+            "type": "object",
+            "nullable": true,
+            "format": "date-time",
+            "description": "Insurance valid until"
+          },
+          "insurancePlan": {
+            "nullable": true,
+            "description": "Insurance plan details",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PatientInsurancePlanDto"
+              }
+            ]
           }
         },
         "required": [
@@ -4385,12 +7969,16 @@
           "phone",
           "gender",
           "personType",
-          "profiles",
-          "professionalId",
+          "clinicId",
           "birthDate",
           "email",
           "emergencyContactName",
-          "emergencyContactPhone"
+          "emergencyContactPhone",
+          "address",
+          "insurancePlanId",
+          "insuranceCardNumber",
+          "insuranceValidUntil",
+          "insurancePlan"
         ]
       },
       "UpdatePatientInputDto": {
@@ -4436,6 +8024,59 @@
             "type": "string",
             "nullable": true,
             "example": "(12) 94567-8912"
+          },
+          "address": {
+            "type": "object",
+            "nullable": true,
+            "properties": {
+              "street": {
+                "type": "string",
+                "nullable": true
+              },
+              "number": {
+                "type": "string",
+                "nullable": true
+              },
+              "complement": {
+                "type": "string",
+                "nullable": true
+              },
+              "neighborhood": {
+                "type": "string",
+                "nullable": true
+              },
+              "city": {
+                "type": "string",
+                "nullable": true
+              },
+              "state": {
+                "type": "string",
+                "nullable": true
+              },
+              "zipCode": {
+                "type": "string",
+                "nullable": true
+              },
+              "country": {
+                "type": "string",
+                "nullable": true
+              }
+            }
+          },
+          "insurancePlanId": {
+            "type": "string",
+            "nullable": true,
+            "format": "uuid"
+          },
+          "insuranceCardNumber": {
+            "type": "string",
+            "nullable": true
+          },
+          "insuranceValidUntil": {
+            "type": "string",
+            "nullable": true,
+            "format": "date-time",
+            "description": "A datetime in ISO 8601 format."
           }
         },
         "required": [
@@ -4445,7 +8086,11 @@
           "birthDate",
           "email",
           "emergencyContactName",
-          "emergencyContactPhone"
+          "emergencyContactPhone",
+          "address",
+          "insurancePlanId",
+          "insuranceCardNumber",
+          "insuranceValidUntil"
         ]
       },
       "CreateAppointmentDto": {
@@ -4456,7 +8101,7 @@
             "format": "uuid",
             "example": "dc5782d4-ce8e-4f95-bb0b-d1a4e130aee8"
           },
-          "professionalId": {
+          "attendedByMemberId": {
             "type": "string",
             "format": "uuid",
             "example": "dc5782d4-ce8e-4f95-bb0b-d1a4e130aee8"
@@ -4492,11 +8137,21 @@
         },
         "required": [
           "patientId",
-          "professionalId",
+          "attendedByMemberId",
           "startAt",
           "endAt",
           "type"
         ]
+      },
+      "AppointmentPaymentStatus": {
+        "type": "string",
+        "enum": [
+          "PENDING",
+          "PAID",
+          "EXEMPT",
+          "REFUNDED"
+        ],
+        "description": "Financial status of the appointment payment, null if no payment registered"
       },
       "Appointment": {
         "type": "object",
@@ -4516,15 +8171,25 @@
             "format": "date-time",
             "description": "The date and time the entity was last updated"
           },
+          "clinicId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "The clinic this appointment belongs to"
+          },
           "patientId": {
             "type": "string",
             "format": "uuid",
             "description": "The patient ID"
           },
-          "professionalId": {
+          "attendedByMemberId": {
             "type": "string",
             "format": "uuid",
-            "description": "The professional ID"
+            "description": "ClinicMember scheduled to attend"
+          },
+          "createdByMemberId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "ClinicMember who created/scheduled the appointment"
           },
           "startAt": {
             "type": "string",
@@ -4558,7 +8223,9 @@
               "CONFIRMED",
               "CANCELLED",
               "COMPLETED",
-              "NO_SHOW"
+              "NO_SHOW",
+              "ARRIVED",
+              "IN_PROGRESS"
             ],
             "description": "The appointment status"
           },
@@ -4577,14 +8244,37 @@
             "type": "object",
             "nullable": true,
             "description": "Notes about the appointment"
+          },
+          "arrivedAt": {
+            "type": "object",
+            "format": "date-time",
+            "nullable": true,
+            "description": "When the patient arrived at the reception"
+          },
+          "calledAt": {
+            "type": "object",
+            "format": "date-time",
+            "nullable": true,
+            "description": "When the patient was called to the room"
+          },
+          "paymentStatus": {
+            "nullable": true,
+            "description": "Financial status of the appointment payment, null if no payment registered",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AppointmentPaymentStatus"
+              }
+            ]
           }
         },
         "required": [
           "id",
           "createdAt",
           "updatedAt",
+          "clinicId",
           "patientId",
-          "professionalId",
+          "attendedByMemberId",
+          "createdByMemberId",
           "startAt",
           "endAt",
           "durationMinutes",
@@ -4592,7 +8282,10 @@
           "status",
           "canceledAt",
           "canceledReason",
-          "note"
+          "note",
+          "arrivedAt",
+          "calledAt",
+          "paymentStatus"
         ]
       },
       "UpdateAppointmentInputDto": {
@@ -4644,6 +8337,177 @@
           "reason"
         ]
       },
+      "AppointmentReminder": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "The unique identifier of the entity"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "The date and time the entity was created"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "The date and time the entity was last updated"
+          },
+          "clinicId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "appointmentId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "patientId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "channel": {
+            "type": "string",
+            "enum": [
+              "WHATSAPP",
+              "SMS",
+              "EMAIL"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "PENDING",
+              "SENT",
+              "FAILED",
+              "CANCELLED"
+            ]
+          },
+          "scheduledAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "sentAt": {
+            "type": "object",
+            "format": "date-time",
+            "nullable": true
+          },
+          "failedAt": {
+            "type": "object",
+            "format": "date-time",
+            "nullable": true
+          },
+          "attempts": {
+            "type": "number"
+          },
+          "errorMessage": {
+            "type": "object",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "createdAt",
+          "updatedAt",
+          "clinicId",
+          "appointmentId",
+          "patientId",
+          "channel",
+          "status",
+          "scheduledAt",
+          "sentAt",
+          "failedAt",
+          "attempts",
+          "errorMessage"
+        ]
+      },
+      "ClinicReminderConfig": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "The unique identifier of the entity"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "The date and time the entity was created"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "The date and time the entity was last updated"
+          },
+          "clinicId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "enabledChannels": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "WHATSAPP",
+                "SMS",
+                "EMAIL"
+              ]
+            }
+          },
+          "hoursBeforeList": {
+            "type": "array",
+            "items": {
+              "type": "number"
+            }
+          },
+          "isActive": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "createdAt",
+          "updatedAt",
+          "clinicId",
+          "enabledChannels",
+          "hoursBeforeList",
+          "isActive"
+        ]
+      },
+      "UpsertReminderConfigDto": {
+        "type": "object",
+        "properties": {
+          "enabledChannels": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "WHATSAPP",
+                "SMS",
+                "EMAIL"
+              ]
+            },
+            "minItems": 1
+          },
+          "hoursBeforeList": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "minimum": 0,
+              "exclusiveMinimum": true
+            },
+            "minItems": 1
+          },
+          "isActive": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "enabledChannels",
+          "hoursBeforeList"
+        ]
+      },
       "CreateRecordDto": {
         "type": "object",
         "properties": {
@@ -4652,7 +8516,7 @@
             "format": "uuid",
             "example": "dc5782d4-ce8e-4f95-bb0b-d1a4e130aee8"
           },
-          "professionalId": {
+          "responsibleProfessionalId": {
             "type": "string",
             "format": "uuid",
             "example": "dc5782d4-ce8e-4f95-bb0b-d1a4e130aee8"
@@ -4785,7 +8649,7 @@
         },
         "required": [
           "patientId",
-          "professionalId"
+          "responsibleProfessionalId"
         ]
       },
       "FileDto": {
@@ -4830,15 +8694,25 @@
             "format": "date-time",
             "description": "The date and time the entity was last updated"
           },
+          "clinicId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "The clinic this record belongs to"
+          },
           "patientId": {
             "type": "string",
             "format": "uuid",
             "description": "The patient ID"
           },
-          "professionalId": {
+          "createdByMemberId": {
             "type": "string",
             "format": "uuid",
-            "description": "The professional ID"
+            "description": "ClinicMember who typed the record"
+          },
+          "responsibleProfessionalId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Professional clinically responsible"
           },
           "description": {
             "type": "object",
@@ -4954,6 +8828,22 @@
             "type": "boolean",
             "description": "Indicates if the imported record was manually reviewed and edited"
           },
+          "isLocked": {
+            "type": "boolean",
+            "description": "Whether the record is locked (signed)"
+          },
+          "signedAt": {
+            "type": "object",
+            "format": "date-time",
+            "nullable": true,
+            "description": "When the record was signed"
+          },
+          "signedByMemberId": {
+            "type": "object",
+            "format": "uuid",
+            "nullable": true,
+            "description": "ID of the member who signed the record"
+          },
           "files": {
             "description": "The attached files",
             "type": "array",
@@ -4966,8 +8856,10 @@
           "id",
           "createdAt",
           "updatedAt",
+          "clinicId",
           "patientId",
-          "professionalId",
+          "createdByMemberId",
+          "responsibleProfessionalId",
           "description",
           "templateType",
           "title",
@@ -4984,7 +8876,78 @@
           "source",
           "importedDocumentId",
           "wasHumanEdited",
+          "isLocked",
+          "signedAt",
+          "signedByMemberId",
           "files"
+        ]
+      },
+      "ReopenRecordBodyDto": {
+        "type": "object",
+        "properties": {
+          "justification": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2000
+          }
+        },
+        "required": [
+          "justification"
+        ]
+      },
+      "RecordAmendment": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "The unique identifier of the entity"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "The date and time the entity was created"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "The date and time the entity was last updated"
+          },
+          "clinicId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "recordId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "requestedByMemberId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "justification": {
+            "type": "string"
+          },
+          "reopenedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "relockedAt": {
+            "type": "object",
+            "format": "date-time",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "createdAt",
+          "updatedAt",
+          "clinicId",
+          "recordId",
+          "requestedByMemberId",
+          "justification",
+          "reopenedAt",
+          "relockedAt"
         ]
       },
       "UpdateRecordInputDto": {
@@ -5113,15 +9076,25 @@
             "format": "date-time",
             "description": "The date and time the entity was last updated"
           },
+          "clinicId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "The clinic this profile belongs to"
+          },
           "patientId": {
             "type": "string",
             "format": "uuid",
             "description": "The patient ID"
           },
-          "professionalId": {
+          "createdByMemberId": {
             "type": "string",
             "format": "uuid",
-            "description": "The professional ID"
+            "description": "ClinicMember who created/edited the profile"
+          },
+          "responsibleProfessionalId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Professional clinically responsible"
           },
           "allergies": {
             "type": "object",
@@ -5163,8 +9136,10 @@
           "id",
           "createdAt",
           "updatedAt",
+          "clinicId",
           "patientId",
-          "professionalId",
+          "createdByMemberId",
+          "responsibleProfessionalId",
           "allergies",
           "chronicConditions",
           "currentMedications",
@@ -5177,7 +9152,7 @@
       "UpsertClinicalProfileInputDto": {
         "type": "object",
         "properties": {
-          "professionalId": {
+          "responsibleProfessionalId": {
             "type": "string",
             "format": "uuid",
             "example": "dc5782d4-ce8e-4f95-bb0b-d1a4e130aee8"
@@ -5219,17 +9194,12 @@
           }
         },
         "required": [
-          "professionalId"
+          "responsibleProfessionalId"
         ]
       },
       "CreatePatientAlertInputDto": {
         "type": "object",
         "properties": {
-          "professionalId": {
-            "type": "string",
-            "format": "uuid",
-            "example": "dc5782d4-ce8e-4f95-bb0b-d1a4e130aee8"
-          },
           "title": {
             "type": "string",
             "minLength": 1,
@@ -5256,7 +9226,6 @@
           }
         },
         "required": [
-          "professionalId",
           "title"
         ]
       },
@@ -5278,15 +9247,20 @@
             "format": "date-time",
             "description": "The date and time the entity was last updated"
           },
+          "clinicId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "The clinic this alert belongs to"
+          },
           "patientId": {
             "type": "string",
             "format": "uuid",
             "description": "The patient ID"
           },
-          "professionalId": {
+          "createdByMemberId": {
             "type": "string",
             "format": "uuid",
-            "description": "The professional ID"
+            "description": "ClinicMember who created the alert"
           },
           "title": {
             "type": "string",
@@ -5315,8 +9289,9 @@
           "id",
           "createdAt",
           "updatedAt",
+          "clinicId",
           "patientId",
-          "professionalId",
+          "createdByMemberId",
           "title",
           "description",
           "severity",
@@ -5485,28 +9460,13 @@
           },
           "specialty": {
             "type": "string",
-            "enum": [
-              "PSICOLOGIA",
-              "MEDICINA",
-              "FISIOTERAPIA",
-              "FONOAUDIOLOGIA",
-              "NUTRICAO",
-              "TERAPIA_OCUPACIONAL",
-              "ENFERMAGEM",
-              "OUTROS"
-            ],
+            "minLength": 1,
+            "maxLength": 100,
             "example": "PSICOLOGIA"
           },
           "isPublic": {
             "type": "boolean",
-            "default": false,
-            "description": "Public templates are available to all professionals"
-          },
-          "professionalId": {
-            "type": "string",
-            "nullable": true,
-            "format": "uuid",
-            "example": "dc5782d4-ce8e-4f95-bb0b-d1a4e130aee8"
+            "default": false
           }
         },
         "required": [
@@ -5547,28 +9507,25 @@
             "description": "Optional description"
           },
           "specialty": {
-            "type": "string",
-            "enum": [
-              "PSICOLOGIA",
-              "MEDICINA",
-              "FISIOTERAPIA",
-              "FONOAUDIOLOGIA",
-              "NUTRICAO",
-              "TERAPIA_OCUPACIONAL",
-              "ENFERMAGEM",
-              "OUTROS"
-            ],
-            "description": "Target specialty"
+            "type": "object",
+            "nullable": true,
+            "description": "Target specialty label (free text)"
           },
           "isPublic": {
             "type": "boolean",
-            "description": "Whether this is a public system template"
+            "description": "Whether this is a public system template (clinicId is null)"
           },
-          "professionalId": {
+          "clinicId": {
             "type": "object",
             "format": "uuid",
             "nullable": true,
-            "description": "Owner professional ID (null for public templates)"
+            "description": "Owner clinic ID (null for public templates)"
+          },
+          "createdByMemberId": {
+            "type": "object",
+            "format": "uuid",
+            "nullable": true,
+            "description": "Member who created the template (null for public templates)"
           }
         },
         "required": [
@@ -5580,7 +9537,8 @@
           "description",
           "specialty",
           "isPublic",
-          "professionalId"
+          "clinicId",
+          "createdByMemberId"
         ]
       },
       "CreateFormTemplateVersionInputDto": {
@@ -5864,8 +9822,9 @@
       "StartPatientFormInputDto": {
         "type": "object",
         "properties": {
-          "professionalId": {
+          "responsibleProfessionalId": {
             "type": "string",
+            "nullable": true,
             "format": "uuid",
             "example": "dc5782d4-ce8e-4f95-bb0b-d1a4e130aee8"
           },
@@ -5885,7 +9844,6 @@
           }
         },
         "required": [
-          "professionalId",
           "templateId"
         ]
       },
@@ -5907,13 +9865,24 @@
             "format": "date-time",
             "description": "The date and time the entity was last updated"
           },
+          "clinicId": {
+            "type": "string",
+            "format": "uuid"
+          },
           "patientId": {
             "type": "string",
             "format": "uuid"
           },
-          "professionalId": {
+          "createdByMemberId": {
             "type": "string",
-            "format": "uuid"
+            "format": "uuid",
+            "description": "ClinicMember who applied/filled the form"
+          },
+          "responsibleProfessionalId": {
+            "type": "object",
+            "format": "uuid",
+            "nullable": true,
+            "description": "Professional clinically responsible"
           },
           "templateId": {
             "type": "string",
@@ -5955,8 +9924,10 @@
           "id",
           "createdAt",
           "updatedAt",
+          "clinicId",
           "patientId",
-          "professionalId",
+          "createdByMemberId",
+          "responsibleProfessionalId",
           "templateId",
           "versionId",
           "status",
@@ -6086,23 +10057,18 @@
             "description": "Identificador único legível, ex: \"psicologia-adulto\""
           },
           "specialtyGroup": {
-            "type": "object",
-            "nullable": true,
-            "description": "Grupo de especialidade, ex: \"medicina\", \"psicologia\""
-          },
-          "specialty": {
             "type": "string",
             "enum": [
-              "PSICOLOGIA",
-              "MEDICINA",
-              "FISIOTERAPIA",
-              "FONOAUDIOLOGIA",
-              "NUTRICAO",
-              "TERAPIA_OCUPACIONAL",
+              "SAUDE_MENTAL",
+              "REABILITACAO",
+              "MEDICINA_GERAL",
+              "MEDICINA_ESPECIALIZADA",
+              "NUTRICAO_DIETETICA",
               "ENFERMAGEM",
               "OUTROS"
             ],
-            "nullable": true
+            "nullable": true,
+            "description": "Grupo de especialidade de IA"
           },
           "description": {
             "type": "object",
@@ -6171,7 +10137,6 @@
           "code",
           "slug",
           "specialtyGroup",
-          "specialty",
           "description",
           "baseInstructions",
           "allowedSources",
@@ -6193,19 +10158,13 @@
             "format": "uuid",
             "example": "dc5782d4-ce8e-4f95-bb0b-d1a4e130aee8"
           },
-          "professionalId": {
-            "type": "string",
-            "format": "uuid",
-            "example": "dc5782d4-ce8e-4f95-bb0b-d1a4e130aee8"
-          },
           "title": {
             "type": "string",
             "maxLength": 255
           }
         },
         "required": [
-          "patientId",
-          "professionalId"
+          "patientId"
         ]
       },
       "PatientChatSession": {
@@ -6226,13 +10185,18 @@
             "format": "date-time",
             "description": "The date and time the entity was last updated"
           },
+          "clinicId": {
+            "type": "string",
+            "format": "uuid"
+          },
           "patientId": {
             "type": "string",
             "format": "uuid"
           },
-          "professionalId": {
+          "memberId": {
             "type": "string",
-            "format": "uuid"
+            "format": "uuid",
+            "description": "ClinicMember owner of the session"
           },
           "agentProfileId": {
             "type": "object",
@@ -6242,12 +10206,12 @@
           "agentName": {
             "type": "object",
             "nullable": true,
-            "description": "Nome do agente selecionado automaticamente com base no perfil profissional. Exibir na interface como \"Agente ativo: {agentName}\"."
+            "description": "Agent name resolved automatically from the member's professional profile. Render as \"Active agent: {agentName}\"."
           },
           "agentSlug": {
             "type": "object",
             "nullable": true,
-            "description": "Slug legível do agente ativo"
+            "description": "Human-readable agent slug"
           },
           "title": {
             "type": "object",
@@ -6275,8 +10239,9 @@
           "id",
           "createdAt",
           "updatedAt",
+          "clinicId",
           "patientId",
-          "professionalId",
+          "memberId",
           "agentProfileId",
           "agentName",
           "agentSlug",
@@ -6530,7 +10495,7 @@
             "format": "uuid",
             "example": "dc5782d4-ce8e-4f95-bb0b-d1a4e130aee8"
           },
-          "professionalId": {
+          "memberId": {
             "type": "string",
             "format": "uuid",
             "example": "dc5782d4-ce8e-4f95-bb0b-d1a4e130aee8"
@@ -6562,18 +10527,23 @@
             "format": "date-time",
             "description": "The date and time the entity was last updated"
           },
+          "clinicId": {
+            "type": "string",
+            "format": "uuid"
+          },
           "patientId": {
             "type": "string",
             "format": "uuid"
           },
-          "professionalId": {
+          "memberId": {
             "type": "object",
             "format": "uuid",
-            "nullable": true
+            "nullable": true,
+            "description": "Member-specific snapshot (null = generic)"
           },
           "patientFacts": {
             "type": "object",
-            "description": "Facts estruturados do paciente"
+            "description": "Structured patient facts"
           },
           "criticalContext": {
             "type": "object",
@@ -6582,7 +10552,7 @@
           "timelineSummary": {
             "type": "object",
             "nullable": true,
-            "description": "Timeline resumida de eventos clínicos"
+            "description": "Summarized clinical timeline"
           },
           "contentHash": {
             "type": "string"
@@ -6600,8 +10570,9 @@
           "id",
           "createdAt",
           "updatedAt",
+          "clinicId",
           "patientId",
-          "professionalId",
+          "memberId",
           "patientFacts",
           "criticalContext",
           "timelineSummary",
@@ -6657,7 +10628,7 @@
           "providerHealthy"
         ]
       },
-      "ProfessionalId": {
+      "ClinicMemberId": {
         "type": "object",
         "properties": {}
       },
@@ -6715,12 +10686,11 @@
           "specialty": {
             "type": "string",
             "enum": [
-              "PSICOLOGIA",
-              "MEDICINA",
-              "FISIOTERAPIA",
-              "FONOAUDIOLOGIA",
-              "NUTRICAO",
-              "TERAPIA_OCUPACIONAL",
+              "SAUDE_MENTAL",
+              "REABILITACAO",
+              "MEDICINA_GERAL",
+              "MEDICINA_ESPECIALIZADA",
+              "NUTRICAO_DIETETICA",
               "ENFERMAGEM",
               "OUTROS"
             ]
@@ -6748,6 +10718,1885 @@
           }
         },
         "required": [
+          "reason"
+        ]
+      },
+      "AddonGrantsTotalsDto": {
+        "type": "object",
+        "properties": {
+          "docsPerMonth": {
+            "type": "number",
+            "nullable": true
+          },
+          "chatMessagesPerMonth": {
+            "type": "number",
+            "nullable": true
+          },
+          "clinicalImagesPerMonth": {
+            "type": "number",
+            "nullable": true
+          },
+          "storageHotGb": {
+            "type": "number",
+            "nullable": true
+          }
+        }
+      },
+      "AddonCatalogItem": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "priceMonthlyBrl": {
+            "type": "number"
+          },
+          "grants": {
+            "$ref": "#/components/schemas/AddonGrantsTotalsDto"
+          }
+        },
+        "required": [
+          "code",
+          "name",
+          "priceMonthlyBrl",
+          "grants"
+        ]
+      },
+      "ProfessionalSubscription": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "memberId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "clinicId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "planCode": {
+            "type": "string",
+            "enum": [
+              "STARTER",
+              "CONSULTORIO",
+              "CLINICA",
+              "ESPECIALISTA"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "ACTIVE",
+              "SUSPENDED",
+              "CANCELLED",
+              "TRIAL"
+            ]
+          },
+          "currentPeriodStart": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "currentPeriodEnd": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "previousPlanCode": {
+            "type": "string",
+            "enum": [
+              "STARTER",
+              "CONSULTORIO",
+              "CLINICA",
+              "ESPECIALISTA"
+            ],
+            "nullable": true
+          },
+          "planChangedAt": {
+            "type": "object",
+            "format": "date-time",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "memberId",
+          "clinicId",
+          "planCode",
+          "status",
+          "currentPeriodStart",
+          "currentPeriodEnd",
+          "previousPlanCode",
+          "planChangedAt",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "UsagePeriodDto": {
+        "type": "object",
+        "properties": {
+          "year": {
+            "type": "number"
+          },
+          "month": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "year",
+          "month"
+        ]
+      },
+      "UsageMetricDto": {
+        "type": "object",
+        "properties": {
+          "used": {
+            "type": "number"
+          },
+          "limit": {
+            "type": "object",
+            "nullable": true,
+            "description": "null = unlimited"
+          },
+          "percent": {
+            "type": "number",
+            "description": "Percentage of limit used (0–100). 0 when limit is null."
+          },
+          "remaining": {
+            "type": "object",
+            "nullable": true,
+            "description": "null = unlimited"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "OK",
+              "WARNING",
+              "EXCEEDED",
+              "NOT_INCLUDED"
+            ]
+          }
+        },
+        "required": [
+          "used",
+          "limit",
+          "percent",
+          "remaining",
+          "status"
+        ]
+      },
+      "UsageBreakdownDto": {
+        "type": "object",
+        "properties": {
+          "docs": {
+            "$ref": "#/components/schemas/UsageMetricDto"
+          },
+          "chat": {
+            "$ref": "#/components/schemas/UsageMetricDto"
+          },
+          "images": {
+            "$ref": "#/components/schemas/UsageMetricDto"
+          },
+          "storageHotGb": {
+            "$ref": "#/components/schemas/UsageMetricDto"
+          }
+        },
+        "required": [
+          "docs",
+          "chat",
+          "images",
+          "storageHotGb"
+        ]
+      },
+      "UsageAlertDto": {
+        "type": "object",
+        "properties": {
+          "metric": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "WARNING",
+              "EXCEEDED"
+            ]
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "metric",
+          "type",
+          "message"
+        ]
+      },
+      "ActiveAddonDto": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "quantity": {
+            "type": "number"
+          },
+          "grantsTotal": {
+            "$ref": "#/components/schemas/AddonGrantsTotalsDto"
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "code",
+          "name",
+          "quantity",
+          "grantsTotal",
+          "expiresAt"
+        ]
+      },
+      "SubscriptionInfoDto": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string"
+          },
+          "currentPeriodStart": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "currentPeriodEnd": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "status",
+          "currentPeriodStart",
+          "currentPeriodEnd"
+        ]
+      },
+      "CurrentUsage": {
+        "type": "object",
+        "properties": {
+          "planCode": {
+            "type": "string",
+            "enum": [
+              "STARTER",
+              "CONSULTORIO",
+              "CLINICA",
+              "ESPECIALISTA"
+            ]
+          },
+          "planName": {
+            "type": "string"
+          },
+          "period": {
+            "$ref": "#/components/schemas/UsagePeriodDto"
+          },
+          "resetAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "ISO timestamp of the next monthly reset"
+          },
+          "usage": {
+            "$ref": "#/components/schemas/UsageBreakdownDto"
+          },
+          "isAnyLimitReached": {
+            "type": "boolean"
+          },
+          "warningThreshold": {
+            "type": "number",
+            "description": "Percentage threshold at which warnings are shown (default: 80)"
+          },
+          "limitsReached": {
+            "description": "Metrics that have reached their limit",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "alerts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UsageAlertDto"
+            }
+          },
+          "addons": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ActiveAddonDto"
+            }
+          },
+          "subscription": {
+            "$ref": "#/components/schemas/SubscriptionInfoDto"
+          }
+        },
+        "required": [
+          "planCode",
+          "planName",
+          "period",
+          "resetAt",
+          "usage",
+          "isAnyLimitReached",
+          "warningThreshold",
+          "limitsReached",
+          "alerts",
+          "addons",
+          "subscription"
+        ]
+      },
+      "PurchaseAddonDto": {
+        "type": "object",
+        "properties": {
+          "addonCode": {
+            "type": "string",
+            "enum": [
+              "EXTRA_DOCS_300",
+              "EXTRA_CHAT_1000",
+              "EXTRA_IMAGES_30",
+              "EXTRA_STORAGE_10GB"
+            ]
+          },
+          "quantity": {
+            "type": "integer",
+            "minimum": 1
+          }
+        },
+        "required": [
+          "addonCode",
+          "quantity"
+        ]
+      },
+      "MemberUsageSummaryItemDto": {
+        "type": "object",
+        "properties": {
+          "memberId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "displayName": {
+            "type": "string"
+          },
+          "planCode": {
+            "type": "string",
+            "enum": [
+              "STARTER",
+              "CONSULTORIO",
+              "CLINICA",
+              "ESPECIALISTA"
+            ]
+          },
+          "usage": {
+            "$ref": "#/components/schemas/UsageBreakdownDto"
+          },
+          "hasAnyWarning": {
+            "type": "boolean"
+          },
+          "hasAnyExceeded": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "memberId",
+          "displayName",
+          "planCode",
+          "usage",
+          "hasAnyWarning",
+          "hasAnyExceeded"
+        ]
+      },
+      "ClinicMembersUsageSummaryDto": {
+        "type": "object",
+        "properties": {
+          "period": {
+            "$ref": "#/components/schemas/UsagePeriodDto"
+          },
+          "members": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MemberUsageSummaryItemDto"
+            }
+          },
+          "summary": {
+            "type": "object"
+          }
+        },
+        "required": [
+          "period",
+          "members",
+          "summary"
+        ]
+      },
+      "MemberActiveAddons": {
+        "type": "object",
+        "properties": {
+          "memberId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "addons": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ActiveAddonDto"
+            }
+          }
+        },
+        "required": [
+          "memberId",
+          "addons"
+        ]
+      },
+      "MemberUsageSummary": {
+        "type": "object",
+        "properties": {
+          "memberId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "usage": {
+            "$ref": "#/components/schemas/CurrentUsage"
+          }
+        },
+        "required": [
+          "memberId",
+          "usage"
+        ]
+      },
+      "ChangePlanDto": {
+        "type": "object",
+        "properties": {
+          "planCode": {
+            "type": "string",
+            "enum": [
+              "STARTER",
+              "CONSULTORIO",
+              "CLINICA",
+              "ESPECIALISTA"
+            ],
+            "example": "CONSULTORIO"
+          }
+        },
+        "required": [
+          "planCode"
+        ]
+      },
+      "DraftEvolution": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "The unique identifier of the entity"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "The date and time the entity was created"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "The date and time the entity was last updated"
+          },
+          "clinicId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "patientId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "createdByMemberId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "importedDocumentId": {
+            "type": "object",
+            "format": "uuid",
+            "nullable": true
+          },
+          "templateType": {
+            "type": "string",
+            "enum": [
+              "SOAP",
+              "DAP"
+            ],
+            "nullable": true
+          },
+          "title": {
+            "type": "object",
+            "nullable": true
+          },
+          "attendanceType": {
+            "type": "string",
+            "enum": [
+              "FIRST_VISIT",
+              "FOLLOW_UP",
+              "EVALUATION",
+              "PROCEDURE",
+              "TELEMEDICINE",
+              "INTERCURRENCE"
+            ],
+            "nullable": true
+          },
+          "clinicalStatus": {
+            "type": "string",
+            "enum": [
+              "STABLE",
+              "IMPROVING",
+              "WORSENING",
+              "UNCHANGED",
+              "UNDER_OBSERVATION"
+            ],
+            "nullable": true
+          },
+          "conductTags": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "GUIDANCE",
+                "PRESCRIPTION",
+                "EXAM_REQUESTED",
+                "REFERRAL",
+                "FOLLOW_UP_SCHEDULED",
+                "THERAPY_ADJUSTMENT"
+              ]
+            }
+          },
+          "subjective": {
+            "type": "object",
+            "nullable": true
+          },
+          "objective": {
+            "type": "object",
+            "nullable": true
+          },
+          "assessment": {
+            "type": "object",
+            "nullable": true
+          },
+          "plan": {
+            "type": "object",
+            "nullable": true
+          },
+          "freeNotes": {
+            "type": "object",
+            "nullable": true
+          },
+          "eventDate": {
+            "type": "object",
+            "format": "date-time",
+            "nullable": true
+          },
+          "overallConfidence": {
+            "type": "object",
+            "nullable": true,
+            "description": "Overall AI confidence score (0.0-1.0)"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "DRAFT",
+              "PENDING_REVIEW",
+              "APPROVED",
+              "REJECTED"
+            ]
+          },
+          "wasHumanEdited": {
+            "type": "boolean",
+            "description": "Whether the professional edited any field before approval"
+          },
+          "reviewRequired": {
+            "type": "boolean",
+            "description": "Whether a human review is required before approval"
+          },
+          "approvedByMemberId": {
+            "type": "object",
+            "format": "uuid",
+            "nullable": true
+          },
+          "approvedAt": {
+            "type": "object",
+            "format": "date-time",
+            "nullable": true
+          },
+          "recordId": {
+            "type": "object",
+            "format": "uuid",
+            "nullable": true,
+            "description": "ID of the Record created upon approval"
+          }
+        },
+        "required": [
+          "id",
+          "createdAt",
+          "updatedAt",
+          "clinicId",
+          "patientId",
+          "createdByMemberId",
+          "importedDocumentId",
+          "templateType",
+          "title",
+          "attendanceType",
+          "clinicalStatus",
+          "conductTags",
+          "subjective",
+          "objective",
+          "assessment",
+          "plan",
+          "freeNotes",
+          "eventDate",
+          "overallConfidence",
+          "status",
+          "wasHumanEdited",
+          "reviewRequired",
+          "approvedByMemberId",
+          "approvedAt",
+          "recordId"
+        ]
+      },
+      "UpdateDraftBodyDto": {
+        "type": "object",
+        "properties": {
+          "templateType": {
+            "type": "string",
+            "enum": [
+              "SOAP",
+              "DAP"
+            ]
+          },
+          "title": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 255
+          },
+          "attendanceType": {
+            "type": "string",
+            "enum": [
+              "FIRST_VISIT",
+              "FOLLOW_UP",
+              "EVALUATION",
+              "PROCEDURE",
+              "TELEMEDICINE",
+              "INTERCURRENCE"
+            ]
+          },
+          "clinicalStatus": {
+            "type": "string",
+            "nullable": true,
+            "enum": [
+              "STABLE",
+              "IMPROVING",
+              "WORSENING",
+              "UNCHANGED",
+              "UNDER_OBSERVATION"
+            ]
+          },
+          "conductTags": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "GUIDANCE",
+                "PRESCRIPTION",
+                "EXAM_REQUESTED",
+                "REFERRAL",
+                "FOLLOW_UP_SCHEDULED",
+                "THERAPY_ADJUSTMENT"
+              ]
+            }
+          },
+          "subjective": {
+            "type": "string",
+            "nullable": true
+          },
+          "objective": {
+            "type": "string",
+            "nullable": true
+          },
+          "assessment": {
+            "type": "string",
+            "nullable": true
+          },
+          "plan": {
+            "type": "string",
+            "nullable": true
+          },
+          "freeNotes": {
+            "type": "string",
+            "nullable": true
+          },
+          "eventDate": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "templateType",
+          "title",
+          "attendanceType",
+          "clinicalStatus",
+          "conductTags",
+          "subjective",
+          "objective",
+          "assessment",
+          "plan",
+          "freeNotes",
+          "eventDate"
+        ]
+      },
+      "CreateDraftDto": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "PRESCRIPTION",
+              "PRESCRIPTION_SPECIAL",
+              "MEDICAL_CERTIFICATE",
+              "REFERRAL",
+              "EXAM_REQUEST"
+            ]
+          },
+          "patientId": {
+            "type": "string",
+            "format": "uuid",
+            "example": "dc5782d4-ce8e-4f95-bb0b-d1a4e130aee8"
+          },
+          "responsibleProfessionalId": {
+            "type": "string",
+            "format": "uuid",
+            "example": "dc5782d4-ce8e-4f95-bb0b-d1a4e130aee8"
+          },
+          "contentJson": {
+            "type": "object",
+            "additionalProperties": {
+              "nullable": true
+            }
+          },
+          "appointmentId": {
+            "type": "string",
+            "format": "uuid",
+            "example": "dc5782d4-ce8e-4f95-bb0b-d1a4e130aee8"
+          },
+          "recordId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "required": [
+          "type",
+          "patientId",
+          "responsibleProfessionalId",
+          "contentJson"
+        ]
+      },
+      "ClinicalDocument": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "The unique identifier of the entity"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "The date and time the entity was created"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "The date and time the entity was last updated"
+          },
+          "clinicId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "patientId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "createdByMemberId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "responsibleProfessionalId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "PRESCRIPTION",
+              "PRESCRIPTION_SPECIAL",
+              "MEDICAL_CERTIFICATE",
+              "REFERRAL",
+              "EXAM_REQUEST"
+            ]
+          },
+          "templateId": {
+            "type": "object",
+            "format": "uuid",
+            "nullable": true
+          },
+          "contentJson": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "fileId": {
+            "type": "object",
+            "format": "uuid",
+            "nullable": true
+          },
+          "generatedAt": {
+            "type": "object",
+            "format": "date-time",
+            "nullable": true
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "DRAFT",
+              "GENERATED",
+              "CANCELLED"
+            ]
+          },
+          "appointmentId": {
+            "type": "object",
+            "format": "uuid",
+            "nullable": true
+          },
+          "recordId": {
+            "type": "object",
+            "format": "uuid",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "createdAt",
+          "updatedAt",
+          "clinicId",
+          "patientId",
+          "createdByMemberId",
+          "responsibleProfessionalId",
+          "type",
+          "contentJson",
+          "status"
+        ]
+      },
+      "ClinicalDocumentTemplate": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "The unique identifier of the entity"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "The date and time the entity was created"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "The date and time the entity was last updated"
+          },
+          "clinicId": {
+            "type": "object",
+            "format": "uuid",
+            "nullable": true
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "PRESCRIPTION",
+              "PRESCRIPTION_SPECIAL",
+              "MEDICAL_CERTIFICATE",
+              "REFERRAL",
+              "EXAM_REQUEST"
+            ]
+          },
+          "isDefault": {
+            "type": "boolean"
+          },
+          "name": {
+            "type": "string"
+          },
+          "layoutJson": {
+            "type": "object"
+          }
+        },
+        "required": [
+          "id",
+          "createdAt",
+          "updatedAt",
+          "type",
+          "isDefault",
+          "name",
+          "layoutJson"
+        ]
+      },
+      "UpsertTemplateDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 255
+          },
+          "layoutJson": {
+            "type": "object",
+            "additionalProperties": {
+              "nullable": true
+            }
+          }
+        },
+        "required": [
+          "name",
+          "layoutJson"
+        ]
+      },
+      "ModelBreakdownEntry": {
+        "type": "object",
+        "properties": {
+          "modelId": {
+            "type": "string"
+          },
+          "messages": {
+            "type": "number"
+          },
+          "costUsd": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "modelId",
+          "messages",
+          "costUsd"
+        ]
+      },
+      "MemberBillingReport": {
+        "type": "object",
+        "properties": {
+          "memberId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "displayName": {
+            "type": "string"
+          },
+          "planCode": {
+            "type": "string",
+            "enum": [
+              "STARTER",
+              "CONSULTORIO",
+              "CLINICA",
+              "ESPECIALISTA"
+            ]
+          },
+          "planPriceBrl": {
+            "type": "number"
+          },
+          "periodYear": {
+            "type": "number"
+          },
+          "periodMonth": {
+            "type": "number"
+          },
+          "docsCount": {
+            "type": "number",
+            "description": "Docs uploaded in the period"
+          },
+          "chatMessages": {
+            "type": "number",
+            "description": "Chat messages (usage record counter)"
+          },
+          "imagesCount": {
+            "type": "number",
+            "description": "Clinical images in the period"
+          },
+          "totalAiCostUsd": {
+            "type": "number",
+            "description": "Total AI cost in USD"
+          },
+          "totalAiCostBrl": {
+            "type": "number",
+            "description": "Total AI cost in BRL"
+          },
+          "aiInteractionCount": {
+            "type": "number",
+            "description": "Number of completed chat interactions with AI"
+          },
+          "avgCostPerMessageUsd": {
+            "type": "number",
+            "description": "Average cost per message in USD"
+          },
+          "modelBreakdown": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ModelBreakdownEntry"
+            }
+          },
+          "planRevenueBrl": {
+            "type": "number",
+            "description": "Monthly plan revenue in BRL"
+          },
+          "totalCostBrl": {
+            "type": "number",
+            "description": "Total cost in BRL (AI + future add-ons)"
+          },
+          "grossMarginBrl": {
+            "type": "number",
+            "description": "Gross margin in BRL"
+          },
+          "grossMarginPercent": {
+            "type": "number",
+            "description": "Gross margin percent"
+          }
+        },
+        "required": [
+          "memberId",
+          "displayName",
+          "planCode",
+          "planPriceBrl",
+          "periodYear",
+          "periodMonth",
+          "docsCount",
+          "chatMessages",
+          "imagesCount",
+          "totalAiCostUsd",
+          "totalAiCostBrl",
+          "aiInteractionCount",
+          "avgCostPerMessageUsd",
+          "modelBreakdown",
+          "planRevenueBrl",
+          "totalCostBrl",
+          "grossMarginBrl",
+          "grossMarginPercent"
+        ]
+      },
+      "ClinicBillingReportMostExpensive": {
+        "type": "object",
+        "properties": {
+          "memberId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "displayName": {
+            "type": "string"
+          },
+          "aiCostUsd": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "memberId",
+          "displayName",
+          "aiCostUsd"
+        ]
+      },
+      "ClinicBillingReportMostActive": {
+        "type": "object",
+        "properties": {
+          "memberId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "displayName": {
+            "type": "string"
+          },
+          "messages": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "memberId",
+          "displayName",
+          "messages"
+        ]
+      },
+      "ClinicBillingReportSummary": {
+        "type": "object",
+        "properties": {
+          "totalMembers": {
+            "type": "number"
+          },
+          "totalRevenueBrl": {
+            "type": "number"
+          },
+          "totalAiCostUsd": {
+            "type": "number"
+          },
+          "totalAiCostBrl": {
+            "type": "number"
+          },
+          "avgMarginPercent": {
+            "type": "number"
+          },
+          "mostExpensiveMember": {
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ClinicBillingReportMostExpensive"
+              }
+            ]
+          },
+          "mostActiveByChat": {
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ClinicBillingReportMostActive"
+              }
+            ]
+          }
+        },
+        "required": [
+          "totalMembers",
+          "totalRevenueBrl",
+          "totalAiCostUsd",
+          "totalAiCostBrl",
+          "avgMarginPercent",
+          "mostExpensiveMember",
+          "mostActiveByChat"
+        ]
+      },
+      "ClinicBillingReport": {
+        "type": "object",
+        "properties": {
+          "clinicId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "clinicName": {
+            "type": "string"
+          },
+          "periodYear": {
+            "type": "number"
+          },
+          "periodMonth": {
+            "type": "number"
+          },
+          "members": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MemberBillingReport"
+            }
+          },
+          "summary": {
+            "$ref": "#/components/schemas/ClinicBillingReportSummary"
+          }
+        },
+        "required": [
+          "clinicId",
+          "clinicName",
+          "periodYear",
+          "periodMonth",
+          "members",
+          "summary"
+        ]
+      },
+      "ActivateSubscriptionDto": {
+        "type": "object",
+        "properties": {
+          "planCode": {
+            "type": "string",
+            "enum": [
+              "STARTER",
+              "CONSULTORIO",
+              "CLINICA",
+              "ESPECIALISTA"
+            ]
+          },
+          "paymentMethod": {
+            "type": "string",
+            "enum": [
+              "CREDIT_CARD",
+              "PIX",
+              "BOLETO"
+            ]
+          },
+          "cpfCnpj": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "planCode",
+          "paymentMethod"
+        ]
+      },
+      "ChangePaymentPlanDto": {
+        "type": "object",
+        "properties": {
+          "planCode": {
+            "type": "string",
+            "enum": [
+              "STARTER",
+              "CONSULTORIO",
+              "CLINICA",
+              "ESPECIALISTA"
+            ]
+          },
+          "paymentMethod": {
+            "type": "string",
+            "enum": [
+              "CREDIT_CARD",
+              "PIX",
+              "BOLETO"
+            ],
+            "default": "PIX"
+          }
+        },
+        "required": [
+          "planCode"
+        ]
+      },
+      "PaymentEvent": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "clinicId": {
+            "type": "string"
+          },
+          "memberId": {
+            "type": "string"
+          },
+          "subscriptionId": {
+            "type": "string"
+          },
+          "asaasPaymentId": {
+            "type": "object",
+            "nullable": true
+          },
+          "asaasSubscriptionId": {
+            "type": "object",
+            "nullable": true
+          },
+          "eventType": {
+            "type": "string"
+          },
+          "amount": {
+            "type": "object",
+            "nullable": true
+          },
+          "paymentMethod": {
+            "type": "object",
+            "nullable": true
+          },
+          "status": {
+            "type": "string"
+          },
+          "processedAt": {
+            "type": "object",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "clinicId",
+          "memberId",
+          "subscriptionId",
+          "asaasPaymentId",
+          "asaasSubscriptionId",
+          "eventType",
+          "amount",
+          "paymentMethod",
+          "status",
+          "processedAt",
+          "createdAt"
+        ]
+      },
+      "RegisterPaymentDto": {
+        "type": "object",
+        "properties": {
+          "paymentMethod": {
+            "type": "string",
+            "enum": [
+              "CASH",
+              "PIX",
+              "CREDIT_CARD",
+              "DEBIT_CARD",
+              "BANK_TRANSFER",
+              "INSURANCE",
+              "COURTESY"
+            ]
+          },
+          "amountBrl": {
+            "type": "number",
+            "minimum": 0,
+            "exclusiveMinimum": true
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "PENDING",
+              "PAID",
+              "EXEMPT",
+              "REFUNDED"
+            ],
+            "default": "PAID"
+          },
+          "insurancePlanId": {
+            "type": "string",
+            "nullable": true,
+            "format": "uuid",
+            "example": "dc5782d4-ce8e-4f95-bb0b-d1a4e130aee8"
+          },
+          "insuranceAuthCode": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 100
+          },
+          "notes": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 1000
+          }
+        },
+        "required": [
+          "paymentMethod",
+          "amountBrl"
+        ]
+      },
+      "AppointmentPayment": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "The unique identifier of the entity"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "The date and time the entity was created"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "The date and time the entity was last updated"
+          },
+          "clinicId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "appointmentId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "patientId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "registeredByMemberId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "paymentMethod": {
+            "type": "string",
+            "enum": [
+              "CASH",
+              "PIX",
+              "CREDIT_CARD",
+              "DEBIT_CARD",
+              "BANK_TRANSFER",
+              "INSURANCE",
+              "COURTESY"
+            ]
+          },
+          "status": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AppointmentPaymentStatus"
+              }
+            ]
+          },
+          "amountBrl": {
+            "type": "number"
+          },
+          "paidAt": {
+            "type": "object",
+            "format": "date-time",
+            "nullable": true
+          },
+          "insurancePlanId": {
+            "type": "object",
+            "format": "uuid",
+            "nullable": true
+          },
+          "insuranceAuthCode": {
+            "type": "object",
+            "nullable": true
+          },
+          "notes": {
+            "type": "object",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "createdAt",
+          "updatedAt",
+          "clinicId",
+          "appointmentId",
+          "patientId",
+          "registeredByMemberId",
+          "paymentMethod",
+          "status",
+          "amountBrl",
+          "paidAt",
+          "insurancePlanId",
+          "insuranceAuthCode",
+          "notes"
+        ]
+      },
+      "UpdatePaymentStatusDto": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "PENDING",
+              "PAID",
+              "EXEMPT",
+              "REFUNDED"
+            ]
+          },
+          "paidAt": {
+            "type": "string",
+            "nullable": true,
+            "format": "date-time",
+            "description": "A datetime in ISO 8601 format."
+          },
+          "amountBrl": {
+            "type": "number",
+            "minimum": 0,
+            "exclusiveMinimum": true
+          },
+          "notes": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 1000
+          }
+        },
+        "required": [
+          "status"
+        ]
+      },
+      "RevenueSummaryDto": {
+        "type": "object",
+        "properties": {
+          "totalBrl": {
+            "type": "number"
+          },
+          "totalPaid": {
+            "type": "number"
+          },
+          "totalPending": {
+            "type": "number"
+          },
+          "totalExempt": {
+            "type": "number"
+          },
+          "totalRefunded": {
+            "type": "number"
+          },
+          "appointmentCount": {
+            "type": "number"
+          },
+          "avgTicketBrl": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "totalBrl",
+          "totalPaid",
+          "totalPending",
+          "totalExempt",
+          "totalRefunded",
+          "appointmentCount",
+          "avgTicketBrl"
+        ]
+      },
+      "PaymentMethodSummaryDto": {
+        "type": "object",
+        "properties": {
+          "method": {
+            "type": "string",
+            "enum": [
+              "CASH",
+              "PIX",
+              "CREDIT_CARD",
+              "DEBIT_CARD",
+              "BANK_TRANSFER",
+              "INSURANCE",
+              "COURTESY"
+            ]
+          },
+          "count": {
+            "type": "number"
+          },
+          "totalBrl": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "method",
+          "count",
+          "totalBrl"
+        ]
+      },
+      "ProfessionalSummaryDto": {
+        "type": "object",
+        "properties": {
+          "memberId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "displayName": {
+            "type": "string"
+          },
+          "count": {
+            "type": "number"
+          },
+          "totalBrl": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "memberId",
+          "displayName",
+          "count",
+          "totalBrl"
+        ]
+      },
+      "PaymentListItemDto": {
+        "type": "object",
+        "properties": {
+          "paymentId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "appointmentId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "patientName": {
+            "type": "string"
+          },
+          "professionalName": {
+            "type": "string"
+          },
+          "appointmentDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "paymentMethod": {
+            "type": "string",
+            "enum": [
+              "CASH",
+              "PIX",
+              "CREDIT_CARD",
+              "DEBIT_CARD",
+              "BANK_TRANSFER",
+              "INSURANCE",
+              "COURTESY"
+            ]
+          },
+          "status": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AppointmentPaymentStatus"
+              }
+            ]
+          },
+          "amountBrl": {
+            "type": "number"
+          },
+          "paidAt": {
+            "type": "object",
+            "format": "date-time",
+            "nullable": true
+          },
+          "insurancePlanName": {
+            "type": "object",
+            "nullable": true
+          }
+        },
+        "required": [
+          "paymentId",
+          "appointmentId",
+          "patientName",
+          "professionalName",
+          "appointmentDate",
+          "paymentMethod",
+          "status",
+          "amountBrl",
+          "paidAt",
+          "insurancePlanName"
+        ]
+      },
+      "RevenueReport": {
+        "type": "object",
+        "properties": {
+          "period": {
+            "type": "object"
+          },
+          "filters": {
+            "type": "object"
+          },
+          "summary": {
+            "$ref": "#/components/schemas/RevenueSummaryDto"
+          },
+          "byPaymentMethod": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PaymentMethodSummaryDto"
+            }
+          },
+          "byProfessional": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProfessionalSummaryDto"
+            }
+          },
+          "payments": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PaymentListItemDto"
+            }
+          },
+          "pagination": {
+            "type": "object"
+          }
+        },
+        "required": [
+          "period",
+          "filters",
+          "summary",
+          "byPaymentMethod",
+          "byProfessional",
+          "payments",
+          "pagination"
+        ]
+      },
+      "RevenueSummaryReport": {
+        "type": "object",
+        "properties": {
+          "period": {
+            "type": "object"
+          },
+          "filters": {
+            "type": "object"
+          },
+          "summary": {
+            "$ref": "#/components/schemas/RevenueSummaryDto"
+          },
+          "byPaymentMethod": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PaymentMethodSummaryDto"
+            }
+          },
+          "byProfessional": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProfessionalSummaryDto"
+            }
+          }
+        },
+        "required": [
+          "period",
+          "filters",
+          "summary",
+          "byPaymentMethod",
+          "byProfessional"
+        ]
+      },
+      "UpsertWorkingHoursDto": {
+        "type": "object",
+        "properties": {
+          "dayOfWeek": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 6
+          },
+          "startTime": {
+            "type": "string",
+            "pattern": "^\\d{2}:\\d{2}$"
+          },
+          "endTime": {
+            "type": "string",
+            "pattern": "^\\d{2}:\\d{2}$"
+          },
+          "slotDuration": {
+            "type": "integer",
+            "minimum": 5,
+            "maximum": 120
+          },
+          "active": {
+            "type": "boolean",
+            "default": true
+          }
+        },
+        "required": [
+          "dayOfWeek",
+          "startTime",
+          "endTime",
+          "slotDuration"
+        ]
+      },
+      "WorkingHours": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "The unique identifier of the entity"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "The date and time the entity was created"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "The date and time the entity was last updated"
+          },
+          "clinicMemberId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "The clinic member this schedule belongs to"
+          },
+          "dayOfWeek": {
+            "type": "number",
+            "description": "Day of week (0 = Sunday, 6 = Saturday)"
+          },
+          "startTime": {
+            "type": "string",
+            "description": "Start time in HH:MM format",
+            "example": "08:00"
+          },
+          "endTime": {
+            "type": "string",
+            "description": "End time in HH:MM format",
+            "example": "17:00"
+          },
+          "slotDuration": {
+            "type": "number",
+            "description": "Appointment slot duration in minutes"
+          },
+          "active": {
+            "type": "boolean",
+            "description": "Whether this schedule is active"
+          }
+        },
+        "required": [
+          "id",
+          "createdAt",
+          "updatedAt",
+          "clinicMemberId",
+          "dayOfWeek",
+          "startTime",
+          "endTime",
+          "slotDuration",
+          "active"
+        ]
+      },
+      "CreateMemberBlockDto": {
+        "type": "object",
+        "properties": {
+          "startAt": {
+            "type": "string",
+            "nullable": true
+          },
+          "endAt": {
+            "type": "string",
+            "nullable": true
+          },
+          "reason": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 500
+          }
+        },
+        "required": [
+          "startAt",
+          "endAt"
+        ]
+      },
+      "MemberBlock": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "The unique identifier of the entity"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "The date and time the entity was created"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "The date and time the entity was last updated"
+          },
+          "clinicMemberId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "The clinic member this block belongs to"
+          },
+          "startAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Block start date/time"
+          },
+          "endAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Block end date/time"
+          },
+          "reason": {
+            "type": "object",
+            "nullable": true,
+            "description": "Optional reason for the block"
+          }
+        },
+        "required": [
+          "id",
+          "createdAt",
+          "updatedAt",
+          "clinicMemberId",
+          "startAt",
+          "endAt",
           "reason"
         ]
       }

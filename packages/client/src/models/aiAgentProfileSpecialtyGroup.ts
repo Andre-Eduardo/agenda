@@ -12,7 +12,19 @@
  */
 
 /**
- * Grupo de especialidade, ex: "medicina", "psicologia"
+ * Grupo de especialidade de IA
  * @nullable
  */
-export type AiAgentProfileSpecialtyGroup = { [key: string]: unknown } | null;
+export type AiAgentProfileSpecialtyGroup = typeof AiAgentProfileSpecialtyGroup[keyof typeof AiAgentProfileSpecialtyGroup] | null;
+
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const AiAgentProfileSpecialtyGroup = {
+  SAUDE_MENTAL: 'SAUDE_MENTAL',
+  REABILITACAO: 'REABILITACAO',
+  MEDICINA_GERAL: 'MEDICINA_GERAL',
+  MEDICINA_ESPECIALIZADA: 'MEDICINA_ESPECIALIZADA',
+  NUTRICAO_DIETETICA: 'NUTRICAO_DIETETICA',
+  ENFERMAGEM: 'ENFERMAGEM',
+  OUTROS: 'OUTROS',
+} as const;

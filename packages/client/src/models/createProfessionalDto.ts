@@ -10,25 +10,13 @@
                 the token will be invalidated and removed from the cookie.
  * OpenAPI spec version: 0.0.0
  */
-import type { CreateProfessionalDtoGender } from './createProfessionalDtoGender';
-import type { CreateProfessionalDtoPersonType } from './createProfessionalDtoPersonType';
+import type { CreateProfessionalDtoSpecialtyNormalized } from './createProfessionalDtoSpecialtyNormalized';
 
 export interface CreateProfessionalDto {
-  /** @minLength 1 */
-  name: string;
-  documentId: string;
   /** @nullable */
-  phone?: string | null;
+  registrationNumber: string | null;
   /** @nullable */
-  gender?: CreateProfessionalDtoGender;
-  personType?: CreateProfessionalDtoPersonType;
-  /** @minLength 1 */
-  specialty: string;
+  specialty: string | null;
   /** @nullable */
-  userId?: string | null;
-  /**
-   * Display color for the professional
-   * @nullable
-   */
-  color?: string | null;
+  specialtyNormalized: CreateProfessionalDtoSpecialtyNormalized;
 }

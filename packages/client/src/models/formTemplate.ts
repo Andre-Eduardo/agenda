@@ -12,7 +12,8 @@
  */
 import type { FormTemplateDescription } from './formTemplateDescription';
 import type { FormTemplateSpecialty } from './formTemplateSpecialty';
-import type { FormTemplateProfessionalId } from './formTemplateProfessionalId';
+import type { FormTemplateClinicId } from './formTemplateClinicId';
+import type { FormTemplateCreatedByMemberId } from './formTemplateCreatedByMemberId';
 
 export interface FormTemplate {
   /** The unique identifier of the entity */
@@ -30,13 +31,21 @@ export interface FormTemplate {
    * @nullable
    */
   description: FormTemplateDescription;
-  /** Target specialty */
-  specialty: FormTemplateSpecialty;
-  /** Whether this is a public system template */
-  isPublic: boolean;
   /**
-   * Owner professional ID (null for public templates)
+   * Target specialty label (free text)
    * @nullable
    */
-  professionalId: FormTemplateProfessionalId;
+  specialty: FormTemplateSpecialty;
+  /** Whether this is a public system template (clinicId is null) */
+  isPublic: boolean;
+  /**
+   * Owner clinic ID (null for public templates)
+   * @nullable
+   */
+  clinicId: FormTemplateClinicId;
+  /**
+   * Member who created the template (null for public templates)
+   * @nullable
+   */
+  createdByMemberId: FormTemplateCreatedByMemberId;
 }

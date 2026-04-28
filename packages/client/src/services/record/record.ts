@@ -33,6 +33,8 @@ import type {
   ApiProblem,
   CreateRecordDto,
   Record,
+  RecordAmendment,
+  ReopenRecordBodyDto,
   SearchRecordsParams,
   UpdateRecordInputDto
 } from '../../models';
@@ -418,4 +420,222 @@ export const useDeleteRecord = <TError = ApiProblem,
 
       return useMutation(mutationOptions, queryClient);
     }
+    /**
+ * @summary Signs and locks a record
+ */
+export const signRecord = (
+    id: string,
+ options?: SecondParameter<typeof apiClient>,signal?: AbortSignal
+) => {
+      
+      
+      return apiClient<Record>(
+      {url: `/api/v1/records/${id}/sign`, method: 'POST', signal
+    },
+      options);
+    }
+  
+
+
+export const getSignRecordMutationOptions = <TError = ApiProblem,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof signRecord>>, TError,{id: string}, TContext>, request?: SecondParameter<typeof apiClient>}
+): UseMutationOptions<Awaited<ReturnType<typeof signRecord>>, TError,{id: string}, TContext> => {
+
+const mutationKey = ['signRecord'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof signRecord>>, {id: string}> = (props) => {
+          const {id} = props ?? {};
+
+          return  signRecord(id,requestOptions)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type SignRecordMutationResult = NonNullable<Awaited<ReturnType<typeof signRecord>>>
     
+    export type SignRecordMutationError = ApiProblem
+
+    /**
+ * @summary Signs and locks a record
+ */
+export const useSignRecord = <TError = ApiProblem,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof signRecord>>, TError,{id: string}, TContext>, request?: SecondParameter<typeof apiClient>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof signRecord>>,
+        TError,
+        {id: string},
+        TContext
+      > => {
+
+      const mutationOptions = getSignRecordMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
+ * @summary Reopens a locked record with justification
+ */
+export const reopenRecord = (
+    id: string,
+    reopenRecordBodyDto: ReopenRecordBodyDto,
+ options?: SecondParameter<typeof apiClient>,signal?: AbortSignal
+) => {
+      
+      
+      return apiClient<Record>(
+      {url: `/api/v1/records/${id}/reopen`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: reopenRecordBodyDto, signal
+    },
+      options);
+    }
+  
+
+
+export const getReopenRecordMutationOptions = <TError = ApiProblem,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof reopenRecord>>, TError,{id: string;data: ReopenRecordBodyDto}, TContext>, request?: SecondParameter<typeof apiClient>}
+): UseMutationOptions<Awaited<ReturnType<typeof reopenRecord>>, TError,{id: string;data: ReopenRecordBodyDto}, TContext> => {
+
+const mutationKey = ['reopenRecord'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof reopenRecord>>, {id: string;data: ReopenRecordBodyDto}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  reopenRecord(id,data,requestOptions)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type ReopenRecordMutationResult = NonNullable<Awaited<ReturnType<typeof reopenRecord>>>
+    export type ReopenRecordMutationBody = ReopenRecordBodyDto
+    export type ReopenRecordMutationError = ApiProblem
+
+    /**
+ * @summary Reopens a locked record with justification
+ */
+export const useReopenRecord = <TError = ApiProblem,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof reopenRecord>>, TError,{id: string;data: ReopenRecordBodyDto}, TContext>, request?: SecondParameter<typeof apiClient>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof reopenRecord>>,
+        TError,
+        {id: string;data: ReopenRecordBodyDto},
+        TContext
+      > => {
+
+      const mutationOptions = getReopenRecordMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
+ * @summary Lists amendments (reopen history) for a record
+ */
+export const getRecordAmendments = (
+    id: string,
+ options?: SecondParameter<typeof apiClient>,signal?: AbortSignal
+) => {
+      
+      
+      return apiClient<RecordAmendment[]>(
+      {url: `/api/v1/records/${id}/amendments`, method: 'GET', signal
+    },
+      options);
+    }
+  
+
+
+
+export const getGetRecordAmendmentsQueryKey = (id?: string,) => {
+    return [
+    `/api/v1/records/${id}/amendments`
+    ] as const;
+    }
+
+    
+export const getGetRecordAmendmentsQueryOptions = <TData = Awaited<ReturnType<typeof getRecordAmendments>>, TError = ApiProblem>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getRecordAmendments>>, TError, TData>>, request?: SecondParameter<typeof apiClient>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetRecordAmendmentsQueryKey(id);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getRecordAmendments>>> = ({ signal }) => getRecordAmendments(id, requestOptions, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn, enabled: !!(id), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getRecordAmendments>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetRecordAmendmentsQueryResult = NonNullable<Awaited<ReturnType<typeof getRecordAmendments>>>
+export type GetRecordAmendmentsQueryError = ApiProblem
+
+
+export function useGetRecordAmendments<TData = Awaited<ReturnType<typeof getRecordAmendments>>, TError = ApiProblem>(
+ id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getRecordAmendments>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getRecordAmendments>>,
+          TError,
+          Awaited<ReturnType<typeof getRecordAmendments>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof apiClient>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetRecordAmendments<TData = Awaited<ReturnType<typeof getRecordAmendments>>, TError = ApiProblem>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getRecordAmendments>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getRecordAmendments>>,
+          TError,
+          Awaited<ReturnType<typeof getRecordAmendments>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof apiClient>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetRecordAmendments<TData = Awaited<ReturnType<typeof getRecordAmendments>>, TError = ApiProblem>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getRecordAmendments>>, TError, TData>>, request?: SecondParameter<typeof apiClient>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Lists amendments (reopen history) for a record
+ */
+
+export function useGetRecordAmendments<TData = Awaited<ReturnType<typeof getRecordAmendments>>, TError = ApiProblem>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getRecordAmendments>>, TError, TData>>, request?: SecondParameter<typeof apiClient>}
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetRecordAmendmentsQueryOptions(id,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+
+
+

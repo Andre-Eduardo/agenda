@@ -31,7 +31,6 @@ import type {
 
 import type {
   ApiProblem,
-  CreateFormTemplateInputDto,
   CreateFormTemplateVersionInputDto,
   FormTemplate,
   FormTemplateVersion,
@@ -139,131 +138,6 @@ export function useSearchFormTemplates<TData = Awaited<ReturnType<typeof searchF
 
 
 /**
- * @summary Create a new form template
- */
-export const create = (
-    createFormTemplateInputDto: CreateFormTemplateInputDto,
- options?: SecondParameter<typeof apiClient>,signal?: AbortSignal
-) => {
-      
-      
-      return apiClient<FormTemplate>(
-      {url: `/api/v1/form-templates`, method: 'POST',
-      headers: {'Content-Type': 'application/json', },
-      data: createFormTemplateInputDto, signal
-    },
-      options);
-    }
-  
-
-
-export const getCreateMutationOptions = <TError = ApiProblem,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof create>>, TError,{data: CreateFormTemplateInputDto}, TContext>, request?: SecondParameter<typeof apiClient>}
-): UseMutationOptions<Awaited<ReturnType<typeof create>>, TError,{data: CreateFormTemplateInputDto}, TContext> => {
-
-const mutationKey = ['create'];
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-      
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof create>>, {data: CreateFormTemplateInputDto}> = (props) => {
-          const {data} = props ?? {};
-
-          return  create(data,requestOptions)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type CreateMutationResult = NonNullable<Awaited<ReturnType<typeof create>>>
-    export type CreateMutationBody = CreateFormTemplateInputDto
-    export type CreateMutationError = ApiProblem
-
-    /**
- * @summary Create a new form template
- */
-export const useCreate = <TError = ApiProblem,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof create>>, TError,{data: CreateFormTemplateInputDto}, TContext>, request?: SecondParameter<typeof apiClient>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof create>>,
-        TError,
-        {data: CreateFormTemplateInputDto},
-        TContext
-      > => {
-
-      const mutationOptions = getCreateMutationOptions(options);
-
-      return useMutation(mutationOptions, queryClient);
-    }
-    /**
- * @summary Soft-delete a form template
- */
-export const _delete = (
-    templateId: string,
- options?: SecondParameter<typeof apiClient>,) => {
-      
-      
-      return apiClient<void>(
-      {url: `/api/v1/form-templates/${templateId}`, method: 'DELETE'
-    },
-      options);
-    }
-  
-
-
-export const getDeleteMutationOptions = <TError = ApiProblem,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof _delete>>, TError,{templateId: string}, TContext>, request?: SecondParameter<typeof apiClient>}
-): UseMutationOptions<Awaited<ReturnType<typeof _delete>>, TError,{templateId: string}, TContext> => {
-
-const mutationKey = ['_delete'];
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-      
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof _delete>>, {templateId: string}> = (props) => {
-          const {templateId} = props ?? {};
-
-          return  _delete(templateId,requestOptions)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type _DeleteMutationResult = NonNullable<Awaited<ReturnType<typeof _delete>>>
-    
-    export type _DeleteMutationError = ApiProblem
-
-    /**
- * @summary Soft-delete a form template
- */
-export const useDelete = <TError = ApiProblem,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof _delete>>, TError,{templateId: string}, TContext>, request?: SecondParameter<typeof apiClient>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof _delete>>,
-        TError,
-        {templateId: string},
-        TContext
-      > => {
-
-      const mutationOptions = getDeleteMutationOptions(options);
-
-      return useMutation(mutationOptions, queryClient);
-    }
-    /**
  * @summary Clone a public template for a professional
  */
 export const clone = (

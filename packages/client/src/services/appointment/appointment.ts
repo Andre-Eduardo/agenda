@@ -483,4 +483,126 @@ export const useCancelAppointment = <TError = ApiProblem,
 
       return useMutation(mutationOptions, queryClient);
     }
+    /**
+ * @summary Checks in a patient at the reception (SCHEDULED/CONFIRMED → ARRIVED)
+ */
+export const checkinAppointment = (
+    id: string,
+ options?: SecondParameter<typeof apiClient>,) => {
+      
+      
+      return apiClient<Appointment>(
+      {url: `/api/v1/appointments/${id}/checkin`, method: 'PATCH'
+    },
+      options);
+    }
+  
+
+
+export const getCheckinAppointmentMutationOptions = <TError = ApiProblem,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof checkinAppointment>>, TError,{id: string}, TContext>, request?: SecondParameter<typeof apiClient>}
+): UseMutationOptions<Awaited<ReturnType<typeof checkinAppointment>>, TError,{id: string}, TContext> => {
+
+const mutationKey = ['checkinAppointment'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof checkinAppointment>>, {id: string}> = (props) => {
+          const {id} = props ?? {};
+
+          return  checkinAppointment(id,requestOptions)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CheckinAppointmentMutationResult = NonNullable<Awaited<ReturnType<typeof checkinAppointment>>>
+    
+    export type CheckinAppointmentMutationError = ApiProblem
+
+    /**
+ * @summary Checks in a patient at the reception (SCHEDULED/CONFIRMED → ARRIVED)
+ */
+export const useCheckinAppointment = <TError = ApiProblem,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof checkinAppointment>>, TError,{id: string}, TContext>, request?: SecondParameter<typeof apiClient>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof checkinAppointment>>,
+        TError,
+        {id: string},
+        TContext
+      > => {
+
+      const mutationOptions = getCheckinAppointmentMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
+ * @summary Calls the patient to the room (ARRIVED → IN_PROGRESS)
+ */
+export const callAppointment = (
+    id: string,
+ options?: SecondParameter<typeof apiClient>,) => {
+      
+      
+      return apiClient<Appointment>(
+      {url: `/api/v1/appointments/${id}/call`, method: 'PATCH'
+    },
+      options);
+    }
+  
+
+
+export const getCallAppointmentMutationOptions = <TError = ApiProblem,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof callAppointment>>, TError,{id: string}, TContext>, request?: SecondParameter<typeof apiClient>}
+): UseMutationOptions<Awaited<ReturnType<typeof callAppointment>>, TError,{id: string}, TContext> => {
+
+const mutationKey = ['callAppointment'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof callAppointment>>, {id: string}> = (props) => {
+          const {id} = props ?? {};
+
+          return  callAppointment(id,requestOptions)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CallAppointmentMutationResult = NonNullable<Awaited<ReturnType<typeof callAppointment>>>
+    
+    export type CallAppointmentMutationError = ApiProblem
+
+    /**
+ * @summary Calls the patient to the room (ARRIVED → IN_PROGRESS)
+ */
+export const useCallAppointment = <TError = ApiProblem,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof callAppointment>>, TError,{id: string}, TContext>, request?: SecondParameter<typeof apiClient>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof callAppointment>>,
+        TError,
+        {id: string},
+        TContext
+      > => {
+
+      const mutationOptions = getCallAppointmentMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
     

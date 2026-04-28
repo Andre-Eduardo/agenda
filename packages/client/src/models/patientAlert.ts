@@ -20,10 +20,12 @@ export interface PatientAlert {
   createdAt: string;
   /** The date and time the entity was last updated */
   updatedAt: string;
+  /** The clinic this alert belongs to */
+  clinicId: string;
   /** The patient ID */
   patientId: string;
-  /** The professional ID */
-  professionalId: string;
+  /** ClinicMember who created the alert */
+  createdByMemberId: string;
   /** Alert title */
   title: string;
   /**

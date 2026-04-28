@@ -20,7 +20,7 @@ export class AppointmentPaymentDto extends EntityDto {
     @ApiProperty({enum: PaymentMethod})
     paymentMethod: PaymentMethod;
 
-    @ApiProperty({enum: AppointmentPaymentStatus})
+    @ApiProperty({enum: AppointmentPaymentStatus, enumName: 'AppointmentPaymentStatus'})
     status: AppointmentPaymentStatus;
 
     @ApiProperty()

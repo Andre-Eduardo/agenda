@@ -11,6 +11,7 @@
  * OpenAPI spec version: 0.0.0
  */
 import type { UpdatePatientInputDtoGender } from './updatePatientInputDtoGender';
+import type { UpdatePatientInputDtoAddress } from './updatePatientInputDtoAddress';
 
 export interface UpdatePatientInputDto {
   /** @minLength 1 */
@@ -30,4 +31,15 @@ export interface UpdatePatientInputDto {
   emergencyContactName: string | null;
   /** @nullable */
   emergencyContactPhone: string | null;
+  /** @nullable */
+  address: UpdatePatientInputDtoAddress;
+  /** @nullable */
+  insurancePlanId: string | null;
+  /** @nullable */
+  insuranceCardNumber: string | null;
+  /**
+   * A datetime in ISO 8601 format.
+   * @nullable
+   */
+  insuranceValidUntil: string | null;
 }

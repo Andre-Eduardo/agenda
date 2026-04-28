@@ -10,11 +10,9 @@
                 the token will be invalidated and removed from the cookie.
  * OpenAPI spec version: 0.0.0
  */
-import type { ProfessionalPhone } from './professionalPhone';
-import type { ProfessionalGender } from './professionalGender';
-import type { ProfessionalPersonType } from './professionalPersonType';
-import type { ProfessionalProfilesItem } from './professionalProfilesItem';
-import type { ProfessionalUserId } from './professionalUserId';
+import type { ProfessionalRegistrationNumber } from './professionalRegistrationNumber';
+import type { ProfessionalSpecialty } from './professionalSpecialty';
+import type { ProfessionalSpecialtyNormalized } from './professionalSpecialtyNormalized';
 
 export interface Professional {
   /** The unique identifier of the entity */
@@ -23,31 +21,21 @@ export interface Professional {
   createdAt: string;
   /** The date and time the entity was last updated */
   updatedAt: string;
-  /** The professional name */
-  name: string;
-  /** The professional document ID */
-  documentId: string;
+  /** The clinic member that owns this professional record */
+  clinicMemberId: string;
   /**
-   * The professional phone
+   * Professional registration number (CRM, CRP, etc.)
    * @nullable
    */
-  phone: ProfessionalPhone;
+  registrationNumber: ProfessionalRegistrationNumber;
   /**
-   * The professional gender
+   * Free-form specialty
    * @nullable
    */
-  gender: ProfessionalGender;
-  /** The person type */
-  personType: ProfessionalPersonType;
-  /** The professional profiles */
-  profiles: ProfessionalProfilesItem[];
-  /** The professional specialty */
-  specialty: string;
-  /** The professional config ID */
-  configId: string;
+  specialty: ProfessionalSpecialty;
   /**
-   * The associated user ID
+   * Normalized specialty group
    * @nullable
    */
-  userId: ProfessionalUserId;
+  specialtyNormalized: ProfessionalSpecialtyNormalized;
 }

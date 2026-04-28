@@ -62,7 +62,7 @@ class PaymentListItemDto {
     @ApiProperty() professionalName: string;
     @ApiProperty({format: 'date-time'}) appointmentDate: string;
     @ApiProperty({enum: PaymentMethod}) paymentMethod: PaymentMethod;
-    @ApiProperty({enum: AppointmentPaymentStatus}) status: AppointmentPaymentStatus;
+    @ApiProperty({enum: AppointmentPaymentStatus, enumName: 'AppointmentPaymentStatus'}) status: AppointmentPaymentStatus;
     @ApiProperty() amountBrl: number;
     @ApiProperty({format: 'date-time', nullable: true}) paidAt: string | null;
     @ApiProperty({nullable: true}) insurancePlanName: string | null;

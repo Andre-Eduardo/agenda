@@ -19,7 +19,7 @@ import type { CreateRecordDtoSource } from './createRecordDtoSource';
 
 export interface CreateRecordDto {
   patientId: string;
-  professionalId: string;
+  responsibleProfessionalId: string;
   /** @minLength 1 */
   description?: string;
   files?: CreateRecordDtoFilesItem[];

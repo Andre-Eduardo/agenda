@@ -24,17 +24,19 @@ export interface PatientChatSession {
   createdAt: string;
   /** The date and time the entity was last updated */
   updatedAt: string;
+  clinicId: string;
   patientId: string;
-  professionalId: string;
+  /** ClinicMember owner of the session */
+  memberId: string;
   /** @nullable */
   agentProfileId: PatientChatSessionAgentProfileId;
   /**
-   * Nome do agente selecionado automaticamente com base no perfil profissional. Exibir na interface como "Agente ativo: {agentName}".
+   * Agent name resolved automatically from the member's professional profile. Render as "Active agent: {agentName}".
    * @nullable
    */
   agentName: PatientChatSessionAgentName;
   /**
-   * Slug legível do agente ativo
+   * Human-readable agent slug
    * @nullable
    */
   agentSlug: PatientChatSessionAgentSlug;

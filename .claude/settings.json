@@ -129,7 +129,15 @@
       "Bash(PGPASSWORD=postgres psql -h localhost -U postgres -d agenda -c \"\\\\d patient\")",
       "Bash(pnpm prisma:generate)",
       "Bash(netstat -ano)",
-      "Bash(grep \"tests\\\\\\\\\\\\\\\\navigation\" /tmp/e2e2.log)"
+      "Bash(grep \"tests\\\\\\\\\\\\\\\\navigation\" /tmp/e2e2.log)",
+      "Bash(pnpm -F @agenda-app/client codegen)",
+      "mcp__playwright__browser_navigate",
+      "mcp__playwright__browser_wait_for",
+      "mcp__playwright__browser_take_screenshot",
+      "mcp__playwright__browser_snapshot",
+      "mcp__playwright__browser_console_messages",
+      "mcp__playwright__browser_click",
+      "mcp__playwright__browser_type"
     ],
     "additionalDirectories": [
       "\\tmp"

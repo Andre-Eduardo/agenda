@@ -10,16 +10,14 @@
                 the token will be invalidated and removed from the cookie.
  * OpenAPI spec version: 0.0.0
  */
-import type { SearchFormTemplatesSpecialty } from './searchFormTemplatesSpecialty';
 import type { SearchFormTemplatesScope } from './searchFormTemplatesScope';
 import type { SearchFormTemplatesSortCreatedAt } from './searchFormTemplatesSortCreatedAt';
 import type { SearchFormTemplatesSortUpdatedAt } from './searchFormTemplatesSortUpdatedAt';
 import type { SearchFormTemplatesSortName } from './searchFormTemplatesSortName';
 
 export type SearchFormTemplatesParams = {
-specialty?: SearchFormTemplatesSpecialty;
+specialty?: string;
 scope?: SearchFormTemplatesScope;
-professionalId?: string;
 /**
  * The cursor to start from
  * @nullable

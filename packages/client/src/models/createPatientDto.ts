@@ -12,6 +12,7 @@
  */
 import type { CreatePatientDtoGender } from './createPatientDtoGender';
 import type { CreatePatientDtoPersonType } from './createPatientDtoPersonType';
+import type { CreatePatientDtoAddress } from './createPatientDtoAddress';
 
 export interface CreatePatientDto {
   /** @minLength 1 */
@@ -22,8 +23,6 @@ export interface CreatePatientDto {
   /** @nullable */
   gender?: CreatePatientDtoGender;
   personType?: CreatePatientDtoPersonType;
-  /** @nullable */
-  professionalId?: string | null;
   /**
    * A datetime in ISO 8601 format.
    * @nullable
@@ -35,4 +34,15 @@ export interface CreatePatientDto {
   emergencyContactName?: string | null;
   /** @nullable */
   emergencyContactPhone?: string | null;
+  /** @nullable */
+  address?: CreatePatientDtoAddress;
+  /** @nullable */
+  insurancePlanId?: string | null;
+  /** @nullable */
+  insuranceCardNumber?: string | null;
+  /**
+   * A datetime in ISO 8601 format.
+   * @nullable
+   */
+  insuranceValidUntil?: string | null;
 }

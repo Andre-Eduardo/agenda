@@ -12,7 +12,7 @@
  */
 
 /**
- * Nome do agente selecionado automaticamente com base no perfil profissional. Exibir na interface como "Agente ativo: {agentName}".
+ * Agent name resolved automatically from the member's professional profile. Render as "Active agent: {agentName}".
  * @nullable
  */
 export type PatientChatSessionAgentName = { [key: string]: unknown } | null;

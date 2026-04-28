@@ -44,3 +44,6 @@ lerna-debug.log*
 
 # Stitch design references (downloaded on demand)
 design/stitch/
+
+# Playwright MCP screenshots (generated during development)
+.playwright-mcp/

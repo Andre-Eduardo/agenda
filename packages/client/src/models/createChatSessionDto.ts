@@ -13,7 +13,6 @@
 
 export interface CreateChatSessionDto {
   patientId: string;
-  professionalId: string;
   /** @maxLength 255 */
   title?: string;
 }

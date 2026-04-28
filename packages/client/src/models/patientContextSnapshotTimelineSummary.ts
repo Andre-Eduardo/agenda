@@ -12,7 +12,7 @@
  */
 
 /**
- * Timeline resumida de eventos clínicos
+ * Summarized clinical timeline
  * @nullable
  */
 export type PatientContextSnapshotTimelineSummary = { [key: string]: unknown } | null;

@@ -10,10 +10,13 @@
                 the token will be invalidated and removed from the cookie.
  * OpenAPI spec version: 0.0.0
  */
+import type { UpdateProfessionalInputDtoSpecialtyNormalized } from './updateProfessionalInputDtoSpecialtyNormalized';
 
 export interface UpdateProfessionalInputDto {
-  /** @minLength 1 */
-  specialty: string;
   /** @nullable */
-  userId: string | null;
+  registrationNumber: string | null;
+  /** @nullable */
+  specialty: string | null;
+  /** @nullable */
+  specialtyNormalized: UpdateProfessionalInputDtoSpecialtyNormalized;
 }

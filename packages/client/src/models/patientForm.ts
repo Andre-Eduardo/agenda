@@ -10,6 +10,7 @@
                 the token will be invalidated and removed from the cookie.
  * OpenAPI spec version: 0.0.0
  */
+import type { PatientFormResponsibleProfessionalId } from './patientFormResponsibleProfessionalId';
 import type { PatientFormStatus } from './patientFormStatus';
 import type { PatientFormResponseJson } from './patientFormResponseJson';
 import type { PatientFormComputedJson } from './patientFormComputedJson';
@@ -22,8 +23,15 @@ export interface PatientForm {
   createdAt: string;
   /** The date and time the entity was last updated */
   updatedAt: string;
+  clinicId: string;
   patientId: string;
-  professionalId: string;
+  /** ClinicMember who applied/filled the form */
+  createdByMemberId: string;
+  /**
+   * Professional clinically responsible
+   * @nullable
+   */
+  responsibleProfessionalId: PatientFormResponsibleProfessionalId;
   templateId: string;
   versionId: string;
   status: PatientFormStatus;

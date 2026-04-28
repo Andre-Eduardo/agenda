@@ -13,7 +13,6 @@
 import type { CreatePatientAlertInputDtoSeverity } from './createPatientAlertInputDtoSeverity';
 
 export interface CreatePatientAlertInputDto {
-  professionalId: string;
   /**
    * @minLength 1
    * @maxLength 255

@@ -10,7 +10,6 @@
                 the token will be invalidated and removed from the cookie.
  * OpenAPI spec version: 0.0.0
  */
-import type { CreateFormTemplateInputDtoSpecialty } from './createFormTemplateInputDtoSpecialty';
 
 export interface CreateFormTemplateInputDto {
   /**
@@ -29,9 +28,10 @@ export interface CreateFormTemplateInputDto {
    * @nullable
    */
   description?: string | null;
-  specialty: CreateFormTemplateInputDtoSpecialty;
-  /** Public templates are available to all professionals */
+  /**
+   * @minLength 1
+   * @maxLength 100
+   */
+  specialty: string;
   isPublic?: boolean;
-  /** @nullable */
-  professionalId?: string | null;
 }

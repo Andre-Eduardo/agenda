@@ -48,7 +48,7 @@ export class AppointmentDto extends EntityDto {
     @ApiProperty({format: 'date-time', nullable: true, description: 'When the patient was called to the room'})
     calledAt: string | null;
 
-    @ApiProperty({enum: AppointmentPaymentStatus, nullable: true, description: 'Financial status of the appointment payment, null if no payment registered'})
+    @ApiProperty({enum: AppointmentPaymentStatus, enumName: 'AppointmentPaymentStatus', nullable: true, description: 'Financial status of the appointment payment, null if no payment registered'})
     paymentStatus: AppointmentPaymentStatus | null;
 
     constructor(appointment: Appointment, paymentStatus: AppointmentPaymentStatus | null = null) {

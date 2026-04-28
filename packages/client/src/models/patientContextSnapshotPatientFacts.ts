@@ -12,6 +12,6 @@
  */
 
 /**
- * Facts estruturados do paciente
+ * Structured patient facts
  */
 export type PatientContextSnapshotPatientFacts = { [key: string]: unknown };

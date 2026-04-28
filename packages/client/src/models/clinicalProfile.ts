@@ -25,10 +25,14 @@ export interface ClinicalProfile {
   createdAt: string;
   /** The date and time the entity was last updated */
   updatedAt: string;
+  /** The clinic this profile belongs to */
+  clinicId: string;
   /** The patient ID */
   patientId: string;
-  /** The professional ID */
-  professionalId: string;
+  /** ClinicMember who created/edited the profile */
+  createdByMemberId: string;
+  /** Professional clinically responsible */
+  responsibleProfessionalId: string;
   /**
    * Known allergies
    * @nullable

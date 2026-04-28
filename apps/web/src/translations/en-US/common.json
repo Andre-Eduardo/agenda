@@ -40,5 +40,37 @@
   "theme": {
     "light": "Light mode",
     "dark": "Dark mode"
+  },
+  "auth": {
+    "login": {
+      "title": "Welcome back",
+      "subtitle": "Sign in to your professional account to continue.",
+      "form": {
+        "username": "Username",
+        "password": "Password",
+        "forgotPassword": "Forgot?",
+        "rememberMe": "Keep me signed in on this device",
+        "submit": "Sign in"
+      },
+      "validation": {
+        "username": {
+          "required": "Email is required"
+        },
+        "password": {
+          "required": "Password is required"
+        },
+        "credentials": {
+          "invalid": "Invalid email or password"
+        }
+      },
+      "panel": {
+        "title": "Smart health records.",
+        "highlight": "Your decision.",
+        "description": "OCR import, assisted analysis and mandatory human review at every step of clinical documentation."
+      },
+      "footer": {
+        "security": "Secure system · LGPD compliance"
+      }
+    }
   }
 }

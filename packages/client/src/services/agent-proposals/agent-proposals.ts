@@ -42,7 +42,7 @@ type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 
 
 /**
- * @summary List pending proposals for the logged-in professional
+ * @summary List pending proposals for the actor's current clinic
  */
 export const listPending = (
     
@@ -113,7 +113,7 @@ export function useListPending<TData = Awaited<ReturnType<typeof listPending>>, 
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary List pending proposals for the logged-in professional
+ * @summary List pending proposals for the actor's current clinic
  */
 
 export function useListPending<TData = Awaited<ReturnType<typeof listPending>>, TError = ApiProblem>(

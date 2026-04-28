@@ -15,6 +15,9 @@ import type { AppointmentStatus } from './appointmentStatus';
 import type { AppointmentCanceledAt } from './appointmentCanceledAt';
 import type { AppointmentCanceledReason } from './appointmentCanceledReason';
 import type { AppointmentNote } from './appointmentNote';
+import type { AppointmentArrivedAt } from './appointmentArrivedAt';
+import type { AppointmentCalledAt } from './appointmentCalledAt';
+import type { AppointmentPaymentStatusProperty } from './appointmentPaymentStatusProperty';
 
 export interface Appointment {
   /** The unique identifier of the entity */
@@ -23,10 +26,14 @@ export interface Appointment {
   createdAt: string;
   /** The date and time the entity was last updated */
   updatedAt: string;
+  /** The clinic this appointment belongs to */
+  clinicId: string;
   /** The patient ID */
   patientId: string;
-  /** The professional ID */
-  professionalId: string;
+  /** ClinicMember scheduled to attend */
+  attendedByMemberId: string;
+  /** ClinicMember who created/scheduled the appointment */
+  createdByMemberId: string;
   /** The appointment start time */
   startAt: string;
   /** The appointment end time */
@@ -52,4 +59,19 @@ export interface Appointment {
    * @nullable
    */
   note: AppointmentNote;
+  /**
+   * When the patient arrived at the reception
+   * @nullable
+   */
+  arrivedAt: AppointmentArrivedAt;
+  /**
+   * When the patient was called to the room
+   * @nullable
+   */
+  calledAt: AppointmentCalledAt;
+  /**
+   * Financial status of the appointment payment, null if no payment registered
+   * @nullable
+   */
+  paymentStatus: AppointmentPaymentStatusProperty;
 }

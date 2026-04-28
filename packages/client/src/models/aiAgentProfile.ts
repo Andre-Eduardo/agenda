@@ -12,7 +12,6 @@
  */
 import type { AiAgentProfileCode } from './aiAgentProfileCode';
 import type { AiAgentProfileSpecialtyGroup } from './aiAgentProfileSpecialtyGroup';
-import type { AiAgentProfileSpecialty } from './aiAgentProfileSpecialty';
 import type { AiAgentProfileDescription } from './aiAgentProfileDescription';
 import type { AiAgentProfileBaseInstructions } from './aiAgentProfileBaseInstructions';
 import type { AiAgentProfileContextPriority } from './aiAgentProfileContextPriority';
@@ -37,12 +36,10 @@ export interface AiAgentProfile {
   /** Identificador único legível, ex: "psicologia-adulto" */
   slug: string;
   /**
-   * Grupo de especialidade, ex: "medicina", "psicologia"
+   * Grupo de especialidade de IA
    * @nullable
    */
   specialtyGroup: AiAgentProfileSpecialtyGroup;
-  /** @nullable */
-  specialty: AiAgentProfileSpecialty;
   /** @nullable */
   description: AiAgentProfileDescription;
   /**

@@ -12,19 +12,7 @@
  */
 
 /**
- * Target specialty
+ * Target specialty label (free text)
+ * @nullable
  */
-export type FormTemplateSpecialty = typeof FormTemplateSpecialty[keyof typeof FormTemplateSpecialty];
-
-
-// eslint-disable-next-line @typescript-eslint/no-redeclare
-export const FormTemplateSpecialty = {
-  PSICOLOGIA: 'PSICOLOGIA',
-  MEDICINA: 'MEDICINA',
-  FISIOTERAPIA: 'FISIOTERAPIA',
-  FONOAUDIOLOGIA: 'FONOAUDIOLOGIA',
-  NUTRICAO: 'NUTRICAO',
-  TERAPIA_OCUPACIONAL: 'TERAPIA_OCUPACIONAL',
-  ENFERMAGEM: 'ENFERMAGEM',
-  OUTROS: 'OUTROS',
-} as const;
+export type FormTemplateSpecialty = { [key: string]: unknown } | null;

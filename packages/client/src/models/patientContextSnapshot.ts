@@ -10,7 +10,7 @@
                 the token will be invalidated and removed from the cookie.
  * OpenAPI spec version: 0.0.0
  */
-import type { PatientContextSnapshotProfessionalId } from './patientContextSnapshotProfessionalId';
+import type { PatientContextSnapshotMemberId } from './patientContextSnapshotMemberId';
 import type { PatientContextSnapshotPatientFacts } from './patientContextSnapshotPatientFacts';
 import type { PatientContextSnapshotCriticalContext } from './patientContextSnapshotCriticalContext';
 import type { PatientContextSnapshotTimelineSummary } from './patientContextSnapshotTimelineSummary';
@@ -23,15 +23,19 @@ export interface PatientContextSnapshot {
   createdAt: string;
   /** The date and time the entity was last updated */
   updatedAt: string;
+  clinicId: string;
   patientId: string;
-  /** @nullable */
-  professionalId: PatientContextSnapshotProfessionalId;
-  /** Facts estruturados do paciente */
+  /**
+   * Member-specific snapshot (null = generic)
+   * @nullable
+   */
+  memberId: PatientContextSnapshotMemberId;
+  /** Structured patient facts */
   patientFacts: PatientContextSnapshotPatientFacts;
   /** @nullable */
   criticalContext: PatientContextSnapshotCriticalContext;
   /**
-   * Timeline resumida de eventos clínicos
+   * Summarized clinical timeline
    * @nullable
    */
   timelineSummary: PatientContextSnapshotTimelineSummary;

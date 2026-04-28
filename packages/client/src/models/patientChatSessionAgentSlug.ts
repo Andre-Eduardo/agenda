@@ -12,7 +12,7 @@
  */
 
 /**
- * Slug legível do agente ativo
+ * Human-readable agent slug
  * @nullable
  */
 export type PatientChatSessionAgentSlug = { [key: string]: unknown } | null;

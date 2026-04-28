@@ -13,12 +13,15 @@
 import type { PatientPhone } from './patientPhone';
 import type { PatientGender } from './patientGender';
 import type { PatientPersonType } from './patientPersonType';
-import type { PatientProfilesItem } from './patientProfilesItem';
-import type { PatientProfessionalId } from './patientProfessionalId';
 import type { PatientBirthDate } from './patientBirthDate';
 import type { PatientEmail } from './patientEmail';
 import type { PatientEmergencyContactName } from './patientEmergencyContactName';
 import type { PatientEmergencyContactPhone } from './patientEmergencyContactPhone';
+import type { PatientAddress } from './patientAddress';
+import type { PatientInsurancePlanId } from './patientInsurancePlanId';
+import type { PatientInsuranceCardNumber } from './patientInsuranceCardNumber';
+import type { PatientInsuranceValidUntil } from './patientInsuranceValidUntil';
+import type { PatientInsurancePlan } from './patientInsurancePlan';
 
 export interface Patient {
   /** The unique identifier of the entity */
@@ -43,13 +46,8 @@ export interface Patient {
   gender: PatientGender;
   /** The person type */
   personType: PatientPersonType;
-  /** The patient profiles */
-  profiles: PatientProfilesItem[];
-  /**
-   * The associated professional ID
-   * @nullable
-   */
-  professionalId: PatientProfessionalId;
+  /** The clinic this patient belongs to */
+  clinicId: string;
   /**
    * The patient birth date
    * @nullable
@@ -70,4 +68,29 @@ export interface Patient {
    * @nullable
    */
   emergencyContactPhone: PatientEmergencyContactPhone;
+  /**
+   * Patient address
+   * @nullable
+   */
+  address: PatientAddress;
+  /**
+   * Insurance plan ID
+   * @nullable
+   */
+  insurancePlanId: PatientInsurancePlanId;
+  /**
+   * Insurance card number
+   * @nullable
+   */
+  insuranceCardNumber: PatientInsuranceCardNumber;
+  /**
+   * Insurance valid until
+   * @nullable
+   */
+  insuranceValidUntil: PatientInsuranceValidUntil;
+  /**
+   * Insurance plan details
+   * @nullable
+   */
+  insurancePlan: PatientInsurancePlan;
 }

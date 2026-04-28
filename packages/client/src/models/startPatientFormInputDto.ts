@@ -12,7 +12,8 @@
  */
 
 export interface StartPatientFormInputDto {
-  professionalId: string;
+  /** @nullable */
+  responsibleProfessionalId?: string | null;
   templateId: string;
   versionId?: string;
   /** @nullable */

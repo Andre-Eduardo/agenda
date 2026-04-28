@@ -28,7 +28,7 @@ import type {
 import type {
   AiAgentProfile,
   ApiProblem,
-  ProfessionalId
+  ClinicMemberId
 } from '../../models';
 
 import { apiClient } from '../../api-client';
@@ -39,7 +39,7 @@ type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 
 
 /**
- * Returns the versioned catalog of active clinical AI agent profiles. O agente ativo de uma sessão é selecionado automaticamente pelo backend com base na especialidade do profissional — não há seleção manual pelo usuário.
+ * Returns the versioned catalog of active clinical AI agent profiles. The active agent for a session is selected automatically server-side based on the member's specialty.
  * @summary Lists all active AI agent profiles
  */
 export const listAgents = (
@@ -132,17 +132,17 @@ export function useListAgents<TData = Awaited<ReturnType<typeof listAgents>>, TE
 
 
 /**
- * Pré-visualiza o agente que seria selecionado automaticamente para o profissional informado. Use este endpoint para exibir "Agente ativo: {agentName}" antes de iniciar o chat.
- * @summary Resolves the AI agent that would be used for a given professional
+ * Previews which agent would be picked automatically for the given member. Use this to render "Active agent: {agentName}" before starting a chat session.
+ * @summary Resolve the AI agent for a given clinic member
  */
-export const resolveAgentForProfessional = (
-    professionalId: ProfessionalId,
+export const resolveAgentForMember = (
+    clinicMemberId: ClinicMemberId,
  options?: SecondParameter<typeof apiClient>,signal?: AbortSignal
 ) => {
       
       
       return apiClient<AiAgentProfile>(
-      {url: `/api/v1/agents/resolve/${professionalId}`, method: 'GET', signal
+      {url: `/api/v1/agents/resolve/${clinicMemberId}`, method: 'GET', signal
     },
       options);
     }
@@ -150,69 +150,69 @@ export const resolveAgentForProfessional = (
 
 
 
-export const getResolveAgentForProfessionalQueryKey = (professionalId?: ProfessionalId,) => {
+export const getResolveAgentForMemberQueryKey = (clinicMemberId?: ClinicMemberId,) => {
     return [
-    `/api/v1/agents/resolve/${professionalId}`
+    `/api/v1/agents/resolve/${clinicMemberId}`
     ] as const;
     }
 
     
-export const getResolveAgentForProfessionalQueryOptions = <TData = Awaited<ReturnType<typeof resolveAgentForProfessional>>, TError = ApiProblem>(professionalId: ProfessionalId, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof resolveAgentForProfessional>>, TError, TData>>, request?: SecondParameter<typeof apiClient>}
+export const getResolveAgentForMemberQueryOptions = <TData = Awaited<ReturnType<typeof resolveAgentForMember>>, TError = ApiProblem>(clinicMemberId: ClinicMemberId, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof resolveAgentForMember>>, TError, TData>>, request?: SecondParameter<typeof apiClient>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getResolveAgentForProfessionalQueryKey(professionalId);
+  const queryKey =  queryOptions?.queryKey ?? getResolveAgentForMemberQueryKey(clinicMemberId);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof resolveAgentForProfessional>>> = ({ signal }) => resolveAgentForProfessional(professionalId, requestOptions, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof resolveAgentForMember>>> = ({ signal }) => resolveAgentForMember(clinicMemberId, requestOptions, signal);
 
       
 
       
 
-   return  { queryKey, queryFn, enabled: !!(professionalId), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof resolveAgentForProfessional>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn, enabled: !!(clinicMemberId), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof resolveAgentForMember>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type ResolveAgentForProfessionalQueryResult = NonNullable<Awaited<ReturnType<typeof resolveAgentForProfessional>>>
-export type ResolveAgentForProfessionalQueryError = ApiProblem
+export type ResolveAgentForMemberQueryResult = NonNullable<Awaited<ReturnType<typeof resolveAgentForMember>>>
+export type ResolveAgentForMemberQueryError = ApiProblem
 
 
-export function useResolveAgentForProfessional<TData = Awaited<ReturnType<typeof resolveAgentForProfessional>>, TError = ApiProblem>(
- professionalId: ProfessionalId, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof resolveAgentForProfessional>>, TError, TData>> & Pick<
+export function useResolveAgentForMember<TData = Awaited<ReturnType<typeof resolveAgentForMember>>, TError = ApiProblem>(
+ clinicMemberId: ClinicMemberId, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof resolveAgentForMember>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof resolveAgentForProfessional>>,
+          Awaited<ReturnType<typeof resolveAgentForMember>>,
           TError,
-          Awaited<ReturnType<typeof resolveAgentForProfessional>>
+          Awaited<ReturnType<typeof resolveAgentForMember>>
         > , 'initialData'
       >, request?: SecondParameter<typeof apiClient>}
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useResolveAgentForProfessional<TData = Awaited<ReturnType<typeof resolveAgentForProfessional>>, TError = ApiProblem>(
- professionalId: ProfessionalId, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof resolveAgentForProfessional>>, TError, TData>> & Pick<
+export function useResolveAgentForMember<TData = Awaited<ReturnType<typeof resolveAgentForMember>>, TError = ApiProblem>(
+ clinicMemberId: ClinicMemberId, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof resolveAgentForMember>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof resolveAgentForProfessional>>,
+          Awaited<ReturnType<typeof resolveAgentForMember>>,
           TError,
-          Awaited<ReturnType<typeof resolveAgentForProfessional>>
+          Awaited<ReturnType<typeof resolveAgentForMember>>
         > , 'initialData'
       >, request?: SecondParameter<typeof apiClient>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useResolveAgentForProfessional<TData = Awaited<ReturnType<typeof resolveAgentForProfessional>>, TError = ApiProblem>(
- professionalId: ProfessionalId, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof resolveAgentForProfessional>>, TError, TData>>, request?: SecondParameter<typeof apiClient>}
+export function useResolveAgentForMember<TData = Awaited<ReturnType<typeof resolveAgentForMember>>, TError = ApiProblem>(
+ clinicMemberId: ClinicMemberId, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof resolveAgentForMember>>, TError, TData>>, request?: SecondParameter<typeof apiClient>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Resolves the AI agent that would be used for a given professional
+ * @summary Resolve the AI agent for a given clinic member
  */
 
-export function useResolveAgentForProfessional<TData = Awaited<ReturnType<typeof resolveAgentForProfessional>>, TError = ApiProblem>(
- professionalId: ProfessionalId, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof resolveAgentForProfessional>>, TError, TData>>, request?: SecondParameter<typeof apiClient>}
+export function useResolveAgentForMember<TData = Awaited<ReturnType<typeof resolveAgentForMember>>, TError = ApiProblem>(
+ clinicMemberId: ClinicMemberId, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof resolveAgentForMember>>, TError, TData>>, request?: SecondParameter<typeof apiClient>}
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
-  const queryOptions = getResolveAgentForProfessionalQueryOptions(professionalId,options)
+  const queryOptions = getResolveAgentForMemberQueryOptions(clinicMemberId,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
@@ -225,7 +225,7 @@ export function useResolveAgentForProfessional<TData = Awaited<ReturnType<typeof
 
 
 /**
- * Retorna as regras de correspondência entre especialidade profissional e agente clínico. Útil para diagnóstico e documentação da lógica de resolução automática.
+ * Returns the rules matching member specialty to clinical agent. Useful for debugging the auto-resolution logic.
  * @summary Lists the active agent mapping rules (for diagnostics)
  */
 export const listMappingRules = (

@@ -14,7 +14,7 @@ import type { CreateAppointmentDtoType } from './createAppointmentDtoType';
 
 export interface CreateAppointmentDto {
   patientId: string;
-  professionalId: string;
+  attendedByMemberId: string;
   /** A datetime in ISO 8601 format. */
   startAt: string;
   /** A datetime in ISO 8601 format. */

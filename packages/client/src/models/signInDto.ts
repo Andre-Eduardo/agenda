@@ -12,8 +12,6 @@
  */
 
 export interface SignInDto {
-  /** @nullable */
-  professionalId?: string | null;
   username: string;
   /** @minLength 1 */
   password: string;

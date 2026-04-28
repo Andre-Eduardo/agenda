@@ -40,5 +40,37 @@
   "theme": {
     "light": "Modo claro",
     "dark": "Modo escuro"
+  },
+  "auth": {
+    "login": {
+      "title": "Bem-vindo de volta",
+      "subtitle": "Acesse sua conta profissional para continuar.",
+      "form": {
+        "username": "Usuário",
+        "password": "Senha",
+        "forgotPassword": "Esqueceu?",
+        "rememberMe": "Manter conectado neste dispositivo",
+        "submit": "Entrar"
+      },
+      "validation": {
+        "username": {
+          "required": "Usuário é obrigatório"
+        },
+        "password": {
+          "required": "Senha é obrigatória"
+        },
+        "credentials": {
+          "invalid": "Usuário ou senha incorretos"
+        }
+      },
+      "panel": {
+        "title": "Prontuário inteligente.",
+        "highlight": "Decisão sua.",
+        "description": "Importação por OCR, análise assistida e revisão humana obrigatória em cada etapa do registro clínico."
+      },
+      "footer": {
+        "security": "Sistema seguro · Conformidade LGPD"
+      }
+    }
   }
 }

@@ -25,6 +25,8 @@ import type { RecordEventDate } from './recordEventDate';
 import type { RecordAppointmentId } from './recordAppointmentId';
 import type { RecordSource } from './recordSource';
 import type { RecordImportedDocumentId } from './recordImportedDocumentId';
+import type { RecordSignedAt } from './recordSignedAt';
+import type { RecordSignedByMemberId } from './recordSignedByMemberId';
 import type { FileDto } from './fileDto';
 
 export interface Record {
@@ -34,10 +36,14 @@ export interface Record {
   createdAt: string;
   /** The date and time the entity was last updated */
   updatedAt: string;
+  /** The clinic this record belongs to */
+  clinicId: string;
   /** The patient ID */
   patientId: string;
-  /** The professional ID */
-  professionalId: string;
+  /** ClinicMember who typed the record */
+  createdByMemberId: string;
+  /** Professional clinically responsible */
+  responsibleProfessionalId: string;
   /**
    * Legacy free-text description
    * @nullable
@@ -109,6 +115,18 @@ export interface Record {
   importedDocumentId: RecordImportedDocumentId;
   /** Indicates if the imported record was manually reviewed and edited */
   wasHumanEdited: boolean;
+  /** Whether the record is locked (signed) */
+  isLocked: boolean;
+  /**
+   * When the record was signed
+   * @nullable
+   */
+  signedAt: RecordSignedAt;
+  /**
+   * ID of the member who signed the record
+   * @nullable
+   */
+  signedByMemberId: RecordSignedByMemberId;
   /** The attached files */
   files: FileDto[];
 }

@@ -12,7 +12,7 @@
  */
 
 export interface UpsertClinicalProfileInputDto {
-  professionalId: string;
+  responsibleProfessionalId: string;
   /** @nullable */
   allergies?: string | null;
   /** @nullable */

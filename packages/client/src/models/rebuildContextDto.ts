@@ -13,6 +13,6 @@
 
 export interface RebuildContextDto {
   patientId: string;
-  professionalId?: string;
+  memberId?: string;
   reindex?: boolean;
 }
