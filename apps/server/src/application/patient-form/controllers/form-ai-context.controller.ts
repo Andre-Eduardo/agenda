@@ -3,7 +3,7 @@ import {ApiTags} from '@nestjs/swagger';
 import {z} from 'zod';
 import {Actor} from '../../../domain/@shared/actor';
 import {PatientId} from '../../../domain/patient/entities';
-import {Specialty} from '../../../domain/form-template/entities';
+import {AiSpecialtyGroup} from '../../../domain/form-template/entities';
 import {PatientFormPermission} from '../../../domain/auth';
 import {Authorize} from '../../@shared/auth';
 import {RequestActor} from '../../@shared/auth/request-actor.decorator';
@@ -14,7 +14,7 @@ import {entityId} from '../../@shared/validation/schemas';
 import {FormAiContextService, AiContextPayload} from '../services';
 
 const aiContextFilterSchema = z.object({
-    specialty: z.nativeEnum(Specialty).optional(),
+    specialty: z.nativeEnum(AiSpecialtyGroup).optional(),
     fromDate: z.coerce.date().optional(),
     toDate: z.coerce.date().optional(),
     onlyCompleted: z.coerce.boolean().optional(),

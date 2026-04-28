@@ -1,6 +1,6 @@
 import {Injectable} from '@nestjs/common';
 import {PreconditionException} from '../../../domain/@shared/exceptions';
-import {FormTemplate} from '../../../domain/form-template/entities';
+import {FormTemplate, inferSpecialtyGroup} from '../../../domain/form-template/entities';
 import {FormTemplateRepository} from '../../../domain/form-template/form-template.repository';
 import {ApplicationService, Command} from '../../@shared/application.service';
 import {CreateFormTemplateDto, FormTemplateDto} from '../dtos';
@@ -21,7 +21,8 @@ export class CreateFormTemplateService implements ApplicationService<CreateFormT
             code: payload.code,
             name: payload.name,
             description: payload.description ?? null,
-            specialty: payload.specialty,
+            specialtyLabel: payload.specialty,
+            specialtyGroup: inferSpecialtyGroup(payload.specialty),
             isPublic: payload.isPublic,
             clinicId: payload.isPublic ? null : actor.clinicId,
             createdByMemberId: payload.isPublic ? null : actor.clinicMemberId,

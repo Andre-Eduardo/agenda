@@ -38,6 +38,7 @@ export class ReopenRecordService implements ApplicationService<ReopenRecordDto, 
             recordId: record.id,
             requestedByMemberId: actor.clinicMemberId,
             justification: payload.justification,
+            reopenedAt: new Date(),
         });
 
         await this.recordRepository.save(record);

@@ -1,4 +1,4 @@
-import {Body, Controller, Delete, Get, Post, Put, Query} from '@nestjs/common';
+import {Body, Controller, Delete, Get, HttpCode, HttpStatus, Post, Put, Query} from '@nestjs/common';
 import {ApiTags} from '@nestjs/swagger';
 import {Actor} from '../../../domain/@shared/actor';
 import {RecordId} from '../../../domain/record/entities';
@@ -90,6 +90,7 @@ export class RecordController {
         responses: [{status: 200, description: 'Record signed', type: RecordDto}],
     })
     @Authorize(RecordPermission.UPDATE)
+    @HttpCode(HttpStatus.OK)
     @Post(':id/sign')
     async signRecord(
         @RequestActor() actor: Actor,
@@ -104,6 +105,7 @@ export class RecordController {
         responses: [{status: 200, description: 'Record reopened', type: RecordDto}],
     })
     @Authorize(RecordPermission.UPDATE)
+    @HttpCode(HttpStatus.OK)
     @Post(':id/reopen')
     async reopenRecord(
         @RequestActor() actor: Actor,

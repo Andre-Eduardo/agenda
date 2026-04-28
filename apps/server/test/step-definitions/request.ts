@@ -1,4 +1,4 @@
-import {Given, Then, When} from '@cucumber/cucumber';
+import {Before, Given, Then, When} from '@cucumber/cucumber';
 import type {Response} from 'supertest';
 import * as qs from 'qs';
 import {chai} from '../support/chai-setup';
@@ -8,7 +8,7 @@ import {resolveReferences} from '../support/parser';
 import type {DataTable} from '@cucumber/cucumber';
 
 // ---------------------------------------------------------------------------
-// Shared request state (reset per scenario via NestJS app lifecycle)
+// Shared request state — reset before each scenario
 // ---------------------------------------------------------------------------
 type RequestContext = {
     response?: Response;
@@ -19,6 +19,11 @@ const requestContext: RequestContext = {
     response: undefined,
     headers: {'Accept-Language': 'pt-BR'},
 };
+
+Before({name: 'Reset request context'}, function () {
+    requestContext.response = undefined;
+    requestContext.headers = {'Accept-Language': 'pt-BR'};
+});
 
 function getResponse(): Response {
     if (!requestContext.response) {
@@ -38,7 +43,7 @@ function getResponse(): Response {
  * Example:
  *   Given I set the header "Accept-Language" to "en-US"
  */
-Given('I set the header {string} to {string}', function (_this: Context, header: string, value: string) {
+Given('I set the header {string} to {string}', function (this: Context, header: string, value: string) {
     requestContext.headers[header] = value;
 });
 

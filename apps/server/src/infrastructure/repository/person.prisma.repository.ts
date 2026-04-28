@@ -42,7 +42,6 @@ export class PersonPrismaRepository extends PrismaRepository implements PersonRe
         const where: PrismaClient.Prisma.PersonWhereInput = {
             id: filter.ids ? {in: filter.ids.map((id) => id.toString())} : undefined,
             name: filter.name ? {contains: filter.name, mode: 'insensitive'} : undefined,
-            documentId: filter.documentId ? {contains: filter.documentId} : undefined,
             phone: filter.phone ? {contains: filter.phone.toString()} : undefined,
             gender: filter.gender ? filter.gender : undefined,
         };

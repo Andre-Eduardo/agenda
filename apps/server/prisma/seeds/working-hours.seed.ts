@@ -14,6 +14,7 @@ import {randomUUID} from 'crypto';
 
 const prisma = new PrismaClient();
 
+const CLINIC_ID = '00000000-0000-0000-0000-000000000010';
 const CLINIC_MEMBER_ID = '00000000-0000-0000-0000-000000000011';
 
 // dayOfWeek: 0 = domingo, 1 = segunda, ..., 5 = sexta, 6 = sábado
@@ -54,6 +55,7 @@ export async function main() {
             await prisma.workingHours.create({
                 data: {
                     id: randomUUID(),
+                    clinicId: CLINIC_ID,
                     clinicMemberId: CLINIC_MEMBER_ID,
                     dayOfWeek: s.day,
                     startTime: s.start,

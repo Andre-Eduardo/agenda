@@ -33,9 +33,9 @@ export class RegisterPaymentService implements ApplicationService<RegisterPaymen
             throw new PreconditionException('Appointment does not belong to the current clinic.');
         }
 
-        if (appointment.status !== AppointmentStatus.COMPLETED) {
+        if (appointment.status === AppointmentStatus.CANCELLED) {
             throw new PreconditionException(
-                `Cannot register payment for an appointment with status ${appointment.status}. Only COMPLETED appointments can be paid.`,
+                'Cannot register payment for a cancelled appointment.',
             );
         }
 

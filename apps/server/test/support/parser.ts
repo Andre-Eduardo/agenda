@@ -82,9 +82,9 @@ export function parseValue(context: Context, raw: string): unknown {
     if (resolved === 'true') return true;
     if (resolved === 'false') return false;
 
-    const asNumber = Number(resolved);
-
-    if (!Number.isNaN(asNumber) && resolved.trim() !== '') return asNumber;
+    // Only coerce to number for plain numeric strings (no leading +, spaces, or non-numeric chars)
+    // This prevents phone numbers like "+5511999990099" from becoming floats.
+    if (/^-?\d+(\.\d+)?$/.test(resolved.trim())) return Number(resolved);
 
     // Try to parse JSON arrays/objects
     if ((resolved.startsWith('[') && resolved.endsWith(']')) || (resolved.startsWith('{') && resolved.endsWith('}'))) {

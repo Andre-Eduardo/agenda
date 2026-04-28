@@ -57,6 +57,7 @@ export class AddChatMessageService
         }
 
         const message = PatientChatMessage.create({
+            clinicId: session.clinicId,
             sessionId: payload.sessionId,
             role: payload.role,
             content: payload.content,

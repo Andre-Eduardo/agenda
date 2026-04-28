@@ -6,7 +6,7 @@ import {ApplicationService, Command} from '../../@shared/application.service';
 import {FormResponseValidatorService} from './form-response-validator.service';
 import {FormFieldIndexerService} from './form-field-indexer.service';
 import {PatientFormDto, SavePatientFormDraftDto} from '../dtos';
-import type {Specialty} from '../../../domain/form-template/entities';
+import {inferSpecialtyGroup} from '../../../domain/form-template/entities';
 
 @Injectable()
 export class SavePatientFormDraftService implements ApplicationService<SavePatientFormDraftDto, PatientFormDto> {
@@ -38,7 +38,7 @@ export class SavePatientFormDraftService implements ApplicationService<SavePatie
         // Reindex fields for partial search support even in drafts
         await this.indexer.reindex(
             form.id,
-            version.definitionJson.specialty as Specialty,
+            inferSpecialtyGroup(version.definitionJson.specialty),
             version.definitionJson,
             payload.answers
         );

@@ -80,7 +80,6 @@ export class PatientMapper extends MapperWithoutDto<Patient, PatientModel> {
             person: {
                 id: entity.id.toString(),
                 name: entity.name,
-                documentId: entity.documentId.toString(),
                 phone: entity.phone?.toString() ?? null,
                 gender: toEnumOrNull(PrismaClient.Gender, entity.gender),
                 personType: toEnum(PrismaClient.PersonType, entity.personType),

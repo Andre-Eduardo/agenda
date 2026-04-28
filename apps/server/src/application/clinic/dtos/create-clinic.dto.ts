@@ -1,5 +1,5 @@
 import {z} from 'zod';
-import {Specialty} from '../../../domain/form-template/entities';
+import {AiSpecialtyGroup} from '../../../domain/form-template/entities';
 import {createZodDto} from '../../@shared/validation/dto';
 
 export const createClinicSchema = z.object({
@@ -17,7 +17,7 @@ export const createClinicSchema = z.object({
     zipCode: z.string().nullish(),
     country: z.string().nullish(),
     logoUrl: z.string().url().nullish(),
-    clinicSpecialties: z.array(z.nativeEnum(Specialty)).optional(),
+    clinicSpecialties: z.array(z.nativeEnum(AiSpecialtyGroup)).optional(),
 });
 
 export class CreateClinicDto extends createZodDto(createClinicSchema) {}

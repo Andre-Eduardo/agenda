@@ -15,8 +15,8 @@ Feature: File upload (POST /upload/prepare and /upload/local)
             | filename | report.pdf      |
             | mimeType | application/pdf |
             | size     | 102400          |
-        Then the request should succeed with a 201 status code
-        And I save the response field "id" as "upload_file" id for "prepared"
+        Then the request should succeed with a 200 status code
+        And I save the response field "fileId" as "upload_file" id for "prepared"
 
     Scenario: Prepare upload without filename returns 400
         When I send a "POST" request to "/api/v1/upload/prepare" with:

@@ -21,6 +21,7 @@ Feature: Financial report (GET)
             | startAt            | 2026-01-10T09:00:00.000Z         |
             | endAt              | 2026-01-10T10:00:00.000Z         |
             | type               | FIRST_VISIT                      |
+            | retroactive        | true                             |
         Then the request should succeed with a 201 status code
         And I save the response field "id" as "appointment" id for "report_appt"
         When I send a "POST" request to "/api/v1/appointments/${ref:id:appointment:report_appt}/payment" with:

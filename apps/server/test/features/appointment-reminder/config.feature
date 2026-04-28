@@ -53,7 +53,7 @@ Feature: Clinic reminder config (PUT / GET)
         When I send a "POST" request to "/api/v1/patients" with:
             | name       | Reminder Patient |
             | documentId | 555.666.777-88   |
-            | phone      | 5511999990099    |
+            | phone      | +5511999990099    |
         Then the request should succeed with a 201 status code
         And I save the response field "id" as "patient" id for "reminder_p"
         When I send a "POST" request to "/api/v1/appointments" with:

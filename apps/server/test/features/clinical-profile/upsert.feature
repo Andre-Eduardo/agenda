@@ -18,10 +18,10 @@ Feature: Clinical profile upsert (PUT)
 
     Scenario: Create clinical profile via upsert
         When I send a "PUT" request to "/api/v1/patients/${ref:id:patient:profile_patient}/clinical-profile" with:
-            | professionalId     | ${ref:id:professional:dr_house} |
-            | allergies          | Penicillin, NSAIDs              |
-            | chronicConditions  | Type 2 Diabetes                 |
-            | currentMedications | Metformin 500mg                 |
+            | responsibleProfessionalId | ${ref:id:professional:dr_house} |
+            | allergies                 | Penicillin, NSAIDs              |
+            | chronicConditions         | Type 2 Diabetes                 |
+            | currentMedications        | Metformin 500mg                 |
         Then the request should succeed with a 200 status code
         And the response should contain:
             | allergies         | Penicillin, NSAIDs |
@@ -29,26 +29,26 @@ Feature: Clinical profile upsert (PUT)
 
     Scenario: Update an existing clinical profile
         When I send a "PUT" request to "/api/v1/patients/${ref:id:patient:profile_patient}/clinical-profile" with:
-            | professionalId | ${ref:id:professional:dr_house} |
-            | allergies      | Aspirin                         |
+            | responsibleProfessionalId | ${ref:id:professional:dr_house} |
+            | allergies                 | Aspirin                         |
         Then the request should succeed with a 200 status code
         When I send a "PUT" request to "/api/v1/patients/${ref:id:patient:profile_patient}/clinical-profile" with:
-            | professionalId | ${ref:id:professional:dr_house}       |
-            | allergies      | Aspirin, Codeine                      |
-            | generalNotes   | Updated during follow-up appointment  |
+            | responsibleProfessionalId | ${ref:id:professional:dr_house}       |
+            | allergies                 | Aspirin, Codeine                      |
+            | generalNotes              | Updated during follow-up appointment  |
         Then the request should succeed with a 200 status code
         And the response should contain:
             | allergies    | Aspirin, Codeine                     |
             | generalNotes | Updated during follow-up appointment |
 
-    Scenario: Upsert clinical profile without required professionalId
+    Scenario: Upsert clinical profile without required responsibleProfessionalId returns 400
         When I send a "PUT" request to "/api/v1/patients/${ref:id:patient:profile_patient}/clinical-profile" with:
             | allergies | Aspirin |
-        Then the request should succeed with a 200 status code
+        Then the request should fail with a 400 status code
 
     Scenario: Upsert clinical profile without authentication
         Given I sign out
         When I send a "PUT" request to "/api/v1/patients/${ref:id:patient:profile_patient}/clinical-profile" with:
-            | professionalId | ${ref:id:professional:dr_house} |
-            | allergies      | Aspirin                         |
+            | responsibleProfessionalId | ${ref:id:professional:dr_house} |
+            | allergies                 | Aspirin                         |
         Then the request should fail with a 401 status code

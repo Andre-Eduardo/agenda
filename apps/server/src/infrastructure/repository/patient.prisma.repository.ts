@@ -53,7 +53,7 @@ export class PatientPrismaRepository extends PrismaRepository implements Patient
             OR: filter.term
                 ? [
                       {person: {name: {contains: filter.term, mode: 'insensitive'}}},
-                      {person: {documentId: {contains: filter.term}}},
+                      {documentId: {contains: filter.term}},
                   ]
                 : undefined,
         };

@@ -1,4 +1,4 @@
-import {Body, Controller, Post} from '@nestjs/common';
+import {Body, Controller, HttpCode, Post} from '@nestjs/common';
 import {ApiTags} from '@nestjs/swagger';
 import {z} from 'zod';
 import {Authorize} from '../../@shared/auth';
@@ -32,6 +32,7 @@ export class AgentAskController {
         responses: [{status: 200, description: 'Agent response with answer and tool call audit trail'}],
     })
     @Authorize(RecordPermission.VIEW)
+    @HttpCode(200)
     @Post('ask')
     async ask(
         @RequestActor() actor: Actor,

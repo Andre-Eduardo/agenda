@@ -1,6 +1,6 @@
 import {Injectable} from '@nestjs/common';
 import {ResourceNotFoundException} from '../../../domain/@shared/exceptions';
-import {DraftEvolution} from '../../../domain/draft-evolution/entities/draft-evolution.entity';
+import {DraftEvolution, DraftEvolutionStatus} from '../../../domain/draft-evolution/entities/draft-evolution.entity';
 import {DraftEvolutionRepository} from '../../../domain/draft-evolution/draft-evolution.repository';
 import {ImportedDocumentId} from '../../../domain/record/entities/imported-document.entity';
 import {ImportedDocumentRepository} from '../../../domain/record/imported-document.repository';
@@ -33,6 +33,8 @@ export class GetOrCreateDraftService implements ApplicationService<GetDraftDto, 
             conductTags: [],
             reviewRequired: document.reviewRequired,
             overallConfidence: document.aiConfidence ?? null,
+            status: DraftEvolutionStatus.DRAFT,
+            wasHumanEdited: false,
         });
 
         await this.draftEvolutionRepository.save(draft);

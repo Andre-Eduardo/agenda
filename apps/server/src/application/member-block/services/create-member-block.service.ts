@@ -30,6 +30,7 @@ export class CreateMemberBlockService
         }
 
         const block = MemberBlock.create({
+            clinicId: member.clinicId,
             clinicMemberId: memberId,
             startAt,
             endAt,

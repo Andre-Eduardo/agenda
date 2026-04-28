@@ -103,7 +103,7 @@ export class AgentResolutionService {
 
     private async resolveGenericAgent(): Promise<AiAgentProfile | null> {
         const allActive = await this.agentProfileRepository.findAllActive();
-        return allActive.find((p) => p.specialty === null) ?? allActive[0] ?? null;
+        return allActive.find((p) => p.specialtyGroup === null) ?? allActive[0] ?? null;
     }
 
     listActiveMappingRules(): AgentMappingRule[] {

@@ -112,7 +112,6 @@ export async function main() {
         create: {
             id: IDS.person,
             name: 'Dr. Admin Silva',
-            documentId: '000.000.000-00',
             phone: '(11) 99999-0000',
             gender: 'MALE',
             personType: 'NATURAL',
@@ -133,14 +132,14 @@ export async function main() {
             clinicMemberId: IDS.clinicMember,
             registrationNumber: 'CRM-SP 12345',
             specialty: 'Medicina Geral',
-            specialtyNormalized: 'MEDICINA',
+            specialtyNormalized: 'MEDICINA_GERAL',
             createdAt: now,
             updatedAt: now,
         },
         update: {
             registrationNumber: 'CRM-SP 12345',
             specialty: 'Medicina Geral',
-            specialtyNormalized: 'MEDICINA',
+            specialtyNormalized: 'MEDICINA_GERAL',
             updatedAt: now,
         },
     });

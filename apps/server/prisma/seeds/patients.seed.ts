@@ -74,7 +74,6 @@ export async function main() {
             create: {
                 id: p.personId,
                 name: p.name,
-                documentId: p.documentId,
                 phone: p.phone,
                 gender: p.gender,
                 personType: 'NATURAL',

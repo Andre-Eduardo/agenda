@@ -15,12 +15,12 @@ import {NestFactory} from '@nestjs/core';
 import {AppModule} from '../src/app.module';
 import {IngestKnowledgeDocumentService} from '../src/application/knowledge-base/services/ingest-knowledge-document.service';
 import {ClinicId} from '../src/domain/clinic/entities';
-import type {Specialty} from '../src/domain/form-template/entities';
+import type {AiSpecialtyGroup} from '../src/domain/form-template/entities';
 
 interface CliArgs {
     files: string[];
     category: string;
-    specialty?: Specialty;
+    specialty?: AiSpecialtyGroup;
     clinicId?: ClinicId;
 }
 
@@ -28,14 +28,14 @@ function parseArgs(): CliArgs {
     const args = process.argv.slice(2);
     const files: string[] = [];
     let category = 'manual';
-    let specialty: Specialty | undefined;
+    let specialty: AiSpecialtyGroup | undefined;
     let clinicId: ClinicId | undefined;
 
     for (const arg of args) {
         if (arg.startsWith('--category=')) {
             category = arg.slice('--category='.length);
         } else if (arg.startsWith('--specialty=')) {
-            specialty = arg.slice('--specialty='.length) as Specialty;
+            specialty = arg.slice('--specialty='.length) as AiSpecialtyGroup;
         } else if (arg.startsWith('--clinic-id=')) {
             clinicId = ClinicId.from(arg.slice('--clinic-id='.length));
         } else if (!arg.startsWith('--')) {

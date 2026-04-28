@@ -53,7 +53,7 @@ export class PatientFormPrismaRepository extends PrismaRepository implements Pat
             templateId: filter.templateId?.toString(),
             status: toEnumOrNull(PrismaClient.FormResponseStatus, filter.status) ?? undefined,
             template: filter.specialty
-                ? {specialty: toEnumOrNull(PrismaClient.Specialty, filter.specialty) ?? undefined}
+                ? {specialtyGroup: toEnumOrNull(PrismaClient.AiSpecialtyGroup, filter.specialty) ?? undefined}
                 : undefined,
         };
 

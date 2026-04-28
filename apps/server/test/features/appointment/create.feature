@@ -12,14 +12,14 @@ Feature: Appointment creation (POST)
         When I send a "POST" request to "/api/v1/patients" with:
             | name           | Appointment Patient             |
             | documentId     | 100.200.300-40                  |
-            | professionalId | ${ref:id:professional:dr_house} |
+            | attendedByMemberId | ${ref:id:clinicMember:dr_house} |
         Then the request should succeed with a 201 status code
         And I save the response field "id" as "patient" id for "appt_patient"
 
     Scenario: Create an appointment with valid data
         When I send a "POST" request to "/api/v1/appointments" with:
             | patientId      | ${ref:id:patient:appt_patient}  |
-            | professionalId | ${ref:id:professional:dr_house} |
+            | attendedByMemberId | ${ref:id:clinicMember:dr_house} |
             | startAt        | 2026-06-01T09:00:00.000Z        |
             | endAt          | 2026-06-01T10:00:00.000Z        |
             | type           | FIRST_VISIT                     |
@@ -30,7 +30,7 @@ Feature: Appointment creation (POST)
     Scenario: Create an appointment with a note
         When I send a "POST" request to "/api/v1/appointments" with:
             | patientId      | ${ref:id:patient:appt_patient}  |
-            | professionalId | ${ref:id:professional:dr_house} |
+            | attendedByMemberId | ${ref:id:clinicMember:dr_house} |
             | startAt        | 2026-07-01T14:00:00.000Z        |
             | endAt          | 2026-07-01T15:00:00.000Z        |
             | type           | RETURN                          |
@@ -50,7 +50,7 @@ Feature: Appointment creation (POST)
         Given I sign out
         When I send a "POST" request to "/api/v1/appointments" with:
             | patientId      | ${ref:id:patient:appt_patient}  |
-            | professionalId | ${ref:id:professional:dr_house} |
+            | attendedByMemberId | ${ref:id:clinicMember:dr_house} |
             | startAt        | 2026-09-01T09:00:00.000Z        |
             | endAt          | 2026-09-01T10:00:00.000Z        |
             | type           | FIRST_VISIT                     |

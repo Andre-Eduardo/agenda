@@ -32,7 +32,7 @@ Feature: Imported document approval pipeline (GET / POST)
         When I send a "POST" request to "/api/v1/imported-documents/${ref:id:importedDocument:already_approved_doc}/approve"
         Then the request should succeed with a 200 status code
         When I send a "POST" request to "/api/v1/imported-documents/${ref:id:importedDocument:already_approved_doc}/approve"
-        Then the request should fail with a 412 status code
+        Then the request should fail with a 409 status code
 
     Scenario: Approve without authentication returns 401
         Given I sign out

@@ -260,6 +260,7 @@ export class ClinicalChatController {
         responses: [{status: 200, description: 'Context rebuilt'}],
     })
     @Authorize(ClinicalChatPermission.REINDEX)
+    @HttpCode(HttpStatus.OK)
     @Post('context/rebuild')
     async rebuildContext(
         @RequestActor() actor: Actor,
@@ -278,6 +279,7 @@ export class ClinicalChatController {
         responses: [{status: 200, description: 'Invalidation result'}],
     })
     @Authorize(ClinicalChatPermission.REINDEX)
+    @HttpCode(HttpStatus.OK)
     @Post('context/invalidate')
     async invalidateSnapshot(
         @RequestActor() _actor: Actor,

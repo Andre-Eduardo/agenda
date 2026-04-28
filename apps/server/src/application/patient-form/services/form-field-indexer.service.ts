@@ -2,20 +2,16 @@ import {Injectable} from '@nestjs/common';
 import {FormFieldIndex} from '../../../domain/form-field-index/entities';
 import {FormFieldIndexRepository} from '../../../domain/form-field-index/form-field-index.repository';
 import {PatientFormId} from '../../../domain/patient-form/entities';
-import {Specialty} from '../../../domain/form-template/entities';
+import {AiSpecialtyGroup} from '../../../domain/form-template/entities';
 import type {FormDefinitionJson, FormAnswer} from '../../../domain/form-template/types';
 
 @Injectable()
 export class FormFieldIndexerService {
     constructor(private readonly formFieldIndexRepository: FormFieldIndexRepository) {}
 
-    /**
-     * Extracts and persists indexable fields from form answers.
-     * Completely replaces existing index for this form.
-     */
     async reindex(
         patientFormId: PatientFormId,
-        specialty: Specialty,
+        specialtyGroup: AiSpecialtyGroup | null,
         definition: FormDefinitionJson,
         answers: FormAnswer[]
     ): Promise<void> {
@@ -39,7 +35,7 @@ export class FormFieldIndexerService {
                 valueBoolean: answer.valueBoolean ?? null,
                 valueDate: answer.valueDate ? new Date(answer.valueDate) : null,
                 valueJson: answer.valueJson ?? null,
-                specialty,
+                specialtyGroup,
                 confidence: null,
             });
 
@@ -49,13 +45,10 @@ export class FormFieldIndexerService {
         await this.formFieldIndexRepository.saveMany(entries);
     }
 
-    /**
-     * Search indexed fields across patient forms.
-     */
     async search(filter: {
         patientFormId?: PatientFormId;
         fieldId?: string;
-        specialty?: Specialty;
+        specialtyGroup?: AiSpecialtyGroup;
     }): Promise<FormFieldIndex[]> {
         return this.formFieldIndexRepository.search(filter);
     }

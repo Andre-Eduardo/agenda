@@ -2,7 +2,7 @@ import {Injectable} from '@nestjs/common';
 import {Prisma} from '@prisma/client';
 import {AiAgentProfile, AiAgentProfileId} from '../../domain/clinical-chat/entities';
 import {AiAgentProfileRepository} from '../../domain/clinical-chat/ai-agent-profile.repository';
-import type {Specialty} from '../../domain/form-template/entities';
+import type {AiSpecialtyGroup} from '../../domain/form-template/entities';
 import {AiAgentProfileMapper} from '../mappers/ai-agent-profile.mapper';
 import {PrismaProvider} from './prisma/prisma.provider';
 import {PrismaRepository} from './prisma.repository';
@@ -30,10 +30,10 @@ export class AiAgentProfilePrismaRepository extends PrismaRepository implements 
         return record ? this.mapper.toDomain(record) : null;
     }
 
-    async findBySpecialty(specialty: Specialty): Promise<AiAgentProfile | null> {
+    async findBySpecialty(specialty: AiSpecialtyGroup): Promise<AiAgentProfile | null> {
         const record = await this.prisma.aiAgentProfile.findFirst({
             where: {
-                specialty: specialty as never,
+                specialtyGroup: specialty,
                 isActive: true,
             },
         });

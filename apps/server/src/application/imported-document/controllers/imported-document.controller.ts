@@ -1,4 +1,4 @@
-import {Body, Controller, Get, Patch, Post} from '@nestjs/common';
+import {Body, Controller, Get, HttpCode, HttpStatus, Patch, Post} from '@nestjs/common';
 import {ApiTags} from '@nestjs/swagger';
 import {Actor} from '../../../domain/@shared/actor';
 import {ImportedDocumentId} from '../../../domain/record/entities/imported-document.entity';
@@ -57,6 +57,7 @@ export class ImportedDocumentController {
     })
     @Authorize(ImportedDocumentPermission.UPDATE)
     @UseUsageLimit('docs')
+    @HttpCode(HttpStatus.OK)
     @Post(':id/approve')
     async approveDraft(
         @RequestActor() actor: Actor,

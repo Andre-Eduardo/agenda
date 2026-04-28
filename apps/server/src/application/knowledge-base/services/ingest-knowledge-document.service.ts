@@ -1,7 +1,7 @@
 import {Injectable} from '@nestjs/common';
 import {ClinicId} from '../../../domain/clinic/entities';
 import {AiProviderRegistry} from '../../../domain/clinical-chat/ports/ai-provider-registry.port';
-import type {Specialty} from '../../../domain/form-template/entities';
+import type {AiSpecialtyGroup} from '../../../domain/form-template/entities';
 import {KnowledgeChunk} from '../../../domain/knowledge-base/entities';
 import {KnowledgeChunkRepository} from '../../../domain/knowledge-base/knowledge-chunk.repository';
 import {ChunkTextService} from './chunk-text.service';
@@ -9,7 +9,7 @@ import {ChunkTextService} from './chunk-text.service';
 export type IngestKnowledgeDocumentInput = {
     content: string;
     category: string;
-    specialty?: Specialty;
+    specialty?: AiSpecialtyGroup;
     /** null = global chunk; ClinicId = clinic-private. */
     clinicId?: ClinicId | null;
     sourceFile?: string;

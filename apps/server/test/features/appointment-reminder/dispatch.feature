@@ -17,7 +17,7 @@ Feature: Appointment reminder dispatch (POST)
         When I send a "POST" request to "/api/v1/patients" with:
             | name       | Reminder Test Patient |
             | documentId | 100.200.300-99        |
-            | phone      | 5511999990099         |
+            | phone      | +5511999990099         |
         Then the request should succeed with a 201 status code
         And I save the response field "id" as "patient" id for "reminder_patient"
 

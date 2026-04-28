@@ -12,14 +12,14 @@ Feature: Clinical record listing and retrieval (GET)
         When I send a "POST" request to "/api/v1/patients" with:
             | name           | Record Patient                  |
             | documentId     | 200.300.400-50                  |
-            | professionalId | ${ref:id:professional:dr_house} |
+            | responsibleProfessionalId | ${ref:id:professional:dr_house} |
         Then the request should succeed with a 201 status code
         And I save the response field "id" as "patient" id for "rec_patient"
 
     Scenario: List records returns paginated results
         When I send a "POST" request to "/api/v1/records" with:
             | patientId      | ${ref:id:patient:rec_patient}   |
-            | professionalId | ${ref:id:professional:dr_house} |
+            | responsibleProfessionalId | ${ref:id:professional:dr_house} |
             | description    | List seed record                |
         Then the request should succeed with a 201 status code
         When I send a "GET" request to "/api/v1/records" with the query:
@@ -36,7 +36,7 @@ Feature: Clinical record listing and retrieval (GET)
     Scenario: Filter records by patient
         When I send a "POST" request to "/api/v1/records" with:
             | patientId      | ${ref:id:patient:rec_patient}   |
-            | professionalId | ${ref:id:professional:dr_house} |
+            | responsibleProfessionalId | ${ref:id:professional:dr_house} |
             | description    | Patient-filtered record         |
         Then the request should succeed with a 201 status code
         When I send a "GET" request to "/api/v1/records" with the query:
@@ -52,7 +52,7 @@ Feature: Clinical record listing and retrieval (GET)
     Scenario: Get record by ID
         When I send a "POST" request to "/api/v1/records" with:
             | patientId      | ${ref:id:patient:rec_patient}   |
-            | professionalId | ${ref:id:professional:dr_house} |
+            | responsibleProfessionalId | ${ref:id:professional:dr_house} |
             | description    | Get by id record                |
         Then the request should succeed with a 201 status code
         And I save the response field "id" as "record" id for "get_test"

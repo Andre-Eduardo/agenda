@@ -1,11 +1,10 @@
 import {z} from 'zod';
-import {Specialty} from '../../../domain/form-template/entities';
 import {createZodDto} from '../../@shared/validation/dto';
 import {pagination} from '../../@shared/validation/schemas/pagination.schema';
 
 export const searchFormTemplatesSchema = z
     .object({
-        specialty: z.nativeEnum(Specialty).optional(),
+        specialty: z.string().optional(),
         /**
          * `public` → only system templates (clinicId = null)
          * `mine` → only the actor's current clinic

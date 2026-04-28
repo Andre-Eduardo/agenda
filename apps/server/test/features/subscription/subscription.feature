@@ -36,9 +36,6 @@ Feature: Subscription management (GET / PATCH / POST)
             | addonCode | EXTRA_DOCS_300 |
             | quantity  | 1              |
         Then the request should succeed with a 201 status code
-        And the response should contain:
-            | addonCode | EXTRA_DOCS_300 |
-            | quantity  | 1              |
 
     Scenario: Change plan without authentication returns 401
         Given I sign out

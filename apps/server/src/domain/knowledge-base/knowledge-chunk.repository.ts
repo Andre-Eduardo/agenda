@@ -1,10 +1,10 @@
 import type {ClinicId} from '../clinic/entities';
-import type {Specialty} from '../form-template/entities';
+import type {AiSpecialtyGroup} from '../form-template/entities';
 import type {KnowledgeChunk, KnowledgeChunkId} from './entities';
 
 export type KnowledgeChunkSearchFilter = {
     queryEmbedding: number[];
-    specialty?: Specialty;
+    specialty?: AiSpecialtyGroup;
     category?: string;
     clinicId?: ClinicId | null;
     topK?: number;

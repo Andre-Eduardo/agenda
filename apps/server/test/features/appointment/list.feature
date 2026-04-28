@@ -12,14 +12,14 @@ Feature: Appointment listing and retrieval (GET)
         When I send a "POST" request to "/api/v1/patients" with:
             | name           | Appointment Patient             |
             | documentId     | 100.200.300-40                  |
-            | professionalId | ${ref:id:professional:dr_house} |
+            | attendedByMemberId | ${ref:id:clinicMember:dr_house} |
         Then the request should succeed with a 201 status code
         And I save the response field "id" as "patient" id for "appt_patient"
 
     Scenario: List appointments returns paginated results
         When I send a "POST" request to "/api/v1/appointments" with:
             | patientId      | ${ref:id:patient:appt_patient}  |
-            | professionalId | ${ref:id:professional:dr_house} |
+            | attendedByMemberId | ${ref:id:clinicMember:dr_house} |
             | startAt        | 2026-10-01T09:00:00.000Z        |
             | endAt          | 2026-10-01T10:00:00.000Z        |
             | type           | FIRST_VISIT                     |
@@ -38,7 +38,7 @@ Feature: Appointment listing and retrieval (GET)
     Scenario: Filter appointments by patient
         When I send a "POST" request to "/api/v1/appointments" with:
             | patientId      | ${ref:id:patient:appt_patient}  |
-            | professionalId | ${ref:id:professional:dr_house} |
+            | attendedByMemberId | ${ref:id:clinicMember:dr_house} |
             | startAt        | 2026-11-01T09:00:00.000Z        |
             | endAt          | 2026-11-01T10:00:00.000Z        |
             | type           | FIRST_VISIT                     |
@@ -51,7 +51,7 @@ Feature: Appointment listing and retrieval (GET)
     Scenario: Get appointment by ID
         When I send a "POST" request to "/api/v1/appointments" with:
             | patientId      | ${ref:id:patient:appt_patient}  |
-            | professionalId | ${ref:id:professional:dr_house} |
+            | attendedByMemberId | ${ref:id:clinicMember:dr_house} |
             | startAt        | 2026-12-01T09:00:00.000Z        |
             | endAt          | 2026-12-01T10:00:00.000Z        |
             | type           | FIRST_VISIT                     |

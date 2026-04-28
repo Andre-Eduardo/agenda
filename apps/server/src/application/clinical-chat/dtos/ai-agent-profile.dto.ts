@@ -1,7 +1,7 @@
 import {ApiProperty, ApiSchema} from '@nestjs/swagger';
 import {z} from 'zod';
 import {EntityDto} from '../../@shared/dto';
-import {Specialty} from '../../../domain/form-template/entities';
+import {AiSpecialtyGroup} from '../../../domain/form-template/entities';
 import type {AiAgentProfile} from '../../../domain/clinical-chat/entities';
 import {createZodDto} from '../../@shared/validation/dto';
 
@@ -16,11 +16,8 @@ export class AiAgentProfileDto extends EntityDto {
     @ApiProperty({description: 'Identificador único legível, ex: "psicologia-adulto"'})
     slug: string;
 
-    @ApiProperty({nullable: true, description: 'Grupo de especialidade, ex: "medicina", "psicologia"'})
-    specialtyGroup: string | null;
-
-    @ApiProperty({enum: Specialty, nullable: true})
-    specialty: Specialty | null;
+    @ApiProperty({enum: AiSpecialtyGroup, nullable: true, description: 'Grupo de especialidade de IA'})
+    specialtyGroup: AiSpecialtyGroup | null;
 
     @ApiProperty({nullable: true})
     description: string | null;
@@ -72,7 +69,6 @@ export class AiAgentProfileDto extends EntityDto {
         this.code = entity.code;
         this.slug = entity.slug;
         this.specialtyGroup = entity.specialtyGroup;
-        this.specialty = entity.specialty;
         this.description = entity.description;
         this.baseInstructions = entity.baseInstructions;
         this.allowedSources = entity.allowedSources;
@@ -100,8 +96,7 @@ export const createAiAgentProfileSchema = z.object({
         .min(1)
         .max(100)
         .regex(/^[a-z0-9-]+$/, 'Slug must be lowercase, alphanumeric with hyphens'),
-    specialtyGroup: z.string().min(1).max(50).optional(),
-    specialty: z.nativeEnum(Specialty).optional(),
+    specialtyGroup: z.nativeEnum(AiSpecialtyGroup).optional(),
     description: z.string().optional(),
     baseInstructions: z.string().optional(),
     allowedSources: z.array(z.string()).default([]),

@@ -4,12 +4,12 @@ import type {AgentTool} from '../../interfaces';
 import {AGENT_TOOL_TOKEN} from '../../interfaces';
 import type {ToolContext} from '../../interfaces';
 import {RetrieveKnowledgeChunksService} from '../../../knowledge-base/services/retrieve-knowledge-chunks.service';
-import {Specialty} from '../../../../domain/form-template/entities';
+import {AiSpecialtyGroup} from '../../../../domain/form-template/entities';
 
 const schema = z.object({
     query: z.string().min(1).max(1000).describe('Natural language query to search the knowledge base.'),
     topK: z.coerce.number().int().min(1).max(10).optional().default(5),
-    specialty: z.nativeEnum(Specialty).optional().describe('Filter results by medical specialty.'),
+    specialty: z.nativeEnum(AiSpecialtyGroup).optional().describe('Filter results by medical specialty group.'),
     category: z.string().optional().describe('Filter results by category (e.g. "protocolo", "conduta").'),
     minScore: z.coerce.number().min(0).max(1).optional().default(0.3),
 });

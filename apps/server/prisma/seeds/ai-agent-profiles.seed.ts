@@ -18,7 +18,7 @@
  * IMPORTANTE: Estes perfis NÃO integram nenhum LLM nesta etapa.
  * São o ponto de configuração para a fase de integração com providers.
  */
-import {PrismaClient, Prisma} from '@prisma/client';
+import {PrismaClient, Prisma, AiSpecialtyGroup} from '@prisma/client';
 import {randomUUID} from 'crypto';
 
 const prisma = new PrismaClient();
@@ -37,8 +37,7 @@ type AgentSeedData = {
     code: string;
     slug: string;
     name: string;
-    specialtyGroup: string | null;
-    specialty: string | null;
+    specialtyGroup: AiSpecialtyGroup | null;
     description: string;
     baseInstructions: string;
     allowedSources: string[];
@@ -56,7 +55,6 @@ const agents: AgentSeedData[] = [
         slug: 'generic',
         name: 'Agente Clínico Genérico',
         specialtyGroup: null,
-        specialty: null,
         description: 'Agente clínico genérico para qualquer especialidade. Foco em leitura de histórico geral.',
         baseInstructions: `Você é um assistente clínico especializado em apoio a profissionais de saúde.
 Sua função é responder perguntas sobre o histórico clínico do paciente com base nos dados fornecidos.
@@ -74,8 +72,7 @@ Apoie o profissional com leitura contextual, identificação de padrões e suges
         code: 'medico_geral',
         slug: 'medico-geral',
         name: 'Agente — Médico Geral',
-        specialtyGroup: 'medicina',
-        specialty: 'MEDICINA',
+        specialtyGroup: 'MEDICINA_GERAL',
         description: 'Agente especialista em medicina geral. Foco em anamnese completa, condutas e evolução SOAP.',
         baseInstructions: `Você é um assistente clínico especializado em medicina geral.
 Apoie o médico na análise integrada do histórico clínico do paciente.
@@ -98,8 +95,7 @@ Sempre destaque alergias e contraindicações no início da resposta.`,
         code: 'medicina_familiar',
         slug: 'medicina-familiar',
         name: 'Agente — Medicina de Família e Comunidade',
-        specialtyGroup: 'medicina',
-        specialty: 'MEDICINA',
+        specialtyGroup: 'MEDICINA_GERAL',
         description: 'Agente especialista em medicina de família. Foco em longitudinalidade, prevenção e contexto biopsicossocial.',
         baseInstructions: `Você é um assistente clínico especializado em medicina de família e comunidade.
 Apoie o médico de família na análise do histórico longitudinal do paciente.
@@ -122,8 +118,7 @@ Foque em:
         code: 'neurologia',
         slug: 'neurologia',
         name: 'Agente — Neurologia',
-        specialtyGroup: 'medicina',
-        specialty: 'MEDICINA',
+        specialtyGroup: 'MEDICINA_GERAL',
         description: 'Agente especialista em neurologia. Foco em exame neurológico, escalas e evolução de condições neurológicas.',
         baseInstructions: `Você é um assistente clínico especializado em neurologia.
 Apoie o neurologista na análise do histórico neurológico do paciente.
@@ -146,8 +141,7 @@ Foque em:
         code: 'pediatria',
         slug: 'pediatria',
         name: 'Agente — Pediatria',
-        specialtyGroup: 'medicina',
-        specialty: 'MEDICINA',
+        specialtyGroup: 'MEDICINA_GERAL',
         description: 'Agente especialista em pediatria. Foco em desenvolvimento, crescimento e saúde infantil.',
         baseInstructions: `Você é um assistente clínico especializado em pediatria.
 Apoie o pediatra na análise do histórico de saúde do paciente pediátrico.
@@ -171,8 +165,7 @@ Foque em:
         code: 'psiquiatria',
         slug: 'psiquiatria',
         name: 'Agente — Psiquiatria',
-        specialtyGroup: 'medicina',
-        specialty: 'MEDICINA',
+        specialtyGroup: 'MEDICINA_GERAL',
         description: 'Agente especialista em psiquiatria. Foco em evolução de transtornos mentais, escalas psiquiátricas e farmacoterapia.',
         baseInstructions: `Você é um assistente clínico especializado em psiquiatria.
 Apoie o psiquiatra na análise do histórico psiquiátrico do paciente.
@@ -199,8 +192,7 @@ Foque em:
         code: 'psicologia_clinica',
         slug: 'psicologia-clinica',
         name: 'Agente — Psicologia Clínica',
-        specialtyGroup: 'psicologia',
-        specialty: 'PSICOLOGIA',
+        specialtyGroup: 'SAUDE_MENTAL',
         description: 'Agente especialista em psicologia clínica. Foco em evoluções SOAP, escalas e formulários psicológicos.',
         baseInstructions: `Você é um assistente clínico especializado em psicologia clínica.
 Apoie o psicólogo na leitura e análise do histórico psicológico do paciente.
@@ -225,8 +217,7 @@ Foque em:
         code: 'neuropsicologia',
         slug: 'neuropsicologia',
         name: 'Agente — Neuropsicologia',
-        specialtyGroup: 'psicologia',
-        specialty: 'PSICOLOGIA',
+        specialtyGroup: 'SAUDE_MENTAL',
         description: 'Agente especialista em neuropsicologia. Foco em avaliação cognitiva, baterias neuropsicológicas e reabilitação.',
         baseInstructions: `Você é um assistente clínico especializado em neuropsicologia.
 Apoie o neuropsicólogo na análise do histórico neuropsicológico do paciente.
@@ -250,8 +241,7 @@ Foque em:
         code: 'psicopedagogia',
         slug: 'psicopedagogia',
         name: 'Agente — Psicopedagogia',
-        specialtyGroup: 'psicologia',
-        specialty: 'PSICOLOGIA',
+        specialtyGroup: 'SAUDE_MENTAL',
         description: 'Agente especialista em psicopedagogia. Foco em dificuldades de aprendizagem, avaliação e intervenção psicopedagógica.',
         baseInstructions: `Você é um assistente clínico especializado em psicopedagogia.
 Apoie o psicopedagogo na análise do histórico de aprendizagem do paciente.
@@ -275,8 +265,7 @@ Foque em:
         code: 'psicologia_desenvolvimento',
         slug: 'psicologia-desenvolvimento',
         name: 'Agente — Psicologia do Desenvolvimento',
-        specialtyGroup: 'psicologia',
-        specialty: 'PSICOLOGIA',
+        specialtyGroup: 'SAUDE_MENTAL',
         description: 'Agente especialista em psicologia do desenvolvimento. Foco em marcos desenvolvimentais, ciclo de vida e intervenção precoce.',
         baseInstructions: `Você é um assistente clínico especializado em psicologia do desenvolvimento.
 Apoie o psicólogo do desenvolvimento na análise do histórico desenvolvimental do paciente.
@@ -302,8 +291,7 @@ Foque em:
         code: 'fisioterapia',
         slug: 'fisioterapia',
         name: 'Agente Clínico — Fisioterapia',
-        specialtyGroup: 'fisioterapia',
-        specialty: 'FISIOTERAPIA',
+        specialtyGroup: 'REABILITACAO',
         description: 'Agente especialista em fisioterapia. Foco em avaliações funcionais e progressão terapêutica.',
         baseInstructions: `Você é um assistente clínico especializado em fisioterapia.
 Apoie o fisioterapeuta na análise do histórico do paciente.
@@ -325,8 +313,7 @@ Foque em:
         code: 'nutricao',
         slug: 'nutricao',
         name: 'Agente Clínico — Nutrição',
-        specialtyGroup: 'nutricao',
-        specialty: 'NUTRICAO',
+        specialtyGroup: 'NUTRICAO_DIETETICA',
         description: 'Agente especialista em nutrição clínica. Foco em triagem nutricional e evolução dietética.',
         baseInstructions: `Você é um assistente clínico especializado em nutrição.
 Apoie o nutricionista na análise do histórico do paciente.
@@ -359,7 +346,6 @@ export async function main() {
                 slug: agent.slug,
                 name: agent.name,
                 specialtyGroup: agent.specialtyGroup,
-                specialty: agent.specialty as never,
                 description: agent.description,
                 baseInstructions: agent.baseInstructions,
                 allowedSources: agent.allowedSources,

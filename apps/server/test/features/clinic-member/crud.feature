@@ -6,7 +6,7 @@ Feature: Clinic member CRUD (POST / GET)
         Given the following users exist:
             | Name       | Username  | Email               | Password  |
             | Dr. House  | dr_house  | house@example.com   | H0use.Dr! |
-            | Dr. Wilson | dr_wilson | wilson@example.com  | W1ls0n!   |
+            | Dr. Wilson | dr_wilson | wilson@example.com  | W1ls0n!1   |
         And I am signed in as "dr_house"
         And a professional "dr_house" exists with specialty "MEDICINA"
         And I am signed in as "dr_house" with clinic member "${ref:id:clinicMember:dr_house}"

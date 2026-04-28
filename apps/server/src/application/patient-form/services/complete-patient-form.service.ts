@@ -7,7 +7,7 @@ import {FormResponseValidatorService} from './form-response-validator.service';
 import {FormScoringService} from './form-scoring.service';
 import {FormFieldIndexerService} from './form-field-indexer.service';
 import {CompletePatientFormDto, PatientFormDto} from '../dtos';
-import type {Specialty} from '../../../domain/form-template/entities';
+import {inferSpecialtyGroup} from '../../../domain/form-template/entities';
 
 @Injectable()
 export class CompletePatientFormService implements ApplicationService<CompletePatientFormDto, PatientFormDto> {
@@ -48,7 +48,7 @@ export class CompletePatientFormService implements ApplicationService<CompletePa
         // Reindex all fields for search and analytics
         await this.indexer.reindex(
             form.id,
-            version.definitionJson.specialty as Specialty,
+            inferSpecialtyGroup(version.definitionJson.specialty),
             version.definitionJson,
             payload.answers
         );

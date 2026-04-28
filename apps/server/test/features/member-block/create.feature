@@ -56,7 +56,7 @@ Feature: Member Block CRUD (POST / GET / DELETE)
             | startAt            | 2026-08-01T10:00:00.000Z            |
             | endAt              | 2026-08-01T11:00:00.000Z            |
             | type               | FIRST_VISIT                         |
-        Then the request should fail with a 412 status code
+        Then the request should fail with a 409 status code
 
     Scenario: List blocks for a member
         When I send a "POST" request to "/api/v1/members/${ref:id:clinicMember:dr_house}/blocks" with:

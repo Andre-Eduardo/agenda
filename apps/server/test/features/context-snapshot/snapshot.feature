@@ -12,7 +12,7 @@ Feature: Patient context snapshot (POST / GET)
         When I send a "POST" request to "/api/v1/patients" with:
             | name           | Snapshot Patient                |
             | documentId     | 888.999.000-11                  |
-            | professionalId | ${ref:id:professional:dr_house} |
+            | responsibleProfessionalId | ${ref:id:professional:dr_house} |
         Then the request should succeed with a 201 status code
         And I save the response field "id" as "patient" id for "snap_patient"
 
@@ -40,7 +40,7 @@ Feature: Patient context snapshot (POST / GET)
         Then the request should succeed with a 200 status code
         When I send a "POST" request to "/api/v1/records" with:
             | patientId      | ${ref:id:patient:snap_patient}  |
-            | professionalId | ${ref:id:professional:dr_house} |
+            | responsibleProfessionalId | ${ref:id:professional:dr_house} |
             | description    | Novo dado clínico para invalidar snapshot |
         Then the request should succeed with a 201 status code
         When I send a "POST" request to "/api/v1/clinical-chat/context/invalidate" with body:

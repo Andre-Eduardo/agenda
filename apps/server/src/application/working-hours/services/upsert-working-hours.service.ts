@@ -39,6 +39,7 @@ export class UpsertWorkingHoursService implements ApplicationService<UpsertWorki
             workingHours.active = active;
         } else {
             workingHours = WorkingHours.create({
+                clinicId: member.clinicId,
                 clinicMemberId: memberId,
                 dayOfWeek,
                 startTime,

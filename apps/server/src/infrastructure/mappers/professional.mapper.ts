@@ -4,7 +4,7 @@ import {ProfessionalDto} from '../../application/professional/dtos/professional.
 import {toEnumOrNull} from '../../domain/@shared/utils';
 import {ClinicMemberId} from '../../domain/clinic-member/entities';
 import {Professional, ProfessionalId} from '../../domain/professional/entities';
-import {AiAiSpecialtyGroupGroup} from '../../domain/form-template/entities';
+import {AiSpecialtyGroup} from '../../domain/form-template/entities';
 import {MapperWithDto} from './mapper';
 
 export type ProfessionalReadModel = PrismaClient.Professional;

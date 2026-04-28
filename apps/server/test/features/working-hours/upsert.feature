@@ -113,7 +113,7 @@ Feature: Working Hours CRUD (POST / GET / DELETE)
             | startAt              | 2026-06-01T06:00:00.000Z            |
             | endAt                | 2026-06-01T07:00:00.000Z            |
             | type                 | FIRST_VISIT                         |
-        Then the request should fail with a 412 status code
+        Then the request should fail with a 409 status code
 
     Scenario: Upsert working hours requires authentication
         Given I sign out

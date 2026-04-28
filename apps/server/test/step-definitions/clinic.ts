@@ -1,6 +1,8 @@
 import {Given} from '@cucumber/cucumber';
+import {randomUUID} from 'crypto';
 import {chai} from '../support/chai-setup';
 import type {Context} from '../support/context';
+import {resolveReferences} from '../support/parser';
 
 // ---------------------------------------------------------------------------
 // Given — clinic + member creation helpers
@@ -38,7 +40,11 @@ Given(
     'a clinic member {string} with role {string} in clinic {string}',
     async function (this: Context, memberKey: string, role: string, clinicKey: string) {
         const userId = this.getVariableId('user', memberKey);
-        const clinicId = this.getVariableId('clinic', clinicKey);
+        const resolvedClinic = resolveReferences(this, clinicKey);
+        // clinicKey may be a plain key ("dr_house") or an already-resolved UUID
+        const clinicId = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(resolvedClinic)
+            ? resolvedClinic
+            : this.getVariableId('clinic', resolvedClinic);
 
         const response = await this.agent.post('/api/v1/clinic-members').send({
             clinicId,
@@ -95,5 +101,49 @@ Given(
         });
         chai.expect(profResp.status, JSON.stringify(profResp.body)).to.equal(201);
         this.setVariableId('professional', key, profResp.body.id as string);
+
+        // 4. Subscription — auto-create a STARTER plan so subscription-guarded
+        //    endpoints (usage, billing-report, imported-document approve) work
+        //    without needing a full payment flow.
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = now.getMonth() + 1;
+        const subscriptionId = randomUUID();
+
+        await this.prisma.professionalSubscription.upsert({
+            where: {memberId: clinicMemberId},
+            create: {
+                id: subscriptionId,
+                clinicId,
+                memberId: clinicMemberId,
+                planCode: 'STARTER',
+                status: 'ACTIVE',
+                currentPeriodStart: new Date(year, month - 1, 1),
+                currentPeriodEnd: new Date(year, month, 0, 23, 59, 59, 999),
+                createdAt: now,
+                updatedAt: now,
+            },
+            update: {},
+        });
+
+        await this.prisma.usageRecord.upsert({
+            where: {usage_record_member_period_unique: {memberId: clinicMemberId, periodYear: year, periodMonth: month}},
+            create: {
+                id: randomUUID(),
+                clinicId,
+                memberId: clinicMemberId,
+                subscriptionId,
+                periodYear: year,
+                periodMonth: month,
+                planCodeSnapshot: 'STARTER',
+                docsUploaded: 0,
+                chatMessages: 0,
+                clinicalImages: 0,
+                storageHotGbUsed: 0,
+                createdAt: now,
+                updatedAt: now,
+            },
+            update: {},
+        });
     },
 );

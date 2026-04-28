@@ -16,13 +16,12 @@
 import {PrismaClient} from '@prisma/client';
 import {randomUUID} from 'crypto';
 import {AGENT_REGISTRY, SPECIALTY_AGENT_MAP} from './agent.config';
-import {Specialty} from '../../domain/form-template/entities';
+import {AiSpecialtyGroup} from '../../domain/form-template/entities';
 
 const prisma = new PrismaClient();
 
-/** Resolve a Specialty de um slug via inverso do SPECIALTY_AGENT_MAP */
-function specialtyForSlug(slug: string): Specialty | null {
-    const entry = (Object.entries(SPECIALTY_AGENT_MAP) as [Specialty, string][]).find(
+function specialtyGroupForSlug(slug: string): AiSpecialtyGroup | null {
+    const entry = (Object.entries(SPECIALTY_AGENT_MAP) as [AiSpecialtyGroup, string][]).find(
         ([, s]) => s === slug,
     );
     return entry?.[0] ?? null;
@@ -52,7 +51,7 @@ async function syncAgents(): Promise<void> {
             where: {slug: config.slug},
         });
 
-        const specialty = specialtyForSlug(config.slug);
+        const specialtyGroup = specialtyGroupForSlug(config.slug);
 
         if (!existing) {
             const now = new Date();
@@ -62,8 +61,7 @@ async function syncAgents(): Promise<void> {
                     name: config.name,
                     slug: config.slug,
                     code: config.slug.replace(/-/g, '_'),
-                    specialty: specialty ?? null,
-                    specialtyGroup: specialty ? specialty.toLowerCase() : null,
+                    specialtyGroup: specialtyGroup ?? null,
                     baseInstructions: config.baseInstructions,
                     guardrails: config.guardrails,
                     analysisGoals: config.analysisGoals,

@@ -3,7 +3,7 @@ import * as PrismaClient from '@prisma/client';
 import {toEnumArray} from '../../domain/@shared/utils';
 import {DocumentId, Email, Phone} from '../../domain/@shared/value-objects';
 import {Clinic, ClinicId} from '../../domain/clinic/entities';
-import {Specialty} from '../../domain/form-template/entities';
+import {AiSpecialtyGroup} from '../../domain/form-template/entities';
 import {MapperWithoutDto} from './mapper';
 
 export type ClinicModel = PrismaClient.Clinic;
@@ -27,7 +27,7 @@ export class ClinicMapper extends MapperWithoutDto<Clinic, ClinicModel> {
             zipCode: model.zipCode ?? null,
             country: model.country ?? null,
             logoUrl: model.logoUrl ?? null,
-            clinicSpecialties: toEnumArray(Specialty, model.clinicSpecialties),
+            clinicSpecialties: toEnumArray(AiSpecialtyGroup, model.clinicSpecialties),
             createdAt: model.createdAt,
             updatedAt: model.updatedAt,
             deletedAt: model.deletedAt ?? null,
@@ -51,7 +51,7 @@ export class ClinicMapper extends MapperWithoutDto<Clinic, ClinicModel> {
             zipCode: entity.zipCode,
             country: entity.country,
             logoUrl: entity.logoUrl,
-            clinicSpecialties: entity.clinicSpecialties as PrismaClient.Specialty[],
+            clinicSpecialties: entity.clinicSpecialties as PrismaClient.AiSpecialtyGroup[],
             createdAt: entity.createdAt,
             updatedAt: entity.updatedAt,
             deletedAt: entity.deletedAt ?? null,

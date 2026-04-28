@@ -4,7 +4,7 @@ import {z} from 'zod';
 import {Actor} from '../../../domain/@shared/actor';
 import {PatientId} from '../../../domain/patient/entities';
 import {PatientFormId} from '../../../domain/patient-form/entities';
-import {Specialty} from '../../../domain/form-template/entities';
+import {AiSpecialtyGroup} from '../../../domain/form-template/entities';
 import {PatientFormPermission} from '../../../domain/auth';
 import {Authorize} from '../../@shared/auth';
 import {RequestActor} from '../../@shared/auth/request-actor.decorator';
@@ -16,7 +16,7 @@ import {FormFieldIndexDto} from '../dtos';
 import {FormFieldIndexerService} from '../services';
 
 const searchIndexSchema = z.object({
-    specialty: z.nativeEnum(Specialty).optional(),
+    specialty: z.nativeEnum(AiSpecialtyGroup).optional(),
     fieldId: z.string().optional(),
     patientFormId: entityId(PatientFormId).optional(),
 });
@@ -44,7 +44,7 @@ export class FormFieldIndexController {
     ): Promise<FormFieldIndexDto[]> {
         const results = await this.indexerService.search({
             fieldId: query.fieldId,
-            specialty: query.specialty,
+            specialtyGroup: query.specialty,
         });
         return results.map((r) => new FormFieldIndexDto(r));
     }
@@ -62,7 +62,7 @@ export class FormFieldIndexController {
         const results = await this.indexerService.search({
             patientFormId: query.patientFormId,
             fieldId: query.fieldId,
-            specialty: query.specialty,
+            specialtyGroup: query.specialty,
         });
         return results.map((r) => new FormFieldIndexDto(r));
     }

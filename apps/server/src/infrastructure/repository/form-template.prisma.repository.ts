@@ -51,7 +51,7 @@ export class FormTemplatePrismaRepository extends PrismaRepository implements Fo
     ): Promise<PaginatedList<FormTemplate>> {
         const where: PrismaClient.Prisma.FormTemplateWhereInput = {
             deletedAt: filter.includeDeleted ? undefined : null,
-            specialty: filter.specialty as PrismaClient.Specialty | undefined,
+            specialtyLabel: filter.specialtyLabel,
             isPublic: filter.isPublic !== undefined ? filter.isPublic : undefined,
             clinicId: this.normalizeNullableId(filter.clinicId),
             createdByMemberId: this.normalizeNullableId(filter.createdByMemberId),
