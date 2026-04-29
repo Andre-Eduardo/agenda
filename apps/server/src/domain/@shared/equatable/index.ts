@@ -1,1 +1,1 @@
-export * from './equatable';
+export * from "@domain/@shared/equatable/equatable";

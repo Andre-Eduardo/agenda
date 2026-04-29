@@ -1,1 +1,1 @@
-export * from './draft-evolution.dto';
+export * from "@application/imported-document/dtos/draft-evolution.dto";

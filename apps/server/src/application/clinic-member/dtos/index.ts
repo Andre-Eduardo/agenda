@@ -1,2 +1,2 @@
-export * from './clinic-member.dto';
-export * from './create-clinic-member.dto';
+export * from "@application/clinic-member/dtos/clinic-member.dto";
+export * from "@application/clinic-member/dtos/create-clinic-member.dto";

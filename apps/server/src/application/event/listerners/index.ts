@@ -1,1 +1,1 @@
-export * from './record-event.listener';
+export * from "@application/event/listerners/record-event.listener";

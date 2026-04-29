@@ -1,79 +1,83 @@
-import {Injectable} from '@nestjs/common';
-import * as PrismaClient from '@prisma/client';
-import {toEnum, toEnumOrNull} from '../../domain/@shared/utils';
-import {ClinicId} from '../../domain/clinic/entities';
-import {AiSpecialtyGroup} from '../../domain/form-template/entities';
-import {KnowledgeChunk, KnowledgeChunkId, type KnowledgeChunkMetadata} from '../../domain/knowledge-base/entities';
-import {MapperWithoutDto} from './mapper';
+import { Injectable } from "@nestjs/common";
+import * as PrismaClient from "@prisma/client";
+import { toEnum, toEnumOrNull } from "@domain/@shared/utils";
+import { ClinicId } from "@domain/clinic/entities";
+import { AiSpecialtyGroup } from "@domain/form-template/entities";
+import {
+  KnowledgeChunk,
+  KnowledgeChunkId,
+  type KnowledgeChunkMetadata,
+} from "@domain/knowledge-base/entities";
+import { MapperWithoutDto } from "@infrastructure/mappers/mapper";
 
 export type KnowledgeChunkModel = PrismaClient.KnowledgeChunk;
 
 export type KnowledgeChunkRawRow = {
-    id: string;
-    clinic_id: string | null;
-    specialty: string | null;
-    category: string;
-    content: string;
-    metadata: unknown;
-    source_file: string | null;
-    source_page: number | null;
-    content_hash: string;
-    created_at: Date;
-    updated_at: Date;
-    score?: number;
+  id: string;
+  clinic_id: string | null;
+  specialty: string | null;
+  category: string;
+  content: string;
+  metadata: unknown;
+  source_file: string | null;
+  source_page: number | null;
+  content_hash: string;
+  created_at: Date;
+  updated_at: Date;
+  score?: number;
 };
 
 @Injectable()
 export class KnowledgeChunkMapper extends MapperWithoutDto<KnowledgeChunk, KnowledgeChunkModel> {
-    toDomain(model: KnowledgeChunkModel): KnowledgeChunk {
-        return new KnowledgeChunk({
-            id: KnowledgeChunkId.from(model.id),
-            clinicId: model.clinicId === null ? null : ClinicId.from(model.clinicId),
-            specialty: toEnumOrNull(AiSpecialtyGroup, model.specialty),
-            category: model.category,
-            content: model.content,
-            metadata: model.metadata as KnowledgeChunkMetadata | null,
-            sourceFile: model.sourceFile,
-            sourcePage: model.sourcePage,
-            embedding: null,
-            contentHash: model.contentHash,
-            createdAt: model.createdAt,
-            updatedAt: model.updatedAt,
-            deletedAt: null,
-        });
-    }
+  toDomain(model: KnowledgeChunkModel): KnowledgeChunk {
+    return new KnowledgeChunk({
+      id: KnowledgeChunkId.from(model.id),
+      clinicId: model.clinicId === null ? null : ClinicId.from(model.clinicId),
+      specialty: toEnumOrNull(AiSpecialtyGroup, model.specialty),
+      category: model.category,
+      content: model.content,
+      metadata: model.metadata as KnowledgeChunkMetadata | null,
+      sourceFile: model.sourceFile,
+      sourcePage: model.sourcePage,
+      embedding: null,
+      contentHash: model.contentHash,
+      createdAt: model.createdAt,
+      updatedAt: model.updatedAt,
+      deletedAt: null,
+    });
+  }
 
-    toDomainFromRaw(row: KnowledgeChunkRawRow): KnowledgeChunk {
-        return new KnowledgeChunk({
-            id: KnowledgeChunkId.from(row.id),
-            clinicId: row.clinic_id === null ? null : ClinicId.from(row.clinic_id),
-            specialty: toEnumOrNull(AiSpecialtyGroup, row.specialty),
-            category: row.category,
-            content: row.content,
-            metadata: row.metadata as KnowledgeChunkMetadata | null,
-            sourceFile: row.source_file,
-            sourcePage: row.source_page !== null ? Number(row.source_page) : null,
-            embedding: null,
-            contentHash: row.content_hash,
-            createdAt: row.created_at,
-            updatedAt: row.updated_at,
-            deletedAt: null,
-        });
-    }
+  toDomainFromRaw(row: KnowledgeChunkRawRow): KnowledgeChunk {
+    return new KnowledgeChunk({
+      id: KnowledgeChunkId.from(row.id),
+      clinicId: row.clinic_id === null ? null : ClinicId.from(row.clinic_id),
+      specialty: toEnumOrNull(AiSpecialtyGroup, row.specialty),
+      category: row.category,
+      content: row.content,
+      metadata: row.metadata as KnowledgeChunkMetadata | null,
+      sourceFile: row.source_file,
+      sourcePage: row.source_page,
+      embedding: null,
+      contentHash: row.content_hash,
+      createdAt: row.created_at,
+      updatedAt: row.updated_at,
+      deletedAt: null,
+    });
+  }
 
-    toPersistence(entity: KnowledgeChunk): Omit<KnowledgeChunkModel, 'embedding'> {
-        return {
-            id: entity.id.toString(),
-            clinicId: entity.clinicId?.toString() ?? null,
-            specialty: entity.specialty ? toEnum(PrismaClient.AiSpecialtyGroup, entity.specialty) : null,
-            category: entity.category,
-            content: entity.content,
-            metadata: entity.metadata as PrismaClient.Prisma.JsonValue,
-            sourceFile: entity.sourceFile,
-            sourcePage: entity.sourcePage,
-            contentHash: entity.contentHash,
-            createdAt: entity.createdAt,
-            updatedAt: entity.updatedAt,
-        };
-    }
+  toPersistence(entity: KnowledgeChunk): Omit<KnowledgeChunkModel, "embedding"> {
+    return {
+      id: entity.id.toString(),
+      clinicId: entity.clinicId?.toString() ?? null,
+      specialty: entity.specialty ? toEnum(PrismaClient.AiSpecialtyGroup, entity.specialty) : null,
+      category: entity.category,
+      content: entity.content,
+      metadata: entity.metadata as PrismaClient.Prisma.JsonValue,
+      sourceFile: entity.sourceFile,
+      sourcePage: entity.sourcePage,
+      contentHash: entity.contentHash,
+      createdAt: entity.createdAt,
+      updatedAt: entity.updatedAt,
+    };
+  }
 }

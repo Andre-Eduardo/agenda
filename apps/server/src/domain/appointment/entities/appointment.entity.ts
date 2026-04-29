@@ -1,272 +1,289 @@
 import {
-    AggregateRoot,
-    type AllEntityProps,
-    type EntityJson,
-    type EntityProps,
-    type CreateEntity,
-} from '../../@shared/entity';
-import {EntityId} from '../../@shared/entity/id';
-import type {ClinicId} from '../../clinic/entities';
-import type {ClinicMemberId} from '../../clinic-member/entities';
-import type {PatientId} from '../../patient/entities';
-import {InvalidInputException, PreconditionException} from '../../@shared/exceptions';
+  AggregateRoot,
+  type AllEntityProps,
+  type EntityJson,
+  type EntityProps,
+  type CreateEntity,
+} from "@domain/@shared/entity";
+import { EntityId } from "@domain/@shared/entity/id";
+import type { ClinicId } from "@domain/clinic/entities";
+import type { ClinicMemberId } from "@domain/clinic-member/entities";
+import type { PatientId } from "@domain/patient/entities";
+import { InvalidInputException, PreconditionException } from "@domain/@shared/exceptions";
 import {
-    AppointmentCreatedEvent,
-    AppointmentChangedEvent,
-    AppointmentDeletedEvent,
-    AppointmentCheckinEvent,
-    AppointmentCalledEvent,
-} from '../events';
+  AppointmentCreatedEvent,
+  AppointmentChangedEvent,
+  AppointmentDeletedEvent,
+  AppointmentCheckinEvent,
+  AppointmentCalledEvent,
+} from "@domain/appointment/events";
 
 export type AppointmentProps = EntityProps<Appointment>;
-export type CreateAppointment = Omit<CreateEntity<Appointment>, 'status' | 'arrivedAt' | 'calledAt'> & {
-    status?: AppointmentStatus;
+export type CreateAppointment = Omit<
+  CreateEntity<Appointment>,
+  "status" | "arrivedAt" | "calledAt"
+> & {
+  status?: AppointmentStatus;
 };
 export type UpdateAppointment = Partial<AppointmentProps>;
 
 export enum AppointmentStatus {
-    SCHEDULED = 'SCHEDULED',
-    CONFIRMED = 'CONFIRMED',
-    CANCELLED = 'CANCELLED',
-    COMPLETED = 'COMPLETED',
-    NO_SHOW = 'NO_SHOW',
-    ARRIVED = 'ARRIVED',
-    IN_PROGRESS = 'IN_PROGRESS',
+  SCHEDULED = "SCHEDULED",
+  CONFIRMED = "CONFIRMED",
+  CANCELLED = "CANCELLED",
+  COMPLETED = "COMPLETED",
+  NO_SHOW = "NO_SHOW",
+  ARRIVED = "ARRIVED",
+  IN_PROGRESS = "IN_PROGRESS",
 }
 
 export enum AppointmentType {
-    FIRST_VISIT = 'FIRST_VISIT',
-    RETURN = 'RETURN',
-    WALK_IN = 'WALK_IN',
-    TELEMEDICINE = 'TELEMEDICINE',
-    PROCEDURE = 'PROCEDURE',
+  FIRST_VISIT = "FIRST_VISIT",
+  RETURN = "RETURN",
+  WALK_IN = "WALK_IN",
+  TELEMEDICINE = "TELEMEDICINE",
+  PROCEDURE = "PROCEDURE",
 }
 
 export class Appointment extends AggregateRoot<AppointmentId> {
-    clinicId: ClinicId;
-    patientId: PatientId;
-    /** Membro que vai atender (geralmente um PROFESSIONAL). */
-    attendedByMemberId: ClinicMemberId;
-    /** Quem agendou (pode ser um SECRETARY, ADMIN, etc.). */
-    createdByMemberId: ClinicMemberId;
-    startAt: Date;
-    endAt: Date;
-    durationMinutes: number;
-    type: AppointmentType;
-    canceledAt: Date | null;
-    canceledReason: string | null;
-    note: string | null;
-    status: AppointmentStatus;
-    /** Momento em que o paciente deu entrada na recepção. */
-    arrivedAt: Date | null;
-    /** Momento em que o paciente foi chamado para a sala. */
-    calledAt: Date | null;
+  clinicId: ClinicId;
+  patientId: PatientId;
+  /** Membro que vai atender (geralmente um PROFESSIONAL). */
+  attendedByMemberId: ClinicMemberId;
+  /** Quem agendou (pode ser um SECRETARY, ADMIN, etc.). */
+  createdByMemberId: ClinicMemberId;
+  startAt: Date;
+  endAt: Date;
+  durationMinutes: number;
+  type: AppointmentType;
+  canceledAt: Date | null;
+  canceledReason: string | null;
+  note: string | null;
+  status: AppointmentStatus;
+  /** Momento em que o paciente deu entrada na recepção. */
+  arrivedAt: Date | null;
+  /** Momento em que o paciente foi chamado para a sala. */
+  calledAt: Date | null;
 
-    constructor(props: AllEntityProps<Appointment>) {
-        super(props);
-        this.clinicId = props.clinicId;
-        this.patientId = props.patientId;
-        this.attendedByMemberId = props.attendedByMemberId;
-        this.createdByMemberId = props.createdByMemberId;
-        this.startAt = props.startAt;
-        this.endAt = props.endAt;
-        this.durationMinutes = props.durationMinutes;
-        this.type = props.type;
-        this.canceledAt = props.canceledAt ?? null;
-        this.canceledReason = props.canceledReason ?? null;
-        this.note = props.note ?? null;
-        this.status = props.status ?? AppointmentStatus.SCHEDULED;
-        this.arrivedAt = props.arrivedAt ?? null;
-        this.calledAt = props.calledAt ?? null;
-        this.validate();
+  constructor(props: AllEntityProps<Appointment>) {
+    super(props);
+    this.clinicId = props.clinicId;
+    this.patientId = props.patientId;
+    this.attendedByMemberId = props.attendedByMemberId;
+    this.createdByMemberId = props.createdByMemberId;
+    this.startAt = props.startAt;
+    this.endAt = props.endAt;
+    this.durationMinutes = props.durationMinutes;
+    this.type = props.type;
+    this.canceledAt = props.canceledAt ?? null;
+    this.canceledReason = props.canceledReason ?? null;
+    this.note = props.note ?? null;
+    this.status = props.status ?? AppointmentStatus.SCHEDULED;
+    this.arrivedAt = props.arrivedAt ?? null;
+    this.calledAt = props.calledAt ?? null;
+    this.validate();
+  }
+
+  static create(props: CreateAppointment): Appointment {
+    const id = AppointmentId.generate();
+    const now = new Date();
+
+    const appointment = new Appointment({
+      ...props,
+      id,
+      status: props.status ?? AppointmentStatus.SCHEDULED,
+      canceledReason: props.canceledReason ?? null,
+      note: props.note ?? null,
+      canceledAt: props.canceledAt ?? null,
+      arrivedAt: null,
+      calledAt: null,
+      createdAt: now,
+      updatedAt: now,
+      deletedAt: null,
+    });
+
+    appointment.addEvent(new AppointmentCreatedEvent({ appointment, timestamp: now }));
+
+    return appointment;
+  }
+
+  delete(): void {
+    this.addEvent(new AppointmentDeletedEvent({ appointment: this }));
+  }
+
+  change(props: UpdateAppointment): void {
+    if (
+      this.status === AppointmentStatus.COMPLETED ||
+      this.status === AppointmentStatus.CANCELLED
+    ) {
+      throw new PreconditionException(`Cannot modify an appointment with status ${this.status}.`);
     }
 
-    static create(props: CreateAppointment): Appointment {
-        const id = AppointmentId.generate();
-        const now = new Date();
+    const oldState = new Appointment(this);
 
-        const appointment = new Appointment({
-            ...props,
-            id,
-            status: props.status ?? AppointmentStatus.SCHEDULED,
-            canceledReason: props.canceledReason ?? null,
-            note: props.note ?? null,
-            canceledAt: props.canceledAt ?? null,
-            arrivedAt: null,
-            calledAt: null,
-            createdAt: now,
-            updatedAt: now,
-            deletedAt: null,
-        });
-
-        appointment.addEvent(new AppointmentCreatedEvent({appointment, timestamp: now}));
-
-        return appointment;
+    if (props.startAt !== undefined) {
+      this.startAt = props.startAt;
     }
 
-    delete(): void {
-        this.addEvent(new AppointmentDeletedEvent({appointment: this}));
+    if (props.endAt !== undefined) {
+      this.endAt = props.endAt;
     }
 
-    change(props: UpdateAppointment): void {
-        if (this.status === AppointmentStatus.COMPLETED || this.status === AppointmentStatus.CANCELLED) {
-            throw new PreconditionException(`Cannot modify an appointment with status ${this.status}.`);
-        }
-
-        const oldState = new Appointment(this);
-
-        if (props.startAt !== undefined) {
-            this.startAt = props.startAt;
-        }
-
-        if (props.endAt !== undefined) {
-            this.endAt = props.endAt;
-        }
-
-        if (props.durationMinutes !== undefined) {
-            this.durationMinutes = props.durationMinutes;
-        }
-
-        if (props.type !== undefined) {
-            this.type = props.type;
-        }
-
-        if (props.note !== undefined) {
-            this.note = props.note;
-        }
-
-        this.validate();
-
-        this.addEvent(new AppointmentChangedEvent({oldState, newState: this}));
+    if (props.durationMinutes !== undefined) {
+      this.durationMinutes = props.durationMinutes;
     }
 
-    cancel(reason: string): void {
-        const cancellableStatuses = [
-            AppointmentStatus.SCHEDULED,
-            AppointmentStatus.CONFIRMED,
-            AppointmentStatus.ARRIVED,
-        ];
-
-        if (!cancellableStatuses.includes(this.status)) {
-            throw new PreconditionException(`Cannot cancel an appointment with status ${this.status}.`);
-        }
-
-        const oldState = new Appointment(this);
-
-        this.status = AppointmentStatus.CANCELLED;
-        this.canceledAt = new Date();
-        this.canceledReason = reason;
-
-        this.addEvent(new AppointmentChangedEvent({oldState, newState: this}));
+    if (props.type !== undefined) {
+      this.type = props.type;
     }
 
-    confirm(): void {
-        if (this.status !== AppointmentStatus.SCHEDULED) {
-            throw new PreconditionException(`Cannot confirm an appointment with status ${this.status}.`);
-        }
-
-        const oldState = new Appointment(this);
-
-        this.status = AppointmentStatus.CONFIRMED;
-        this.addEvent(new AppointmentChangedEvent({oldState, newState: this}));
+    if (props.note !== undefined) {
+      this.note = props.note;
     }
 
-    complete(): void {
-        if (this.status !== AppointmentStatus.CONFIRMED && this.status !== AppointmentStatus.SCHEDULED
-            && this.status !== AppointmentStatus.IN_PROGRESS) {
-            throw new PreconditionException(`Cannot complete an appointment with status ${this.status}.`);
-        }
+    this.validate();
 
-        const oldState = new Appointment(this);
+    this.addEvent(new AppointmentChangedEvent({ oldState, newState: this }));
+  }
 
-        this.status = AppointmentStatus.COMPLETED;
-        this.addEvent(new AppointmentChangedEvent({oldState, newState: this}));
+  cancel(reason: string): void {
+    const cancellableStatuses = [
+      AppointmentStatus.SCHEDULED,
+      AppointmentStatus.CONFIRMED,
+      AppointmentStatus.ARRIVED,
+    ];
+
+    if (!cancellableStatuses.includes(this.status)) {
+      throw new PreconditionException(`Cannot cancel an appointment with status ${this.status}.`);
     }
 
-    noShow(): void {
-        if (this.status !== AppointmentStatus.CONFIRMED && this.status !== AppointmentStatus.SCHEDULED
-            && this.status !== AppointmentStatus.ARRIVED) {
-            throw new PreconditionException(`Cannot mark no-show for an appointment with status ${this.status}.`);
-        }
+    const oldState = new Appointment(this);
 
-        const oldState = new Appointment(this);
+    this.status = AppointmentStatus.CANCELLED;
+    this.canceledAt = new Date();
+    this.canceledReason = reason;
 
-        this.status = AppointmentStatus.NO_SHOW;
-        this.addEvent(new AppointmentChangedEvent({oldState, newState: this}));
+    this.addEvent(new AppointmentChangedEvent({ oldState, newState: this }));
+  }
+
+  confirm(): void {
+    if (this.status !== AppointmentStatus.SCHEDULED) {
+      throw new PreconditionException(`Cannot confirm an appointment with status ${this.status}.`);
     }
 
-    checkin(): void {
-        if (this.status !== AppointmentStatus.SCHEDULED && this.status !== AppointmentStatus.CONFIRMED) {
-            throw new PreconditionException(`Cannot check in an appointment with status ${this.status}.`);
-        }
+    const oldState = new Appointment(this);
 
-        const oldState = new Appointment(this);
+    this.status = AppointmentStatus.CONFIRMED;
+    this.addEvent(new AppointmentChangedEvent({ oldState, newState: this }));
+  }
 
-        this.status = AppointmentStatus.ARRIVED;
-        this.arrivedAt = new Date();
-
-        this.addEvent(new AppointmentCheckinEvent({appointment: this}));
-        this.addEvent(new AppointmentChangedEvent({oldState, newState: this}));
+  complete(): void {
+    if (
+      this.status !== AppointmentStatus.CONFIRMED &&
+      this.status !== AppointmentStatus.SCHEDULED &&
+      this.status !== AppointmentStatus.IN_PROGRESS
+    ) {
+      throw new PreconditionException(`Cannot complete an appointment with status ${this.status}.`);
     }
 
-    call(): void {
-        if (this.status !== AppointmentStatus.ARRIVED) {
-            throw new PreconditionException(`Cannot call an appointment with status ${this.status}.`);
-        }
+    const oldState = new Appointment(this);
 
-        const oldState = new Appointment(this);
+    this.status = AppointmentStatus.COMPLETED;
+    this.addEvent(new AppointmentChangedEvent({ oldState, newState: this }));
+  }
 
-        this.status = AppointmentStatus.IN_PROGRESS;
-        this.calledAt = new Date();
-
-        this.addEvent(new AppointmentCalledEvent({appointment: this}));
-        this.addEvent(new AppointmentChangedEvent({oldState, newState: this}));
+  noShow(): void {
+    if (
+      this.status !== AppointmentStatus.CONFIRMED &&
+      this.status !== AppointmentStatus.SCHEDULED &&
+      this.status !== AppointmentStatus.ARRIVED
+    ) {
+      throw new PreconditionException(
+        `Cannot mark no-show for an appointment with status ${this.status}.`,
+      );
     }
 
-    validate(): void {
-        if (this.startAt >= this.endAt) {
-            throw new InvalidInputException('endAt must be after startAt', [
-                {field: 'endAt', reason: 'endAt must be after startAt'},
-            ]);
-        }
+    const oldState = new Appointment(this);
 
-        if (this.durationMinutes <= 0) {
-            throw new InvalidInputException('durationMinutes must be positive', [
-                {field: 'durationMinutes', reason: 'must be positive'},
-            ]);
-        }
+    this.status = AppointmentStatus.NO_SHOW;
+    this.addEvent(new AppointmentChangedEvent({ oldState, newState: this }));
+  }
+
+  checkin(): void {
+    if (
+      this.status !== AppointmentStatus.SCHEDULED &&
+      this.status !== AppointmentStatus.CONFIRMED
+    ) {
+      throw new PreconditionException(`Cannot check in an appointment with status ${this.status}.`);
     }
 
-    toJSON(): EntityJson<Appointment> {
-        return {
-            id: this.id.toJSON(),
-            clinicId: this.clinicId.toJSON(),
-            patientId: this.patientId.toJSON(),
-            attendedByMemberId: this.attendedByMemberId.toJSON(),
-            createdByMemberId: this.createdByMemberId.toJSON(),
-            startAt: this.startAt.toJSON(),
-            endAt: this.endAt.toJSON(),
-            durationMinutes: this.durationMinutes,
-            type: this.type,
-            canceledAt: this.canceledAt?.toJSON() ?? null,
-            canceledReason: this.canceledReason,
-            note: this.note,
-            status: this.status,
-            arrivedAt: this.arrivedAt?.toJSON() ?? null,
-            calledAt: this.calledAt?.toJSON() ?? null,
-            createdAt: this.createdAt.toJSON(),
-            updatedAt: this.updatedAt.toJSON(),
-            deletedAt: this.deletedAt?.toJSON() ?? null,
-        };
+    const oldState = new Appointment(this);
+
+    this.status = AppointmentStatus.ARRIVED;
+    this.arrivedAt = new Date();
+
+    this.addEvent(new AppointmentCheckinEvent({ appointment: this }));
+    this.addEvent(new AppointmentChangedEvent({ oldState, newState: this }));
+  }
+
+  call(): void {
+    if (this.status !== AppointmentStatus.ARRIVED) {
+      throw new PreconditionException(`Cannot call an appointment with status ${this.status}.`);
     }
+
+    const oldState = new Appointment(this);
+
+    this.status = AppointmentStatus.IN_PROGRESS;
+    this.calledAt = new Date();
+
+    this.addEvent(new AppointmentCalledEvent({ appointment: this }));
+    this.addEvent(new AppointmentChangedEvent({ oldState, newState: this }));
+  }
+
+  validate(): void {
+    if (this.startAt >= this.endAt) {
+      throw new InvalidInputException("endAt must be after startAt", [
+        { field: "endAt", reason: "endAt must be after startAt" },
+      ]);
+    }
+
+    if (this.durationMinutes <= 0) {
+      throw new InvalidInputException("durationMinutes must be positive", [
+        { field: "durationMinutes", reason: "must be positive" },
+      ]);
+    }
+  }
+
+  toJSON(): EntityJson<Appointment> {
+    return {
+      id: this.id.toJSON(),
+      clinicId: this.clinicId.toJSON(),
+      patientId: this.patientId.toJSON(),
+      attendedByMemberId: this.attendedByMemberId.toJSON(),
+      createdByMemberId: this.createdByMemberId.toJSON(),
+      startAt: this.startAt.toJSON(),
+      endAt: this.endAt.toJSON(),
+      durationMinutes: this.durationMinutes,
+      type: this.type,
+      canceledAt: this.canceledAt?.toJSON() ?? null,
+      canceledReason: this.canceledReason,
+      note: this.note,
+      status: this.status,
+      arrivedAt: this.arrivedAt?.toJSON() ?? null,
+      calledAt: this.calledAt?.toJSON() ?? null,
+      createdAt: this.createdAt.toJSON(),
+      updatedAt: this.updatedAt.toJSON(),
+      deletedAt: this.deletedAt?.toJSON() ?? null,
+    };
+  }
 }
 
-export class AppointmentId extends EntityId<'AppointmentId'> {
-    static from(value: string): AppointmentId {
-        return new AppointmentId(value);
-    }
+export class AppointmentId extends EntityId<"AppointmentId"> {
+  static from(value: string): AppointmentId {
+    return new AppointmentId(value);
+  }
 
-    static generate(): AppointmentId {
-        return new AppointmentId();
-    }
+  static generate(): AppointmentId {
+    return new AppointmentId();
+  }
 }

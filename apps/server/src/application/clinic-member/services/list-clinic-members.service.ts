@@ -1,18 +1,21 @@
-import {Injectable} from '@nestjs/common';
-import {ClinicId} from '../../../domain/clinic/entities';
-import {ClinicMemberRepository} from '../../../domain/clinic-member/clinic-member.repository';
-import {ApplicationService, Command} from '../../@shared/application.service';
-import {ClinicMemberDto} from '../dtos';
+import { Injectable } from "@nestjs/common";
+import { ClinicId } from "@domain/clinic/entities";
+import { ClinicMemberRepository } from "@domain/clinic-member/clinic-member.repository";
+import { ApplicationService, Command } from "@application/@shared/application.service";
+import { ClinicMemberDto } from "@application/clinic-member/dtos";
 
-export type ListClinicMembersInput = {clinicId: ClinicId};
+export type ListClinicMembersInput = { clinicId: ClinicId };
 
 @Injectable()
-export class ListClinicMembersService implements ApplicationService<ListClinicMembersInput, ClinicMemberDto[]> {
-    constructor(private readonly clinicMemberRepository: ClinicMemberRepository) {}
+export class ListClinicMembersService implements ApplicationService<
+  ListClinicMembersInput,
+  ClinicMemberDto[]
+> {
+  constructor(private readonly clinicMemberRepository: ClinicMemberRepository) {}
 
-    async execute({payload}: Command<ListClinicMembersInput>): Promise<ClinicMemberDto[]> {
-        const members = await this.clinicMemberRepository.findByClinicId(payload.clinicId);
+  async execute({ payload }: Command<ListClinicMembersInput>): Promise<ClinicMemberDto[]> {
+    const members = await this.clinicMemberRepository.findByClinicId(payload.clinicId);
 
-        return members.map((m) => new ClinicMemberDto(m));
-    }
+    return members.map((m) => new ClinicMemberDto(m));
+  }
 }

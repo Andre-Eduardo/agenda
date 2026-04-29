@@ -13,19 +13,19 @@ src/
 
 ## Convenções de nomenclatura
 
-| Artefato | Padrão de arquivo | Classe |
-|----------|-------------------|--------|
-| Controller | `entity.controller.ts` | `EntityController` |
-| Service | `create-entity.service.ts` | `CreateEntityService` |
-| Input DTO | `create-entity.dto.ts` | `CreateEntityDto` |
-| Response DTO | `entity.dto.ts` | `EntityDto` |
-| Entidade de domínio | `entity.ts` | `Entity` |
-| Repositório (interface) | `entity.repository.ts` | `EntityRepository` (symbol + interface) |
-| Repositório (Prisma) | `prisma-entity.repository.ts` | `PrismaEntityRepository` |
-| Mapper | `entity.mapper.ts` | `EntityMapper` |
-| Módulo | `entity.module.ts` | `EntityModule` |
-| Teste unitário | `create-entity.service.test.ts` | — |
-| Fake helper | `fake-entity.ts` | — |
+| Artefato                | Padrão de arquivo               | Classe                                  |
+| ----------------------- | ------------------------------- | --------------------------------------- |
+| Controller              | `entity.controller.ts`          | `EntityController`                      |
+| Service                 | `create-entity.service.ts`      | `CreateEntityService`                   |
+| Input DTO               | `create-entity.dto.ts`          | `CreateEntityDto`                       |
+| Response DTO            | `entity.dto.ts`                 | `EntityDto`                             |
+| Entidade de domínio     | `entity.ts`                     | `Entity`                                |
+| Repositório (interface) | `entity.repository.ts`          | `EntityRepository` (symbol + interface) |
+| Repositório (Prisma)    | `prisma-entity.repository.ts`   | `PrismaEntityRepository`                |
+| Mapper                  | `entity.mapper.ts`              | `EntityMapper`                          |
+| Módulo                  | `entity.module.ts`              | `EntityModule`                          |
+| Teste unitário          | `create-entity.service.test.ts` | —                                       |
+| Fake helper             | `fake-entity.ts`                | —                                       |
 
 Cada pasta `controllers/`, `services/` e `dtos/` deve ter um `index.ts` re-exportando tudo.
 
@@ -33,10 +33,10 @@ Cada pasta `controllers/`, `services/` e `dtos/` deve ter um `index.ts` re-expor
 
 ```typescript
 export const createEntitySchema = z.object({
-    companyId: entityId(CompanyId),   // sempre presente; injetado por CompanyInjectorPipe
-    name: z.string().min(1).max(255),
-    description: z.string().nullish(), // opcional + nullable
-    amount: z.coerce.number().positive(),
+  companyId: entityId(CompanyId), // sempre presente; injetado por CompanyInjectorPipe
+  name: z.string().min(1).max(255),
+  description: z.string().nullish(), // opcional + nullable
+  amount: z.coerce.number().positive(),
 });
 export class CreateEntityDto extends createZodDto(createEntitySchema) {}
 ```
@@ -44,10 +44,10 @@ export class CreateEntityDto extends createZodDto(createEntitySchema) {}
 ## Response DTOs (classe + @ApiProperty)
 
 ```typescript
-@ApiSchema({name: 'Entity'})
+@ApiSchema({ name: "Entity" })
 export class EntityDto extends CompanyEntityDto {
-    @ApiProperty() name!: string;
-    @ApiProperty({nullable: true}) description!: string | null;
+  @ApiProperty() name!: string;
+  @ApiProperty({ nullable: true }) description!: string | null;
 }
 // EntityDto herda: id, createdAt, updatedAt (strings ISO8601)
 // CompanyEntityDto herda EntityDto + companyId
@@ -77,17 +77,19 @@ Todos estendem `BaseApplicationService`. Controller chama `execute()`, subclasse
 ```typescript
 @Injectable()
 export class CreateEntityService extends BaseApplicationService<CreateEntityDto, EntityDto> {
-    constructor(
-        private readonly entityRepository: EntityRepository,
-        private readonly mapper: EntityMapper,
-        protected readonly eventDispatcher: EventDispatcher,
-    ) { super(eventDispatcher); }
+  constructor(
+    private readonly entityRepository: EntityRepository,
+    private readonly mapper: EntityMapper,
+    protected readonly eventDispatcher: EventDispatcher,
+  ) {
+    super(eventDispatcher);
+  }
 
-    async handle({actor, payload}: Command<CreateEntityDto>): Promise<EntityDto> {
-        const entity = Entity.create({...payload, createdById: actor.userId});
-        await this.entityRepository.save(entity);
-        return this.mapper.toDto(entity);
-    }
+  async handle({ actor, payload }: Command<CreateEntityDto>): Promise<EntityDto> {
+    const entity = Entity.create({ ...payload, createdById: actor.userId });
+    await this.entityRepository.save(entity);
+    return this.mapper.toDto(entity);
+  }
 }
 ```
 
@@ -125,16 +127,16 @@ grep -rE "\bas any\b|as unknown as" apps/server/src/ --include="*.ts" | grep -v 
 
 ```typescript
 export class Entity extends AggregateRoot<EntityId> {
-    static create(props): Entity {
-        const entity = new Entity({id: EntityId.generate(), createdAt: new Date(), ...props});
-        entity.addEvent(new EntityCreatedEvent({entityId: entity.id}));
-        return entity;
-    }
-    updateName(name: string): void {
-        this.name = name;
-        this.update(); // atualiza updatedAt
-        this.addEvent(new EntityUpdatedEvent({entityId: this.id}));
-    }
+  static create(props): Entity {
+    const entity = new Entity({ id: EntityId.generate(), createdAt: new Date(), ...props });
+    entity.addEvent(new EntityCreatedEvent({ entityId: entity.id }));
+    return entity;
+  }
+  updateName(name: string): void {
+    this.name = name;
+    this.update(); // atualiza updatedAt
+    this.addEvent(new EntityUpdatedEvent({ entityId: this.id }));
+  }
 }
 ```
 
@@ -145,8 +147,11 @@ export class Entity extends AggregateRoot<EntityId> {
 
 ```typescript
 // domain/entity/entity.repository.ts
-export interface EntityRepository { findById(id: EntityId): Promise<Entity | null>; save(entity): Promise<void>; }
-export const EntityRepository = Symbol('EntityRepository'); // token de injeção
+export interface EntityRepository {
+  findById(id: EntityId): Promise<Entity | null>;
+  save(entity): Promise<void>;
+}
+export const EntityRepository = Symbol("EntityRepository"); // token de injeção
 ```
 
 ## Testes unitários (Jest + jest-mock-extended)
@@ -155,10 +160,10 @@ export const EntityRepository = Symbol('EntityRepository'); // token de injeçã
 const repo = mock<EntityRepository>();
 const service = new CreateEntityService(repo, mapper, mock<EventDispatcher>());
 
-it('should create', async () => {
-    repo.findById.mockResolvedValue(fakeEntity());
-    await expect(service.execute({actor, payload})).resolves.toMatchObject({name: 'Test'});
-    expect(repo.save).toHaveBeenCalledWith(expect.any(Entity));
+it("should create", async () => {
+  repo.findById.mockResolvedValue(fakeEntity());
+  await expect(service.execute({ actor, payload })).resolves.toMatchObject({ name: "Test" });
+  expect(repo.save).toHaveBeenCalledWith(expect.any(Entity));
 });
 ```
 

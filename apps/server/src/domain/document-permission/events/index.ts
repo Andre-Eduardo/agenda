@@ -1,7 +1,10 @@
-import {DocumentPermissionGrantedEvent} from './document-permission-granted.event';
-import {DocumentPermissionChangedEvent} from './document-permission-changed.event';
+import { DocumentPermissionGrantedEvent } from "@domain/document-permission/events/document-permission-granted.event";
+import { DocumentPermissionChangedEvent } from "@domain/document-permission/events/document-permission-changed.event";
 
-export * from './document-permission-changed.event';
-export * from './document-permission-granted.event';
+export * from "@domain/document-permission/events/document-permission-changed.event";
+export * from "@domain/document-permission/events/document-permission-granted.event";
 
-export const documentPermissionEvents = [DocumentPermissionGrantedEvent, DocumentPermissionChangedEvent];
+export const documentPermissionEvents = [
+  DocumentPermissionGrantedEvent,
+  DocumentPermissionChangedEvent,
+];

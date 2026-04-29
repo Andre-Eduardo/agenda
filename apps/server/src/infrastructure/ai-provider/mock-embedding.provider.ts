@@ -1,5 +1,5 @@
-import {Injectable} from '@nestjs/common';
-import type {EmbeddingProvider} from '../../domain/clinical-chat/ports/embedding.provider';
+import { Injectable } from "@nestjs/common";
+import type { EmbeddingProvider } from "@domain/clinical-chat/ports/embedding.provider";
 
 /**
  * Provider mock de embeddings para desenvolvimento.
@@ -26,27 +26,27 @@ import type {EmbeddingProvider} from '../../domain/clinical-chat/ports/embedding
  */
 @Injectable()
 export class MockEmbeddingProvider implements EmbeddingProvider {
-    readonly providerId = 'mock-embedding';
-    readonly dimensions = 1536;
+  readonly providerId = "mock-embedding";
+  readonly dimensions = 1536;
 
-    async generateEmbedding(_text: string): Promise<number[]> {
-        // Vetor aleatório — não útil para similaridade semântica real
-        return Array.from({length: this.dimensions}, () => Math.random() * 2 - 1);
-    }
+  generateEmbedding(_text: string): Promise<number[]> {
+    // Vetor aleatório — não útil para similaridade semântica real
+    return Promise.resolve(Array.from({ length: this.dimensions }, () => Math.random() * 2 - 1));
+  }
 
-    async generateEmbeddings(texts: string[]): Promise<number[][]> {
-        return Promise.all(texts.map((t) => this.generateEmbedding(t)));
-    }
+  generateEmbeddings(texts: string[]): Promise<number[][]> {
+    return Promise.all(texts.map((t) => this.generateEmbedding(t)));
+  }
 
-    vectorDimensions(): number {
-        return this.dimensions;
-    }
+  vectorDimensions(): number {
+    return this.dimensions;
+  }
 
-    async healthCheck(): Promise<{healthy: boolean; latencyMs?: number; message?: string}> {
-        return {
-            healthy: true,
-            latencyMs: 0,
-            message: 'Mock embedding provider sempre disponível — nenhuma API externa necessária.',
-        };
-    }
+  healthCheck(): Promise<{ healthy: boolean; latencyMs?: number; message?: string }> {
+    return Promise.resolve({
+      healthy: true,
+      latencyMs: 0,
+      message: "Mock embedding provider sempre disponível — nenhuma API externa necessária.",
+    });
+  }
 }

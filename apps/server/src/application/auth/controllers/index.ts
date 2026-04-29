@@ -1,1 +1,1 @@
-export * from './auth.controller';
+export * from "@application/auth/controllers/auth.controller";

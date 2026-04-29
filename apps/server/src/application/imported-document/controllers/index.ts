@@ -1,1 +1,1 @@
-export * from './imported-document.controller';
+export * from "@application/imported-document/controllers/imported-document.controller";

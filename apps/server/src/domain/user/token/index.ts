@@ -1,1 +1,1 @@
-export * from './token';
+export * from "@domain/user/token/token";

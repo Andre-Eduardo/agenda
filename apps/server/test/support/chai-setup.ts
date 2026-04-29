@@ -1,8 +1,8 @@
-import chai from 'chai';
-import chaiMatchPattern from 'chai-match-pattern';
-import chaiSubset from 'chai-subset';
+import chai, { use } from "chai";
+import chaiMatchPattern from "chai-match-pattern";
+import chaiSubset from "chai-subset";
 
-chai.use(chaiMatchPattern);
-chai.use(chaiSubset);
+use(chaiMatchPattern);
+use(chaiSubset);
 
-export {chai};
+export { chai };

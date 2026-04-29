@@ -1,7 +1,7 @@
-import {Injectable} from '@nestjs/common';
-import {RecordRepository} from '../../../domain/record/record.repository';
+import { Injectable } from "@nestjs/common";
+import { RecordRepository } from "@domain/record/record.repository";
 
 @Injectable()
 export class RecordService {
-    constructor(private readonly repository: RecordRepository) {}
+  constructor(private readonly repository: RecordRepository) {}
 }

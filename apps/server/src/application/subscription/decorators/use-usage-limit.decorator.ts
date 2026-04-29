@@ -1,9 +1,9 @@
-import {SetMetadata, UseGuards, UseInterceptors, applyDecorators} from '@nestjs/common';
-import type {UsageMetric} from '../subscription.service';
-import {UsageLimitGuard} from '../guards/usage-limit.guard';
-import {QuotaHeadersInterceptor} from '../interceptors/quota-headers.interceptor';
+import { SetMetadata, UseGuards, UseInterceptors, applyDecorators } from "@nestjs/common";
+import type { UsageMetric } from "@application/subscription/subscription.service";
+import { UsageLimitGuard } from "@application/subscription/guards/usage-limit.guard";
+import { QuotaHeadersInterceptor } from "@application/subscription/interceptors/quota-headers.interceptor";
 
-export const USAGE_METRIC_KEY = 'usageMetric';
+export const USAGE_METRIC_KEY = "usageMetric";
 
 /**
  * Applies quota enforcement for the given metric.
@@ -16,8 +16,8 @@ export const USAGE_METRIC_KEY = 'usageMetric';
  *   async sendMessage(...) {}
  */
 export const UseUsageLimit = (metric: UsageMetric) =>
-    applyDecorators(
-        SetMetadata(USAGE_METRIC_KEY, metric),
-        UseGuards(UsageLimitGuard),
-        UseInterceptors(new QuotaHeadersInterceptor()),
-    );
+  applyDecorators(
+    SetMetadata(USAGE_METRIC_KEY, metric),
+    UseGuards(UsageLimitGuard),
+    UseInterceptors(new QuotaHeadersInterceptor()),
+  );

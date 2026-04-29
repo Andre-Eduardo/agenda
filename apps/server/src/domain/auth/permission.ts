@@ -1,200 +1,200 @@
 export enum UserPermission {
-    VIEW = 'user:view',
-    VIEW_PROFILE = 'user:view-profile',
-    CREATE = 'user:create',
-    UPDATE = 'user:update',
-    CHANGE_PASSWORD = 'user:change-password',
-    DELETE = 'user:delete',
+  VIEW = "user:view",
+  VIEW_PROFILE = "user:view-profile",
+  CREATE = "user:create",
+  UPDATE = "user:update",
+  CHANGE_PASSWORD = "user:change-password",
+  DELETE = "user:delete",
 }
 
 export enum ProfessionalPermission {
-    VIEW = 'professional:view',
-    CREATE = 'professional:create',
-    UPDATE = 'professional:update',
-    DELETE = 'professional:delete',
+  VIEW = "professional:view",
+  CREATE = "professional:create",
+  UPDATE = "professional:update",
+  DELETE = "professional:delete",
 }
 
 export enum PatientPermission {
-    VIEW = 'patient:view',
-    CREATE = 'patient:create',
-    UPDATE = 'patient:update',
-    DELETE = 'patient:delete',
+  VIEW = "patient:view",
+  CREATE = "patient:create",
+  UPDATE = "patient:update",
+  DELETE = "patient:delete",
 }
 
 export enum AppointmentPermission {
-    VIEW = 'appointment:view',
-    CREATE = 'appointment:create',
-    UPDATE = 'appointment:update',
-    CANCEL = 'appointment:cancel',
-    DELETE = 'appointment:delete',
-    CHECKIN = 'appointment:checkin',
-    CALL = 'appointment:call',
+  VIEW = "appointment:view",
+  CREATE = "appointment:create",
+  UPDATE = "appointment:update",
+  CANCEL = "appointment:cancel",
+  DELETE = "appointment:delete",
+  CHECKIN = "appointment:checkin",
+  CALL = "appointment:call",
 }
 
 export enum AppointmentReminderPermission {
-    VIEW = 'appointment-reminder:view',
-    DISPATCH = 'appointment-reminder:dispatch',
+  VIEW = "appointment-reminder:view",
+  DISPATCH = "appointment-reminder:dispatch",
 }
 
 export enum ClinicReminderConfigPermission {
-    VIEW = 'clinic-reminder-config:view',
-    MANAGE = 'clinic-reminder-config:manage',
+  VIEW = "clinic-reminder-config:view",
+  MANAGE = "clinic-reminder-config:manage",
 }
 
 export enum RecordPermission {
-    VIEW = 'record:view',
-    CREATE = 'record:create',
-    UPDATE = 'record:update',
-    DELETE = 'record:delete',
+  VIEW = "record:view",
+  CREATE = "record:create",
+  UPDATE = "record:update",
+  DELETE = "record:delete",
 }
 
 export enum ImportedDocumentPermission {
-    VIEW = 'imported-document:view',
-    CREATE = 'imported-document:create',
-    UPDATE = 'imported-document:update',
+  VIEW = "imported-document:view",
+  CREATE = "imported-document:create",
+  UPDATE = "imported-document:update",
 }
 
 export enum PersonPermission {
-    VIEW = 'person:view',
-    CREATE = 'person:create',
-    UPDATE = 'person:update',
-    DELETE = 'person:delete',
+  VIEW = "person:view",
+  CREATE = "person:create",
+  UPDATE = "person:update",
+  DELETE = "person:delete",
 }
 
 export enum UploadPermission {
-    PREPARE = 'upload:prepare',
-    UPLOAD = 'upload:upload',
+  PREPARE = "upload:prepare",
+  UPLOAD = "upload:upload",
 }
 
 export enum ClinicalProfilePermission {
-    VIEW = 'clinical-profile:view',
-    UPDATE = 'clinical-profile:update',
+  VIEW = "clinical-profile:view",
+  UPDATE = "clinical-profile:update",
 }
 
 export enum PatientAlertPermission {
-    VIEW = 'patient-alert:view',
-    CREATE = 'patient-alert:create',
-    UPDATE = 'patient-alert:update',
-    DELETE = 'patient-alert:delete',
+  VIEW = "patient-alert:view",
+  CREATE = "patient-alert:create",
+  UPDATE = "patient-alert:update",
+  DELETE = "patient-alert:delete",
 }
 
 export enum FormTemplatePermission {
-    VIEW = 'form-template:view',
-    CREATE = 'form-template:create',
-    UPDATE = 'form-template:update',
-    DELETE = 'form-template:delete',
-    PUBLISH = 'form-template:publish',
+  VIEW = "form-template:view",
+  CREATE = "form-template:create",
+  UPDATE = "form-template:update",
+  DELETE = "form-template:delete",
+  PUBLISH = "form-template:publish",
 }
 
 export enum PatientFormPermission {
-    VIEW = 'patient-form:view',
-    CREATE = 'patient-form:create',
-    UPDATE = 'patient-form:update',
-    DELETE = 'patient-form:delete',
+  VIEW = "patient-form:view",
+  CREATE = "patient-form:create",
+  UPDATE = "patient-form:update",
+  DELETE = "patient-form:delete",
 }
 
 export enum ClinicPermission {
-    UPDATE = 'clinic:update',
+  UPDATE = "clinic:update",
 }
 
 export enum InsurancePlanPermission {
-    VIEW = 'insurance-plan:view',
-    CREATE = 'insurance-plan:create',
+  VIEW = "insurance-plan:view",
+  CREATE = "insurance-plan:create",
 }
 
 export enum ClinicalChatPermission {
-    VIEW = 'clinical-chat:view',
-    CREATE = 'clinical-chat:create',
-    UPDATE = 'clinical-chat:update',
-    DELETE = 'clinical-chat:delete',
-    /** Permissão para re-indexar contexto clínico / disparar rebuild de snapshot */
-    REINDEX = 'clinical-chat:reindex',
+  VIEW = "clinical-chat:view",
+  CREATE = "clinical-chat:create",
+  UPDATE = "clinical-chat:update",
+  DELETE = "clinical-chat:delete",
+  /** Permissão para re-indexar contexto clínico / disparar rebuild de snapshot */
+  REINDEX = "clinical-chat:reindex",
 }
 
 export enum ClinicalDocumentPermission {
-    VIEW = 'clinical-document:view',
-    CREATE = 'clinical-document:create',
-    GENERATE = 'clinical-document:generate',
-    CANCEL = 'clinical-document:cancel',
-    MANAGE_TEMPLATES = 'clinical-document:manage-templates',
+  VIEW = "clinical-document:view",
+  CREATE = "clinical-document:create",
+  GENERATE = "clinical-document:generate",
+  CANCEL = "clinical-document:cancel",
+  MANAGE_TEMPLATES = "clinical-document:manage-templates",
 }
 
 export enum SubscriptionPermission {
-    VIEW_CLINIC = 'subscription:view-clinic',
-    MANAGE = 'subscription:manage',
+  VIEW_CLINIC = "subscription:view-clinic",
+  MANAGE = "subscription:manage",
 }
 
 export enum BillingPermission {
-    VIEW_MEMBER = 'billing:view-member',
-    VIEW_CLINIC = 'billing:view-clinic',
+  VIEW_MEMBER = "billing:view-member",
+  VIEW_CLINIC = "billing:view-clinic",
 }
 
 export enum PaymentPermission {
-    MANAGE = 'payment:manage',
-    VIEW = 'payment:view',
+  MANAGE = "payment:manage",
+  VIEW = "payment:view",
 }
 
 export enum AppointmentPaymentPermission {
-    REGISTER = 'appointment-payment:register',
-    UPDATE = 'appointment-payment:update',
-    VIEW = 'appointment-payment:view',
+  REGISTER = "appointment-payment:register",
+  UPDATE = "appointment-payment:update",
+  VIEW = "appointment-payment:view",
 }
 
 export enum FinancialReportPermission {
-    VIEW = 'financial-report:view',
+  VIEW = "financial-report:view",
 }
 
 export enum WorkingHoursPermission {
-    MANAGE = 'working-hours:manage',
+  MANAGE = "working-hours:manage",
 }
 
 export enum MemberBlockPermission {
-    CREATE = 'member-block:create',
-    LIST = 'member-block:list',
-    DELETE = 'member-block:delete',
+  CREATE = "member-block:create",
+  LIST = "member-block:list",
+  DELETE = "member-block:delete",
 }
 
 const PERMISSIONS = [
-    ...Object.values(UserPermission),
-    ...Object.values(ProfessionalPermission),
-    ...Object.values(PatientPermission),
-    ...Object.values(AppointmentPermission),
-    ...Object.values(RecordPermission),
-    ...Object.values(ImportedDocumentPermission),
-    ...Object.values(PersonPermission),
-    ...Object.values(UploadPermission),
-    ...Object.values(ClinicalProfilePermission),
-    ...Object.values(PatientAlertPermission),
-    ...Object.values(FormTemplatePermission),
-    ...Object.values(PatientFormPermission),
-    ...Object.values(ClinicPermission),
-    ...Object.values(InsurancePlanPermission),
-    ...Object.values(ClinicalChatPermission),
-    ...Object.values(ClinicalDocumentPermission),
-    ...Object.values(AppointmentReminderPermission),
-    ...Object.values(ClinicReminderConfigPermission),
-    ...Object.values(SubscriptionPermission),
-    ...Object.values(BillingPermission),
-    ...Object.values(PaymentPermission),
-    ...Object.values(AppointmentPaymentPermission),
-    ...Object.values(FinancialReportPermission),
-    ...Object.values(WorkingHoursPermission),
-    ...Object.values(MemberBlockPermission),
+  ...Object.values(UserPermission),
+  ...Object.values(ProfessionalPermission),
+  ...Object.values(PatientPermission),
+  ...Object.values(AppointmentPermission),
+  ...Object.values(RecordPermission),
+  ...Object.values(ImportedDocumentPermission),
+  ...Object.values(PersonPermission),
+  ...Object.values(UploadPermission),
+  ...Object.values(ClinicalProfilePermission),
+  ...Object.values(PatientAlertPermission),
+  ...Object.values(FormTemplatePermission),
+  ...Object.values(PatientFormPermission),
+  ...Object.values(ClinicPermission),
+  ...Object.values(InsurancePlanPermission),
+  ...Object.values(ClinicalChatPermission),
+  ...Object.values(ClinicalDocumentPermission),
+  ...Object.values(AppointmentReminderPermission),
+  ...Object.values(ClinicReminderConfigPermission),
+  ...Object.values(SubscriptionPermission),
+  ...Object.values(BillingPermission),
+  ...Object.values(PaymentPermission),
+  ...Object.values(AppointmentPaymentPermission),
+  ...Object.values(FinancialReportPermission),
+  ...Object.values(WorkingHoursPermission),
+  ...Object.values(MemberBlockPermission),
 ];
 
 export type Permission = (typeof PERMISSIONS)[number];
 
 // eslint-disable-next-line @typescript-eslint/no-namespace -- Allow for declaration merging
 export namespace Permission {
-    export function of(value: string): Permission {
-        if (!PERMISSIONS.includes(value as Permission)) {
-            throw new Error(`Unknown permission: ${value}`);
-        }
-
-        return value as Permission;
+  export function of(value: string): Permission {
+    if (!PERMISSIONS.includes(value as Permission)) {
+      throw new Error(`Unknown permission: ${value}`);
     }
 
-    export function all(): Set<Permission> {
-        return new Set(PERMISSIONS);
-    }
+    return value as Permission;
+  }
+
+  export function all(): Set<Permission> {
+    return new Set(PERMISSIONS);
+  }
 }

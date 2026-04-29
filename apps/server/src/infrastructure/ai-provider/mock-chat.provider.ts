@@ -1,12 +1,12 @@
-import {Injectable} from '@nestjs/common';
+import { Injectable } from "@nestjs/common";
 import type {
-    ChatModelProvider,
-    ChatReplyInput,
-    ChatReplyOutput,
-    UsageEstimate,
-    ProviderCapabilities,
-    HealthCheckResult,
-} from '../../domain/clinical-chat/ports/chat-model.provider';
+  ChatModelProvider,
+  ChatReplyInput,
+  ChatReplyOutput,
+  UsageEstimate,
+  ProviderCapabilities,
+  HealthCheckResult,
+} from "@domain/clinical-chat/ports/chat-model.provider";
 
 /**
  * Provider mock de LLM para desenvolvimento e testes end-to-end.
@@ -39,125 +39,135 @@ import type {
  * mock.queueToolCall('get_todays_appointments', {}, 'tc-1');
  */
 export type MockToolCallConfig = {
-    name: string;
-    arguments: Record<string, unknown>;
-    id?: string;
+  name: string;
+  arguments: Record<string, unknown>;
+  id?: string;
 };
 
 @Injectable()
 export class MockChatProvider implements ChatModelProvider {
-    readonly providerId = 'mock';
-    readonly modelId = 'mock-clinical-assistant-v1';
+  readonly providerId = "mock";
+  readonly modelId = "mock-clinical-assistant-v1";
 
-    private readonly pendingToolCalls: MockToolCallConfig[] = [];
+  private readonly pendingToolCalls: MockToolCallConfig[] = [];
 
-    queueToolCall(name: string, args: Record<string, unknown> = {}, id?: string): void {
-        this.pendingToolCalls.push({name, arguments: args, id: id ?? `tc-${Date.now()}`});
+  queueToolCall(name: string, args: Record<string, unknown> = {}, id?: string): void {
+    this.pendingToolCalls.push({ name, arguments: args, id: id ?? `tc-${Date.now()}` });
+  }
+
+  async generateChatReply(input: ChatReplyInput): Promise<ChatReplyOutput> {
+    if (this.pendingToolCalls.length > 0) {
+      const toolCalls = this.pendingToolCalls.splice(0);
+
+      return {
+        content: "",
+        finishReason: "tool_use",
+        toolCalls: toolCalls.map((tc) => ({
+          id: tc.id ?? `tc-${Date.now()}`,
+          name: tc.name,
+          arguments: tc.arguments,
+        })),
+        usage: { promptTokens: 10, completionTokens: 10, totalTokens: 20 },
+      };
     }
 
-    async generateChatReply(input: ChatReplyInput): Promise<ChatReplyOutput> {
-        if (this.pendingToolCalls.length > 0) {
-            const toolCalls = this.pendingToolCalls.splice(0);
+    const lastUserMessage = input.messages.filter((m) => m.role === "user").at(-1);
+    const questionPreview = lastUserMessage?.content?.slice(0, 100) ?? "(sem mensagem)";
+    const isTruncated = (lastUserMessage?.content?.length ?? 0) > 100;
 
-            return {
-                content: '',
-                finishReason: 'tool_use',
-                toolCalls: toolCalls.map((tc) => ({
-                    id: tc.id ?? `tc-${Date.now()}`,
-                    name: tc.name,
-                    arguments: tc.arguments,
-                })),
-                usage: {promptTokens: 10, completionTokens: 10, totalTokens: 20},
-            };
-        }
+    // Simula latência de um LLM real (200–600ms)
+    await this.simulateLatency(200, 600);
 
-        const lastUserMessage = input.messages.filter((m) => m.role === 'user').at(-1);
-        const questionPreview = lastUserMessage?.content?.slice(0, 100) ?? '(sem mensagem)';
-        const isTruncated = (lastUserMessage?.content?.length ?? 0) > 100;
+    const systemMessage = input.messages.find((m) => m.role === "system");
+    const hasContext =
+      systemMessage && (systemMessage as { role: "system"; content: string }).content.length > 50;
+    const hasTools = input.tools && input.tools.length > 0;
 
-        // Simula latência de um LLM real (200–600ms)
-        await this.simulateLatency(200, 600);
-
-        const systemMessage = input.messages.find((m) => m.role === 'system');
-        const hasContext = systemMessage && (systemMessage as {role: 'system'; content: string}).content.length > 50;
-        const hasTools = input.tools && input.tools.length > 0;
-
-        const content = [
-            `[ASSISTENTE CLÍNICO — MODO DESENVOLVIMENTO]`,
+    const content = [
+      `[ASSISTENTE CLÍNICO — MODO DESENVOLVIMENTO]`,
+      ``,
+      `Esta é uma resposta simulada gerada pelo provider mock.`,
+      `O provider real ainda não está configurado.`,
+      ``,
+      `Pergunta recebida:`,
+      `"${questionPreview}${isTruncated ? "..." : ""}"`,
+      ``,
+      hasContext
+        ? `Contexto clínico detectado: ${(systemMessage as { role: "system"; content: string }).content.length} caracteres de contexto injetado.`
+        : `Nenhum contexto clínico detectado no sistema.`,
+      ...(hasTools
+        ? [
             ``,
-            `Esta é uma resposta simulada gerada pelo provider mock.`,
-            `O provider real ainda não está configurado.`,
-            ``,
-            `Pergunta recebida:`,
-            `"${questionPreview}${isTruncated ? '...' : ''}"`,
-            ``,
-            hasContext
-                ? `Contexto clínico detectado: ${(systemMessage as {role: 'system'; content: string}).content.length} caracteres de contexto injetado.`
-                : `Nenhum contexto clínico detectado no sistema.`,
-            ...(hasTools ? [``, `${input.tools!.length} ferramenta(s) disponível(is): ${input.tools!.map((t) => t.name).join(', ')}.`] : []),
-            ``,
-            `Para ativar um provider real, consulte:`,
-            `infrastructure/ai-provider/ai-provider.tokens.ts`,
-            `infrastructure/ai-provider/ai-provider.module.ts`,
-        ].join('\n');
+            `${input.tools!.length} ferramenta(s) disponível(is): ${input.tools!.map((t) => t.name).join(", ")}.`,
+          ]
+        : []),
+      ``,
+      `Para ativar um provider real, consulte:`,
+      `infrastructure/ai-provider/ai-provider.tokens.ts`,
+      `infrastructure/ai-provider/ai-provider.module.ts`,
+    ].join("\n");
 
-        const promptTokens = this.estimateTokenCount(input.messages.map((m) => m.content ?? '').join(' '));
-        const completionTokens = Math.ceil(content.length / 4);
+    const promptTokens = this.estimateTokenCount(
+      input.messages.map((m) => m.content ?? "").join(" "),
+    );
+    const completionTokens = Math.ceil(content.length / 4);
 
-        return {
-            content,
-            finishReason: 'stop',
-            usage: {
-                promptTokens,
-                completionTokens,
-                totalTokens: promptTokens + completionTokens,
-            },
-            rawResponse: {
-                provider: this.providerId,
-                model: this.modelId,
-                mock: true,
-                inputMessages: input.messages.length,
-            },
-        };
-    }
+    return {
+      content,
+      finishReason: "stop",
+      usage: {
+        promptTokens,
+        completionTokens,
+        totalTokens: promptTokens + completionTokens,
+      },
+      rawResponse: {
+        provider: this.providerId,
+        model: this.modelId,
+        mock: true,
+        inputMessages: input.messages.length,
+      },
+    };
+  }
 
-    async estimateUsage(input: ChatReplyInput): Promise<UsageEstimate> {
-        const text = input.messages.map((m) => m.content ?? '').join(' ');
-        const estimatedPromptTokens = this.estimateTokenCount(text);
-        const estimatedCompletionTokens = Math.round(estimatedPromptTokens * 0.3);
+  estimateUsage(input: ChatReplyInput): Promise<UsageEstimate> {
+    const text = input.messages.map((m) => m.content ?? "").join(" ");
+    const estimatedPromptTokens = this.estimateTokenCount(text);
+    const estimatedCompletionTokens = Math.round(estimatedPromptTokens * 0.3);
 
-        return {
-            estimatedPromptTokens,
-            estimatedCompletionTokens,
-            estimatedTotalTokens: estimatedPromptTokens + estimatedCompletionTokens,
-        };
-    }
+    return Promise.resolve({
+      estimatedPromptTokens,
+      estimatedCompletionTokens,
+      estimatedTotalTokens: estimatedPromptTokens + estimatedCompletionTokens,
+    });
+  }
 
-    listCapabilities(): ProviderCapabilities {
-        return {
-            supportsStreaming: false,
-            supportsStructuredOutput: false,
-            maxContextTokens: 8192,
-            defaultMaxTokens: 1024,
-        };
-    }
+  listCapabilities(): ProviderCapabilities {
+    return {
+      supportsStreaming: false,
+      supportsStructuredOutput: false,
+      maxContextTokens: 8192,
+      defaultMaxTokens: 1024,
+    };
+  }
 
-    async healthCheck(): Promise<HealthCheckResult> {
-        return {
-            healthy: true,
-            latencyMs: 0,
-            message: 'Mock provider sempre disponível — nenhuma API externa necessária.',
-        };
-    }
+  healthCheck(): Promise<HealthCheckResult> {
+    return Promise.resolve({
+      healthy: true,
+      latencyMs: 0,
+      message: "Mock provider sempre disponível — nenhuma API externa necessária.",
+    });
+  }
 
-    /** Estimativa simples: ~4 caracteres por token (heurística para textos em português). */
-    private estimateTokenCount(text: string): number {
-        return Math.ceil(text.length / 4);
-    }
+  /** Estimativa simples: ~4 caracteres por token (heurística para textos em português). */
+  private estimateTokenCount(text: string): number {
+    return Math.ceil(text.length / 4);
+  }
 
-    private async simulateLatency(minMs: number, maxMs: number): Promise<void> {
-        const ms = minMs + Math.random() * (maxMs - minMs);
+  private simulateLatency(minMs: number, maxMs: number): Promise<void> {
+    const ms = minMs + Math.random() * (maxMs - minMs);
 
-        return new Promise((resolve) => setTimeout(resolve, ms));
-    }
+    return new Promise((resolve) => {
+      setTimeout(resolve, ms);
+    });
+  }
 }

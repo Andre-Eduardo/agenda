@@ -1,168 +1,226 @@
-import * as fs from 'fs';
-import * as path from 'path';
-import {AiSpecialtyGroup} from '../../domain/form-template/entities';
+import * as fs from "fs";
+import * as path from "path";
+import { AiSpecialtyGroup } from "@domain/form-template/entities";
+import { DocumentEntityType } from "@domain/document-permission/entities";
 
 export type AgentConfig = {
-    slug: string;
-    name: string;
-    /** Formato OpenRouter: provider/model-name */
-    providerModelId: string;
-    baseInstructions: string;
-    guardrails: string;
-    analysisGoals: string[];
-    contextPriority: Record<string, number>;
-    allowedSources: string[];
-    maxTokens: number;
-    temperature: number;
+  slug: string;
+  name: string;
+  /** Formato OpenRouter: provider/model-name */
+  providerModelId: string;
+  baseInstructions: string;
+  guardrails: string;
+  analysisGoals: string[];
+  contextPriority: Record<string, number>;
+  allowedSources: DocumentEntityType[];
+  maxTokens: number;
+  temperature: number;
 };
 
-/** Carrega arquivo .md de prompt se existir, senão retorna null */
-function loadPromptFile(name: string): string | null {
-    const filePath = path.resolve(process.cwd(), `src/ai/agents/prompts/${name}.md`);
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
 
-    if (fs.existsSync(filePath)) return fs.readFileSync(filePath, 'utf8');
+function requirePromptFile(name: string): string {
+  const filePath = path.resolve(process.cwd(), `src/ai/agents/prompts/${name}.md`);
 
-    return null;
+  if (!fs.existsSync(filePath)) {
+    throw new Error(`Missing required prompt file: src/ai/agents/prompts/${name}.md`);
+  }
+
+  return fs.readFileSync(filePath, "utf8");
 }
 
-const DEFAULT_GUARDRAILS =
-    loadPromptFile('guardrails/default') ??
-    `Você é um assistente clínico auxiliar.
-- Nunca sugira diagnósticos definitivos ou substitua avaliação presencial.
-- Não altere dados clínicos do paciente.
-- Respostas sempre fundamentadas no contexto clínico fornecido.
-- Em caso de dúvida, oriente o profissional a buscar mais informações.
-- Nunca compartilhe dados de outros pacientes.`;
+function requireEnv(name: string): string {
+  const value = process.env[name];
 
-const DEFAULT_ALLOWED_SOURCES = ['RECORD', 'PATIENT_FORM', 'CLINICAL_PROFILE', 'PATIENT_ALERT'];
+  if (!value?.trim()) {
+    throw new Error(`Missing required environment variable: ${name}`);
+  }
+
+  return value;
+}
+
+/**
+ * Lê analysisGoals de uma variável de ambiente no formato CSV.
+ * Ex: AGENT_GP_ANALYSIS_GOALS="resumo clínico,hipóteses diagnósticas,inconsistências"
+ */
+function requireGoals(envVar: string): string[] {
+  const value = requireEnv(envVar);
+  const goals = value
+    .split(",")
+    .map((g) => g.trim())
+    .filter(Boolean);
+
+  if (goals.length === 0) {
+    throw new Error(`Environment variable ${envVar} must contain at least one goal`);
+  }
+
+  return goals;
+}
+
+/**
+ * Lê contextPriority de uma variável de ambiente no formato "key:num,key:num".
+ * Ex: AGENT_GP_CONTEXT_PRIORITY="records:1,alerts:2,profile:3,forms:4"
+ */
+function requirePriority(envVar: string): Record<string, number> {
+  const value = requireEnv(envVar);
+  const entries = value
+    .split(",")
+    .map((pair) => pair.trim().split(":"))
+    .filter((parts): parts is [string, string] => parts.length === 2)
+    .map(([key, val]) => [key.trim(), parseInt(val.trim(), 10)] as const);
+
+  if (entries.length === 0) {
+    throw new Error(
+      `Environment variable ${envVar} must be in format "key:num,key:num" (e.g. "records:1,alerts:2")`,
+    );
+  }
+
+  return Object.fromEntries(entries);
+}
+
+// ---------------------------------------------------------------------------
+// Prompts carregados e validados na inicialização
+// ---------------------------------------------------------------------------
+
+const PROMPTS = {
+  guardrails: requirePromptFile("guardrails/default"),
+  generalPractitioner: requirePromptFile("general-practitioner"),
+  psychologist: requirePromptFile("psychologist"),
+  physiotherapist: requirePromptFile("physiotherapist"),
+  speechTherapist: requirePromptFile("speech-therapist"),
+  nutritionist: requirePromptFile("nutritionist"),
+  occupationalTherapist: requirePromptFile("occupational-therapist"),
+  nurse: requirePromptFile("nurse"),
+};
+
+const DEFAULT_ALLOWED_SOURCES: DocumentEntityType[] = [
+  DocumentEntityType.RECORD,
+  DocumentEntityType.PATIENT_FORM,
+  DocumentEntityType.CLINICAL_PROFILE,
+  DocumentEntityType.PATIENT_ALERT,
+];
+
+// ---------------------------------------------------------------------------
+// Registry
+// ---------------------------------------------------------------------------
 
 /**
  * Registry central de agentes clínicos.
  *
- * Cada entrada define um agente com seu modelo, instruções e parâmetros.
- * Variáveis de ambiente permitem substituição por ambiente sem migration.
+ * Todas as variáveis abaixo são obrigatórias — a ausência de qualquer uma
+ * lança erro na inicialização antes de o servidor aceitar requisições.
  *
- * Modelo padrão: anthropic/claude-sonnet-4 (formato OpenRouter: provider/model)
+ * Variáveis por agente (prefixo indicado abaixo):
+ *   AGENT_<PREFIX>_MODEL            string  — modelo OpenRouter (ex: anthropic/claude-sonnet-4)
+ *   AGENT_<PREFIX>_MAX_TOKENS       number  — ex: 1500
+ *   AGENT_<PREFIX>_TEMPERATURE      float   — ex: 0.3
+ *   AGENT_<PREFIX>_ANALYSIS_GOALS   CSV     — ex: "resumo clínico,hipóteses diagnósticas"
+ *   AGENT_<PREFIX>_CONTEXT_PRIORITY key:n   — ex: "records:1,alerts:2,profile:3,forms:4"
  */
 export const AGENT_REGISTRY = {
-    'general-practitioner': {
-        slug: 'general-practitioner',
-        name: 'Clínico Geral',
-        providerModelId: process.env.AGENT_GP_MODEL ?? 'anthropic/claude-sonnet-4',
-        baseInstructions:
-            loadPromptFile('general-practitioner') ??
-            'Você é um assistente clínico para médicos clínicos gerais. Apoie o profissional com análise contextual do paciente, identificando hipóteses diagnósticas, inconsistências e pontos relevantes para a consulta.',
-        guardrails: DEFAULT_GUARDRAILS,
-        analysisGoals: ['resumo clínico', 'hipóteses diagnósticas', 'inconsistências'],
-        contextPriority: {records: 1, alerts: 2, profile: 3, forms: 4},
-        allowedSources: DEFAULT_ALLOWED_SOURCES,
-        maxTokens: parseInt(process.env.AGENT_GP_MAX_TOKENS ?? '1500'),
-        temperature: parseFloat(process.env.AGENT_GP_TEMPERATURE ?? '0.3'),
-    },
+  "general-practitioner": {
+    slug: "general-practitioner",
+    name: "Clínico Geral",
+    providerModelId: requireEnv("AGENT_GP_MODEL"),
+    baseInstructions: PROMPTS.generalPractitioner,
+    guardrails: PROMPTS.guardrails,
+    analysisGoals: requireGoals("AGENT_GP_ANALYSIS_GOALS"),
+    contextPriority: requirePriority("AGENT_GP_CONTEXT_PRIORITY"),
+    allowedSources: DEFAULT_ALLOWED_SOURCES,
+    maxTokens: parseInt(requireEnv("AGENT_GP_MAX_TOKENS"), 10),
+    temperature: parseFloat(requireEnv("AGENT_GP_TEMPERATURE")),
+  },
 
-    psychologist: {
-        slug: 'psychologist',
-        name: 'Psicologia',
-        providerModelId: process.env.AGENT_PSY_MODEL ?? 'anthropic/claude-sonnet-4',
-        baseInstructions:
-            loadPromptFile('psychologist') ??
-            'Você é um assistente clínico para psicólogos. Apoie o profissional com análise de histórico emocional, comportamental e relacional do paciente, identificando padrões relevantes para o acompanhamento psicológico.',
-        guardrails: DEFAULT_GUARDRAILS,
-        analysisGoals: ['histórico emocional', 'padrões comportamentais', 'progresso terapêutico'],
-        contextPriority: {records: 1, alerts: 2, forms: 3, profile: 4},
-        allowedSources: DEFAULT_ALLOWED_SOURCES,
-        maxTokens: parseInt(process.env.AGENT_PSY_MAX_TOKENS ?? '1500'),
-        temperature: parseFloat(process.env.AGENT_PSY_TEMPERATURE ?? '0.4'),
-    },
+  psychologist: {
+    slug: "psychologist",
+    name: "Psicologia",
+    providerModelId: requireEnv("AGENT_PSY_MODEL"),
+    baseInstructions: PROMPTS.psychologist,
+    guardrails: PROMPTS.guardrails,
+    analysisGoals: requireGoals("AGENT_PSY_ANALYSIS_GOALS"),
+    contextPriority: requirePriority("AGENT_PSY_CONTEXT_PRIORITY"),
+    allowedSources: DEFAULT_ALLOWED_SOURCES,
+    maxTokens: parseInt(requireEnv("AGENT_PSY_MAX_TOKENS"), 10),
+    temperature: parseFloat(requireEnv("AGENT_PSY_TEMPERATURE")),
+  },
 
-    physiotherapist: {
-        slug: 'physiotherapist',
-        name: 'Fisioterapia',
-        providerModelId: process.env.AGENT_PHYSIO_MODEL ?? 'anthropic/claude-sonnet-4',
-        baseInstructions:
-            loadPromptFile('physiotherapist') ??
-            'Você é um assistente clínico para fisioterapeutas. Apoie o profissional com análise de histórico funcional, evolução motora e aderência ao tratamento do paciente.',
-        guardrails: DEFAULT_GUARDRAILS,
-        analysisGoals: ['evolução funcional', 'aderência ao tratamento', 'metas de reabilitação'],
-        contextPriority: {records: 1, forms: 2, alerts: 3, profile: 4},
-        allowedSources: DEFAULT_ALLOWED_SOURCES,
-        maxTokens: parseInt(process.env.AGENT_PHYSIO_MAX_TOKENS ?? '1200'),
-        temperature: parseFloat(process.env.AGENT_PHYSIO_TEMPERATURE ?? '0.3'),
-    },
+  physiotherapist: {
+    slug: "physiotherapist",
+    name: "Fisioterapia",
+    providerModelId: requireEnv("AGENT_PHYSIO_MODEL"),
+    baseInstructions: PROMPTS.physiotherapist,
+    guardrails: PROMPTS.guardrails,
+    analysisGoals: requireGoals("AGENT_PHYSIO_ANALYSIS_GOALS"),
+    contextPriority: requirePriority("AGENT_PHYSIO_CONTEXT_PRIORITY"),
+    allowedSources: DEFAULT_ALLOWED_SOURCES,
+    maxTokens: parseInt(requireEnv("AGENT_PHYSIO_MAX_TOKENS"), 10),
+    temperature: parseFloat(requireEnv("AGENT_PHYSIO_TEMPERATURE")),
+  },
 
-    'speech-therapist': {
-        slug: 'speech-therapist',
-        name: 'Fonoaudiologia',
-        providerModelId: process.env.AGENT_SPEECH_MODEL ?? 'anthropic/claude-sonnet-4',
-        baseInstructions:
-            loadPromptFile('speech-therapist') ??
-            'Você é um assistente clínico para fonoaudiólogos. Apoie o profissional com análise de histórico de linguagem, fala, deglutição e audição do paciente.',
-        guardrails: DEFAULT_GUARDRAILS,
-        analysisGoals: ['evolução de linguagem', 'padrões de fala', 'progressão terapêutica'],
-        contextPriority: {records: 1, forms: 2, alerts: 3, profile: 4},
-        allowedSources: DEFAULT_ALLOWED_SOURCES,
-        maxTokens: parseInt(process.env.AGENT_SPEECH_MAX_TOKENS ?? '1200'),
-        temperature: parseFloat(process.env.AGENT_SPEECH_TEMPERATURE ?? '0.3'),
-    },
+  "speech-therapist": {
+    slug: "speech-therapist",
+    name: "Fonoaudiologia",
+    providerModelId: requireEnv("AGENT_SPEECH_MODEL"),
+    baseInstructions: PROMPTS.speechTherapist,
+    guardrails: PROMPTS.guardrails,
+    analysisGoals: requireGoals("AGENT_SPEECH_ANALYSIS_GOALS"),
+    contextPriority: requirePriority("AGENT_SPEECH_CONTEXT_PRIORITY"),
+    allowedSources: DEFAULT_ALLOWED_SOURCES,
+    maxTokens: parseInt(requireEnv("AGENT_SPEECH_MAX_TOKENS"), 10),
+    temperature: parseFloat(requireEnv("AGENT_SPEECH_TEMPERATURE")),
+  },
 
-    nutritionist: {
-        slug: 'nutritionist',
-        name: 'Nutrição',
-        providerModelId: process.env.AGENT_NUTRI_MODEL ?? 'anthropic/claude-sonnet-4',
-        baseInstructions:
-            loadPromptFile('nutritionist') ??
-            'Você é um assistente clínico para nutricionistas. Apoie o profissional com análise de histórico alimentar, evolução de indicadores nutricionais e aderência ao plano alimentar do paciente.',
-        guardrails: DEFAULT_GUARDRAILS,
-        analysisGoals: ['evolução nutricional', 'aderência ao plano', 'indicadores antropométricos'],
-        contextPriority: {forms: 1, records: 2, alerts: 3, profile: 4},
-        allowedSources: DEFAULT_ALLOWED_SOURCES,
-        maxTokens: parseInt(process.env.AGENT_NUTRI_MAX_TOKENS ?? '1200'),
-        temperature: parseFloat(process.env.AGENT_NUTRI_TEMPERATURE ?? '0.3'),
-    },
+  nutritionist: {
+    slug: "nutritionist",
+    name: "Nutrição",
+    providerModelId: requireEnv("AGENT_NUTRI_MODEL"),
+    baseInstructions: PROMPTS.nutritionist,
+    guardrails: PROMPTS.guardrails,
+    analysisGoals: requireGoals("AGENT_NUTRI_ANALYSIS_GOALS"),
+    contextPriority: requirePriority("AGENT_NUTRI_CONTEXT_PRIORITY"),
+    allowedSources: DEFAULT_ALLOWED_SOURCES,
+    maxTokens: parseInt(requireEnv("AGENT_NUTRI_MAX_TOKENS"), 10),
+    temperature: parseFloat(requireEnv("AGENT_NUTRI_TEMPERATURE")),
+  },
 
-    'occupational-therapist': {
-        slug: 'occupational-therapist',
-        name: 'Terapia Ocupacional',
-        providerModelId: process.env.AGENT_OT_MODEL ?? 'anthropic/claude-sonnet-4',
-        baseInstructions:
-            loadPromptFile('occupational-therapist') ??
-            'Você é um assistente clínico para terapeutas ocupacionais. Apoie o profissional com análise de capacidade funcional, participação em atividades cotidianas e progressão da independência do paciente.',
-        guardrails: DEFAULT_GUARDRAILS,
-        analysisGoals: ['capacidade funcional', 'participação em AVDs', 'progressão da independência'],
-        contextPriority: {records: 1, forms: 2, alerts: 3, profile: 4},
-        allowedSources: DEFAULT_ALLOWED_SOURCES,
-        maxTokens: parseInt(process.env.AGENT_OT_MAX_TOKENS ?? '1200'),
-        temperature: parseFloat(process.env.AGENT_OT_TEMPERATURE ?? '0.3'),
-    },
+  "occupational-therapist": {
+    slug: "occupational-therapist",
+    name: "Terapia Ocupacional",
+    providerModelId: requireEnv("AGENT_OT_MODEL"),
+    baseInstructions: PROMPTS.occupationalTherapist,
+    guardrails: PROMPTS.guardrails,
+    analysisGoals: requireGoals("AGENT_OT_ANALYSIS_GOALS"),
+    contextPriority: requirePriority("AGENT_OT_CONTEXT_PRIORITY"),
+    allowedSources: DEFAULT_ALLOWED_SOURCES,
+    maxTokens: parseInt(requireEnv("AGENT_OT_MAX_TOKENS"), 10),
+    temperature: parseFloat(requireEnv("AGENT_OT_TEMPERATURE")),
+  },
 
-    nurse: {
-        slug: 'nurse',
-        name: 'Enfermagem',
-        providerModelId: process.env.AGENT_NURSE_MODEL ?? 'anthropic/claude-sonnet-4',
-        baseInstructions:
-            loadPromptFile('nurse') ??
-            'Você é um assistente clínico para enfermeiros. Apoie o profissional com análise de histórico de cuidados, controle de sinais vitais, medicação e aderência ao plano de cuidados do paciente.',
-        guardrails: DEFAULT_GUARDRAILS,
-        analysisGoals: ['monitoramento clínico', 'aderência ao tratamento', 'riscos assistenciais'],
-        contextPriority: {alerts: 1, records: 2, profile: 3, forms: 4},
-        allowedSources: DEFAULT_ALLOWED_SOURCES,
-        maxTokens: parseInt(process.env.AGENT_NURSE_MAX_TOKENS ?? '1200'),
-        temperature: parseFloat(process.env.AGENT_NURSE_TEMPERATURE ?? '0.3'),
-    },
+  nurse: {
+    slug: "nurse",
+    name: "Enfermagem",
+    providerModelId: requireEnv("AGENT_NURSE_MODEL"),
+    baseInstructions: PROMPTS.nurse,
+    guardrails: PROMPTS.guardrails,
+    analysisGoals: requireGoals("AGENT_NURSE_ANALYSIS_GOALS"),
+    contextPriority: requirePriority("AGENT_NURSE_CONTEXT_PRIORITY"),
+    allowedSources: DEFAULT_ALLOWED_SOURCES,
+    maxTokens: parseInt(requireEnv("AGENT_NURSE_MAX_TOKENS"), 10),
+    temperature: parseFloat(requireEnv("AGENT_NURSE_TEMPERATURE")),
+  },
 } as const satisfies Record<string, AgentConfig>;
 
 /**
  * Mapeamento estático de especialidade clínica → slug de agente.
- *
- * Alterar AGENT_GP_MODEL=openai/gpt-4o no .env e reiniciar usa o novo modelo
- * sem migration ou alteração de código.
  */
 export const SPECIALTY_AGENT_MAP: Record<AiSpecialtyGroup, keyof typeof AGENT_REGISTRY> = {
-    [AiSpecialtyGroup.MEDICINA_GERAL]: 'general-practitioner',
-    [AiSpecialtyGroup.MEDICINA_ESPECIALIZADA]: 'general-practitioner',
-    [AiSpecialtyGroup.SAUDE_MENTAL]: 'psychologist',
-    [AiSpecialtyGroup.REABILITACAO]: 'physiotherapist',
-    [AiSpecialtyGroup.NUTRICAO_DIETETICA]: 'nutritionist',
-    [AiSpecialtyGroup.ENFERMAGEM]: 'nurse',
-    [AiSpecialtyGroup.OUTROS]: 'general-practitioner',
+  [AiSpecialtyGroup.MEDICINA_GERAL]: "general-practitioner",
+  [AiSpecialtyGroup.MEDICINA_ESPECIALIZADA]: "general-practitioner",
+  [AiSpecialtyGroup.SAUDE_MENTAL]: "psychologist",
+  [AiSpecialtyGroup.REABILITACAO]: "physiotherapist",
+  [AiSpecialtyGroup.NUTRICAO_DIETETICA]: "nutritionist",
+  [AiSpecialtyGroup.ENFERMAGEM]: "nurse",
+  [AiSpecialtyGroup.OUTROS]: "general-practitioner",
 };

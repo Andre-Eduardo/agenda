@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "target": "ES2022",
+    "target": "ES2023",
     "module": "CommonJS",
     "skipLibCheck": true,
     "resolveJsonModule": true,
@@ -21,7 +21,6 @@
     "declaration": true,
     "removeComments": false,
     "sourceMap": true,
-    "baseUrl": ".",
     "paths": {
       "*": ["./*"],
       "@agenda-app/*": [

@@ -1,1 +1,1 @@
-export * from './knowledge-chunk.entity';
+export * from "@domain/knowledge-base/entities/knowledge-chunk.entity";

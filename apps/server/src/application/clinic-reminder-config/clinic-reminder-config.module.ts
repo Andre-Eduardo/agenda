@@ -1,12 +1,12 @@
-import {Module} from '@nestjs/common';
-import {InfrastructureModule} from '../../infrastructure/infrastructure.module';
-import {ClinicReminderConfigController} from './controllers/clinic-reminder-config.controller';
-import {GetReminderConfigService} from './services/get-reminder-config.service';
-import {UpsertReminderConfigService} from './services/upsert-reminder-config.service';
+import { Module } from "@nestjs/common";
+import { InfrastructureModule } from "@infrastructure/infrastructure.module";
+import { ClinicReminderConfigController } from "@application/clinic-reminder-config/controllers/clinic-reminder-config.controller";
+import { GetReminderConfigService } from "@application/clinic-reminder-config/services/get-reminder-config.service";
+import { UpsertReminderConfigService } from "@application/clinic-reminder-config/services/upsert-reminder-config.service";
 
 @Module({
-    imports: [InfrastructureModule],
-    controllers: [ClinicReminderConfigController],
-    providers: [GetReminderConfigService, UpsertReminderConfigService],
+  imports: [InfrastructureModule],
+  controllers: [ClinicReminderConfigController],
+  providers: [GetReminderConfigService, UpsertReminderConfigService],
 })
 export class ClinicReminderConfigModule {}

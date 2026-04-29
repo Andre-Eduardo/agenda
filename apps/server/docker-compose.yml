@@ -1,7 +1,7 @@
 services:
   app:
     build: .
-    command: [ 'bash', '-c', 'npx prisma migrate deploy && npm run start:prod' ]
+    command: ["bash", "-c", "npx prisma migrate deploy && npm run start:prod"]
     ports:
       - "3000:3000"
     depends_on:

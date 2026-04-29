@@ -1,19 +1,23 @@
-import type {ClinicMemberId} from '../clinic-member/entities';
-import type {MemberBlock, MemberBlockId} from './entities';
+import type { ClinicMemberId } from "@domain/clinic-member/entities";
+import type { MemberBlock, MemberBlockId } from "@domain/professional/entities";
 
 export interface MemberBlockRepository {
-    findById(id: MemberBlockId): Promise<MemberBlock | null>;
+  findById(id: MemberBlockId): Promise<MemberBlock | null>;
 
-    findByMember(
-        clinicMemberId: ClinicMemberId,
-        filters?: {startAt?: Date; endAt?: Date},
-    ): Promise<MemberBlock[]>;
+  findByMember(
+    clinicMemberId: ClinicMemberId,
+    filters?: { startAt?: Date; endAt?: Date },
+  ): Promise<MemberBlock[]>;
 
-    findOverlapping(clinicMemberId: ClinicMemberId, startAt: Date, endAt: Date): Promise<MemberBlock[]>;
+  findOverlapping(
+    clinicMemberId: ClinicMemberId,
+    startAt: Date,
+    endAt: Date,
+  ): Promise<MemberBlock[]>;
 
-    save(block: MemberBlock): Promise<void>;
+  save(block: MemberBlock): Promise<void>;
 
-    delete(id: MemberBlockId): Promise<void>;
+  delete(id: MemberBlockId): Promise<void>;
 }
 
 export abstract class MemberBlockRepository {}

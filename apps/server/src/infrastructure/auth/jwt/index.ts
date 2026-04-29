@@ -1,2 +1,2 @@
-export * from './json-web-token';
-export * from './json-web-token.provider';
+export * from "@infrastructure/auth/jwt/json-web-token";
+export * from "@infrastructure/auth/jwt/json-web-token.provider";

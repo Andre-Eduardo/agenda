@@ -1,1 +1,1 @@
-export * from './clinic-reminder-config.entity';
+export * from "@domain/clinic-reminder-config/entities/clinic-reminder-config.entity";

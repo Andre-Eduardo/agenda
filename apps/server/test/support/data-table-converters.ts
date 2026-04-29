@@ -1,6 +1,6 @@
-import type {DataTable} from '@cucumber/cucumber';
-import type {Context} from './context';
-import {parseValue} from './parser';
+import type { DataTable } from "@cucumber/cucumber";
+import type { Context } from "./context";
+import { parseValue } from "./parser";
 
 /**
  * Converts a vertical DataTable (two-column key→value) into a plain object.
@@ -14,38 +14,43 @@ import {parseValue} from './parser';
  *   fieldMap = { 'User Name': 'username' }
  */
 export function singleEntry<T extends Record<string, unknown>>(
-    context: Context,
-    table: DataTable,
-    fieldMap: Record<string, string> = {}
+  context: Context,
+  table: DataTable,
+  fieldMap: Record<string, string> = {},
 ): T {
-    const entries: Array<[string, unknown]> = table.raw().map(([rawKey, rawValue]) => {
-        const key = fieldMap[rawKey] ?? rawKey;
-        const value = parseValue(context, rawValue);
+  const entries: Array<[string, unknown]> = table.raw().map(([rawKey, rawValue]) => {
+    const key = fieldMap[rawKey] ?? rawKey;
+    const value = parseValue(context, rawValue);
 
-        // Support dot-notation keys to build nested objects: "auth.token" → {auth: {token: value}}
-        const parts = key.split('.');
+    // Support dot-notation keys to build nested objects: "auth.token" → {auth: {token: value}}
+    const parts = key.split(".");
 
-        if (parts.length > 1) {
-            const rootKey = parts[0];
-            const nested = parts.slice(1).reduceRight<unknown>((acc, k) => ({[k]: acc}), value);
+    if (parts.length > 1) {
+      const rootKey = parts[0];
+      const nested = parts.slice(1).reduceRight<unknown>((acc, k) => ({ [k]: acc }), value);
 
-            return [rootKey, nested];
-        }
+      return [rootKey, nested];
+    }
 
-        return [key, value];
-    });
+    return [key, value];
+  });
 
-    return entries.reduce<Record<string, unknown>>((acc, [key, value]) => {
-        if (key in acc) {
-            const existing = acc[key];
+  return entries.reduce<Record<string, unknown>>((acc, [key, value]) => {
+    if (key in acc) {
+      const existing = acc[key];
 
-            if (typeof existing === 'object' && existing !== null && typeof value === 'object' && value !== null) {
-                return {...acc, [key]: {...(existing as object), ...(value as object)}};
-            }
-        }
+      if (
+        typeof existing === "object" &&
+        existing !== null &&
+        typeof value === "object" &&
+        value !== null
+      ) {
+        return { ...acc, [key]: { ...existing, ...value } };
+      }
+    }
 
-        return {...acc, [key]: value};
-    }, {}) as T;
+    return { ...acc, [key]: value };
+  }, {}) as T;
 }
 
 /**
@@ -61,19 +66,20 @@ export function singleEntry<T extends Record<string, unknown>>(
  *   fieldMap = { 'Name': 'name', 'Username': 'username' }
  */
 export function multipleEntries<T extends Record<string, unknown>>(
-    context: Context,
-    table: DataTable,
-    fieldMap: Record<string, string> = {}
+  context: Context,
+  table: DataTable,
+  fieldMap: Record<string, string> = {},
 ): T[] {
-    const rows = table.raw();
-    const headers = rows[0].map((h) => fieldMap[h] ?? h);
-    const dataRows = rows.slice(1);
+  const rows = table.raw();
+  const headers = rows[0].map((h) => fieldMap[h] ?? h);
+  const dataRows = rows.slice(1);
 
-    return dataRows.map((row) =>
-        row.reduce<Record<string, unknown>>((acc, rawValue, idx) => {
-            acc[headers[idx]] = parseValue(context, rawValue);
+  return dataRows.map(
+    (row) =>
+      row.reduce<Record<string, unknown>>((acc, rawValue, idx) => {
+        acc[headers[idx]] = parseValue(context, rawValue);
 
-            return acc;
-        }, {}) as T
-    );
+        return acc;
+      }, {}) as T,
+  );
 }

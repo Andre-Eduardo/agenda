@@ -35,7 +35,7 @@ Example, we use:
 
 ```typescript
 class User {
-    name: string | null;
+  name: string | null;
 }
 ```
 
@@ -43,7 +43,7 @@ instead of
 
 ```typescript
 class User {
-    name?: string;
+  name?: string;
 }
 ```
 

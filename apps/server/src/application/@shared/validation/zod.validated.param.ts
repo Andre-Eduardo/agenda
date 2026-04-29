@@ -1,7 +1,7 @@
-import {Param} from '@nestjs/common';
-import type {ZodSchema} from 'zod';
-import {ZodValidationPipe} from './zod.validation.pipe';
+import { Param } from "@nestjs/common";
+import type { ZodSchema } from "zod";
+import { ZodValidationPipe } from "@application/@shared/validation/zod.validation.pipe";
 
 export function ValidatedParam(property: string, schema: ZodSchema): ParameterDecorator {
-    return Param(property, new ZodValidationPipe(schema));
+  return Param(property, new ZodValidationPipe(schema));
 }

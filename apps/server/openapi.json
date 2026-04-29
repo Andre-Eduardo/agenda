@@ -39,9 +39,7 @@
           }
         },
         "summary": "Signs in to a user",
-        "tags": [
-          "Auth"
-        ]
+        "tags": ["Auth"]
       }
     },
     "/api/v1/auth/sign-out": {
@@ -72,9 +70,7 @@
           }
         },
         "summary": "Signs out a user",
-        "tags": [
-          "Auth"
-        ]
+        "tags": ["Auth"]
       }
     },
     "/api/v1/clinics": {
@@ -114,9 +110,7 @@
           }
         },
         "summary": "Creates a new clinic",
-        "tags": [
-          "Clinic"
-        ]
+        "tags": ["Clinic"]
       }
     },
     "/api/v1/clinics/{clinicId}": {
@@ -157,9 +151,7 @@
           }
         },
         "summary": "Get clinic by id",
-        "tags": [
-          "Clinic"
-        ]
+        "tags": ["Clinic"]
       },
       "patch": {
         "operationId": "updateClinic",
@@ -208,9 +200,7 @@
           }
         },
         "summary": "Update a clinic",
-        "tags": [
-          "Clinic"
-        ]
+        "tags": ["Clinic"]
       }
     },
     "/api/v1/clinics/{clinicId}/insurance-plans": {
@@ -254,9 +244,7 @@
           }
         },
         "summary": "List insurance plans for a clinic",
-        "tags": [
-          "Clinic"
-        ]
+        "tags": ["Clinic"]
       },
       "post": {
         "operationId": "createInsurancePlan",
@@ -305,9 +293,7 @@
           }
         },
         "summary": "Create an insurance plan for a clinic",
-        "tags": [
-          "Clinic"
-        ]
+        "tags": ["Clinic"]
       }
     },
     "/api/v1/clinic-members": {
@@ -347,9 +333,7 @@
           }
         },
         "summary": "Adds a new member to a clinic",
-        "tags": [
-          "ClinicMember"
-        ]
+        "tags": ["ClinicMember"]
       },
       "get": {
         "operationId": "listClinicMembers",
@@ -389,9 +373,7 @@
           }
         },
         "summary": "List members of a clinic",
-        "tags": [
-          "ClinicMember"
-        ]
+        "tags": ["ClinicMember"]
       }
     },
     "/api/v1/clinic-patient-accesses": {
@@ -431,9 +413,7 @@
           }
         },
         "summary": "Grant clinic-patient access to a member",
-        "tags": [
-          "ClinicPatientAccess"
-        ]
+        "tags": ["ClinicPatientAccess"]
       }
     },
     "/api/v1/clinic-patient-accesses/{memberId}/{patientId}": {
@@ -473,9 +453,7 @@
           }
         },
         "summary": "Revoke a member's access to a patient",
-        "tags": [
-          "ClinicPatientAccess"
-        ]
+        "tags": ["ClinicPatientAccess"]
       }
     },
     "/api/v1/document-permissions": {
@@ -515,9 +493,7 @@
           }
         },
         "summary": "Grant or revoke a per-document permission",
-        "tags": [
-          "DocumentPermission"
-        ]
+        "tags": ["DocumentPermission"]
       }
     },
     "/api/v1/user/sign-up": {
@@ -557,9 +533,7 @@
           }
         },
         "summary": "Signs up a new user",
-        "tags": [
-          "User"
-        ]
+        "tags": ["User"]
       }
     },
     "/api/v1/user/me": {
@@ -589,9 +563,7 @@
           }
         },
         "summary": "Gets the current user",
-        "tags": [
-          "User"
-        ]
+        "tags": ["User"]
       }
     },
     "/api/v1/user/{id}": {
@@ -632,9 +604,7 @@
           }
         },
         "summary": "Gets a user",
-        "tags": [
-          "User"
-        ]
+        "tags": ["User"]
       },
       "put": {
         "operationId": "updateUser",
@@ -683,9 +653,7 @@
           }
         },
         "summary": "Updates a user",
-        "tags": [
-          "User"
-        ]
+        "tags": ["User"]
       },
       "delete": {
         "operationId": "deleteUser",
@@ -727,9 +695,7 @@
           }
         },
         "summary": "Deletes a user",
-        "tags": [
-          "User"
-        ]
+        "tags": ["User"]
       }
     },
     "/api/v1/user/change-password": {
@@ -762,9 +728,7 @@
           }
         },
         "summary": "Changes the user password",
-        "tags": [
-          "User"
-        ]
+        "tags": ["User"]
       }
     },
     "/api/v1/professionals": {
@@ -804,9 +768,7 @@
           }
         },
         "summary": "Creates a new professional",
-        "tags": [
-          "Professional"
-        ]
+        "tags": ["Professional"]
       },
       "get": {
         "operationId": "searchProfessionals",
@@ -843,17 +805,11 @@
               "properties": {
                 "createdAt": {
                   "type": "string",
-                  "enum": [
-                    "asc",
-                    "desc"
-                  ]
+                  "enum": ["asc", "desc"]
                 },
                 "updatedAt": {
                   "type": "string",
-                  "enum": [
-                    "asc",
-                    "desc"
-                  ]
+                  "enum": ["asc", "desc"]
                 }
               },
               "nullable": true,
@@ -886,9 +842,7 @@
           }
         },
         "summary": "Lists and searches professionals",
-        "tags": [
-          "Professional"
-        ]
+        "tags": ["Professional"]
       }
     },
     "/api/v1/professionals/{id}": {
@@ -929,9 +883,7 @@
           }
         },
         "summary": "Gets a professional by ID",
-        "tags": [
-          "Professional"
-        ]
+        "tags": ["Professional"]
       },
       "put": {
         "operationId": "updateProfessional",
@@ -980,9 +932,7 @@
           }
         },
         "summary": "Updates a professional",
-        "tags": [
-          "Professional"
-        ]
+        "tags": ["Professional"]
       },
       "delete": {
         "operationId": "deleteProfessional",
@@ -1014,9 +964,7 @@
           }
         },
         "summary": "Deletes a professional",
-        "tags": [
-          "Professional"
-        ]
+        "tags": ["Professional"]
       }
     },
     "/api/v1/patients": {
@@ -1056,9 +1004,7 @@
           }
         },
         "summary": "Creates a new patient",
-        "tags": [
-          "Patient"
-        ]
+        "tags": ["Patient"]
       },
       "get": {
         "operationId": "searchPatients",
@@ -1095,17 +1041,11 @@
               "properties": {
                 "createdAt": {
                   "type": "string",
-                  "enum": [
-                    "asc",
-                    "desc"
-                  ]
+                  "enum": ["asc", "desc"]
                 },
                 "updatedAt": {
                   "type": "string",
-                  "enum": [
-                    "asc",
-                    "desc"
-                  ]
+                  "enum": ["asc", "desc"]
                 }
               },
               "nullable": true,
@@ -1138,9 +1078,7 @@
           }
         },
         "summary": "Lists and searches patients",
-        "tags": [
-          "Patient"
-        ]
+        "tags": ["Patient"]
       }
     },
     "/api/v1/patients/{id}": {
@@ -1181,9 +1119,7 @@
           }
         },
         "summary": "Gets a patient by ID",
-        "tags": [
-          "Patient"
-        ]
+        "tags": ["Patient"]
       },
       "put": {
         "operationId": "updatePatient",
@@ -1232,9 +1168,7 @@
           }
         },
         "summary": "Updates a patient",
-        "tags": [
-          "Patient"
-        ]
+        "tags": ["Patient"]
       },
       "delete": {
         "operationId": "deletePatient",
@@ -1266,9 +1200,7 @@
           }
         },
         "summary": "Deletes a patient",
-        "tags": [
-          "Patient"
-        ]
+        "tags": ["Patient"]
       }
     },
     "/api/v1/appointments": {
@@ -1308,9 +1240,7 @@
           }
         },
         "summary": "Creates a new appointment",
-        "tags": [
-          "Appointment"
-        ]
+        "tags": ["Appointment"]
       },
       "get": {
         "operationId": "searchAppointments",
@@ -1347,24 +1277,15 @@
               "properties": {
                 "createdAt": {
                   "type": "string",
-                  "enum": [
-                    "asc",
-                    "desc"
-                  ]
+                  "enum": ["asc", "desc"]
                 },
                 "updatedAt": {
                   "type": "string",
-                  "enum": [
-                    "asc",
-                    "desc"
-                  ]
+                  "enum": ["asc", "desc"]
                 },
                 "startAt": {
                   "type": "string",
-                  "enum": [
-                    "asc",
-                    "desc"
-                  ]
+                  "enum": ["asc", "desc"]
                 }
               },
               "nullable": true,
@@ -1397,9 +1318,7 @@
           }
         },
         "summary": "Lists and searches appointments",
-        "tags": [
-          "Appointment"
-        ]
+        "tags": ["Appointment"]
       }
     },
     "/api/v1/appointments/{id}": {
@@ -1440,9 +1359,7 @@
           }
         },
         "summary": "Gets an appointment by ID",
-        "tags": [
-          "Appointment"
-        ]
+        "tags": ["Appointment"]
       },
       "put": {
         "operationId": "updateAppointment",
@@ -1491,9 +1408,7 @@
           }
         },
         "summary": "Updates an appointment",
-        "tags": [
-          "Appointment"
-        ]
+        "tags": ["Appointment"]
       },
       "delete": {
         "operationId": "deleteAppointment",
@@ -1525,9 +1440,7 @@
           }
         },
         "summary": "Deletes an appointment",
-        "tags": [
-          "Appointment"
-        ]
+        "tags": ["Appointment"]
       }
     },
     "/api/v1/appointments/{id}/cancel": {
@@ -1578,9 +1491,7 @@
           }
         },
         "summary": "Cancels an appointment",
-        "tags": [
-          "Appointment"
-        ]
+        "tags": ["Appointment"]
       }
     },
     "/api/v1/appointments/{id}/checkin": {
@@ -1621,9 +1532,7 @@
           }
         },
         "summary": "Checks in a patient at the reception (SCHEDULED/CONFIRMED → ARRIVED)",
-        "tags": [
-          "Appointment"
-        ]
+        "tags": ["Appointment"]
       }
     },
     "/api/v1/appointments/{id}/call": {
@@ -1664,9 +1573,7 @@
           }
         },
         "summary": "Calls the patient to the room (ARRIVED → IN_PROGRESS)",
-        "tags": [
-          "Appointment"
-        ]
+        "tags": ["Appointment"]
       }
     },
     "/api/v1/clinics/{clinicId}/reminders/pending": {
@@ -1710,9 +1617,7 @@
           }
         },
         "summary": "Lists pending reminders due within the next 10 minutes for a clinic",
-        "tags": [
-          "Appointment Reminder"
-        ]
+        "tags": ["Appointment Reminder"]
       }
     },
     "/api/v1/clinics/{clinicId}/reminders/dispatch": {
@@ -1746,9 +1651,7 @@
           }
         },
         "summary": "Manually triggers reminder dispatch for a clinic (due within next 10 minutes)",
-        "tags": [
-          "Appointment Reminder"
-        ]
+        "tags": ["Appointment Reminder"]
       }
     },
     "/api/v1/clinics/{clinicId}/reminder-config": {
@@ -1789,9 +1692,7 @@
           }
         },
         "summary": "Get reminder configuration for a clinic",
-        "tags": [
-          "Clinic Reminder Config"
-        ]
+        "tags": ["Clinic Reminder Config"]
       },
       "put": {
         "operationId": "upsertReminderConfig",
@@ -1840,9 +1741,7 @@
           }
         },
         "summary": "Create or update reminder configuration for a clinic",
-        "tags": [
-          "Clinic Reminder Config"
-        ]
+        "tags": ["Clinic Reminder Config"]
       }
     },
     "/api/v1/records": {
@@ -1882,9 +1781,7 @@
           }
         },
         "summary": "Creates a new record",
-        "tags": [
-          "Record"
-        ]
+        "tags": ["Record"]
       },
       "get": {
         "operationId": "searchRecords",
@@ -1921,24 +1818,15 @@
               "properties": {
                 "createdAt": {
                   "type": "string",
-                  "enum": [
-                    "asc",
-                    "desc"
-                  ]
+                  "enum": ["asc", "desc"]
                 },
                 "updatedAt": {
                   "type": "string",
-                  "enum": [
-                    "asc",
-                    "desc"
-                  ]
+                  "enum": ["asc", "desc"]
                 },
                 "eventDate": {
                   "type": "string",
-                  "enum": [
-                    "asc",
-                    "desc"
-                  ]
+                  "enum": ["asc", "desc"]
                 }
               },
               "nullable": true,
@@ -1989,13 +1877,7 @@
             "description": "Filter by clinical status",
             "schema": {
               "type": "string",
-              "enum": [
-                "STABLE",
-                "IMPROVING",
-                "WORSENING",
-                "UNCHANGED",
-                "UNDER_OBSERVATION"
-              ]
+              "enum": ["STABLE", "IMPROVING", "WORSENING", "UNCHANGED", "UNDER_OBSERVATION"]
             }
           },
           {
@@ -2025,10 +1907,7 @@
             "description": "Filter by record source",
             "schema": {
               "type": "string",
-              "enum": [
-                "MANUAL",
-                "IMPORT"
-              ]
+              "enum": ["MANUAL", "IMPORT"]
             }
           }
         ],
@@ -2048,9 +1927,7 @@
           }
         },
         "summary": "Lists and searches records",
-        "tags": [
-          "Record"
-        ]
+        "tags": ["Record"]
       }
     },
     "/api/v1/records/{id}": {
@@ -2091,9 +1968,7 @@
           }
         },
         "summary": "Gets a record by ID",
-        "tags": [
-          "Record"
-        ]
+        "tags": ["Record"]
       },
       "put": {
         "operationId": "updateRecord",
@@ -2142,9 +2017,7 @@
           }
         },
         "summary": "Updates a record",
-        "tags": [
-          "Record"
-        ]
+        "tags": ["Record"]
       },
       "delete": {
         "operationId": "deleteRecord",
@@ -2176,9 +2049,7 @@
           }
         },
         "summary": "Deletes a record",
-        "tags": [
-          "Record"
-        ]
+        "tags": ["Record"]
       }
     },
     "/api/v1/records/{id}/sign": {
@@ -2219,9 +2090,7 @@
           }
         },
         "summary": "Signs and locks a record",
-        "tags": [
-          "Record"
-        ]
+        "tags": ["Record"]
       }
     },
     "/api/v1/records/{id}/reopen": {
@@ -2272,9 +2141,7 @@
           }
         },
         "summary": "Reopens a locked record with justification",
-        "tags": [
-          "Record"
-        ]
+        "tags": ["Record"]
       }
     },
     "/api/v1/records/{id}/amendments": {
@@ -2318,9 +2185,7 @@
           }
         },
         "summary": "Lists amendments (reopen history) for a record",
-        "tags": [
-          "Record"
-        ]
+        "tags": ["Record"]
       }
     },
     "/api/v1/patients/{patientId}/clinical-profile": {
@@ -2361,9 +2226,7 @@
           }
         },
         "summary": "Gets the clinical profile of a patient",
-        "tags": [
-          "ClinicalProfile"
-        ]
+        "tags": ["ClinicalProfile"]
       },
       "put": {
         "operationId": "upsertClinicalProfile",
@@ -2412,9 +2275,7 @@
           }
         },
         "summary": "Creates or updates the clinical profile of a patient",
-        "tags": [
-          "ClinicalProfile"
-        ]
+        "tags": ["ClinicalProfile"]
       }
     },
     "/api/v1/patients/{patientId}/alerts": {
@@ -2463,24 +2324,15 @@
               "properties": {
                 "createdAt": {
                   "type": "string",
-                  "enum": [
-                    "asc",
-                    "desc"
-                  ]
+                  "enum": ["asc", "desc"]
                 },
                 "updatedAt": {
                   "type": "string",
-                  "enum": [
-                    "asc",
-                    "desc"
-                  ]
+                  "enum": ["asc", "desc"]
                 },
                 "severity": {
                   "type": "string",
-                  "enum": [
-                    "asc",
-                    "desc"
-                  ]
+                  "enum": ["asc", "desc"]
                 }
               },
               "nullable": true,
@@ -2513,9 +2365,7 @@
           }
         },
         "summary": "Lists clinical alerts for a patient",
-        "tags": [
-          "PatientAlert"
-        ]
+        "tags": ["PatientAlert"]
       },
       "post": {
         "operationId": "createPatientAlert",
@@ -2564,9 +2414,7 @@
           }
         },
         "summary": "Creates a clinical alert for a patient",
-        "tags": [
-          "PatientAlert"
-        ]
+        "tags": ["PatientAlert"]
       }
     },
     "/api/v1/patients/{patientId}/alerts/{alertId}": {
@@ -2627,9 +2475,7 @@
           }
         },
         "summary": "Updates a clinical alert",
-        "tags": [
-          "PatientAlert"
-        ]
+        "tags": ["PatientAlert"]
       },
       "delete": {
         "operationId": "deletePatientAlert",
@@ -2671,9 +2517,7 @@
           }
         },
         "summary": "Soft-deletes a clinical alert",
-        "tags": [
-          "PatientAlert"
-        ]
+        "tags": ["PatientAlert"]
       }
     },
     "/api/v1/upload/prepare": {
@@ -2713,9 +2557,7 @@
           }
         },
         "summary": "Prepare a file upload and get upload instructions",
-        "tags": [
-          "Upload"
-        ]
+        "tags": ["Upload"]
       }
     },
     "/api/v1/upload/local": {
@@ -2755,9 +2597,7 @@
           }
         },
         "summary": "Upload a file directly to the server (local storage only)",
-        "tags": [
-          "Upload"
-        ]
+        "tags": ["Upload"]
       }
     },
     "/api/v1/form-templates": {
@@ -2779,11 +2619,7 @@
             "schema": {
               "default": "all",
               "type": "string",
-              "enum": [
-                "public",
-                "mine",
-                "all"
-              ]
+              "enum": ["public", "mine", "all"]
             }
           },
           {
@@ -2818,24 +2654,15 @@
               "properties": {
                 "createdAt": {
                   "type": "string",
-                  "enum": [
-                    "asc",
-                    "desc"
-                  ]
+                  "enum": ["asc", "desc"]
                 },
                 "updatedAt": {
                   "type": "string",
-                  "enum": [
-                    "asc",
-                    "desc"
-                  ]
+                  "enum": ["asc", "desc"]
                 },
                 "name": {
                   "type": "string",
-                  "enum": [
-                    "asc",
-                    "desc"
-                  ]
+                  "enum": ["asc", "desc"]
                 }
               },
               "nullable": true,
@@ -2859,9 +2686,7 @@
           }
         },
         "summary": "List form templates (filterable by specialty and scope)",
-        "tags": [
-          "FormTemplate"
-        ]
+        "tags": ["FormTemplate"]
       },
       "post": {
         "operationId": "create",
@@ -2899,9 +2724,7 @@
           }
         },
         "summary": "Create a new form template",
-        "tags": [
-          "FormTemplate"
-        ]
+        "tags": ["FormTemplate"]
       }
     },
     "/api/v1/form-templates/{templateId}": {
@@ -2942,9 +2765,7 @@
           }
         },
         "summary": "Get a form template by ID",
-        "tags": [
-          "FormTemplate"
-        ]
+        "tags": ["FormTemplate"]
       },
       "delete": {
         "operationId": "delete",
@@ -2976,9 +2797,7 @@
           }
         },
         "summary": "Soft-delete a form template",
-        "tags": [
-          "FormTemplate"
-        ]
+        "tags": ["FormTemplate"]
       }
     },
     "/api/v1/form-templates/{templateId}/clone": {
@@ -3019,9 +2838,7 @@
           }
         },
         "summary": "Clone a public template for a professional",
-        "tags": [
-          "FormTemplate"
-        ]
+        "tags": ["FormTemplate"]
       }
     },
     "/api/v1/form-templates/{templateId}/versions": {
@@ -3055,9 +2872,7 @@
           }
         },
         "summary": "List all versions of a template",
-        "tags": [
-          "FormTemplate"
-        ]
+        "tags": ["FormTemplate"]
       },
       "post": {
         "operationId": "createVersion",
@@ -3106,9 +2921,7 @@
           }
         },
         "summary": "Create a new version for a template",
-        "tags": [
-          "FormTemplate"
-        ]
+        "tags": ["FormTemplate"]
       }
     },
     "/api/v1/form-templates/versions/{versionId}/publish": {
@@ -3149,9 +2962,7 @@
           }
         },
         "summary": "Publish a template version",
-        "tags": [
-          "FormTemplate"
-        ]
+        "tags": ["FormTemplate"]
       }
     },
     "/api/v1/form-templates/versions/{versionId}/deprecate": {
@@ -3192,9 +3003,7 @@
           }
         },
         "summary": "Deprecate a template version",
-        "tags": [
-          "FormTemplate"
-        ]
+        "tags": ["FormTemplate"]
       }
     },
     "/api/v1/patients/{patientId}/forms": {
@@ -3234,12 +3043,7 @@
             "in": "query",
             "schema": {
               "type": "string",
-              "enum": [
-                "DRAFT",
-                "IN_PROGRESS",
-                "COMPLETED",
-                "CANCELLED"
-              ]
+              "enum": ["DRAFT", "IN_PROGRESS", "COMPLETED", "CANCELLED"]
             }
           },
           {
@@ -3274,31 +3078,19 @@
               "properties": {
                 "appliedAt": {
                   "type": "string",
-                  "enum": [
-                    "asc",
-                    "desc"
-                  ]
+                  "enum": ["asc", "desc"]
                 },
                 "createdAt": {
                   "type": "string",
-                  "enum": [
-                    "asc",
-                    "desc"
-                  ]
+                  "enum": ["asc", "desc"]
                 },
                 "updatedAt": {
                   "type": "string",
-                  "enum": [
-                    "asc",
-                    "desc"
-                  ]
+                  "enum": ["asc", "desc"]
                 },
                 "completedAt": {
                   "type": "string",
-                  "enum": [
-                    "asc",
-                    "desc"
-                  ]
+                  "enum": ["asc", "desc"]
                 }
               },
               "nullable": true,
@@ -3322,9 +3114,7 @@
           }
         },
         "summary": "List all forms for a patient",
-        "tags": [
-          "PatientForm"
-        ]
+        "tags": ["PatientForm"]
       },
       "post": {
         "operationId": "start",
@@ -3373,9 +3163,7 @@
           }
         },
         "summary": "Start a new patient form (opens with empty answers)",
-        "tags": [
-          "PatientForm"
-        ]
+        "tags": ["PatientForm"]
       }
     },
     "/api/v1/patients/{patientId}/forms/{patientFormId}": {
@@ -3426,9 +3214,7 @@
           }
         },
         "summary": "Get a specific patient form",
-        "tags": [
-          "PatientForm"
-        ]
+        "tags": ["PatientForm"]
       }
     },
     "/api/v1/patients/{patientId}/forms/{patientFormId}/draft": {
@@ -3489,9 +3275,7 @@
           }
         },
         "summary": "Save a draft of the form (partial save, no validation of required fields)",
-        "tags": [
-          "PatientForm"
-        ]
+        "tags": ["PatientForm"]
       }
     },
     "/api/v1/patients/{patientId}/forms/{patientFormId}/complete": {
@@ -3552,9 +3336,7 @@
           }
         },
         "summary": "Complete the form (validates all required fields and computes scores)",
-        "tags": [
-          "PatientForm"
-        ]
+        "tags": ["PatientForm"]
       }
     },
     "/api/v1/patients/{patientId}/form-field-index": {
@@ -3588,9 +3370,7 @@
           }
         },
         "summary": "List indexed fields from a patient's forms",
-        "tags": [
-          "FormFieldIndex"
-        ]
+        "tags": ["FormFieldIndex"]
       }
     },
     "/api/v1/form-field-index/search": {
@@ -3613,9 +3393,7 @@
           }
         },
         "summary": "Search indexed fields across all patients",
-        "tags": [
-          "FormFieldIndex"
-        ]
+        "tags": ["FormFieldIndex"]
       }
     },
     "/api/v1/patients/{patientId}/ai-context": {
@@ -3649,9 +3427,7 @@
           }
         },
         "summary": "Get structured AI context payload for a patient",
-        "tags": [
-          "FormAiContext"
-        ]
+        "tags": ["FormAiContext"]
       }
     },
     "/api/v1/clinical-chat/agent-profiles": {
@@ -3684,9 +3460,7 @@
           }
         },
         "summary": "Lists all active AI agent profiles",
-        "tags": [
-          "Clinical Chat"
-        ]
+        "tags": ["Clinical Chat"]
       }
     },
     "/api/v1/clinical-chat/sessions": {
@@ -3727,9 +3501,7 @@
           }
         },
         "summary": "Creates a new clinical chat session for a patient",
-        "tags": [
-          "Clinical Chat"
-        ]
+        "tags": ["Clinical Chat"]
       },
       "get": {
         "operationId": "listSessions",
@@ -3766,24 +3538,15 @@
               "properties": {
                 "createdAt": {
                   "type": "string",
-                  "enum": [
-                    "asc",
-                    "desc"
-                  ]
+                  "enum": ["asc", "desc"]
                 },
                 "updatedAt": {
                   "type": "string",
-                  "enum": [
-                    "asc",
-                    "desc"
-                  ]
+                  "enum": ["asc", "desc"]
                 },
                 "lastActivityAt": {
                   "type": "string",
-                  "enum": [
-                    "asc",
-                    "desc"
-                  ]
+                  "enum": ["asc", "desc"]
                 }
               },
               "nullable": true,
@@ -3816,11 +3579,7 @@
             "in": "query",
             "schema": {
               "type": "string",
-              "enum": [
-                "ACTIVE",
-                "CLOSED",
-                "ARCHIVED"
-              ]
+              "enum": ["ACTIVE", "CLOSED", "ARCHIVED"]
             }
           }
         ],
@@ -3840,9 +3599,7 @@
           }
         },
         "summary": "Lists clinical chat sessions with filters",
-        "tags": [
-          "Clinical Chat"
-        ]
+        "tags": ["Clinical Chat"]
       }
     },
     "/api/v1/clinical-chat/sessions/{id}": {
@@ -3883,9 +3640,7 @@
           }
         },
         "summary": "Gets a clinical chat session by ID",
-        "tags": [
-          "Clinical Chat"
-        ]
+        "tags": ["Clinical Chat"]
       }
     },
     "/api/v1/clinical-chat/sessions/{id}/close": {
@@ -3926,9 +3681,7 @@
           }
         },
         "summary": "Closes a clinical chat session",
-        "tags": [
-          "Clinical Chat"
-        ]
+        "tags": ["Clinical Chat"]
       }
     },
     "/api/v1/clinical-chat/sessions/{id}/chat": {
@@ -3980,9 +3733,7 @@
           }
         },
         "summary": "Sends a message to the clinical chat and gets an AI-generated response",
-        "tags": [
-          "Clinical Chat"
-        ]
+        "tags": ["Clinical Chat"]
       }
     },
     "/api/v1/clinical-chat/sessions/{id}/messages": {
@@ -4034,9 +3785,7 @@
           }
         },
         "summary": "Manually adds a message to a chat session (no AI processing)",
-        "tags": [
-          "Clinical Chat"
-        ]
+        "tags": ["Clinical Chat"]
       },
       "get": {
         "operationId": "listMessages",
@@ -4066,9 +3815,7 @@
           }
         },
         "summary": "Lists messages of a chat session",
-        "tags": [
-          "Clinical Chat"
-        ]
+        "tags": ["Clinical Chat"]
       }
     },
     "/api/v1/clinical-chat/context/rebuild": {
@@ -4101,9 +3848,7 @@
           }
         },
         "summary": "Rebuilds the clinical context snapshot and re-indexes chunks for a patient",
-        "tags": [
-          "Clinical Chat"
-        ]
+        "tags": ["Clinical Chat"]
       }
     },
     "/api/v1/clinical-chat/context/invalidate": {
@@ -4137,9 +3882,7 @@
           }
         },
         "summary": "Invalidates the current clinical snapshot for a patient (marks as stale)",
-        "tags": [
-          "Clinical Chat"
-        ]
+        "tags": ["Clinical Chat"]
       }
     },
     "/api/v1/clinical-chat/context/retrieve": {
@@ -4226,9 +3969,7 @@
           }
         },
         "summary": "Retrieves relevant context chunks for a patient given a query",
-        "tags": [
-          "Clinical Chat"
-        ]
+        "tags": ["Clinical Chat"]
       }
     },
     "/api/v1/clinical-chat/context/snapshot/{patientId}": {
@@ -4269,9 +4010,7 @@
           }
         },
         "summary": "Gets a patient's current context snapshot (rebuilds if stale or missing)",
-        "tags": [
-          "Clinical Chat"
-        ]
+        "tags": ["Clinical Chat"]
       }
     },
     "/api/v1/clinical-chat/sessions/{id}/inspect": {
@@ -4312,9 +4051,7 @@
           }
         },
         "summary": "Inspects the current context and provider state for a session",
-        "tags": [
-          "Clinical Chat"
-        ]
+        "tags": ["Clinical Chat"]
       }
     },
     "/api/v1/agents": {
@@ -4348,9 +4085,7 @@
           }
         },
         "summary": "Lists all active AI agent profiles",
-        "tags": [
-          "Agents"
-        ]
+        "tags": ["Agents"]
       }
     },
     "/api/v1/agents/resolve/{clinicMemberId}": {
@@ -4390,9 +4125,7 @@
           }
         },
         "summary": "Resolve the AI agent for a given clinic member",
-        "tags": [
-          "Agents"
-        ]
+        "tags": ["Agents"]
       }
     },
     "/api/v1/agents/mapping-rules": {
@@ -4416,9 +4149,7 @@
           }
         },
         "summary": "Lists the active agent mapping rules (for diagnostics)",
-        "tags": [
-          "Agents"
-        ]
+        "tags": ["Agents"]
       }
     },
     "/api/v1/agent/ask": {
@@ -4451,9 +4182,7 @@
           }
         },
         "summary": "Ask the clinical agent (tool-enabled)",
-        "tags": [
-          "Agent"
-        ]
+        "tags": ["Agent"]
       }
     },
     "/api/v1/agent/metrics": {
@@ -4476,9 +4205,7 @@
           }
         },
         "summary": "Agent observability metrics aggregated over a time range",
-        "tags": [
-          "Agent"
-        ]
+        "tags": ["Agent"]
       }
     },
     "/api/v1/knowledge/search": {
@@ -4511,9 +4238,7 @@
           }
         },
         "summary": "[DEV ONLY] Search knowledge chunks for RAG debugging",
-        "tags": [
-          "Knowledge"
-        ]
+        "tags": ["Knowledge"]
       }
     },
     "/api/v1/agent-proposals": {
@@ -4536,9 +4261,7 @@
           }
         },
         "summary": "List pending proposals for the actor's current clinic",
-        "tags": [
-          "Agent Proposals"
-        ]
+        "tags": ["Agent Proposals"]
       }
     },
     "/api/v1/agent-proposals/{id}/confirm": {
@@ -4579,9 +4302,7 @@
           }
         },
         "summary": "Confirm a proposal and execute the action",
-        "tags": [
-          "Agent Proposals"
-        ]
+        "tags": ["Agent Proposals"]
       }
     },
     "/api/v1/agent-proposals/{id}/reject": {
@@ -4629,9 +4350,7 @@
           }
         },
         "summary": "Reject a proposal",
-        "tags": [
-          "Agent Proposals"
-        ]
+        "tags": ["Agent Proposals"]
       }
     },
     "/api/v1/addons/catalog": {
@@ -4664,9 +4383,7 @@
           }
         },
         "summary": "List available add-on packages with prices and grants (public)",
-        "tags": [
-          "Subscription"
-        ]
+        "tags": ["Subscription"]
       }
     },
     "/api/v1/members/{memberId}/subscription": {
@@ -4710,9 +4427,7 @@
           }
         },
         "summary": "Get active subscription for a professional member",
-        "tags": [
-          "Subscription"
-        ]
+        "tags": ["Subscription"]
       },
       "patch": {
         "operationId": "changePlan",
@@ -4767,9 +4482,7 @@
           }
         },
         "summary": "Change the plan for a professional member (admin/owner only)",
-        "tags": [
-          "Subscription"
-        ]
+        "tags": ["Subscription"]
       },
       "delete": {
         "operationId": "cancelSubscription",
@@ -4807,9 +4520,7 @@
           }
         },
         "summary": "Cancel the Asaas subscription for a professional member",
-        "tags": [
-          "Payment"
-        ]
+        "tags": ["Payment"]
       }
     },
     "/api/v1/members/{memberId}/usage": {
@@ -4853,9 +4564,7 @@
           }
         },
         "summary": "Get current period usage for a professional member",
-        "tags": [
-          "Subscription"
-        ]
+        "tags": ["Subscription"]
       }
     },
     "/api/v1/members/{memberId}/addons": {
@@ -4915,9 +4624,7 @@
           }
         },
         "summary": "Purchase an add-on package for a professional member (admin/owner only)",
-        "tags": [
-          "Subscription"
-        ]
+        "tags": ["Subscription"]
       },
       "get": {
         "operationId": "getMemberAddons",
@@ -4959,9 +4666,7 @@
           }
         },
         "summary": "List active add-ons for a professional member in the current month",
-        "tags": [
-          "Subscription"
-        ]
+        "tags": ["Subscription"]
       }
     },
     "/api/v1/clinics/{clinicId}/members/usage": {
@@ -5002,9 +4707,7 @@
           }
         },
         "summary": "Get current usage for all professionals in a clinic with per-member details (admin/owner only)",
-        "tags": [
-          "Subscription"
-        ]
+        "tags": ["Subscription"]
       }
     },
     "/api/v1/clinics/{clinicId}/addons": {
@@ -5048,9 +4751,7 @@
           }
         },
         "summary": "List active add-ons for all members in a clinic (admin/owner only)",
-        "tags": [
-          "Subscription"
-        ]
+        "tags": ["Subscription"]
       }
     },
     "/api/v1/clinics/{clinicId}/usage": {
@@ -5094,9 +4795,7 @@
           }
         },
         "summary": "Get current usage for all professionals in a clinic (admin/owner only)",
-        "tags": [
-          "Subscription"
-        ]
+        "tags": ["Subscription"]
       }
     },
     "/api/v1/imported-documents/{id}/draft": {
@@ -5137,9 +4836,7 @@
           }
         },
         "summary": "Gets or initializes the AI draft for an imported document",
-        "tags": [
-          "ImportedDocument"
-        ]
+        "tags": ["ImportedDocument"]
       },
       "patch": {
         "operationId": "updateDraft",
@@ -5188,9 +4885,7 @@
           }
         },
         "summary": "Saves professional edits to the draft",
-        "tags": [
-          "ImportedDocument"
-        ]
+        "tags": ["ImportedDocument"]
       }
     },
     "/api/v1/imported-documents/{id}/approve": {
@@ -5231,9 +4926,7 @@
           }
         },
         "summary": "Approves the draft and creates the official Record",
-        "tags": [
-          "ImportedDocument"
-        ]
+        "tags": ["ImportedDocument"]
       }
     },
     "/api/v1/clinical-documents": {
@@ -5273,9 +4966,7 @@
           }
         },
         "summary": "Create a clinical document draft",
-        "tags": [
-          "ClinicalDocuments"
-        ]
+        "tags": ["ClinicalDocuments"]
       }
     },
     "/api/v1/clinical-documents/{id}/generate": {
@@ -5316,9 +5007,7 @@
           }
         },
         "summary": "Generate PDF for a clinical document",
-        "tags": [
-          "ClinicalDocuments"
-        ]
+        "tags": ["ClinicalDocuments"]
       }
     },
     "/api/v1/clinical-documents/{id}": {
@@ -5359,9 +5048,7 @@
           }
         },
         "summary": "Get a clinical document by ID",
-        "tags": [
-          "ClinicalDocuments"
-        ]
+        "tags": ["ClinicalDocuments"]
       },
       "delete": {
         "operationId": "cancelDocument",
@@ -5400,9 +5087,7 @@
           }
         },
         "summary": "Cancel a clinical document",
-        "tags": [
-          "ClinicalDocuments"
-        ]
+        "tags": ["ClinicalDocuments"]
       }
     },
     "/api/v1/patients/{patientId}/clinical-documents": {
@@ -5440,11 +5125,7 @@
             "in": "query",
             "schema": {
               "type": "string",
-              "enum": [
-                "DRAFT",
-                "GENERATED",
-                "CANCELLED"
-              ]
+              "enum": ["DRAFT", "GENERATED", "CANCELLED"]
             }
           },
           {
@@ -5487,9 +5168,7 @@
           }
         },
         "summary": "List clinical documents for a patient",
-        "tags": [
-          "ClinicalDocuments"
-        ]
+        "tags": ["ClinicalDocuments"]
       }
     },
     "/api/v1/clinics/{clinicId}/document-templates": {
@@ -5533,9 +5212,7 @@
           }
         },
         "summary": "List document templates for a clinic",
-        "tags": [
-          "ClinicalDocuments"
-        ]
+        "tags": ["ClinicalDocuments"]
       }
     },
     "/api/v1/clinics/{clinicId}/document-templates/{type}": {
@@ -5602,9 +5279,7 @@
           }
         },
         "summary": "Create or update a document template for a clinic",
-        "tags": [
-          "ClinicalDocuments"
-        ]
+        "tags": ["ClinicalDocuments"]
       }
     },
     "/api/v1/members/{memberId}/billing-report": {
@@ -5672,9 +5347,7 @@
           }
         },
         "summary": "Get billing cost report for a professional member",
-        "tags": [
-          "Billing"
-        ]
+        "tags": ["Billing"]
       }
     },
     "/api/v1/clinics/{clinicId}/billing-report": {
@@ -5742,9 +5415,7 @@
           }
         },
         "summary": "Get aggregated billing cost report for all professionals in a clinic (admin/owner only)",
-        "tags": [
-          "Billing"
-        ]
+        "tags": ["Billing"]
       }
     },
     "/api/v1/members/{memberId}/subscription/activate": {
@@ -5794,9 +5465,7 @@
           }
         },
         "summary": "Activate a recurring subscription for a professional member via Asaas",
-        "tags": [
-          "Payment"
-        ]
+        "tags": ["Payment"]
       }
     },
     "/api/v1/members/{memberId}/subscription/plan": {
@@ -5846,9 +5515,7 @@
           }
         },
         "summary": "Change the plan for a member — cancels current Asaas subscription and creates new one",
-        "tags": [
-          "Payment"
-        ]
+        "tags": ["Payment"]
       }
     },
     "/api/v1/members/{memberId}/subscription/payments": {
@@ -5898,9 +5565,7 @@
           }
         },
         "summary": "List payment events for a professional member (most recent first)",
-        "tags": [
-          "Payment"
-        ]
+        "tags": ["Payment"]
       }
     },
     "/api/v1/webhooks/asaas": {
@@ -5935,9 +5600,7 @@
           }
         },
         "summary": "Asaas payment webhook receiver",
-        "tags": [
-          "Webhooks"
-        ]
+        "tags": ["Webhooks"]
       }
     },
     "/api/v1/appointments/{id}/payment": {
@@ -5994,9 +5657,7 @@
           }
         },
         "summary": "Register payment for a completed appointment",
-        "tags": [
-          "Appointment Payment"
-        ]
+        "tags": ["Appointment Payment"]
       },
       "patch": {
         "operationId": "updatePaymentStatus",
@@ -6048,9 +5709,7 @@
           }
         },
         "summary": "Update payment status for an appointment",
-        "tags": [
-          "Appointment Payment"
-        ]
+        "tags": ["Appointment Payment"]
       },
       "get": {
         "operationId": "getPaymentByAppointment",
@@ -6092,9 +5751,7 @@
           }
         },
         "summary": "Get payment for an appointment",
-        "tags": [
-          "Appointment Payment"
-        ]
+        "tags": ["Appointment Payment"]
       }
     },
     "/api/v1/clinics/{clinicId}/financial/report": {
@@ -6166,12 +5823,7 @@
             "description": "Filter by payment status",
             "schema": {
               "type": "string",
-              "enum": [
-                "PENDING",
-                "PAID",
-                "EXEMPT",
-                "REFUNDED"
-              ]
+              "enum": ["PENDING", "PAID", "EXEMPT", "REFUNDED"]
             }
           },
           {
@@ -6222,9 +5874,7 @@
           }
         },
         "summary": "Get revenue report for a clinic",
-        "tags": [
-          "Financial Report"
-        ]
+        "tags": ["Financial Report"]
       }
     },
     "/api/v1/clinics/{clinicId}/financial/summary": {
@@ -6296,12 +5946,7 @@
             "description": "Filter by payment status",
             "schema": {
               "type": "string",
-              "enum": [
-                "PENDING",
-                "PAID",
-                "EXEMPT",
-                "REFUNDED"
-              ]
+              "enum": ["PENDING", "PAID", "EXEMPT", "REFUNDED"]
             }
           }
         ],
@@ -6334,9 +5979,7 @@
           }
         },
         "summary": "Get revenue summary for a clinic (dashboard)",
-        "tags": [
-          "Financial Report"
-        ]
+        "tags": ["Financial Report"]
       }
     },
     "/api/v1/members/{memberId}/working-hours": {
@@ -6387,9 +6030,7 @@
           }
         },
         "summary": "Creates or updates the working hours for a day",
-        "tags": [
-          "WorkingHours"
-        ]
+        "tags": ["WorkingHours"]
       },
       "get": {
         "operationId": "list",
@@ -6431,9 +6072,7 @@
           }
         },
         "summary": "Lists all working hours for a member",
-        "tags": [
-          "WorkingHours"
-        ]
+        "tags": ["WorkingHours"]
       }
     },
     "/api/v1/members/{memberId}/working-hours/{hoursId}": {
@@ -6477,9 +6116,7 @@
           }
         },
         "summary": "Deletes a working hours entry",
-        "tags": [
-          "WorkingHours"
-        ]
+        "tags": ["WorkingHours"]
       }
     },
     "/api/v1/members/{memberId}/blocks": {
@@ -6530,9 +6167,7 @@
           }
         },
         "summary": "Creates a schedule block for a member",
-        "tags": [
-          "MemberBlock"
-        ]
+        "tags": ["MemberBlock"]
       },
       "get": {
         "operationId": "list",
@@ -6592,9 +6227,7 @@
           }
         },
         "summary": "Lists schedule blocks for a member",
-        "tags": [
-          "MemberBlock"
-        ]
+        "tags": ["MemberBlock"]
       }
     },
     "/api/v1/members/{memberId}/blocks/{blockId}": {
@@ -6638,9 +6271,7 @@
           }
         },
         "summary": "Deletes a schedule block",
-        "tags": [
-          "MemberBlock"
-        ]
+        "tags": ["MemberBlock"]
       }
     }
   },
@@ -6683,40 +6314,8 @@
             "description": "The HTTP status code",
             "example": 400,
             "enum": [
-              400,
-              401,
-              402,
-              403,
-              404,
-              405,
-              406,
-              407,
-              408,
-              409,
-              410,
-              411,
-              412,
-              413,
-              414,
-              415,
-              416,
-              417,
-              418,
-              421,
-              422,
-              423,
-              424,
-              428,
-              429,
-              456,
-              500,
-              501,
-              502,
-              503,
-              504,
-              505,
-              507,
-              508
+              400, 401, 402, 403, 404, 405, 406, 407, 408, 409, 410, 411, 412, 413, 414, 415, 416,
+              417, 418, 421, 422, 423, 424, 428, 429, 456, 500, 501, 502, 503, 504, 505, 507, 508
             ]
           },
           "instance": {
@@ -6725,13 +6324,7 @@
             "example": "/api/example/12345"
           }
         },
-        "required": [
-          "title",
-          "type",
-          "detail",
-          "status",
-          "instance"
-        ]
+        "required": ["title", "type", "detail", "status", "instance"]
       },
       "SignInDto": {
         "type": "object",
@@ -6746,10 +6339,7 @@
             "example": "J0hn@d03"
           }
         },
-        "required": [
-          "username",
-          "password"
-        ]
+        "required": ["username", "password"]
       },
       "CreateClinicDto": {
         "type": "object",
@@ -6829,9 +6419,7 @@
             }
           }
         },
-        "required": [
-          "name"
-        ]
+        "required": ["name"]
       },
       "Clinic": {
         "type": "object",
@@ -7085,15 +6673,7 @@
             "description": "Whether the plan is active"
           }
         },
-        "required": [
-          "id",
-          "createdAt",
-          "updatedAt",
-          "clinicId",
-          "name",
-          "code",
-          "isActive"
-        ]
+        "required": ["id", "createdAt", "updatedAt", "clinicId", "name", "code", "isActive"]
       },
       "CreateInsurancePlanDto": {
         "type": "object",
@@ -7110,9 +6690,7 @@
             "example": "UNI-001"
           }
         },
-        "required": [
-          "name"
-        ]
+        "required": ["name"]
       },
       "CreateClinicMemberDto": {
         "type": "object",
@@ -7123,13 +6701,7 @@
           },
           "role": {
             "type": "string",
-            "enum": [
-              "OWNER",
-              "ADMIN",
-              "PROFESSIONAL",
-              "SECRETARY",
-              "VIEWER"
-            ]
+            "enum": ["OWNER", "ADMIN", "PROFESSIONAL", "SECRETARY", "VIEWER"]
           },
           "displayName": {
             "type": "string",
@@ -7140,10 +6712,7 @@
             "nullable": true
           }
         },
-        "required": [
-          "userId",
-          "role"
-        ]
+        "required": ["userId", "role"]
       },
       "ClinicMember": {
         "type": "object",
@@ -7175,13 +6744,7 @@
           },
           "role": {
             "type": "string",
-            "enum": [
-              "OWNER",
-              "ADMIN",
-              "PROFESSIONAL",
-              "SECRETARY",
-              "VIEWER"
-            ],
+            "enum": ["OWNER", "ADMIN", "PROFESSIONAL", "SECRETARY", "VIEWER"],
             "description": "Role inside the clinic"
           },
           "displayName": {
@@ -7231,23 +6794,14 @@
           },
           "accessLevel": {
             "type": "string",
-            "enum": [
-              "FULL",
-              "READ_ONLY",
-              "REGISTER_ONLY",
-              "NONE"
-            ]
+            "enum": ["FULL", "READ_ONLY", "REGISTER_ONLY", "NONE"]
           },
           "reason": {
             "type": "string",
             "nullable": true
           }
         },
-        "required": [
-          "memberId",
-          "patientId",
-          "accessLevel"
-        ]
+        "required": ["memberId", "patientId", "accessLevel"]
       },
       "ClinicPatientAccess": {
         "type": "object",
@@ -7281,12 +6835,7 @@
           },
           "accessLevel": {
             "type": "string",
-            "enum": [
-              "FULL",
-              "READ_ONLY",
-              "REGISTER_ONLY",
-              "NONE"
-            ]
+            "enum": ["FULL", "READ_ONLY", "REGISTER_ONLY", "NONE"]
           },
           "reason": {
             "type": "object",
@@ -7334,12 +6883,7 @@
             "nullable": true
           }
         },
-        "required": [
-          "memberId",
-          "entityType",
-          "entityId",
-          "canView"
-        ]
+        "required": ["memberId", "entityType", "entityId", "canView"]
       },
       "DocumentPermission": {
         "type": "object",
@@ -7429,12 +6973,7 @@
             "example": "J0hn@d03"
           }
         },
-        "required": [
-          "name",
-          "username",
-          "email",
-          "password"
-        ]
+        "required": ["name", "username", "email", "password"]
       },
       "User": {
         "type": "object",
@@ -7470,14 +7009,7 @@
             "example": "John"
           }
         },
-        "required": [
-          "id",
-          "createdAt",
-          "updatedAt",
-          "username",
-          "email",
-          "name"
-        ]
+        "required": ["id", "createdAt", "updatedAt", "username", "email", "name"]
       },
       "UpdateUserInputDto": {
         "type": "object",
@@ -7499,9 +7031,7 @@
             "type": "string"
           }
         },
-        "required": [
-          "currentPassword"
-        ]
+        "required": ["currentPassword"]
       },
       "ChangeUserPasswordDto": {
         "type": "object",
@@ -7516,10 +7046,7 @@
             "example": "J0hn@d03"
           }
         },
-        "required": [
-          "oldPassword",
-          "newPassword"
-        ]
+        "required": ["oldPassword", "newPassword"]
       },
       "DeleteUserInputDto": {
         "type": "object",
@@ -7528,9 +7055,7 @@
             "type": "string"
           }
         },
-        "required": [
-          "password"
-        ]
+        "required": ["password"]
       },
       "CreateProfessionalDto": {
         "type": "object",
@@ -7559,11 +7084,7 @@
             ]
           }
         },
-        "required": [
-          "registrationNumber",
-          "specialty",
-          "specialtyNormalized"
-        ]
+        "required": ["registrationNumber", "specialty", "specialtyNormalized"]
       },
       "Professional": {
         "type": "object",
@@ -7651,11 +7172,7 @@
             ]
           }
         },
-        "required": [
-          "registrationNumber",
-          "specialty",
-          "specialtyNormalized"
-        ]
+        "required": ["registrationNumber", "specialty", "specialtyNormalized"]
       },
       "CreatePatientDto": {
         "type": "object",
@@ -7677,18 +7194,11 @@
           "gender": {
             "type": "string",
             "nullable": true,
-            "enum": [
-              "MALE",
-              "FEMALE",
-              "OTHER"
-            ]
+            "enum": ["MALE", "FEMALE", "OTHER"]
           },
           "personType": {
             "type": "string",
-            "enum": [
-              "NATURAL",
-              "LEGAL"
-            ]
+            "enum": ["NATURAL", "LEGAL"]
           },
           "birthDate": {
             "type": "string",
@@ -7766,10 +7276,7 @@
             "description": "A datetime in ISO 8601 format."
           }
         },
-        "required": [
-          "name",
-          "documentId"
-        ]
+        "required": ["name", "documentId"]
       },
       "PatientAddressDto": {
         "type": "object",
@@ -7839,12 +7346,7 @@
             "type": "boolean"
           }
         },
-        "required": [
-          "id",
-          "name",
-          "code",
-          "isActive"
-        ]
+        "required": ["id", "name", "code", "isActive"]
       },
       "Patient": {
         "type": "object",
@@ -7882,20 +7384,13 @@
           },
           "gender": {
             "type": "string",
-            "enum": [
-              "MALE",
-              "FEMALE",
-              "OTHER"
-            ],
+            "enum": ["MALE", "FEMALE", "OTHER"],
             "nullable": true,
             "description": "The patient gender"
           },
           "personType": {
             "type": "string",
-            "enum": [
-              "NATURAL",
-              "LEGAL"
-            ],
+            "enum": ["NATURAL", "LEGAL"],
             "description": "The person type"
           },
           "clinicId": {
@@ -7997,11 +7492,7 @@
           "gender": {
             "type": "string",
             "nullable": true,
-            "enum": [
-              "MALE",
-              "FEMALE",
-              "OTHER"
-            ]
+            "enum": ["MALE", "FEMALE", "OTHER"]
           },
           "birthDate": {
             "type": "string",
@@ -8118,13 +7609,7 @@
           },
           "type": {
             "type": "string",
-            "enum": [
-              "FIRST_VISIT",
-              "RETURN",
-              "WALK_IN",
-              "TELEMEDICINE",
-              "PROCEDURE"
-            ]
+            "enum": ["FIRST_VISIT", "RETURN", "WALK_IN", "TELEMEDICINE", "PROCEDURE"]
           },
           "note": {
             "type": "string",
@@ -8135,22 +7620,11 @@
             "type": "boolean"
           }
         },
-        "required": [
-          "patientId",
-          "attendedByMemberId",
-          "startAt",
-          "endAt",
-          "type"
-        ]
+        "required": ["patientId", "attendedByMemberId", "startAt", "endAt", "type"]
       },
       "AppointmentPaymentStatus": {
         "type": "string",
-        "enum": [
-          "PENDING",
-          "PAID",
-          "EXEMPT",
-          "REFUNDED"
-        ],
+        "enum": ["PENDING", "PAID", "EXEMPT", "REFUNDED"],
         "description": "Financial status of the appointment payment, null if no payment registered"
       },
       "Appointment": {
@@ -8207,13 +7681,7 @@
           },
           "type": {
             "type": "string",
-            "enum": [
-              "FIRST_VISIT",
-              "RETURN",
-              "WALK_IN",
-              "TELEMEDICINE",
-              "PROCEDURE"
-            ],
+            "enum": ["FIRST_VISIT", "RETURN", "WALK_IN", "TELEMEDICINE", "PROCEDURE"],
             "description": "The appointment type"
           },
           "status": {
@@ -8303,13 +7771,7 @@
           },
           "type": {
             "type": "string",
-            "enum": [
-              "FIRST_VISIT",
-              "RETURN",
-              "WALK_IN",
-              "TELEMEDICINE",
-              "PROCEDURE"
-            ]
+            "enum": ["FIRST_VISIT", "RETURN", "WALK_IN", "TELEMEDICINE", "PROCEDURE"]
           },
           "note": {
             "type": "string",
@@ -8317,12 +7779,7 @@
             "example": "Rescheduled appointment"
           }
         },
-        "required": [
-          "startAt",
-          "endAt",
-          "type",
-          "note"
-        ]
+        "required": ["startAt", "endAt", "type", "note"]
       },
       "CancelAppointmentInputDto": {
         "type": "object",
@@ -8333,9 +7790,7 @@
             "example": "Patient requested cancellation"
           }
         },
-        "required": [
-          "reason"
-        ]
+        "required": ["reason"]
       },
       "AppointmentReminder": {
         "type": "object",
@@ -8369,20 +7824,11 @@
           },
           "channel": {
             "type": "string",
-            "enum": [
-              "WHATSAPP",
-              "SMS",
-              "EMAIL"
-            ]
+            "enum": ["WHATSAPP", "SMS", "EMAIL"]
           },
           "status": {
             "type": "string",
-            "enum": [
-              "PENDING",
-              "SENT",
-              "FAILED",
-              "CANCELLED"
-            ]
+            "enum": ["PENDING", "SENT", "FAILED", "CANCELLED"]
           },
           "scheduledAt": {
             "type": "string",
@@ -8448,11 +7894,7 @@
             "type": "array",
             "items": {
               "type": "string",
-              "enum": [
-                "WHATSAPP",
-                "SMS",
-                "EMAIL"
-              ]
+              "enum": ["WHATSAPP", "SMS", "EMAIL"]
             }
           },
           "hoursBeforeList": {
@@ -8482,11 +7924,7 @@
             "type": "array",
             "items": {
               "type": "string",
-              "enum": [
-                "WHATSAPP",
-                "SMS",
-                "EMAIL"
-              ]
+              "enum": ["WHATSAPP", "SMS", "EMAIL"]
             },
             "minItems": 1
           },
@@ -8503,10 +7941,7 @@
             "type": "boolean"
           }
         },
-        "required": [
-          "enabledChannels",
-          "hoursBeforeList"
-        ]
+        "required": ["enabledChannels", "hoursBeforeList"]
       },
       "CreateRecordDto": {
         "type": "object",
@@ -8546,11 +7981,7 @@
                   "example": "Blood test results"
                 }
               },
-              "required": [
-                "fileName",
-                "url",
-                "description"
-              ]
+              "required": ["fileName", "url", "description"]
             },
             "default": []
           },
@@ -8561,10 +7992,7 @@
           },
           "templateType": {
             "type": "string",
-            "enum": [
-              "SOAP",
-              "DAP"
-            ]
+            "enum": ["SOAP", "DAP"]
           },
           "attendanceType": {
             "type": "string",
@@ -8579,13 +8007,7 @@
           },
           "clinicalStatus": {
             "type": "string",
-            "enum": [
-              "STABLE",
-              "IMPROVING",
-              "WORSENING",
-              "UNCHANGED",
-              "UNDER_OBSERVATION"
-            ]
+            "enum": ["STABLE", "IMPROVING", "WORSENING", "UNCHANGED", "UNDER_OBSERVATION"]
           },
           "conductTags": {
             "type": "array",
@@ -8634,10 +8056,7 @@
           },
           "source": {
             "type": "string",
-            "enum": [
-              "MANUAL",
-              "IMPORT"
-            ]
+            "enum": ["MANUAL", "IMPORT"]
           },
           "importedDocumentId": {
             "type": "string",
@@ -8647,10 +8066,7 @@
             "type": "boolean"
           }
         },
-        "required": [
-          "patientId",
-          "responsibleProfessionalId"
-        ]
+        "required": ["patientId", "responsibleProfessionalId"]
       },
       "FileDto": {
         "type": "object",
@@ -8669,12 +8085,7 @@
             "type": "string"
           }
         },
-        "required": [
-          "id",
-          "fileName",
-          "url",
-          "description"
-        ]
+        "required": ["id", "fileName", "url", "description"]
       },
       "Record": {
         "type": "object",
@@ -8721,10 +8132,7 @@
           },
           "templateType": {
             "type": "string",
-            "enum": [
-              "SOAP",
-              "DAP"
-            ],
+            "enum": ["SOAP", "DAP"],
             "nullable": true,
             "description": "Evolution template type"
           },
@@ -8748,13 +8156,7 @@
           },
           "clinicalStatus": {
             "type": "string",
-            "enum": [
-              "STABLE",
-              "IMPROVING",
-              "WORSENING",
-              "UNCHANGED",
-              "UNDER_OBSERVATION"
-            ],
+            "enum": ["STABLE", "IMPROVING", "WORSENING", "UNCHANGED", "UNDER_OBSERVATION"],
             "nullable": true,
             "description": "Clinical status"
           },
@@ -8812,10 +8214,7 @@
           },
           "source": {
             "type": "string",
-            "enum": [
-              "MANUAL",
-              "IMPORT"
-            ],
+            "enum": ["MANUAL", "IMPORT"],
             "description": "Origin of the record"
           },
           "importedDocumentId": {
@@ -8891,9 +8290,7 @@
             "maxLength": 2000
           }
         },
-        "required": [
-          "justification"
-        ]
+        "required": ["justification"]
       },
       "RecordAmendment": {
         "type": "object",
@@ -8965,10 +8362,7 @@
           },
           "templateType": {
             "type": "string",
-            "enum": [
-              "SOAP",
-              "DAP"
-            ]
+            "enum": ["SOAP", "DAP"]
           },
           "attendanceType": {
             "type": "string",
@@ -8983,13 +8377,7 @@
           },
           "clinicalStatus": {
             "type": "string",
-            "enum": [
-              "STABLE",
-              "IMPROVING",
-              "WORSENING",
-              "UNCHANGED",
-              "UNDER_OBSERVATION"
-            ]
+            "enum": ["STABLE", "IMPROVING", "WORSENING", "UNCHANGED", "UNDER_OBSERVATION"]
           },
           "conductTags": {
             "type": "array",
@@ -9027,10 +8415,7 @@
           },
           "source": {
             "type": "string",
-            "enum": [
-              "MANUAL",
-              "IMPORT"
-            ]
+            "enum": ["MANUAL", "IMPORT"]
           },
           "importedDocumentId": {
             "type": "string",
@@ -9193,9 +8578,7 @@
             "example": "Patient prefers morning appointments"
           }
         },
-        "required": [
-          "responsibleProfessionalId"
-        ]
+        "required": ["responsibleProfessionalId"]
       },
       "CreatePatientAlertInputDto": {
         "type": "object",
@@ -9213,11 +8596,7 @@
           },
           "severity": {
             "type": "string",
-            "enum": [
-              "LOW",
-              "MEDIUM",
-              "HIGH"
-            ],
+            "enum": ["LOW", "MEDIUM", "HIGH"],
             "default": "MEDIUM"
           },
           "isActive": {
@@ -9225,9 +8604,7 @@
             "default": true
           }
         },
-        "required": [
-          "title"
-        ]
+        "required": ["title"]
       },
       "PatientAlert": {
         "type": "object",
@@ -9273,11 +8650,7 @@
           },
           "severity": {
             "type": "string",
-            "enum": [
-              "LOW",
-              "MEDIUM",
-              "HIGH"
-            ],
+            "enum": ["LOW", "MEDIUM", "HIGH"],
             "description": "Alert severity"
           },
           "isActive": {
@@ -9314,22 +8687,13 @@
           },
           "severity": {
             "type": "string",
-            "enum": [
-              "LOW",
-              "MEDIUM",
-              "HIGH"
-            ]
+            "enum": ["LOW", "MEDIUM", "HIGH"]
           },
           "isActive": {
             "type": "boolean"
           }
         },
-        "required": [
-          "title",
-          "description",
-          "severity",
-          "isActive"
-        ]
+        "required": ["title", "description", "severity", "isActive"]
       },
       "PrepareUploadInputDto": {
         "type": "object",
@@ -9355,11 +8719,7 @@
             "example": "abc123"
           }
         },
-        "required": [
-          "filename",
-          "mimeType",
-          "size"
-        ]
+        "required": ["filename", "mimeType", "size"]
       },
       "UploadInfoDto": {
         "type": "object",
@@ -9372,26 +8732,17 @@
           },
           "method": {
             "type": "string",
-            "enum": [
-              "PUT",
-              "POST"
-            ]
+            "enum": ["PUT", "POST"]
           }
         },
-        "required": [
-          "url",
-          "method"
-        ]
+        "required": ["url", "method"]
       },
       "PreparedUploadDto": {
         "type": "object",
         "properties": {
           "storageType": {
             "type": "string",
-            "enum": [
-              "LOCAL",
-              "S3"
-            ]
+            "enum": ["LOCAL", "S3"]
           },
           "fileId": {
             "type": "string"
@@ -9403,11 +8754,7 @@
             "$ref": "#/components/schemas/UploadInfoDto"
           }
         },
-        "required": [
-          "storageType",
-          "fileId",
-          "tempPath"
-        ]
+        "required": ["storageType", "fileId", "tempPath"]
       },
       "UploadLocalInputDto": {
         "type": "object",
@@ -9417,9 +8764,7 @@
             "minLength": 1
           }
         },
-        "required": [
-          "tempPath"
-        ]
+        "required": ["tempPath"]
       },
       "TempUploadDto": {
         "type": "object",
@@ -9431,10 +8776,7 @@
             "type": "string"
           }
         },
-        "required": [
-          "fileId",
-          "tempPath"
-        ]
+        "required": ["fileId", "tempPath"]
       },
       "CreateFormTemplateInputDto": {
         "type": "object",
@@ -9469,11 +8811,7 @@
             "default": false
           }
         },
-        "required": [
-          "code",
-          "name",
-          "specialty"
-        ]
+        "required": ["code", "name", "specialty"]
       },
       "FormTemplate": {
         "type": "object",
@@ -9644,10 +8982,7 @@
                                   "type": "number"
                                 }
                               },
-                              "required": [
-                                "value",
-                                "label"
-                              ]
+                              "required": ["value", "label"]
                             }
                           },
                           "repeatable": {
@@ -9681,11 +9016,7 @@
                             "properties": {
                               "width": {
                                 "type": "string",
-                                "enum": [
-                                  "full",
-                                  "half",
-                                  "third"
-                                ]
+                                "enum": ["full", "half", "third"]
                               },
                               "hint": {
                                 "type": "string"
@@ -9696,22 +9027,12 @@
                             }
                           }
                         },
-                        "required": [
-                          "id",
-                          "type",
-                          "label",
-                          "order"
-                        ]
+                        "required": ["id", "type", "label", "order"]
                       },
                       "minItems": 1
                     }
                   },
-                  "required": [
-                    "id",
-                    "label",
-                    "order",
-                    "fields"
-                  ]
+                  "required": ["id", "label", "order", "fields"]
                 },
                 "minItems": 1
               },
@@ -9731,9 +9052,7 @@
                     }
                   }
                 },
-                "required": [
-                  "enabled"
-                ]
+                "required": ["enabled"]
               },
               "metadata": {
                 "type": "object",
@@ -9751,9 +9070,7 @@
             }
           }
         },
-        "required": [
-          "definitionJson"
-        ]
+        "required": ["definitionJson"]
       },
       "FormTemplateVersion": {
         "type": "object",
@@ -9784,11 +9101,7 @@
           },
           "status": {
             "type": "string",
-            "enum": [
-              "DRAFT",
-              "PUBLISHED",
-              "DEPRECATED"
-            ],
+            "enum": ["DRAFT", "PUBLISHED", "DEPRECATED"],
             "description": "Version lifecycle status"
           },
           "definitionJson": {
@@ -9843,9 +9156,7 @@
             "nullable": true
           }
         },
-        "required": [
-          "templateId"
-        ]
+        "required": ["templateId"]
       },
       "PatientForm": {
         "type": "object",
@@ -9894,12 +9205,7 @@
           },
           "status": {
             "type": "string",
-            "enum": [
-              "DRAFT",
-              "IN_PROGRESS",
-              "COMPLETED",
-              "CANCELLED"
-            ]
+            "enum": ["DRAFT", "IN_PROGRESS", "COMPLETED", "CANCELLED"]
           },
           "responseJson": {
             "type": "object",
@@ -9969,15 +9275,11 @@
                   "nullable": true
                 }
               },
-              "required": [
-                "fieldId"
-              ]
+              "required": ["fieldId"]
             }
           }
         },
-        "required": [
-          "answers"
-        ]
+        "required": ["answers"]
       },
       "CompletePatientFormInputDto": {
         "type": "object",
@@ -10011,9 +9313,7 @@
                   "nullable": true
                 }
               },
-              "required": [
-                "fieldId"
-              ]
+              "required": ["fieldId"]
             }
           },
           "linkToRecordId": {
@@ -10022,9 +9322,7 @@
             "format": "uuid"
           }
         },
-        "required": [
-          "answers"
-        ]
+        "required": ["answers"]
       },
       "AiAgentProfile": {
         "type": "object",
@@ -10163,9 +9461,7 @@
             "maxLength": 255
           }
         },
-        "required": [
-          "patientId"
-        ]
+        "required": ["patientId"]
       },
       "PatientChatSession": {
         "type": "object",
@@ -10219,11 +9515,7 @@
           },
           "status": {
             "type": "string",
-            "enum": [
-              "ACTIVE",
-              "CLOSED",
-              "ARCHIVED"
-            ]
+            "enum": ["ACTIVE", "CLOSED", "ARCHIVED"]
           },
           "lastActivityAt": {
             "type": "string",
@@ -10273,9 +9565,7 @@
             "default": 0
           }
         },
-        "required": [
-          "content"
-        ]
+        "required": ["content"]
       },
       "PatientChatMessage": {
         "type": "object",
@@ -10301,12 +9591,7 @@
           },
           "role": {
             "type": "string",
-            "enum": [
-              "USER",
-              "ASSISTANT",
-              "SYSTEM",
-              "INTERNAL"
-            ]
+            "enum": ["USER", "ASSISTANT", "SYSTEM", "INTERNAL"]
           },
           "content": {
             "type": "string"
@@ -10390,12 +9675,7 @@
           },
           "status": {
             "type": "string",
-            "enum": [
-              "PENDING",
-              "COMPLETED",
-              "FAILED",
-              "FALLBACK"
-            ]
+            "enum": ["PENDING", "COMPLETED", "FAILED", "FALLBACK"]
           },
           "errorCode": {
             "type": "object",
@@ -10440,23 +9720,14 @@
             "$ref": "#/components/schemas/ChatInteractionLog"
           }
         },
-        "required": [
-          "userMessage",
-          "assistantMessage",
-          "interactionLog"
-        ]
+        "required": ["userMessage", "assistantMessage", "interactionLog"]
       },
       "AddChatMessageDto": {
         "type": "object",
         "properties": {
           "role": {
             "type": "string",
-            "enum": [
-              "USER",
-              "ASSISTANT",
-              "SYSTEM",
-              "INTERNAL"
-            ]
+            "enum": ["USER", "ASSISTANT", "SYSTEM", "INTERNAL"]
           },
           "content": {
             "type": "string",
@@ -10478,10 +9749,7 @@
             "default": []
           }
         },
-        "required": [
-          "role",
-          "content"
-        ]
+        "required": ["role", "content"]
       },
       "PatientChatSessionId": {
         "type": "object",
@@ -10505,9 +9773,7 @@
             "default": true
           }
         },
-        "required": [
-          "patientId"
-        ]
+        "required": ["patientId"]
       },
       "PatientContextSnapshot": {
         "type": "object",
@@ -10666,9 +9932,7 @@
             "maximum": 10
           }
         },
-        "required": [
-          "message"
-        ]
+        "required": ["message"]
       },
       "SearchKnowledgeDto": {
         "type": "object",
@@ -10705,9 +9969,7 @@
             "maximum": 1
           }
         },
-        "required": [
-          "query"
-        ]
+        "required": ["query"]
       },
       "RejectProposalDto": {
         "type": "object",
@@ -10717,9 +9979,7 @@
             "maxLength": 500
           }
         },
-        "required": [
-          "reason"
-        ]
+        "required": ["reason"]
       },
       "AddonGrantsTotalsDto": {
         "type": "object",
@@ -10758,12 +10018,7 @@
             "$ref": "#/components/schemas/AddonGrantsTotalsDto"
           }
         },
-        "required": [
-          "code",
-          "name",
-          "priceMonthlyBrl",
-          "grants"
-        ]
+        "required": ["code", "name", "priceMonthlyBrl", "grants"]
       },
       "ProfessionalSubscription": {
         "type": "object",
@@ -10782,21 +10037,11 @@
           },
           "planCode": {
             "type": "string",
-            "enum": [
-              "STARTER",
-              "CONSULTORIO",
-              "CLINICA",
-              "ESPECIALISTA"
-            ]
+            "enum": ["STARTER", "CONSULTORIO", "CLINICA", "ESPECIALISTA"]
           },
           "status": {
             "type": "string",
-            "enum": [
-              "ACTIVE",
-              "SUSPENDED",
-              "CANCELLED",
-              "TRIAL"
-            ]
+            "enum": ["ACTIVE", "SUSPENDED", "CANCELLED", "TRIAL"]
           },
           "currentPeriodStart": {
             "type": "string",
@@ -10808,12 +10053,7 @@
           },
           "previousPlanCode": {
             "type": "string",
-            "enum": [
-              "STARTER",
-              "CONSULTORIO",
-              "CLINICA",
-              "ESPECIALISTA"
-            ],
+            "enum": ["STARTER", "CONSULTORIO", "CLINICA", "ESPECIALISTA"],
             "nullable": true
           },
           "planChangedAt": {
@@ -10854,10 +10094,7 @@
             "type": "number"
           }
         },
-        "required": [
-          "year",
-          "month"
-        ]
+        "required": ["year", "month"]
       },
       "UsageMetricDto": {
         "type": "object",
@@ -10881,21 +10118,10 @@
           },
           "status": {
             "type": "string",
-            "enum": [
-              "OK",
-              "WARNING",
-              "EXCEEDED",
-              "NOT_INCLUDED"
-            ]
+            "enum": ["OK", "WARNING", "EXCEEDED", "NOT_INCLUDED"]
           }
         },
-        "required": [
-          "used",
-          "limit",
-          "percent",
-          "remaining",
-          "status"
-        ]
+        "required": ["used", "limit", "percent", "remaining", "status"]
       },
       "UsageBreakdownDto": {
         "type": "object",
@@ -10913,12 +10139,7 @@
             "$ref": "#/components/schemas/UsageMetricDto"
           }
         },
-        "required": [
-          "docs",
-          "chat",
-          "images",
-          "storageHotGb"
-        ]
+        "required": ["docs", "chat", "images", "storageHotGb"]
       },
       "UsageAlertDto": {
         "type": "object",
@@ -10928,20 +10149,13 @@
           },
           "type": {
             "type": "string",
-            "enum": [
-              "WARNING",
-              "EXCEEDED"
-            ]
+            "enum": ["WARNING", "EXCEEDED"]
           },
           "message": {
             "type": "string"
           }
         },
-        "required": [
-          "metric",
-          "type",
-          "message"
-        ]
+        "required": ["metric", "type", "message"]
       },
       "ActiveAddonDto": {
         "type": "object",
@@ -10963,13 +10177,7 @@
             "format": "date-time"
           }
         },
-        "required": [
-          "code",
-          "name",
-          "quantity",
-          "grantsTotal",
-          "expiresAt"
-        ]
+        "required": ["code", "name", "quantity", "grantsTotal", "expiresAt"]
       },
       "SubscriptionInfoDto": {
         "type": "object",
@@ -10986,23 +10194,14 @@
             "format": "date-time"
           }
         },
-        "required": [
-          "status",
-          "currentPeriodStart",
-          "currentPeriodEnd"
-        ]
+        "required": ["status", "currentPeriodStart", "currentPeriodEnd"]
       },
       "CurrentUsage": {
         "type": "object",
         "properties": {
           "planCode": {
             "type": "string",
-            "enum": [
-              "STARTER",
-              "CONSULTORIO",
-              "CLINICA",
-              "ESPECIALISTA"
-            ]
+            "enum": ["STARTER", "CONSULTORIO", "CLINICA", "ESPECIALISTA"]
           },
           "planName": {
             "type": "string"
@@ -11067,22 +10266,14 @@
         "properties": {
           "addonCode": {
             "type": "string",
-            "enum": [
-              "EXTRA_DOCS_300",
-              "EXTRA_CHAT_1000",
-              "EXTRA_IMAGES_30",
-              "EXTRA_STORAGE_10GB"
-            ]
+            "enum": ["EXTRA_DOCS_300", "EXTRA_CHAT_1000", "EXTRA_IMAGES_30", "EXTRA_STORAGE_10GB"]
           },
           "quantity": {
             "type": "integer",
             "minimum": 1
           }
         },
-        "required": [
-          "addonCode",
-          "quantity"
-        ]
+        "required": ["addonCode", "quantity"]
       },
       "MemberUsageSummaryItemDto": {
         "type": "object",
@@ -11096,12 +10287,7 @@
           },
           "planCode": {
             "type": "string",
-            "enum": [
-              "STARTER",
-              "CONSULTORIO",
-              "CLINICA",
-              "ESPECIALISTA"
-            ]
+            "enum": ["STARTER", "CONSULTORIO", "CLINICA", "ESPECIALISTA"]
           },
           "usage": {
             "$ref": "#/components/schemas/UsageBreakdownDto"
@@ -11138,11 +10324,7 @@
             "type": "object"
           }
         },
-        "required": [
-          "period",
-          "members",
-          "summary"
-        ]
+        "required": ["period", "members", "summary"]
       },
       "MemberActiveAddons": {
         "type": "object",
@@ -11158,10 +10340,7 @@
             }
           }
         },
-        "required": [
-          "memberId",
-          "addons"
-        ]
+        "required": ["memberId", "addons"]
       },
       "MemberUsageSummary": {
         "type": "object",
@@ -11174,28 +10353,18 @@
             "$ref": "#/components/schemas/CurrentUsage"
           }
         },
-        "required": [
-          "memberId",
-          "usage"
-        ]
+        "required": ["memberId", "usage"]
       },
       "ChangePlanDto": {
         "type": "object",
         "properties": {
           "planCode": {
             "type": "string",
-            "enum": [
-              "STARTER",
-              "CONSULTORIO",
-              "CLINICA",
-              "ESPECIALISTA"
-            ],
+            "enum": ["STARTER", "CONSULTORIO", "CLINICA", "ESPECIALISTA"],
             "example": "CONSULTORIO"
           }
         },
-        "required": [
-          "planCode"
-        ]
+        "required": ["planCode"]
       },
       "DraftEvolution": {
         "type": "object",
@@ -11234,10 +10403,7 @@
           },
           "templateType": {
             "type": "string",
-            "enum": [
-              "SOAP",
-              "DAP"
-            ],
+            "enum": ["SOAP", "DAP"],
             "nullable": true
           },
           "title": {
@@ -11258,13 +10424,7 @@
           },
           "clinicalStatus": {
             "type": "string",
-            "enum": [
-              "STABLE",
-              "IMPROVING",
-              "WORSENING",
-              "UNCHANGED",
-              "UNDER_OBSERVATION"
-            ],
+            "enum": ["STABLE", "IMPROVING", "WORSENING", "UNCHANGED", "UNDER_OBSERVATION"],
             "nullable": true
           },
           "conductTags": {
@@ -11313,12 +10473,7 @@
           },
           "status": {
             "type": "string",
-            "enum": [
-              "DRAFT",
-              "PENDING_REVIEW",
-              "APPROVED",
-              "REJECTED"
-            ]
+            "enum": ["DRAFT", "PENDING_REVIEW", "APPROVED", "REJECTED"]
           },
           "wasHumanEdited": {
             "type": "boolean",
@@ -11378,10 +10533,7 @@
         "properties": {
           "templateType": {
             "type": "string",
-            "enum": [
-              "SOAP",
-              "DAP"
-            ]
+            "enum": ["SOAP", "DAP"]
           },
           "title": {
             "type": "string",
@@ -11402,13 +10554,7 @@
           "clinicalStatus": {
             "type": "string",
             "nullable": true,
-            "enum": [
-              "STABLE",
-              "IMPROVING",
-              "WORSENING",
-              "UNCHANGED",
-              "UNDER_OBSERVATION"
-            ]
+            "enum": ["STABLE", "IMPROVING", "WORSENING", "UNCHANGED", "UNDER_OBSERVATION"]
           },
           "conductTags": {
             "type": "array",
@@ -11502,12 +10648,7 @@
             "format": "uuid"
           }
         },
-        "required": [
-          "type",
-          "patientId",
-          "responsibleProfessionalId",
-          "contentJson"
-        ]
+        "required": ["type", "patientId", "responsibleProfessionalId", "contentJson"]
       },
       "ClinicalDocument": {
         "type": "object",
@@ -11574,11 +10715,7 @@
           },
           "status": {
             "type": "string",
-            "enum": [
-              "DRAFT",
-              "GENERATED",
-              "CANCELLED"
-            ]
+            "enum": ["DRAFT", "GENERATED", "CANCELLED"]
           },
           "appointmentId": {
             "type": "object",
@@ -11647,15 +10784,7 @@
             "type": "object"
           }
         },
-        "required": [
-          "id",
-          "createdAt",
-          "updatedAt",
-          "type",
-          "isDefault",
-          "name",
-          "layoutJson"
-        ]
+        "required": ["id", "createdAt", "updatedAt", "type", "isDefault", "name", "layoutJson"]
       },
       "UpsertTemplateDto": {
         "type": "object",
@@ -11672,10 +10801,7 @@
             }
           }
         },
-        "required": [
-          "name",
-          "layoutJson"
-        ]
+        "required": ["name", "layoutJson"]
       },
       "ModelBreakdownEntry": {
         "type": "object",
@@ -11690,11 +10816,7 @@
             "type": "number"
           }
         },
-        "required": [
-          "modelId",
-          "messages",
-          "costUsd"
-        ]
+        "required": ["modelId", "messages", "costUsd"]
       },
       "MemberBillingReport": {
         "type": "object",
@@ -11708,12 +10830,7 @@
           },
           "planCode": {
             "type": "string",
-            "enum": [
-              "STARTER",
-              "CONSULTORIO",
-              "CLINICA",
-              "ESPECIALISTA"
-            ]
+            "enum": ["STARTER", "CONSULTORIO", "CLINICA", "ESPECIALISTA"]
           },
           "planPriceBrl": {
             "type": "number"
@@ -11810,11 +10927,7 @@
             "type": "number"
           }
         },
-        "required": [
-          "memberId",
-          "displayName",
-          "aiCostUsd"
-        ]
+        "required": ["memberId", "displayName", "aiCostUsd"]
       },
       "ClinicBillingReportMostActive": {
         "type": "object",
@@ -11830,11 +10943,7 @@
             "type": "number"
           }
         },
-        "required": [
-          "memberId",
-          "displayName",
-          "messages"
-        ]
+        "required": ["memberId", "displayName", "messages"]
       },
       "ClinicBillingReportSummary": {
         "type": "object",
@@ -11907,69 +11016,39 @@
             "$ref": "#/components/schemas/ClinicBillingReportSummary"
           }
         },
-        "required": [
-          "clinicId",
-          "clinicName",
-          "periodYear",
-          "periodMonth",
-          "members",
-          "summary"
-        ]
+        "required": ["clinicId", "clinicName", "periodYear", "periodMonth", "members", "summary"]
       },
       "ActivateSubscriptionDto": {
         "type": "object",
         "properties": {
           "planCode": {
             "type": "string",
-            "enum": [
-              "STARTER",
-              "CONSULTORIO",
-              "CLINICA",
-              "ESPECIALISTA"
-            ]
+            "enum": ["STARTER", "CONSULTORIO", "CLINICA", "ESPECIALISTA"]
           },
           "paymentMethod": {
             "type": "string",
-            "enum": [
-              "CREDIT_CARD",
-              "PIX",
-              "BOLETO"
-            ]
+            "enum": ["CREDIT_CARD", "PIX", "BOLETO"]
           },
           "cpfCnpj": {
             "type": "string"
           }
         },
-        "required": [
-          "planCode",
-          "paymentMethod"
-        ]
+        "required": ["planCode", "paymentMethod"]
       },
       "ChangePaymentPlanDto": {
         "type": "object",
         "properties": {
           "planCode": {
             "type": "string",
-            "enum": [
-              "STARTER",
-              "CONSULTORIO",
-              "CLINICA",
-              "ESPECIALISTA"
-            ]
+            "enum": ["STARTER", "CONSULTORIO", "CLINICA", "ESPECIALISTA"]
           },
           "paymentMethod": {
             "type": "string",
-            "enum": [
-              "CREDIT_CARD",
-              "PIX",
-              "BOLETO"
-            ],
+            "enum": ["CREDIT_CARD", "PIX", "BOLETO"],
             "default": "PIX"
           }
         },
-        "required": [
-          "planCode"
-        ]
+        "required": ["planCode"]
       },
       "PaymentEvent": {
         "type": "object",
@@ -12053,12 +11132,7 @@
           },
           "status": {
             "type": "string",
-            "enum": [
-              "PENDING",
-              "PAID",
-              "EXEMPT",
-              "REFUNDED"
-            ],
+            "enum": ["PENDING", "PAID", "EXEMPT", "REFUNDED"],
             "default": "PAID"
           },
           "insurancePlanId": {
@@ -12078,10 +11152,7 @@
             "maxLength": 1000
           }
         },
-        "required": [
-          "paymentMethod",
-          "amountBrl"
-        ]
+        "required": ["paymentMethod", "amountBrl"]
       },
       "AppointmentPayment": {
         "type": "object",
@@ -12180,12 +11251,7 @@
         "properties": {
           "status": {
             "type": "string",
-            "enum": [
-              "PENDING",
-              "PAID",
-              "EXEMPT",
-              "REFUNDED"
-            ]
+            "enum": ["PENDING", "PAID", "EXEMPT", "REFUNDED"]
           },
           "paidAt": {
             "type": "string",
@@ -12204,9 +11270,7 @@
             "maxLength": 1000
           }
         },
-        "required": [
-          "status"
-        ]
+        "required": ["status"]
       },
       "RevenueSummaryDto": {
         "type": "object",
@@ -12265,11 +11329,7 @@
             "type": "number"
           }
         },
-        "required": [
-          "method",
-          "count",
-          "totalBrl"
-        ]
+        "required": ["method", "count", "totalBrl"]
       },
       "ProfessionalSummaryDto": {
         "type": "object",
@@ -12288,12 +11348,7 @@
             "type": "number"
           }
         },
-        "required": [
-          "memberId",
-          "displayName",
-          "count",
-          "totalBrl"
-        ]
+        "required": ["memberId", "displayName", "count", "totalBrl"]
       },
       "PaymentListItemDto": {
         "type": "object",
@@ -12430,13 +11485,7 @@
             }
           }
         },
-        "required": [
-          "period",
-          "filters",
-          "summary",
-          "byPaymentMethod",
-          "byProfessional"
-        ]
+        "required": ["period", "filters", "summary", "byPaymentMethod", "byProfessional"]
       },
       "UpsertWorkingHoursDto": {
         "type": "object",
@@ -12464,12 +11513,7 @@
             "default": true
           }
         },
-        "required": [
-          "dayOfWeek",
-          "startTime",
-          "endTime",
-          "slotDuration"
-        ]
+        "required": ["dayOfWeek", "startTime", "endTime", "slotDuration"]
       },
       "WorkingHours": {
         "type": "object",
@@ -12546,10 +11590,7 @@
             "maxLength": 500
           }
         },
-        "required": [
-          "startAt",
-          "endAt"
-        ]
+        "required": ["startAt", "endAt"]
       },
       "MemberBlock": {
         "type": "object",
@@ -12590,15 +11631,7 @@
             "description": "Optional reason for the block"
           }
         },
-        "required": [
-          "id",
-          "createdAt",
-          "updatedAt",
-          "clinicMemberId",
-          "startAt",
-          "endAt",
-          "reason"
-        ]
+        "required": ["id", "createdAt", "updatedAt", "clinicMemberId", "startAt", "endAt", "reason"]
       }
     }
   }

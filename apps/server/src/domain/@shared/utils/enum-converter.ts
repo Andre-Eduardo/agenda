@@ -1,4 +1,4 @@
-import {InvalidInputException} from '../exceptions';
+import { InvalidInputException } from "@domain/@shared/exceptions";
 
 /**
  * Tipo utilitário que representa o shape de um enum TypeScript (ex: `enum Foo { A = 'A' }`)
@@ -16,15 +16,15 @@ export type EnumLike<TValue extends string = string> = Record<string, TValue>;
  * @throws {InvalidInputException} se o valor não pertencer ao enum.
  */
 export function toEnum<T extends EnumLike>(enumType: T, value: string): T[keyof T] {
-    const validValues = Object.values(enumType) as string[];
+  const validValues = Object.values(enumType);
 
-    if (!validValues.includes(value)) {
-        throw new InvalidInputException(
-            `Invalid enum value "${value}". Expected one of: ${validValues.join(', ')}.`,
-        );
-    }
+  if (!validValues.includes(value)) {
+    throw new InvalidInputException(
+      `Invalid enum value "${value}". Expected one of: ${validValues.join(", ")}.`,
+    );
+  }
 
-    return value as T[keyof T];
+  return value as T[keyof T];
 }
 
 /**
@@ -32,17 +32,20 @@ export function toEnum<T extends EnumLike>(enumType: T, value: string): T[keyof 
  * caso contrário valida e converte via {@link toEnum}.
  */
 export function toEnumOrNull<T extends EnumLike>(
-    enumType: T,
-    value: string | null | undefined,
+  enumType: T,
+  value: string | null | undefined,
 ): T[keyof T] | null {
-    if (value == null) return null;
+  if (value == null) return null;
 
-    return toEnum(enumType, value);
+  return toEnum(enumType, value);
 }
 
 /**
  * Variante para arrays: valida cada item e retorna o array tipado.
  */
-export function toEnumArray<T extends EnumLike>(enumType: T, values: readonly string[]): Array<T[keyof T]> {
-    return values.map((v) => toEnum(enumType, v));
+export function toEnumArray<T extends EnumLike>(
+  enumType: T,
+  values: readonly string[],
+): Array<T[keyof T]> {
+  return values.map((v) => toEnum(enumType, v));
 }

@@ -1,1 +1,1 @@
-export * from './sign-in.dto';
+export * from "@application/auth/dtos/sign-in.dto";

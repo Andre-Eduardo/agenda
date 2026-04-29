@@ -29,42 +29,43 @@ pnpm -F @agenda-app/server exec cucumber-js --tags '@real-api'
 
 **Features covered:**
 
-| Feature | File | What it validates |
-|---------|------|-------------------|
+| Feature                 | File                                                         | What it validates                                                                                                   |
+| ----------------------- | ------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------- |
 | RAG semantic similarity | `test/features/clinical-chat/rag-patient-similarity.feature` | pgvector + HNSW + OpenAI embeddings return semantically relevant chunks (score > 0.7) and enforce patient isolation |
 
 **Pre-requisites:**
+
 - PostgreSQL running with pgvector extension
 - Valid `OPENAI_API_KEY` environment variable
 - `AI_EMBEDDING_PROVIDER=openai` (defaults to mock in tests)
 
 ## Test infrastructure
 
-| File | Purpose |
-|------|---------|
-| `test/support/context.ts` | Per-scenario `Context` class extending Cucumber `World` |
-| `test/support/setup.ts` | `BeforeAll` (migrations), `Before` (app boot), `After` (teardown) |
-| `test/support/parser.ts` | Reference resolution (`${ref:id:user:john_doe}`) |
-| `test/support/data-table-converters.ts` | `singleEntry` / `multipleEntries` DataTable helpers |
-| `test/support/chai-setup.ts` | chai + chai-match-pattern + chai-subset |
+| File                                    | Purpose                                                           |
+| --------------------------------------- | ----------------------------------------------------------------- |
+| `test/support/context.ts`               | Per-scenario `Context` class extending Cucumber `World`           |
+| `test/support/setup.ts`                 | `BeforeAll` (migrations), `Before` (app boot), `After` (teardown) |
+| `test/support/parser.ts`                | Reference resolution (`${ref:id:user:john_doe}`)                  |
+| `test/support/data-table-converters.ts` | `singleEntry` / `multipleEntries` DataTable helpers               |
+| `test/support/chai-setup.ts`            | chai + chai-match-pattern + chai-subset                           |
 
 ## Step definition reference
 
-| Pattern | File | Description |
-|---------|------|-------------|
-| `the following users exist:` | `user.ts` | Bulk user creation from DataTable |
-| `I am signed in as {string}` | `user.ts` | Sign in by username |
-| `a professional {string} exists with specialty {string}` | `professional.ts` | Create professional |
-| `I send a {string} request to {string} with:` | `request.ts` | HTTP request with body |
-| `I send a {string} request to {string} with the query:` | `request.ts` | HTTP request with query params |
-| `um profissional logado com especialidade {string}` | `rag-patient.ts` | RAG: create user+professional, sign in |
-| `um paciente {string} com evolução {string}` | `rag-patient.ts` | RAG: create patient + record + index |
-| `os chunks do paciente foram indexados` | `rag-patient.ts` | RAG: re-index last patient |
-| `consulto chunks com query {string}` | `rag-patient.ts` | RAG: retrieve chunks for last patient |
-| `consulto chunks do paciente {string} com query {string}` | `rag-patient.ts` | RAG: retrieve chunks for named patient |
-| `o primeiro chunk tem score > {float}` | `rag-patient.ts` | Assert first chunk similarity score |
-| `o primeiro chunk contém {string}` | `rag-patient.ts` | Assert first chunk content |
-| `nenhum chunk retornado menciona {string}` | `rag-patient.ts` | Assert patient isolation |
+| Pattern                                                   | File              | Description                            |
+| --------------------------------------------------------- | ----------------- | -------------------------------------- |
+| `the following users exist:`                              | `user.ts`         | Bulk user creation from DataTable      |
+| `I am signed in as {string}`                              | `user.ts`         | Sign in by username                    |
+| `a professional {string} exists with specialty {string}`  | `professional.ts` | Create professional                    |
+| `I send a {string} request to {string} with:`             | `request.ts`      | HTTP request with body                 |
+| `I send a {string} request to {string} with the query:`   | `request.ts`      | HTTP request with query params         |
+| `um profissional logado com especialidade {string}`       | `rag-patient.ts`  | RAG: create user+professional, sign in |
+| `um paciente {string} com evolução {string}`              | `rag-patient.ts`  | RAG: create patient + record + index   |
+| `os chunks do paciente foram indexados`                   | `rag-patient.ts`  | RAG: re-index last patient             |
+| `consulto chunks com query {string}`                      | `rag-patient.ts`  | RAG: retrieve chunks for last patient  |
+| `consulto chunks do paciente {string} com query {string}` | `rag-patient.ts`  | RAG: retrieve chunks for named patient |
+| `o primeiro chunk tem score > {float}`                    | `rag-patient.ts`  | Assert first chunk similarity score    |
+| `o primeiro chunk contém {string}`                        | `rag-patient.ts`  | Assert first chunk content             |
+| `nenhum chunk retornado menciona {string}`                | `rag-patient.ts`  | Assert patient isolation               |
 
 ## Dynamic references
 

@@ -1,19 +1,19 @@
-import {Injectable} from '@nestjs/common';
-import {ClinicMemberId} from '../../../domain/clinic-member/entities';
-import {PatientId} from '../../../domain/patient/entities';
-import {ContextSnapshotStatus} from '../../../domain/clinical-chat/entities';
-import {PatientContextSnapshotRepository} from '../../../domain/clinical-chat/patient-context-snapshot.repository';
+import { Injectable } from "@nestjs/common";
+import { ClinicMemberId } from "@domain/clinic-member/entities";
+import { PatientId } from "@domain/patient/entities";
+import { ContextSnapshotStatus } from "@domain/clinical-chat/entities";
+import { PatientContextSnapshotRepository } from "@domain/clinical-chat/patient-context-snapshot.repository";
 
 export type InvalidateSnapshotInput = {
-    patientId: PatientId;
-    memberId?: ClinicMemberId | null;
-    /** Razão da invalidação, para fins de rastreabilidade */
-    reason?: string;
+  patientId: PatientId;
+  memberId?: ClinicMemberId | null;
+  /** Razão da invalidação, para fins de rastreabilidade */
+  reason?: string;
 };
 
 export type InvalidateSnapshotOutput = {
-    invalidated: boolean;
-    previousStatus: ContextSnapshotStatus | null;
+  invalidated: boolean;
+  previousStatus: ContextSnapshotStatus | null;
 };
 
 /**
@@ -37,27 +37,27 @@ export type InvalidateSnapshotOutput = {
  */
 @Injectable()
 export class InvalidateSnapshotService {
-    constructor(private readonly snapshotRepository: PatientContextSnapshotRepository) {}
+  constructor(private readonly snapshotRepository: PatientContextSnapshotRepository) {}
 
-    async execute(input: InvalidateSnapshotInput): Promise<InvalidateSnapshotOutput> {
-        const {patientId, memberId = null} = input;
+  async execute(input: InvalidateSnapshotInput): Promise<InvalidateSnapshotOutput> {
+    const { patientId, memberId = null } = input;
 
-        const snapshot = await this.snapshotRepository.findByPatient(patientId, memberId);
+    const snapshot = await this.snapshotRepository.findByPatient(patientId, memberId);
 
-        if (!snapshot) {
-            return {invalidated: false, previousStatus: null};
-        }
-
-        if (snapshot.status === ContextSnapshotStatus.STALE) {
-            // Já está stale — idempotente
-            return {invalidated: false, previousStatus: ContextSnapshotStatus.STALE};
-        }
-
-        const previousStatus = snapshot.status;
-
-        snapshot.markStale();
-        await this.snapshotRepository.save(snapshot);
-
-        return {invalidated: true, previousStatus};
+    if (!snapshot) {
+      return { invalidated: false, previousStatus: null };
     }
+
+    if (snapshot.status === ContextSnapshotStatus.STALE) {
+      // Já está stale — idempotente
+      return { invalidated: false, previousStatus: ContextSnapshotStatus.STALE };
+    }
+
+    const previousStatus = snapshot.status;
+
+    snapshot.markStale();
+    await this.snapshotRepository.save(snapshot);
+
+    return { invalidated: true, previousStatus };
+  }
 }

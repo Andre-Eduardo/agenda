@@ -1,13 +1,13 @@
-import {ClinicPatientAccessGrantedEvent} from './clinic-patient-access-granted.event';
-import {ClinicPatientAccessChangedEvent} from './clinic-patient-access-changed.event';
-import {ClinicPatientAccessRevokedEvent} from './clinic-patient-access-revoked.event';
+import { ClinicPatientAccessGrantedEvent } from "@domain/clinic-patient-access/events/clinic-patient-access-granted.event";
+import { ClinicPatientAccessChangedEvent } from "@domain/clinic-patient-access/events/clinic-patient-access-changed.event";
+import { ClinicPatientAccessRevokedEvent } from "@domain/clinic-patient-access/events/clinic-patient-access-revoked.event";
 
-export * from './clinic-patient-access-changed.event';
-export * from './clinic-patient-access-granted.event';
-export * from './clinic-patient-access-revoked.event';
+export * from "@domain/clinic-patient-access/events/clinic-patient-access-changed.event";
+export * from "@domain/clinic-patient-access/events/clinic-patient-access-granted.event";
+export * from "@domain/clinic-patient-access/events/clinic-patient-access-revoked.event";
 
 export const clinicPatientAccessEvents = [
-    ClinicPatientAccessGrantedEvent,
-    ClinicPatientAccessChangedEvent,
-    ClinicPatientAccessRevokedEvent,
+  ClinicPatientAccessGrantedEvent,
+  ClinicPatientAccessChangedEvent,
+  ClinicPatientAccessRevokedEvent,
 ];

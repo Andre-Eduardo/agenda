@@ -1,1 +1,1 @@
-export * from './enum-converter';
+export * from "@domain/@shared/utils/enum-converter";

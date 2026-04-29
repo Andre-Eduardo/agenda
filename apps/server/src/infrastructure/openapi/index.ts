@@ -1,1 +1,1 @@
-export * from './schema-generator';
+export * from "@infrastructure/openapi/schema-generator";

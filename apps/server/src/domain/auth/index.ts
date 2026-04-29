@@ -1,2 +1,2 @@
-export * from './global-role';
-export * from './permission';
+export * from "@domain/auth/global-role";
+export * from "@domain/auth/permission";

@@ -1,2 +1,2 @@
-export * from './config.module';
-export * from './env.config.service';
+export * from "@infrastructure/config/config.module";
+export * from "@infrastructure/config/env.config.service";

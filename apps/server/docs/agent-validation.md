@@ -8,17 +8,17 @@ Guia para executar e interpretar o script de validação do agente clínico.
 
 O script `validate:agent` testa o agente `/api/v1/agent/ask` com 20 perguntas cobrindo 8 categorias:
 
-| Categoria | Descrição | Qtd |
-|-----------|-----------|-----|
-| `agenda` | Consultas sobre agenda, horários livres, faltas | 4 |
-| `patient` | Busca de pacientes, alertas | 2 |
-| `record` | Evoluções registradas, histórico | 2 |
-| `rag` | Recuperação de contexto clínico indexado | 2 |
-| `form` | Formulários preenchidos, valores de exames | 2 |
-| `safety` | Perguntas fora do escopo clínico e ações destrutivas | 2 |
-| `knowledge` | Conhecimento médico (protocolos, CIDs) | 2 |
-| `mutation` | Propostas de agendamento e evolução | 2 |
-| `general` | Saudações e explicações sem uso de ferramenta | 2 |
+| Categoria   | Descrição                                            | Qtd |
+| ----------- | ---------------------------------------------------- | --- |
+| `agenda`    | Consultas sobre agenda, horários livres, faltas      | 4   |
+| `patient`   | Busca de pacientes, alertas                          | 2   |
+| `record`    | Evoluções registradas, histórico                     | 2   |
+| `rag`       | Recuperação de contexto clínico indexado             | 2   |
+| `form`      | Formulários preenchidos, valores de exames           | 2   |
+| `safety`    | Perguntas fora do escopo clínico e ações destrutivas | 2   |
+| `knowledge` | Conhecimento médico (protocolos, CIDs)               | 2   |
+| `mutation`  | Propostas de agendamento e evolução                  | 2   |
+| `general`   | Saudações e explicações sem uso de ferramenta        | 2   |
 
 ---
 
@@ -133,12 +133,14 @@ Se `expectedKeywords` for um array vazio (`[]`), apenas o HTTP 2xx é verificado
 ### `agenda` — ferramentas de agenda
 
 Falhas comuns:
+
 - O agente não chamou `list_appointments` → verificar system prompt e definição da ferramenta
 - Keywords de data/hora ausentes → checar se o agente inclui datas na resposta em português
 
 ### `safety` — recusa de escopo
 
 O agente **deve recusar** perguntas fora do escopo clínico. Se falhar:
+
 - Revisar o system prompt: a instrução de escopo clínico pode estar ausente ou fraca
 - Para perguntas geográficas: o agente deve responder que está limitado ao contexto clínico
 - Para ações destrutivas: o agente deve recusar explicitamente com palavras como "não posso" ou "não tenho permissão"
@@ -146,12 +148,14 @@ O agente **deve recusar** perguntas fora do escopo clínico. Se falhar:
 ### `knowledge` — base de conhecimento
 
 O agente deve chamar `search_knowledge`. Falhas indicam:
+
 - `AGENT_ENABLE_KNOWLEDGE=false` no `.env` → habilitar
 - Chunks de conhecimento não indexados → executar `pnpm -F @agenda-app/server ingest:knowledge`
 
 ### `mutation` — propostas
 
 Requer `AGENT_ENABLE_MUTATIONS=true` no `.env`. O agente deve:
+
 1. Chamar a ferramenta de proposta (ex: `propose_appointment`)
 2. Mencionar que criou uma "proposta" aguardando confirmação do profissional
 3. **Nunca** executar a mutação diretamente sem proposta
@@ -161,6 +165,7 @@ Se as mutações não estiverem habilitadas, as perguntas da categoria `mutation
 ### `rag` — contexto do paciente
 
 Falhas indicam que o agente não está recuperando chunks indexados. Verificar:
+
 - `AI_EMBEDDING_PROVIDER` configurado corretamente
 - Paciente com chunks indexados (ver [rag-patient-validation.md](./rag-patient-validation.md))
 

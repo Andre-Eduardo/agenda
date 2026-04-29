@@ -4,31 +4,31 @@
  */
 
 export type FormAnswer = {
-    fieldId: string;
-    valueText?: string | null;
-    valueNumber?: number | null;
-    valueBoolean?: boolean | null;
-    valueDate?: string | null;
-    valueJson?: unknown;
+  fieldId: string;
+  valueText?: string | null;
+  valueNumber?: number | null;
+  valueBoolean?: boolean | null;
+  valueDate?: string | null;
+  valueJson?: unknown;
 };
 
 export type FormResponseJson = {
-    answers: FormAnswer[];
+  answers: FormAnswer[];
 };
 
 export type FormComputedScore = {
-    fieldId: string;
-    label: string;
-    value: number;
-    classification?: string;
-    flag?: string;
+  fieldId: string;
+  label: string;
+  value: number;
+  classification?: string;
+  flag?: string;
 };
 
 export type FormComputedJson = {
-    totalScore?: number;
-    classification?: string;
-    flags?: string[];
-    scores?: FormComputedScore[];
-    notes?: string;
-    metadata?: Record<string, unknown>;
+  totalScore?: number;
+  classification?: string;
+  flags?: string[];
+  scores?: FormComputedScore[];
+  notes?: string;
+  metadata?: Record<string, unknown>;
 };

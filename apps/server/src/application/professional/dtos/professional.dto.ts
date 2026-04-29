@@ -1,27 +1,34 @@
-import {ApiProperty, ApiSchema} from '@nestjs/swagger';
-import type {Professional} from '../../../domain/professional/entities';
-import {AiSpecialtyGroup} from '../../../domain/form-template/entities';
-import {EntityDto} from '../../@shared/dto';
+import { ApiProperty, ApiSchema } from "@nestjs/swagger";
+import type { Professional } from "@domain/professional/entities";
+import { AiSpecialtyGroup } from "@domain/form-template/entities";
+import { EntityDto } from "@application/@shared/dto";
 
-@ApiSchema({name: 'Professional'})
+@ApiSchema({ name: "Professional" })
 export class ProfessionalDto extends EntityDto {
-    @ApiProperty({format: 'uuid', description: 'The clinic member that owns this professional record'})
-    clinicMemberId: string;
+  @ApiProperty({
+    format: "uuid",
+    description: "The clinic member that owns this professional record",
+  })
+  clinicMemberId: string;
 
-    @ApiProperty({nullable: true, description: 'Professional registration number (CRM, CRP, etc.)'})
-    registrationNumber: string | null;
+  @ApiProperty({ nullable: true, description: "Professional registration number (CRM, CRP, etc.)" })
+  registrationNumber: string | null;
 
-    @ApiProperty({nullable: true, description: 'Free-form specialty', example: 'Cardiology'})
-    specialty: string | null;
+  @ApiProperty({ nullable: true, description: "Free-form specialty", example: "Cardiology" })
+  specialty: string | null;
 
-    @ApiProperty({enum: AiSpecialtyGroup, nullable: true, description: 'Normalized specialty group'})
-    specialtyNormalized: AiSpecialtyGroup | null;
+  @ApiProperty({
+    enum: AiSpecialtyGroup,
+    nullable: true,
+    description: "Normalized specialty group",
+  })
+  specialtyNormalized: AiSpecialtyGroup | null;
 
-    constructor(professional: Professional) {
-        super(professional);
-        this.clinicMemberId = professional.clinicMemberId.toString();
-        this.registrationNumber = professional.registrationNumber;
-        this.specialty = professional.specialty;
-        this.specialtyNormalized = professional.specialtyNormalized;
-    }
+  constructor(professional: Professional) {
+    super(professional);
+    this.clinicMemberId = professional.clinicMemberId.toString();
+    this.registrationNumber = professional.registrationNumber;
+    this.specialty = professional.specialty;
+    this.specialtyNormalized = professional.specialtyNormalized;
+  }
 }

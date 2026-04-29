@@ -1,41 +1,48 @@
-import {Injectable} from '@nestjs/common';
-import * as PrismaClient from '@prisma/client';
-import {toEnum} from '../../domain/@shared/utils';
-import {FormTemplateVersion, FormTemplateVersionId, FormStatus} from '../../domain/form-template-version/entities';
-import {FormTemplateId} from '../../domain/form-template/entities';
-import {MapperWithoutDto} from './mapper';
-import type {FormDefinitionJson} from '../../domain/form-template/types';
+import { Injectable } from "@nestjs/common";
+import * as PrismaClient from "@prisma/client";
+import { toEnum } from "@domain/@shared/utils";
+import {
+  FormTemplateVersion,
+  FormTemplateVersionId,
+  FormStatus,
+} from "@domain/form-template-version/entities";
+import { FormTemplateId } from "@domain/form-template/entities";
+import { MapperWithoutDto } from "@infrastructure/mappers/mapper";
+import type { FormDefinitionJson } from "@domain/form-template/types";
 
 export type FormTemplateVersionModel = PrismaClient.FormTemplateVersion;
 
 @Injectable()
-export class FormTemplateVersionMapper extends MapperWithoutDto<FormTemplateVersion, FormTemplateVersionModel> {
-    toDomain(model: FormTemplateVersionModel): FormTemplateVersion {
-        return new FormTemplateVersion({
-            id: FormTemplateVersionId.from(model.id),
-            templateId: FormTemplateId.from(model.templateId),
-            versionNumber: model.versionNumber,
-            status: toEnum(FormStatus, model.status),
-            definitionJson: model.definitionJson as unknown as FormDefinitionJson,
-            schemaJson: model.schemaJson ?? null,
-            publishedAt: model.publishedAt ?? null,
-            createdAt: model.createdAt,
-            updatedAt: model.updatedAt,
-            deletedAt: null,
-        });
-    }
+export class FormTemplateVersionMapper extends MapperWithoutDto<
+  FormTemplateVersion,
+  FormTemplateVersionModel
+> {
+  toDomain(model: FormTemplateVersionModel): FormTemplateVersion {
+    return new FormTemplateVersion({
+      id: FormTemplateVersionId.from(model.id),
+      templateId: FormTemplateId.from(model.templateId),
+      versionNumber: model.versionNumber,
+      status: toEnum(FormStatus, model.status),
+      definitionJson: model.definitionJson as unknown as FormDefinitionJson,
+      schemaJson: model.schemaJson ?? null,
+      publishedAt: model.publishedAt ?? null,
+      createdAt: model.createdAt,
+      updatedAt: model.updatedAt,
+      deletedAt: null,
+    });
+  }
 
-    toPersistence(entity: FormTemplateVersion): FormTemplateVersionModel {
-        return {
-            id: entity.id.toString(),
-            templateId: entity.templateId.toString(),
-            versionNumber: entity.versionNumber,
-            status: toEnum(PrismaClient.FormStatus, entity.status),
-            definitionJson: entity.definitionJson as unknown as PrismaClient.Prisma.JsonValue,
-            schemaJson: entity.schemaJson ? (entity.schemaJson as PrismaClient.Prisma.JsonValue) : null,
-            publishedAt: entity.publishedAt ?? null,
-            createdAt: entity.createdAt,
-            updatedAt: entity.updatedAt,
-        };
-    }
+  toPersistence(entity: FormTemplateVersion): FormTemplateVersionModel {
+    return {
+      id: entity.id.toString(),
+      templateId: entity.templateId.toString(),
+      versionNumber: entity.versionNumber,
+      status: toEnum(PrismaClient.FormStatus, entity.status),
+      definitionJson: entity.definitionJson as unknown as PrismaClient.Prisma.JsonValue,
+      schemaJson: entity.schemaJson ? (entity.schemaJson as PrismaClient.Prisma.JsonValue) : null,
+      publishedAt: entity.publishedAt ?? null,
+      createdAt: entity.createdAt,
+      updatedAt: entity.updatedAt,
+    };
+  }
 }

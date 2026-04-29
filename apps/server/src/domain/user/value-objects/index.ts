@@ -1,2 +1,2 @@
-export * from './obfuscated-password.vo';
-export * from './username.vo';
+export * from "@domain/user/value-objects/obfuscated-password.vo";
+export * from "@domain/user/value-objects/username.vo";

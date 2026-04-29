@@ -76,7 +76,7 @@ Feature: Working Hours CRUD (POST / GET / DELETE)
             | endTime      | 17:00 |
             | slotDuration | 30    |
             | active       | true  |
-        When I send a "GET" request to "/api/v1/members/${ref:id:clinicMember:dr_house}/working-hours"
+        And I send a "GET" request to "/api/v1/members/${ref:id:clinicMember:dr_house}/working-hours"
         Then the request should succeed with a 200 status code
 
     Scenario: Delete a working hours entry
@@ -101,7 +101,7 @@ Feature: Working Hours CRUD (POST / GET / DELETE)
         And the following users exist:
             | Name        | Username | Email              | Password  |
             | João Silva  | joao     | joao@example.com   | J0ao.Sv!  |
-        When I send a "POST" request to "/api/v1/patients" with:
+        And I send a "POST" request to "/api/v1/patients" with:
             | name           | João Silva                          |
             | documentId     | 999.888.777-66                      |
             | professionalId | ${ref:id:professional:dr_house}     |

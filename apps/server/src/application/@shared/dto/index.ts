@@ -1,2 +1,2 @@
-export * from './entity.dto';
-export * from './paginated.dto';
+export * from "@application/@shared/dto/entity.dto";
+export * from "@application/@shared/dto/paginated.dto";

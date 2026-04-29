@@ -1,1 +1,1 @@
-export * from './zod.dto';
+export * from "@application/@shared/validation/dto/zod.dto";

@@ -20,22 +20,22 @@
  * ─────────────────────────────────────────────────────────────────────────────
  */
 export interface EmbeddingProvider {
-    /** Identificador único do provider (ex: "openai-embedding", "mock-embedding") */
-    readonly providerId: string;
-    /** Dimensão dos vetores gerados (deve corresponder ao schema pgvector configurado) */
-    readonly dimensions: number;
+  /** Identificador único do provider (ex: "openai-embedding", "mock-embedding") */
+  readonly providerId: string;
+  /** Dimensão dos vetores gerados (deve corresponder ao schema pgvector configurado) */
+  readonly dimensions: number;
 
-    /** Gera embedding para um único texto. */
-    generateEmbedding(text: string): Promise<number[]>;
+  /** Gera embedding para um único texto. */
+  generateEmbedding(text: string): Promise<number[]>;
 
-    /** Gera embeddings em batch — mais eficiente que chamadas individuais. */
-    generateEmbeddings(texts: string[]): Promise<number[][]>;
+  /** Gera embeddings em batch — mais eficiente que chamadas individuais. */
+  generateEmbeddings(texts: string[]): Promise<number[][]>;
 
-    /** Retorna a dimensão dos vetores gerados. */
-    vectorDimensions(): number;
+  /** Retorna a dimensão dos vetores gerados. */
+  vectorDimensions(): number;
 
-    /** Verifica se o provider de embeddings está disponível. */
-    healthCheck(): Promise<{healthy: boolean; latencyMs?: number; message?: string}>;
+  /** Verifica se o provider de embeddings está disponível. */
+  healthCheck(): Promise<{ healthy: boolean; latencyMs?: number; message?: string }>;
 }
 
 /** Token abstrato para injeção de dependência no NestJS */

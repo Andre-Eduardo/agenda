@@ -1,15 +1,15 @@
-import {PrismaService} from '../index';
+import { PrismaService } from "../index";
 
-describe('A prisma service', () => {
-    describe('onModuleInit', () => {
-        it('should call $connect', async () => {
-            const prismaService = new PrismaService();
+describe("A prisma service", () => {
+  describe("onModuleInit", () => {
+    it("should call $connect", async () => {
+      const prismaService = new PrismaService();
 
-            jest.spyOn(prismaService, '$connect').mockImplementation(async () => {});
+      jest.spyOn(prismaService, "$connect").mockImplementation(async () => {});
 
-            await prismaService.onModuleInit();
+      await prismaService.onModuleInit();
 
-            expect(prismaService.$connect).toHaveBeenCalled();
-        });
+      expect(prismaService.$connect).toHaveBeenCalled();
     });
+  });
 });

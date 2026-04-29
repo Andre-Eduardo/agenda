@@ -1,7 +1,7 @@
-import {Injectable} from '@nestjs/common';
-import {PatientRepository} from '../../../domain/patient/patient.repository';
+import { Injectable } from "@nestjs/common";
+import { PatientRepository } from "@domain/patient/patient.repository";
 
 @Injectable()
 export class PatientService {
-    constructor(private readonly repository: PatientRepository) {}
+  constructor(private readonly repository: PatientRepository) {}
 }

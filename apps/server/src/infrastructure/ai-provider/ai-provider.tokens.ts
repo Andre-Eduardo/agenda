@@ -33,5 +33,5 @@
  * ─────────────────────────────────────────────────────────────────────────────
  */
 
-export const CHAT_MODEL_PROVIDER_TOKEN = 'CHAT_MODEL_PROVIDER';
-export const EMBEDDING_PROVIDER_TOKEN = 'EMBEDDING_PROVIDER';
+export const CHAT_MODEL_PROVIDER_TOKEN = "CHAT_MODEL_PROVIDER";
+export const EMBEDDING_PROVIDER_TOKEN = "EMBEDDING_PROVIDER";

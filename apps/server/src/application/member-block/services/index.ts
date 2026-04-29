@@ -1,3 +1,3 @@
-export * from './create-member-block.service';
-export * from './delete-member-block.service';
-export * from './list-member-blocks.service';
+export * from "@application/member-block/services/create-member-block.service";
+export * from "@application/member-block/services/delete-member-block.service";
+export * from "@application/member-block/services/list-member-blocks.service";

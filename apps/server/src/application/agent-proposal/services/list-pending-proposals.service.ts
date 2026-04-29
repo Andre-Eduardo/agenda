@@ -1,43 +1,43 @@
-import {Injectable} from '@nestjs/common';
-import {AgentProposalRepository} from '../../../domain/agent-proposal/agent-proposal.repository';
-import {AgentProposalStatus} from '../../../domain/agent-proposal/entities';
-import {ClinicId} from '../../../domain/clinic/entities';
-import type {Command} from '../../@shared/application.service';
+import { Injectable } from "@nestjs/common";
+import { AgentProposalRepository } from "@domain/agent-proposal/agent-proposal.repository";
+import { AgentProposalStatus } from "@domain/agent-proposal/entities";
+import { ClinicId } from "@domain/clinic/entities";
+import type { Command } from "@application/@shared/application.service";
 
-export type ListPendingProposalsInput = {clinicId: string};
+export type ListPendingProposalsInput = { clinicId: string };
 export type ProposalSummary = {
-    id: string;
-    type: string;
-    status: string;
-    patientId: string | null;
-    preview: Record<string, unknown>;
-    confidence: number | null;
-    expiresAt: string | null;
-    createdAt: string;
+  id: string;
+  type: string;
+  status: string;
+  patientId: string | null;
+  preview: Record<string, unknown>;
+  confidence: number | null;
+  expiresAt: string | null;
+  createdAt: string;
 };
 
 @Injectable()
 export class ListPendingProposalsService {
-    constructor(private readonly proposalRepository: AgentProposalRepository) {}
+  constructor(private readonly proposalRepository: AgentProposalRepository) {}
 
-    async execute({payload}: Command<ListPendingProposalsInput>): Promise<ProposalSummary[]> {
-        const result = await this.proposalRepository.search(
-            {page: 1, limit: 50, sort: [{key: 'createdAt', direction: 'desc'}]},
-            {
-                clinicId: ClinicId.from(payload.clinicId),
-                status: AgentProposalStatus.PENDING,
-            },
-        );
+  async execute({ payload }: Command<ListPendingProposalsInput>): Promise<ProposalSummary[]> {
+    const result = await this.proposalRepository.search(
+      { page: 1, limit: 50, sort: [{ key: "createdAt", direction: "desc" }] },
+      {
+        clinicId: ClinicId.from(payload.clinicId),
+        status: AgentProposalStatus.PENDING,
+      },
+    );
 
-        return result.data.map((p) => ({
-            id: p.id.toString(),
-            type: p.type,
-            status: p.status,
-            patientId: p.patientId,
-            preview: p.preview,
-            confidence: p.confidence,
-            expiresAt: p.expiresAt?.toISOString() ?? null,
-            createdAt: p.createdAt.toISOString(),
-        }));
-    }
+    return result.data.map((p) => ({
+      id: p.id.toString(),
+      type: p.type,
+      status: p.status,
+      patientId: p.patientId,
+      preview: p.preview,
+      confidence: p.confidence,
+      expiresAt: p.expiresAt?.toISOString() ?? null,
+      createdAt: p.createdAt.toISOString(),
+    }));
+  }
 }

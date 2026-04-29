@@ -1,2 +1,2 @@
-export * from './contextual.logger';
-export * from './logger';
+export * from "@application/@shared/logger/contextual.logger";
+export * from "@application/@shared/logger/logger";

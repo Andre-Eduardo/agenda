@@ -1,20 +1,20 @@
-import type {JwtPayload} from 'jsonwebtoken';
-import * as jwt from 'jsonwebtoken';
-import {z} from 'zod';
-import {ClinicId} from '../../../domain/clinic/entities';
-import {ClinicMemberId} from '../../../domain/clinic-member/entities';
-import {UserId} from '../../../domain/user/entities';
-import type {TokenClinicMember, TokenData} from '../../../domain/user/token';
-import {Token, TokenScope} from '../../../domain/user/token';
+import type { JwtPayload } from "jsonwebtoken";
+import * as jwt from "jsonwebtoken";
+import { z } from "zod";
+import { ClinicId } from "@domain/clinic/entities";
+import { ClinicMemberId } from "@domain/clinic-member/entities";
+import { UserId } from "@domain/user/entities";
+import type { TokenClinicMember, TokenData } from "@domain/user/token";
+import { Token, TokenScope } from "@domain/user/token";
 
 type JsonWebTokenOptions = {
-    data: TokenData;
-    encodedToken: string;
+  data: TokenData;
+  encodedToken: string;
 };
 
 const clinicMemberSchema = z.object({
-    clinicMemberId: z.string().uuid(),
-    clinicId: z.string().uuid(),
+  clinicMemberId: z.string().uuid(),
+  clinicId: z.string().uuid(),
 });
 
 /**
@@ -23,91 +23,91 @@ const clinicMemberSchema = z.object({
  * @see https://www.rfc-editor.org/rfc/rfc7519.html
  */
 export class JsonWebToken extends Token {
-    static ISSUER = 'ecxus.com.br';
+  static ISSUER = "ecxus.com.br";
 
-    static AUDIENCE = 'ecxus.com.br:automo';
+  static AUDIENCE = "ecxus.com.br:automo";
 
-    private static CLAIM_VALIDATION = z
-        .object({
-            exp: z.number().nonnegative().int(),
-            iat: z.number().nonnegative().int(),
-            nbf: z.number().nonnegative().int(),
-            iss: z.literal(this.ISSUER),
-            aud: z.literal(this.AUDIENCE),
-            scope: z.array(z.nativeEnum(TokenScope)),
-            sub: z.string().uuid(),
-            clinicMemberId: z.string().uuid().nullable(),
-            clinicMembers: z.array(clinicMemberSchema).optional(),
-            metadata: z.record(z.string(), z.union([z.string(), z.number(), z.boolean()])).optional(),
-        })
-        .strict();
+  private static readonly CLAIM_VALIDATION = z
+    .object({
+      exp: z.number().nonnegative().int(),
+      iat: z.number().nonnegative().int(),
+      nbf: z.number().nonnegative().int(),
+      iss: z.literal(this.ISSUER),
+      aud: z.literal(this.AUDIENCE),
+      scope: z.array(z.nativeEnum(TokenScope)),
+      sub: z.string().uuid(),
+      clinicMemberId: z.string().uuid().nullable(),
+      clinicMembers: z.array(clinicMemberSchema).optional(),
+      metadata: z.record(z.string(), z.union([z.string(), z.number(), z.boolean()])).optional(),
+    })
+    .strict();
 
-    private readonly encodedToken: string;
+  private readonly encodedToken: string;
 
-    constructor(options: JsonWebTokenOptions) {
-        const {issueTime, expirationTime} = options.data;
+  constructor(options: JsonWebTokenOptions) {
+    const { issueTime, expirationTime } = options.data;
 
-        super({
-            ...options.data,
-            // Ensure that the milliseconds are zeroed out to avoid precision issues since JWTs claims are in seconds.
-            issueTime: new Date(issueTime.getTime() - (issueTime.getTime() % 1000)),
-            expirationTime: new Date(expirationTime.getTime() - (expirationTime.getTime() % 1000)),
-        });
-        this.encodedToken = options.encodedToken;
-    }
+    super({
+      ...options.data,
+      // Ensure that the milliseconds are zeroed out to avoid precision issues since JWTs claims are in seconds.
+      issueTime: new Date(issueTime.getTime() - (issueTime.getTime() % 1000)),
+      expirationTime: new Date(expirationTime.getTime() - (expirationTime.getTime() % 1000)),
+    });
+    this.encodedToken = options.encodedToken;
+  }
 
-    static signed(data: TokenData, secret: string | Buffer): JsonWebToken {
-        return new JsonWebToken({
-            data,
-            encodedToken: jwt.sign(JsonWebToken.parseToJwtPayload(data), secret),
-        });
-    }
+  static signed(data: TokenData, secret: string | Buffer): JsonWebToken {
+    return new JsonWebToken({
+      data,
+      encodedToken: jwt.sign(JsonWebToken.parseToJwtPayload(data), secret),
+    });
+  }
 
-    static parse(raw: string): JsonWebToken {
-        const payload = this.CLAIM_VALIDATION.parse(jwt.decode(raw));
+  static parse(raw: string): JsonWebToken {
+    const payload = this.CLAIM_VALIDATION.parse(jwt.decode(raw));
 
-        const data: TokenData = {
-            expirationTime: new Date(payload.exp * 1000),
-            issueTime: new Date(payload.iat * 1000),
-            userId: UserId.from(payload.sub),
-            clinicMemberId: payload.clinicMemberId ? ClinicMemberId.from(payload.clinicMemberId) : null,
-            clinicMembers:
-                payload.clinicMembers?.map<TokenClinicMember>((m) => ({
-                    clinicMemberId: ClinicMemberId.from(m.clinicMemberId),
-                    clinicId: ClinicId.from(m.clinicId),
-                })) ?? [],
-            scope: payload.scope,
-            metadata: payload.metadata,
-        };
+    const data: TokenData = {
+      expirationTime: new Date(payload.exp * 1000),
+      issueTime: new Date(payload.iat * 1000),
+      userId: UserId.from(payload.sub),
+      clinicMemberId: payload.clinicMemberId ? ClinicMemberId.from(payload.clinicMemberId) : null,
+      clinicMembers:
+        payload.clinicMembers?.map<TokenClinicMember>((m) => ({
+          clinicMemberId: ClinicMemberId.from(m.clinicMemberId),
+          clinicId: ClinicId.from(m.clinicId),
+        })) ?? [],
+      scope: payload.scope,
+      metadata: payload.metadata,
+    };
 
-        return new JsonWebToken({
-            data,
-            encodedToken: raw,
-        });
-    }
+    return new JsonWebToken({
+      data,
+      encodedToken: raw,
+    });
+  }
 
-    /**
-     * Parses token data encoded as a JWT payload.
-     */
-    static parseToJwtPayload(data: TokenData): JwtPayload {
-        return {
-            exp: Math.trunc(data.expirationTime.getTime() / 1000),
-            iat: Math.trunc(data.issueTime.getTime() / 1000),
-            nbf: Math.trunc(data.issueTime.getTime() / 1000),
-            iss: JsonWebToken.ISSUER,
-            aud: JsonWebToken.AUDIENCE,
-            scope: [...data.scope],
-            sub: data.userId.toString(),
-            clinicMemberId: data.clinicMemberId?.toString() ?? null,
-            clinicMembers: data.clinicMembers.map((m) => ({
-                clinicMemberId: m.clinicMemberId.toString(),
-                clinicId: m.clinicId.toString(),
-            })),
-            metadata: data.metadata,
-        } satisfies z.infer<typeof this.CLAIM_VALIDATION>;
-    }
+  /**
+   * Parses token data encoded as a JWT payload.
+   */
+  static parseToJwtPayload(data: TokenData): JwtPayload {
+    return {
+      exp: Math.trunc(data.expirationTime.getTime() / 1000),
+      iat: Math.trunc(data.issueTime.getTime() / 1000),
+      nbf: Math.trunc(data.issueTime.getTime() / 1000),
+      iss: JsonWebToken.ISSUER,
+      aud: JsonWebToken.AUDIENCE,
+      scope: [...data.scope],
+      sub: data.userId.toString(),
+      clinicMemberId: data.clinicMemberId?.toString() ?? null,
+      clinicMembers: data.clinicMembers.map((m) => ({
+        clinicMemberId: m.clinicMemberId.toString(),
+        clinicId: m.clinicId.toString(),
+      })),
+      metadata: data.metadata,
+    } satisfies z.infer<typeof this.CLAIM_VALIDATION>;
+  }
 
-    toString(): string {
-        return this.encodedToken;
-    }
+  toString(): string {
+    return this.encodedToken;
+  }
 }

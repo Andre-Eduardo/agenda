@@ -13,119 +13,122 @@
  * - Loga claramente o que foi criado, atualizado ou ignorado
  */
 
-import {PrismaClient} from '@prisma/client';
-import {randomUUID} from 'crypto';
-import {AGENT_REGISTRY, SPECIALTY_AGENT_MAP} from './agent.config';
-import {AiSpecialtyGroup} from '../../domain/form-template/entities';
+import { PrismaClient } from "@prisma/client";
+import { randomUUID } from "crypto";
+import { AGENT_REGISTRY, SPECIALTY_AGENT_MAP } from "./agent.config";
+import { AiSpecialtyGroup } from "@domain/form-template/entities";
 
 const prisma = new PrismaClient();
 
 function specialtyGroupForSlug(slug: string): AiSpecialtyGroup | null {
-    const entry = (Object.entries(SPECIALTY_AGENT_MAP) as Array<[AiSpecialtyGroup, string]>).find(
-        ([, s]) => s === slug,
-    );
+  const entry = (Object.entries(SPECIALTY_AGENT_MAP) as Array<[AiSpecialtyGroup, string]>).find(
+    ([, s]) => s === slug,
+  );
 
-    return entry?.[0] ?? null;
+  return entry?.[0] ?? null;
 }
 
 async function syncAgents(): Promise<void> {
-    console.log('=== sync:agents — sincronizando AGENT_REGISTRY → banco ===\n');
+  console.log("=== sync:agents — sincronizando AGENT_REGISTRY → banco ===\n");
 
-    const slugsWithSessions = new Set<string>();
+  const slugsWithSessions = new Set<string>();
 
-    const sessionsWithAgents = await prisma.patientChatSession.findMany({
-        where: {agentProfileId: {not: null}},
-        include: {agentProfile: {select: {slug: true}}},
+  const sessionsWithAgents = await prisma.patientChatSession.findMany({
+    where: { agentProfileId: { not: null } },
+    include: { agentProfile: { select: { slug: true } } },
+  });
+
+  for (const session of sessionsWithAgents) {
+    if (session.agentProfile?.slug) {
+      slugsWithSessions.add(session.agentProfile.slug);
+    }
+  }
+
+  let created = 0;
+  let updated = 0;
+  let skipped = 0;
+
+  for (const config of Object.values(AGENT_REGISTRY)) {
+    const existing = await prisma.aiAgentProfile.findUnique({
+      where: { slug: config.slug },
     });
 
-    for (const session of sessionsWithAgents) {
-        if (session.agentProfile?.slug) {
-            slugsWithSessions.add(session.agentProfile.slug);
-        }
-    }
+    const specialtyGroup = specialtyGroupForSlug(config.slug);
 
-    let created = 0;
-    let updated = 0;
-    let skipped = 0;
+    if (!existing) {
+      const now = new Date();
 
-    for (const config of Object.values(AGENT_REGISTRY)) {
-        const existing = await prisma.aiAgentProfile.findUnique({
-            where: {slug: config.slug},
+      await prisma.aiAgentProfile.create({
+        data: {
+          id: randomUUID(),
+          name: config.name,
+          slug: config.slug,
+          code: config.slug.replaceAll("-", "_"),
+          specialtyGroup: specialtyGroup ?? null,
+          baseInstructions: config.baseInstructions,
+          guardrails: config.guardrails,
+          analysisGoals: config.analysisGoals,
+          allowedSources: config.allowedSources,
+          contextPriority: config.contextPriority,
+          providerModelId: config.providerModelId,
+          isActive: true,
+          createdAt: now,
+          updatedAt: now,
+        },
+      });
+      console.log(`  [CRIADO]    ${config.slug}  (modelo: ${config.providerModelId})`);
+      created++;
+    } else {
+      const modelChanged = existing.providerModelId !== config.providerModelId;
+      const instructionsChanged = existing.baseInstructions !== config.baseInstructions;
+
+      if (modelChanged || instructionsChanged) {
+        await prisma.aiAgentProfile.update({
+          where: { slug: config.slug },
+          data: {
+            name: config.name,
+            baseInstructions: config.baseInstructions,
+            guardrails: config.guardrails,
+            analysisGoals: config.analysisGoals,
+            allowedSources: config.allowedSources,
+            contextPriority: config.contextPriority,
+            providerModelId: config.providerModelId,
+            updatedAt: new Date(),
+          },
         });
+        const changes: string[] = [];
 
-        const specialtyGroup = specialtyGroupForSlug(config.slug);
+        if (modelChanged)
+          changes.push(`modelo: ${existing.providerModelId ?? "null"} → ${config.providerModelId}`);
 
-        if (!existing) {
-            const now = new Date();
-
-            await prisma.aiAgentProfile.create({
-                data: {
-                    id: randomUUID(),
-                    name: config.name,
-                    slug: config.slug,
-                    code: config.slug.replaceAll(/-/g, '_'),
-                    specialtyGroup: specialtyGroup ?? null,
-                    baseInstructions: config.baseInstructions,
-                    guardrails: config.guardrails,
-                    analysisGoals: config.analysisGoals,
-                    allowedSources: config.allowedSources,
-                    contextPriority: config.contextPriority,
-                    providerModelId: config.providerModelId,
-                    isActive: true,
-                    createdAt: now,
-                    updatedAt: now,
-                },
-            });
-            console.log(`  [CRIADO]    ${config.slug}  (modelo: ${config.providerModelId})`);
-            created++;
-        } else {
-            const modelChanged = existing.providerModelId !== config.providerModelId;
-            const instructionsChanged = existing.baseInstructions !== config.baseInstructions;
-
-            if (modelChanged || instructionsChanged) {
-                await prisma.aiAgentProfile.update({
-                    where: {slug: config.slug},
-                    data: {
-                        name: config.name,
-                        baseInstructions: config.baseInstructions,
-                        guardrails: config.guardrails,
-                        analysisGoals: config.analysisGoals,
-                        allowedSources: config.allowedSources,
-                        contextPriority: config.contextPriority,
-                        providerModelId: config.providerModelId,
-                        updatedAt: new Date(),
-                    },
-                });
-                const changes: string[] = [];
-
-                if (modelChanged) changes.push(`modelo: ${existing.providerModelId ?? 'null'} → ${config.providerModelId}`);
-
-                if (instructionsChanged) changes.push('instruções atualizadas');
-                console.log(`  [ATUALIZADO] ${config.slug}  (${changes.join(', ')})`);
-                updated++;
-            } else {
-                console.log(`  [IGNORADO]  ${config.slug}  (sem alterações)`);
-                skipped++;
-            }
-        }
+        if (instructionsChanged) changes.push("instruções atualizadas");
+        console.log(`  [ATUALIZADO] ${config.slug}  (${changes.join(", ")})`);
+        updated++;
+      } else {
+        console.log(`  [IGNORADO]  ${config.slug}  (sem alterações)`);
+        skipped++;
+      }
     }
+  }
 
-    console.log(`\n=== Concluído: ${created} criados, ${updated} atualizados, ${skipped} ignorados ===`);
+  console.log(
+    `\n=== Concluído: ${created} criados, ${updated} atualizados, ${skipped} ignorados ===`,
+  );
 
-    if (slugsWithSessions.size > 0) {
-        console.log(
-            `\nNota: ${slugsWithSessions.size} agente(s) com sessões vinculadas foram preservados:`,
-        );
+  if (slugsWithSessions.size > 0) {
+    console.log(
+      `\nNota: ${slugsWithSessions.size} agente(s) com sessões vinculadas foram preservados:`,
+    );
 
-        for (const slug of slugsWithSessions) {
-            console.log(`  - ${slug}`);
-        }
+    for (const slug of slugsWithSessions) {
+      console.log(`  - ${slug}`);
     }
+  }
 }
 
 syncAgents()
-    .catch((error) => {
-        console.error('Erro ao sincronizar agentes:', error);
-        process.exit(1);
-    })
-    .finally(() => prisma.$disconnect());
+  .catch((error) => {
+    console.error("Erro ao sincronizar agentes:", error);
+    process.exit(1);
+  })
+  .finally(() => prisma.$disconnect());

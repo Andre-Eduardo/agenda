@@ -21,6 +21,10 @@
     "builtin": true,
     "es2016": true
   },
+  "rules": {
+    "no-null": "off",
+    "prefer-top-level-await": "off"
+  },
   "ignorePatterns": [
     "dist",
     "node_modules",
@@ -54,6 +58,18 @@
             "name": "bignumber.js"
           }
         ]
+      }
+    },
+    {
+      "files": [
+        "prisma/**/*.ts",
+        "scripts/**/*.ts",
+        "src/ai/agents/sync-agents.command.ts",
+        "src/application/billing/backfill-costs.command.ts",
+        "test/support/context.ts"
+      ],
+      "rules": {
+        "no-console": "off"
       }
     }
   ]

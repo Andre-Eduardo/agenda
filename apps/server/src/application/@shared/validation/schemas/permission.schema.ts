@@ -1,28 +1,28 @@
-import {z} from 'zod';
-import {Permission} from '../../../../domain/auth';
+import { z } from "zod";
+import { Permission } from "@domain/auth";
 
 export const permission = z
-    .string()
-    .transform((value, ctx) => {
-        try {
-            return Permission.of(value);
-        } catch {
-            ctx.addIssue({
-                code: z.ZodIssueCode.custom,
-                message: 'Invalid permission',
-            });
+  .string()
+  .transform((value, ctx) => {
+    try {
+      return Permission.of(value);
+    } catch {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Invalid permission",
+      });
 
-            return z.NEVER;
-        }
-    })
-    .openapi({
-        enum: [...Permission.all()],
-    });
+      return z.NEVER;
+    }
+  })
+  .openapi({
+    enum: [...Permission.all()],
+  });
 
 export const permissions = z
-    .array(permission)
-    .transform((value) => new Set<Permission>(value))
-    .openapi({
-        enumName: 'Permission',
-        isArray: true,
-    });
+  .array(permission)
+  .transform((value) => new Set<Permission>(value))
+  .openapi({
+    enumName: "Permission",
+    isArray: true,
+  });

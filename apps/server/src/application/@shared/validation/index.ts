@@ -1,3 +1,3 @@
-export * from './zod.validated.body';
-export * from './zod.validated.param';
-export * from './zod.validation.pipe';
+export * from "@application/@shared/validation/zod.validated.body";
+export * from "@application/@shared/validation/zod.validated.param";
+export * from "@application/@shared/validation/zod.validation.pipe";

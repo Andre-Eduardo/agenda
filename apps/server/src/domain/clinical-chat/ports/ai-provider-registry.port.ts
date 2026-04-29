@@ -1,5 +1,5 @@
-import type {ChatModelProvider} from './chat-model.provider';
-import type {EmbeddingProvider} from './embedding.provider';
+import type { ChatModelProvider } from "@domain/clinical-chat/ports/chat-model.provider";
+import type { EmbeddingProvider } from "@domain/clinical-chat/ports/embedding.provider";
 
 /**
  * Registry centralizado para gerenciar providers de IA.
@@ -13,17 +13,17 @@ import type {EmbeddingProvider} from './embedding.provider';
  * - Circuit breaker por provider
  */
 export interface AiProviderRegistry {
-    /** Retorna o provider de chat configurado para uso principal. */
-    getChatProvider(): ChatModelProvider;
+  /** Retorna o provider de chat configurado para uso principal. */
+  getChatProvider(): ChatModelProvider;
 
-    /** Retorna o provider de embeddings configurado. */
-    getEmbeddingProvider(): EmbeddingProvider;
+  /** Retorna o provider de embeddings configurado. */
+  getEmbeddingProvider(): EmbeddingProvider;
 
-    /** Lista IDs de todos os providers registrados (útil para diagnóstico). */
-    listRegisteredProviders(): string[];
+  /** Lista IDs de todos os providers registrados (útil para diagnóstico). */
+  listRegisteredProviders(): string[];
 
-    /** Verifica saúde de todos os providers registrados. */
-    healthCheckAll(): Promise<Record<string, boolean>>;
+  /** Verifica saúde de todos os providers registrados. */
+  healthCheckAll(): Promise<Record<string, boolean>>;
 }
 
 /** Token abstrato para injeção de dependência no NestJS */

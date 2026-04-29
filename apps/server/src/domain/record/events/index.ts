@@ -1,22 +1,22 @@
-import {RecordChangedEvent} from './record-changed.event';
-import {RecordCreatedEvent} from './record-created.event';
-import {RecordDeletedEvent} from './record-deleted.event';
-import {RecordSavedEvent} from './record-saved.event';
-import {RecordSignedEvent} from './record-signed.event';
-import {RecordReopenedEvent} from './record-reopened.event';
+import { RecordChangedEvent } from "@domain/record/events/record-changed.event";
+import { RecordCreatedEvent } from "@domain/record/events/record-created.event";
+import { RecordDeletedEvent } from "@domain/record/events/record-deleted.event";
+import { RecordSavedEvent } from "@domain/record/events/record-saved.event";
+import { RecordSignedEvent } from "@domain/record/events/record-signed.event";
+import { RecordReopenedEvent } from "@domain/record/events/record-reopened.event";
 
-export * from './record-changed.event';
-export * from './record-created.event';
-export * from './record-deleted.event';
-export * from './record-signed.event';
-export * from './record-saved.event';
-export * from './record-reopened.event';
+export * from "@domain/record/events/record-changed.event";
+export * from "@domain/record/events/record-created.event";
+export * from "@domain/record/events/record-deleted.event";
+export * from "@domain/record/events/record-reopened.event";
+export * from "@domain/record/events/record-saved.event";
+export * from "@domain/record/events/record-signed.event";
 
 export const recordEvents = [
-    RecordCreatedEvent,
-    RecordChangedEvent,
-    RecordDeletedEvent,
-    RecordSavedEvent,
-    RecordSignedEvent,
-    RecordReopenedEvent,
+  RecordCreatedEvent,
+  RecordChangedEvent,
+  RecordDeletedEvent,
+  RecordSavedEvent,
+  RecordSignedEvent,
+  RecordReopenedEvent,
 ];

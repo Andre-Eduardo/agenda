@@ -1,5 +1,5 @@
-import {DraftApprovedEvent} from './draft-approved.event';
+import { DraftApprovedEvent } from "@domain/draft-evolution/events/draft-approved.event";
 
-export * from './draft-approved.event';
+export * from "@domain/draft-evolution/events/draft-approved.event";
 
 export const draftEvolutionEvents = [DraftApprovedEvent];

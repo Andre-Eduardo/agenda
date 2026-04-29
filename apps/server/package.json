@@ -1,7 +1,7 @@
 {
   "name": "@agenda-app/server",
-  "private": true,
   "version": "0.0.0",
+  "private": true,
   "description": "The backend for the Agenda application",
   "scripts": {
     "typecheck": "tsc",
@@ -31,9 +31,6 @@
     "ingest:knowledge": "ts-node --swc scripts/ingest-knowledge.ts",
     "validate:agent": "ts-node --swc scripts/validate-agent.ts",
     "backfill:costs": "ts-node --swc src/application/billing/backfill-costs.command.ts"
-  },
-  "prisma": {
-    "seed": "ts-node prisma/seed.ts"
   },
   "dependencies": {
     "@asteasolutions/zod-to-openapi": "^7.3.0",
@@ -126,5 +123,8 @@
     "tsconfig-paths": "^4.2.0",
     "typescript": "^5.8.3",
     "yaml": "^2.7.1"
+  },
+  "prisma": {
+    "seed": "ts-node prisma/seed.ts"
   }
 }

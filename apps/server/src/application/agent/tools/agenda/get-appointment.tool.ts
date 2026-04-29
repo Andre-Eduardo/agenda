@@ -1,37 +1,38 @@
-import {Injectable} from '@nestjs/common';
-import {z} from 'zod';
-import type {AgentTool} from '../../interfaces';
-import {AGENT_TOOL_TOKEN} from '../../interfaces';
-import type {ToolContext} from '../../interfaces';
-import {AppointmentRepository} from '../../../../domain/appointment/appointment.repository';
-import {AppointmentId} from '../../../../domain/appointment/entities';
-import type {AppointmentView} from '../../mappers/appointment-view.mapper';
-import {toAppointmentView} from '../../mappers/appointment-view.mapper';
+import { Injectable } from "@nestjs/common";
+import { z } from "zod";
+import type { AgentTool, ToolContext } from "@application/agent/interfaces";
+import { AGENT_TOOL_TOKEN } from "@application/agent/interfaces";
+import { AppointmentRepository } from "@domain/appointment/appointment.repository";
+import { AppointmentId } from "@domain/appointment/entities";
+import type { AppointmentView } from "@application/agent/mappers/appointment-view.mapper";
+import { toAppointmentView } from "@application/agent/mappers/appointment-view.mapper";
 
 const schema = z.object({
-    appointmentId: z.string().uuid().describe('UUID of the appointment.'),
+  appointmentId: z.string().uuid().describe("UUID of the appointment."),
 });
 
 type Input = z.infer<typeof schema>;
-type Output = {appointment: AppointmentView | null};
+type Output = { appointment: AppointmentView | null };
 
 @Injectable()
 export class GetAppointmentTool implements AgentTool<Input, Output> {
-    readonly name = 'get_appointment';
-    readonly description = 'Retrieve a single appointment by its ID.';
-    readonly domain = 'agenda' as const;
-    readonly inputSchema = schema;
+  readonly name = "get_appointment";
+  readonly description = "Retrieve a single appointment by its ID.";
+  readonly domain = "agenda" as const;
+  readonly inputSchema = schema;
 
-    constructor(private readonly appointmentRepository: AppointmentRepository) {}
+  constructor(private readonly appointmentRepository: AppointmentRepository) {}
 
-    async execute(input: Input, _context: ToolContext): Promise<Output> {
-        const appointment = await this.appointmentRepository.findById(AppointmentId.from(input.appointmentId));
+  async execute(input: Input, _context: ToolContext): Promise<Output> {
+    const appointment = await this.appointmentRepository.findById(
+      AppointmentId.from(input.appointmentId),
+    );
 
-        return {appointment: appointment ? toAppointmentView(appointment) : null};
-    }
+    return { appointment: appointment ? toAppointmentView(appointment) : null };
+  }
 }
 
 export const GetAppointmentToolProvider = {
-    provide: AGENT_TOOL_TOKEN,
-    useClass: GetAppointmentTool,
+  provide: AGENT_TOOL_TOKEN,
+  useClass: GetAppointmentTool,
 };

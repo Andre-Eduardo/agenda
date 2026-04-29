@@ -1,13 +1,16 @@
-import {Module} from '@nestjs/common';
-import {AiProviderRegistry} from '../../domain/clinical-chat/ports/ai-provider-registry.port';
-import {MockChatProvider} from './mock-chat.provider';
-import {MockEmbeddingProvider} from './mock-embedding.provider';
-import {OpenAiEmbeddingProvider} from './openai-embedding.provider';
-import {DefaultAiProviderRegistry} from './ai-provider-registry';
-import {CHAT_MODEL_PROVIDER_TOKEN, EMBEDDING_PROVIDER_TOKEN} from './ai-provider.tokens';
-import {OpenRouterChatProvider} from './openrouter-chat.provider';
-import {OpenRouterProvider} from '../../ai/providers/openrouter.provider';
-import {AI_PROVIDER} from '../../ai/providers/ai-provider.token';
+import { Module } from "@nestjs/common";
+import { AiProviderRegistry } from "@domain/clinical-chat/ports/ai-provider-registry.port";
+import { MockChatProvider } from "@infrastructure/ai-provider/mock-chat.provider";
+import { MockEmbeddingProvider } from "@infrastructure/ai-provider/mock-embedding.provider";
+import { OpenAiEmbeddingProvider } from "@infrastructure/ai-provider/openai-embedding.provider";
+import { DefaultAiProviderRegistry } from "@infrastructure/ai-provider/ai-provider-registry";
+import {
+  CHAT_MODEL_PROVIDER_TOKEN,
+  EMBEDDING_PROVIDER_TOKEN,
+} from "@infrastructure/ai-provider/ai-provider.tokens";
+import { OpenRouterChatProvider } from "@infrastructure/ai-provider/openrouter-chat.provider";
+import { OpenRouterProvider } from "../../ai/providers/openrouter.provider";
+import { AI_PROVIDER } from "../../ai/providers/ai-provider.token";
 
 /**
  * Módulo de providers de IA para o chat clínico.
@@ -31,98 +34,93 @@ import {AI_PROVIDER} from '../../ai/providers/ai-provider.token';
  * ─────────────────────────────────────────────────────────────────────────────
  */
 @Module({
-    providers: [
-        MockChatProvider,
-        MockEmbeddingProvider,
+  providers: [
+    MockChatProvider,
+    MockEmbeddingProvider,
 
-        // Chat provider: selecionado por AI_CHAT_PROVIDER (padrão: mock)
-        {
-            provide: CHAT_MODEL_PROVIDER_TOKEN,
-            useFactory: (): MockChatProvider | OpenRouterChatProvider => {
-                const provider = process.env.AI_CHAT_PROVIDER ?? 'mock';
+    // Chat provider: selecionado por AI_CHAT_PROVIDER (padrão: mock)
+    {
+      provide: CHAT_MODEL_PROVIDER_TOKEN,
+      useFactory: (): MockChatProvider | OpenRouterChatProvider => {
+        const provider = process.env.AI_CHAT_PROVIDER ?? "mock";
 
-                if (provider === 'openrouter') {
-                    const apiKey = process.env.OPENROUTER_API_KEY;
-                    const modelId = process.env.OPENROUTER_MODEL;
+        if (provider === "openrouter") {
+          const apiKey = process.env.OPENROUTER_API_KEY;
+          const modelId = process.env.OPENROUTER_MODEL;
 
-                    if (!apiKey) {
-                        throw new Error(
-                            '[AiProviderModule] OPENROUTER_API_KEY não configurada. ' +
-                                'Defina a variável de ambiente ou use AI_CHAT_PROVIDER=mock.'
-                        );
-                    }
+          if (!apiKey) {
+            throw new Error(
+              "[AiProviderModule] OPENROUTER_API_KEY não configurada. " +
+                "Defina a variável de ambiente ou use AI_CHAT_PROVIDER=mock.",
+            );
+          }
 
-                    if (!modelId) {
-                        throw new Error(
-                            '[AiProviderModule] OPENROUTER_MODEL não configurada. ' +
-                                'Exemplo: OPENROUTER_MODEL=openai/gpt-4o'
-                        );
-                    }
+          if (!modelId) {
+            throw new Error(
+              "[AiProviderModule] OPENROUTER_MODEL não configurada. " +
+                "Exemplo: OPENROUTER_MODEL=openai/gpt-4o",
+            );
+          }
 
-                    return new OpenRouterChatProvider({
-                        apiKey,
-                        modelId,
-                        appName: process.env.OPENROUTER_APP_NAME,
-                        appUrl: process.env.OPENROUTER_APP_URL,
-                    });
-                }
+          return new OpenRouterChatProvider({
+            apiKey,
+            modelId,
+            appName: process.env.OPENROUTER_APP_NAME,
+            appUrl: process.env.OPENROUTER_APP_URL,
+          });
+        }
 
-                // Padrão: mock (desenvolvimento sem API key)
-                return new MockChatProvider();
-            },
-        },
+        // Padrão: mock (desenvolvimento sem API key)
+        return new MockChatProvider();
+      },
+    },
 
-        // IAiProvider via AI_PROVIDER token — usado por serviços que dependem da interface limpa
-        // Ativo apenas quando AI_CHAT_PROVIDER=openrouter; caso contrário não é registrado
-        {
-            provide: AI_PROVIDER,
-            useFactory: (): OpenRouterProvider | null => {
-                if ((process.env.AI_CHAT_PROVIDER ?? 'mock') !== 'openrouter') {
-                    return null;
-                }
+    // IAiProvider via AI_PROVIDER token — usado por serviços que dependem da interface limpa
+    // Ativo apenas quando AI_CHAT_PROVIDER=openrouter; caso contrário não é registrado
+    {
+      provide: AI_PROVIDER,
+      useFactory: (): OpenRouterProvider | null => {
+        if ((process.env.AI_CHAT_PROVIDER ?? "mock") !== "openrouter") {
+          return null;
+        }
 
-                return new OpenRouterProvider();
-            },
-        },
+        return new OpenRouterProvider();
+      },
+    },
 
-        // Embedding provider: selecionado por AI_EMBEDDING_PROVIDER (padrão: mock)
-        // Separado do ChatProvider — trocar o modelo de chat nunca exige reindexação.
-        {
-            provide: EMBEDDING_PROVIDER_TOKEN,
-            useFactory: (): MockEmbeddingProvider | OpenAiEmbeddingProvider => {
-                const provider = process.env.AI_EMBEDDING_PROVIDER ?? 'mock';
+    // Embedding provider: selecionado por AI_EMBEDDING_PROVIDER (padrão: mock)
+    // Separado do ChatProvider — trocar o modelo de chat nunca exige reindexação.
+    {
+      provide: EMBEDDING_PROVIDER_TOKEN,
+      useFactory: (): MockEmbeddingProvider | OpenAiEmbeddingProvider => {
+        const provider = process.env.AI_EMBEDDING_PROVIDER ?? "mock";
 
-                if (provider === 'openai') {
-                    const apiKey = process.env.OPENAI_API_KEY;
+        if (provider === "openai") {
+          const apiKey = process.env.OPENAI_API_KEY;
 
-                    if (!apiKey) {
-                        throw new Error(
-                            '[AiProviderModule] OPENAI_API_KEY não configurada. ' +
-                                'Defina a variável de ambiente ou use AI_EMBEDDING_PROVIDER=mock.'
-                        );
-                    }
+          if (!apiKey) {
+            throw new Error(
+              "[AiProviderModule] OPENAI_API_KEY não configurada. " +
+                "Defina a variável de ambiente ou use AI_EMBEDDING_PROVIDER=mock.",
+            );
+          }
 
-                    return new OpenAiEmbeddingProvider({
-                        apiKey,
-                        model: process.env.OPENAI_EMBEDDING_MODEL,
-                    });
-                }
+          return new OpenAiEmbeddingProvider({
+            apiKey,
+            model: process.env.OPENAI_EMBEDDING_MODEL,
+          });
+        }
 
-                // Padrão: mock (desenvolvimento sem API key — vetores aleatórios)
-                return new MockEmbeddingProvider();
-            },
-        },
+        // Padrão: mock (desenvolvimento sem API key — vetores aleatórios)
+        return new MockEmbeddingProvider();
+      },
+    },
 
-        {
-            provide: AiProviderRegistry,
-            useClass: DefaultAiProviderRegistry,
-        },
-    ],
-    exports: [
-        CHAT_MODEL_PROVIDER_TOKEN,
-        EMBEDDING_PROVIDER_TOKEN,
-        AiProviderRegistry,
-        AI_PROVIDER,
-    ],
+    {
+      provide: AiProviderRegistry,
+      useClass: DefaultAiProviderRegistry,
+    },
+  ],
+  exports: [CHAT_MODEL_PROVIDER_TOKEN, EMBEDDING_PROVIDER_TOKEN, AiProviderRegistry, AI_PROVIDER],
 })
 export class AiProviderModule {}

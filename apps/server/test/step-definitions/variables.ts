@@ -1,6 +1,6 @@
-import {Given, Then} from '@cucumber/cucumber';
-import {chai} from '../support/chai-setup';
-import type {Context} from '../support/context';
+import { Given, Then } from "@cucumber/cucumber";
+import { chai } from "../support/chai-setup";
+import type { Context } from "../support/context";
 
 // ---------------------------------------------------------------------------
 // Given — set a named variable for use in later steps
@@ -12,8 +12,8 @@ import type {Context} from '../support/context';
  * Example:
  *   Given I store "some-value" as "myVar"
  */
-Given('I store {string} as {string}', function (this: Context, value: string, varName: string) {
-    (this.variables as Record<string, unknown>)[varName] = value;
+Given("I store {string} as {string}", function (this: Context, value: string, varName: string) {
+  (this.variables as Record<string, unknown>)[varName] = value;
 });
 
 // ---------------------------------------------------------------------------
@@ -26,10 +26,10 @@ Given('I store {string} as {string}', function (this: Context, value: string, va
  * Example:
  *   Then the variable "contextId" should exist
  */
-Then('the variable {string} should exist', function (this: Context, varName: string) {
-    const value = (this.variables as Record<string, unknown>)[varName];
+Then("the variable {string} should exist", function (this: Context, varName: string) {
+  const value = (this.variables as Record<string, unknown>)[varName];
 
-    chai.expect(value, `Variable "${varName}" should exist`).to.not.be.undefined;
+  chai.expect(value, `Variable "${varName}" should exist`).to.not.be.undefined;
 });
 
 /**
@@ -38,8 +38,11 @@ Then('the variable {string} should exist', function (this: Context, varName: str
  * Example:
  *   Then the id for "user" "john_doe" should exist
  */
-Then('the id for {string} {string} should exist', function (this: Context, idType: string, key: string) {
+Then(
+  "the id for {string} {string} should exist",
+  function (this: Context, idType: string, key: string) {
     const id = this.variables.ids[idType]?.[key];
 
-    chai.expect(id, `ID for [${idType}] "${key}" should exist`).to.be.a('string').and.not.empty;
-});
+    chai.expect(id, `ID for [${idType}] "${key}" should exist`).to.be.a("string").and.not.empty;
+  },
+);

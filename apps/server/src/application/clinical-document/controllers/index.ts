@@ -1,1 +1,1 @@
-export * from './clinical-document.controller';
+export * from "@application/clinical-document/controllers/clinical-document.controller";
