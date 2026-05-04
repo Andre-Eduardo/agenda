@@ -34,6 +34,10 @@ export const Route = createFileRoute("/_stackedLayout/patients")({
 // ── Types ────────────────────────────────────────────────────────────────────
 
 type Layout = "table" | "cards";
+// NOTE: Patient API does not yet expose a `status` field.
+// This filter is a UI placeholder — wire to SearchPatientsParams when the
+// backend adds status support.
+type StatusFilter = "all" | "active" | "inactive";
 
 interface PatientPage {
   totalCount: number;
@@ -378,6 +382,8 @@ function PatientsContent({
   setOpenMenuId: (id: string | null) => void;
   totalCount: number;
   onOpen: (p: Patient) => void;
+  // NOTE: statusFilter is intentionally not propagated here — filtering happens
+  // at the API layer once the backend adds status support.
 }) {
   if (!isLoading && patients.length === 0) {
     return (
@@ -455,6 +461,7 @@ export function PatientsPage() {
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [layout, setLayout] = useState<Layout>("table");
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -493,10 +500,17 @@ export function PatientsPage() {
   const totalCount = query.data?.totalCount ?? 0;
   const totalAll = statsQuery.data?.totalCount ?? 0;
   const totalAppointments = appointmentsQuery.data?.totalCount;
-  const {isLoading} = query;
+  const { isLoading } = query;
+
+  const hasFilters = !!search || statusFilter !== "all";
 
   function openPatient(patient: Patient) {
     navigate({ to: "/patients/$patientId", params: { patientId: patient.id } });
+  }
+
+  function clearFilters() {
+    setSearch("");
+    setStatusFilter("all");
   }
 
   const subtitle = (
@@ -552,6 +566,7 @@ export function PatientsPage() {
 
       {/* Toolbar */}
       <div className={S.toolbar.root}>
+        {/* Search */}
         <div className={S.toolbar.search}>
           <Search className="size-4 shrink-0 text-(--color-text-tertiary)" strokeWidth={1.5} />
           <input
@@ -563,6 +578,28 @@ export function PatientsPage() {
           <span className={S.toolbar.searchKbd}>⌘K</span>
         </div>
 
+        {/* Status filter */}
+        <div className={S.segmented.root} role="tablist">
+          {(
+            [
+              ["all",      "Todos"],
+              ["active",   "Ativos"],
+              ["inactive", "Inativos"],
+            ] as const
+          ).map(([value, label]) => (
+            <button
+              key={value}
+              role="tab"
+              aria-selected={statusFilter === value}
+              className={S.segmentedBtn({ active: statusFilter === value })}
+              onClick={() => setStatusFilter(value)}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+
+        {/* Layout toggle */}
         <div className={S.toolbar.layoutGroup}>
           {(
             [
@@ -581,8 +618,8 @@ export function PatientsPage() {
           ))}
         </div>
 
-        {search && (
-          <button className={S.toolbar.clearBtn} onClick={() => setSearch("")}>
+        {hasFilters && (
+          <button className={S.toolbar.clearBtn} onClick={clearFilters}>
             <X className="mr-1 inline size-3.5" />
             Limpar filtros
           </button>

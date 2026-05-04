@@ -580,6 +580,7 @@ export function PatientDetailPage() {
 }
 
 function PatientProfile({ patient }: { patient: Patient }) {
+  const navigate = useNavigate();
   const age = getAge(patient.birthDate);
   const dob = formatDate(patient.birthDate);
   const gender = genderLabel(patient.gender);
@@ -714,7 +715,16 @@ function PatientProfile({ patient }: { patient: Patient }) {
           </div>
 
           <div className={S.header.actions}>
-            <Button variant="outline" size="sm">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() =>
+                navigate({
+                  to: "/patients/$patientId/edit",
+                  params: { patientId: patient.id },
+                })
+              }
+            >
               <Pencil className="size-4" />
               Editar cadastro
             </Button>
@@ -783,7 +793,18 @@ function PatientProfile({ patient }: { patient: Patient }) {
         {/* Informações do paciente */}
         <SectionCard
           title="Informações do paciente"
-          action={<SecLink>Editar <Pencil className="size-3" /></SecLink>}
+          action={
+            <SecLink
+              onClick={() =>
+                navigate({
+                  to: "/patients/$patientId/edit",
+                  params: { patientId: patient.id },
+                })
+              }
+            >
+              Editar <Pencil className="size-3" />
+            </SecLink>
+          }
         >
           <InfoGroup title="Dados pessoais">
             <div className={S.kvGrid}>
@@ -822,7 +843,18 @@ function PatientProfile({ patient }: { patient: Patient }) {
         {/* Saúde inicial */}
         <SectionCard
           title="Saúde inicial"
-          action={<SecLink>Editar <Pencil className="size-3" /></SecLink>}
+          action={
+            <SecLink
+              onClick={() =>
+                navigate({
+                  to: "/patients/$patientId/edit",
+                  params: { patientId: patient.id },
+                })
+              }
+            >
+              Editar <Pencil className="size-3" />
+            </SecLink>
+          }
         >
           <ProfileContent
             isLoading={clinicalProfile.isLoading}

@@ -9,6 +9,7 @@ import {
   LogOut,
   Menu,
   Moon,
+  Settings,
   Stethoscope,
   Sun,
   Users,
@@ -37,7 +38,7 @@ const NAV_GROUPS: NavGroup[] = [
   {
     labelKey: "nav.menu",
     items: [
-      { icon: Home, labelKey: "nav.dashboard", path: "/" },
+      { icon: Home, labelKey: "nav.dashboard", path: "/dashboard" },
       { icon: Calendar, labelKey: "nav.appointments", path: "/appointments" },
       { icon: Users, labelKey: "nav.patients", path: "/patients" },
       { icon: Stethoscope, labelKey: "nav.professionals", path: "/professionals" },
@@ -48,6 +49,7 @@ const NAV_GROUPS: NavGroup[] = [
     items: [
       { icon: ClipboardList, labelKey: "nav.forms", path: "/form-templates" },
       { icon: FileText, labelKey: "nav.chat", path: "/chat" },
+      { icon: Settings, labelKey: "nav.settings", path: "/settings" },
     ],
   },
 ];

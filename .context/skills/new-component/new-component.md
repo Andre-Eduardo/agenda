@@ -29,7 +29,7 @@ The user should provide:
 
 ### `index.tsx`
 ```tsx
-import {useTranslation} from '@ecxus/ui/hooks/useTranslation'
+import {useTranslation} from 'react-i18next'
 
 import {style} from './styles'
 import {translationKey} from './translations'
@@ -45,7 +45,7 @@ export default function ComponentName() {
 
 ### `styles.ts`
 ```ts
-import type {BoxStyleObject} from '@ecxus/ui/components/Box'
+import type {BoxStyleObject} from '@shadcn/ui components'
 
 export const style = {
   container: {},

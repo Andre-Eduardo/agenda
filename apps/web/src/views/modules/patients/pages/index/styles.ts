@@ -1,6 +1,25 @@
 import { cn } from '@/lib/utils';
 import { cva } from 'class-variance-authority';
 
+// ── Status filter segmented control ──────────────────────────────────────────
+
+export const segmented = {
+  root: cn('inline-flex rounded-[8px] border border-(--color-border) bg-(--color-bg-surface) p-0.5'),
+};
+
+export const segmentedBtn = cva(
+  'rounded-[6px] px-3 py-1.5 text-[13px] font-medium leading-[1.3] transition-all duration-(--duration-fast) ease-out',
+  {
+    variants: {
+      active: {
+        true: 'bg-(--color-bg-card) text-(--color-text-primary) shadow-[0_1px_2px_rgba(0,0,0,0.04)]',
+        false: 'text-(--color-text-tertiary) hover:text-(--color-text-secondary)',
+      },
+    },
+    defaultVariants: { active: false },
+  },
+);
+
 export const statsGrid = cn('mb-6 grid grid-cols-3 gap-3');
 export const cardsGrid = cn('grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-3');
 export const cardsFooter = cn('mt-3.5 rounded-(--radius-card) border border-(--color-border) bg-(--color-bg-card)');

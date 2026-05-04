@@ -1,31 +1,33 @@
 ---
 name: generate-client
-description: Regenerate the @automo/client package from the server OpenAPI spec
+description: Regenerate the @agenda-app/client package from the server OpenAPI spec
 user_invocable: true
 ---
 
 # Generate API Client
 
-Regenerate the `@automo/client` package after server API changes.
+Regenerate o pacote `@agenda-app/client` após mudanças na API do servidor.
 
 ## Steps
 
-1. Run the full client generation pipeline:
+1. Gerar o `openapi.json` a partir dos decorators NestJS:
    ```bash
-   pnpm generate:client
-   ```
-   This runs two steps:
-   - `pnpm -F @automo/server openapi:generate` — generates `openapi.json` from NestJS decorators
-   - `pnpm -F @automo/client codegen` — runs Orval to generate TypeScript services, React Query hooks, and MSW mocks
-
-2. If the generation succeeds, run typecheck to ensure no type errors were introduced:
-   ```bash
-   pnpm -F @automo/web typecheck
+   pnpm -F @agenda-app/server openapi:generate
    ```
 
-3. Report which services/models were added or changed by checking the git diff on `packages/client/src/`.
+2. Regenerar os hooks React Query / serviços Axios via Orval:
+   ```bash
+   pnpm -F @agenda-app/client generate
+   ```
+
+3. Se a geração tiver sucesso, rodar typecheck para garantir que não surgiram erros de tipo:
+   ```bash
+   pnpm -F @agenda-app/app typecheck
+   ```
+
+4. Reportar quais serviços/modelos foram adicionados ou alterados verificando o git diff em `packages/client/src/`.
 
 ## Important
 
-- Never manually edit files in `packages/client/src/services/` or `packages/client/src/models/` — they are auto-generated.
-- If the generation fails, check that the server compiles first: `pnpm -F @automo/server build`
+- Nunca edite manualmente arquivos dentro de `packages/client/src/` — eles são auto-gerados pelo Orval.
+- Se a geração falhar, verifique se o servidor compila primeiro: `pnpm -F @agenda-app/server build`

@@ -1,4 +1,4 @@
-# Automo — Monorepo
+# Agenda — Monorepo
 
 Healthcare/agenda management application. Monorepo gerenciado com **pnpm workspaces**.
 

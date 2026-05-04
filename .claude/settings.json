@@ -38,8 +38,7 @@
       "mcp__claude_ai_Figma__use_figma",
       "Bash(pnpm -F @agenda-app/app typecheck)",
       "Bash(grep -E \"\\\\.\\(ts|js\\)$\")",
-      "Read(//i/Ecxus/automo-app/**)",
-      "Bash(cmd /c \"dir /b E:\\\\agenda\\\\node_modules\\\\@ecxus 2>&1\")",
+
       "Bash(taskkill /PID 7024 /F)",
       "Bash(taskkill /PID 18668 /F)",
       "Bash(cmd //c \"taskkill /PID 7024 /F\")",

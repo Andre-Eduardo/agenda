@@ -26,10 +26,9 @@ The actual translated values live in 3 directories:
 - `apps/web/src/translations/en-US/` — English (US)
 - `apps/web/src/translations/es-ES/` — Spanish (Spain)
 
-Each translation file:
-- Imports `Dictionary` type from `@ecxus/ui/translations`
-- Imports the component's translation type
-- Exports a const typed as `Dictionary<ComponentTranslations>`
+Cada arquivo de tradução:
+- É um arquivo `.json` simples (i18next)
+- Contém chaves organizadas em objeto plano ou aninhado, correspondendo ao namespace
 
 ## Steps
 
@@ -57,7 +56,7 @@ Each translation file:
 
 6. **Run typecheck** to verify types are correct:
    ```bash
-   pnpm -F @automo/web typecheck
+   pnpm -F @agenda-app/app typecheck
    ```
 
 ## Translation Style Guide

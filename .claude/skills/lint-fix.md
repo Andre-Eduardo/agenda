@@ -17,9 +17,9 @@ Run Oxlint linter and auto-fix issues across the monorepo.
 ## Steps
 
 1. Run lint with auto-fix:
-   - All: `pnpm lint:fix`
-   - Web only: `pnpm -F @automo/web lint:fix`
-   - Server only: `pnpm -F @automo/server lint:fix`
+   - All: `pnpm run lint`
+   - Web only: `pnpm -F @agenda-app/app lint`
+   - Server only: `pnpm -F @agenda-app/server lint`
 
 2. If there are remaining issues that couldn't be auto-fixed:
    - Read the affected files
@@ -31,4 +31,4 @@ Run Oxlint linter and auto-fix issues across the monorepo.
 ## Notes
 
 - This project uses **Oxlint** (not ESLint) — the config is in `oxlint-base.json`
-- Formatting is handled by **Oxfmt** — run `pnpm -F @automo/web format` or `pnpm -F @automo/server format`
+- Formatting is handled by **Oxfmt** — run `pnpm -F @agenda-app/app format` or `pnpm -F @agenda-app/server format`

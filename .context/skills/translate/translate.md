@@ -31,7 +31,7 @@ The actual translated values live in 3 directories:
 - `apps/web/src/translations/es-ES/` — Spanish (Spain)
 
 Each translation file:
-- Imports `Dictionary` type from `@ecxus/ui/translations`
+- Imports `Dictionary` type from `i18next (JSON files)`
 - Imports the component's translation type
 - Exports a const typed as `Dictionary<ComponentTranslations>`
 
@@ -61,7 +61,7 @@ Each translation file:
 
 6. **Run typecheck** to verify types are correct:
    ```bash
-   pnpm -F @automo/web typecheck
+   pnpm -F @agenda-app/app typecheck
    ```
 
 ## Translation Style Guide

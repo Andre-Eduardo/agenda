@@ -17,40 +17,32 @@ The user should provide:
 ## Steps
 
 1. Ask the user (if not provided):
-   - Component name
-   - Target module (e.g., `room`, `person`, `room-dashboard`)
+   - Component name (PascalCase)
+   - Target module (e.g., `patients`, `dashboard`, `settings`)
    - Type: `page` (goes in `pages/`) or `component` (goes in `components/`)
 
-2. Create the component folder with all required files:
+2. Create the component folder under `apps/web/src/views/modules/{module}/pages/{name}/` (page) or `apps/web/src/views/modules/{module}/components/{name}/` (component) with os seguintes arquivos:
 
 ### `index.tsx`
 ```tsx
-import {useTranslation} from '@ecxus/ui/hooks/useTranslation'
-
-import {style} from './styles'
-import {translationKey} from './translations'
+import {useTranslation} from 'react-i18next'
 
 export default function ComponentName() {
-  const {t} = useTranslation(translationKey)
+  const {t} = useTranslation('common')
 
   return (
-    // Component JSX
+    <div className="...">
+      {/* Component JSX */}
+    </div>
   )
 }
 ```
 
-### `styles.ts`
+### `styles.ts` (opcional — apenas se houver classes Tailwind reutilizadas)
 ```ts
-import type {BoxStyleObject} from '@ecxus/ui/components/Box'
-
-export const style = {
-  container: {},
-} satisfies Record<string, BoxStyleObject>
-```
-
-### `translations.ts`
-```ts
-export const translationKey = 'module.moduleName.componentName'
+export const styles = {
+  container: 'flex flex-col gap-4',
+} as const
 ```
 
 ### `index.test.tsx`
@@ -67,6 +59,13 @@ describe('ComponentName', () => {
 })
 ```
 
-3. If it's a page, remind the user to add a route entry in the module's `routes.ts`.
+3. Se for uma **página**, lembrar o usuário de:
+   - Adicionar a rota no `apps/web/src/views/modules/routes.ts` e no `routeTree.gen.ts`
+   - Seguir o padrão TanStack Router (ver `docs/frontend/routing.md`)
 
-4. Remind the user to add translation keys in `src/translations/{locale}/module/{moduleName}/`.
+4. Lembrar o usuário de adicionar as chaves de tradução nos 3 arquivos JSON:
+   - `apps/web/src/translations/pt-BR/common.json`
+   - `apps/web/src/translations/en-US/common.json`
+   - `apps/web/src/translations/es-ES/common.json`
+
+5. Usar componentes de `shadcn/ui` (já instalados em `apps/web/src/components/ui/`) sempre que possível — não crie primitivos do zero.

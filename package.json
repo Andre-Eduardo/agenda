@@ -1,8 +1,8 @@
 {
-  "name": "automo",
+  "name": "agenda-app",
   "private": true,
   "version": "0.0.0",
-  "description": "The Automo application",
+  "description": "Healthcare/agenda management application",
   "keywords": [
     "agenda-app",
     "typescript"

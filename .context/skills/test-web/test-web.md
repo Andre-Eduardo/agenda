@@ -25,7 +25,7 @@ Run Jest unit tests for the web application.
 
 2. For each test file, run:
    ```bash
-   pnpm -F @automo/web test -- --no-coverage <relative-path-from-apps/web>
+   pnpm -F @agenda-app/app test -- --no-coverage <relative-path-from-apps/web>
    ```
    Note: The path must be relative to `apps/web/` (e.g., `src/views/modules/room/pages/RoomsPage/index.test.tsx`)
 

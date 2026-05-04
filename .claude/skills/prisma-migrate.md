@@ -21,25 +21,26 @@ Create or apply Prisma database migrations.
 1. Ensure the Prisma schema at `apps/server/prisma/schema.prisma` has the desired changes
 2. Run:
    ```bash
-   pnpm -F @automo/server prisma:migrate:create --name <migration_name>
+   pnpm -F @agenda-app/server prisma:migrate
    ```
+   (o Prisma solicitará o nome da migration interativamente — use `--name <migration_name>` se quiser passar direto)
 3. Review the generated SQL in `apps/server/prisma/migrations/`
 4. Regenerate the Prisma client:
    ```bash
-   pnpm -F @automo/server prisma:generate
+   pnpm -F @agenda-app/server prisma:generate
    ```
 
 ### Apply pending migrations
-1. Make sure the database is running: `pnpm -F @automo/server start:database`
+1. Certifique-se que o banco está rodando (via Docker Compose ou serviço local)
 2. Run:
    ```bash
-   pnpm -F @automo/server prisma:migrate
+   pnpm -F @agenda-app/server prisma:migrate
    ```
 
 ### Check status
 1. Run:
    ```bash
-   pnpm -F @automo/server prisma:migrate:status
+   pnpm -F @agenda-app/server exec prisma migrate status
    ```
 
 ## Notes
@@ -47,4 +48,4 @@ Create or apply Prisma database migrations.
 - The database uses PostgreSQL with the CITEXT extension
 - Schema file: `apps/server/prisma/schema.prisma`
 - Seed file: `apps/server/prisma/seed.ts`
-- After schema changes, always regenerate the client: `pnpm -F @automo/server prisma:generate`
+- After schema changes, always regenerate the client: `pnpm -F @agenda-app/server prisma:generate`

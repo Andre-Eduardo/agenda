@@ -22,8 +22,8 @@ Run TypeScript compiler in type-check mode (no emit) to find type errors.
 
 1. Run the typecheck based on scope:
    - All: `pnpm typecheck`
-   - Web only: `pnpm -F @automo/web typecheck`
-   - Server only: `pnpm -F @automo/server typecheck`
+   - Web only: `pnpm -F @agenda-app/app typecheck`
+   - Server only: `pnpm -F @agenda-app/server typecheck`
 
 2. If there are errors:
    - Parse the error output to identify affected files and line numbers

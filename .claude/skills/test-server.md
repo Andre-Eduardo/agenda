@@ -21,7 +21,7 @@ Run Jest unit tests for the server application.
 
 2. For each test file, run:
    ```bash
-   pnpm -F @automo/server test -- --no-coverage <relative-path-from-apps/server>
+   pnpm -F @agenda-app/server test -- --no-coverage <relative-path-from-apps/server>
    ```
    Note: The path must be relative to `apps/server/` (e.g., `src/application/room/services/__tests__/GetRoomService.test.ts`)
 
