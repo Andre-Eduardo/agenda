@@ -17,6 +17,7 @@ export const routes = rootRoute("../root.tsx", [
   layout("stackedLayout", "../layouts/StackedLayout/index.tsx", [
     index(filePath("welcome", "index")),
     route("/patients", filePath("patients", "index")),
+    route("/patients/new", filePath("patients", "new")),
     route("/patients/$patientId", filePath("patients", "detail")),
   ]),
 ]);

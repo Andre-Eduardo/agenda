@@ -13,6 +13,7 @@ import { Route as DotDotLayoutsStackedLayoutIndexRouteImport } from './views/lay
 import { Route as DotDotLayoutsAuthLayoutIndexRouteImport } from './views/layouts/AuthLayout/index'
 import { Route as patientsPagesIndexIndexRouteImport } from './views/modules/patients/pages/index/index'
 import { Route as welcomePagesIndexIndexRouteImport } from './views/modules/welcome/pages/index/index'
+import { Route as patientsPagesNewIndexRouteImport } from './views/modules/patients/pages/new/index'
 import { Route as patientsPagesDetailIndexRouteImport } from './views/modules/patients/pages/detail/index'
 import { Route as authPagesLoginIndexRouteImport } from './views/modules/auth/pages/login/index'
 
@@ -36,6 +37,11 @@ const welcomePagesIndexIndexRoute = welcomePagesIndexIndexRouteImport.update({
   path: '/',
   getParentRoute: () => DotDotLayoutsStackedLayoutIndexRoute,
 } as any)
+const patientsPagesNewIndexRoute = patientsPagesNewIndexRouteImport.update({
+  id: '/patients/new',
+  path: '/patients/new',
+  getParentRoute: () => DotDotLayoutsStackedLayoutIndexRoute,
+} as any)
 const patientsPagesDetailIndexRoute =
   patientsPagesDetailIndexRouteImport.update({
     id: '/patients/$patientId',
@@ -51,12 +57,14 @@ const authPagesLoginIndexRoute = authPagesLoginIndexRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof welcomePagesIndexIndexRoute
   '/patients': typeof patientsPagesIndexIndexRoute
+  '/patients/new': typeof patientsPagesNewIndexRoute
   '/auth/login': typeof authPagesLoginIndexRoute
   '/patients/$patientId': typeof patientsPagesDetailIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof welcomePagesIndexIndexRoute
   '/patients': typeof patientsPagesIndexIndexRoute
+  '/patients/new': typeof patientsPagesNewIndexRoute
   '/auth/login': typeof authPagesLoginIndexRoute
   '/patients/$patientId': typeof patientsPagesDetailIndexRoute
 }
@@ -66,20 +74,22 @@ export interface FileRoutesById {
   '/_stackedLayout': typeof DotDotLayoutsStackedLayoutIndexRouteWithChildren
   '/_stackedLayout/': typeof welcomePagesIndexIndexRoute
   '/_stackedLayout/patients': typeof patientsPagesIndexIndexRoute
+  '/_stackedLayout/patients/new': typeof patientsPagesNewIndexRoute
   '/_auth/auth/login': typeof authPagesLoginIndexRoute
   '/_stackedLayout/patients/$patientId': typeof patientsPagesDetailIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/patients' | '/auth/login' | '/patients/$patientId'
+  fullPaths: '/' | '/patients' | '/patients/new' | '/auth/login' | '/patients/$patientId'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/patients' | '/auth/login' | '/patients/$patientId'
+  to: '/' | '/patients' | '/patients/new' | '/auth/login' | '/patients/$patientId'
   id:
     | '__root__'
     | '/_auth'
     | '/_stackedLayout'
     | '/_stackedLayout/'
     | '/_stackedLayout/patients'
+    | '/_stackedLayout/patients/new'
     | '/_auth/auth/login'
     | '/_stackedLayout/patients/$patientId'
   fileRoutesById: FileRoutesById
@@ -119,6 +129,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof welcomePagesIndexIndexRouteImport
       parentRoute: typeof DotDotLayoutsStackedLayoutIndexRoute
     }
+    '/_stackedLayout/patients/new': {
+      id: '/_stackedLayout/patients/new'
+      path: '/patients/new'
+      fullPath: '/patients/new'
+      preLoaderRoute: typeof patientsPagesNewIndexRouteImport
+      parentRoute: typeof DotDotLayoutsStackedLayoutIndexRoute
+    }
     '/_stackedLayout/patients/$patientId': {
       id: '/_stackedLayout/patients/$patientId'
       path: '/patients/$patientId'
@@ -153,6 +170,7 @@ const DotDotLayoutsAuthLayoutIndexRouteWithChildren =
 interface DotDotLayoutsStackedLayoutIndexRouteChildren {
   welcomePagesIndexIndexRoute: typeof welcomePagesIndexIndexRoute
   patientsPagesIndexIndexRoute: typeof patientsPagesIndexIndexRoute
+  patientsPagesNewIndexRoute: typeof patientsPagesNewIndexRoute
   patientsPagesDetailIndexRoute: typeof patientsPagesDetailIndexRoute
 }
 
@@ -160,6 +178,7 @@ const DotDotLayoutsStackedLayoutIndexRouteChildren: DotDotLayoutsStackedLayoutIn
   {
     welcomePagesIndexIndexRoute: welcomePagesIndexIndexRoute,
     patientsPagesIndexIndexRoute: patientsPagesIndexIndexRoute,
+    patientsPagesNewIndexRoute: patientsPagesNewIndexRoute,
     patientsPagesDetailIndexRoute: patientsPagesDetailIndexRoute,
   }
 

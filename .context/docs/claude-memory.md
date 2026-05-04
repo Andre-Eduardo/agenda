@@ -1,3 +1,8 @@
+---
+source: .claude\settings.json
+type: claude-memory
+---
+
 {
   "permissions": {
     "allow": [

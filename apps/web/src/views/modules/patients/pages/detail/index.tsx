@@ -64,7 +64,9 @@ function asStr(v: unknown): string | null {
 
 function asDisplayStr(v: unknown): string | null {
   if (!v) return null;
+
   if (typeof v === "string") return v || null;
+
   try {
     return JSON.stringify(v);
   } catch {
@@ -74,11 +76,13 @@ function asDisplayStr(v: unknown): string | null {
 
 function getAge(birthDate: unknown): number | null {
   const s = asStr(birthDate);
+
   if (!s) return null;
   const birth = new Date(s);
   const now = new Date();
   let age = now.getFullYear() - birth.getFullYear();
   const m = now.getMonth() - birth.getMonth();
+
   if (m < 0 || (m === 0 && now.getDate() < birth.getDate())) age -= 1;
 
   return age;
@@ -86,6 +90,7 @@ function getAge(birthDate: unknown): number | null {
 
 function formatDate(v: unknown, opts?: Intl.DateTimeFormatOptions): string {
   const s = asStr(v);
+
   if (!s) return "—";
 
   return new Date(s).toLocaleDateString("pt-BR", opts ?? { day: "2-digit", month: "2-digit", year: "numeric" });
@@ -93,13 +98,18 @@ function formatDate(v: unknown, opts?: Intl.DateTimeFormatOptions): string {
 
 function formatRelativeDate(v: unknown): string {
   const s = asStr(v);
+
   if (!s) return "—";
   const d = new Date(s);
   const now = new Date();
   const diffDays = Math.floor((now.getTime() - d.getTime()) / 86_400_000);
+
   if (diffDays === 0) return "hoje";
+
   if (diffDays === 1) return "ontem";
+
   if (diffDays < 30) return `${diffDays} dias atrás`;
+
   if (diffDays < 365) return `${Math.floor(diffDays / 30)} meses atrás`;
 
   return `${Math.floor(diffDays / 365)} anos atrás`;
@@ -107,6 +117,7 @@ function formatRelativeDate(v: unknown): string {
 
 function formatDateShort(v: unknown): string {
   const s = asStr(v);
+
   if (!s) return "—";
 
   return new Date(s).toLocaleDateString("pt-BR", { day: "2-digit", month: "short" });
@@ -114,6 +125,7 @@ function formatDateShort(v: unknown): string {
 
 function formatTime(v: unknown): string {
   const s = asStr(v);
+
   if (!s) return "—";
 
   return new Date(s).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
@@ -121,7 +133,9 @@ function formatTime(v: unknown): string {
 
 function genderLabel(gender: PatientGender): string {
   if (gender === "FEMALE") return "Feminino";
+
   if (gender === "MALE") return "Masculino";
+
   if (gender === "OTHER") return "Outro";
 
   return "—";
@@ -153,13 +167,15 @@ function formStatusLabel(status: PatientFormStatus): string {
 
 function getAvatarVariant(id: string): string {
   let h = 0;
+
   for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) >>> 0;
 
-  return S.avatarVariants[h % S.avatarVariants.length] ?? S.avatarVariants[0]!;
+  return S.avatarVariants[h % S.avatarVariants.length] ?? S.avatarVariants[0];
 }
 
 function getInitials(name: string): string {
   const parts = name.trim().split(/\s+/);
+
   if (parts.length === 1) return (parts[0] ?? "").slice(0, 2).toUpperCase();
 
   return `${parts[0]?.[0] ?? ""}${parts[parts.length - 1]?.[0] ?? ""}`.toUpperCase();
@@ -302,6 +318,7 @@ function MoreMenu() {
     const handle = (e: MouseEvent) => {
       if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
     };
+
     document.addEventListener("mousedown", handle);
 
     return () => document.removeEventListener("mousedown", handle);
@@ -575,7 +592,7 @@ function PatientProfile({ patient }: { patient: Patient }) {
     cursor: null,
     limit: 10,
     isActive: "true",
-    sort: { severity: "desc" as "desc" },
+    sort: { severity: "desc" as const },
   }) as unknown as UseQueryResult<PaginatedPage<PatientAlert>>;
 
   const baseRecordParams = {

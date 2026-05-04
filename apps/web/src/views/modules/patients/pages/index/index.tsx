@@ -44,6 +44,7 @@ interface PatientPage {
 
 function getAvatarVariant(id: string): string {
   let hash = 0;
+
   for (let i = 0; i < id.length; i++) hash = (hash * 31 + id.charCodeAt(i)) >>> 0;
 
   return S.avatarVariants[hash % S.avatarVariants.length];
@@ -65,6 +66,7 @@ function getAge(birthDate: unknown): number | null {
   const now = new Date();
   let age = now.getFullYear() - birth.getFullYear();
   const m = now.getMonth() - birth.getMonth();
+
   if (m < 0 || (m === 0 && now.getDate() < birth.getDate())) age -= 1;
 
   return age;
@@ -144,6 +146,7 @@ function RowContextMenu({
     function handler(e: MouseEvent) {
       if (ref.current && !ref.current.contains(e.target as Node)) onClose();
     }
+
     document.addEventListener("mousedown", handler);
 
     return () => document.removeEventListener("mousedown", handler);
@@ -249,6 +252,7 @@ function PatientTableRow({
             onClose={onCloseMenu}
             onAction={(action) => {
               onCloseMenu();
+
               if (action === "view") onClick();
             }}
           />
@@ -489,7 +493,7 @@ export function PatientsPage() {
   const totalCount = query.data?.totalCount ?? 0;
   const totalAll = statsQuery.data?.totalCount ?? 0;
   const totalAppointments = appointmentsQuery.data?.totalCount;
-  const isLoading = query.isLoading;
+  const {isLoading} = query;
 
   function openPatient(patient: Patient) {
     navigate({ to: "/patients/$patientId", params: { patientId: patient.id } });
@@ -509,7 +513,7 @@ export function PatientsPage() {
       title="Pacientes"
       subtitle={subtitle}
       actions={
-        <Button size="sm">
+        <Button size="sm" onClick={() => navigate({ to: "/patients/new" })}>
           <Plus className="size-4" />
           Novo paciente
         </Button>
