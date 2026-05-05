@@ -7,34 +7,12 @@ export const page = {
   errorState: cn('flex flex-col items-center justify-center gap-4 p-12 text-(--color-text-secondary)'),
 };
 
-export const breadcrumb = {
-  root: cn('flex items-center gap-[6px] text-[13px] text-(--color-text-tertiary)'),
-  link: cn('cursor-pointer text-(--color-text-secondary) transition-colors hover:text-(--color-primary-text)'),
-  current: cn('text-(--color-text-primary)'),
-};
-
-export const pageHeader = {
-  root: cn('mt-5'),
-  title: cn('text-[28px] font-medium leading-[1.15] tracking-[-0.01em] text-(--color-text-primary)'),
-};
-
 export const patientCard = {
   root: cn('mt-4 flex items-center gap-3 rounded-(--radius-card) border border-(--color-border) bg-(--color-bg-card) px-4 py-[10px]'),
-  avatar: cn('inline-flex size-9 shrink-0 items-center justify-center rounded-full text-sm font-medium'),
   info: cn('min-w-0'),
   name: cn('cursor-pointer text-[14px] font-medium text-(--color-text-primary) transition-colors hover:text-(--color-primary-text)'),
   meta: cn('mt-[2px] text-[12px] text-(--color-text-tertiary)'),
 };
-
-export const avatarVariants = [
-  'bg-(--color-primary-surface) text-(--color-primary-text)',
-  'bg-(--color-info-surface) text-(--color-info)',
-  'bg-(--color-success-surface) text-(--color-success)',
-  'bg-(--color-warning-surface) text-(--color-warning)',
-  'bg-(--color-ai-bg) text-(--color-ai-text)',
-  'bg-(--color-bg-surface) text-(--color-text-secondary)',
-  'bg-(--color-danger-surface) text-(--color-danger)',
-];
 
 export const layout = {
   root: cn('mx-6 mt-[18px] grid grid-cols-[200px_1fr] gap-7 items-start'),
@@ -57,39 +35,6 @@ export const section = {
   headAside: cn('ml-auto shrink-0'),
   title: cn('text-[16px] font-medium leading-[1.3] tracking-[-0.01em] text-(--color-text-primary)'),
   sub: cn('mt-[2px] text-[12px] text-(--color-text-tertiary)'),
-};
-
-export const grid = cn('grid grid-cols-12 gap-x-4 gap-y-[14px]');
-
-export const span = cva('', {
-  variants: {
-    cols: {
-      1: 'col-span-1', 2: 'col-span-2', 3: 'col-span-3', 4: 'col-span-4',
-      5: 'col-span-5', 6: 'col-span-6', 7: 'col-span-7', 8: 'col-span-8',
-      9: 'col-span-9', 10: 'col-span-10', 11: 'col-span-11', 12: 'col-span-12',
-    },
-  },
-  defaultVariants: { cols: 12 },
-});
-
-export const field = {
-  root: cn('flex flex-col gap-1.5'),
-  label: cn('flex items-center gap-1 text-[13px] font-medium leading-[1.3] text-(--color-text-primary)'),
-  req: cn('text-(--color-danger)'),
-  opt: cn('text-xs font-normal text-(--color-text-tertiary)'),
-  hint: cn('text-xs leading-[1.4] text-(--color-text-tertiary)'),
-  inputBase: cn(
-    'w-full rounded-(--radius-input) border border-(--color-border) bg-(--color-bg-card) px-3 py-[9px]',
-    'text-sm leading-[1.4] text-(--color-text-primary) transition-colors',
-    'placeholder:text-(--color-text-tertiary)',
-    'hover:border-(--color-border-hover)',
-    'focus:border-(--color-primary) focus:outline-none',
-  ),
-  inputMono: cn('font-mono tabular-nums text-[13px]'),
-  selectIcon: cn(
-    'appearance-none',
-    "bg-[url(\"data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%2394A3B8' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E\")] bg-no-repeat bg-[right_10px_center] pr-8",
-  ),
 };
 
 export const vitals = {

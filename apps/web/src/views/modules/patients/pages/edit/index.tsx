@@ -14,7 +14,6 @@ import {
   Check,
   Mail,
   Calendar,
-  AlertCircle,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import {
@@ -25,6 +24,17 @@ import {
   UpdatePatientInputDtoGender,
 } from "@agenda-app/client";
 import { Button } from "@/components/ui/button";
+import { SectionCard as UISectionCard } from "@/components/ui/card";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import {
+  Breadcrumb, BreadcrumbItem, BreadcrumbLink,
+  BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
+import { PageHeader } from "@/components/ui/page-header";
+import { Input, inputVariants } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { NativeSelect } from "@/components/ui/native-select";
+import { Field, FormGrid } from "@/components/ui/field";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -104,44 +114,6 @@ function tabHasValues(tab: TabKey, values: Partial<FormValues>): boolean {
     default:
       return false;
   }
-}
-
-// ── Field ─────────────────────────────────────────────────────────────────────
-
-function Field({
-  label,
-  required,
-  optional,
-  hint,
-  error,
-  cols = 12,
-  children,
-}: {
-  label: string;
-  required?: boolean;
-  optional?: boolean;
-  hint?: string;
-  error?: string;
-  cols?: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12;
-  children: React.ReactNode;
-}) {
-  return (
-    <div className={cn(S.field.root, S.span({ cols }))}>
-      <div className={S.field.label}>
-        {label}
-        {required && <span className={S.field.req}>*</span>}
-        {optional && <span className={S.field.opt}>(opcional)</span>}
-      </div>
-      {children}
-      {error && (
-        <span className={S.field.error}>
-          <AlertCircle className="size-3 shrink-0" />
-          {error}
-        </span>
-      )}
-      {!error && hint && <span className={S.field.hint}>{hint}</span>}
-    </div>
-  );
 }
 
 // ── Section header ─────────────────────────────────────────────────────────────
@@ -305,73 +277,54 @@ function EditPatientForm({ patient }: { patient: Patient }) {
   return (
     <div className={S.page.root}>
       {/* Breadcrumb */}
-      <div className={S.breadcrumb.root}>
-        <button
-          type="button"
-          className={S.breadcrumb.link}
-          onClick={() => navigate({ to: "/patients" })}
-        >
-          Pacientes
-        </button>
-        <ChevronRight className="size-3" strokeWidth={1.5} />
-        <button type="button" className={S.breadcrumb.link} onClick={goBack}>
-          {patient.name}
-        </button>
-        <ChevronRight className="size-3" strokeWidth={1.5} />
-        <span className={S.breadcrumb.current}>Editar</span>
-      </div>
+      <Breadcrumb>
+        <BreadcrumbList>
+          <BreadcrumbItem>
+            <BreadcrumbLink asChild>
+              <button type="button" onClick={() => navigate({ to: "/patients" })}>Pacientes</button>
+            </BreadcrumbLink>
+          </BreadcrumbItem>
+          <BreadcrumbSeparator />
+          <BreadcrumbItem>
+            <BreadcrumbLink asChild>
+              <button type="button" onClick={goBack}>{patient.name}</button>
+            </BreadcrumbLink>
+          </BreadcrumbItem>
+          <BreadcrumbSeparator />
+          <BreadcrumbItem>
+            <BreadcrumbPage>Editar</BreadcrumbPage>
+          </BreadcrumbItem>
+        </BreadcrumbList>
+      </Breadcrumb>
 
       {/* Header */}
-      <div className={S.pageHeader.root}>
-        <div>
-          <h1 className={S.pageHeader.title}>Editar paciente</h1>
-          <p className={S.pageHeader.sub}>
-            Atualize os dados administrativos e iniciais do paciente.
-          </p>
-        </div>
-      </div>
+      <PageHeader
+        title="Editar paciente"
+        subtitle="Atualize os dados administrativos e iniciais do paciente."
+      />
 
       {/* Form card */}
       <form id="edit-patient-form" onSubmit={handleSubmit(onSubmit)}>
-        <div className={S.formCard}>
-          {/* Tabs */}
-          <div className={S.tabs.root} role="tablist">
+        <UISectionCard>
+          <Tabs value={tab} onValueChange={(v) => setTab(v as TabKey)} className="flex flex-col">
+          <TabsList>
             {TABS.map((t) => {
-              const active  = t.key === tab;
-              const filled  = !active && tabHasValues(t.key, values);
+              const filled = tab !== t.key && tabHasValues(t.key, values);
               const TabIcon = t.icon;
-
               return (
-                <button
-                  key={t.key}
-                  type="button"
-                  role="tab"
-                  aria-selected={active}
-                  className={cn(S.tabs.tab, active && S.tabs.tabActive)}
-                  onClick={() => setTab(t.key)}
-                >
-                  <span
-                    className={cn(
-                      S.tabs.num,
-                      active && S.tabs.numActive,
-                      filled && S.tabs.numFilled,
-                    )}
-                  >
-                    {filled ? (
-                      <Check className="size-[11px]" strokeWidth={2.5} />
-                    ) : (
-                      t.num
-                    )}
+                <TabsTrigger key={t.key} value={t.key}>
+                  <span className={cn(S.tabNum, tab === t.key && S.tabNumActive, filled && S.tabNumFilled)}>
+                    {filled ? <Check className="size-[11px]" strokeWidth={2.5} /> : t.num}
                   </span>
                   <TabIcon className="hidden size-[14px] sm:block" strokeWidth={1.5} />
-                  <span className={S.tabs.label}>{t.label}</span>
-                </button>
+                  {t.label}
+                </TabsTrigger>
               );
             })}
-          </div>
+          </TabsList>
 
           {/* ── Tab 1: Identificação ──────────────────────────── */}
-          {tab === "identity" && (
+          <TabsContent value="identity">
             <div className={S.section.root}>
               <SectionHead
                 num="1"
@@ -380,59 +333,54 @@ function EditPatientForm({ patient }: { patient: Patient }) {
               />
 
               {/* Document ID — read-only after creation */}
-              <div className={cn(S.field.root, S.span({ cols: 12 }), "mb-4")}>
-                <div className={S.field.label}>Documento (CPF / RG / Prontuário)</div>
+              <Field
+                label="Documento (CPF / RG / Prontuário)"
+                cols={12}
+                hint="O documento não pode ser alterado após o cadastro."
+                className="mb-4"
+              >
                 <div
                   className={cn(
-                    S.field.inputBase,
-                    S.field.inputMono,
+                    inputVariants({ appearance: 'mono' }),
                     "cursor-not-allowed bg-(--color-bg-surface) text-(--color-text-secondary)",
                   )}
                 >
                   {patient.documentId}
                 </div>
-                <span className={S.field.hint}>
-                  O documento não pode ser alterado após o cadastro.
-                </span>
-              </div>
+              </Field>
 
-              <div className={S.grid}>
+              <FormGrid>
                 <Field label="Nome completo" required cols={8} error={errors.name?.message}>
-                  <input
+                  <Input
                     {...register("name")}
                     placeholder="Ex.: Maria Helena Souza"
-                    className={cn(S.field.inputBase, errors.name && S.field.inputError)}
+                    state={errors.name ? 'error' : 'default'}
                   />
                 </Field>
 
                 <Field label="Data de nascimento" optional cols={4}>
-                  <div className={S.field.inputWithIcon}>
-                    <Calendar
-                      className="absolute left-3 top-1/2 size-[14px] -translate-y-1/2 text-(--color-text-tertiary)"
-                      strokeWidth={1.5}
-                    />
-                    <input
-                      {...register("birthDate")}
-                      type="date"
-                      className={cn(S.field.inputBase, S.field.inputMono, S.field.inputPaddedLeft)}
-                    />
-                  </div>
+                  <Input
+                    {...register("birthDate")}
+                    type="date"
+                    appearance="mono"
+                    leadIcon={<Calendar className="size-[14px]" strokeWidth={1.5} />}
+                  />
                 </Field>
 
                 <Field label="Sexo biológico" optional cols={4}>
-                  <select {...register("gender")} className={cn(S.field.inputBase, S.field.selectIcon)}>
+                  <NativeSelect {...register("gender")}>
                     <option value="">Selecione…</option>
                     <option value={UpdatePatientInputDtoGender.MALE}>Masculino</option>
                     <option value={UpdatePatientInputDtoGender.FEMALE}>Feminino</option>
                     <option value={UpdatePatientInputDtoGender.OTHER}>Outro / Prefiro não informar</option>
-                  </select>
+                  </NativeSelect>
                 </Field>
-              </div>
+              </FormGrid>
             </div>
-          )}
+          </TabsContent>
 
           {/* ── Tab 2: Contato ─────────────────────────────────── */}
-          {tab === "contact" && (
+          <TabsContent value="contact">
             <div className={S.section.root}>
               <SectionHead
                 num="2"
@@ -440,40 +388,26 @@ function EditPatientForm({ patient }: { patient: Patient }) {
                 subtitle="Canais para confirmar consultas e enviar lembretes."
               />
 
-              <div className={S.grid}>
+              <FormGrid>
                 <Field label="Celular / WhatsApp" optional cols={4}>
-                  <div className={S.field.inputWithIcon}>
-                    <Phone
-                      className="absolute left-3 top-1/2 size-[14px] -translate-y-1/2 text-(--color-text-tertiary)"
-                      strokeWidth={1.5}
-                    />
-                    <input
-                      {...register("phone")}
-                      placeholder="(00) 00000-0000"
-                      className={cn(S.field.inputBase, S.field.inputMono, S.field.inputPaddedLeft)}
-                    />
-                  </div>
+                  <Input
+                    {...register("phone")}
+                    placeholder="(00) 00000-0000"
+                    appearance="mono"
+                    leadIcon={<Phone className="size-[14px]" strokeWidth={1.5} />}
+                  />
                 </Field>
 
                 <Field label="E-mail" optional cols={4} error={errors.email?.message}>
-                  <div className={S.field.inputWithIcon}>
-                    <Mail
-                      className="absolute left-3 top-1/2 size-[14px] -translate-y-1/2 text-(--color-text-tertiary)"
-                      strokeWidth={1.5}
-                    />
-                    <input
-                      {...register("email")}
-                      type="email"
-                      placeholder="paciente@email.com"
-                      className={cn(
-                        S.field.inputBase,
-                        S.field.inputPaddedLeft,
-                        errors.email && S.field.inputError,
-                      )}
-                    />
-                  </div>
+                  <Input
+                    {...register("email")}
+                    type="email"
+                    placeholder="paciente@email.com"
+                    leadIcon={<Mail className="size-[14px]" strokeWidth={1.5} />}
+                    state={errors.email ? 'error' : 'default'}
+                  />
                 </Field>
-              </div>
+              </FormGrid>
 
               {/* Responsável */}
               <div className={S.subSection.root}>
@@ -485,128 +419,89 @@ function EditPatientForm({ patient }: { patient: Patient }) {
                     · para menores ou pacientes com tutela
                   </span>
                 </div>
-                <div className={S.grid}>
+                <FormGrid>
                   <Field label="Nome do responsável" optional cols={5}>
-                    <input
-                      {...register("emergencyContactName")}
-                      placeholder="Nome completo"
-                      className={S.field.inputBase}
-                    />
+                    <Input {...register("emergencyContactName")} placeholder="Nome completo" />
                   </Field>
 
                   <Field label="Telefone" optional cols={4}>
-                    <input
+                    <Input
                       {...register("emergencyContactPhone")}
                       placeholder="(00) 00000-0000"
-                      className={cn(S.field.inputBase, S.field.inputMono)}
+                      appearance="mono"
                     />
                   </Field>
-                </div>
+                </FormGrid>
               </div>
             </div>
-          )}
+          </TabsContent>
 
           {/* ── Tab 3: Endereço ───────────────────────────────── */}
-          {tab === "address" && (
+          <TabsContent value="address">
             <div className={S.section.root}>
               <SectionHead num="3" title="Endereço" subtitle="Todos os campos são opcionais." />
 
-              <div className={S.grid}>
+              <FormGrid>
                 <Field
                   label="CEP"
                   optional
                   cols={3}
-                  hint={
-                    zipLoading
-                      ? "Buscando endereço…"
-                      : "Preenche os demais campos automaticamente."
-                  }
+                  hint={zipLoading ? "Buscando endereço…" : "Preenche os demais campos automaticamente."}
                 >
-                  <div className={S.field.inputWithIcon}>
-                    <input
-                      {...register("zipCode")}
-                      placeholder="00000-000"
-                      className={cn(S.field.inputBase, S.field.inputMono)}
-                    />
-                    {zipLoading && (
-                      <span className={cn(S.field.trailIcon, "animate-spin")}>
-                        <svg
-                          className="size-[14px]"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="1.5"
-                        >
+                  <Input
+                    {...register("zipCode")}
+                    placeholder="00000-000"
+                    appearance="mono"
+                    trailIcon={
+                      zipLoading ? (
+                        <svg className="size-[14px] animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
                           <path d="M21 12a9 9 0 1 1-6.219-8.56" />
                         </svg>
-                      </span>
-                    )}
-                  </div>
+                      ) : undefined
+                    }
+                  />
                 </Field>
 
                 <Field label="Logradouro" optional cols={6}>
-                  <input
+                  <Input
                     {...register("street")}
                     placeholder="Rua, avenida, travessa…"
-                    className={S.field.inputBase}
                     disabled={zipLoading}
                   />
                 </Field>
 
                 <Field label="Número" optional cols={3}>
-                  <input
-                    {...register("number")}
-                    placeholder="123"
-                    className={cn(S.field.inputBase, S.field.inputMono)}
-                  />
+                  <Input {...register("number")} placeholder="123" appearance="mono" />
                 </Field>
 
                 <Field label="Complemento" optional cols={4}>
-                  <input
-                    {...register("complement")}
-                    placeholder="Apto, sala, bloco…"
-                    className={S.field.inputBase}
-                  />
+                  <Input {...register("complement")} placeholder="Apto, sala, bloco…" />
                 </Field>
 
                 <Field label="Bairro" optional cols={4}>
-                  <input
-                    {...register("neighborhood")}
-                    placeholder="Bairro"
-                    className={S.field.inputBase}
-                    disabled={zipLoading}
-                  />
+                  <Input {...register("neighborhood")} placeholder="Bairro" disabled={zipLoading} />
                 </Field>
 
                 <Field label="Cidade" optional cols={3}>
-                  <input
-                    {...register("city")}
-                    placeholder="Cidade"
-                    className={S.field.inputBase}
-                    disabled={zipLoading}
-                  />
+                  <Input {...register("city")} placeholder="Cidade" disabled={zipLoading} />
                 </Field>
 
                 <Field label="UF" optional cols={1}>
-                  <select
-                    {...register("state")}
-                    className={cn(S.field.inputBase, S.field.selectIcon)}
-                    disabled={zipLoading}
-                  >
+                  <NativeSelect {...register("state")} disabled={zipLoading}>
                     <option value="">—</option>
                     {BR_STATES.map((uf) => (
                       <option key={uf} value={uf}>
                         {uf}
                       </option>
                     ))}
-                  </select>
+                  </NativeSelect>
                 </Field>
-              </div>
+              </FormGrid>
             </div>
-          )}
+          </TabsContent>
 
           {/* ── Tab 4: Saúde ──────────────────────────────────── */}
-          {tab === "health" && (
+          <TabsContent value="health">
             <div className={S.section.root}>
               <SectionHead
                 num="4"
@@ -614,28 +509,26 @@ function EditPatientForm({ patient }: { patient: Patient }) {
                 subtitle="Registro inicial — a anamnese completa é feita após o cadastro."
               />
 
-              <div className={S.grid}>
+              <FormGrid>
                 <Field
                   label="Alergias conhecidas"
                   optional
                   cols={12}
                   hint="Liste medicamentos, alimentos ou substâncias com reações documentadas."
                 >
-                  <textarea
+                  <Textarea
                     {...register("allergies")}
-                    className={cn(S.field.inputBase, S.field.textarea)}
                     placeholder="Ex.: Dipirona — reação cutânea moderada. Frutos do mar — anafilaxia."
                   />
                 </Field>
 
                 <Field label="Observações iniciais" optional cols={12}>
-                  <textarea
+                  <Textarea
                     {...register("notes")}
-                    className={cn(S.field.inputBase, S.field.textarea)}
                     placeholder="Histórico relevante, comorbidades conhecidas, medicação contínua, queixa que motivou o cadastro…"
                   />
                 </Field>
-              </div>
+              </FormGrid>
 
               <div className={S.infoNote}>
                 <Info className="mt-px size-[14px] shrink-0" strokeWidth={1.5} />
@@ -646,8 +539,8 @@ function EditPatientForm({ patient }: { patient: Patient }) {
                 </div>
               </div>
             </div>
-          )}
-        </div>
+          </TabsContent>
+          </Tabs>
 
         {/* Sticky footer */}
         <div className={S.footer.root}>
@@ -706,6 +599,7 @@ function EditPatientForm({ patient }: { patient: Patient }) {
             )}
           </div>
         </div>
+        </UISectionCard>
       </form>
     </div>
   );

@@ -7,7 +7,6 @@ import {
   Tag,
   Paperclip,
   Lock,
-  ChevronRight,
   CheckCircle2,
   AlertTriangle,
   Check,
@@ -33,6 +32,20 @@ import {
 } from "@agenda-app/client";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { NativeSelect } from "@/components/ui/native-select";
+import { PageHeader } from "@/components/ui/page-header";
+import { Field, FormGrid } from "@/components/ui/field";
+import { AvatarInitials } from "@/components/ui/avatar";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
 import { cn } from "@/lib/utils";
 import { useAppStore } from "@/store/appStore";
 import { toast } from "sonner";
@@ -144,16 +157,10 @@ function getBmiLabel(bmi: number): string {
   return "Obesidade III";
 }
 
-function getAvatarVariant(id: string): string {
+function getAvatarColorIndex(id: string): number {
   let h = 0;
   for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) >>> 0;
-  return S.avatarVariants[h % S.avatarVariants.length] ?? S.avatarVariants[0];
-}
-
-function getInitials(name: string): string {
-  const parts = name.trim().split(/\s+/);
-  if (parts.length === 1) return (parts[0] ?? "").slice(0, 2).toUpperCase();
-  return `${parts[0]?.[0] ?? ""}${parts[parts.length - 1]?.[0] ?? ""}`.toUpperCase();
+  return h;
 }
 
 function isVitalOutOfRange(val: string, range: { min: number; max: number }): boolean {
@@ -183,31 +190,6 @@ interface PublishSummary {
 }
 
 // ── Sub-components ────────────────────────────────────────────────────────────
-
-function Field({
-  label,
-  required,
-  optional,
-  cols = 12,
-  children,
-}: {
-  label: string;
-  required?: boolean;
-  optional?: boolean;
-  cols?: 1|2|3|4|5|6|7|8|9|10|11|12;
-  children: ReactNode;
-}) {
-  return (
-    <div className={cn(S.field.root, S.span({ cols }))}>
-      <div className={S.field.label}>
-        {label}
-        {required && <span className={S.field.req}>*</span>}
-        {optional && <span className={S.field.opt}>(opcional)</span>}
-      </div>
-      {children}
-    </div>
-  );
-}
 
 function SoapField({
   letter,
@@ -590,30 +572,34 @@ function NewEvolutionForm({ patient }: { patient: Patient }) {
     <div className={S.page.root}>
       <div className={S.page.top}>
         {/* Breadcrumb */}
-        <nav className={S.breadcrumb.root}>
-          <Link to="/patients" className={S.breadcrumb.link}>Pacientes</Link>
-          <ChevronRight className="size-3 stroke-[1.5]" />
-          <Link
-            to="/patients/$patientId"
-            params={{ patientId: patient.id }}
-            className={S.breadcrumb.link}
-          >
-            {patient.name}
-          </Link>
-          <ChevronRight className="size-3 stroke-[1.5]" />
-          <span className={S.breadcrumb.current}>Nova evolução</span>
-        </nav>
+        <Breadcrumb>
+          <BreadcrumbList>
+            <BreadcrumbItem>
+              <BreadcrumbLink asChild>
+                <Link to="/patients">Pacientes</Link>
+              </BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbLink asChild>
+                <Link to="/patients/$patientId" params={{ patientId: patient.id }}>
+                  {patient.name}
+                </Link>
+              </BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbPage>Nova evolução</BreadcrumbPage>
+            </BreadcrumbItem>
+          </BreadcrumbList>
+        </Breadcrumb>
 
         {/* Title */}
-        <div className={S.pageHeader.root}>
-          <h1 className={S.pageHeader.title}>Nova evolução</h1>
-        </div>
+        <PageHeader title="Nova evolução" className="mt-5" />
 
         {/* Patient card */}
         <div className={S.patientCard.root}>
-          <div className={cn(S.patientCard.avatar, getAvatarVariant(patient.id))}>
-            {getInitials(patient.name)}
-          </div>
+          <AvatarInitials name={patient.name} colorIndex={getAvatarColorIndex(patient.id)} size="sm" />
           <div className={S.patientCard.info}>
             <Link
               to="/patients/$patientId"
@@ -665,43 +651,42 @@ function NewEvolutionForm({ patient }: { patient: Patient }) {
               </div>
             </div>
 
-            <div className={S.grid}>
+            <FormGrid>
               <Field label="Data" required cols={3}>
-                <input
+                <Input
                   type="date"
                   value={date}
                   onChange={(e) => setDate(e.target.value)}
-                  className={cn(S.field.inputBase, S.field.inputMono)}
+                  appearance="mono"
                 />
               </Field>
               <Field label="Início" required cols={3}>
-                <input
+                <Input
                   type="time"
                   value={time}
                   onChange={(e) => setTime(e.target.value)}
-                  className={cn(S.field.inputBase, S.field.inputMono)}
+                  appearance="mono"
                 />
               </Field>
               <Field label="Término" optional cols={3}>
-                <input
+                <Input
                   type="time"
                   value={endTime}
                   onChange={(e) => setEndTime(e.target.value)}
-                  className={cn(S.field.inputBase, S.field.inputMono)}
+                  appearance="mono"
                 />
               </Field>
               <Field label="Tipo de atendimento" required cols={3}>
-                <select
+                <NativeSelect
                   value={attendanceType}
                   onChange={(e) => setAttendanceType(e.target.value as CreateRecordDtoAttendanceType)}
-                  className={cn(S.field.inputBase, S.field.selectIcon)}
                 >
                   {ATTENDANCE_OPTIONS.map((o) => (
                     <option key={o.value} value={o.value}>{o.label}</option>
                   ))}
-                </select>
+                </NativeSelect>
               </Field>
-            </div>
+            </FormGrid>
           </section>
 
           {/* ── Sinais vitais ─────────────────────────────────────────── */}
@@ -894,24 +879,19 @@ function NewEvolutionForm({ patient }: { patient: Patient }) {
               </div>
             </div>
 
-            <div className={S.grid}>
+            <FormGrid>
               <Field label="Status clínico" cols={6}>
-                <select
+                <NativeSelect
                   value={clinicalStatus}
                   onChange={(e) => setClinicalStatus(e.target.value as CreateRecordDtoClinicalStatus)}
-                  className={cn(S.field.inputBase, S.field.selectIcon)}
                 >
                   {CLINICAL_STATUS_OPTIONS.map((o) => (
                     <option key={o.value} value={o.value}>{o.label}</option>
                   ))}
-                </select>
+                </NativeSelect>
               </Field>
 
-              <div className={cn(S.span({ cols: 12 }), "flex flex-col gap-1.5")}>
-                <div className={S.field.label}>
-                  Conduta
-                  <span className={S.field.opt}>(opcional)</span>
-                </div>
+              <Field label="Conduta" optional cols={12}>
                 <div className={S.conductGrid}>
                   {CONDUCT_TAGS.map((t) => {
                     const on = conductTags.includes(t.value);
@@ -929,18 +909,18 @@ function NewEvolutionForm({ patient }: { patient: Patient }) {
                     );
                   })}
                 </div>
-              </div>
+              </Field>
 
               <Field label="Observações complementares" optional cols={12}>
-                <textarea
+                <Textarea
                   value={freeNotes}
                   onChange={(e) => setFreeNotes(e.target.value)}
                   rows={3}
-                  className={cn(S.field.inputBase, "resize-y min-h-[80px]")}
+                  className="resize-y min-h-[80px]"
                   placeholder="Informações que não se encaixam na estrutura SOAP. Lembretes para o próximo retorno…"
                 />
               </Field>
-            </div>
+            </FormGrid>
           </section>
 
           {/* ── Anexos ───────────────────────────────────────────────── */}

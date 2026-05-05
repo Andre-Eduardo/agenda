@@ -1,26 +1,10 @@
 import { cn } from '@/lib/utils';
 import { cva } from 'class-variance-authority';
 
-export const avatarVariants = [
-  'bg-(--color-primary-surface) text-(--color-primary-text)',
-  'bg-(--color-info-surface) text-(--color-info)',
-  'bg-(--color-success-surface) text-(--color-success)',
-  'bg-(--color-warning-surface) text-(--color-warning)',
-  'bg-(--color-ai-bg) text-(--color-ai-text)',
-  'bg-(--color-bg-surface) text-(--color-text-secondary)',
-  'bg-(--color-danger-surface) text-(--color-danger)',
-];
-
 export const page = {
   root: cn('pb-[60px] bg-(--color-bg-page)'),
   inner: cn('px-6 pt-6'),
   errorState: cn('flex flex-col items-center justify-center gap-4 p-12 text-(--color-text-secondary)'),
-};
-
-export const breadcrumb = {
-  root: cn('mb-3 flex items-center gap-[6px] text-[12px] text-(--color-text-tertiary)'),
-  link: cn('cursor-pointer text-(--color-text-secondary) transition-colors hover:text-(--color-primary-text) hover:underline'),
-  current: cn('font-medium text-(--color-text-primary)'),
 };
 
 export const header = {
@@ -43,18 +27,6 @@ export const header = {
   patMeta: cn('mt-[2px] text-[11px] text-(--color-text-tertiary)'),
   actions: cn('flex gap-2'),
 };
-
-export const originPill = cva(
-  'inline-flex items-center gap-[6px] rounded-full border px-[11px] py-[5px] text-[12px] font-medium leading-[1.3]',
-  {
-    variants: {
-      variant: {
-        ai: 'bg-(--color-ai-bg) text-(--color-ai-text) border-(--color-ai-border)',
-        manual: 'bg-(--color-bg-surface) text-(--color-text-secondary) border-(--color-border)',
-      },
-    },
-  },
-);
 
 export const body = cn('flex flex-col gap-[18px]');
 
@@ -89,32 +61,12 @@ export const soap = {
   bodyEmpty: cn('pl-[48px] text-[14px] leading-[1.6] italic text-(--color-text-tertiary)'),
 };
 
-export const statusPill = cva(
-  'inline-flex items-center gap-[6px] rounded-full border px-[10px] py-1 text-[12px] font-medium leading-[1.3]',
-  {
-    variants: {
-      status: {
-        STABLE: 'bg-(--color-success-surface) text-(--color-success) border-(--color-success)',
-        IMPROVING: 'bg-(--color-success-surface) text-(--color-success) border-(--color-success)',
-        WORSENING: 'bg-(--color-danger-surface) text-(--color-danger) border-(--color-danger)',
-        UNCHANGED: 'bg-(--color-bg-surface) text-(--color-text-secondary) border-(--color-border)',
-        UNDER_OBSERVATION: 'bg-(--color-warning-surface) text-(--color-warning) border-(--color-warning)',
-      },
-    },
-  },
-);
-
 export const tags = {
   grid: cn('grid grid-cols-[auto_1fr] items-start gap-x-7 gap-y-[14px]'),
   label: cn('pt-1 text-[12px] font-medium uppercase tracking-[0.04em] text-(--color-text-tertiary)'),
   list: cn('flex flex-wrap gap-[6px]'),
   dot: cn('size-[6px] rounded-full bg-current'),
 };
-
-export const conductTag = cn(
-  'inline-flex items-center rounded-full border border-(--color-border)',
-  'bg-(--color-bg-surface) px-[10px] py-1 text-[12px] font-medium text-(--color-text-secondary)',
-);
 
 export const notes = cn('whitespace-pre-wrap text-[14px] leading-[1.6] text-(--color-text-primary)');
 

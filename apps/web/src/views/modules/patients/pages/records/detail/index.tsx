@@ -16,6 +16,16 @@ import type { ReactNode } from "react";
 import type { UseQueryResult } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Badge } from "@/components/ui/badge";
+import { AvatarInitials } from "@/components/ui/avatar";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
 import { useGetRecord, useGetPatient, useSearchRecords } from "@agenda-app/client";
 import type {
   Record as MedicalRecord,
@@ -91,16 +101,10 @@ function getAge(birthDate: unknown): number | null {
   return age;
 }
 
-function getAvatarVariant(id: string): string {
+function getAvatarColorIndex(id: string): number {
   let h = 0;
   for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) >>> 0;
-  return S.avatarVariants[h % S.avatarVariants.length] ?? (S.avatarVariants[0] ?? "");
-}
-
-function getInitials(name: string): string {
-  const parts = name.trim().split(/\s+/);
-  if (parts.length === 1) return (parts[0] ?? "").slice(0, 2).toUpperCase();
-  return `${parts[0]?.[0] ?? ""}${parts[parts.length - 1]?.[0] ?? ""}`.toUpperCase();
+  return h;
 }
 
 function attendanceLabel(type: string | null | undefined): string {
@@ -214,10 +218,10 @@ function TagsSection({ record }: { record: MedicalRecord }): ReactNode {
           <>
             <div className={S.tags.label}>Status clínico</div>
             <div>
-              <span className={S.statusPill({ status: record.clinicalStatus as NonNullable<RecordClinicalStatus> })}>
+              <Badge clinicalStatus={record.clinicalStatus as NonNullable<RecordClinicalStatus>} className="gap-[6px] rounded-full px-[10px] py-1 text-[12px]">
                 <span className={S.tags.dot} />
                 {clinicalStatusLabel(record.clinicalStatus)}
-              </span>
+              </Badge>
             </div>
           </>
         )}
@@ -226,7 +230,7 @@ function TagsSection({ record }: { record: MedicalRecord }): ReactNode {
             <div className={S.tags.label}>Condutas</div>
             <div className={S.tags.list}>
               {record.conductTags.map((t) => (
-                <span key={t} className={S.conductTag}>{conductLabel(t)}</span>
+                <Badge key={t} variant="outline" className="rounded-full bg-(--color-bg-surface) px-[10px] py-1 text-[12px] font-medium text-(--color-text-secondary)">{conductLabel(t)}</Badge>
               ))}
             </div>
           </>
@@ -346,15 +350,15 @@ function TraceabilitySection({ record }: { record: MedicalRecord }) {
           <div className={S.trace.key}>Origem do conteúdo</div>
           <div className={S.trace.val}>
             {isAI ? (
-              <span className={S.originPill({ variant: "ai" })}>
+              <Badge origin="ai" className="gap-[6px] rounded-full px-[11px] py-[5px] text-[12px]">
                 <Sparkles className="size-[11px]" />
                 Gerado por IA e aprovado
-              </span>
+              </Badge>
             ) : (
-              <span className={S.originPill({ variant: "manual" })}>
+              <Badge origin="manual" className="gap-[6px] rounded-full px-[11px] py-[5px] text-[12px]">
                 <Pencil className="size-[11px]" />
                 Registro manual
-              </span>
+              </Badge>
             )}
           </div>
         </div>
@@ -419,19 +423,27 @@ function RecordDetailView({
     <div className={S.page.root}>
       <div className={S.page.inner}>
         {/* Breadcrumb */}
-        <nav className={S.breadcrumb.root}>
-          <Link to="/patients" className={S.breadcrumb.link}>Pacientes</Link>
-          <ChevronRight className="size-3 stroke-[1.5]" />
-          <Link
-            to="/patients/$patientId"
-            params={{ patientId: patient.id }}
-            className={S.breadcrumb.link}
-          >
-            {patient.name}
-          </Link>
-          <ChevronRight className="size-3 stroke-[1.5]" />
-          <span className={S.breadcrumb.current}>Evolução</span>
-        </nav>
+        <Breadcrumb className="mb-3">
+          <BreadcrumbList>
+            <BreadcrumbItem>
+              <BreadcrumbLink asChild>
+                <Link to="/patients">Pacientes</Link>
+              </BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbLink asChild>
+                <Link to="/patients/$patientId" params={{ patientId: patient.id }}>
+                  {patient.name}
+                </Link>
+              </BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbPage>Evolução</BreadcrumbPage>
+            </BreadcrumbItem>
+          </BreadcrumbList>
+        </Breadcrumb>
 
         {/* Header */}
         <header className={S.header.root}>
@@ -449,15 +461,15 @@ function RecordDetailView({
               </span>
               <span className={S.header.metaSep} />
               {isAI ? (
-                <span className={S.originPill({ variant: "ai" })}>
+                <Badge origin="ai" className="gap-[6px] rounded-full px-[11px] py-[5px] text-[12px]">
                   <Sparkles className="size-[11px]" />
                   Aprovado a partir de IA
-                </span>
+                </Badge>
               ) : (
-                <span className={S.originPill({ variant: "manual" })}>
+                <Badge origin="manual" className="gap-[6px] rounded-full px-[11px] py-[5px] text-[12px]">
                   <Pencil className="size-[11px]" />
                   Registro manual
-                </span>
+                </Badge>
               )}
             </div>
           </div>
@@ -467,12 +479,7 @@ function RecordDetailView({
               className={S.header.patCard}
               onClick={() => navigate({ to: "/patients/$patientId", params: { patientId: patient.id } })}
             >
-              <div className={cn(
-                "inline-flex size-9 shrink-0 items-center justify-center rounded-full text-sm font-medium",
-                getAvatarVariant(patient.id),
-              )}>
-                {getInitials(patient.name)}
-              </div>
+              <AvatarInitials name={patient.name} colorIndex={getAvatarColorIndex(patient.id)} size="sm" />
               <div className="min-w-0 flex-1">
                 <div className={S.header.patName}>{patient.name}</div>
                 <div className={S.header.patMeta}>{age !== null ? `${age} anos` : "—"}</div>
