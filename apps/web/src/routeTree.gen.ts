@@ -14,6 +14,7 @@ import { Route as DotDotLayoutsAuthLayoutIndexRouteImport } from './views/layout
 import { Route as settingsPagesIndexIndexRouteImport } from './views/modules/settings/pages/index/index'
 import { Route as patientsPagesIndexIndexRouteImport } from './views/modules/patients/pages/index/index'
 import { Route as dashboardPagesIndexIndexRouteImport } from './views/modules/dashboard/pages/index/index'
+import { Route as appointmentsPagesIndexIndexRouteImport } from './views/modules/appointments/pages/index/index'
 import { Route as welcomePagesIndexIndexRouteImport } from './views/modules/welcome/pages/index/index'
 import { Route as patientsPagesNewIndexRouteImport } from './views/modules/patients/pages/new/index'
 import { Route as patientsPagesDetailIndexRouteImport } from './views/modules/patients/pages/detail/index'
@@ -46,6 +47,12 @@ const dashboardPagesIndexIndexRoute =
     path: '/dashboard',
     getParentRoute: () => DotDotLayoutsStackedLayoutIndexRoute,
   } as any)
+const appointmentsPagesIndexIndexRoute =
+  appointmentsPagesIndexIndexRouteImport.update({
+    id: '/appointments',
+    path: '/appointments',
+    getParentRoute: () => DotDotLayoutsStackedLayoutIndexRoute,
+  } as any)
 const welcomePagesIndexIndexRoute = welcomePagesIndexIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -75,6 +82,7 @@ const patientsPagesEditIndexRoute = patientsPagesEditIndexRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof welcomePagesIndexIndexRoute
+  '/appointments': typeof appointmentsPagesIndexIndexRoute
   '/dashboard': typeof dashboardPagesIndexIndexRoute
   '/patients': typeof patientsPagesIndexIndexRoute
   '/settings': typeof settingsPagesIndexIndexRoute
@@ -85,6 +93,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof welcomePagesIndexIndexRoute
+  '/appointments': typeof appointmentsPagesIndexIndexRoute
   '/dashboard': typeof dashboardPagesIndexIndexRoute
   '/patients': typeof patientsPagesIndexIndexRoute
   '/settings': typeof settingsPagesIndexIndexRoute
@@ -98,6 +107,7 @@ export interface FileRoutesById {
   '/_auth': typeof DotDotLayoutsAuthLayoutIndexRouteWithChildren
   '/_stackedLayout': typeof DotDotLayoutsStackedLayoutIndexRouteWithChildren
   '/_stackedLayout/': typeof welcomePagesIndexIndexRoute
+  '/_stackedLayout/appointments': typeof appointmentsPagesIndexIndexRoute
   '/_stackedLayout/dashboard': typeof dashboardPagesIndexIndexRoute
   '/_stackedLayout/patients': typeof patientsPagesIndexIndexRoute
   '/_stackedLayout/settings': typeof settingsPagesIndexIndexRoute
@@ -110,6 +120,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/appointments'
     | '/dashboard'
     | '/patients'
     | '/settings'
@@ -120,6 +131,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/appointments'
     | '/dashboard'
     | '/patients'
     | '/settings'
@@ -132,6 +144,7 @@ export interface FileRouteTypes {
     | '/_auth'
     | '/_stackedLayout'
     | '/_stackedLayout/'
+    | '/_stackedLayout/appointments'
     | '/_stackedLayout/dashboard'
     | '/_stackedLayout/patients'
     | '/_stackedLayout/settings'
@@ -181,6 +194,13 @@ declare module '@tanstack/react-router' {
       path: '/dashboard'
       fullPath: '/dashboard'
       preLoaderRoute: typeof dashboardPagesIndexIndexRouteImport
+      parentRoute: typeof DotDotLayoutsStackedLayoutIndexRoute
+    }
+    '/_stackedLayout/appointments': {
+      id: '/_stackedLayout/appointments'
+      path: '/appointments'
+      fullPath: '/appointments'
+      preLoaderRoute: typeof appointmentsPagesIndexIndexRouteImport
       parentRoute: typeof DotDotLayoutsStackedLayoutIndexRoute
     }
     '/_stackedLayout/': {
@@ -237,6 +257,7 @@ const DotDotLayoutsAuthLayoutIndexRouteWithChildren =
 
 interface DotDotLayoutsStackedLayoutIndexRouteChildren {
   welcomePagesIndexIndexRoute: typeof welcomePagesIndexIndexRoute
+  appointmentsPagesIndexIndexRoute: typeof appointmentsPagesIndexIndexRoute
   dashboardPagesIndexIndexRoute: typeof dashboardPagesIndexIndexRoute
   patientsPagesIndexIndexRoute: typeof patientsPagesIndexIndexRoute
   settingsPagesIndexIndexRoute: typeof settingsPagesIndexIndexRoute
@@ -248,6 +269,7 @@ interface DotDotLayoutsStackedLayoutIndexRouteChildren {
 const DotDotLayoutsStackedLayoutIndexRouteChildren: DotDotLayoutsStackedLayoutIndexRouteChildren =
   {
     welcomePagesIndexIndexRoute: welcomePagesIndexIndexRoute,
+    appointmentsPagesIndexIndexRoute: appointmentsPagesIndexIndexRoute,
     dashboardPagesIndexIndexRoute: dashboardPagesIndexIndexRoute,
     patientsPagesIndexIndexRoute: patientsPagesIndexIndexRoute,
     settingsPagesIndexIndexRoute: settingsPagesIndexIndexRoute,

@@ -17,7 +17,8 @@
     "empty": "No se encontraron resultados",
     "error": "Ocurrió un error. Inténtalo de nuevo.",
     "saved": "Guardado con éxito",
-    "saving": "Guardando..."
+    "saving": "Guardando...",
+    "forbidden": "Acceso denegado. No tienes permiso para ver esta página."
   },
   "confirm": {
     "deleteTitle": "Confirmar eliminación",

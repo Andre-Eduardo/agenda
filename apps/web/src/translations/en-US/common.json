@@ -17,7 +17,8 @@
     "empty": "No results found",
     "error": "Something went wrong. Please try again.",
     "saved": "Saved successfully",
-    "saving": "Saving..."
+    "saving": "Saving...",
+    "forbidden": "Access denied. You do not have permission to view this page."
   },
   "confirm": {
     "deleteTitle": "Confirm deletion",

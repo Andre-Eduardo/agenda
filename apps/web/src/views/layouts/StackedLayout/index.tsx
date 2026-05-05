@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Outlet, Link, useRouterState, useNavigate, createFileRoute } from "@tanstack/react-router";
+import { Outlet, Link, useRouterState, useNavigate, createFileRoute, redirect } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 import {
   Calendar,
@@ -55,15 +55,14 @@ const NAV_GROUPS: NavGroup[] = [
 ];
 
 export const Route = createFileRoute("/_stackedLayout")({
-  // TODO: re-enable auth guard once /auth/login route is registered in routes.ts
-  // beforeLoad: ({ context, location }) => {
-  //   if (!context?.auth) {
-  //     throw redirect({
-  //       to: '/auth/login',
-  //       search: { redirect: location.pathname },
-  //     });
-  //   }
-  // },
+  beforeLoad: ({context, location}) => {
+    if (!context?.auth) {
+      throw redirect({
+        to: '/auth/login',
+        search: {redirect: location.pathname},
+      });
+    }
+  },
   component: StackedLayout,
 });
 
