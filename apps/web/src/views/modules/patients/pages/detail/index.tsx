@@ -386,10 +386,14 @@ function DetailSkeleton() {
 function RecordsContent({
   isLoading,
   records,
+  patientId,
 }: {
   isLoading: boolean;
   records: MedicalRecord[];
+  patientId: string;
 }) {
+  const navigate = useNavigate();
+
   if (isLoading) {
     return (
       <div className="flex flex-col gap-3">
@@ -409,7 +413,11 @@ function RecordsContent({
         const isAI = r.source === "IMPORT";
 
         return (
-          <div key={r.id} className={S.record.row}>
+          <div
+            key={r.id}
+            className={S.record.row}
+            onClick={() => navigate({ to: "/patients/$patientId/records/$recordId", params: { patientId, recordId: r.id } })}
+          >
             <div className="text-right">
               <div className={S.record.dateText}>{formatDateShort(eventDate)}</div>
               <div className={S.record.time}>{formatTime(eventDate)}</div>
@@ -741,7 +749,12 @@ function PatientProfile({ patient }: { patient: Patient }) {
 
       {/* Action grid */}
       <div className={S.actionGrid}>
-        <ActionTile icon={<FilePlus className="size-[18px]" />} label="Nova evolução" sub="Registrar SOAP" />
+        <ActionTile
+          icon={<FilePlus className="size-[18px]" />}
+          label="Nova evolução"
+          sub="Registrar SOAP"
+          onClick={() => navigate({ to: "/patients/$patientId/records/new", params: { patientId: patient.id } })}
+        />
         <ActionTile icon={<FileUp className="size-[18px]" />} label="Importar documento" sub="Foto ou PDF · IA extrai dados" />
         <ActionTile icon={<CalendarPlus className="size-[18px]" />} label="Agendar consulta" sub="Já com paciente preenchido" />
         <ActionTile icon={<MessagesSquare className="size-[18px]" />} label="Chat clínico com IA" sub="Contexto do prontuário" ai />
@@ -785,7 +798,7 @@ function PatientProfile({ patient }: { patient: Patient }) {
         title="Últimas evoluções"
         action={<SecLink>Ver prontuário completo <ArrowUpRight className="size-3" /></SecLink>}
       >
-        <RecordsContent isLoading={recordsQuery.isLoading} records={records} />
+        <RecordsContent isLoading={recordsQuery.isLoading} records={records} patientId={patient.id} />
       </SectionCard>
 
       {/* Two-col: patient info + initial health */}
