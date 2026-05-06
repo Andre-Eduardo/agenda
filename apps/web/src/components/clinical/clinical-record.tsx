@@ -6,5 +6,5 @@
  * AI-generated drafts should be wrapped in <AIBlock> until reviewed.
  */
 export function ClinicalRecord() {
-  return null;
+    return null;
 }

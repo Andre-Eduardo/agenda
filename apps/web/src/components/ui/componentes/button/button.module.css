@@ -1,100 +1,100 @@
 /* ── Base ──────────────────────────────────────────────────────────────────── */
 
 .base {
-  @apply inline-flex items-center justify-center gap-2 whitespace-nowrap
+    @apply inline-flex items-center justify-center gap-2 whitespace-nowrap
          rounded-(--radius-input) text-sm font-medium
          transition-colors duration-(--duration-fast) ease-out
          cursor-pointer select-none;
 
-  &:focus-visible {
-    @apply outline-none ring-2 ring-(--color-primary) ring-offset-1;
-  }
+    &:focus-visible {
+        @apply outline-none ring-2 ring-(--color-primary) ring-offset-1;
+    }
 
-  &:disabled {
-    @apply pointer-events-none opacity-50;
-  }
+    &:disabled {
+        @apply pointer-events-none opacity-50;
+    }
 
-  & svg {
-    @apply pointer-events-none shrink-0;
-  }
+    & svg {
+        @apply pointer-events-none shrink-0;
+    }
 }
 
 /* ── Variantes de aparência ────────────────────────────────────────────────── */
 
 .variantDefault {
-  @apply bg-(--color-primary) text-white;
+    @apply bg-(--color-primary) text-white;
 
-  &:hover:not(:disabled) {
-    @apply bg-(--color-primary-hover);
-  }
+    &:hover:not(:disabled) {
+        @apply bg-(--color-primary-hover);
+    }
 }
 
 .variantDestructive {
-  @apply bg-(--color-danger) text-white;
+    @apply bg-(--color-danger) text-white;
 
-  &:hover:not(:disabled) {
-    opacity: 0.9;
-  }
+    &:hover:not(:disabled) {
+        opacity: 0.9;
+    }
 }
 
 .variantOutline {
-  @apply border border-(--color-border) bg-(--color-bg-card) text-(--color-text-primary);
+    @apply border border-(--color-border) bg-(--color-bg-card) text-(--color-text-primary);
 
-  &:hover:not(:disabled) {
-    @apply bg-(--color-bg-surface) border-(--color-border-hover);
-  }
+    &:hover:not(:disabled) {
+        @apply bg-(--color-bg-surface) border-(--color-border-hover);
+    }
 }
 
 .variantSecondary {
-  @apply bg-(--color-bg-surface) text-(--color-text-secondary);
+    @apply bg-(--color-bg-surface) text-(--color-text-secondary);
 
-  &:hover:not(:disabled) {
-    @apply bg-(--color-border) text-(--color-text-primary);
-  }
+    &:hover:not(:disabled) {
+        @apply bg-(--color-border) text-(--color-text-primary);
+    }
 }
 
 .variantGhost {
-  @apply text-(--color-text-secondary);
+    @apply text-(--color-text-secondary);
 
-  &:hover:not(:disabled) {
-    @apply bg-(--color-bg-surface) text-(--color-text-primary);
-  }
+    &:hover:not(:disabled) {
+        @apply bg-(--color-bg-surface) text-(--color-text-primary);
+    }
 }
 
 .variantLink {
-  @apply text-(--color-primary-text) underline-offset-4;
+    @apply text-(--color-primary-text) underline-offset-4;
 
-  &:hover:not(:disabled) {
-    @apply underline;
-  }
+    &:hover:not(:disabled) {
+        @apply underline;
+    }
 }
 
 .variantAi {
-  @apply bg-(--color-ai-badge-bg) text-white;
+    @apply bg-(--color-ai-badge-bg) text-white;
 
-  &:hover:not(:disabled) {
-    background-color: #0f766e;
-  }
+    &:hover:not(:disabled) {
+        background-color: #0f766e;
+    }
 }
 
 /* ── Tamanhos ──────────────────────────────────────────────────────────────── */
 
 .sizeDefault {
-  @apply h-[38px] px-4;
+    @apply h-[38px] px-4;
 }
 
 .sizeSm {
-  @apply h-[32px] px-3 text-xs;
+    @apply h-[32px] px-3 text-xs;
 }
 
 .sizeLg {
-  @apply h-[42px] px-6;
+    @apply h-[42px] px-6;
 }
 
 .sizeIcon {
-  @apply size-9;
+    @apply size-9;
 }
 
 .sizeIconSm {
-  @apply size-7 text-xs;
+    @apply size-7 text-xs;
 }

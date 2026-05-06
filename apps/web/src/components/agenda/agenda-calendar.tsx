@@ -6,5 +6,5 @@
  * TODO: implement when the agenda/appointments page is built.
  */
 export function AgendaCalendar() {
-  return null;
+    return null;
 }

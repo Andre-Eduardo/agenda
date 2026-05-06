@@ -1,51 +1,77 @@
 /* ── StatTile ───────────────────────────────────────────────────────────────── */
 
 .root {
-  @apply flex flex-col gap-1.5 rounded-(--radius-card) border border-(--color-border)
+    @apply flex flex-col gap-1.5 rounded-(--radius-card) border border-(--color-border)
          bg-(--color-bg-card) p-[18px];
 }
 
 .header {
-  @apply flex items-center justify-between;
+    @apply flex items-center justify-between;
 }
 
 .label {
-  @apply text-sm leading-[1.4] text-(--color-text-secondary);
+    @apply text-sm leading-[1.4] text-(--color-text-secondary);
 }
 
 .valueSkeleton {
-  @apply mt-0.5 h-8 w-16 animate-pulse rounded bg-(--color-bg-surface);
+    @apply mt-0.5 h-8 w-16 animate-pulse rounded bg-(--color-bg-surface);
 }
 
 .value {
-  @apply mt-0.5 font-mono text-[28px] font-medium leading-[1.1]
+    @apply mt-0.5 font-mono text-[28px] font-medium leading-[1.1]
          tabular-nums tracking-[-0.01em] text-(--color-text-primary);
 }
 
 /* ── Delta ──────────────────────────────────────────────────────────────────── */
 
 .delta {
-  @apply text-2xs leading-[1.4];
+    @apply text-2xs leading-[1.4];
 }
 
-.deltaPositive { @apply text-(--color-success); }
-.deltaNegative { @apply text-(--color-danger); }
-.deltaNeutral  { @apply text-(--color-text-tertiary); }
+.deltaPositive {
+    @apply text-(--color-success);
+}
+.deltaNegative {
+    @apply text-(--color-danger);
+}
+.deltaNeutral {
+    @apply text-(--color-text-tertiary);
+}
 
 /* ── Icon variants ──────────────────────────────────────────────────────────── */
 
 .iconBase {
-  @apply flex items-center justify-center rounded-[8px];
+    @apply flex items-center justify-center rounded-[8px];
 }
 
-.iconSm { @apply size-7; }
-.iconMd { @apply size-8; }
-.iconLg { @apply size-10; }
+.iconSm {
+    @apply size-7;
+}
+.iconMd {
+    @apply size-8;
+}
+.iconLg {
+    @apply size-10;
+}
 
-.iconPrimary { @apply bg-(--color-primary)/10 text-(--color-primary); }
-.iconSuccess { @apply bg-(--color-success)/10 text-(--color-success); }
-.iconWarning { @apply bg-(--color-warning)/10 text-(--color-warning); }
-.iconDanger  { @apply bg-(--color-danger)/10 text-(--color-danger); }
-.iconInfo    { @apply bg-(--color-info-surface) text-(--color-info); }
-.iconMuted   { @apply bg-(--color-bg-surface) text-(--color-text-secondary); }
-.iconAi      { @apply bg-(--color-ai-bg) text-(--color-ai-text); }
+.iconPrimary {
+    @apply bg-(--color-primary)/10 text-(--color-primary);
+}
+.iconSuccess {
+    @apply bg-(--color-success)/10 text-(--color-success);
+}
+.iconWarning {
+    @apply bg-(--color-warning)/10 text-(--color-warning);
+}
+.iconDanger {
+    @apply bg-(--color-danger)/10 text-(--color-danger);
+}
+.iconInfo {
+    @apply bg-(--color-info-surface) text-(--color-info);
+}
+.iconMuted {
+    @apply bg-(--color-bg-surface) text-(--color-text-secondary);
+}
+.iconAi {
+    @apply bg-(--color-ai-bg) text-(--color-ai-text);
+}

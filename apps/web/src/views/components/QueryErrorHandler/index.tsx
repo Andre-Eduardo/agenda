@@ -1,22 +1,26 @@
 import {useEffect} from 'react';
 import type {ApiProblem} from '@agenda-app/client';
+import {useQueryClient} from '@tanstack/react-query';
 import {AxiosError} from 'axios';
 import {useTranslation} from 'react-i18next';
-import {useQueryClient} from '@tanstack/react-query';
 import {toast} from 'sonner';
 
 type ApiError = AxiosError<ApiProblem>;
 
 export const isApiError = (error: unknown): error is ApiError => error instanceof AxiosError;
 
-export const isUnauthorizedError = (error: unknown): error is ApiError =>
-    isApiError(error) && error.response?.status === 401;
+const getStatus = (error: unknown): number | undefined => {
+    if (!isApiError(error)) return undefined;
 
-export const isForbiddenError = (error: unknown): error is ApiError =>
-    isApiError(error) && error.response?.status === 403;
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access -- AxiosError generic is correctly narrowed via isApiError
+    return error.response?.status as number | undefined;
+};
 
-export const isUnexpectedError = (error: unknown): error is ApiError =>
-    isApiError(error) && error.response?.status === 500;
+export const isUnauthorizedError = (error: unknown): error is ApiError => getStatus(error) === 401;
+
+export const isForbiddenError = (error: unknown): error is ApiError => getStatus(error) === 403;
+
+export const isUnexpectedError = (error: unknown): error is ApiError => getStatus(error) === 500;
 
 export const QueryErrorHandler = () => {
     const {t} = useTranslation();
@@ -47,8 +51,11 @@ export const QueryErrorHandler = () => {
                     }
 
                     if (isApiError(error)) {
-                        toast.error(error.response?.data.title ?? t('states.error'), {
-                            description: error.response?.data.detail,
+                        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access -- AxiosError<ApiProblem> generic narrowed via isApiError
+                        const problem = error.response?.data as ApiProblem | undefined;
+
+                        toast.error(problem?.title ?? t('states.error'), {
+                            description: problem?.detail,
                         });
                     } else {
                         toast.error(t('states.error'), {

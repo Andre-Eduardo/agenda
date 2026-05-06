@@ -1,15 +1,15 @@
-import { Outlet, createRootRouteWithContext } from "@tanstack/react-router";
-import type { QueryClient } from "@tanstack/react-query";
+import type {QueryClient} from '@tanstack/react-query';
+import {Outlet, createRootRouteWithContext} from '@tanstack/react-router';
 
 export interface RouterContext {
-  queryClient: QueryClient;
-  auth: boolean;
+    queryClient: QueryClient;
+    auth: boolean;
 }
 
 export const Route = createRootRouteWithContext<RouterContext>()({
-  component: RootComponent,
+    component: RootComponent,
 });
 
 function RootComponent() {
-  return <Outlet />;
+    return <Outlet />;
 }

@@ -1,31 +1,37 @@
 /* ── KV ─────────────────────────────────────────────────────────────────────── */
 
 .root {
-  @apply flex min-w-0 flex-col gap-[2px];
+    @apply flex min-w-0 flex-col gap-[2px];
 }
 
 .label {
-  @apply text-[12px] leading-[1.3] text-(--color-text-tertiary);
+    @apply text-[12px] leading-[1.3] text-(--color-text-tertiary);
 }
 
 .value {
-  @apply break-words text-[13px] leading-[1.4] text-(--color-text-primary);
+    @apply break-words text-[13px] leading-[1.4] text-(--color-text-primary);
 }
 
 .valueMono {
-  @apply font-mono tabular-nums;
+    @apply font-mono tabular-nums;
 }
 
 .valueEmpty {
-  @apply italic text-(--color-text-tertiary);
+    @apply italic text-(--color-text-tertiary);
 }
 
 /* ── KVGrid ─────────────────────────────────────────────────────────────────── */
 
 .grid {
-  @apply grid gap-x-6 gap-y-4;
+    @apply grid gap-x-6 gap-y-4;
 }
 
-.gridCols2 { @apply grid-cols-2; }
-.gridCols3 { @apply grid-cols-3; }
-.gridCols4 { @apply grid-cols-4; }
+.gridCols2 {
+    @apply grid-cols-2;
+}
+.gridCols3 {
+    @apply grid-cols-3;
+}
+.gridCols4 {
+    @apply grid-cols-4;
+}

@@ -1,13 +1,14 @@
-import type {MutableRefObject, Ref, RefCallback} from 'react';
+import type {Ref, RefCallback, RefObject} from 'react';
 import {useMemo} from 'react';
 
 /**
  * Set the value of a ref.
  */
-function setRef<T>(ref: RefCallback<T> | MutableRefObject<T> | null | undefined, value: T): void {
+function setRef<T>(ref: RefCallback<T> | RefObject<T> | null | undefined, value: T): void {
     if (typeof ref === 'function') {
         ref(value);
     } else if (ref != null) {
+        // eslint-disable-next-line no-param-reassign -- standard React ref-setting pattern
         ref.current = value;
     }
 }

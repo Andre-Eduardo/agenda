@@ -21,7 +21,7 @@ export type PolymorphicRef<T extends ElementType> = ComponentProps<T>['ref'];
 
 function BoxImpl<T extends ElementType = 'div'>(
     {as: Tag = 'div' as T, className, ...props}: PolymorphicProps<T, BoxProps>,
-    ref: ForwardedRef<Element>,
+    ref: ForwardedRef<Element>
 ) {
     // Necessário: TypeScript não consegue estreitar o tipo genérico T dentro da implementação.
     // O contrato público é garantido pela assinatura de `Box` abaixo.
@@ -47,5 +47,5 @@ function BoxImpl<T extends ElementType = 'div'>(
  * <Box as="button" type="button" onClick={handleClick}>...</Box>
  */
 export const Box = forwardRef(BoxImpl) as <T extends ElementType = 'div'>(
-    props: PolymorphicProps<T, BoxProps> & {ref?: ForwardedRef<Element>},
+    props: PolymorphicProps<T, BoxProps> & {ref?: ForwardedRef<Element>}
 ) => ReactElement | null;

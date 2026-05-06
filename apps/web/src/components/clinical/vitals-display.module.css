@@ -1,19 +1,19 @@
 .grid {
-  @apply grid grid-cols-4 gap-2;
+    @apply grid grid-cols-4 gap-2;
 }
 
 .item {
-  @apply flex flex-col gap-[3px] rounded-(--radius-data) bg-(--color-bg-surface) p-(--padding-data-block);
+    @apply flex flex-col gap-[3px] rounded-(--radius-data) bg-(--color-bg-surface) p-(--padding-data-block);
 }
 
 .itemLabel {
-  @apply text-2xs leading-[1.2] text-(--color-text-secondary);
+    @apply text-2xs leading-[1.2] text-(--color-text-secondary);
 }
 
 .value {
-  @apply font-mono text-sm-body leading-[1.2] tabular-nums text-(--color-text-primary);
+    @apply font-mono text-sm-body leading-[1.2] tabular-nums text-(--color-text-primary);
 }
 
 .unit {
-  @apply font-mono text-2xs leading-[1.2] text-(--color-text-tertiary);
+    @apply font-mono text-2xs leading-[1.2] text-(--color-text-tertiary);
 }

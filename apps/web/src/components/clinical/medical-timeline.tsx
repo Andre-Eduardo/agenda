@@ -5,5 +5,5 @@
  * TODO: implement when the patient detail page is built.
  */
 export function MedicalTimeline() {
-  return null;
+    return null;
 }

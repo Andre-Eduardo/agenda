@@ -1,5 +1,5 @@
 export interface PaginatedResult<T> {
-  items: T[];
-  cursor: string | null;
-  total: number;
+    items: T[];
+    cursor: string | null;
+    total: number;
 }

@@ -7,5 +7,5 @@
  * TODO: implement when the clinical-chat page is built.
  */
 export function ClinicalChat() {
-  return null;
+    return null;
 }

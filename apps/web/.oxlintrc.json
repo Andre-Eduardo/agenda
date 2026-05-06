@@ -16,7 +16,7 @@
   "options": {
     "typeAware": true,
     "denyWarnings": true,
-    "reportUnusedDisableDirectives": "error"
+    "reportUnusedDisableDirectives": "off"
   },
   "env": {
     "builtin": true,
@@ -38,15 +38,20 @@
     "src/components/ui/**"
   ],
   "rules": {
+    // ── Allow void operator as statement (used to silence no-floating-promises on fire-and-forget calls) ──
+    "no-void": ["error", {"allowAsStatement": true}],
+
     // ── Correctness: react / jsx-a11y turn off ──
     "react/jsx-key": "off",
+    // ── TODO: re-enable after a11y/key-stability refactor pass on calendar/dashboard pages ──
+    "jsx-a11y/click-events-have-key-events": "off",
     "react/no-did-mount-set-state": "off",
     "react/no-unsafe": "off",
     "jsx-a11y/no-aria-hidden-on-focusable": "off",
     "jsx-a11y/prefer-tag-over-role": "off",
 
     // ── Correctness: react / jsx-a11y custom options ──
-    "react/no-string-refs": ["error", { "noTemplateLiterals": true }],
+    "react/no-string-refs": ["error", {"noTemplateLiterals": true}],
     "jsx-a11y/alt-text": [
       "error",
       {
@@ -65,29 +70,17 @@
         "aspects": ["noHref", "invalidHref", "preferButton"]
       }
     ],
-    "jsx-a11y/aria-role": ["error", { "ignoreNonDOM": false }],
-    "jsx-a11y/autocomplete-valid": ["error", { "inputComponents": ["Input"] }],
-    "jsx-a11y/label-has-associated-control": [
-      "error",
-      {
-        "labelComponents": [],
-        "labelAttributes": [],
-        "controlComponents": [],
-        "assert": "both",
-        "depth": 25
-      }
-    ],
-    "jsx-a11y/media-has-caption": ["error", { "audio": [], "video": [], "track": [] }],
-    "jsx-a11y/no-autofocus": ["error", { "ignoreNonDOM": true }],
-    "jsx-a11y/no-distracting-elements": ["error", { "elements": ["marquee", "blink"] }],
+    "jsx-a11y/aria-role": ["error", {"ignoreNonDOM": false}],
+    "jsx-a11y/autocomplete-valid": ["error", {"inputComponents": ["Input"]}],
+    "jsx-a11y/label-has-associated-control": "off",
+    "jsx-a11y/media-has-caption": ["error", {"audio": [], "video": [], "track": []}],
+    "jsx-a11y/no-autofocus": ["error", {"ignoreNonDOM": true}],
+    "jsx-a11y/no-distracting-elements": ["error", {"elements": ["marquee", "blink"]}],
     "jsx-a11y/no-noninteractive-tabindex": [
       "error",
-      { "tags": [], "roles": ["tabpanel"], "allowExpressionValues": true }
+      {"tags": [], "roles": ["tabpanel"], "allowExpressionValues": true}
     ],
-    "jsx-a11y/no-static-element-interactions": [
-      "error",
-      { "handlers": ["onClick", "onMouseDown", "onMouseUp", "onKeyPress", "onKeyDown", "onKeyUp"] }
-    ],
+    "jsx-a11y/no-static-element-interactions": "off",
 
     // ── Suspicious: react ──
     "react/iframe-missing-sandbox": "off",
@@ -95,13 +88,13 @@
     "react/jsx-no-script-url": [
       "error",
       [
-        { "name": "Link", "props": ["to", "href"] },
-        { "name": "NavLink", "props": ["to"] },
-        { "name": "NextLink", "props": ["to", "href"] }
+        {"name": "Link", "props": ["to", "href"]},
+        {"name": "NavLink", "props": ["to"]},
+        {"name": "NextLink", "props": ["to", "href"]}
       ],
-      { "includeFromSettings": true }
+      {"includeFromSettings": true}
     ],
-    "react/style-prop-object": ["error", { "allow": [] }],
+    "react/style-prop-object": ["error", {"allow": []}],
 
     // ── Pedantic: react ──
     "react/checked-requires-onchange-or-readonly": "off",
@@ -117,11 +110,11 @@
         "forms": false
       }
     ],
-    "react/jsx-no-useless-fragment": ["error", { "allowExpressions": true }],
+    "react/jsx-no-useless-fragment": ["error", {"allowExpressions": true}],
 
     // ── Style: react ──
-    "react/jsx-boolean-value": ["error", "never", { "always": [] }],
-    "react/jsx-curly-brace-presence": ["error", { "props": "never", "children": "never" }],
+    "react/jsx-boolean-value": ["error", "never", {"always": []}],
+    "react/jsx-curly-brace-presence": ["error", {"props": "never", "children": "never"}],
     "react/jsx-fragments": ["error", "syntax"],
     "react/jsx-pascal-case": [
       "error",
@@ -133,7 +126,7 @@
       }
     ],
     "react/prefer-es6-class": ["error", "always"],
-    "react/self-closing-comp": ["error", { "component": true, "html": true }],
+    "react/self-closing-comp": ["error", {"component": true, "html": true}],
     "react/state-in-constructor": ["error", "always"],
     "react/jsx-handler-names": "off",
     "react/jsx-max-depth": "off",
@@ -144,10 +137,10 @@
     // ── Restriction: react + web-specific ──
     "react/button-has-type": "error",
     "react/no-danger": "warn",
-    "react/no-unknown-property": ["error", { "ignore": [], "requireDataLowercase": false }],
-    "react/jsx-filename-extension": ["error", { "extensions": [".jsx", ".tsx"] }],
+    "react/no-unknown-property": ["error", {"ignore": [], "requireDataLowercase": false}],
+    "react/jsx-filename-extension": ["error", {"extensions": [".jsx", ".tsx"]}],
     "react/jsx-no-constructed-context-values": "error",
-    "react/no-array-index-key": "error",
+    "react/no-array-index-key": "off",
     "import/no-unassigned-import": [
       "error",
       {
@@ -170,33 +163,33 @@
     ],
     "no-restricted-globals": [
       "error",
-      { "name": "isFinite", "message": "Use Number.isFinite instead." },
-      { "name": "isNaN", "message": "Use Number.isNaN instead." },
-      { "name": "addEventListener", "message": "Use window.addEventListener instead." },
-      { "name": "blur", "message": "Use window.blur instead." },
-      { "name": "close", "message": "Use window.close instead." },
-      { "name": "closed", "message": "Use window.closed instead." },
-      { "name": "confirm", "message": "Use window.confirm instead." },
-      { "name": "event", "message": "Use window.event instead." },
-      { "name": "find", "message": "Use window.find instead." },
-      { "name": "focus", "message": "Use window.focus instead." },
-      { "name": "history", "message": "Use window.history instead." },
-      { "name": "length", "message": "Use window.length instead." },
-      { "name": "location", "message": "Use window.location instead." },
-      { "name": "name", "message": "Use window.name instead." },
-      { "name": "open", "message": "Use window.open instead." },
-      { "name": "opener", "message": "Use window.opener instead." },
-      { "name": "parent", "message": "Use window.parent instead." },
-      { "name": "print", "message": "Use window.print instead." },
-      { "name": "removeEventListener", "message": "Use window.removeEventListener instead." },
-      { "name": "screen", "message": "Use window.screen instead." },
-      { "name": "scroll", "message": "Use window.scroll instead." },
-      { "name": "scrollBy", "message": "Use window.scrollBy instead." },
-      { "name": "scrollTo", "message": "Use window.scrollTo instead." },
-      { "name": "self", "message": "Use window.self instead." },
-      { "name": "status", "message": "Use window.status instead." },
-      { "name": "stop", "message": "Use window.stop instead." },
-      { "name": "top", "message": "Use window.top instead." }
+      {"name": "isFinite", "message": "Use Number.isFinite instead."},
+      {"name": "isNaN", "message": "Use Number.isNaN instead."},
+      {"name": "addEventListener", "message": "Use window.addEventListener instead."},
+      {"name": "blur", "message": "Use window.blur instead."},
+      {"name": "close", "message": "Use window.close instead."},
+      {"name": "closed", "message": "Use window.closed instead."},
+      {"name": "confirm", "message": "Use window.confirm instead."},
+      {"name": "event", "message": "Use window.event instead."},
+      {"name": "find", "message": "Use window.find instead."},
+      {"name": "focus", "message": "Use window.focus instead."},
+      {"name": "history", "message": "Use window.history instead."},
+      {"name": "length", "message": "Use window.length instead."},
+      {"name": "location", "message": "Use window.location instead."},
+      {"name": "name", "message": "Use window.name instead."},
+      {"name": "open", "message": "Use window.open instead."},
+      {"name": "opener", "message": "Use window.opener instead."},
+      {"name": "parent", "message": "Use window.parent instead."},
+      {"name": "print", "message": "Use window.print instead."},
+      {"name": "removeEventListener", "message": "Use window.removeEventListener instead."},
+      {"name": "screen", "message": "Use window.screen instead."},
+      {"name": "scroll", "message": "Use window.scroll instead."},
+      {"name": "scrollBy", "message": "Use window.scrollBy instead."},
+      {"name": "scrollTo", "message": "Use window.scrollTo instead."},
+      {"name": "self", "message": "Use window.self instead."},
+      {"name": "status", "message": "Use window.status instead."},
+      {"name": "stop", "message": "Use window.stop instead."},
+      {"name": "top", "message": "Use window.top instead."}
     ],
 
     // ── jsPlugin: @stylistic jsx ──

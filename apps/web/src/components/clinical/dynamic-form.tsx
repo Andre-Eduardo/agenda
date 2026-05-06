@@ -5,5 +5,5 @@
  * TODO: implement when the patient-form/fill page is built.
  */
 export function DynamicForm() {
-  return null;
+    return null;
 }

@@ -1,4 +1,4 @@
-import { index, layout, rootRoute, route } from "@tanstack/virtual-file-routes";
+import {index, layout, rootRoute, route} from '@tanstack/virtual-file-routes';
 
 /**
  * Central virtual route tree.
@@ -10,29 +10,27 @@ import { index, layout, rootRoute, route } from "@tanstack/virtual-file-routes";
  * Add new feature modules under `apps/web/src/views/modules/{module}/` and
  * register their routes here. See docs/frontend/02-routing.md.
  */
-export const routes = rootRoute("../root.tsx", [
-  layout("auth", "../layouts/AuthLayout/index.tsx", [
-    route("/auth/login", filePath("auth", "login")),
-  ]),
-  layout("stackedLayout", "../layouts/StackedLayout/index.tsx", [
-    index(filePath("welcome", "index")),
-    route("/dashboard", filePath("dashboard", "index")),
-    route("/appointments", filePath("appointments", "index")),
-    route("/patients", filePath("patients", "index")),
-    route("/patients/new", filePath("patients", "new")),
-    route("/patients/$patientId", filePath("patients", "detail")),
-    route("/patients/$patientId/edit", filePath("patients", "edit")),
-    route("/patients/$patientId/records/new", filePath("patients", "records/new")),
-    route("/patients/$patientId/records/$recordId", filePath("patients", "records/detail")),
-    route("/appointments", filePath("agenda", "index")),
-    route("/settings", filePath("settings", "index")),
-  ]),
+export const routes = rootRoute('../root.tsx', [
+    layout('auth', '../layouts/AuthLayout/index.tsx', [route('/auth/login', filePath('auth', 'login'))]),
+    layout('stackedLayout', '../layouts/StackedLayout/index.tsx', [
+        index(filePath('welcome', 'index')),
+        route('/dashboard', filePath('dashboard', 'index')),
+        route('/appointments', filePath('appointments', 'index')),
+        route('/patients', filePath('patients', 'index')),
+        route('/patients/new', filePath('patients', 'new')),
+        route('/patients/$patientId', filePath('patients', 'detail')),
+        route('/patients/$patientId/edit', filePath('patients', 'edit')),
+        route('/patients/$patientId/records/new', filePath('patients', 'records/new')),
+        route('/patients/$patientId/records/$recordId', filePath('patients', 'records/detail')),
+        route('/appointments', filePath('agenda', 'index')),
+        route('/settings', filePath('settings', 'index')),
+    ]),
 ]);
 
 export function filePathLayout(module: string): string {
-  return `${module}/layout.tsx`;
+    return `${module}/layout.tsx`;
 }
 
 export function filePath(module: string, page: string): string {
-  return `${module}/pages/${page}/index.tsx`;
+    return `${module}/pages/${page}/index.tsx`;
 }

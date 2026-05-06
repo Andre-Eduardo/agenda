@@ -1,43 +1,43 @@
 /* ── BreadcrumbList ─────────────────────────────────────────────────────────── */
 
 .list {
-  @apply flex flex-wrap items-center gap-[6px] text-[13px] text-(--color-text-tertiary);
+    @apply flex flex-wrap items-center gap-[6px] text-[13px] text-(--color-text-tertiary);
 }
 
 /* ── BreadcrumbItem ─────────────────────────────────────────────────────────── */
 
 .item {
-  @apply inline-flex items-center gap-[6px];
+    @apply inline-flex items-center gap-[6px];
 }
 
 /* ── BreadcrumbLink ─────────────────────────────────────────────────────────── */
 
 .link {
-  @apply cursor-pointer text-(--color-text-secondary) transition-colors;
+    @apply cursor-pointer text-(--color-text-secondary) transition-colors;
 
-  &:hover {
-    @apply text-(--color-primary-text);
-  }
+    &:hover {
+        @apply text-(--color-primary-text);
+    }
 }
 
 /* ── BreadcrumbPage ─────────────────────────────────────────────────────────── */
 
 .page {
-  @apply text-(--color-text-primary);
+    @apply text-(--color-text-primary);
 }
 
 /* ── BreadcrumbSeparator ────────────────────────────────────────────────────── */
 
 .separator {
-  @apply text-(--color-text-tertiary);
+    @apply text-(--color-text-tertiary);
 
-  & svg {
-    @apply size-3;
-  }
+    & svg {
+        @apply size-3;
+    }
 }
 
 /* ── BreadcrumbEllipsis ─────────────────────────────────────────────────────── */
 
 .ellipsis {
-  @apply flex size-7 items-center justify-center;
+    @apply flex size-7 items-center justify-center;
 }

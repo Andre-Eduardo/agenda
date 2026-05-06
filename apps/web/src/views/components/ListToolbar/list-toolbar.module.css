@@ -1,19 +1,19 @@
 .root {
-  @apply mb-4 flex flex-wrap items-center justify-between gap-3;
+    @apply mb-4 flex flex-wrap items-center justify-between gap-3;
 }
 
 .left {
-  @apply flex flex-1 min-w-70 items-center gap-3;
+    @apply flex flex-1 min-w-70 items-center gap-3;
 }
 
 .searchWrapper {
-  @apply relative flex-1 max-w-105;
+    @apply relative flex-1 max-w-105;
 }
 
 .searchIcon {
-  @apply absolute left-3 top-1/2 -translate-y-1/2 size-4 text-(--color-text-tertiary);
+    @apply absolute left-3 top-1/2 -translate-y-1/2 size-4 text-(--color-text-tertiary);
 }
 
 .actions {
-  @apply flex items-center gap-3;
+    @apply flex items-center gap-3;
 }

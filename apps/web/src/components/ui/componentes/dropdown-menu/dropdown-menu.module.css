@@ -1,72 +1,96 @@
 /* ── Shared content panel ──────────────────────────────────────────────────── */
 
 .menuContent {
-  @apply z-50 min-w-[180px] overflow-hidden rounded-(--radius-dropdown)
+    @apply z-50 min-w-[180px] overflow-hidden rounded-(--radius-dropdown)
          border border-(--color-border) bg-(--color-bg-card) p-1.5
          text-(--color-text-primary) shadow-lg
          origin-(--radix-dropdown-menu-content-transform-origin);
 
-  &[data-state="open"]   { @apply animate-in fade-in-0 zoom-in-95; }
-  &[data-state="closed"] { @apply animate-out fade-out-0 zoom-out-95; }
-  &[data-side="bottom"]  { @apply slide-in-from-top-2; }
-  &[data-side="left"]    { @apply slide-in-from-right-2; }
-  &[data-side="right"]   { @apply slide-in-from-left-2; }
-  &[data-side="top"]     { @apply slide-in-from-bottom-2; }
+    &[data-state='open'] {
+        @apply animate-in fade-in-0 zoom-in-95;
+    }
+    &[data-state='closed'] {
+        @apply animate-out fade-out-0 zoom-out-95;
+    }
+    &[data-side='bottom'] {
+        @apply slide-in-from-top-2;
+    }
+    &[data-side='left'] {
+        @apply slide-in-from-right-2;
+    }
+    &[data-side='right'] {
+        @apply slide-in-from-left-2;
+    }
+    &[data-side='top'] {
+        @apply slide-in-from-bottom-2;
+    }
 }
 
 /* ── Shared item row ───────────────────────────────────────────────────────── */
 
 .menuItem {
-  @apply relative flex cursor-pointer select-none items-center gap-2.5
+    @apply relative flex cursor-pointer select-none items-center gap-2.5
          rounded-[6px] px-2.5 py-2 text-sm text-(--color-text-primary)
          outline-none transition-colors duration-(--duration-fast) ease-out;
 
-  &:hover                { @apply bg-(--color-bg-surface); }
-  &:focus                { @apply bg-(--color-bg-surface); }
-  &[data-disabled]       { @apply pointer-events-none opacity-50; }
-  &[data-state="open"]   { @apply bg-(--color-bg-surface); }
+    &:hover {
+        @apply bg-(--color-bg-surface);
+    }
+    &:focus {
+        @apply bg-(--color-bg-surface);
+    }
+    &[data-disabled] {
+        @apply pointer-events-none opacity-50;
+    }
+    &[data-state='open'] {
+        @apply bg-(--color-bg-surface);
+    }
 
-  & svg {
-    @apply pointer-events-none size-4 shrink-0;
-  }
+    & svg {
+        @apply pointer-events-none size-4 shrink-0;
+    }
 }
 
 .menuItemInset {
-  @apply pl-8;
+    @apply pl-8;
 }
 
 /* ── CheckboxItem / RadioItem (shadcn-style, accent tokens) ────────────────── */
 
 .menuCheckItem {
-  @apply relative flex cursor-default select-none items-center rounded-sm
+    @apply relative flex cursor-default select-none items-center rounded-sm
          py-1.5 pl-8 pr-2 text-sm outline-none transition-colors;
 
-  &:focus          { @apply bg-accent text-accent-foreground; }
-  &[data-disabled] { @apply pointer-events-none opacity-50; }
+    &:focus {
+        @apply bg-accent text-accent-foreground;
+    }
+    &[data-disabled] {
+        @apply pointer-events-none opacity-50;
+    }
 }
 
 .menuItemIndicator {
-  @apply absolute left-2 flex h-3.5 w-3.5 items-center justify-center;
+    @apply absolute left-2 flex h-3.5 w-3.5 items-center justify-center;
 }
 
 /* ── Label ─────────────────────────────────────────────────────────────────── */
 
 .menuLabel {
-  @apply px-2 py-1.5 text-sm font-semibold;
+    @apply px-2 py-1.5 text-sm font-semibold;
 }
 
 .menuLabelInset {
-  @apply pl-8;
+    @apply pl-8;
 }
 
 /* ── Separator ─────────────────────────────────────────────────────────────── */
 
 .menuSeparator {
-  @apply my-1 h-px bg-(--color-border);
+    @apply my-1 h-px bg-(--color-border);
 }
 
 /* ── Shortcut ──────────────────────────────────────────────────────────────── */
 
 .menuShortcut {
-  @apply ml-auto text-xs tracking-widest opacity-60;
+    @apply ml-auto text-xs tracking-widest opacity-60;
 }

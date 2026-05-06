@@ -1,78 +1,106 @@
 /* ── SheetOverlay ──────────────────────────────────────────────────────────── */
 
 .sheetOverlay {
-  @apply fixed inset-0 z-50 bg-black/80;
+    @apply fixed inset-0 z-50 bg-black/80;
 
-  &[data-state="open"]   { @apply animate-in fade-in-0; }
-  &[data-state="closed"] { @apply animate-out fade-out-0; }
+    &[data-state='open'] {
+        @apply animate-in fade-in-0;
+    }
+    &[data-state='closed'] {
+        @apply animate-out fade-out-0;
+    }
 }
 
 /* ── SheetContent (base) ───────────────────────────────────────────────────── */
 
 .sheetContent {
-  @apply fixed z-50 gap-4 bg-background p-6 shadow-lg transition ease-in-out;
+    @apply fixed z-50 gap-4 bg-background p-6 shadow-lg transition ease-in-out;
 
-  &[data-state="open"]   { @apply animate-in duration-500; }
-  &[data-state="closed"] { @apply animate-out duration-300; }
+    &[data-state='open'] {
+        @apply animate-in duration-500;
+    }
+    &[data-state='closed'] {
+        @apply animate-out duration-300;
+    }
 }
 
 /* ── SheetContent side variants ────────────────────────────────────────────── */
 
 .sheetSideTop {
-  @apply inset-x-0 top-0 border-b;
-  &[data-state="open"]   { @apply slide-in-from-top; }
-  &[data-state="closed"] { @apply slide-out-to-top; }
+    @apply inset-x-0 top-0 border-b;
+    &[data-state='open'] {
+        @apply slide-in-from-top;
+    }
+    &[data-state='closed'] {
+        @apply slide-out-to-top;
+    }
 }
 
 .sheetSideBottom {
-  @apply inset-x-0 bottom-0 border-t;
-  &[data-state="open"]   { @apply slide-in-from-bottom; }
-  &[data-state="closed"] { @apply slide-out-to-bottom; }
+    @apply inset-x-0 bottom-0 border-t;
+    &[data-state='open'] {
+        @apply slide-in-from-bottom;
+    }
+    &[data-state='closed'] {
+        @apply slide-out-to-bottom;
+    }
 }
 
 .sheetSideLeft {
-  @apply inset-y-0 left-0 h-full w-3/4 border-r sm:max-w-sm;
-  &[data-state="open"]   { @apply slide-in-from-left; }
-  &[data-state="closed"] { @apply slide-out-to-left; }
+    @apply inset-y-0 left-0 h-full w-3/4 border-r sm:max-w-sm;
+    &[data-state='open'] {
+        @apply slide-in-from-left;
+    }
+    &[data-state='closed'] {
+        @apply slide-out-to-left;
+    }
 }
 
 .sheetSideRight {
-  @apply inset-y-0 right-0 h-full w-3/4 border-l sm:max-w-sm;
-  &[data-state="open"]   { @apply slide-in-from-right; }
-  &[data-state="closed"] { @apply slide-out-to-right; }
+    @apply inset-y-0 right-0 h-full w-3/4 border-l sm:max-w-sm;
+    &[data-state='open'] {
+        @apply slide-in-from-right;
+    }
+    &[data-state='closed'] {
+        @apply slide-out-to-right;
+    }
 }
 
 /* ── SheetClose button ─────────────────────────────────────────────────────── */
 
 .sheetCloseButton {
-  @apply absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background
+    @apply absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background
          transition-opacity focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2
          disabled:pointer-events-none;
 
-  &:hover              { @apply opacity-100; }
-  &[data-state="open"] { @apply bg-secondary; }
+    &:hover {
+        @apply opacity-100;
+    }
+    &[data-state='open'] {
+        @apply bg-secondary;
+    }
 }
 
 /* ── SheetHeader ───────────────────────────────────────────────────────────── */
 
 .sheetHeader {
-  @apply flex flex-col space-y-2 text-center sm:text-left;
+    @apply flex flex-col space-y-2 text-center sm:text-left;
 }
 
 /* ── SheetFooter ───────────────────────────────────────────────────────────── */
 
 .sheetFooter {
-  @apply flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2;
+    @apply flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2;
 }
 
 /* ── SheetTitle ────────────────────────────────────────────────────────────── */
 
 .sheetTitle {
-  @apply text-lg font-semibold text-foreground;
+    @apply text-lg font-semibold text-foreground;
 }
 
 /* ── SheetDescription ──────────────────────────────────────────────────────── */
 
 .sheetDescription {
-  @apply text-sm text-muted-foreground;
+    @apply text-sm text-muted-foreground;
 }

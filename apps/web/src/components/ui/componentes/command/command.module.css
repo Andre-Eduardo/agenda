@@ -1,99 +1,103 @@
 /* ── Command ────────────────────────────────────────────────────────────────── */
 
 .command {
-  @apply flex h-full w-full flex-col overflow-hidden rounded-md bg-popover text-popover-foreground;
+    @apply flex h-full w-full flex-col overflow-hidden rounded-md bg-popover text-popover-foreground;
 }
 
 /* CommandDialog passes this class to <Command> to configure cmdk internals */
 .commandDialog {
-  & [cmdk-group-heading] {
-    @apply px-2 font-medium text-muted-foreground;
-  }
+    & [cmdk-group-heading] {
+        @apply px-2 font-medium text-muted-foreground;
+    }
 
-  & [cmdk-group]:not([hidden]) ~ [cmdk-group] {
-    @apply pt-0;
-  }
+    & [cmdk-group]:not([hidden]) ~ [cmdk-group] {
+        @apply pt-0;
+    }
 
-  & [cmdk-group] {
-    @apply px-2;
-  }
+    & [cmdk-group] {
+        @apply px-2;
+    }
 
-  & [cmdk-input-wrapper] svg {
-    @apply h-5 w-5;
-  }
+    & [cmdk-input-wrapper] svg {
+        @apply h-5 w-5;
+    }
 
-  & [cmdk-input] {
-    @apply h-12;
-  }
+    & [cmdk-input] {
+        @apply h-12;
+    }
 
-  & [cmdk-item] {
-    @apply px-2 py-3;
-  }
+    & [cmdk-item] {
+        @apply px-2 py-3;
+    }
 
-  & [cmdk-item] svg {
-    @apply h-5 w-5;
-  }
+    & [cmdk-item] svg {
+        @apply h-5 w-5;
+    }
 }
 
 /* ── CommandInput ───────────────────────────────────────────────────────────── */
 
 .commandInputWrapper {
-  @apply flex items-center border-b px-3;
+    @apply flex items-center border-b px-3;
 }
 
 .commandInput {
-  @apply flex h-11 w-full rounded-md bg-transparent py-3 text-sm outline-none
+    @apply flex h-11 w-full rounded-md bg-transparent py-3 text-sm outline-none
          disabled:cursor-not-allowed disabled:opacity-50;
 
-  &::placeholder {
-    @apply text-muted-foreground;
-  }
+    &::placeholder {
+        @apply text-muted-foreground;
+    }
 }
 
 /* ── CommandList ────────────────────────────────────────────────────────────── */
 
 .commandList {
-  @apply max-h-[300px] overflow-y-auto overflow-x-hidden;
+    @apply max-h-[300px] overflow-y-auto overflow-x-hidden;
 }
 
 /* ── CommandEmpty ───────────────────────────────────────────────────────────── */
 
 .commandEmpty {
-  @apply py-6 text-center text-sm;
+    @apply py-6 text-center text-sm;
 }
 
 /* ── CommandGroup ───────────────────────────────────────────────────────────── */
 
 .commandGroup {
-  @apply overflow-hidden p-1 text-foreground;
+    @apply overflow-hidden p-1 text-foreground;
 
-  & [cmdk-group-heading] {
-    @apply px-2 py-1.5 text-xs font-medium text-muted-foreground;
-  }
+    & [cmdk-group-heading] {
+        @apply px-2 py-1.5 text-xs font-medium text-muted-foreground;
+    }
 }
 
 /* ── CommandSeparator ───────────────────────────────────────────────────────── */
 
 .commandSeparator {
-  @apply -mx-1 h-px bg-border;
+    @apply -mx-1 h-px bg-border;
 }
 
 /* ── CommandItem ────────────────────────────────────────────────────────────── */
 
 .commandItem {
-  @apply relative flex cursor-default select-none items-center gap-2
+    @apply relative flex cursor-default select-none items-center gap-2
          rounded-sm px-2 py-1.5 text-sm outline-none;
 
-  &[data-selected="true"]  { @apply bg-accent text-accent-foreground; }
-  &[data-disabled="true"]  { @apply pointer-events-none opacity-50; }
+    &[data-selected='true'] {
+        @apply bg-accent text-accent-foreground;
+    }
+    &[data-disabled='true'] {
+        @apply pointer-events-none opacity-50;
+    }
 
-  & svg {
-    @apply pointer-events-none size-4 shrink-0;
-  }
+    & svg {
+        @apply pointer-events-none size-4 shrink-0;
+    }
 }
 
 /* ── CommandShortcut ────────────────────────────────────────────────────────── */
 
 .commandShortcut {
-  @apply ml-auto text-xs tracking-widest text-muted-foreground;
+    @apply ml-auto text-xs tracking-widest text-muted-foreground;
 }

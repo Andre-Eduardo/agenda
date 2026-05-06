@@ -1,6 +1,5 @@
 import {AxiosError} from 'axios';
 import type {AxiosRequestHeaders} from 'axios';
-import {screen} from '@testing-library/react';
 import {isApiError, isForbiddenError, isUnauthorizedError, isUnexpectedError, QueryErrorHandler} from '.';
 
 describe('QueryErrorHandler utility functions', () => {

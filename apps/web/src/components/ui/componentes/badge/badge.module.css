@@ -1,144 +1,144 @@
 /* ── Base ──────────────────────────────────────────────────────────────────── */
 
 .base {
-  @apply inline-flex items-center gap-1 rounded-full border border-transparent
+    @apply inline-flex items-center gap-1 rounded-full border border-transparent
          px-2.5 py-0.5 text-[11px] font-medium transition-colors;
 
-  &:focus {
-    @apply outline-none ring-2 ring-(--color-primary) ring-offset-2;
-  }
+    &:focus {
+        @apply outline-none ring-2 ring-(--color-primary) ring-offset-2;
+    }
 }
 
 /* ── Variant ───────────────────────────────────────────────────────────────── */
 
 .variantDefault {
-  @apply bg-(--color-primary)/10 text-(--color-primary);
+    @apply bg-(--color-primary)/10 text-(--color-primary);
 }
 
 .variantSecondary {
-  @apply bg-(--color-bg-surface) text-(--color-text-secondary);
+    @apply bg-(--color-bg-surface) text-(--color-text-secondary);
 }
 
 .variantDestructive {
-  @apply bg-(--color-danger)/10 text-(--color-danger);
+    @apply bg-(--color-danger)/10 text-(--color-danger);
 }
 
 .variantOutline {
-  @apply border border-(--color-border) text-(--color-text-primary);
+    @apply border border-(--color-border) text-(--color-text-primary);
 }
 
 .variantSuccess {
-  @apply bg-(--color-success)/10 text-(--color-success);
+    @apply bg-(--color-success)/10 text-(--color-success);
 }
 
 .variantWarning {
-  @apply bg-(--color-warning)/10 text-(--color-warning);
+    @apply bg-(--color-warning)/10 text-(--color-warning);
 }
 
 .variantAi {
-  @apply bg-(--color-ai-bg) text-(--color-ai-text);
+    @apply bg-(--color-ai-bg) text-(--color-ai-text);
 }
 
 /* ── Status ────────────────────────────────────────────────────────────────── */
 
 .statusScheduled {
-  @apply bg-(--color-text-tertiary)/10 text-(--color-text-secondary);
+    @apply bg-(--color-text-tertiary)/10 text-(--color-text-secondary);
 }
 
 .statusConfirmed {
-  @apply bg-(--color-primary)/10 text-(--color-primary);
+    @apply bg-(--color-primary)/10 text-(--color-primary);
 }
 
 .statusCompleted {
-  @apply bg-(--color-success)/10 text-(--color-success);
+    @apply bg-(--color-success)/10 text-(--color-success);
 }
 
 .statusCancelled {
-  @apply bg-(--color-danger)/10 text-(--color-danger);
+    @apply bg-(--color-danger)/10 text-(--color-danger);
 }
 
 .statusNoShow {
-  @apply bg-(--color-warning)/10 text-(--color-warning);
+    @apply bg-(--color-warning)/10 text-(--color-warning);
 }
 
 .statusArrived {
-  @apply bg-(--color-primary)/15 text-(--color-primary);
+    @apply bg-(--color-primary)/15 text-(--color-primary);
 }
 
 .statusInProgress {
-  @apply bg-(--color-primary)/15 text-(--color-primary);
+    @apply bg-(--color-primary)/15 text-(--color-primary);
 }
 
 /* ── Gender ────────────────────────────────────────────────────────────────── */
 
 .genderMale {
-  @apply bg-(--color-info-surface) text-(--color-info);
+    @apply bg-(--color-info-surface) text-(--color-info);
 }
 
 .genderFemale {
-  @apply bg-(--color-primary-surface) text-(--color-primary-text);
+    @apply bg-(--color-primary-surface) text-(--color-primary-text);
 }
 
 .genderOther {
-  @apply bg-(--color-bg-surface) text-(--color-text-secondary);
+    @apply bg-(--color-bg-surface) text-(--color-text-secondary);
 }
 
 /* ── Severity ──────────────────────────────────────────────────────────────── */
 
 .severityHigh {
-  @apply border border-(--color-danger)/30 bg-(--color-danger-surface) text-(--color-danger);
+    @apply border border-(--color-danger)/30 bg-(--color-danger-surface) text-(--color-danger);
 }
 
 .severityMedium {
-  @apply border border-(--color-warning)/30 bg-(--color-warning-surface) text-(--color-warning);
+    @apply border border-(--color-warning)/30 bg-(--color-warning-surface) text-(--color-warning);
 }
 
 .severityLow {
-  @apply border border-(--color-border) bg-(--color-bg-surface) text-(--color-text-secondary);
+    @apply border border-(--color-border) bg-(--color-bg-surface) text-(--color-text-secondary);
 }
 
 /* ── Clinical status ───────────────────────────────────────────────────────── */
 
 .clinicalStatusStable {
-  @apply border border-(--color-success) bg-(--color-success-surface) text-(--color-success);
+    @apply border border-(--color-success) bg-(--color-success-surface) text-(--color-success);
 }
 
 .clinicalStatusImproving {
-  @apply border border-(--color-success) bg-(--color-success-surface) text-(--color-success);
+    @apply border border-(--color-success) bg-(--color-success-surface) text-(--color-success);
 }
 
 .clinicalStatusWorsening {
-  @apply border border-(--color-danger) bg-(--color-danger-surface) text-(--color-danger);
+    @apply border border-(--color-danger) bg-(--color-danger-surface) text-(--color-danger);
 }
 
 .clinicalStatusUnchanged {
-  @apply border border-(--color-border) bg-(--color-bg-surface) text-(--color-text-secondary);
+    @apply border border-(--color-border) bg-(--color-bg-surface) text-(--color-text-secondary);
 }
 
 .clinicalStatusUnderObservation {
-  @apply border border-(--color-warning) bg-(--color-warning-surface) text-(--color-warning);
+    @apply border border-(--color-warning) bg-(--color-warning-surface) text-(--color-warning);
 }
 
 /* ── Origin ────────────────────────────────────────────────────────────────── */
 
 .originAi {
-  @apply border border-(--color-ai-border) bg-(--color-ai-bg) text-(--color-ai-text);
+    @apply border border-(--color-ai-border) bg-(--color-ai-bg) text-(--color-ai-text);
 }
 
 .originManual {
-  @apply border border-(--color-border) bg-(--color-bg-surface) text-(--color-text-secondary);
+    @apply border border-(--color-border) bg-(--color-bg-surface) text-(--color-text-secondary);
 }
 
 /* ── Size ──────────────────────────────────────────────────────────────────── */
 
 .sizeSm {
-  @apply px-2 py-0.5 text-[10px];
+    @apply px-2 py-0.5 text-[10px];
 }
 
 .sizeMd {
-  @apply px-2.5 py-0.5 text-[11px];
+    @apply px-2.5 py-0.5 text-[11px];
 }
 
 .sizeLg {
-  @apply px-3 py-1 text-xs;
+    @apply px-3 py-1 text-xs;
 }

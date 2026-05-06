@@ -43,12 +43,12 @@ Todos os tokens vivem em [`src/app/globals.css`](src/app/globals.css). **Nunca u
 
 ### Dois padrões: CSS Modules (componentes) + styles.ts (páginas/variantes)
 
-| Onde usar | Padrão | Arquivo |
-|-----------|--------|---------|
+| Onde usar                                                | Padrão                              | Arquivo                |
+| -------------------------------------------------------- | ----------------------------------- | ---------------------- |
 | Primitivos UI (`components/ui/`, `components/clinical/`) | **CSS Modules** + `@apply` + `clsx` | `Component.module.css` |
-| Páginas e features (`views/modules/`) | **`styles.ts`** + `cn()` + `cva` | `styles.ts` |
-| Wrapper simples (1-2 classes) | `cn()` inline no JSX | — |
-| Componente puro de lógica | nenhum | — |
+| Páginas e features (`views/modules/`)                    | **`styles.ts`** + `cn()` + `cva`    | `styles.ts`            |
+| Wrapper simples (1-2 classes)                            | `cn()` inline no JSX                | —                      |
+| Componente puro de lógica                                | nenhum                              | —                      |
 
 **Nunca inline classes longas diretamente no JSX** — use sempre o arquivo de estilos.
 
@@ -63,25 +63,27 @@ components/ui/box/
 ```
 
 **`Component.module.css` — estrutura:**
+
 ```css
 .root {
-  @apply rounded-(--radius-card) border border-(--color-border) bg-(--color-bg-card) p-4;
+    @apply rounded-(--radius-card) border border-(--color-border) bg-(--color-bg-card) p-4;
 
-  & .header {
-    @apply flex items-center gap-2 font-medium text-(--color-text-primary);
-  }
+    & .header {
+        @apply flex items-center gap-2 font-medium text-(--color-text-primary);
+    }
 
-  &:hover {
-    @apply border-(--color-border-hover);
-  }
+    &:hover {
+        @apply border-(--color-border-hover);
+    }
 }
 
 .active {
-  @apply border-(--color-primary) bg-(--color-primary-surface);
+    @apply border-(--color-primary) bg-(--color-primary-surface);
 }
 ```
 
 **Uso no JSX:**
+
 ```tsx
 import {clsx} from 'clsx';
 import styles from './Component.module.css';
@@ -98,6 +100,7 @@ import {cn} from '@/lib/utils';
 ```
 
 > **`clsx` vs `cn`:**
+>
 > - `clsx` — combina classes de módulo (sem twMerge, não precisa)
 > - `cn` (`clsx` + `tailwind-merge`) — quando mistura classes de módulo com utilitários Tailwind dinâmicos que podem conflitar
 
@@ -112,55 +115,59 @@ views/modules/patients/pages/detail/
 ```
 
 **`styles.ts` — estrutura:**
+
 ```ts
 import {cn} from '@/lib/utils';
 import {cva} from 'class-variance-authority';
 
 // String estática
-export const card = cn(
-  'rounded-(--radius-card) border border-(--color-border) bg-(--color-bg-card) p-4',
-);
+export const card = cn('rounded-(--radius-card) border border-(--color-border) bg-(--color-bg-card) p-4');
 
 // Variante com cva
 export const badge = cva('inline-flex items-center rounded-(--radius-badge) px-2 py-0.5 text-xs', {
-  variants: {
-    severity: {
-      HIGH:   'bg-(--color-danger)/10 text-(--color-danger)',
-      MEDIUM: 'bg-(--color-warning)/10 text-(--color-warning)',
-      LOW:    'bg-(--color-text-secondary)/10 text-(--color-text-secondary)',
+    variants: {
+        severity: {
+            HIGH: 'bg-(--color-danger)/10 text-(--color-danger)',
+            MEDIUM: 'bg-(--color-warning)/10 text-(--color-warning)',
+            LOW: 'bg-(--color-text-secondary)/10 text-(--color-text-secondary)',
+        },
     },
-  },
 });
 
 // Namespace para sub-elementos de componente complexo
 export const timeline = {
-  root: cn('relative flex flex-col gap-0'),
-  item: cn('relative flex gap-3 pb-6'),
-  dot:  cn('mt-1 h-2 w-2 rounded-full bg-(--color-primary) shrink-0'),
+    root: cn('relative flex flex-col gap-0'),
+    item: cn('relative flex gap-3 pb-6'),
+    dot: cn('mt-1 h-2 w-2 rounded-full bg-(--color-primary) shrink-0'),
 };
 ```
 
 **Uso no JSX:**
+
 ```tsx
 // Poucos exports (≤ 5): named imports
 import {card, badge} from './styles';
-<div className={card}><span className={badge({severity: 'HIGH'})}>...</span></div>
+<div className={card}>
+    <span className={badge({severity: 'HIGH'})}>...</span>
+</div>;
 
 // Muitos exports (> 5): namespace
 import * as S from './styles';
-<div className={S.root}><header className={S.header}>...</header></div>
+<div className={S.root}>
+    <header className={S.header}>...</header>
+</div>;
 ```
 
 **Quando criar `styles.ts`:**
 
-| Condição | Criar? |
-|----------|--------|
-| Página (`views/modules/*/pages/`) | **Sempre** |
-| Componente com ≥ 5 classes em um elemento | Sim |
-| Classes condicionais ou variantes (`cva`) | Sim |
-| Componente puro de lógica (sem DOM visível) | Não — ex: `Can`, `ThemeProvider` |
-| Wrapper simples de 1-2 elementos | Não |
-| `components/ui/*` (shadcn) | **Nunca** — não tocar esses arquivos |
+| Condição                                    | Criar?                               |
+| ------------------------------------------- | ------------------------------------ |
+| Página (`views/modules/*/pages/`)           | **Sempre**                           |
+| Componente com ≥ 5 classes em um elemento   | Sim                                  |
+| Classes condicionais ou variantes (`cva`)   | Sim                                  |
+| Componente puro de lógica (sem DOM visível) | Não — ex: `Can`, `ThemeProvider`     |
+| Wrapper simples de 1-2 elementos            | Não                                  |
+| `components/ui/*` (shadcn)                  | **Nunca** — não tocar esses arquivos |
 
 ---
 
@@ -205,19 +212,19 @@ import styles from './card.module.css';
 
 ```tsx
 // Primitivos shadcn (em src/components/ui/)
-import { Button } from "@/components/ui/button";
-import { Card, CardHeader, CardContent } from "@/components/ui/card";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
+import {Button} from '@/components/ui/button';
+import {Card, CardHeader, CardContent} from '@/components/ui/card';
+import {Dialog, DialogContent} from '@/components/ui/dialog';
+import {Input} from '@/components/ui/input';
 
 // Compartilhados de app (em src/views/components/)
-import { Page } from "@/views/components/Page";
-import { FormActions } from "@/views/components/FormActions";
-import { Can } from "@/views/components/Can";
+import {Page} from '@/views/components/Page';
+import {FormActions} from '@/views/components/FormActions';
+import {Can} from '@/views/components/Can';
 
 // Clínicos customizados (em src/components/clinical/)
-import { AIBlock } from "@/components/clinical/ai-block";
-import { ConfidenceIndicator } from "@/components/clinical/confidence-indicator";
+import {AIBlock} from '@/components/clinical/ai-block';
+import {ConfidenceIndicator} from '@/components/clinical/confidence-indicator';
 ```
 
 Adicionar novo componente shadcn:
@@ -234,11 +241,10 @@ npx shadcn@latest add <component>
 - Route loaders pré-carregam queries antes da montagem do componente:
 
 ```typescript
-export const Route = createFileRoute("/_stackedLayout/appointments")({
-  loader: ({ context: { queryClient } }) =>
-    queryClient.ensureQueryData(getListAppointmentsSuspenseQueryOptions()),
-  pendingComponent: LoadingPage,
-  component: AppointmentsPage,
+export const Route = createFileRoute('/_stackedLayout/appointments')({
+    loader: ({context: {queryClient}}) => queryClient.ensureQueryData(getListAppointmentsSuspenseQueryOptions()),
+    pendingComponent: LoadingPage,
+    component: AppointmentsPage,
 });
 ```
 
@@ -250,11 +256,11 @@ export const Route = createFileRoute("/_stackedLayout/appointments")({
 O client é gerado automaticamente de `openapi.json`:
 
 ```typescript
-import { useGetAppointments, useCreateAppointment } from "@agenda-app/client";
+import {useGetAppointments, useCreateAppointment} from '@agenda-app/client';
 
-const { data, isLoading } = useGetAppointments({ page: 1, limit: 20 });
+const {data, isLoading} = useGetAppointments({page: 1, limit: 20});
 const mutation = useCreateAppointment();
-mutation.mutate({ data: payload });
+mutation.mutate({data: payload});
 ```
 
 Para regenerar após mudança na API:
@@ -270,21 +276,21 @@ pnpm -F @agenda-app/client generate           # regenera hooks
 - **UI state** → Zustand ([`src/store/appStore.ts`](src/store/appStore.ts)), persistido em localStorage
 
 ```typescript
-const { colorMode, setColorMode } = useAppStore();
+const {colorMode, setColorMode} = useAppStore();
 ```
 
 ## Formulários (React Hook Form + Zod)
 
 ```typescript
-const schema = z.object({ name: z.string().min(1), date: z.string() });
+const schema = z.object({name: z.string().min(1), date: z.string()});
 type FormData = z.infer<typeof schema>;
 
 const {
-  register,
-  handleSubmit,
-  formState: { errors },
+    register,
+    handleSubmit,
+    formState: {errors},
 } = useForm<FormData>({
-  resolver: zodResolver(schema),
+    resolver: zodResolver(schema),
 });
 ```
 

@@ -1,8 +1,8 @@
-import type {MutableRefObject} from 'react';
+import type {RefObject} from 'react';
 import {useEffect} from 'react';
 
 type Options = IntersectionObserverInit & {
-    target: MutableRefObject<Element | null>;
+    target: RefObject<Element | null>;
     onIntersect: (entry: IntersectionObserverEntry) => void;
     enabled?: boolean;
 };

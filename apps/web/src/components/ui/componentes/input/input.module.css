@@ -1,69 +1,69 @@
 /* ── Base ──────────────────────────────────────────────────────────────────── */
 
 .base {
-  @apply w-full rounded-(--radius-input) border border-(--color-border) bg-(--color-bg-card)
+    @apply w-full rounded-(--radius-input) border border-(--color-border) bg-(--color-bg-card)
          px-3 py-[9px] text-sm leading-[1.4] text-(--color-text-primary)
          transition-colors duration-(--duration-fast) ease-out;
 
-  &::placeholder {
-    @apply text-(--color-text-tertiary);
-  }
+    &::placeholder {
+        @apply text-(--color-text-tertiary);
+    }
 
-  &:hover:not(:disabled) {
-    @apply border-(--color-border-hover);
-  }
+    &:hover:not(:disabled) {
+        @apply border-(--color-border-hover);
+    }
 
-  &:focus {
-    @apply border-(--color-primary) outline-none;
-  }
+    &:focus {
+        @apply border-(--color-primary) outline-none;
+    }
 
-  &:disabled {
-    @apply cursor-not-allowed opacity-50;
-  }
+    &:disabled {
+        @apply cursor-not-allowed opacity-50;
+    }
 
-  &::file-selector-button {
-    @apply border-0 bg-transparent text-sm font-medium;
-  }
+    &::file-selector-button {
+        @apply border-0 bg-transparent text-sm font-medium;
+    }
 }
 
 /* ── Appearance ────────────────────────────────────────────────────────────── */
 
 .appearanceMono {
-  @apply font-mono tabular-nums text-[13px];
+    @apply font-mono tabular-nums text-[13px];
 }
 
 /* ── State ─────────────────────────────────────────────────────────────────── */
 
 .stateError {
-  @apply border-(--color-warning);
-
-  &:focus {
     @apply border-(--color-warning);
-  }
+
+    &:focus {
+        @apply border-(--color-warning);
+    }
 }
 
 /* ── Icon padding modifiers ────────────────────────────────────────────────── */
 
 .withLeadIcon {
-  @apply pl-[36px];
+    @apply pl-[36px];
 }
 
 .withTrailIcon {
-  @apply pr-8;
+    @apply pr-8;
 }
 
 /* ── Icon wrapper ──────────────────────────────────────────────────────────── */
 
 .wrapper {
-  @apply relative;
+    @apply relative;
 }
 
 .leadIcon {
-  @apply pointer-events-none absolute left-3 top-1/2 -translate-y-1/2
+    @apply pointer-events-none absolute left-3 top-1/2 -translate-y-1/2
          text-(--color-text-tertiary);
 }
 
 .trailIcon {
-  @apply pointer-events-none absolute right-3 top-1/2 -translate-y-1/2
+    @apply pointer-events-none absolute right-3 top-1/2 -translate-y-1/2
          flex items-center gap-1 text-(--color-text-tertiary);
 }

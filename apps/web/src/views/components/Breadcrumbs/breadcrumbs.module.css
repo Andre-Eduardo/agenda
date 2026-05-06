@@ -1,15 +1,15 @@
 .nav {
-  @apply flex items-center gap-1 text-sm text-(--color-text-secondary);
+    @apply flex items-center gap-1 text-sm text-(--color-text-secondary);
 }
 
 .separator {
-  @apply size-4 text-(--color-text-tertiary);
+    @apply size-4 text-(--color-text-tertiary);
 }
 
 .current {
-  @apply font-medium text-(--color-text-primary);
+    @apply font-medium text-(--color-text-primary);
 }
 
 .link {
-  @apply hover:text-(--color-text-primary) transition-colors;
+    @apply hover:text-(--color-text-primary) transition-colors;
 }

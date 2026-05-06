@@ -1,9 +1,9 @@
 import path from 'node:path';
 import {includeIgnoreFile} from '@eslint/compat';
-import {defineConfig} from 'eslint/config';
 import jsxA11y from 'eslint-plugin-jsx-a11y';
 import react from 'eslint-plugin-react';
 import reactHooks from 'eslint-plugin-react-hooks';
+import {defineConfig} from 'eslint/config';
 import tseslint from 'typescript-eslint';
 
 const gitignorePath = path.resolve('.', '.gitignore');
@@ -11,13 +11,7 @@ const gitignorePath = path.resolve('.', '.gitignore');
 export default defineConfig([
     includeIgnoreFile(gitignorePath),
     {
-        ignores: [
-            'vite.config.ts',
-            'src/routeTree.gen.ts',
-            'src/components/ui/**',
-            'dist/**',
-            '.tanstack/**',
-        ],
+        ignores: ['vite.config.ts', 'src/routeTree.gen.ts', 'src/components/ui/**', 'dist/**', '.tanstack/**'],
     },
     ...tseslint.configs.recommendedTypeChecked,
     ...tseslint.configs.stylisticTypeChecked,

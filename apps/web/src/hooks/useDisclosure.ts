@@ -31,12 +31,12 @@ export function useDisclosure(props: UseDisclosureProps = {}): DisclosureReturn 
     const handleClose = useCallbackRef(onCloseProp);
     const handleToggle = useCallbackRef(onToggleProp);
 
-    const [isOpenState, setIsOpen] = useState(props.defaultIsOpen ?? false);
+    const [isOpenState, setIsOpenState] = useState(props.defaultIsOpen ?? false);
 
     const isOpen = isOpenProp ?? isOpenState;
 
     const onClose = useCallback(() => {
-        setIsOpen(false);
+        setIsOpenState(false);
 
         if (handleClose) {
             handleClose();
@@ -48,7 +48,7 @@ export function useDisclosure(props: UseDisclosureProps = {}): DisclosureReturn 
     }, [handleClose, handleToggle]);
 
     const onOpen = useCallback(() => {
-        setIsOpen(true);
+        setIsOpenState(true);
 
         if (handleOpen) {
             handleOpen();

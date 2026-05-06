@@ -13,10 +13,10 @@ const BREAKPOINTS = {
 
 type BreakpointKey = keyof typeof BREAKPOINTS;
 
-type MaxWidth = {maxWidth: string | BreakpointKey};
-type MinWidth = {minWidth: string | BreakpointKey};
-type MaxHeight = {maxHeight: string | BreakpointKey};
-type MinHeight = {minHeight: string | BreakpointKey};
+type MaxWidth = {maxWidth: string};
+type MinWidth = {minWidth: string};
+type MaxHeight = {maxHeight: string};
+type MinHeight = {minHeight: string};
 
 type MinMaxWidth = (MinWidth & Partial<MaxWidth>) | (Partial<MinWidth> & MaxWidth);
 type MinMaxHeight = (MinHeight & Partial<MaxHeight>) | (Partial<MinHeight> & MaxHeight);
@@ -25,12 +25,11 @@ export type Constraints = (MinMaxWidth & Partial<MinMaxHeight>) | (Partial<MinMa
 
 const camelToKebab = (str: string) => str.replace(/[A-Z]/g, (l) => `-${l.toLowerCase()}`);
 
-const resolveValue = (value: string): string =>
-    value in BREAKPOINTS ? BREAKPOINTS[value as BreakpointKey] : value;
+const resolveValue = (value: string): string => (value in BREAKPOINTS ? BREAKPOINTS[value as BreakpointKey] : value);
 
 function buildQuery(constraints: Constraints): string {
     return Object.entries(constraints)
-        .map(([key, value]) => `(${camelToKebab(key)}: ${resolveValue(value as string)})`)
+        .map(([key, value]) => `(${camelToKebab(key)}: ${resolveValue(value)})`)
         .join(' and ');
 }
 
@@ -48,10 +47,10 @@ function buildQuery(constraints: Constraints): string {
 export function useMediaQuery(constraints: Constraints): boolean {
     const query = useMemo(() => buildQuery(constraints), [constraints]);
     const watcher = useMemo(() => window.matchMedia(query), [query]);
-    const [matches, setMatch] = useState(watcher.matches);
+    const [matches, setMatches] = useState(watcher.matches);
 
     useEffect(() => {
-        const handleChange = (event: MediaQueryListEvent) => setMatch(event.matches);
+        const handleChange = (event: MediaQueryListEvent) => setMatches(event.matches);
 
         watcher.addEventListener('change', handleChange);
 

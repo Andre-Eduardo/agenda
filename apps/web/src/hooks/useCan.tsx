@@ -1,9 +1,9 @@
 export type Permission = string;
 
 export interface UseCanProps {
-  has?: Permission;
-  hasAny?: Permission[];
-  hasAll?: Permission[];
+    has?: Permission;
+    hasAny?: Permission[];
+    hasAll?: Permission[];
 }
 
 /**
@@ -15,10 +15,10 @@ export interface UseCanProps {
  * matching the API documented in docs/frontend/03-auth.md.
  */
 export function useCan(props?: UseCanProps): boolean {
-  if (!props) return true;
-  const { has, hasAny, hasAll } = props;
+    if (!props) return true;
+    const {has, hasAny, hasAll} = props;
 
-  if (!has && !hasAny && !hasAll) return true;
+    if (!has && !hasAny && !hasAll) return true;
 
-  return true;
+    return true;
 }

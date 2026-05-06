@@ -1,53 +1,65 @@
 /* ── DialogOverlay ─────────────────────────────────────────────────────────── */
 
 .dialogOverlay {
-  @apply fixed inset-0 z-50 bg-black/80;
+    @apply fixed inset-0 z-50 bg-black/80;
 
-  &[data-state="open"]   { @apply animate-in fade-in-0; }
-  &[data-state="closed"] { @apply animate-out fade-out-0; }
+    &[data-state='open'] {
+        @apply animate-in fade-in-0;
+    }
+    &[data-state='closed'] {
+        @apply animate-out fade-out-0;
+    }
 }
 
 /* ── DialogContent ─────────────────────────────────────────────────────────── */
 
 .dialogContent {
-  @apply fixed left-1/2 top-1/2 z-50 grid w-full max-w-lg -translate-x-1/2 -translate-y-1/2
+    @apply fixed left-1/2 top-1/2 z-50 grid w-full max-w-lg -translate-x-1/2 -translate-y-1/2
          gap-4 border bg-background p-6 shadow-lg duration-200 sm:rounded-lg;
 
-  &[data-state="open"]   { @apply animate-in fade-in-0 zoom-in-95 slide-in-from-left-1/2 slide-in-from-top-[48%]; }
-  &[data-state="closed"] { @apply animate-out fade-out-0 zoom-out-95 slide-out-to-left-1/2 slide-out-to-top-[48%]; }
+    &[data-state='open'] {
+        @apply animate-in fade-in-0 zoom-in-95 slide-in-from-left-1/2 slide-in-from-top-[48%];
+    }
+    &[data-state='closed'] {
+        @apply animate-out fade-out-0 zoom-out-95 slide-out-to-left-1/2 slide-out-to-top-[48%];
+    }
 }
 
 /* ── DialogClose button (inside DialogContent) ─────────────────────────────── */
 
 .dialogCloseButton {
-  @apply absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background
+    @apply absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background
          transition-opacity focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2
          disabled:pointer-events-none;
 
-  &:hover                    { @apply opacity-100; }
-  &[data-state="open"]       { @apply bg-accent text-muted-foreground; }
+    &:hover {
+        @apply opacity-100;
+    }
+    &[data-state='open'] {
+        @apply bg-accent text-muted-foreground;
+    }
 }
 
 /* ── DialogHeader ──────────────────────────────────────────────────────────── */
 
 .dialogHeader {
-  @apply flex flex-col space-y-1.5 text-center sm:text-left;
+    @apply flex flex-col space-y-1.5 text-center sm:text-left;
 }
 
 /* ── DialogFooter ──────────────────────────────────────────────────────────── */
 
 .dialogFooter {
-  @apply flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2;
+    @apply flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2;
 }
 
 /* ── DialogTitle ───────────────────────────────────────────────────────────── */
 
 .dialogTitle {
-  @apply text-lg font-semibold leading-none tracking-tight;
+    @apply text-lg font-semibold leading-none tracking-tight;
 }
 
 /* ── DialogDescription ─────────────────────────────────────────────────────── */
 
 .dialogDescription {
-  @apply text-sm text-muted-foreground;
+    @apply text-sm text-muted-foreground;
 }

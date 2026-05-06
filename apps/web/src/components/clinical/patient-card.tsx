@@ -5,5 +5,5 @@
  * TODO: implement when building the patient list / detail pages.
  */
 export function PatientCard() {
-  return null;
+    return null;
 }
