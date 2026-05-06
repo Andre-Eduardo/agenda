@@ -1,1 +1,1 @@
-export * from "@domain/patient-alert/entities/patient-alert.entity";
+export * from '@domain/patient-alert/entities/patient-alert.entity';

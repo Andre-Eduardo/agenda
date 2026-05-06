@@ -1,33 +1,33 @@
-import validator from "validator";
-import { InvalidInputException } from "@domain/@shared/exceptions";
+import validator from 'validator';
+import {InvalidInputException} from '@domain/@shared/exceptions';
 
 export class Phone {
-  private readonly value: string;
+    private readonly value: string;
 
-  constructor(value: string) {
-    Phone.validate(value);
-    this.value = value.replaceAll(/\D/g, "");
-  }
-
-  static create(value: string): Phone {
-    return new Phone(value);
-  }
-
-  static validate(value: string): void {
-    if (!validator.isMobilePhone(value)) {
-      throw new InvalidInputException("Invalid phone format.");
+    constructor(value: string) {
+        Phone.validate(value);
+        this.value = value.replaceAll(/\D/g, '');
     }
-  }
 
-  equals(other: unknown): other is this {
-    return other instanceof Phone && this.value === other.value;
-  }
+    static create(value: string): Phone {
+        return new Phone(value);
+    }
 
-  toString(): string {
-    return this.value;
-  }
+    static validate(value: string): void {
+        if (!validator.isMobilePhone(value)) {
+            throw new InvalidInputException('Invalid phone format.');
+        }
+    }
 
-  toJSON(): string {
-    return this.value;
-  }
+    equals(other: unknown): other is this {
+        return other instanceof Phone && this.value === other.value;
+    }
+
+    toString(): string {
+        return this.value;
+    }
+
+    toJSON(): string {
+        return this.value;
+    }
 }

@@ -1,1 +1,1 @@
-export * from "@domain/appointment/entities/appointment.entity";
+export * from '@domain/appointment/entities/appointment.entity';

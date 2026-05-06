@@ -1,6 +1,6 @@
-import { Given } from "@cucumber/cucumber";
-import { randomUUID } from "crypto";
-import type { Context } from "../support/context";
+import {randomUUID} from 'crypto';
+import {Given} from '@cucumber/cucumber';
+import type {Context} from '../support/context';
 
 /**
  * Seeds a PENDING AgentProposal of the given type directly in the database.
@@ -12,62 +12,62 @@ import type { Context } from "../support/context";
  *   Given a pending agent proposal of type "PATIENT_ALERT" exists as "proposal1"
  */
 Given(
-  "a pending agent proposal of type {string} exists as {string}",
-  async function (this: Context, proposalType: string, key: string) {
-    const clinicId = this.getVariableId("clinic", "dr_house");
-    const memberId = this.getVariableId("clinicMember", "dr_house");
+    'a pending agent proposal of type {string} exists as {string}',
+    async function (this: Context, proposalType: string, key: string) {
+        const clinicId = this.getVariableId('clinic', 'dr_house');
+        const memberId = this.getVariableId('clinicMember', 'dr_house');
 
-    const patientId = (() => {
-      try {
-        return this.getVariableId("patient", "proposal_patient");
-      } catch {
-        return null;
-      }
-    })();
+        const patientId = (() => {
+            try {
+                return this.getVariableId('patient', 'proposal_patient');
+            } catch {
+                return null;
+            }
+        })();
 
-    const now = new Date();
-    const proposalId = randomUUID();
+        const now = new Date();
+        const proposalId = randomUUID();
 
-    // Build a minimal valid payload depending on the proposal type
-    let payload: Record<string, unknown>;
+        // Build a minimal valid payload depending on the proposal type
+        let payload: Record<string, unknown>;
 
-    if (proposalType === "PATIENT_ALERT") {
-      payload = { message: "Paciente com risco elevado de hipoglicemia", severity: "HIGH" };
-    } else if (proposalType === "APPOINTMENT") {
-      payload = {
-        patientId,
-        attendedByMemberId: memberId,
-        startAt: "2026-08-01T09:00:00.000Z",
-        endAt: "2026-08-01T10:00:00.000Z",
-        type: "FIRST_VISIT",
-      };
-    } else {
-      payload = {};
+        if (proposalType === 'PATIENT_ALERT') {
+            payload = {message: 'Paciente com risco elevado de hipoglicemia', severity: 'HIGH'};
+        } else if (proposalType === 'APPOINTMENT') {
+            payload = {
+                patientId,
+                attendedByMemberId: memberId,
+                startAt: '2026-08-01T09:00:00.000Z',
+                endAt: '2026-08-01T10:00:00.000Z',
+                type: 'FIRST_VISIT',
+            };
+        } else {
+            payload = {};
+        }
+
+        const preview = {
+            title: `Proposta: ${proposalType}`,
+            description: 'Gerada automaticamente em teste',
+        };
+
+        await this.prisma.agentProposal.create({
+            data: {
+                id: proposalId,
+                clinicId,
+                createdByMemberId: memberId,
+                patientId,
+                proposalType: proposalType as import('@prisma/client').AgentProposalType,
+                status: 'PENDING',
+                payload: payload as import('@prisma/client').Prisma.InputJsonValue,
+                preview,
+                rationale: 'Proposta criada em teste BDD',
+                confidence: 0.95,
+                expiresAt: new Date(now.getTime() + 24 * 60 * 60 * 1000),
+                createdAt: now,
+                updatedAt: now,
+            },
+        });
+
+        this.setVariableId('agentProposal', key, proposalId);
     }
-
-    const preview = {
-      title: `Proposta: ${proposalType}`,
-      description: "Gerada automaticamente em teste",
-    };
-
-    await this.prisma.agentProposal.create({
-      data: {
-        id: proposalId,
-        clinicId,
-        createdByMemberId: memberId,
-        patientId,
-        proposalType: proposalType as import("@prisma/client").AgentProposalType,
-        status: "PENDING",
-        payload: payload as import("@prisma/client").Prisma.InputJsonValue,
-        preview,
-        rationale: "Proposta criada em teste BDD",
-        confidence: 0.95,
-        expiresAt: new Date(now.getTime() + 24 * 60 * 60 * 1000),
-        createdAt: now,
-        updatedAt: now,
-      },
-    });
-
-    this.setVariableId("agentProposal", key, proposalId);
-  },
 );

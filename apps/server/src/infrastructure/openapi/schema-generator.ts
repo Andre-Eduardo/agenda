@@ -1,56 +1,50 @@
-import { OpenApiGeneratorV3, OpenAPIRegistry } from "@asteasolutions/zod-to-openapi";
-import type { SchemaObject as OpenApiSchema } from "@asteasolutions/zod-to-openapi/dist/types";
-import type { ApiPropertyOptions } from "@nestjs/swagger";
-import type { SchemasObject } from "@nestjs/swagger/dist/interfaces/open-api-spec.interface";
-import type { AnyZodObject } from "zod";
+import {OpenApiGeneratorV3, OpenAPIRegistry} from '@asteasolutions/zod-to-openapi';
+import type {SchemaObject as OpenApiSchema} from '@asteasolutions/zod-to-openapi/dist/types';
+import type {ApiPropertyOptions} from '@nestjs/swagger';
+import type {SchemasObject} from '@nestjs/swagger/dist/interfaces/open-api-spec.interface';
+import type {AnyZodObject} from 'zod';
 
 type SchemaObjectForMetadataFactory = ApiPropertyOptions & {
-  "x-param-object"?: boolean;
+    'x-param-object'?: boolean;
 };
 
-export function generateOpenApiSchema(
-  zodDto: AnyZodObject,
-  hideDefinitions?: string[],
-): OpenApiSchema {
-  const hideKeys = hideDefinitions?.reduce((acc, key) => ({ ...acc, [key]: true }), {}) ?? {};
-  const canOmit = typeof (zodDto as unknown as Record<string, unknown>).omit === "function";
-  const filteredSchema = canOmit
-    ? zodDto.omit(hideKeys).openapi({ ...zodDto._def.openapi?.metadata })
-    : zodDto.openapi({ ...zodDto._def.openapi?.metadata });
+export function generateOpenApiSchema(zodDto: AnyZodObject, hideDefinitions?: string[]): OpenApiSchema {
+    const hideKeys = hideDefinitions?.reduce((acc, key) => ({...acc, [key]: true}), {}) ?? {};
+    const canOmit = typeof (zodDto as unknown as Record<string, unknown>).omit === 'function';
+    const filteredSchema = canOmit
+        ? zodDto.omit(hideKeys).openapi({...zodDto._def.openapi?.metadata})
+        : zodDto.openapi({...zodDto._def.openapi?.metadata});
 
-  const refId = "schema";
+    const refId = 'schema';
 
-  const registry = new OpenAPIRegistry();
+    const registry = new OpenAPIRegistry();
 
-  registry.register(refId, filteredSchema);
-  const generator = new OpenApiGeneratorV3(registry.definitions);
+    registry.register(refId, filteredSchema);
+    const generator = new OpenApiGeneratorV3(registry.definitions);
 
-  return generator.generateComponents().components.schemas[refId];
+    return generator.generateComponents().components.schemas[refId];
 }
 
-export function generateNestSwaggerSchema(
-  zodDto: AnyZodObject,
-  hideDefinitions?: string[],
-): SchemasObject {
-  const hideKeys = hideDefinitions?.reduce((acc, key) => ({ ...acc, [key]: true }), {}) ?? {};
-  const canOmit = typeof (zodDto as unknown as Record<string, unknown>).omit === "function";
-  const filteredSchema = canOmit
-    ? zodDto.omit(hideKeys).openapi({ ...zodDto._def.openapi?.metadata })
-    : zodDto.openapi({ ...zodDto._def.openapi?.metadata });
+export function generateNestSwaggerSchema(zodDto: AnyZodObject, hideDefinitions?: string[]): SchemasObject {
+    const hideKeys = hideDefinitions?.reduce((acc, key) => ({...acc, [key]: true}), {}) ?? {};
+    const canOmit = typeof (zodDto as unknown as Record<string, unknown>).omit === 'function';
+    const filteredSchema = canOmit
+        ? zodDto.omit(hideKeys).openapi({...zodDto._def.openapi?.metadata})
+        : zodDto.openapi({...zodDto._def.openapi?.metadata});
 
-  const refId = "schema";
+    const refId = 'schema';
 
-  const registry = new OpenAPIRegistry();
+    const registry = new OpenAPIRegistry();
 
-  registry.register(refId, filteredSchema);
-  const generator = new OpenApiGeneratorV3(registry.definitions);
-  const allSchemas = generator.generateComponents().components.schemas ?? {};
+    registry.register(refId, filteredSchema);
+    const generator = new OpenApiGeneratorV3(registry.definitions);
+    const allSchemas = generator.generateComponents().components.schemas ?? {};
 
-  const generatedSchema = allSchemas[refId];
+    const generatedSchema = allSchemas[refId];
 
-  convertSchemaObject(generatedSchema, allSchemas);
+    convertSchemaObject(generatedSchema, allSchemas);
 
-  return generatedSchema.properties;
+    return generatedSchema.properties;
 }
 
 /**
@@ -69,47 +63,45 @@ export function generateNestSwaggerSchema(
  * Based on: https://github.com/anatine/zod-plugins/blob/main/packages/zod-nestjs/src/lib/create-zod-dto.ts
  */
 function convertSchemaObject(
-  schemaObject: OpenApiSchema,
-  allSchemas: Record<string, OpenApiSchema> = {},
-  required?: boolean,
+    schemaObject: OpenApiSchema,
+    allSchemas: Record<string, OpenApiSchema> = {},
+    required?: boolean
 ): void {
-  if ("$ref" in schemaObject) {
-    return;
-  }
-
-  // Only convert direct properties of the root schema — NestJS reconstructs these into
-  // a `required: string[]` array at the parent level. Nested sub-schemas are left alone.
-  const properties = (schemaObject.properties ?? {}) as Record<string, OpenApiSchema>;
-
-  for (const [key, subSchemaObject] of Object.entries(properties)) {
-    if ("$ref" in subSchemaObject) {
-      // Resolve the $ref inline so NestJS Swagger receives a plain schema instead
-      // of a $ref pointer it cannot dereference without the full component registry.
-      const refName = (subSchemaObject.$ref as string).split("/").pop() ?? "";
-      const resolved = allSchemas[refName];
-
-      if (resolved && !("$ref" in resolved)) {
-        properties[key] = { ...resolved };
-      }
-
-      continue;
+    if ('$ref' in schemaObject) {
+        return;
     }
 
-    /**
-     * There is no way to determine if a property is required for object in query parameters.
-     */
-    const propRequired = schemaObject["x-param-object"]
-      ? undefined
-      : schemaObject.required?.includes(key);
+    // Only convert direct properties of the root schema — NestJS reconstructs these into
+    // a `required: string[]` array at the parent level. Nested sub-schemas are left alone.
+    const properties = (schemaObject.properties ?? {}) as Record<string, OpenApiSchema>;
 
-    if (propRequired !== undefined) {
-      (subSchemaObject as SchemaObjectForMetadataFactory).required = propRequired;
+    for (const [key, subSchemaObject] of Object.entries(properties)) {
+        if ('$ref' in subSchemaObject) {
+            // Resolve the $ref inline so NestJS Swagger receives a plain schema instead
+            // of a $ref pointer it cannot dereference without the full component registry.
+            const refName = (subSchemaObject.$ref as string).split('/').pop() ?? '';
+            const resolved = allSchemas[refName];
+
+            if (resolved && !('$ref' in resolved)) {
+                properties[key] = {...resolved};
+            }
+
+            continue;
+        }
+
+        /**
+         * There is no way to determine if a property is required for object in query parameters.
+         */
+        const propRequired = schemaObject['x-param-object'] ? undefined : schemaObject.required?.includes(key);
+
+        if (propRequired !== undefined) {
+            (subSchemaObject as SchemaObjectForMetadataFactory).required = propRequired;
+        }
     }
-  }
 
-  const convertedSchemaObject = schemaObject as SchemaObjectForMetadataFactory;
+    const convertedSchemaObject = schemaObject as SchemaObjectForMetadataFactory;
 
-  if (required !== undefined) {
-    convertedSchemaObject.required = required;
-  }
+    if (required !== undefined) {
+        convertedSchemaObject.required = required;
+    }
 }

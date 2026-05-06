@@ -1,28 +1,28 @@
-import type { ClinicMemberId } from "@domain/clinic-member/entities";
-import type { UserId } from "@domain/user/entities";
-import type { UserRepository } from "@domain/user/user.repository";
-import { GlobalRole } from "@domain/auth/global-role";
-import { Permission, UserPermission } from "@domain/auth/permission";
-import { Authorizer } from "@domain/auth/authorizer/authorizer";
+import {Authorizer} from '@domain/auth/authorizer/authorizer';
+import {GlobalRole} from '@domain/auth/global-role';
+import {Permission, UserPermission} from '@domain/auth/permission';
+import type {ClinicMemberId} from '@domain/clinic-member/entities';
+import type {UserId} from '@domain/user/entities';
+import type {UserRepository} from '@domain/user/user.repository';
 
 export const permissionsMap: Record<GlobalRole, Set<Permission>> = {
-  [GlobalRole.SUPER_ADMIN]: Permission.all(),
-  [GlobalRole.OWNER]: Permission.all(),
-  [GlobalRole.NONE]: new Set([UserPermission.VIEW_PROFILE, UserPermission.CHANGE_PASSWORD]),
+    [GlobalRole.SUPER_ADMIN]: Permission.all(),
+    [GlobalRole.OWNER]: Permission.all(),
+    [GlobalRole.NONE]: new Set([UserPermission.VIEW_PROFILE, UserPermission.CHANGE_PASSWORD]),
 };
 
 export class GlobalAuthorizer extends Authorizer {
-  constructor(private readonly userRepository: UserRepository) {
-    super();
-  }
-
-  async getPermissions(_: ClinicMemberId | null, userId: UserId): Promise<Set<Permission>> {
-    const user = await this.userRepository.findById(userId);
-
-    if (user === null) {
-      return new Set();
+    constructor(private readonly userRepository: UserRepository) {
+        super();
     }
 
-    return permissionsMap[user.globalRole];
-  }
+    async getPermissions(_: ClinicMemberId | null, userId: UserId): Promise<Set<Permission>> {
+        const user = await this.userRepository.findById(userId);
+
+        if (user === null) {
+            return new Set();
+        }
+
+        return permissionsMap[user.globalRole];
+    }
 }

@@ -8,14 +8,7 @@ const gitignorePath = path.resolve('.', '.gitignore');
 export default defineConfig([
     includeIgnoreFile(gitignorePath),
     {
-        ignores: [
-            'jest.config.ts',
-            '.jest/**',
-            'dist/**',
-            'openapi.json',
-            'prisma/**',
-            'scripts/**',
-        ],
+        ignores: ['jest.config.ts', '.jest/**', 'dist/**', 'openapi.json', 'prisma/**', 'scripts/**'],
     },
     ...tseslint.configs.recommendedTypeChecked,
     ...tseslint.configs.stylisticTypeChecked,

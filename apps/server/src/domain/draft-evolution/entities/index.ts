@@ -1,1 +1,1 @@
-export * from "@domain/draft-evolution/entities/draft-evolution.entity";
+export * from '@domain/draft-evolution/entities/draft-evolution.entity';

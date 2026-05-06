@@ -1,33 +1,33 @@
-import validator from "validator";
-import { InvalidInputException } from "@domain/@shared/exceptions";
+import validator from 'validator';
+import {InvalidInputException} from '@domain/@shared/exceptions';
 
 export class Email {
-  private readonly value: string;
+    private readonly value: string;
 
-  constructor(value: string) {
-    Email.validate(value);
-    this.value = value;
-  }
-
-  static create(value: string): Email {
-    return new Email(value);
-  }
-
-  static validate(value: string): void {
-    if (!validator.isEmail(value)) {
-      throw new InvalidInputException("Invalid email format.");
+    constructor(value: string) {
+        Email.validate(value);
+        this.value = value;
     }
-  }
 
-  equals(other: unknown): other is this {
-    return other instanceof Email && this.value.toLowerCase() === other.value.toLowerCase();
-  }
+    static create(value: string): Email {
+        return new Email(value);
+    }
 
-  toString(): string {
-    return this.value;
-  }
+    static validate(value: string): void {
+        if (!validator.isEmail(value)) {
+            throw new InvalidInputException('Invalid email format.');
+        }
+    }
 
-  toJSON(): string {
-    return this.value;
-  }
+    equals(other: unknown): other is this {
+        return other instanceof Email && this.value.toLowerCase() === other.value.toLowerCase();
+    }
+
+    toString(): string {
+        return this.value;
+    }
+
+    toJSON(): string {
+        return this.value;
+    }
 }

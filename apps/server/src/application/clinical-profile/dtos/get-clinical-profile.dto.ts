@@ -1,9 +1,9 @@
-import { z } from "zod";
-import { PatientId } from "@domain/patient/entities";
-import { entityId } from "@application/@shared/validation/schemas";
+import {z} from 'zod';
+import {entityId} from '@application/@shared/validation/schemas';
+import {PatientId} from '@domain/patient/entities';
 
 export const getClinicalProfileSchema = z.object({
-  patientId: entityId(PatientId),
+    patientId: entityId(PatientId),
 });
 
 export type GetClinicalProfileDto = z.infer<typeof getClinicalProfileSchema>;

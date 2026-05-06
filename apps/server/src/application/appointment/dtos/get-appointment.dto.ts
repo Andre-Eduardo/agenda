@@ -1,10 +1,10 @@
-import { z } from "zod";
-import { AppointmentId } from "@domain/appointment/entities";
-import { createZodDto } from "@application/@shared/validation/dto";
-import { entityId } from "@application/@shared/validation/schemas";
+import {z} from 'zod';
+import {createZodDto} from '@application/@shared/validation/dto';
+import {entityId} from '@application/@shared/validation/schemas';
+import {AppointmentId} from '@domain/appointment/entities';
 
 export const getAppointmentSchema = z.object({
-  id: entityId(AppointmentId),
+    id: entityId(AppointmentId),
 });
 
 export class GetAppointmentDto extends createZodDto(getAppointmentSchema) {}

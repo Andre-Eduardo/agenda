@@ -232,7 +232,7 @@ interface PositionedAppt { apt: ApptView; lane: number; lanes: number }
 
 function layoutOverlaps(appts: ApptView[]): PositionedAppt[] {
   const sorted = [...appts].sort((a,b)=>timeToMin(a.start) - timeToMin(b.start));
-  const items: Array<PositionedAppt & {s:number;e:number}> = sorted.map(apt=>({
+  const items: Array<PositionedAppt & {s: number;e: number}> = sorted.map(apt=>({
     apt, s:timeToMin(apt.start), e:timeToMin(apt.end), lane:0, lanes:1,
   }));
   const groups: Array<typeof items> = [];

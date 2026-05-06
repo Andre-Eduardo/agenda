@@ -177,12 +177,12 @@ Edite `docs/agent-validation-questions.json` seguindo o schema:
 
 ```json
 {
-  "id": "categoria-N",
-  "question": "Pergunta em português",
-  "expectedKeywords": ["palavra1", "palavra2"],
-  "expectedTools": ["nome_da_ferramenta"],
-  "category": "categoria",
-  "note": "Contexto opcional para desenvolvedores"
+    "id": "categoria-N",
+    "question": "Pergunta em português",
+    "expectedKeywords": ["palavra1", "palavra2"],
+    "expectedTools": ["nome_da_ferramenta"],
+    "category": "categoria",
+    "note": "Contexto opcional para desenvolvedores"
 }
 ```
 

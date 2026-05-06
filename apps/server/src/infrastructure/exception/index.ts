@@ -1,1 +1,1 @@
-export * from "@infrastructure/exception/api-problem.formatter";
+export * from '@infrastructure/exception/api-problem.formatter';

@@ -1,115 +1,111 @@
-import { Injectable, OnModuleInit, OnModuleDestroy } from "@nestjs/common";
-import mqtt, { IClientOptions, MqttClient } from "mqtt";
-import { IClientPublishOptions, IClientSubscribeOptions } from "mqtt/lib/client";
-import { Logger } from "@application/@shared/logger";
-import { EnvConfigService } from "@infrastructure/config";
+import {Injectable, OnModuleInit, OnModuleDestroy} from '@nestjs/common';
+import mqtt, {IClientOptions, MqttClient} from 'mqtt';
+import {IClientPublishOptions, IClientSubscribeOptions} from 'mqtt/lib/client';
+import {Logger} from '@application/@shared/logger';
+import {EnvConfigService} from '@infrastructure/config';
 
-const DEFAULT_PUBLISH_OPTIONS: IClientPublishOptions = { qos: 1, retain: false };
-const DEFAULT_SUBSCRIBE_OPTIONS: IClientSubscribeOptions = { qos: 1 };
+const DEFAULT_PUBLISH_OPTIONS: IClientPublishOptions = {qos: 1, retain: false};
+const DEFAULT_SUBSCRIBE_OPTIONS: IClientSubscribeOptions = {qos: 1};
 
 @Injectable()
 export class MqttClientService implements OnModuleInit, OnModuleDestroy {
-  private client!: MqttClient;
+    private client!: MqttClient;
 
-  constructor(
-    private readonly config: EnvConfigService,
-    private readonly logger: Logger,
-  ) {}
+    constructor(
+        private readonly config: EnvConfigService,
+        private readonly logger: Logger
+    ) {}
 
-  async onModuleInit(): Promise<void> {
-    const brokerUrl = this.getBrokerUrl();
-    const options = this.getClientOptions();
+    async onModuleInit(): Promise<void> {
+        const brokerUrl = this.getBrokerUrl();
+        const options = this.getClientOptions();
 
-    if (!brokerUrl) {
-      this.logger.info("MQTT communication not enabled. Broker URL is missing.");
+        if (!brokerUrl) {
+            this.logger.info('MQTT communication not enabled. Broker URL is missing.');
 
-      return;
+            return;
+        }
+
+        this.logger.info(`Connecting to MQTT broker: ${brokerUrl}`);
+
+        await new Promise<void>((resolve) => {
+            this.client = mqtt.connect(brokerUrl, options);
+
+            this.client.on('connect', () => {
+                this.logger.info('Connected to MQTT broker');
+                resolve();
+            });
+
+            this.client.on('error', (err) => {
+                this.logger.error('MQTT connection error:', err);
+                resolve();
+            });
+
+            this.client.on('offline', () => {
+                this.logger.warn('MQTT client offline');
+            });
+
+            this.client.on('reconnect', () => {
+                this.logger.info('MQTT client reconnecting');
+            });
+
+            this.client.on('close', () => {
+                this.logger.info('MQTT connection closed');
+            });
+        });
     }
 
-    this.logger.info(`Connecting to MQTT broker: ${brokerUrl}`);
-
-    await new Promise<void>((resolve) => {
-      this.client = mqtt.connect(brokerUrl, options);
-
-      this.client.on("connect", () => {
-        this.logger.info("Connected to MQTT broker");
-        resolve();
-      });
-
-      this.client.on("error", (err) => {
-        this.logger.error("MQTT connection error:", err);
-        resolve();
-      });
-
-      this.client.on("offline", () => {
-        this.logger.warn("MQTT client offline");
-      });
-
-      this.client.on("reconnect", () => {
-        this.logger.info("MQTT client reconnecting");
-      });
-
-      this.client.on("close", () => {
-        this.logger.info("MQTT connection closed");
-      });
-    });
-  }
-
-  onModuleDestroy() {
-    if (this.isConnected()) {
-      this.client.end();
-      this.logger.info("MQTT client disconnected");
-    }
-  }
-
-  publish(
-    topic: string,
-    payload: string | Buffer,
-    options: IClientPublishOptions = DEFAULT_PUBLISH_OPTIONS,
-  ): void {
-    if (!this.isConnected()) {
-      throw new Error("MQTT client not connected");
+    onModuleDestroy() {
+        if (this.isConnected()) {
+            this.client.end();
+            this.logger.info('MQTT client disconnected');
+        }
     }
 
-    this.client.publish(topic, payload, options, (err) => {
-      if (err) {
-        this.logger.error(`Failed to publish to topic ${topic}:`, err);
-      }
-    });
-  }
+    publish(topic: string, payload: string | Buffer, options: IClientPublishOptions = DEFAULT_PUBLISH_OPTIONS): void {
+        if (!this.isConnected()) {
+            throw new Error('MQTT client not connected');
+        }
 
-  subscribe(topic: string, options: IClientSubscribeOptions = DEFAULT_SUBSCRIBE_OPTIONS): void {
-    if (!this.isConnected()) {
-      throw new Error("MQTT client not connected");
+        this.client.publish(topic, payload, options, (err) => {
+            if (err) {
+                this.logger.error(`Failed to publish to topic ${topic}:`, err);
+            }
+        });
     }
 
-    this.client.subscribe(topic, options, (err) => {
-      if (err) {
-        this.logger.error(`Failed to subscribe to topic ${topic}:`, err);
-      }
-    });
-  }
+    subscribe(topic: string, options: IClientSubscribeOptions = DEFAULT_SUBSCRIBE_OPTIONS): void {
+        if (!this.isConnected()) {
+            throw new Error('MQTT client not connected');
+        }
 
-  onMessage(callback: (topic: string, message: Buffer) => void): void {
-    this.client.on("message", (topic, message) => {
-      callback(topic, message);
-    });
-  }
+        this.client.subscribe(topic, options, (err) => {
+            if (err) {
+                this.logger.error(`Failed to subscribe to topic ${topic}:`, err);
+            }
+        });
+    }
 
-  isConnected(): boolean {
-    return this.client?.connected ?? false;
-  }
+    onMessage(callback: (topic: string, message: Buffer) => void): void {
+        this.client.on('message', (topic, message) => {
+            callback(topic, message);
+        });
+    }
 
-  private getBrokerUrl(): string | undefined {
-    return this.config.mqtt.brokerUrl;
-  }
+    isConnected(): boolean {
+        return this.client?.connected ?? false;
+    }
 
-  private getClientOptions(): IClientOptions {
-    return {
-      username: this.config.mqtt.username,
-      password: this.config.mqtt.password,
-      clean: true,
-      reconnectPeriod: 5000, // Wait 5 seconds before reconnecting
-    };
-  }
+    private getBrokerUrl(): string | undefined {
+        return this.config.mqtt.brokerUrl;
+    }
+
+    private getClientOptions(): IClientOptions {
+        return {
+            username: this.config.mqtt.username,
+            password: this.config.mqtt.password,
+            clean: true,
+            reconnectPeriod: 5000, // Wait 5 seconds before reconnecting
+        };
+    }
 }

@@ -1,13 +1,13 @@
-import type { DomainEventProps } from "@domain/event";
-import { DomainEvent } from "@domain/event";
-import type { ClinicPatientAccess } from "@domain/clinic-patient-access/entities";
+import type {ClinicPatientAccess} from '@domain/clinic-patient-access/entities';
+import type {DomainEventProps} from '@domain/event';
+import {DomainEvent} from '@domain/event';
 
 export class ClinicPatientAccessGrantedEvent extends DomainEvent {
-  static readonly type = "CLINIC_PATIENT_ACCESS_GRANTED";
-  readonly access: ClinicPatientAccess;
+    static readonly type = 'CLINIC_PATIENT_ACCESS_GRANTED';
+    readonly access: ClinicPatientAccess;
 
-  constructor(props: DomainEventProps<ClinicPatientAccessGrantedEvent>) {
-    super(ClinicPatientAccessGrantedEvent.type, props.timestamp);
-    this.access = props.access;
-  }
+    constructor(props: DomainEventProps<ClinicPatientAccessGrantedEvent>) {
+        super(ClinicPatientAccessGrantedEvent.type, props.timestamp);
+        this.access = props.access;
+    }
 }
