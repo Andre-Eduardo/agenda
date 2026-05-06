@@ -1,5 +1,7 @@
 import type { ReactNode } from "react";
+import { clsx } from "clsx";
 import { cn } from "@/lib/utils";
+import styles from "./page.module.css";
 
 interface PageProps {
   title: string;
@@ -19,24 +21,20 @@ export function Page({
   className,
 }: PageProps) {
   return (
-    <div className={cn("flex flex-col p-6 bg-(--color-bg-page)", className)}>
+    <div className={cn(styles.root, className)}>
       <header
-        className={cn(
-          "mb-6 flex gap-4",
-          responsiveActions
-            ? "flex-col sm:flex-row sm:items-start sm:justify-between"
-            : "items-start justify-between",
+        className={clsx(
+          styles.header,
+          responsiveActions ? styles.headerResponsive : styles.headerDefault,
         )}
       >
-        <div className="flex flex-col gap-1">
-          <h1 className="text-2xl leading-[1.2] font-medium text-(--color-text-primary) font-sans">
-            {title}
-          </h1>
-          {subtitle && <p className="text-sm text-(--color-text-secondary)">{subtitle}</p>}
+        <div className={styles.titleGroup}>
+          <h1 className={styles.title}>{title}</h1>
+          {subtitle && <p className={styles.subtitle}>{subtitle}</p>}
         </div>
-        {actions && <div className="flex items-center gap-3">{actions}</div>}
+        {actions && <div className={styles.actions}>{actions}</div>}
       </header>
-      <main className="flex-1">{children}</main>
+      <main className={styles.main}>{children}</main>
     </div>
   );
 }

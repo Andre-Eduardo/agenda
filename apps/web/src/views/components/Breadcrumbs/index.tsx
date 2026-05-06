@@ -2,6 +2,7 @@ import { Fragment } from "react";
 import { Link, useMatches } from "@tanstack/react-router";
 import { ChevronRight } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import styles from "./breadcrumbs.module.css";
 
 export interface BreadcrumbContext {
   breadcrumb?: string;
@@ -29,25 +30,17 @@ export function Breadcrumbs() {
   if (crumbs.length === 0) return null;
 
   return (
-    <nav
-      aria-label="Breadcrumb"
-      className="flex items-center gap-1 text-sm text-(--color-text-secondary)"
-    >
+    <nav aria-label="Breadcrumb" className={styles.nav}>
       {crumbs.map((crumb, index) => {
         const isLast = index === crumbs.length - 1;
 
         return (
           <Fragment key={crumb.pathname}>
-            {index > 0 && (
-              <ChevronRight aria-hidden className="size-4 text-(--color-text-tertiary)" />
-            )}
+            {index > 0 && <ChevronRight aria-hidden className={styles.separator} />}
             {isLast ? (
-              <span className="font-medium text-(--color-text-primary)">{t(crumb.key)}</span>
+              <span className={styles.current}>{t(crumb.key)}</span>
             ) : (
-              <Link
-                to={crumb.pathname}
-                className="hover:text-(--color-text-primary) transition-colors"
-              >
+              <Link to={crumb.pathname} className={styles.link}>
                 {t(crumb.key)}
               </Link>
             )}

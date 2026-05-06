@@ -1,0 +1,24 @@
+.root {
+  @apply flex flex-col gap-3 border-l-[3px] border-l-(--color-ai-border) bg-(--color-ai-bg) text-(--color-ai-text) p-(--padding-card);
+  border-radius: 0;
+}
+
+.header {
+  @apply flex items-center gap-2 text-sm;
+}
+
+.badge {
+  @apply inline-flex items-center gap-1 rounded-(--radius-badge) bg-(--color-ai-badge-bg) px-2 py-0.5 text-2xs font-medium text-(--color-ai-badge-text);
+}
+
+.label {
+  @apply text-(--color-ai-text);
+}
+
+.body {
+  @apply text-sm-body;
+}
+
+.footer {
+  @apply flex flex-wrap gap-2;
+}

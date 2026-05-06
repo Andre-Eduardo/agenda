@@ -17,7 +17,8 @@ import {
 } from "lucide-react";
 import { useAppStore } from "@/store/appStore";
 import { useCan, type Permission } from "@/hooks/useCan";
-import { cn } from "@/lib/utils";
+import { clsx } from "clsx";
+import styles from "./stacked-layout.module.css";
 import { Button } from "@/components/ui/componentes/button";
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/componentes/sheet";
 import { Avatar, AvatarFallback } from "@/components/ui/componentes/avatar";
@@ -93,12 +94,7 @@ function NavLink({ item, currentPath, onClick }: NavLinkProps) {
     <Link
       to={item.path}
       onClick={onClick}
-      className={cn(
-        "flex items-center gap-3 rounded-(--radius-button) px-3 py-2 text-sm-body font-medium transition-colors",
-        isActive
-          ? "bg-(--color-primary-surface) text-(--color-primary-text)"
-          : "text-(--color-text-secondary) hover:bg-(--color-bg-surface) hover:text-(--color-text-primary)",
-      )}
+      className={clsx(styles.navLink, isActive ? styles.navLinkActive : styles.navLinkInactive)}
     >
       <Icon aria-hidden className="size-5" />
       {t(item.labelKey)}
@@ -116,10 +112,8 @@ function NavSection({ group, currentPath, onNavigate }: NavSectionProps) {
   const { t } = useTranslation();
 
   return (
-    <div className="flex flex-col gap-1">
-      <p className="px-3 pb-1 pt-2 text-2xs uppercase tracking-wider text-(--color-text-tertiary)">
-        {t(group.labelKey)}
-      </p>
+    <div className={styles.navSection}>
+      <p className={styles.navSectionLabel}>{t(group.labelKey)}</p>
       {group.items.map((item) => (
         <NavLink key={item.path} item={item} currentPath={currentPath} onClick={onNavigate} />
       ))}
@@ -146,20 +140,18 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
   };
 
   return (
-    <div className="flex h-full flex-col gap-6 p-4">
-      <div className="flex items-center gap-3 px-2">
-        <div className="flex size-9 items-center justify-center rounded-(--radius-button) bg-(--color-primary) text-(--color-primary-foreground)">
+    <div className={styles.sidebarInner}>
+      <div className={styles.logoRow}>
+        <div className={styles.logoIcon}>
           <Stethoscope aria-hidden className="size-5" />
         </div>
-        <div className="flex flex-col">
-          <span className="text-sub font-medium leading-tight text-(--color-text-primary)">
-            Agenda Saúde
-          </span>
-          <span className="text-2xs text-(--color-text-tertiary)">Gestão Clínica</span>
+        <div className={styles.logoTextGroup}>
+          <span className={styles.logoName}>Agenda Saúde</span>
+          <span className={styles.logoTagline}>Gestão Clínica</span>
         </div>
       </div>
 
-      <nav className="flex flex-1 flex-col gap-3 overflow-y-auto">
+      <nav className={styles.nav}>
         {NAV_GROUPS.map((group) => (
           <NavSection
             key={group.labelKey}
@@ -170,11 +162,11 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
         ))}
       </nav>
 
-      <div className="flex flex-col gap-2 border-t border-(--color-border) pt-4">
+      <div className={styles.sidebarFooter}>
         <Button
           type="button"
           variant="ghost"
-          className="justify-start gap-3 text-(--color-text-secondary) hover:text-(--color-text-primary)"
+          className={styles.sidebarAction}
           onClick={() => setColorMode(colorMode === "dark" ? "light" : "dark")}
         >
           {colorMode === "dark" ? (
@@ -187,7 +179,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
         <Button
           type="button"
           variant="ghost"
-          className="justify-start gap-3 text-(--color-text-secondary) hover:text-(--color-text-primary)"
+          className={styles.sidebarAction}
           onClick={handleLogout}
         >
           <LogOut aria-hidden className="size-5" />
@@ -205,27 +197,27 @@ export function StackedLayout() {
   const initials = getInitials(userName);
 
   return (
-    <div className="flex min-h-screen bg-(--color-bg-page)">
-      <aside className="hidden w-64 shrink-0 border-r border-(--color-border) bg-(--color-bg-surface) lg:block">
+    <div className={styles.root}>
+      <aside className={styles.sidebar}>
         <SidebarContent />
       </aside>
 
-      <div className="flex flex-1 flex-col">
-        <header className="flex items-center justify-between border-b border-(--color-border) bg-(--color-bg-card) px-4 py-3 lg:px-6">
-          <div className="flex items-center gap-3">
+      <div className={styles.content}>
+        <header className={styles.header}>
+          <div className={styles.headerLeft}>
             <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
               <SheetTrigger asChild>
                 <Button
                   type="button"
                   variant="ghost"
                   size="icon"
-                  className="lg:hidden"
+                  className={styles.navMenuButton}
                   aria-label={t("nav.menu")}
                 >
                   <Menu aria-hidden className="size-5" />
                 </Button>
               </SheetTrigger>
-              <SheetContent side="left" className="w-72 p-0 bg-(--color-bg-surface)">
+              <SheetContent side="left" className={styles.mobileSheet}>
                 <SheetTitle className="sr-only">{t("nav.menu")}</SheetTitle>
                 <SidebarContent onNavigate={() => setMobileOpen(false)} />
               </SheetContent>
@@ -233,16 +225,16 @@ export function StackedLayout() {
           </div>
 
           {/* TODO: link this to /user-profile once that route is registered */}
-          <div className="flex items-center gap-2 rounded-(--radius-button) px-2 py-1">
+          <div className={styles.userChip}>
             <Avatar className="size-8">
-              <AvatarFallback className="bg-(--color-primary-surface) text-(--color-primary-text) text-xs font-medium">
+              <AvatarFallback className={styles.avatarFallback}>
                 {initials}
               </AvatarFallback>
             </Avatar>
           </div>
         </header>
 
-        <main className="flex-1 overflow-auto">
+        <main className={styles.main}>
           <Outlet />
         </main>
       </div>

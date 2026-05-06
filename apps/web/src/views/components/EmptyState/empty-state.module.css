@@ -1,0 +1,15 @@
+.root {
+  @apply flex flex-col items-center justify-center px-6 py-12 text-center;
+}
+
+.iconWrapper {
+  @apply mb-4 flex size-16 items-center justify-center rounded-full bg-(--color-bg-surface) text-(--color-text-secondary);
+}
+
+.title {
+  @apply mb-1 text-sub font-medium text-(--color-text-primary);
+}
+
+.message {
+  @apply mb-4 text-sm text-(--color-text-secondary);
+}

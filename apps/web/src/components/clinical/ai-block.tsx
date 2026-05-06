@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
+import styles from "./ai-block.module.css";
 
 interface AIBlockProps {
   children: ReactNode;
@@ -24,22 +25,16 @@ export function AIBlock({
   className,
 }: AIBlockProps) {
   return (
-    <div
-      className={cn(
-        "flex flex-col gap-3 border-l-[3px] border-l-(--color-ai-border) bg-(--color-ai-bg) text-(--color-ai-text) p-(--padding-card)",
-        className,
-      )}
-      style={{ borderRadius: 0 }}
-    >
-      <div className="flex items-center gap-2 text-sm">
-        <span className="inline-flex items-center gap-1 rounded-(--radius-badge) bg-(--color-ai-badge-bg) px-2 py-0.5 text-2xs font-medium text-(--color-ai-badge-text)">
+    <div className={cn(styles.root, className)}>
+      <div className={styles.header}>
+        <span className={styles.badge}>
           <Sparkles aria-hidden className="size-3" />
           IA
         </span>
-        <span className="text-(--color-ai-text)">{label}</span>
+        <span className={styles.label}>{label}</span>
       </div>
-      <div className="text-sm-body">{children}</div>
-      {footer && <div className="flex flex-wrap gap-2">{footer}</div>}
+      <div className={styles.body}>{children}</div>
+      {footer && <div className={styles.footer}>{footer}</div>}
     </div>
   );
 }

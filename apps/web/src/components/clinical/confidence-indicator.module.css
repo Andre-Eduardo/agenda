@@ -1,0 +1,15 @@
+.root {
+  @apply inline-flex items-center gap-1 text-xs;
+}
+
+.high {
+  @apply text-(--color-confidence-high);
+}
+
+.mid {
+  @apply text-(--color-confidence-mid);
+}
+
+.low {
+  @apply text-(--color-confidence-low);
+}

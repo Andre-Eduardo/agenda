@@ -1,0 +1,35 @@
+.root {
+  @apply flex flex-col p-6 bg-(--color-bg-page);
+}
+
+.header {
+  @apply mb-6 flex gap-4;
+}
+
+.headerDefault {
+  @apply items-start justify-between;
+}
+
+.headerResponsive {
+  @apply flex-col sm:flex-row sm:items-start sm:justify-between;
+}
+
+.titleGroup {
+  @apply flex flex-col gap-1;
+}
+
+.title {
+  @apply text-2xl leading-[1.2] font-medium text-(--color-text-primary) font-sans;
+}
+
+.subtitle {
+  @apply text-sm text-(--color-text-secondary);
+}
+
+.actions {
+  @apply flex items-center gap-3;
+}
+
+.main {
+  @apply flex-1;
+}

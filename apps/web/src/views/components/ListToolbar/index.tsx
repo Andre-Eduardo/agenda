@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { Search } from "lucide-react";
 import { Input } from "@/components/ui/componentes/input";
+import styles from "./list-toolbar.module.css";
 
 interface ListToolbarProps {
   searchValue?: string;
@@ -18,14 +19,11 @@ export function ListToolbar({
   actions,
 }: ListToolbarProps) {
   return (
-    <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-      <div className="flex flex-1 min-w-70 items-center gap-3">
+    <div className={styles.root}>
+      <div className={styles.left}>
         {onSearchChange && (
-          <div className="relative flex-1 max-w-105">
-            <Search
-              aria-hidden
-              className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-(--color-text-tertiary)"
-            />
+          <div className={styles.searchWrapper}>
+            <Search aria-hidden className={styles.searchIcon} />
             <Input
               placeholder={searchPlaceholder}
               value={searchValue}
@@ -36,7 +34,7 @@ export function ListToolbar({
         )}
         {filters}
       </div>
-      {actions && <div className="flex items-center gap-3">{actions}</div>}
+      {actions && <div className={styles.actions}>{actions}</div>}
     </div>
   );
 }
