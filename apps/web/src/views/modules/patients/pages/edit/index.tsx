@@ -220,6 +220,7 @@ function EditPatientForm({ patient }: { patient: Patient }) {
   const isLast  = tabIdx === TABS.length - 1;
 
   function goPrev() { if (!isFirst) setTab(TABS[tabIdx - 1].key); }
+
   function goNext()  { if (!isLast)  setTab(TABS[tabIdx + 1].key); }
 
   const onSubmit: SubmitHandler<FormValues> = (data) => {
@@ -311,6 +312,7 @@ function EditPatientForm({ patient }: { patient: Patient }) {
             {TABS.map((t) => {
               const filled = tab !== t.key && tabHasValues(t.key, values);
               const TabIcon = t.icon;
+
               return (
                 <TabsTrigger key={t.key} value={t.key}>
                   <span className={cn(S.tabNum, tab === t.key && S.tabNumActive, filled && S.tabNumFilled)}>

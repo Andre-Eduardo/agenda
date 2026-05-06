@@ -1,8 +1,19 @@
 {
-  "extends": "./tsconfig.json",
+  "extends": "../../tsconfig.build.json",
   "compilerOptions": {
-    "outDir": "dist",
-    "noEmit": false,
-    "declaration": false
-  }
+    "declaration": false,
+    "paths": {
+      "@application/*": ["./src/application/*"],
+      "@domain/*": ["./src/domain/*"],
+      "@infrastructure/*": ["./src/infrastructure/*"]
+    }
+  },
+  "exclude": [
+    "./node_modules",
+    "./dist",
+    "./test",
+    "./*.config.ts",
+    "./src/**/*.test.ts",
+    "./prisma"
+  ]
 }

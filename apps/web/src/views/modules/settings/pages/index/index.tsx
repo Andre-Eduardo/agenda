@@ -173,6 +173,7 @@ function ProfileForm() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [identityInitialized, setIdentityInitialized] = useState(false);
+
   if (user && !identityInitialized) {
     setName(user.name ?? '');
     setEmail((user.email as string) ?? '');
@@ -185,8 +186,10 @@ function ProfileForm() {
   const [registryNum, setRegistryNum] = useState('');
   const [registryUf, setRegistryUf] = useState('SP');
   const [proInitialized, setProInitialized] = useState(false);
+
   if (professional && !proInitialized) {
     const rawSpecialty = (professional.specialty as string | null) ?? '';
+
     setSpecialty(rawSpecialty);
     setRegistryNum((professional.registrationNumber as string | null) ?? '');
     setProInitialized(true);
@@ -213,12 +216,19 @@ function ProfileForm() {
   const pwdStrength = (() => {
     if (!newPwd) return null;
     let s = 0;
+
     if (newPwd.length >= 8) s++;
+
     if (/\d/.test(newPwd)) s++;
+
     if (/[^A-Za-z0-9]/.test(newPwd)) s++;
+
     if (/[A-Z]/.test(newPwd) && /[a-z]/.test(newPwd)) s++;
+
     if (s <= 1) return { level: 'weak' as const, label: 'Fraca', pct: 30 };
+
     if (s === 2) return { level: 'med' as const, label: 'Média', pct: 60 };
+
     return { level: 'strong' as const, label: 'Forte', pct: 100 };
   })();
   const pwdMatch = !!(newPwd && confirmPwd && newPwd === confirmPwd);
@@ -252,6 +262,7 @@ function ProfileForm() {
         specialty: specialty || null,
         specialtyNormalized: null,
       };
+
       updateProfessional.mutate(
         { id: professional.id, data: dto },
         {
@@ -302,6 +313,7 @@ function ProfileForm() {
             const active = t.key === tab;
             const filled = tabFilled[t.key] && !active;
             const Icon = t.icon;
+
             return (
               <button
                 key={t.key}
@@ -531,6 +543,7 @@ function ProfileForm() {
                       value={officeCep}
                       onChange={e => {
                         setOfficeCep(e.target.value);
+
                         if (e.target.value.replace(/\D/g, '').length === 8) {
                           setCepLoading(true);
                           setTimeout(() => setCepLoading(false), 700);
@@ -768,6 +781,7 @@ function Field({
   error?: string;
 }) {
   const id = useId();
+
   return (
     <div className={S.span[span]}>
       <Label htmlFor={id} className={S.fieldLabel}>
@@ -797,6 +811,7 @@ function SessionRow({
 }) {
   const isPhone = device.includes('iPhone') || device.includes('iPad');
   const Icon = isPhone ? Smartphone : Laptop;
+
   return (
     <div className={S.sessionRow({ current })}>
       <div className={S.sessionIcon}>

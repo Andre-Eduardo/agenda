@@ -57,7 +57,7 @@ export const Route = createFileRoute("/_stackedLayout/patients/$patientId/record
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
-const ATTENDANCE_OPTIONS: { value: CreateRecordDtoAttendanceType; label: string }[] = [
+const ATTENDANCE_OPTIONS: Array<{ value: CreateRecordDtoAttendanceType; label: string }> = [
   { value: CreateRecordDtoAttendanceType.FIRST_VISIT, label: "Primeira consulta" },
   { value: CreateRecordDtoAttendanceType.FOLLOW_UP, label: "Retorno" },
   { value: CreateRecordDtoAttendanceType.EVALUATION, label: "Avaliação" },
@@ -66,7 +66,7 @@ const ATTENDANCE_OPTIONS: { value: CreateRecordDtoAttendanceType; label: string 
   { value: CreateRecordDtoAttendanceType.INTERCURRENCE, label: "Intercorrência" },
 ];
 
-const CLINICAL_STATUS_OPTIONS: { value: CreateRecordDtoClinicalStatus; label: string }[] = [
+const CLINICAL_STATUS_OPTIONS: Array<{ value: CreateRecordDtoClinicalStatus; label: string }> = [
   { value: CreateRecordDtoClinicalStatus.STABLE, label: "Estável" },
   { value: CreateRecordDtoClinicalStatus.IMPROVING, label: "Melhorando" },
   { value: CreateRecordDtoClinicalStatus.WORSENING, label: "Piorando" },
@@ -74,7 +74,7 @@ const CLINICAL_STATUS_OPTIONS: { value: CreateRecordDtoClinicalStatus; label: st
   { value: CreateRecordDtoClinicalStatus.UNDER_OBSERVATION, label: "Em observação" },
 ];
 
-const CONDUCT_TAGS: { value: CreateRecordDtoConductTagsItem; label: string; icon: ReactNode }[] = [
+const CONDUCT_TAGS: Array<{ value: CreateRecordDtoConductTagsItem; label: string; icon: ReactNode }> = [
   { value: CreateRecordDtoConductTagsItem.PRESCRIPTION, label: "Prescrição", icon: <Pill className="size-[13px]" /> },
   { value: CreateRecordDtoConductTagsItem.EXAM_REQUESTED, label: "Solicitação de exame", icon: <FlaskConical className="size-[13px]" /> },
   { value: CreateRecordDtoConductTagsItem.REFERRAL, label: "Encaminhamento", icon: <Forward className="size-[13px]" /> },
@@ -109,63 +109,89 @@ function asStr(v: unknown): string | null {
 
 function getAge(birthDate: unknown): number | null {
   const s = asStr(birthDate);
+
   if (!s) return null;
   const birth = new Date(s);
   const now = new Date();
   let age = now.getFullYear() - birth.getFullYear();
   const m = now.getMonth() - birth.getMonth();
+
   if (m < 0 || (m === 0 && now.getDate() < birth.getDate())) age -= 1;
+
   return age;
 }
 
 function buildEventDate(date: string, time: string): string {
   if (!date) return new Date().toISOString();
   const iso = time ? `${date}T${time}:00` : `${date}T00:00:00`;
+
   return new Date(iso).toISOString();
 }
 
 function composeVitalsText(v: VitalsState): string | undefined {
   const parts: string[] = [];
+
   if (v.sys && v.dia) parts.push(`PA ${v.sys}/${v.dia} mmHg`);
+
   if (v.hr) parts.push(`FC ${v.hr} bpm`);
+
   if (v.spo2) parts.push(`SpO₂ ${v.spo2}%`);
+
   if (v.temp) parts.push(`T ${v.temp}°C`);
+
   if (v.weight) parts.push(`Peso ${v.weight} kg`);
+
   if (v.height) parts.push(`Altura ${v.height} cm`);
+
   if (parts.length === 0) return undefined;
+
   return `Sinais vitais: ${parts.join(" | ")}`;
 }
 
 function calcBmi(weight: string, height: string): { value: string; tone: "ok" | "warn" | "bad" } | null {
   const w = parseFloat(weight);
   const h = parseFloat(height);
+
   if (!w || !h || h < 50) return null;
-  const bmi = w / Math.pow(h / 100, 2);
+  const bmi = w / (h / 100) ** 2;
   const value = bmi.toFixed(1);
+
   if (bmi < 18.5) return { value, tone: "warn" };
+
   if (bmi < 25)   return { value, tone: "ok" };
+
   if (bmi < 30)   return { value, tone: "warn" };
+
   return { value, tone: "bad" };
 }
 
 function getBmiLabel(bmi: number): string {
   if (bmi < 18.5) return "Baixo peso";
+
   if (bmi < 25)   return "Eutrófico";
+
   if (bmi < 30)   return "Sobrepeso";
+
   if (bmi < 35)   return "Obesidade I";
+
   if (bmi < 40)   return "Obesidade II";
+
   return "Obesidade III";
 }
 
 function getAvatarColorIndex(id: string): number {
   let h = 0;
+
   for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) >>> 0;
+
   return h;
 }
 
 function isVitalOutOfRange(val: string, range: { min: number; max: number }): boolean {
   const n = parseFloat(val);
+
   if (!val || isNaN(n)) return false;
+
   return n < range.min || n > range.max;
 }
 
@@ -212,6 +238,7 @@ function SoapField({
 
   useEffect(() => {
     const el = ref.current;
+
     if (!el) return;
     el.style.height = "auto";
     el.style.height = `${el.scrollHeight}px`;
@@ -265,6 +292,7 @@ function VitalCell({
 
 function VitalAlert({ val, range }: { val: string; range: { min: number; max: number } }) {
   if (!isVitalOutOfRange(val, range)) return null;
+
   return (
     <div className={S.vitals.warn}>
       <AlertTriangle className="size-[10px]" />
@@ -476,14 +504,20 @@ function NewEvolutionForm({ patient }: { patient: Patient }) {
   useEffect(() => {
     const onScroll = () => {
       let cur = TOC_SECTIONS[0]?.id ?? "sec-attend";
+
       for (const sec of TOC_SECTIONS) {
         const el = document.getElementById(sec.id);
+
         if (!el) continue;
+
         if (el.getBoundingClientRect().top <= 120) cur = sec.id;
       }
+
       setActiveSec(cur);
     };
+
     window.addEventListener("scroll", onScroll, { passive: true });
+
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
@@ -516,8 +550,10 @@ function NewEvolutionForm({ patient }: { patient: Patient }) {
 
   function jumpTo(id: string) {
     const el = document.getElementById(id);
+
     if (!el) return;
     const top = el.getBoundingClientRect().top + window.scrollY - 80;
+
     window.scrollTo({ top, behavior: "smooth" });
   }
 
@@ -528,8 +564,10 @@ function NewEvolutionForm({ patient }: { patient: Patient }) {
   function handlePublishClick() {
     if (!hasSoap && vitalsCount === 0) {
       toast.warning("Preencha pelo menos um campo SOAP ou sinais vitais antes de publicar.");
+
       return;
     }
+
     setShowPublishModal(true);
   }
 
@@ -561,8 +599,10 @@ function NewEvolutionForm({ patient }: { patient: Patient }) {
 
   function handleFileAdd(e: React.ChangeEvent<HTMLInputElement>) {
     const list = Array.from(e.target.files ?? []);
+
     if (!list.length) return;
     const fmt = (b: number) => b < 1024 * 1024 ? `${(b / 1024).toFixed(0)} KB` : `${(b / 1024 / 1024).toFixed(1)} MB`;
+
     setFiles((prev) => [...prev, ...list.map((f, i) => ({ id: Date.now() + i, name: f.name, size: fmt(f.size) }))]);
     e.target.value = "";
   }
@@ -895,6 +935,7 @@ function NewEvolutionForm({ patient }: { patient: Patient }) {
                 <div className={S.conductGrid}>
                   {CONDUCT_TAGS.map((t) => {
                     const on = conductTags.includes(t.value);
+
                     return (
                       <button
                         key={t.value}

@@ -18,7 +18,7 @@ import {
   Sparkles,
   TriangleAlert,
 } from "lucide-react";
-import { type ReactNode } from "react";
+import type { ReactNode } from "react";
 import type { UseQueryResult } from "@tanstack/react-query";
 import { Button } from "@/components/ui/componentes/button";
 import { Skeleton } from "@/components/ui/componentes/skeleton";

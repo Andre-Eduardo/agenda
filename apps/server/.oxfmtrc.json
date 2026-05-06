@@ -1,6 +1,6 @@
 {
   "$schema": "./node_modules/oxfmt/configuration_schema.json",
-  "ignorePatterns": ["**/routeTree.gen.ts"],
+  "ignorePatterns": ["openapi.json"],
   "bracketSpacing": false,
   "endOfLine": "lf",
   "printWidth": 120,
@@ -10,16 +10,9 @@
   "trailingComma": "es5",
   "sortImports": {
     "newlinesBetween": false,
-    "internalPattern": ["@/"],
-    "customGroups": [
-      {
-        "groupName": "react",
-        "elementNamePattern": ["react"]
-      }
-    ],
+    "internalPattern": ["@application/", "@domain/", "@infrastructure/"],
     "groups": [
       "builtin",
-      "react",
       "external",
       ["internal", "subpath"],
       ["parent", "sibling", "index"],

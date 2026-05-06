@@ -63,47 +63,60 @@ const PT_MONTHS_SHORT = ["jan", "fev", "mar", "abr", "mai", "jun", "jul", "ago",
 
 function formatFullDate(v: unknown): string {
   const s = asStr(v);
+
   if (!s) return "—";
   const d = new Date(s);
+
   return `${PT_WEEKDAYS[d.getDay()]}, ${d.getDate()} de ${PT_MONTHS[d.getMonth()]} de ${d.getFullYear()}`;
 }
 
 function formatShortDate(v: unknown): string {
   const s = asStr(v);
+
   if (!s) return "—";
   const d = new Date(s);
+
   return `${d.getDate()} ${PT_MONTHS_SHORT[d.getMonth()]}`;
 }
 
 function formatDateTime(v: unknown): string {
   const s = asStr(v);
+
   if (!s) return "—";
   const d = new Date(s);
   const hh = String(d.getHours()).padStart(2, "0");
   const mm = String(d.getMinutes()).padStart(2, "0");
+
   return `${d.getDate()} ${PT_MONTHS_SHORT[d.getMonth()]} ${d.getFullYear()}, ${hh}:${mm}`;
 }
 
 function formatTime(v: unknown): string {
   const s = asStr(v);
+
   if (!s) return "—";
+
   return new Date(s).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
 }
 
 function getAge(birthDate: unknown): number | null {
   const s = asStr(birthDate);
+
   if (!s) return null;
   const birth = new Date(s);
   const now = new Date();
   let age = now.getFullYear() - birth.getFullYear();
   const m = now.getMonth() - birth.getMonth();
+
   if (m < 0 || (m === 0 && now.getDate() < birth.getDate())) age -= 1;
+
   return age;
 }
 
 function getAvatarColorIndex(id: string): number {
   let h = 0;
+
   for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) >>> 0;
+
   return h;
 }
 
@@ -116,6 +129,7 @@ function attendanceLabel(type: string | null | undefined): string {
     TELEMEDICINE: "Telemedicina",
     INTERCURRENCE: "Intercorrência",
   };
+
   return type ? (map[type] ?? type) : "Consulta";
 }
 
@@ -127,6 +141,7 @@ function clinicalStatusLabel(status: RecordClinicalStatus): string {
     UNCHANGED: "Sem mudança",
     UNDER_OBSERVATION: "Em observação",
   };
+
   return status ? (map[status] ?? status) : "—";
 }
 
@@ -139,6 +154,7 @@ function conductLabel(tag: RecordConductTagsItem): string {
     THERAPY_ADJUSTMENT: "Ajuste de terapia",
     FOLLOW_UP_SCHEDULED: "Retorno agendado",
   };
+
   return map[tag] ?? tag;
 }
 
@@ -157,7 +173,7 @@ function DetailSkeleton() {
 
 // ── SOAP section ───────────────────────────────────────────────────────────────
 
-const SOAP_DEFS: { key: "s" | "o" | "a" | "p"; letter: string; title: string; desc: string }[] = [
+const SOAP_DEFS: Array<{ key: "s" | "o" | "a" | "p"; letter: string; title: string; desc: string }> = [
   { key: "s", letter: "S", title: "Subjetivo", desc: "Queixas, história e contexto relatado pelo paciente" },
   { key: "o", letter: "O", title: "Objetivo", desc: "Achados de exame, vitais e dados objetivos" },
   { key: "a", letter: "A", title: "Avaliação", desc: "Diagnósticos, hipóteses e raciocínio clínico" },
@@ -171,6 +187,7 @@ function SoapSection({ record }: { record: MedicalRecord }) {
     a: asStr(record.assessment),
     p: asStr(record.plan),
   };
+
   return (
     <section className={S.section.root}>
       <div className={S.section.head}>
@@ -180,6 +197,7 @@ function SoapSection({ record }: { record: MedicalRecord }) {
       <div className={S.soap.stack}>
         {SOAP_DEFS.map((def) => {
           const content = contents[def.key];
+
           return (
             <div key={def.key}>
               <div className={S.soap.head}>
@@ -207,7 +225,9 @@ function SoapSection({ record }: { record: MedicalRecord }) {
 function TagsSection({ record }: { record: MedicalRecord }): ReactNode {
   const hasStatus = record.clinicalStatus != null;
   const hasTags = record.conductTags.length > 0;
+
   if (!hasStatus && !hasTags) return null;
+
   return (
     <section className={S.section.root}>
       <div className={S.section.head}>
@@ -244,7 +264,9 @@ function TagsSection({ record }: { record: MedicalRecord }): ReactNode {
 
 function NotesSection({ record }: { record: MedicalRecord }): ReactNode {
   const freeNotes = asStr(record.freeNotes);
+
   if (!freeNotes) return null;
+
   return (
     <section className={S.section.root}>
       <div className={S.section.head}>

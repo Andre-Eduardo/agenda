@@ -132,11 +132,13 @@ const DISPLAY_STATUS_DEF: Array<{ key: DisplayStatus; label: string }> = [
 
 function toDateStr(iso: string): string {
   const d = new Date(iso);
+
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 }
 
 function toTimeStr(iso: string): string {
   const d = new Date(iso);
+
   return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
 }
 
@@ -146,11 +148,13 @@ function toISO(dateStr: string, timeStr: string): string {
 
 function todayDateStr(): string {
   const d = new Date();
+
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 }
 
 function timeToMin(t: string): number {
   const [h, m] = t.split(":").map(Number);
+
   return h * 60 + m;
 }
 
@@ -160,7 +164,9 @@ function minToTime(m: number): string {
 
 function addDays(d: Date, n: number): Date {
   const r = new Date(d);
+
   r.setDate(d.getDate() + n);
+
   return r;
 }
 
@@ -168,8 +174,10 @@ function startOfWeek(d: Date): Date {
   const day = d.getDay();
   const diff = day === 0 ? -6 : 1 - day; // Monday start
   const r = new Date(d);
+
   r.setDate(d.getDate() + diff);
   r.setHours(0, 0, 0, 0);
+
   return r;
 }
 
@@ -188,14 +196,20 @@ function dateToStr(d: Date): string {
 function fmtRelDate(iso: string): string {
   const d = new Date(iso);
   const t = new Date();
+
   t.setHours(0, 0, 0, 0);
   d.setHours(0, 0, 0, 0);
   const diff = Math.round((d.getTime() - t.getTime()) / 86400000);
   const abs = `${String(d.getDate()).padStart(2, "0")} ${MONTH_NAMES_SHORT[d.getMonth()]} ${d.getFullYear()}`;
+
   if (diff === 0) return `Hoje · ${abs}`;
+
   if (diff === -1) return `Ontem · ${abs}`;
+
   if (diff === 1) return `Amanhã · ${abs}`;
+
   if (diff < 0 && diff > -7) return `há ${Math.abs(diff)} dias · ${abs}`;
+
   return abs;
 }
 
@@ -235,26 +249,33 @@ function layoutOverlaps(appts: Appointment[], hourH: number): PositionedAppt[] {
       curEnd = Math.max(curEnd, it.e);
     }
   }
+
   if (current.length) groups.push(current);
 
   for (const g of groups) {
     const laneEnds: number[] = [];
+
     for (const it of g) {
       let placed = false;
+
       for (let li = 0; li < laneEnds.length; li++) {
         if (laneEnds[li] <= it.s) {
           it.lane = li;
           laneEnds[li] = it.e;
           placed = true;
+
           break;
         }
       }
+
       if (!placed) {
         it.lane = laneEnds.length;
         laneEnds.push(it.e);
       }
     }
+
     const total = laneEnds.length;
+
     for (const it of g) it.lanes = total;
   }
 
@@ -273,7 +294,9 @@ function apptNote(apt: Appointment): string | null {
 
 function getAvatarVariant(id: string): string {
   let hash = 0;
+
   for (let i = 0; i < id.length; i++) hash = (hash * 31 + id.charCodeAt(i)) >>> 0;
+
   return S.avatarVariants[hash % S.avatarVariants.length];
 }
 
@@ -359,10 +382,13 @@ function MiniCalendar({
 
   const apptDates = useMemo(() => {
     const m = new Map<string, number>();
+
     appts.forEach((a) => {
       const k = toDateStr(a.startAt);
+
       m.set(k, (m.get(k) ?? 0) + 1);
     });
+
     return m;
   }, [appts]);
 
@@ -403,6 +429,7 @@ function MiniCalendar({
           const hasAppt   = (apptDates.get(dateToStr(d)) ?? 0) > 0;
 
           let state: "default" | "off" | "today" | "selected" | "inWeek" = "default";
+
           if (!inMonth)   state = "off";
           else if (isSelected) state = "selected";
           else if (inWeek) state = "inWeek";
@@ -515,6 +542,7 @@ function DayView({
             const h   = Math.max(((e - s) / 60) * DAY_HOUR_H - 4, 36);
             const w   = 100 / lanes;
             const l   = lane * w;
+
             return (
               <ApptBlock
                 key={apt.id}
@@ -577,6 +605,7 @@ function WeekView({
         <div className={S.timeColHead} />
         {days.map((d, i) => {
           const isToday = sameDay(d, today);
+
           return (
             <div key={i} className={S.dayHead({ today: isToday })}>
               <span className={S.dayHeadDow}>{WEEKDAYS_SHORT[d.getDay()]}</span>
@@ -640,6 +669,7 @@ function WeekView({
                 const h   = Math.max(((e - s) / 60) * WEEK_HOUR_H - 2, 22);
                 const w   = 100 / lanes;
                 const l   = lane * w;
+
                 return (
                   <ApptBlock
                     key={apt.id}
@@ -688,7 +718,9 @@ function DayPopover({
 
   useEffect(() => {
     const h = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
+
     window.addEventListener("keydown", h);
+
     return () => window.removeEventListener("keydown", h);
   }, [onClose]);
 
@@ -712,6 +744,7 @@ function DayPopover({
         <div className={S.popList}>
           {dayAppts.map((a) => {
             const p = patientMap.get(a.patientId);
+
             return (
               <button
                 key={a.id}
@@ -792,6 +825,7 @@ function MonthView({
               {visible.map((a) => {
                 const displayStatus = API_TO_DISPLAY[a.status as AppointmentStatus];
                 const evtCls = S.monthEvtCls[displayStatus] ?? S.monthEvtCls[a.status as string];
+
                 return (
                   <button
                     key={a.id}
@@ -879,7 +913,9 @@ function AppointmentDetailSheet({
         else onClose();
       }
     };
+
     window.addEventListener("keydown", h);
+
     return () => window.removeEventListener("keydown", h);
   }, [editing, showCancel, onClose]);
 
@@ -895,6 +931,7 @@ function AppointmentDetailSheet({
   function saveEdit() {
     const sMin = timeToMin(editStart);
     const eMin = sMin + editDuration;
+
     updateMutation.mutate(
       {
         id: apt.id,
@@ -1237,12 +1274,15 @@ function NewAppointmentSheet({
 
   useEffect(() => {
     const t = setTimeout(() => setDebouncedQuery(patientQuery), 250);
+
     return () => clearTimeout(t);
   }, [patientQuery]);
 
   useEffect(() => {
     const h = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
+
     window.addEventListener("keydown", h);
+
     return () => window.removeEventListener("keydown", h);
   }, [onClose]);
 
@@ -1261,11 +1301,14 @@ function NewAppointmentSheet({
     const eMin = sMin + duration;
     const same = allAppts.find((a) => {
       if (toDateStr(a.startAt) !== date) return false;
+
       if (a.status === "CANCELLED" || a.status === "NO_SHOW") return false;
       const as_ = timeToMin(toTimeStr(a.startAt));
       const ae  = timeToMin(toTimeStr(a.endAt));
+
       return sMin < ae && eMin > as_;
     });
+
     return same ?? null;
   }, [date, start, duration, allAppts]);
 
@@ -1273,10 +1316,14 @@ function NewAppointmentSheet({
 
   function submit() {
     const err: Record<string, string> = {};
+
     if (!patient) err.patient = "Selecione um paciente";
+
     if (!date)   err.date    = "Informe a data";
+
     if (!start)  err.start   = "Informe o horário";
     setErrors(err);
+
     if (Object.keys(err).length) return;
 
     const sMin = timeToMin(start);
@@ -1306,6 +1353,7 @@ function NewAppointmentSheet({
     if (!date) return "";
     const [y, m, d] = date.split("-").map(Number);
     const dt = new Date(y, m - 1, d);
+
     return `${WEEKDAYS_LONG[dt.getDay()]}, ${dt.getDate()} de ${MONTH_NAMES[dt.getMonth()]}`;
   })();
 
@@ -1378,7 +1426,11 @@ function NewAppointmentSheet({
                             setPatient(p);
                             setShowSugg(false);
                             setPatientQuery("");
-                            setErrors((prev) => { const n = { ...prev }; delete n.patient; return n; });
+                            setErrors((prev) => { const n = { ...prev };
+
+ delete n.patient;
+
+ return n; });
                           }}
                         >
                           <div className={cn(S.avatarSm, getAvatarVariant(p.id))}>
@@ -1546,7 +1598,9 @@ export function AgendaPage() {
   const allAppts = apptQuery.data?.data ?? [];
   const patientMap = useMemo(() => {
     const m = new Map<string, Patient>();
+
     (patientQuery.data?.data ?? []).forEach((p) => m.set(p.id, p));
+
     return m;
   }, [patientQuery.data]);
 
@@ -1560,21 +1614,27 @@ export function AgendaPage() {
   function toggleStatus(k: DisplayStatus) {
     setStatusFilters((prev) => {
       const n = new Set(prev);
+
       if (n.has(k)) n.delete(k);
       else n.add(k);
+
       return n;
     });
   }
 
   function goPrev() {
     if (view === "day")   setCursor(addDays(cursor, -1));
+
     if (view === "week")  setCursor(addDays(cursor, -7));
+
     if (view === "month") setCursor(new Date(cursor.getFullYear(), cursor.getMonth() - 1, 1));
   }
 
   function goNext() {
     if (view === "day")   setCursor(addDays(cursor, 1));
+
     if (view === "week")  setCursor(addDays(cursor, 7));
+
     if (view === "month") setCursor(new Date(cursor.getFullYear(), cursor.getMonth() + 1, 1));
   }
 
@@ -1584,15 +1644,20 @@ export function AgendaPage() {
     if (view === "day") {
       return `${cursor.getDate()} de ${MONTH_NAMES[cursor.getMonth()]} de ${cursor.getFullYear()}, ${WEEKDAYS_LONG[cursor.getDay()]}`;
     }
+
     if (view === "week") {
       const ws = startOfWeek(cursor);
       const we = addDays(ws, 6);
+
       if (ws.getMonth() === we.getMonth()) {
         return `${ws.getDate()} – ${we.getDate()} de ${MONTH_NAMES[ws.getMonth()]} de ${ws.getFullYear()}`;
       }
+
       return `${ws.getDate()} ${MONTH_NAMES_SHORT[ws.getMonth()]} – ${we.getDate()} ${MONTH_NAMES_SHORT[we.getMonth()]} de ${we.getFullYear()}`;
     }
+
     const m = MONTH_NAMES[cursor.getMonth()];
+
     return `${m.charAt(0).toUpperCase() + m.slice(1)} ${cursor.getFullYear()}`;
   })();
 
@@ -1652,6 +1717,7 @@ export function AgendaPage() {
         <div className={S.statusFiltersRow}>
           {DISPLAY_STATUS_DEF.map(({ key, label }) => {
             const on = statusFilters.has(key);
+
             return (
               <button
                 key={key}
@@ -1676,6 +1742,7 @@ export function AgendaPage() {
             appts={filteredAppts}
             onPickDay={(d) => {
               setCursor(d);
+
               if (view === "month") setView("day");
             }}
           />

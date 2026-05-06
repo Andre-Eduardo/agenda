@@ -50,18 +50,23 @@ function toDateStr(iso: string) {
 
 function todayStr() {
   const now = new Date();
+
   return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
 }
 
 function fmtTime(iso: string) {
   const d = new Date(iso);
+
   return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
 }
 
 function greeting() {
   const h = new Date().getHours();
+
   if (h < 12) return 'Bom dia';
+
   if (h < 18) return 'Boa tarde';
+
   return 'Boa noite';
 }
 
@@ -69,6 +74,7 @@ function fmtFullDate() {
   const now = new Date();
   const weekdays = ['Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado'];
   const months = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'];
+
   return `${weekdays[now.getDay()]}, ${now.getDate()} de ${months[now.getMonth()]} de ${now.getFullYear()}`;
 }
 
@@ -76,11 +82,15 @@ function fmtDayLabel(iso: string) {
   const [y, m, d] = iso.split('-').map(Number);
   const dt = new Date(y, m - 1, d);
   const today = new Date();
+
   today.setHours(0, 0, 0, 0);
   const diff = Math.round((dt.getTime() - today.getTime()) / 86_400_000);
+
   if (diff === 1) return 'Amanhã';
   const weekdays = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+
   if (diff < 7) return weekdays[dt.getDay()];
+
   return `${String(d).padStart(2, '0')}/${String(m).padStart(2, '0')}`;
 }
 
@@ -388,7 +398,7 @@ function StatCard({
 function ApptRow({ apt }: { apt: Appointment }) {
   const start = fmtTime(apt.startAt);
   const end = fmtTime(apt.endAt);
-  const status = apt.status;
+  const {status} = apt;
   const isActive = ACTIVE_STATUSES.has(status);
 
   return (
@@ -434,6 +444,7 @@ function RecentRecordRow({ record }: { record: ClinicalRecord }) {
     ? (() => {
         const [y, m, d] = (record.eventDate as string).split('-').map(Number);
         const months = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
+
         return `${String(d).padStart(2, '0')} ${months[m - 1]}`;
       })()
     : '';
