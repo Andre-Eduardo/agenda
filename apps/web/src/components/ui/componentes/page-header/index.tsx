@@ -1,14 +1,13 @@
-import { cn } from '@/lib/utils';
+import {clsx} from 'clsx';
 
-// ---------------------------------------------------------------------------
-// PageHeader — cabeçalho padrão de página com título, subtítulo e ações.
-// Substitui o padrão pageHeader dos módulos.
-// ---------------------------------------------------------------------------
+import styles from './page-header.module.css';
+
+// ── PageHeader ────────────────────────────────────────────────────────────────
 
 export interface PageHeaderProps extends React.ComponentProps<'div'> {
-  title: string;
-  subtitle?: string;
-  actions?: React.ReactNode;
+  title:       string;
+  subtitle?:   string;
+  actions?:    React.ReactNode;
   breadcrumb?: React.ReactNode;
 }
 
@@ -22,31 +21,30 @@ function PageHeader({
   ...props
 }: PageHeaderProps) {
   return (
-    <div ref={ref} className={cn('flex flex-col gap-1', className)} {...props}>
+    <div ref={ref} className={clsx(styles.pageHeader, className)} {...props}>
       {breadcrumb && <div>{breadcrumb}</div>}
-      <div className="flex items-end justify-between gap-4">
-        <div className="min-w-0">
-          <h1 className="text-[32px] font-medium leading-[1.15] tracking-[-0.01em] text-(--color-text-primary)">
-            {title}
-          </h1>
-          {subtitle && (
-            <p className="mt-1.5 text-sm leading-[1.5] text-(--color-text-secondary)">{subtitle}</p>
-          )}
+      <div className={styles.pageHeaderRow}>
+        <div className={styles.pageHeaderTitleGroup}>
+          <h1 className={styles.pageHeaderTitle}>{title}</h1>
+          {subtitle && <p className={styles.pageHeaderSubtitle}>{subtitle}</p>}
         </div>
-        {actions && <div className="flex shrink-0 items-center gap-2">{actions}</div>}
+        {actions && <div className={styles.pageHeaderActions}>{actions}</div>}
       </div>
     </div>
   );
 }
 
-// Variante para detail pages — card sticky com avatar + nome + meta + ações
+// ── EntityHeader ──────────────────────────────────────────────────────────────
+//
+// Variante para detail pages — card sticky com avatar + nome + meta + ações.
+
 export interface EntityHeaderProps extends React.ComponentProps<'div'> {
-  avatar?: React.ReactNode;
-  name: React.ReactNode;
-  meta?: React.ReactNode;
+  avatar?:  React.ReactNode;
+  name:     React.ReactNode;
+  meta?:    React.ReactNode;
   actions?: React.ReactNode;
-  alerts?: React.ReactNode;
-  sticky?: boolean;
+  alerts?:  React.ReactNode;
+  sticky?:  boolean;
 }
 
 function EntityHeader({
@@ -63,38 +61,22 @@ function EntityHeader({
   return (
     <div
       ref={ref}
-      className={cn(
-        'rounded-(--radius-card) border border-(--color-border) bg-(--color-bg-card) px-5 py-[18px]',
-        sticky && 'sticky top-0 z-10',
-        className,
-      )}
+      className={clsx(styles.entityHeader, sticky && styles.entityHeaderSticky, className)}
       {...props}
     >
-      <div className="flex items-center justify-between gap-[18px]">
-        <div className="flex min-w-0 items-center gap-[18px]">
+      <div className={styles.entityHeaderRow}>
+        <div className={styles.entityHeaderAvatarGroup}>
           {avatar}
-          <div className="min-w-0">
-            <div className="text-[26px] font-medium leading-[1.2] text-(--color-text-primary)">
-              {name}
-            </div>
-            {meta && (
-              <div className="mt-[6px] flex flex-wrap items-center gap-2 text-[13px] text-(--color-text-secondary)">
-                {meta}
-              </div>
-            )}
+          <div className={styles.entityHeaderNameGroup}>
+            <div className={styles.entityHeaderName}>{name}</div>
+            {meta && <div className={styles.entityHeaderMeta}>{meta}</div>}
           </div>
         </div>
-        {actions && (
-          <div className="flex shrink-0 items-center gap-2">{actions}</div>
-        )}
+        {actions && <div className={styles.entityHeaderActions}>{actions}</div>}
       </div>
-      {alerts && (
-        <div className="mt-3 flex flex-wrap gap-2 border-t border-(--color-border) pt-3">
-          {alerts}
-        </div>
-      )}
+      {alerts && <div className={styles.entityHeaderAlerts}>{alerts}</div>}
     </div>
   );
 }
 
-export { PageHeader, EntityHeader };
+export {PageHeader, EntityHeader};

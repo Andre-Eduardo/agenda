@@ -1,61 +1,60 @@
-import { Slot } from "@radix-ui/react-slot";
-import { cva, type VariantProps } from "class-variance-authority";
+import {Slot} from '@radix-ui/react-slot';
+import {cva, type VariantProps} from 'class-variance-authority';
 
-import { cn } from "@/lib/utils";
+import {cn} from '@/lib/utils';
+import styles from './button.module.css';
 
-const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-(--radius-input) text-sm font-medium transition-colors duration-(--duration-fast) ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--color-primary) focus-visible:ring-offset-1 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0",
-  {
+// ── Variantes ─────────────────────────────────────────────────────────────────
+//
+// Cada chave aponta para uma classe CSS Module — o `cva` combina os módulos
+// em runtime exatamente como faria com classes Tailwind inline.
+
+const buttonVariants = cva(styles.base, {
     variants: {
-      variant: {
-        default:
-          "bg-(--color-primary) text-white hover:bg-(--color-primary)/90",
-        destructive:
-          "bg-(--color-danger) text-white hover:bg-(--color-danger)/90",
-        outline:
-          "border border-(--color-border) bg-(--color-bg-card) text-(--color-text-primary) hover:bg-(--color-bg-surface) hover:border-(--color-border-hover)",
-        secondary:
-          "bg-(--color-bg-surface) text-(--color-text-secondary) hover:bg-(--color-border) hover:text-(--color-text-primary)",
-        ghost:
-          "text-(--color-text-secondary) hover:bg-(--color-bg-surface) hover:text-(--color-text-primary)",
-        link:
-          "text-(--color-primary-text) underline-offset-4 hover:underline",
-        ai:
-          "bg-(--color-ai-badge-bg) text-white hover:bg-[#0F766E]",
-      },
-      size: {
-        default: "h-[38px] px-4",
-        sm: "h-[32px] px-3 text-xs",
-        lg: "h-[42px] px-6",
-        icon: "size-9",
-        "icon-sm": "size-7 text-xs",
-      },
+        variant: {
+            default:     styles.variantDefault,
+            destructive: styles.variantDestructive,
+            outline:     styles.variantOutline,
+            secondary:   styles.variantSecondary,
+            ghost:       styles.variantGhost,
+            link:        styles.variantLink,
+            ai:          styles.variantAi,
+        },
+        size: {
+            default:   styles.sizeDefault,
+            sm:        styles.sizeSm,
+            lg:        styles.sizeLg,
+            icon:      styles.sizeIcon,
+            'icon-sm': styles.sizeIconSm,
+        },
     },
     defaultVariants: {
-      variant: "default",
-      size: "default",
+        variant: 'default',
+        size: 'default',
     },
-  },
-);
+});
+
+// ── Props ─────────────────────────────────────────────────────────────────────
 
 export interface ButtonProps
-  extends React.ButtonHTMLAttributes<HTMLButtonElement>, VariantProps<typeof buttonVariants> {
-  asChild?: boolean;
-  ref?: React.Ref<HTMLButtonElement>;
+    extends React.ButtonHTMLAttributes<HTMLButtonElement>,
+        VariantProps<typeof buttonVariants> {
+    /** Renderiza como filho via Radix Slot (útil para links/router). */
+    asChild?: boolean;
+    ref?: React.Ref<HTMLButtonElement>;
 }
 
-function Button({
-  className,
-  variant,
-  size,
-  asChild = false,
-  ref,
-  ...props
-}: ButtonProps) {
-  const Comp = asChild ? Slot : "button";
-  return (
-    <Comp className={cn(buttonVariants({ variant, size, className }))} ref={ref} {...props} />
-  );
+// ── Componente ────────────────────────────────────────────────────────────────
+
+function Button({className, variant, size, asChild = false, ref, ...props}: ButtonProps) {
+    const Comp = asChild ? Slot : 'button';
+    return (
+        <Comp
+            ref={ref}
+            className={cn(buttonVariants({variant, size}), className)}
+            {...props}
+        />
+    );
 }
 
-export { Button, buttonVariants };
+export {Button, buttonVariants};

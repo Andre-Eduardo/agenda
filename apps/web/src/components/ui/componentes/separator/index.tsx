@@ -1,10 +1,11 @@
-import * as SeparatorPrimitive from "@radix-ui/react-separator";
+import * as SeparatorPrimitive from '@radix-ui/react-separator';
+import {clsx} from 'clsx';
 
-import { cn } from "@/lib/utils";
+import styles from './separator.module.css';
 
 function Separator({
   className,
-  orientation = "horizontal",
+  orientation = 'horizontal',
   decorative = true,
   ref,
   ...props
@@ -14,9 +15,9 @@ function Separator({
       ref={ref}
       decorative={decorative}
       orientation={orientation}
-      className={cn(
-        "shrink-0 bg-border",
-        orientation === "horizontal" ? "h-[1px] w-full" : "h-full w-[1px]",
+      className={clsx(
+        styles.base,
+        orientation === 'horizontal' ? styles.horizontal : styles.vertical,
         className,
       )}
       {...props}
@@ -24,4 +25,4 @@ function Separator({
   );
 }
 
-export { Separator };
+export {Separator};

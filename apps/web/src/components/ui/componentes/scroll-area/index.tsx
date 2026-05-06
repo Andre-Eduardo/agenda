@@ -1,6 +1,7 @@
-import * as ScrollAreaPrimitive from "@radix-ui/react-scroll-area";
+import * as ScrollAreaPrimitive from '@radix-ui/react-scroll-area';
+import {clsx} from 'clsx';
 
-import { cn } from "@/lib/utils";
+import styles from './scroll-area.module.css';
 
 function ScrollArea({
   className,
@@ -11,10 +12,10 @@ function ScrollArea({
   return (
     <ScrollAreaPrimitive.Root
       ref={ref}
-      className={cn("relative overflow-hidden", className)}
+      className={clsx(styles.scrollArea, className)}
       {...props}
     >
-      <ScrollAreaPrimitive.Viewport className="h-full w-full rounded-[inherit]">
+      <ScrollAreaPrimitive.Viewport className={styles.scrollAreaViewport}>
         {children}
       </ScrollAreaPrimitive.Viewport>
       <ScrollBar />
@@ -25,7 +26,7 @@ function ScrollArea({
 
 function ScrollBar({
   className,
-  orientation = "vertical",
+  orientation = 'vertical',
   ref,
   ...props
 }: React.ComponentProps<typeof ScrollAreaPrimitive.ScrollAreaScrollbar>) {
@@ -33,17 +34,17 @@ function ScrollBar({
     <ScrollAreaPrimitive.ScrollAreaScrollbar
       ref={ref}
       orientation={orientation}
-      className={cn(
-        "flex touch-none select-none transition-colors",
-        orientation === "vertical" && "h-full w-2.5 border-l border-l-transparent p-[1px]",
-        orientation === "horizontal" && "h-2.5 flex-col border-t border-t-transparent p-[1px]",
+      className={clsx(
+        styles.scrollBar,
+        orientation === 'vertical'   && styles.scrollBarVertical,
+        orientation === 'horizontal' && styles.scrollBarHorizontal,
         className,
       )}
       {...props}
     >
-      <ScrollAreaPrimitive.ScrollAreaThumb className="relative flex-1 rounded-full bg-border" />
+      <ScrollAreaPrimitive.ScrollAreaThumb className={styles.scrollBarThumb} />
     </ScrollAreaPrimitive.ScrollAreaScrollbar>
   );
 }
 
-export { ScrollArea, ScrollBar };
+export {ScrollArea, ScrollBar};

@@ -1,32 +1,37 @@
-import { cn } from '@/lib/utils';
-import { cva, type VariantProps } from 'class-variance-authority';
+import {cva, type VariantProps} from 'class-variance-authority';
 
-export const inputVariants = cva(
-  'w-full rounded-(--radius-input) border border-(--color-border) bg-(--color-bg-card) px-3 py-[9px] text-sm leading-[1.4] text-(--color-text-primary) transition-colors duration-(--duration-fast) ease-out placeholder:text-(--color-text-tertiary) hover:border-(--color-border-hover) focus:border-(--color-primary) focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 file:border-0 file:bg-transparent file:text-sm file:font-medium',
-  {
-    variants: {
-      appearance: {
-        default: '',
-        mono: 'font-mono tabular-nums text-[13px]',
-      },
-      state: {
-        default: '',
-        error: 'border-(--color-warning) focus:border-(--color-warning)',
-      },
+import {cn} from '@/lib/utils';
+import styles from './input.module.css';
+
+// ── Variantes ─────────────────────────────────────────────────────────────────
+
+export const inputVariants = cva(styles.base, {
+  variants: {
+    appearance: {
+      default: '',
+      mono:    styles.appearanceMono,
     },
-    defaultVariants: {
-      appearance: 'default',
-      state: 'default',
+    state: {
+      default: '',
+      error:   styles.stateError,
     },
   },
-);
+  defaultVariants: {
+    appearance: 'default',
+    state: 'default',
+  },
+});
+
+// ── Props ─────────────────────────────────────────────────────────────────────
 
 export interface InputProps
   extends React.ComponentProps<'input'>,
     VariantProps<typeof inputVariants> {
-  leadIcon?: React.ReactNode;
+  leadIcon?:  React.ReactNode;
   trailIcon?: React.ReactNode;
 }
+
+// ── Componente ────────────────────────────────────────────────────────────────
 
 function Input({
   className,
@@ -43,9 +48,9 @@ function Input({
       type={type}
       ref={ref}
       className={cn(
-        inputVariants({ appearance, state }),
-        leadIcon && 'pl-[36px]',
-        trailIcon && 'pr-8',
+        inputVariants({appearance, state}),
+        leadIcon  && styles.withLeadIcon,
+        trailIcon && styles.withTrailIcon,
         className,
       )}
       {...props}
@@ -55,20 +60,12 @@ function Input({
   if (!leadIcon && !trailIcon) return inputEl;
 
   return (
-    <div className="relative">
-      {leadIcon && (
-        <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-(--color-text-tertiary)">
-          {leadIcon}
-        </span>
-      )}
+    <div className={styles.wrapper}>
+      {leadIcon  && <span className={styles.leadIcon}>{leadIcon}</span>}
       {inputEl}
-      {trailIcon && (
-        <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1 text-(--color-text-tertiary)">
-          {trailIcon}
-        </span>
-      )}
+      {trailIcon && <span className={styles.trailIcon}>{trailIcon}</span>}
     </div>
   );
 }
 
-export { Input };
+export {Input};

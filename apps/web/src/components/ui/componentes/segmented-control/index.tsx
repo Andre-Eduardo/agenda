@@ -1,26 +1,30 @@
 import * as React from 'react';
+import {clsx} from 'clsx';
 
-import { cn } from '@/lib/utils';
+import styles from './segmented-control.module.css';
 
-// ---------------------------------------------------------------------------
-// SegmentedControl — substitui o padrão segmented/segmentedBtn dos módulos.
+// ── SegmentedControl ──────────────────────────────────────────────────────────
+//
 // Uso: valor controlado via value/onValueChange.
-// ---------------------------------------------------------------------------
 
 export interface SegmentedControlProps extends React.ComponentProps<'div'> {
-  value: string;
-  onValueChange: (value: string) => void;
+  value:           string;
+  onValueChange:   (value: string) => void;
 }
 
-function SegmentedControl({ value, onValueChange, className, children, ref, ...props }: SegmentedControlProps) {
+function SegmentedControl({
+  value,
+  onValueChange,
+  className,
+  children,
+  ref,
+  ...props
+}: SegmentedControlProps) {
   return (
     <div
       ref={ref}
       role="group"
-      className={cn(
-        'inline-flex items-center gap-px rounded-(--radius-input) border border-(--color-border) bg-(--color-bg-surface) p-[3px]',
-        className,
-      )}
+      className={clsx(styles.root, className)}
       {...props}
     >
       {React.Children.map(children, (child) => {
@@ -34,8 +38,10 @@ function SegmentedControl({ value, onValueChange, className, children, ref, ...p
   );
 }
 
+// ── SegmentedControlItem ──────────────────────────────────────────────────────
+
 export interface SegmentedControlItemProps extends React.ComponentProps<'button'> {
-  value: string;
+  value:      string;
   /** @internal injetado pelo SegmentedControl pai */
   _selected?: boolean;
   /** @internal injetado pelo SegmentedControl pai */
@@ -58,11 +64,9 @@ function SegmentedControlItem({
       role="radio"
       aria-checked={_selected}
       onClick={() => _onSelect?.(value)}
-      className={cn(
-        'inline-flex h-[26px] cursor-pointer select-none items-center gap-1.5 rounded-[4px] px-2.5 text-xs font-medium transition-colors duration-(--duration-fast)',
-        _selected
-          ? 'bg-(--color-bg-card) text-(--color-text-primary) shadow-sm'
-          : 'text-(--color-text-secondary) hover:text-(--color-text-primary)',
+      className={clsx(
+        styles.item,
+        _selected ? styles.itemSelected : styles.itemUnselected,
         className,
       )}
       {...props}
@@ -74,4 +78,4 @@ function SegmentedControlItem({
 
 SegmentedControl.Item = SegmentedControlItem;
 
-export { SegmentedControl, SegmentedControlItem };
+export {SegmentedControl, SegmentedControlItem};

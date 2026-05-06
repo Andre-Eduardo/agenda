@@ -1,28 +1,33 @@
-import * as AvatarPrimitive from "@radix-ui/react-avatar";
+import * as AvatarPrimitive from '@radix-ui/react-avatar';
 
-import { cn } from "@/lib/utils";
+import {cn} from '@/lib/utils';
+import styles from './avatar.module.css';
+
+// ── Avatar ────────────────────────────────────────────────────────────────────
 
 function Avatar({
   className,
   size,
   ref,
   ...props
-}: React.ComponentProps<typeof AvatarPrimitive.Root> & { size?: 'xs' | 'sm' | 'md' | 'lg' }) {
+}: React.ComponentProps<typeof AvatarPrimitive.Root> & {size?: 'xs' | 'sm' | 'md' | 'lg'}) {
   return (
     <AvatarPrimitive.Root
       ref={ref}
       className={cn(
-        'relative flex shrink-0 overflow-hidden rounded-full',
-        size === 'xs' && 'size-6',
-        size === 'sm' && 'size-8',
-        (!size || size === 'md') && 'size-10',
-        size === 'lg' && 'size-12',
+        styles.avatar,
+        size === 'xs'               && styles.avatarXs,
+        size === 'sm'               && styles.avatarSm,
+        (!size || size === 'md')    && styles.avatarMd,
+        size === 'lg'               && styles.avatarLg,
         className,
       )}
       {...props}
     />
   );
 }
+
+// ── AvatarImage ───────────────────────────────────────────────────────────────
 
 function AvatarImage({
   className,
@@ -32,11 +37,13 @@ function AvatarImage({
   return (
     <AvatarPrimitive.Image
       ref={ref}
-      className={cn("aspect-square h-full w-full", className)}
+      className={cn(styles.avatarImage, className)}
       {...props}
     />
   );
 }
+
+// ── AvatarFallback ────────────────────────────────────────────────────────────
 
 function AvatarFallback({
   className,
@@ -46,16 +53,17 @@ function AvatarFallback({
   return (
     <AvatarPrimitive.Fallback
       ref={ref}
-      className={cn(
-        "flex h-full w-full items-center justify-center rounded-full bg-muted",
-        className,
-      )}
+      className={cn(styles.avatarFallback, className)}
       {...props}
     />
   );
 }
 
-// Palette usada para colorir avatares por índice (hash do nome, posição na lista, etc.)
+// ── Palette para colorir avatares por índice ──────────────────────────────────
+//
+// Usada para colorir avatares por índice (hash do nome, posição na lista, etc.).
+// Mantida como strings Tailwind pois são selecionadas dinamicamente por índice.
+
 export const avatarColorVariants = [
   'bg-(--color-primary-surface) text-(--color-primary-text)',
   'bg-(--color-info-surface) text-(--color-info)',
@@ -68,7 +76,10 @@ export const avatarColorVariants = [
 
 export type AvatarColorVariant = (typeof avatarColorVariants)[number];
 
-// Componente de iniciais simples sem Radix (para listas densas)
+// ── AvatarInitials ────────────────────────────────────────────────────────────
+//
+// Componente de iniciais simples sem Radix (para listas densas).
+
 function AvatarInitials({
   name,
   colorIndex,
@@ -85,16 +96,18 @@ function AvatarInitials({
     .slice(0, 2)
     .map((w) => w[0]?.toUpperCase() ?? '')
     .join('');
+
   const color = avatarColorVariants[(colorIndex ?? 0) % avatarColorVariants.length];
+
   return (
     <span
       className={cn(
-        'inline-flex shrink-0 select-none items-center justify-center rounded-full font-medium',
-        size === 'xs' && 'size-6 text-[10px]',
-        size === 'sm' && 'size-8 text-xs',
-        (!size || size === 'md') && 'size-10 text-sm',
-        size === 'lg' && 'size-12 text-base',
-        color,
+        styles.initials,
+        size === 'xs'            && styles.initialsXs,
+        size === 'sm'            && styles.initialsSm,
+        (!size || size === 'md') && styles.initialsMd,
+        size === 'lg'            && styles.initialsLg,
+        color,   // string Tailwind dinâmica — selecionada por índice
         className,
       )}
     >
@@ -103,4 +116,4 @@ function AvatarInitials({
   );
 }
 
-export { Avatar, AvatarImage, AvatarFallback, AvatarInitials };
+export {Avatar, AvatarImage, AvatarFallback, AvatarInitials};
