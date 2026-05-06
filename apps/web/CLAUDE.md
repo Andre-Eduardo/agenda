@@ -14,15 +14,16 @@ src/
   app/
     globals.css         — tokens CSS via @theme + :root/.dark (design-system.md §11)
   components/
-    ui/                 — componentes shadcn (button, card, dialog, …) — owned source
+    ui/                 — componentes shadcn (button, card, dialog, …) + Box primitivo
+      box/              — primitivo polimórfico (Box + box.module.css)
     clinical/           — componentes clínicos customizados (AIBlock, ConfidenceIndicator, …)
     agenda/             — componentes de agenda (AgendaCalendar)
-  hooks/                — hooks globais (useCan, useFileUpload, …)
+  hooks/                — hooks globais: useCan, useDisclosure, useMergeRefs, useMediaQuery, …
   lib/
     utils.ts            — helper cn() (clsx + tailwind-merge)
   store/                — Zustand stores (appStore — auth, colorMode)
   translations/         — configuração i18next
-  utils/                — helpers globais
+  utils/                — helpers TS puros: aria.ts, debounce.ts, mapValues.ts, …
   views/
     components/         — componentes reutilizáveis globais (Page, FormActions, Can, …)
     layouts/            — AuthLayout, StackedLayout
@@ -36,16 +37,76 @@ src/
         translations/
 ```
 
-## Estilização (Tailwind v4 + tokens CSS + styles.ts)
+## Estilização (Tailwind v4 + tokens CSS — padrão híbrido)
 
 Todos os tokens vivem em [`src/app/globals.css`](src/app/globals.css). **Nunca usar cores hardcoded** — sempre via tokens.
 
-### Padrão obrigatório: styles.ts co-localizado
+### Dois padrões: CSS Modules (componentes) + styles.ts (páginas/variantes)
 
-Todo componente com styling não-trivial deve ter um arquivo `styles.ts` na mesma pasta. **Nunca inline classes longas diretamente no JSX.**
+| Onde usar | Padrão | Arquivo |
+|-----------|--------|---------|
+| Primitivos UI (`components/ui/`, `components/clinical/`) | **CSS Modules** + `@apply` + `clsx` | `Component.module.css` |
+| Páginas e features (`views/modules/`) | **`styles.ts`** + `cn()` + `cva` | `styles.ts` |
+| Wrapper simples (1-2 classes) | `cn()` inline no JSX | — |
+| Componente puro de lógica | nenhum | — |
+
+**Nunca inline classes longas diretamente no JSX** — use sempre o arquivo de estilos.
+
+---
+
+### Padrão A: CSS Modules + `@apply` (componentes base)
 
 ```
-pages/patients/detail/
+components/ui/box/
+  index.tsx          ← JSX / lógica
+  box.module.css     ← estilos via @apply
+```
+
+**`Component.module.css` — estrutura:**
+```css
+.root {
+  @apply rounded-(--radius-card) border border-(--color-border) bg-(--color-bg-card) p-4;
+
+  & .header {
+    @apply flex items-center gap-2 font-medium text-(--color-text-primary);
+  }
+
+  &:hover {
+    @apply border-(--color-border-hover);
+  }
+}
+
+.active {
+  @apply border-(--color-primary) bg-(--color-primary-surface);
+}
+```
+
+**Uso no JSX:**
+```tsx
+import {clsx} from 'clsx';
+import styles from './Component.module.css';
+
+// Estático
+<div className={styles.root} />
+
+// Condicional
+<div className={clsx(styles.root, isActive && styles.active)} />
+
+// Mix módulo + utilitário dinâmico de runtime
+import {cn} from '@/lib/utils';
+<div className={cn(styles.root, isExpanded ? 'col-span-2' : 'col-span-1')} />
+```
+
+> **`clsx` vs `cn`:**
+> - `clsx` — combina classes de módulo (sem twMerge, não precisa)
+> - `cn` (`clsx` + `tailwind-merge`) — quando mistura classes de módulo com utilitários Tailwind dinâmicos que podem conflitar
+
+---
+
+### Padrão B: styles.ts + `cva` (páginas e variantes complexas)
+
+```
+views/modules/patients/pages/detail/
   index.tsx    ← JSX/lógica apenas
   styles.ts    ← todas as classes Tailwind
 ```
@@ -88,9 +149,6 @@ import {card, badge} from './styles';
 // Muitos exports (> 5): namespace
 import * as S from './styles';
 <div className={S.root}><header className={S.header}>...</header></div>
-
-// Classe dinâmica de runtime: cn() inline ainda é ok
-<div className={cn(S.card, isExpanded ? 'col-span-2' : 'col-span-1')}>
 ```
 
 **Quando criar `styles.ts`:**
@@ -103,6 +161,22 @@ import * as S from './styles';
 | Componente puro de lógica (sem DOM visível) | Não — ex: `Can`, `ThemeProvider` |
 | Wrapper simples de 1-2 elementos | Não |
 | `components/ui/*` (shadcn) | **Nunca** — não tocar esses arquivos |
+
+---
+
+### Box — primitivo polimórfico
+
+```tsx
+import {Box} from '@/components/ui/box';
+import styles from './card.module.css';
+
+// Renderiza <div> por padrão
+<Box className={styles.root}>...</Box>
+
+// Troca de elemento semântico
+<Box as="section" className={styles.section}>...</Box>
+<Box as="button" type="button" onClick={handleClick}>...</Box>
+```
 
 ### Sintaxe canônica Tailwind v4
 
