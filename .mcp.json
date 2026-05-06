@@ -2,12 +2,17 @@
   "mcpServers": {
     "playwright": {
       "command": "npx",
-      "args": ["@playwright/mcp@latest"],
+      "args": [
+        "@playwright/mcp@latest"
+      ],
       "type": "stdio"
     },
     "chrome-devtools": {
       "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-puppeteer"],
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-puppeteer"
+      ],
       "type": "stdio"
     },
     "stitch": {
@@ -20,6 +25,13 @@
     "storybook": {
       "type": "http",
       "url": "http://localhost:6006/mcp"
+    },
+    "shadcn": {
+      "command": "npx",
+      "args": [
+        "shadcn@latest",
+        "mcp"
+      ]
     }
   }
 }

@@ -15,7 +15,7 @@ function TabsList({
     <TabsPrimitive.List
       ref={ref}
       className={cn(
-        "inline-flex h-10 items-center justify-center rounded-md bg-muted p-1 text-muted-foreground",
+        'flex border-b border-(--color-border) bg-(--color-bg-surface) px-1.5 pt-1.5 h-auto items-stretch justify-start',
         className,
       )}
       {...props}
@@ -32,7 +32,13 @@ function TabsTrigger({
     <TabsPrimitive.Trigger
       ref={ref}
       className={cn(
-        "inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm",
+        'inline-flex items-center justify-center gap-[10px] whitespace-nowrap',
+        'rounded-t-[8px] rounded-b-none border-b-2 border-transparent -mb-px',
+        'px-4 py-[14px] text-[13px] font-medium leading-[1.3] text-(--color-text-secondary)',
+        'transition-all duration-(--duration-fast) ease-out',
+        'hover:bg-(--color-bg-card) hover:text-(--color-text-primary)',
+        'data-[state=active]:border-(--color-primary) data-[state=active]:bg-(--color-bg-card) data-[state=active]:text-(--color-primary-text)',
+        'focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50',
         className,
       )}
       {...props}
@@ -48,10 +54,7 @@ function TabsContent({
   return (
     <TabsPrimitive.Content
       ref={ref}
-      className={cn(
-        "mt-2 ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
-        className,
-      )}
+      className={cn('focus-visible:outline-none', className)}
       {...props}
     />
   );

@@ -207,7 +207,7 @@ export function DashboardPage() {
               </div>
               <button
                 className={S.secLink}
-                onClick={() => navigate({ to: '/agenda' })}
+                onClick={() => navigate({ to: '/appointments' })}
               >
                 Ver agenda <ArrowUpRight size={12} />
               </button>
@@ -296,7 +296,7 @@ export function DashboardPage() {
                 <QuickAction
                   icon={<CalendarPlus size={16} />}
                   label="Novo agendamento"
-                  onClick={() => navigate({ to: '/agenda' })}
+                  onClick={() => navigate({ to: '/appointments' })}
                 />
                 <QuickAction
                   icon={<Stethoscope size={16} />}
@@ -316,7 +316,7 @@ export function DashboardPage() {
               </div>
               <button
                 className={S.secLink}
-                onClick={() => navigate({ to: '/agenda' })}
+                onClick={() => navigate({ to: '/appointments' })}
               >
                 Ver agenda <ArrowUpRight size={12} />
               </button>
@@ -331,7 +331,7 @@ export function DashboardPage() {
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => navigate({ to: '/agenda' })}
+                    onClick={() => navigate({ to: '/appointments' })}
                     className="mt-1"
                   >
                     <CalendarPlus size={13} />

@@ -30,14 +30,14 @@ function DropdownMenuSubTrigger({
     <DropdownMenuPrimitive.SubTrigger
       ref={ref}
       className={cn(
-        "flex cursor-default select-none items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none focus:bg-accent data-[state=open]:bg-accent [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
-        inset && "pl-8",
+        'flex cursor-pointer select-none items-center gap-2.5 rounded-[6px] px-2.5 py-2 text-sm text-(--color-text-primary) outline-none transition-colors duration-(--duration-fast) ease-out hover:bg-(--color-bg-surface) focus:bg-(--color-bg-surface) data-[state=open]:bg-(--color-bg-surface) [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0',
+        inset && 'pl-8',
         className,
       )}
       {...props}
     >
       {children}
-      <ChevronRight className="ml-auto" />
+      <ChevronRight className="ml-auto size-4" />
     </DropdownMenuPrimitive.SubTrigger>
   );
 }
@@ -51,7 +51,7 @@ function DropdownMenuSubContent({
     <DropdownMenuPrimitive.SubContent
       ref={ref}
       className={cn(
-        "z-50 min-w-[8rem] overflow-hidden rounded-md border bg-popover p-1 text-popover-foreground shadow-lg data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 origin-[--radix-dropdown-menu-content-transform-origin]",
+        'z-50 min-w-[180px] overflow-hidden rounded-(--radius-dropdown) border border-(--color-border) bg-(--color-bg-card) p-1.5 text-(--color-text-primary) shadow-lg data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 origin-[--radix-dropdown-menu-content-transform-origin]',
         className,
       )}
       {...props}
@@ -71,7 +71,8 @@ function DropdownMenuContent({
         ref={ref}
         sideOffset={sideOffset}
         className={cn(
-          "z-50 max-h-[var(--radix-dropdown-menu-content-available-height)] min-w-[8rem] overflow-y-auto overflow-x-hidden rounded-md border bg-popover p-1 text-popover-foreground shadow-md data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 origin-[--radix-dropdown-menu-content-transform-origin]",
+          'z-50 min-w-[180px] overflow-hidden rounded-(--radius-dropdown) border border-(--color-border) bg-(--color-bg-card) p-1.5 text-(--color-text-primary) shadow-lg',
+          'data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 origin-[--radix-dropdown-menu-content-transform-origin]',
           className,
         )}
         {...props}
@@ -92,8 +93,8 @@ function DropdownMenuItem({
     <DropdownMenuPrimitive.Item
       ref={ref}
       className={cn(
-        "relative flex cursor-default select-none items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none transition-colors focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
-        inset && "pl-8",
+        'relative flex cursor-pointer select-none items-center gap-2.5 rounded-[6px] px-2.5 py-2 text-sm text-(--color-text-primary) outline-none transition-colors duration-(--duration-fast) ease-out hover:bg-(--color-bg-surface) focus:bg-(--color-bg-surface) data-[disabled]:pointer-events-none data-[disabled]:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0',
+        inset && 'pl-8',
         className,
       )}
       {...props}
@@ -178,7 +179,7 @@ function DropdownMenuSeparator({
   return (
     <DropdownMenuPrimitive.Separator
       ref={ref}
-      className={cn("-mx-1 my-1 h-px bg-muted", className)}
+      className={cn('my-1 h-px bg-(--color-border)', className)}
       {...props}
     />
   );

@@ -18,10 +18,37 @@ import {
   Sparkles,
   TriangleAlert,
 } from "lucide-react";
-import { useRef, useState, useEffect, type ReactNode } from "react";
+import { type ReactNode } from "react";
 import type { UseQueryResult } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { AvatarInitials, avatarColorVariants } from "@/components/ui/avatar";
+import {
+  SectionCard as UISectionCard,
+  SectionCardHeader,
+  SectionCardTitle,
+  SectionCardBody,
+} from "@/components/ui/card";
+import { KV as UIKv, KVGrid } from "@/components/ui/kv";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
+import { EntityHeader } from "@/components/ui/page-header";
+import { StatTile } from "@/components/ui/stat-tile";
+import { EmptyState } from "@/components/ui/empty-state";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Badge } from "@/components/ui/badge";
 import {
   useGetPatient,
   useGetClinicalProfile,
@@ -165,28 +192,18 @@ function formStatusLabel(status: PatientFormStatus): string {
   return map[status] ?? status;
 }
 
-function getAvatarVariant(id: string): string {
+function getAvatarColorIndex(id: string): number {
   let h = 0;
 
   for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) >>> 0;
 
-  return S.avatarVariants[h % S.avatarVariants.length] ?? S.avatarVariants[0];
-}
-
-function getInitials(name: string): string {
-  const parts = name.trim().split(/\s+/);
-
-  if (parts.length === 1) return (parts[0] ?? "").slice(0, 2).toUpperCase();
-
-  return `${parts[0]?.[0] ?? ""}${parts[parts.length - 1]?.[0] ?? ""}`.toUpperCase();
+  return h % avatarColorVariants.length;
 }
 
 // ── Sub-components ────────────────────────────────────────────────────────────
 
 function PatientAvatar({ name, id }: { name: string; id: string }) {
-  const variant = getAvatarVariant(id);
-
-  return <div className={cn(S.avatarBase, variant)}>{getInitials(name)}</div>;
+  return <AvatarInitials name={name} colorIndex={getAvatarColorIndex(id)} size="lg" />;
 }
 
 function SectionCard({
@@ -201,35 +218,25 @@ function SectionCard({
   noPad?: boolean;
 }) {
   return (
-    <section className={S.sectionCard.root}>
-      <div className={S.sectionCard.header}>
-        <h2 className={S.sectionCard.title}>{title}</h2>
-        {action}
-      </div>
-      <div className={noPad ? "" : S.sectionCard.body}>{children}</div>
-    </section>
+    <UISectionCard>
+      <SectionCardHeader action={action}>
+        <SectionCardTitle>{title}</SectionCardTitle>
+      </SectionCardHeader>
+      <SectionCardBody appearance={noPad ? 'flush' : 'default'}>{children}</SectionCardBody>
+    </UISectionCard>
   );
 }
 
 function SecLink({ children, onClick }: { children: ReactNode; onClick?: () => void }) {
   return (
-    <button type="button" onClick={onClick} className={S.secLink}>
+    <Button variant="link" size="sm" onClick={onClick} className="h-auto p-0 text-xs">
       {children}
-    </button>
+    </Button>
   );
 }
 
 function KV({ label, value, mono = false }: { label: string; value?: string | null; mono?: boolean }) {
-  const empty = !value;
-
-  return (
-    <div className={S.kv.root}>
-      <span className={S.kv.label}>{label}</span>
-      <span className={cn(S.kv.value, mono && S.kv.valueMono, empty && S.kv.valueEmpty)}>
-        {value ?? "Não informado"}
-      </span>
-    </div>
-  );
+  return <UIKv label={label} value={value ?? undefined} mono={mono} emptyText="Não informado" />;
 }
 
 function InfoGroup({ title, children }: { title: string; children: ReactNode }) {
@@ -241,36 +248,7 @@ function InfoGroup({ title, children }: { title: string; children: ReactNode }) 
   );
 }
 
-function SummaryCard({
-  label,
-  value,
-  sub,
-  icon,
-  mono = false,
-  loading = false,
-}: {
-  label: string;
-  value: string;
-  sub?: string;
-  icon: ReactNode;
-  mono?: boolean;
-  loading?: boolean;
-}) {
-  return (
-    <div className={S.summaryCard.root}>
-      <div className={S.summaryCard.header}>
-        <span className={S.summaryCard.label}>{label}</span>
-        <span className={S.summaryCard.icon}>{icon}</span>
-      </div>
-      {loading ? (
-        <Skeleton className="h-[22px] w-14" />
-      ) : (
-        <div className={cn(S.summaryCard.value, mono && S.summaryCard.valueMono)}>{value}</div>
-      )}
-      {sub && !loading && <div className={S.summaryCard.sub}>{sub}</div>}
-    </div>
-  );
-}
+
 
 function ActionTile({
   icon,
@@ -301,57 +279,45 @@ function ActionTile({
 
 function AlertBadge({ alert }: { alert: PatientAlert }) {
   return (
-    <span className={S.alertBadge({ severity: alert.severity })}>
+    <Badge
+      severity={alert.severity as 'HIGH' | 'MEDIUM' | 'LOW'}
+      className="rounded-(--radius-badge) px-2 py-[3px] text-xs gap-[5px]"
+    >
       <TriangleAlert className="size-[10px]" />
       {alert.title}
-    </span>
+    </Badge>
   );
 }
 
 function MoreMenu() {
-  const [open, setOpen] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (!open) return undefined;
-
-    const handle = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
-    };
-
-    document.addEventListener("mousedown", handle);
-
-    return () => document.removeEventListener("mousedown", handle);
-  }, [open]);
-
   return (
-    <div className="relative" ref={ref}>
-      <Button variant="outline" size="icon" onClick={() => setOpen((v) => !v)} aria-label="Mais opções">
-        <MoreHorizontal className="size-4" />
-      </Button>
-      {open && (
-        <div className={S.moreMenu.dropdown}>
-          <button type="button" className={S.moreMenu.item}>
-            <Download className={S.moreMenu.itemIcon} />
-            Exportar dados
-          </button>
-          <button type="button" className={S.moreMenu.item}>
-            <Printer className={S.moreMenu.itemIcon} />
-            Imprimir resumo
-          </button>
-          <div className={S.moreMenu.divider} />
-          <button type="button" className={S.moreMenu.itemDanger}>
-            <Archive className="size-[14px]" />
-            Arquivar paciente
-          </button>
-        </div>
-      )}
-    </div>
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="outline" size="icon" aria-label="Mais opções">
+          <MoreHorizontal className="size-4" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end">
+        <DropdownMenuItem>
+          <Download />
+          Exportar dados
+        </DropdownMenuItem>
+        <DropdownMenuItem>
+          <Printer />
+          Imprimir resumo
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem className="text-(--color-danger) hover:bg-(--color-danger-surface) focus:bg-(--color-danger-surface)">
+          <Archive />
+          Arquivar paciente
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }
 
 function EmptySection({ label }: { label: string }) {
-  return <div className={S.emptySection}>{label}</div>;
+  return <EmptyState title={label} className="py-6" />;
 }
 
 // ── Skeleton ──────────────────────────────────────────────────────────────────
@@ -386,10 +352,14 @@ function DetailSkeleton() {
 function RecordsContent({
   isLoading,
   records,
+  patientId,
 }: {
   isLoading: boolean;
   records: MedicalRecord[];
+  patientId: string;
 }) {
+  const navigate = useNavigate();
+
   if (isLoading) {
     return (
       <div className="flex flex-col gap-3">
@@ -409,7 +379,11 @@ function RecordsContent({
         const isAI = r.source === "IMPORT";
 
         return (
-          <div key={r.id} className={S.record.row}>
+          <div
+            key={r.id}
+            className={S.record.row}
+            onClick={() => navigate({ to: "/patients/$patientId/records/$recordId", params: { patientId, recordId: r.id } })}
+          >
             <div className="text-right">
               <div className={S.record.dateText}>{formatDateShort(eventDate)}</div>
               <div className={S.record.time}>{formatTime(eventDate)}</div>
@@ -673,48 +647,51 @@ function PatientProfile({ patient }: { patient: Patient }) {
   return (
     <div className={S.page.root}>
       {/* Breadcrumb */}
-      <nav className={S.breadcrumb.root}>
-        <Link to="/patients" className={S.breadcrumb.link}>
-          Pacientes
-        </Link>
-        <ChevronRight className="size-3 stroke-[1.5]" />
-        <span className={S.breadcrumb.current}>{patient.name}</span>
-      </nav>
+      <Breadcrumb>
+        <BreadcrumbList>
+          <BreadcrumbItem>
+            <BreadcrumbLink asChild>
+              <Link to="/patients">Pacientes</Link>
+            </BreadcrumbLink>
+          </BreadcrumbItem>
+          <BreadcrumbSeparator />
+          <BreadcrumbItem>
+            <BreadcrumbPage>{patient.name}</BreadcrumbPage>
+          </BreadcrumbItem>
+        </BreadcrumbList>
+      </Breadcrumb>
 
       {/* Patient header — sticky */}
-      <div className={S.header.root}>
-        <div className={S.header.inner}>
-          <div className={S.header.info}>
-            <PatientAvatar name={patient.name} id={patient.id} />
-            <div className={S.header.nameBlock}>
-              <h1 className={S.header.name}>{patient.name}</h1>
-              <div className={S.header.meta}>
-                {age !== null && <span>{age} anos</span>}
-                {age !== null && <span className={S.header.metaDot}>·</span>}
-                <span className={S.header.metaMono}>nasc. {dob}</span>
-                <span className={S.header.metaDot}>·</span>
-                <span className={S.header.metaMono}>{patient.documentId}</span>
-                {patient.gender && (
-                  <>
-                    <span className={S.header.metaDot}>·</span>
-                    <span>{gender}</span>
-                  </>
-                )}
-                {patient.insurancePlan && (
-                  <>
-                    <span className={S.header.metaDot}>·</span>
-                    <span>{patient.insurancePlan.name}</span>
-                  </>
-                )}
-                <span className={S.header.metaDot}>·</span>
-                <span className={cn(S.header.metaMono, "text-(--color-text-tertiary)")}>
-                  ID {patient.id.slice(0, 8).toUpperCase()}
-                </span>
-              </div>
-            </div>
-          </div>
-
-          <div className={S.header.actions}>
+      <EntityHeader
+        avatar={<PatientAvatar name={patient.name} id={patient.id} />}
+        name={patient.name}
+        meta={
+          <>
+            {age !== null && <span>{age} anos</span>}
+            {age !== null && <span className="text-(--color-text-tertiary)">·</span>}
+            <span className="font-mono tabular-nums">nasc. {dob}</span>
+            <span className="text-(--color-text-tertiary)">·</span>
+            <span className="font-mono tabular-nums">{patient.documentId}</span>
+            {patient.gender && (
+              <>
+                <span className="text-(--color-text-tertiary)">·</span>
+                <span>{gender}</span>
+              </>
+            )}
+            {patient.insurancePlan && (
+              <>
+                <span className="text-(--color-text-tertiary)">·</span>
+                <span>{patient.insurancePlan.name}</span>
+              </>
+            )}
+            <span className="text-(--color-text-tertiary)">·</span>
+            <span className="font-mono tabular-nums text-(--color-text-tertiary)">
+              ID {patient.id.slice(0, 8).toUpperCase()}
+            </span>
+          </>
+        }
+        actions={
+          <>
             <Button
               variant="outline"
               size="sm"
@@ -729,48 +706,45 @@ function PatientProfile({ patient }: { patient: Patient }) {
               Editar cadastro
             </Button>
             <MoreMenu />
-          </div>
-        </div>
-
-        {alerts.length > 0 && (
-          <div className={S.header.alertsRow}>
-            {alerts.map((a) => <AlertBadge key={a.id} alert={a} />)}
-          </div>
-        )}
-      </div>
+          </>
+        }
+        alerts={alerts.length > 0 ? alerts.map((a) => <AlertBadge key={a.id} alert={a} />) : undefined}
+      />
 
       {/* Action grid */}
       <div className={S.actionGrid}>
-        <ActionTile icon={<FilePlus className="size-[18px]" />} label="Nova evolução" sub="Registrar SOAP" />
+        <ActionTile
+          icon={<FilePlus className="size-[18px]" />}
+          label="Nova evolução"
+          sub="Registrar SOAP"
+          onClick={() => navigate({ to: "/patients/$patientId/records/new", params: { patientId: patient.id } })}
+        />
         <ActionTile icon={<FileUp className="size-[18px]" />} label="Importar documento" sub="Foto ou PDF · IA extrai dados" />
         <ActionTile icon={<CalendarPlus className="size-[18px]" />} label="Agendar consulta" sub="Já com paciente preenchido" />
         <ActionTile icon={<MessagesSquare className="size-[18px]" />} label="Chat clínico com IA" sub="Contexto do prontuário" ai />
       </div>
 
       {/* Resumo clínico */}
-      <SectionCard title="Resumo clínico">
-        <div className={S.summaryGrid}>
-          <SummaryCard label="Próxima consulta" value="—" icon={<CalendarClock className="size-[14px]" />} mono />
-          <SummaryCard
-            label="Última consulta"
-            value={records.length > 0 ? formatRelativeDate(records[0]?.eventDate ?? records[0]?.createdAt) : "—"}
-            icon={<History className="size-[14px]" />}
-            mono
-          />
-          <SummaryCard
-            label="Total de evoluções"
-            value={totalRecords !== undefined ? String(totalRecords) : "—"}
-            loading={recordsTotalQuery.isLoading}
-            icon={<FileText className="size-[14px]" />}
-          />
-          <SummaryCard
-            label="Formulários"
-            value={totalForms !== undefined ? String(totalForms) : "—"}
-            loading={formsQuery.isLoading}
-            icon={<ClipboardList className="size-[14px]" />}
-          />
-        </div>
-      </SectionCard>
+      <div className="grid grid-cols-4 gap-3">
+        <StatTile label="Próxima consulta" value="—" icon={<CalendarClock className="size-4" />} />
+        <StatTile
+          label="Última consulta"
+          value={records.length > 0 ? formatRelativeDate(records[0]?.eventDate ?? records[0]?.createdAt) : "—"}
+          icon={<History className="size-4" />}
+        />
+        <StatTile
+          label="Total de evoluções"
+          value={totalRecords !== undefined ? String(totalRecords) : "—"}
+          loading={recordsTotalQuery.isLoading}
+          icon={<FileText className="size-4" />}
+        />
+        <StatTile
+          label="Formulários"
+          value={totalForms !== undefined ? String(totalForms) : "—"}
+          loading={formsQuery.isLoading}
+          icon={<ClipboardList className="size-4" />}
+        />
+      </div>
 
       {/* Vitais recentes */}
       <SectionCard
@@ -785,7 +759,7 @@ function PatientProfile({ patient }: { patient: Patient }) {
         title="Últimas evoluções"
         action={<SecLink>Ver prontuário completo <ArrowUpRight className="size-3" /></SecLink>}
       >
-        <RecordsContent isLoading={recordsQuery.isLoading} records={records} />
+        <RecordsContent isLoading={recordsQuery.isLoading} records={records} patientId={patient.id} />
       </SectionCard>
 
       {/* Two-col: patient info + initial health */}
@@ -807,26 +781,26 @@ function PatientProfile({ patient }: { patient: Patient }) {
           }
         >
           <InfoGroup title="Dados pessoais">
-            <div className={S.kvGrid}>
+            <KVGrid>
               <KV label="Nome completo" value={patient.name} />
               <KV label="Data de nascimento" value={dob} mono />
               <KV label="Sexo biológico" value={patient.gender ? gender : null} />
               <KV label="Documento (CPF/ID)" value={patient.documentId} mono />
-            </div>
+            </KVGrid>
           </InfoGroup>
 
           <InfoGroup title="Contato">
-            <div className={S.kvGrid}>
+            <KVGrid>
               <KV label="Celular / WhatsApp" value={phone} mono />
               <KV label="E-mail" value={email} />
-            </div>
+            </KVGrid>
             {(emergencyName ?? emergencyPhone) && (
               <div className={S.emergency.box}>
                 <p className={S.emergency.label}>Responsável</p>
-                <div className={S.kvGrid}>
+                <KVGrid>
                   <KV label="Nome" value={emergencyName} />
                   <KV label="Telefone" value={emergencyPhone} mono />
-                </div>
+                </KVGrid>
               </div>
             )}
           </InfoGroup>

@@ -17,7 +17,6 @@ import {
   Mail,
   Calendar,
   Sparkles,
-  AlertCircle,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import {
@@ -26,6 +25,17 @@ import {
   CreatePatientDtoGender,
 } from "@agenda-app/client";
 import { Button } from "@/components/ui/button";
+import { SectionCard as UISectionCard, SectionCardHeader, SectionCardTitle, SectionCardBody } from "@/components/ui/card";
+import {
+  Breadcrumb, BreadcrumbItem, BreadcrumbLink,
+  BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
+import { PageHeader } from "@/components/ui/page-header";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { NativeSelect } from "@/components/ui/native-select";
+import { Field, FormGrid } from "@/components/ui/field";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import * as S from "./styles";
@@ -96,44 +106,6 @@ function tabHasValues(tab: TabKey, values: Partial<FormValues>): boolean {
     default:
       return false;
   }
-}
-
-// ── Field component ──────────────────────────────────────────────────────────
-
-function Field({
-  label,
-  required,
-  optional,
-  hint,
-  error,
-  cols = 12,
-  children,
-}: {
-  label: string;
-  required?: boolean;
-  optional?: boolean;
-  hint?: string;
-  error?: string;
-  cols?: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12;
-  children: React.ReactNode;
-}) {
-  return (
-    <div className={cn(S.field.root, S.span({ cols }))}>
-      <div className={S.field.label}>
-        {label}
-        {required && <span className={S.field.req}>*</span>}
-        {optional && <span className={S.field.opt}>(opcional)</span>}
-      </div>
-      {children}
-      {error && (
-        <span className={S.field.error}>
-          <AlertCircle className="size-3 shrink-0" />
-          {error}
-        </span>
-      )}
-      {!error && hint && <span className={S.field.hint}>{hint}</span>}
-    </div>
-  );
 }
 
 // ── Section header ───────────────────────────────────────────────────────────
@@ -256,31 +228,31 @@ export function NewPatientPage() {
   return (
     <div className={S.page.root}>
       {/* Breadcrumb */}
-      <div className={S.breadcrumb.root}>
-        <button
-          type="button"
-          className={S.breadcrumb.link}
-          onClick={() => navigate({ to: "/patients" })}
-        >
-          Pacientes
-        </button>
-        <ChevronRight className="size-3" strokeWidth={1.5} />
-        <span className={S.breadcrumb.current}>Novo paciente</span>
-      </div>
+      <Breadcrumb>
+        <BreadcrumbList>
+          <BreadcrumbItem>
+            <BreadcrumbLink asChild>
+              <button type="button" onClick={() => navigate({ to: "/patients" })}>Pacientes</button>
+            </BreadcrumbLink>
+          </BreadcrumbItem>
+          <BreadcrumbSeparator />
+          <BreadcrumbItem>
+            <BreadcrumbPage>Novo paciente</BreadcrumbPage>
+          </BreadcrumbItem>
+        </BreadcrumbList>
+      </Breadcrumb>
 
       {/* Header */}
-      <div className={S.pageHeader.root}>
-        <div>
-          <h1 className={S.pageHeader.title}>Novo paciente</h1>
-          <p className={S.pageHeader.sub}>
-            Cadastro inicial — anamnese clínica é registrada nas evoluções.
-          </p>
-        </div>
-        <Button variant="outline" size="sm" type="button">
-          <Upload className="size-4" strokeWidth={1.5} />
-          Importar de documento
-        </Button>
-      </div>
+      <PageHeader
+        title="Novo paciente"
+        subtitle="Cadastro inicial — anamnese clínica é registrada nas evoluções."
+        actions={
+          <Button variant="outline" size="sm" type="button">
+            <Upload className="size-4" strokeWidth={1.5} />
+            Importar de documento
+          </Button>
+        }
+      />
 
       {/* AI nudge */}
       <div className={S.aiNudge.root}>
@@ -304,45 +276,31 @@ export function NewPatientPage() {
 
       {/* Form card */}
       <form id="patient-form" onSubmit={handleSubmit(onSubmit)}>
-        <div className={S.formCard}>
-          {/* Tabs */}
-          <div className={S.tabs.root} role="tablist">
-            {TABS.map((t, _i) => {
-              const active  = t.key === tab;
-              const filled  = !active && tabHasValues(t.key, values);
-              const TabIcon = t.icon;
+        <UISectionCard>
+          <Tabs value={tab} onValueChange={(v) => setTab(v as TabKey)} className="flex flex-col">
+            <TabsList>
+              {TABS.map((t) => {
+                const filled = tab !== t.key && tabHasValues(t.key, values);
+                const TabIcon = t.icon;
 
-              return (
-                <button
-                  key={t.key}
-                  type="button"
-                  role="tab"
-                  aria-selected={active}
-                  className={cn(S.tabs.tab, active && S.tabs.tabActive)}
-                  onClick={() => setTab(t.key)}
-                >
-                  <span
-                    className={cn(
-                      S.tabs.num,
-                      active  && S.tabs.numActive,
-                      filled  && S.tabs.numFilled,
-                    )}
-                  >
-                    {filled ? (
-                      <Check className="size-[11px]" strokeWidth={2.5} />
-                    ) : (
-                      t.num
-                    )}
-                  </span>
-                  <TabIcon className="hidden size-[14px] sm:block" strokeWidth={1.5} />
-                  <span className={S.tabs.label}>{t.label}</span>
-                </button>
-              );
-            })}
-          </div>
+                return (
+                  <TabsTrigger key={t.key} value={t.key}>
+                    <span className={cn(S.tabNum, tab === t.key && S.tabNumActive, filled && S.tabNumFilled)}>
+                      {filled ? (
+                        <Check className="size-[11px]" strokeWidth={2.5} />
+                      ) : (
+                        t.num
+                      )}
+                    </span>
+                    <TabIcon className="hidden size-[14px] sm:block" strokeWidth={1.5} />
+                    {t.label}
+                  </TabsTrigger>
+                );
+              })}
+            </TabsList>
 
-          {/* ── Tab 1: Identificação ─────────────────────────────── */}
-          {tab === "identity" && (
+            {/* ── Tab 1: Identificação ─────────────────────────────── */}
+            <TabsContent value="identity">
             <div className={S.section.root}>
               <SectionHead
                 num="1"
@@ -365,44 +323,40 @@ export function NewPatientPage() {
                 </div>
               </div>
 
-              <div className={S.grid}>
+              <FormGrid>
                 <Field label="Nome completo" required cols={8} error={errors.name?.message}>
-                  <input
+                  <Input
                     {...register("name")}
                     placeholder="Ex.: Maria Helena Souza"
-                    className={cn(S.field.inputBase, errors.name && S.field.inputError)}
+                    state={errors.name ? 'error' : 'default'}
                   />
                 </Field>
 
                 <Field label="Documento (CPF / RG / Prontuário)" required cols={4} error={errors.documentId?.message}>
-                  <input
+                  <Input
                     {...register("documentId")}
                     placeholder="000.000.000-00"
-                    className={cn(S.field.inputBase, S.field.inputMono, errors.documentId && S.field.inputError)}
+                    appearance="mono"
+                    state={errors.documentId ? 'error' : 'default'}
                   />
                 </Field>
 
                 <Field label="Data de nascimento" optional cols={4}>
-                  <div className={S.field.inputWithIcon}>
-                    <Calendar className="absolute left-3 top-1/2 size-[14px] -translate-y-1/2 text-(--color-text-tertiary)" strokeWidth={1.5} />
-                    <input
-                      {...register("birthDate")}
-                      type="date"
-                      className={cn(S.field.inputBase, S.field.inputMono, S.field.inputPaddedLeft)}
-                    />
-                  </div>
+                  <Input
+                    {...register("birthDate")}
+                    type="date"
+                    appearance="mono"
+                    leadIcon={<Calendar className="size-[14px]" strokeWidth={1.5} />}
+                  />
                 </Field>
 
                 <Field label="Sexo biológico" optional cols={4}>
-                  <select
-                    {...register("gender")}
-                    className={cn(S.field.inputBase, S.field.selectIcon)}
-                  >
+                  <NativeSelect {...register("gender")}>
                     <option value="">Selecione…</option>
                     <option value={CreatePatientDtoGender.MALE}>Masculino</option>
                     <option value={CreatePatientDtoGender.FEMALE}>Feminino</option>
                     <option value={CreatePatientDtoGender.OTHER}>Outro / Prefiro não informar</option>
-                  </select>
+                  </NativeSelect>
                 </Field>
 
                 <Field
@@ -411,19 +365,14 @@ export function NewPatientPage() {
                   cols={4}
                   hint="Como o paciente prefere ser chamado."
                 >
-                  <input
-                    placeholder="Ex.: Helena"
-                    className={S.field.inputBase}
-                    disabled
-                    title="Disponível em breve"
-                  />
+                  <Input placeholder="Ex.: Helena" disabled title="Disponível em breve" />
                 </Field>
-              </div>
+              </FormGrid>
             </div>
-          )}
+          </TabsContent>
 
-          {/* ── Tab 2: Contato ────────────────────────────────────── */}
-          {tab === "contact" && (
+            {/* ── Tab 2: Contato ────────────────────────────────────── */}
+            <TabsContent value="contact">
             <div className={S.section.root}>
               <SectionHead
                 num="2"
@@ -431,34 +380,26 @@ export function NewPatientPage() {
                 subtitle="Canais para confirmar consultas e enviar lembretes."
               />
 
-              <div className={S.grid}>
+              <FormGrid>
                 <Field label="Celular / WhatsApp" required cols={4}>
-                  <div className={S.field.inputWithIcon}>
-                    <Phone className="absolute left-3 top-1/2 size-[14px] -translate-y-1/2 text-(--color-text-tertiary)" strokeWidth={1.5} />
-                    <input
-                      {...register("phone")}
-                      placeholder="(00) 00000-0000"
-                      className={cn(S.field.inputBase, S.field.inputMono, S.field.inputPaddedLeft)}
-                    />
-                  </div>
+                  <Input
+                    {...register("phone")}
+                    placeholder="(00) 00000-0000"
+                    appearance="mono"
+                    leadIcon={<Phone className="size-[14px]" strokeWidth={1.5} />}
+                  />
                 </Field>
 
                 <Field label="E-mail" optional cols={4} error={errors.email?.message}>
-                  <div className={S.field.inputWithIcon}>
-                    <Mail className="absolute left-3 top-1/2 size-[14px] -translate-y-1/2 text-(--color-text-tertiary)" strokeWidth={1.5} />
-                    <input
-                      {...register("email")}
-                      type="email"
-                      placeholder="paciente@email.com"
-                      className={cn(
-                        S.field.inputBase,
-                        S.field.inputPaddedLeft,
-                        errors.email && S.field.inputError,
-                      )}
-                    />
-                  </div>
+                  <Input
+                    {...register("email")}
+                    type="email"
+                    placeholder="paciente@email.com"
+                    leadIcon={<Mail className="size-[14px]" strokeWidth={1.5} />}
+                    state={errors.email ? 'error' : 'default'}
+                  />
                 </Field>
-              </div>
+              </FormGrid>
 
               {/* Responsável */}
               <div className={S.subSection.root}>
@@ -468,39 +409,38 @@ export function NewPatientPage() {
                   <span className={S.subSection.tag}>Opcional</span>
                   <span className={cn(S.subSection.hint, "ml-1")}>· para menores ou pacientes com tutela</span>
                 </div>
-                <div className={S.grid}>
+                <FormGrid>
                   <Field label="Nome do responsável" optional cols={5}>
-                    <input
+                    <Input
                       {...register("emergencyContactName")}
                       placeholder="Nome completo"
-                      className={S.field.inputBase}
                     />
                   </Field>
 
                   <Field label="Telefone" optional cols={4}>
-                    <input
+                    <Input
                       {...register("emergencyContactPhone")}
                       placeholder="(00) 00000-0000"
-                      className={cn(S.field.inputBase, S.field.inputMono)}
+                      appearance="mono"
                     />
                   </Field>
 
                   <Field label="Relação com o paciente" optional cols={3}>
-                    <select className={cn(S.field.inputBase, S.field.selectIcon)} disabled>
+                    <NativeSelect disabled>
                       <option value="">Selecione…</option>
                       <option>Mãe / Pai</option>
                       <option>Cônjuge</option>
                       <option>Filho(a)</option>
                       <option>Responsável legal</option>
-                    </select>
+                    </NativeSelect>
                   </Field>
-                </div>
+                </FormGrid>
               </div>
             </div>
-          )}
+          </TabsContent>
 
-          {/* ── Tab 3: Endereço ───────────────────────────────────── */}
-          {tab === "address" && (
+            {/* ── Tab 3: Endereço ───────────────────────────────────── */}
+            <TabsContent value="address">
             <div className={S.section.root}>
               <SectionHead
                 num="3"
@@ -508,92 +448,79 @@ export function NewPatientPage() {
                 subtitle="Todos os campos são opcionais."
               />
 
-              <div className={S.grid}>
+              <FormGrid>
                 <Field
                   label="CEP"
                   optional
                   cols={3}
                   hint={zipLoading ? "Buscando endereço…" : "Preenche os demais campos automaticamente."}
                 >
-                  <div className={S.field.inputWithIcon}>
-                    <input
-                      {...register("zipCode")}
-                      placeholder="00000-000"
-                      className={cn(S.field.inputBase, S.field.inputMono)}
-                    />
-                    {zipLoading && (
-                      <span className={cn(S.field.trailIcon, "animate-spin")}>
-                        <svg className="size-[14px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                  <Input
+                    {...register("zipCode")}
+                    placeholder="00000-000"
+                    appearance="mono"
+                    trailIcon={
+                      zipLoading ? (
+                        <svg className="size-[14px] animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
                           <path d="M21 12a9 9 0 1 1-6.219-8.56" />
                         </svg>
-                      </span>
-                    )}
-                  </div>
+                      ) : undefined
+                    }
+                  />
                 </Field>
 
                 <Field label="Logradouro" optional cols={6}>
-                  <input
+                  <Input
                     {...register("street")}
                     placeholder="Rua, avenida, travessa…"
-                    className={S.field.inputBase}
                     disabled={zipLoading}
                   />
                 </Field>
 
                 <Field label="Número" optional cols={3}>
-                  <input
+                  <Input
                     {...register("number")}
                     placeholder="123"
-                    className={cn(S.field.inputBase, S.field.inputMono)}
+                    appearance="mono"
                   />
                 </Field>
 
                 <Field label="Complemento" optional cols={4}>
-                  <input
-                    {...register("complement")}
-                    placeholder="Apto, sala, bloco…"
-                    className={S.field.inputBase}
-                  />
+                  <Input {...register("complement")} placeholder="Apto, sala, bloco…" />
                 </Field>
 
                 <Field label="Bairro" optional cols={4}>
-                  <input
+                  <Input
                     {...register("neighborhood")}
                     placeholder="Bairro"
-                    className={S.field.inputBase}
                     disabled={zipLoading}
                   />
                 </Field>
 
                 <Field label="Cidade" optional cols={3}>
-                  <input
+                  <Input
                     {...register("city")}
                     placeholder="Cidade"
-                    className={S.field.inputBase}
                     disabled={zipLoading}
                   />
                 </Field>
 
                 <Field label="UF" optional cols={1}>
-                  <select
-                    {...register("state")}
-                    className={cn(S.field.inputBase, S.field.selectIcon)}
-                    disabled={zipLoading}
-                  >
+                  <NativeSelect {...register("state")} disabled={zipLoading}>
                     <option value="">—</option>
                     {BR_STATES.map((uf) => (
                       <option key={uf} value={uf}>
                         {uf}
                       </option>
                     ))}
-                  </select>
+                  </NativeSelect>
                 </Field>
-              </div>
+              </FormGrid>
             </div>
-          )}
+          </TabsContent>
 
-          {/* ── Tab 4: Saúde ─────────────────────────────────────── */}
-          {tab === "health" && (
+            {/* ── Tab 4: Saúde ─────────────────────────────────────── */}
+            <TabsContent value="health">
             <div className={S.section.root}>
               <SectionHead
                 num="4"
@@ -601,23 +528,23 @@ export function NewPatientPage() {
                 subtitle="Registro inicial — a anamnese completa é feita após o cadastro."
               />
 
-              <div className={S.grid}>
+              <FormGrid>
                 <Field label="Tipo sanguíneo" optional cols={3}>
-                  <select className={cn(S.field.inputBase, S.field.selectIcon)} disabled>
+                  <NativeSelect disabled>
                     <option value="">Não informado</option>
                     <option>A</option>
                     <option>B</option>
                     <option>AB</option>
                     <option>O</option>
-                  </select>
+                  </NativeSelect>
                 </Field>
 
                 <Field label="Fator Rh" optional cols={3}>
-                  <select className={cn(S.field.inputBase, S.field.selectIcon)} disabled>
+                  <NativeSelect disabled>
                     <option value="">Não informado</option>
                     <option>Positivo (+)</option>
                     <option>Negativo (−)</option>
-                  </select>
+                  </NativeSelect>
                 </Field>
 
                 <Field
@@ -626,21 +553,19 @@ export function NewPatientPage() {
                   cols={12}
                   hint="Liste medicamentos, alimentos ou substâncias com reações documentadas."
                 >
-                  <textarea
+                  <Textarea
                     {...register("allergies")}
-                    className={cn(S.field.inputBase, S.field.textarea)}
                     placeholder="Ex.: Dipirona — reação cutânea moderada. Frutos do mar — anafilaxia."
                   />
                 </Field>
 
                 <Field label="Observações iniciais" optional cols={12}>
-                  <textarea
+                  <Textarea
                     {...register("notes")}
-                    className={cn(S.field.inputBase, S.field.textarea)}
                     placeholder="Histórico relevante, comorbidades conhecidas, medicação contínua, queixa que motivou o cadastro…"
                   />
                 </Field>
-              </div>
+              </FormGrid>
 
               <div className={S.infoNote}>
                 <Info className="mt-px size-[14px] shrink-0" strokeWidth={1.5} />
@@ -650,8 +575,8 @@ export function NewPatientPage() {
                 </div>
               </div>
             </div>
-          )}
-        </div>
+          </TabsContent>
+        </Tabs>
 
         {/* Sticky footer */}
         <div className={S.footer.root}>
@@ -709,6 +634,7 @@ export function NewPatientPage() {
             )}
           </div>
         </div>
+        </UISectionCard>
       </form>
     </div>
   );

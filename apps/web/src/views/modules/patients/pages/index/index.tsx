@@ -17,13 +17,25 @@ import {
   SearchX,
   X,
 } from "lucide-react";
-import { useState, useEffect, useRef, type ReactNode } from "react";
+import { useState, useEffect } from "react";
 import type { UseQueryResult } from "@tanstack/react-query";
 import { useSearchPatients, useSearchAppointments } from "@agenda-app/client";
 import type { Patient, PatientGender } from "@agenda-app/client";
 import { Page } from "@/views/components/Page";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Badge } from "@/components/ui/badge";
+import { AvatarInitials, avatarColorVariants } from "@/components/ui/avatar";
+import { StatTile } from "@/components/ui/stat-tile";
+import { SegmentedControl } from "@/components/ui/segmented-control";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { EmptyStateCard } from "@/components/ui/empty-state";
 import { cn } from "@/lib/utils";
 import * as S from "./styles";
 
@@ -46,22 +58,12 @@ interface PatientPage {
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
-function getAvatarVariant(id: string): string {
+function getAvatarColorIndex(id: string): number {
   let hash = 0;
 
   for (let i = 0; i < id.length; i++) hash = (hash * 31 + id.charCodeAt(i)) >>> 0;
 
-  return S.avatarVariants[hash % S.avatarVariants.length];
-}
-
-function getInitials(name: string): string {
-  return name
-    .split(" ")
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((n) => n[0])
-    .join("")
-    .toUpperCase();
+  return hash % avatarColorVariants.length;
 }
 
 function getAge(birthDate: unknown): number | null {
@@ -88,117 +90,25 @@ function formatBirthDate(birthDate: unknown): string {
 
 // ── Sub-components ───────────────────────────────────────────────────────────
 
-function PatientAvatar({ name, id, size = "md" }: { name: string; id: string; size?: "md" | "lg" }) {
-  const variant = getAvatarVariant(id);
-
-  return (
-    <div className={cn(S.avatar({ size }), variant)}>{getInitials(name)}</div>
-  );
+function PatientAvatar({ name, id, size = "md" }: { name: string; id: string; size?: "sm" | "md" | "lg" }) {
+  return <AvatarInitials name={name} colorIndex={getAvatarColorIndex(id)} size={size} />;
 }
-
-const GENDER_SHORT: Record<NonNullable<PatientGender>, string> = { FEMALE: "F", MALE: "M", OTHER: "O" };
 
 function GenderBadge({ gender }: { gender: PatientGender }) {
   if (!gender) return null;
 
-  return <span className={S.genderBadge({ gender })}>{GENDER_SHORT[gender]}</span>;
-}
+  const labels: Record<NonNullable<PatientGender>, string> = { FEMALE: "F", MALE: "M", OTHER: "O" };
 
-function StatTile({
-  label,
-  value,
-  delta,
-  icon,
-  iconClass,
-  loading,
-}: {
-  label: string;
-  value: ReactNode;
-  delta?: ReactNode;
-  icon: ReactNode;
-  iconClass: string;
-  loading?: boolean;
-}) {
-  return (
-    <div className={S.statTile.root}>
-      <div className={S.statTile.header}>
-        <span className={S.statTile.label}>{label}</span>
-        <div className={cn(S.statTile.iconBase, iconClass)}>{icon}</div>
-      </div>
-
-      {loading ? (
-        <Skeleton className="mt-0.5 h-8 w-16" />
-      ) : (
-        <p className={S.statTile.value}>{value}</p>
-      )}
-
-      {delta && <p className={S.statTile.delta}>{delta}</p>}
-    </div>
-  );
-}
-
-function RowContextMenu({
-  onClose,
-  onAction,
-}: {
-  onClose: () => void;
-  onAction: (a: string) => void;
-}) {
-  const ref = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    function handler(e: MouseEvent) {
-      if (ref.current && !ref.current.contains(e.target as Node)) onClose();
-    }
-
-    document.addEventListener("mousedown", handler);
-
-    return () => document.removeEventListener("mousedown", handler);
-  }, [onClose]);
-
-  return (
-    <div
-      ref={ref}
-      className={S.contextMenu.root}
-      style={{ boxShadow: "var(--shadow-dropdown)" }}
-      onClick={(e) => e.stopPropagation()}
-    >
-      {(
-        [
-          { action: "view", icon: <UserRound className="size-3.5" />, label: "Ver perfil" },
-          { action: "edit", icon: <Pencil className="size-3.5" />, label: "Editar cadastro" },
-          { action: "schedule", icon: <CalendarPlus className="size-3.5" />, label: "Agendar consulta" },
-        ] as const
-      ).map(({ action, icon, label }) => (
-        <button key={action} className={S.contextMenu.item} onClick={() => onAction(action)}>
-          {icon}
-          {label}
-        </button>
-      ))}
-
-      <div className={S.contextMenu.divider} />
-
-      <button className={S.contextMenu.itemDanger} onClick={() => onAction("archive")}>
-        <Archive className="size-3.5" />
-        Arquivar paciente
-      </button>
-    </div>
-  );
+  return <Badge gender={gender} size="sm">{labels[gender]}</Badge>;
 }
 
 const TABLE_COLS = "minmax(260px,1.6fr) 90px 1.2fr 1.2fr 130px 56px";
 
 function PatientTableRow({
   patient,
-  isMenuOpen,
-  onToggleMenu,
-  onCloseMenu,
   onClick,
 }: {
   patient: Patient;
-  isMenuOpen: boolean;
-  onToggleMenu: () => void;
-  onCloseMenu: () => void;
   onClick: () => void;
 }) {
   const age = getAge(patient.birthDate);
@@ -248,19 +158,32 @@ function PatientTableRow({
       <GenderBadge gender={patient.gender} />
 
       <div className={S.tableRow.actionWrapper} onClick={(e) => e.stopPropagation()}>
-        <button aria-label="Ações" className={S.tableRow.actionBtn} onClick={onToggleMenu}>
-          <MoreHorizontal className="size-4" strokeWidth={1.5} />
-        </button>
-        {isMenuOpen && (
-          <RowContextMenu
-            onClose={onCloseMenu}
-            onAction={(action) => {
-              onCloseMenu();
-
-              if (action === "view") onClick();
-            }}
-          />
-        )}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button aria-label="Ações" className={S.tableRow.actionBtn}>
+              <MoreHorizontal className="size-4" strokeWidth={1.5} />
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem onClick={onClick}>
+              <UserRound className="size-3.5" />
+              Ver perfil
+            </DropdownMenuItem>
+            <DropdownMenuItem>
+              <Pencil className="size-3.5" />
+              Editar cadastro
+            </DropdownMenuItem>
+            <DropdownMenuItem>
+              <CalendarPlus className="size-3.5" />
+              Agendar consulta
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem className="text-(--color-danger) hover:bg-(--color-danger-surface) focus:bg-(--color-danger-surface)">
+              <Archive className="size-3.5" />
+              Arquivar paciente
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
     </div>
   );
@@ -368,8 +291,6 @@ function PatientsContent({
   layout,
   search,
   setSearch,
-  openMenuId,
-  setOpenMenuId,
   totalCount,
   onOpen,
 }: {
@@ -378,8 +299,6 @@ function PatientsContent({
   layout: Layout;
   search: string;
   setSearch: (v: string) => void;
-  openMenuId: string | null;
-  setOpenMenuId: (id: string | null) => void;
   totalCount: number;
   onOpen: (p: Patient) => void;
   // NOTE: statusFilter is intentionally not propagated here — filtering happens
@@ -387,25 +306,17 @@ function PatientsContent({
 }) {
   if (!isLoading && patients.length === 0) {
     return (
-      <div className={S.emptyState.root}>
-        <div className={S.emptyState.body}>
-          <div className={S.emptyState.iconWrapper}>
-            <SearchX className="size-7" strokeWidth={1.5} />
-          </div>
-          <div className={S.emptyState.textBlock}>
-            <h3 className={S.emptyState.title}>Nenhum paciente encontrado</h3>
-            <p className={S.emptyState.description}>
-              {search
-                ? `Nenhum resultado para "${search}"`
-                : "Ajuste os filtros para ver mais resultados"}
-            </p>
-          </div>
+      <EmptyStateCard
+        icon={<SearchX className="size-6" strokeWidth={1.5} />}
+        title="Nenhum paciente encontrado"
+        description={search ? `Nenhum resultado para "${search}"` : "Ajuste os filtros para ver mais resultados"}
+        action={
           <Button variant="outline" size="sm" onClick={() => setSearch("")}>
             <X className="size-4" />
             Limpar busca
           </Button>
-        </div>
-      </div>
+        }
+      />
     );
   }
 
@@ -424,9 +335,6 @@ function PatientsContent({
               <PatientTableRow
                 key={p.id}
                 patient={p}
-                isMenuOpen={openMenuId === p.id}
-                onToggleMenu={() => setOpenMenuId(openMenuId === p.id ? null : p.id)}
-                onCloseMenu={() => setOpenMenuId(null)}
                 onClick={() => onOpen(p)}
               />
             ))}
@@ -462,7 +370,7 @@ export function PatientsPage() {
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [layout, setLayout] = useState<Layout>("table");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
-  const [openMenuId, setOpenMenuId] = useState<string | null>(null);
+
 
   useEffect(() => {
     const t = setTimeout(() => setDebouncedSearch(search), 300);
@@ -534,7 +442,7 @@ export function PatientsPage() {
       }
     >
       {/* Stats */}
-      <div className={S.statsGrid}>
+      <div className="mb-6 grid grid-cols-3 gap-3">
         <StatTile
           label="Total de pacientes"
           value={totalAll}
@@ -545,14 +453,14 @@ export function PatientsPage() {
           }
           loading={statsQuery.isLoading}
           icon={<Users className="size-4" strokeWidth={1.5} />}
-          iconClass="bg-(--color-primary-surface) text-(--color-primary-text)"
+          iconIntent="primary"
         />
         <StatTile
           label="Total de consultas"
           value={totalAppointments ?? 0}
           loading={appointmentsQuery.isLoading}
           icon={<CalendarDays className="size-4" strokeWidth={1.5} />}
-          iconClass="bg-(--color-info-surface) text-(--color-info)"
+          iconIntent="info"
         />
         <StatTile
           label="Pré-evoluções IA"
@@ -560,7 +468,7 @@ export function PatientsPage() {
           delta="conectar módulo IA"
           loading={false}
           icon={<Sparkles className="size-4" strokeWidth={1.5} />}
-          iconClass="bg-(--color-ai-bg) text-(--color-ai-text)"
+          iconIntent="ai"
         />
       </div>
 
@@ -579,44 +487,21 @@ export function PatientsPage() {
         </div>
 
         {/* Status filter */}
-        <div className={S.segmented.root} role="tablist">
-          {(
-            [
-              ["all",      "Todos"],
-              ["active",   "Ativos"],
-              ["inactive", "Inativos"],
-            ] as const
-          ).map(([value, label]) => (
-            <button
-              key={value}
-              role="tab"
-              aria-selected={statusFilter === value}
-              className={S.segmentedBtn({ active: statusFilter === value })}
-              onClick={() => setStatusFilter(value)}
-            >
-              {label}
-            </button>
-          ))}
-        </div>
+        <SegmentedControl value={statusFilter} onValueChange={(v) => setStatusFilter(v as StatusFilter)}>
+          <SegmentedControl.Item value="all">Todos</SegmentedControl.Item>
+          <SegmentedControl.Item value="active">Ativos</SegmentedControl.Item>
+          <SegmentedControl.Item value="inactive">Inativos</SegmentedControl.Item>
+        </SegmentedControl>
 
         {/* Layout toggle */}
-        <div className={S.toolbar.layoutGroup}>
-          {(
-            [
-              { value: "table", icon: <Rows3 className="size-[15px]" />, title: "Tabela" },
-              { value: "cards", icon: <LayoutGrid className="size-[15px]" />, title: "Cards" },
-            ] as const
-          ).map(({ value, icon, title }) => (
-            <button
-              key={value}
-              title={title}
-              onClick={() => setLayout(value)}
-              className={S.layoutToggleBtn({ active: layout === value })}
-            >
-              {icon}
-            </button>
-          ))}
-        </div>
+        <SegmentedControl value={layout} onValueChange={(v) => setLayout(v as Layout)}>
+          <SegmentedControl.Item value="table" title="Tabela">
+            <Rows3 className="size-[15px]" />
+          </SegmentedControl.Item>
+          <SegmentedControl.Item value="cards" title="Cards">
+            <LayoutGrid className="size-[15px]" />
+          </SegmentedControl.Item>
+        </SegmentedControl>
 
         {hasFilters && (
           <button className={S.toolbar.clearBtn} onClick={clearFilters}>
@@ -636,8 +521,6 @@ export function PatientsPage() {
         layout={layout}
         search={search}
         setSearch={setSearch}
-        openMenuId={openMenuId}
-        setOpenMenuId={setOpenMenuId}
         totalCount={totalCount}
         onOpen={openPatient}
       />

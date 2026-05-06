@@ -22,6 +22,9 @@ export const routes = rootRoute("../root.tsx", [
     route("/patients/new", filePath("patients", "new")),
     route("/patients/$patientId", filePath("patients", "detail")),
     route("/patients/$patientId/edit", filePath("patients", "edit")),
+    route("/patients/$patientId/records/new", filePath("patients", "records/new")),
+    route("/patients/$patientId/records/$recordId", filePath("patients", "records/detail")),
+    route("/appointments", filePath("agenda", "index")),
     route("/settings", filePath("settings", "index")),
   ]),
 ]);
