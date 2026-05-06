@@ -1,0 +1,28 @@
+/* ── EmptyState ─────────────────────────────────────────────────────────────── */
+
+.root {
+  @apply flex flex-col items-center gap-3 py-16 text-center;
+}
+
+.icon {
+  @apply flex size-14 items-center justify-center rounded-full
+         bg-(--color-bg-surface) text-(--color-text-tertiary);
+}
+
+.textGroup {
+  @apply flex flex-col gap-1;
+}
+
+.title {
+  @apply text-sm font-medium text-(--color-text-primary);
+}
+
+.description {
+  @apply text-sm text-(--color-text-secondary);
+}
+
+/* ── EmptyStateCard ─────────────────────────────────────────────────────────── */
+
+.card {
+  @apply rounded-(--radius-card) border border-(--color-border) bg-(--color-bg-card);
+}

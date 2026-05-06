@@ -1,0 +1,26 @@
+/* ── Root ───────────────────────────────────────────────────────────────────── */
+
+.root {
+  @apply inline-flex items-center gap-px rounded-(--radius-input)
+         border border-(--color-border) bg-(--color-bg-surface) p-[3px];
+}
+
+/* ── Item ───────────────────────────────────────────────────────────────────── */
+
+.item {
+  @apply inline-flex h-[26px] cursor-pointer select-none items-center gap-1.5
+         rounded-[4px] px-2.5 text-xs font-medium
+         transition-colors duration-(--duration-fast);
+}
+
+.itemSelected {
+  @apply bg-(--color-bg-card) text-(--color-text-primary) shadow-sm;
+}
+
+.itemUnselected {
+  @apply text-(--color-text-secondary);
+
+  &:hover {
+    @apply text-(--color-text-primary);
+  }
+}
