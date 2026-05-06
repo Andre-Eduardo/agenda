@@ -1,0 +1,64 @@
+/* ── PageHeader ─────────────────────────────────────────────────────────────── */
+
+.pageHeader {
+  @apply flex flex-col gap-1;
+}
+
+.pageHeaderRow {
+  @apply flex items-end justify-between gap-4;
+}
+
+.pageHeaderTitleGroup {
+  @apply min-w-0;
+}
+
+.pageHeaderTitle {
+  @apply text-[32px] font-medium leading-[1.15] tracking-[-0.01em] text-(--color-text-primary);
+}
+
+.pageHeaderSubtitle {
+  @apply mt-1.5 text-sm leading-[1.5] text-(--color-text-secondary);
+}
+
+.pageHeaderActions {
+  @apply flex shrink-0 items-center gap-2;
+}
+
+/* ── EntityHeader ───────────────────────────────────────────────────────────── */
+
+.entityHeader {
+  @apply rounded-(--radius-card) border border-(--color-border) bg-(--color-bg-card)
+         px-5 py-[18px];
+}
+
+.entityHeaderSticky {
+  @apply sticky top-0 z-10;
+}
+
+.entityHeaderRow {
+  @apply flex items-center justify-between gap-[18px];
+}
+
+.entityHeaderAvatarGroup {
+  @apply flex min-w-0 items-center gap-[18px];
+}
+
+.entityHeaderNameGroup {
+  @apply min-w-0;
+}
+
+.entityHeaderName {
+  @apply text-[26px] font-medium leading-[1.2] text-(--color-text-primary);
+}
+
+.entityHeaderMeta {
+  @apply mt-[6px] flex flex-wrap items-center gap-2 text-[13px] text-(--color-text-secondary);
+}
+
+.entityHeaderActions {
+  @apply flex shrink-0 items-center gap-2;
+}
+
+.entityHeaderAlerts {
+  @apply mt-3 flex flex-wrap gap-2 border-t border-(--color-border) pt-3;
+}

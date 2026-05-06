@@ -1,0 +1,72 @@
+/* ── Wrapper ───────────────────────────────────────────────────────────────── */
+
+.wrapper {
+  @apply relative w-full overflow-auto;
+}
+
+/* ── Table ─────────────────────────────────────────────────────────────────── */
+
+.table {
+  @apply w-full caption-bottom text-sm;
+}
+
+/* ── TableHeader ───────────────────────────────────────────────────────────── */
+
+.tableHeader {
+  & tr {
+    @apply border-b;
+  }
+}
+
+/* ── TableBody ─────────────────────────────────────────────────────────────── */
+
+.tableBody {
+  & tr:last-child {
+    @apply border-0;
+  }
+}
+
+/* ── TableFooter ───────────────────────────────────────────────────────────── */
+
+.tableFooter {
+  @apply border-t bg-muted/50 font-medium;
+
+  & > tr:last-child {
+    @apply border-b-0;
+  }
+}
+
+/* ── TableRow ──────────────────────────────────────────────────────────────── */
+
+.tableRow {
+  @apply border-b transition-colors;
+
+  &:hover              { @apply bg-muted/50; }
+  &[data-state="selected"] { @apply bg-muted; }
+}
+
+/* ── TableHead ─────────────────────────────────────────────────────────────── */
+
+.tableHead {
+  @apply h-12 px-4 text-left align-middle font-medium text-muted-foreground;
+
+  &:has([role="checkbox"]) {
+    @apply pr-0;
+  }
+}
+
+/* ── TableCell ─────────────────────────────────────────────────────────────── */
+
+.tableCell {
+  @apply p-4 align-middle;
+
+  &:has([role="checkbox"]) {
+    @apply pr-0;
+  }
+}
+
+/* ── TableCaption ──────────────────────────────────────────────────────────── */
+
+.tableCaption {
+  @apply mt-4 text-sm text-muted-foreground;
+}

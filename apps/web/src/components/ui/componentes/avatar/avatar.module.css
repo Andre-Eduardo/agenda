@@ -1,0 +1,33 @@
+/* ── Avatar (Radix Root) ───────────────────────────────────────────────────── */
+
+.avatar {
+  @apply relative flex shrink-0 overflow-hidden rounded-full;
+}
+
+.avatarXs { @apply size-6; }
+.avatarSm { @apply size-8; }
+.avatarMd { @apply size-10; }
+.avatarLg { @apply size-12; }
+
+/* ── AvatarImage ───────────────────────────────────────────────────────────── */
+
+.avatarImage {
+  @apply aspect-square h-full w-full;
+}
+
+/* ── AvatarFallback ────────────────────────────────────────────────────────── */
+
+.avatarFallback {
+  @apply flex h-full w-full items-center justify-center rounded-full bg-muted;
+}
+
+/* ── AvatarInitials ────────────────────────────────────────────────────────── */
+
+.initials {
+  @apply inline-flex shrink-0 select-none items-center justify-center rounded-full font-medium;
+}
+
+.initialsXs { @apply size-6 text-[10px]; }
+.initialsSm { @apply size-8 text-xs; }
+.initialsMd { @apply size-10 text-sm; }
+.initialsLg { @apply size-12 text-base; }

@@ -1,0 +1,29 @@
+/* ── ScrollArea root ───────────────────────────────────────────────────────── */
+
+.scrollArea {
+  @apply relative overflow-hidden;
+}
+
+.scrollAreaViewport {
+  @apply h-full w-full rounded-[inherit];
+}
+
+/* ── ScrollBar ─────────────────────────────────────────────────────────────── */
+
+.scrollBar {
+  @apply flex touch-none select-none transition-colors;
+}
+
+.scrollBarVertical {
+  @apply h-full w-2.5 border-l border-l-transparent p-[1px];
+}
+
+.scrollBarHorizontal {
+  @apply h-2.5 flex-col border-t border-t-transparent p-[1px];
+}
+
+/* ── ScrollBar thumb ───────────────────────────────────────────────────────── */
+
+.scrollBarThumb {
+  @apply relative flex-1 rounded-full bg-border;
+}

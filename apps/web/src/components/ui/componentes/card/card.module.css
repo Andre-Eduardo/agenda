@@ -1,0 +1,45 @@
+/* ── Card ──────────────────────────────────────────────────────────────────── */
+
+.card {
+  @apply rounded-(--radius-card) border border-(--color-border) bg-(--color-bg-card);
+}
+
+.cardHeader {
+  @apply flex flex-col gap-1.5 px-[18px] py-[14px];
+}
+
+.cardTitle {
+  @apply text-sm font-medium text-(--color-text-primary);
+}
+
+.cardDescription {
+  @apply text-xs text-(--color-text-secondary);
+}
+
+.cardContent {
+  @apply p-[18px];
+}
+
+.cardFooter {
+  @apply flex items-center border-t border-(--color-border) px-[18px] py-[14px];
+}
+
+/* ── SectionCard ───────────────────────────────────────────────────────────── */
+
+.sectionCard {
+  @apply overflow-hidden rounded-(--radius-card) border border-(--color-border) bg-(--color-bg-card);
+}
+
+.sectionCardHeader {
+  @apply flex items-center justify-between border-b border-(--color-border) px-[18px] py-[14px];
+}
+
+.sectionCardTitle {
+  @apply text-sm font-medium text-(--color-text-primary);
+}
+
+/* ── SectionCardBody appearances ───────────────────────────────────────────── */
+
+.sectionCardBodyDefault { @apply p-[18px]; }
+.sectionCardBodyFlush   { @apply p-0; }
+.sectionCardBodySm      { @apply p-3; }

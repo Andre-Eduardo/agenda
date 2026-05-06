@@ -1,0 +1,4 @@
+.base {
+  @apply text-[13px] font-medium leading-[1.3] text-(--color-text-primary)
+         peer-disabled:cursor-not-allowed peer-disabled:opacity-70;
+}
