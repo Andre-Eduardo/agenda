@@ -43,7 +43,7 @@ function StatTile({
     <div className={S.statTile.root}>
       <p className={S.statTile.label}>{label}</p>
 
-      {loading ? <Skeleton className="mt-1 h-7 w-14" /> : <p className={S.statTile.value}>{value}</p>}
+      {loading ? <Skeleton className={S.statTile.skeleton} /> : <p className={S.statTile.value}>{value}</p>}
 
       {delta && !loading && <p className={S.statTile.delta}>{delta}</p>}
     </div>
@@ -61,7 +61,7 @@ function ClinicalBadge({
 }) {
   return (
     <span className={S.clinicalBadge({ variant })}>
-      {dot && <span className="text-[8px] leading-none">●</span>}
+      {dot && <span className={S.clinicalBadgeDot}>●</span>}
       {children}
     </span>
   );
@@ -115,7 +115,7 @@ function NextAppointmentContent({
 }) {
   if (isLoading) {
     return (
-      <div className="flex flex-col gap-2">
+      <div className={S.appointment.skeletonStack}>
         <Skeleton className="h-5 w-40" />
         <Skeleton className="h-4 w-56" />
         <Skeleton className="h-8 w-32" />

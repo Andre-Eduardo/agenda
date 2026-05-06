@@ -4,6 +4,8 @@ import { cn } from '@/lib/utils';
 export const page = {
   root: cn('flex flex-col p-6 pb-24 bg-(--color-bg-page)'),
   errorState: cn('flex flex-col items-center justify-center gap-4 p-12 text-(--color-text-secondary)'),
+  skeletonStack: cn('flex flex-col gap-4 p-6'),
+  skeletonCard400: cn('h-[400px] rounded-(--radius-card)'),
 };
 
 // AI nudge banner
@@ -33,6 +35,7 @@ export const section = {
   ),
   title: cn('text-base font-medium leading-[1.3] tracking-[-0.005em] text-(--color-text-primary)'),
   sub: cn('mt-0.5 text-[13px] leading-[1.4] text-(--color-text-tertiary)'),
+  inner: cn('flex items-start gap-3'),
 };
 
 // Photo uploader
@@ -58,9 +61,13 @@ export const subSection = {
   title: cn('text-[13px] font-medium leading-[1.3] text-(--color-text-primary)'),
   tag: cn('rounded-[4px] border border-(--color-border) bg-(--color-bg-card) px-[7px] py-0.5 text-[11px] text-(--color-text-tertiary)'),
   hint: cn('text-[12px] text-(--color-text-tertiary)'),
+  icon: cn('size-3.5 text-(--color-text-secondary)'),
 };
 
 // Info note (Saúde section)
+export const tabIcon = cn('hidden size-[14px] sm:block');
+export const infoNoteIcon = cn('mt-px size-[14px] shrink-0');
+
 export const infoNote = cn(
   'mt-4 flex items-start gap-[10px] rounded-[8px] border border-(--color-primary-border) bg-(--color-primary-surface) p-3 text-xs leading-[1.5] text-(--color-primary-text)',
 );

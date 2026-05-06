@@ -282,7 +282,7 @@ function WeekView({ appts, patients, cursor, today, now, highlightId, onSlotClic
   const days = Array.from({length:7}, (_,i)=>addDays(ws,i));
 
   return (
-    <div className="min-w-[560px]">
+    <div className={S.weekHeaderMin}>
       {/* Header row */}
       <div className={S.grid.weekHead}>
         <div className={S.grid.timeColHead} />
@@ -290,7 +290,7 @@ function WeekView({ appts, patients, cursor, today, now, highlightId, onSlotClic
           const isToday = sameDay(d, today);
           return (
             <div key={i} className={S.grid.dayHead({ isToday })}>
-              <div className="text-[10px] uppercase">{WEEKDAYS_SHORT[d.getDay()]}</div>
+              <div className={S.dayOfWeekText}>{WEEKDAYS_SHORT[d.getDay()]}</div>
               <div className={S.grid.dayHeadNum({ isToday })}>{d.getDate()}</div>
             </div>
           );
@@ -353,13 +353,13 @@ function DayView({ appts, patients, cursor, today, now, highlightId, onSlotClick
   const positioned = layoutOverlaps(dayAppts);
 
   return (
-    <div className="min-w-[280px]">
-      <div className="px-6 py-3 border-b border-(--color-border) sticky top-0 bg-(--color-bg-page) z-10">
-        <div className="text-sm text-(--color-text-secondary)">{WEEKDAYS_LONG[cursor.getDay()]}</div>
-        <div className="flex items-baseline gap-2">
-          <span className="text-3xl font-medium tabular-nums font-mono text-(--color-text-primary)">{cursor.getDate()}</span>
-          <span className="text-sm text-(--color-text-secondary)">{MONTH_NAMES[cursor.getMonth()]} · {cursor.getFullYear()}</span>
-          {dayAppts.length>0 && <span className="text-xs text-(--color-primary)">{dayAppts.length} {dayAppts.length===1?"consulta":"consultas"}</span>}
+    <div className={S.dayHeaderMin}>
+      <div className={S.dayColHead}>
+        <div className={S.dayHeaderText}>{WEEKDAYS_LONG[cursor.getDay()]}</div>
+        <div className={S.dayHeadBaseline}>
+          <span className={S.dayDateNum}>{cursor.getDate()}</span>
+          <span className={S.dayHeaderText}>{MONTH_NAMES[cursor.getMonth()]} · {cursor.getFullYear()}</span>
+          {dayAppts.length>0 && <span className={S.apptCountText}>{dayAppts.length} {dayAppts.length===1?"consulta":"consultas"}</span>}
         </div>
       </div>
       <div className={S.grid.body}>
@@ -370,7 +370,7 @@ function DayView({ appts, patients, cursor, today, now, highlightId, onSlotClick
             </div>
           ))}
         </div>
-        <div className="flex-1 relative border-l border-(--color-border)" style={{height:HOUR_H_DAY*HOURS.length}}>
+        <div className={S.dayBodyCol} style={{height:HOUR_H_DAY*HOURS.length}}>
           {HOURS.map((h,hi)=>(
             <div key={h} className={S.grid.slot} style={{top:hi*HOUR_H_DAY,height:HOUR_H_DAY}}
               onClick={()=>onSlotClick(cursor,`${String(h).padStart(2,"0")}:00`)} />
@@ -378,7 +378,7 @@ function DayView({ appts, patients, cursor, today, now, highlightId, onSlotClick
           {nowTop!=null && nowTop>=0 && (
             <div className={S.grid.nowLine} style={{top:nowTop}}>
               <span className={S.grid.nowDot} />
-              <span className="absolute left-3 -top-[8px] text-[10px] font-mono tabular-nums text-(--color-primary)">
+              <span className={S.nowTimeLabel}>
                 {String(now.h).padStart(2,"0")}:{String(now.m).padStart(2,"0")}
               </span>
             </div>
@@ -399,7 +399,7 @@ function DayView({ appts, patients, cursor, today, now, highlightId, onSlotClick
           })}
           {dayAppts.length===0 && (
             <div className={S.grid.emptyDay}>
-              <CalendarX2 className="size-7 text-(--color-text-tertiary)" />
+              <CalendarX2 className={S.emptyDayCalIcon} />
               <div className={S.grid.emptyDayTitle}>Sem consultas neste dia</div>
               <div className={S.grid.emptyDaySub}>Clique em qualquer horário ou use &quot;Novo agendamento&quot;.</div>
             </div>
@@ -447,7 +447,7 @@ function MonthView({ appts, patients, cursor, today, highlightId, onSlotClick, o
                 <button key={a.id} type="button"
                   className={cn(S.monthGrid.evt({status:a.status}), a.id===highlightId?"ring-1 ring-(--color-primary)":"")}
                   onClick={e=>{e.stopPropagation();onApptClick(a.id);}}>
-                  <span className="font-mono tabular-nums mr-1">{a.start}</span>
+                  <span className={S.apptTimeMono}>{a.start}</span>
                   {getPatientName(patients,a.patientId).split(" ").slice(0,2).join(" ")}
                 </button>
               ))}
@@ -548,10 +548,10 @@ function AppointmentDetailSheet({ apt, patients, onClose, onEdit, onCancel, onOp
 
   return (
     <Sheet open onOpenChange={o=>!o&&onClose()}>
-      <SheetContent className="w-[400px] sm:w-[480px] overflow-y-auto">
+      <SheetContent className={S.detailSheetPanel}>
         <SheetHeader>
           <SheetTitle className="sr-only">Detalhes do agendamento</SheetTitle>
-          <div className="flex flex-col gap-1">
+          <div className={S.sheetInfoRow}>
             <span className={S.sheet.eyebrow}>Agendamento</span>
             <span className={S.sheet.statusBadge({status:apt.status})}>
               <span className={cn("w-1.5 h-1.5 rounded-full shrink-0",{
@@ -571,15 +571,15 @@ function AppointmentDetailSheet({ apt, patients, onClose, onEdit, onCancel, onOp
         <div className="mt-6">
           {/* Patient card */}
           <div className={S.sheet.patientCard}>
-            <div className="w-10 h-10 rounded-full bg-(--color-primary)/10 flex items-center justify-center text-sm font-medium text-(--color-primary) shrink-0">
+            <div className={S.patAvatarLg}>
               {patient ? getInitials(patient.name) : "?"}
             </div>
-            <div className="flex-1 min-w-0">
+            <div className={S.sheet.patientBody}>
               <div className={S.sheet.patientName}>{patient?.name ?? "—"}</div>
               {asStr(patient?.email) && <div className={S.sheet.patientMeta}>{asStr(patient?.email)}</div>}
             </div>
             <button type="button"
-              className="flex items-center gap-1 text-xs text-(--color-primary) hover:underline shrink-0"
+              className={S.patProfileLink}
               onClick={()=>onOpenPatient(apt.patientId)}>
               Ver perfil <ArrowUpRight className="size-3"/>
             </button>
@@ -591,7 +591,7 @@ function AppointmentDetailSheet({ apt, patients, onClose, onEdit, onCancel, onOp
             <div className={S.sheet.kvGrid}>
               <div className={S.sheet.kv}>
                 <span className={S.sheet.kvKey}>Data</span>
-                <span className="text-sm text-(--color-text-primary)">
+                <span className={S.sheetKvText}>
                   {WEEKDAYS_LONG[date.getDay()]}, {da} de {MONTH_NAMES[mo-1]} de {y}
                 </span>
               </div>
@@ -605,7 +605,7 @@ function AppointmentDetailSheet({ apt, patients, onClose, onEdit, onCancel, onOp
               </div>
               <div className={S.sheet.kv}>
                 <span className={S.sheet.kvKey}>Tipo</span>
-                <span className="text-sm text-(--color-text-primary)">{TYPE_LABELS[apt.type]}</span>
+                <span className={S.sheetKvText}>{TYPE_LABELS[apt.type]}</span>
               </div>
             </div>
           </div>
@@ -625,7 +625,7 @@ function AppointmentDetailSheet({ apt, patients, onClose, onEdit, onCancel, onOp
                 <Pencil className="size-3.5"/> Editar
               </Button>
               <Button size="sm" variant="outline"
-                className="gap-1.5 text-(--color-danger) border-(--color-danger)/30 hover:bg-(--color-danger)/5"
+                className={S.cancelBtn}
                 onClick={onCancel}>
                 <Trash2 className="size-3.5"/> Cancelar consulta
               </Button>
@@ -667,21 +667,21 @@ function EditAppointmentDialog({ apt, onClose, onSaved }: EditDialogProps) {
 
   return (
     <Dialog open onOpenChange={o=>!o&&onClose()}>
-      <DialogContent className="sm:max-w-[480px]">
+      <DialogContent className={S.editDialogWidth}>
         <DialogHeader><DialogTitle>Editar agendamento</DialogTitle></DialogHeader>
-        <div className="grid gap-4 py-2">
-          <div className="grid grid-cols-2 gap-3">
-            <div className="flex flex-col gap-1.5">
+        <div className={S.formBody}>
+          <div className={S.formRow}>
+            <div className={S.formField}>
               <Label>Data</Label>
               <Input type="date" value={date} onChange={e=>setDate(e.target.value)}/>
             </div>
-            <div className="flex flex-col gap-1.5">
+            <div className={S.formField}>
               <Label>Horário</Label>
               <Input type="time" value={startTime} onChange={e=>setStartTime(e.target.value)}/>
             </div>
           </div>
-          <div className="grid grid-cols-2 gap-3">
-            <div className="flex flex-col gap-1.5">
+          <div className={S.formRow}>
+            <div className={S.formField}>
               <Label>Duração</Label>
               <Select value={String(durMin)} onValueChange={v=>setDurMin(Number(v))}>
                 <SelectTrigger><SelectValue/></SelectTrigger>
@@ -694,7 +694,7 @@ function EditAppointmentDialog({ apt, onClose, onSaved }: EditDialogProps) {
                 </SelectContent>
               </Select>
             </div>
-            <div className="flex flex-col gap-1.5">
+            <div className={S.formField}>
               <Label>Tipo</Label>
               <Select value={type} onValueChange={v=>setType(v as AppointmentType)}>
                 <SelectTrigger><SelectValue/></SelectTrigger>
@@ -704,12 +704,12 @@ function EditAppointmentDialog({ apt, onClose, onSaved }: EditDialogProps) {
               </Select>
             </div>
           </div>
-          <div className="flex flex-col gap-1.5">
-            <Label>Observações <span className="text-(--color-text-tertiary) font-normal text-xs">opcional</span></Label>
+          <div className={S.formField}>
+            <Label>Observações <span className={S.optionalLabel}>opcional</span></Label>
             <Textarea rows={3} placeholder="Informações adicionais..." value={note} onChange={e=>setNote(e.target.value)}/>
           </div>
         </div>
-        <div className="flex justify-end gap-2 pt-2">
+        <div className={S.formFooter}>
           <Button variant="outline" onClick={onClose}>Cancelar</Button>
           <Button onClick={handleSave} disabled={update.isPending}>
             {update.isPending?"Salvando…":"Salvar alterações"}
@@ -766,35 +766,35 @@ function NewAppointmentDialog({ prefill, defaultMemberId, onClose, onSaved }: Ne
 
   return (
     <Dialog open onOpenChange={o=>!o&&onClose()}>
-      <DialogContent className="sm:max-w-[520px]">
+      <DialogContent className={S.newApptDialogWidth}>
         <DialogHeader><DialogTitle>Novo agendamento</DialogTitle></DialogHeader>
-        <div className="grid gap-4 py-2">
+        <div className={S.formBody}>
           {/* Patient */}
-          <div className="flex flex-col gap-1.5 relative">
+          <div className={cn(S.formField, "relative")}>
             <Label>Paciente</Label>
             {selectedPatient ? (
-              <div className="flex items-center gap-2 p-2 rounded-(--radius-sm) border border-(--color-border) bg-(--color-bg-surface)">
-                <div className="w-6 h-6 rounded-full bg-(--color-primary)/10 flex items-center justify-center text-[10px] font-medium text-(--color-primary) shrink-0">
+              <div className={S.patSearchPill}>
+                <div className={S.patAvatarSm}>
                   {getInitials(selectedPatient.name)}
                 </div>
-                <span className="text-sm text-(--color-text-primary) flex-1 truncate">{selectedPatient.name}</span>
-                <button type="button" className="text-(--color-text-tertiary) hover:text-(--color-text-primary)"
+                <span className={S.patSearchName}>{selectedPatient.name}</span>
+                <button type="button" className={S.patClearBtn}
                   onClick={()=>setSelectedPatient(null)}>
                   <X className="size-3.5"/>
                 </button>
               </div>
             ) : (
-              <div className="relative">
+              <div className={S.patSearchWrap}>
                 <Input placeholder="Buscar paciente..." value={patientSearch}
                   onChange={e=>{setPatientSearch(e.target.value);setShowDrop(true);}}
                   onFocus={()=>setShowDrop(true)} onBlur={()=>setTimeout(()=>setShowDrop(false),200)}/>
                 {showDrop && patientsList.length>0 && (
-                  <div className="absolute top-full left-0 right-0 z-50 mt-1 rounded-(--radius-card) border border-(--color-border) bg-(--color-bg-card) shadow-lg overflow-hidden max-h-48 overflow-y-auto">
+                  <div className={S.patSearchDrop}>
                     {patientsList.map(p=>(
                       <button key={p.id} type="button"
-                        className="w-full text-left px-3 py-2 text-sm hover:bg-(--color-bg-surface) flex items-center gap-2 transition-colors"
+                        className={S.patSearchRow}
                         onMouseDown={()=>{setSelectedPatient(p);setPatientSearch("");setShowDrop(false);}}>
-                        <div className="w-6 h-6 rounded-full bg-(--color-primary)/10 flex items-center justify-center text-[10px] font-medium text-(--color-primary) shrink-0">
+                        <div className={S.patAvatarSm}>
                           {getInitials(p.name)}
                         </div>
                         <span className="truncate">{p.name}</span>
@@ -806,19 +806,19 @@ function NewAppointmentDialog({ prefill, defaultMemberId, onClose, onSaved }: Ne
             )}
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
-            <div className="flex flex-col gap-1.5">
+          <div className={S.formRow}>
+            <div className={S.formField}>
               <Label>Data</Label>
               <Input type="date" value={date} onChange={e=>setDate(e.target.value)}/>
             </div>
-            <div className="flex flex-col gap-1.5">
+            <div className={S.formField}>
               <Label>Horário</Label>
               <Input type="time" value={startTime} onChange={e=>setStartTime(e.target.value)}/>
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
-            <div className="flex flex-col gap-1.5">
+          <div className={S.formRow}>
+            <div className={S.formField}>
               <Label>Duração</Label>
               <Select value={String(durMin)} onValueChange={v=>setDurMin(Number(v))}>
                 <SelectTrigger><SelectValue/></SelectTrigger>
@@ -831,7 +831,7 @@ function NewAppointmentDialog({ prefill, defaultMemberId, onClose, onSaved }: Ne
                 </SelectContent>
               </Select>
             </div>
-            <div className="flex flex-col gap-1.5">
+            <div className={S.formField}>
               <Label>Tipo</Label>
               <Select value={type} onValueChange={v=>setType(v as CreateAppointmentDtoType)}>
                 <SelectTrigger><SelectValue/></SelectTrigger>
@@ -842,12 +842,12 @@ function NewAppointmentDialog({ prefill, defaultMemberId, onClose, onSaved }: Ne
             </div>
           </div>
 
-          <div className="flex flex-col gap-1.5">
-            <Label>Observações <span className="text-(--color-text-tertiary) font-normal text-xs">opcional</span></Label>
+          <div className={S.formField}>
+            <Label>Observações <span className={S.optionalLabel}>opcional</span></Label>
             <Textarea rows={2} placeholder="Informações adicionais..." value={note} onChange={e=>setNote(e.target.value)}/>
           </div>
         </div>
-        <div className="flex justify-end gap-2 pt-2">
+        <div className={S.formFooter}>
           <Button variant="outline" onClick={onClose}>Cancelar</Button>
           <Button onClick={handleSave} disabled={create.isPending || !selectedPatient}>
             {create.isPending?"Salvando…":"Agendar consulta"}
@@ -873,16 +873,16 @@ function CancelDialog({ apt, onClose, onCancelled }: CancelDialogProps) {
   };
   return (
     <Dialog open onOpenChange={o=>!o&&onClose()}>
-      <DialogContent className="sm:max-w-[400px]">
+      <DialogContent className={S.cancelDialogWidth}>
         <DialogHeader><DialogTitle>Cancelar consulta</DialogTitle></DialogHeader>
-        <p className="text-sm text-(--color-text-secondary)">
+        <p className={S.cancelDialogText}>
           Tem certeza que deseja cancelar esta consulta?
         </p>
-        <div className="flex flex-col gap-1.5 mt-2">
-          <Label>Motivo <span className="text-(--color-text-tertiary) font-normal text-xs">opcional</span></Label>
+        <div className={cn(S.formField, "mt-2")}>
+          <Label>Motivo <span className={S.optionalLabel}>opcional</span></Label>
           <Textarea rows={2} placeholder="Informe o motivo do cancelamento..." value={reason} onChange={e=>setReason(e.target.value)}/>
         </div>
-        <div className="flex justify-end gap-2 pt-2">
+        <div className={S.formFooter}>
           <Button variant="outline" onClick={onClose}>Voltar</Button>
           <Button variant="destructive" onClick={handleConfirm} disabled={cancel.isPending}>
             {cancel.isPending?"Cancelando…":"Confirmar cancelamento"}
@@ -974,7 +974,7 @@ export function AppointmentsPage() {
       {/* Header */}
       <div className={S.header}>
         <div className={S.headerLeft}>
-          <CalendarDays className="size-5 text-(--color-text-secondary)"/>
+          <CalendarDays className={S.headerCalIcon}/>
           <h1 className={S.pageTitle}>Agenda</h1>
         </div>
         <div className={S.headerRight}>

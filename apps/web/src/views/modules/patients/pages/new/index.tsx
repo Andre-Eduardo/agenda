@@ -113,7 +113,7 @@ function tabHasValues(tab: TabKey, values: Partial<FormValues>): boolean {
 function SectionHead({ num, title, subtitle }: { num: string; title: string; subtitle?: string }) {
   return (
     <div className={S.section.head}>
-      <div className="flex items-start gap-3">
+      <div className={S.section.inner}>
         <span className={S.section.num}>{num}</span>
         <div>
           <h2 className={S.section.title}>{title}</h2>
@@ -292,7 +292,7 @@ export function NewPatientPage() {
                         t.num
                       )}
                     </span>
-                    <TabIcon className="hidden size-[14px] sm:block" strokeWidth={1.5} />
+                    <TabIcon className={S.tabIcon} strokeWidth={1.5} />
                     {t.label}
                   </TabsTrigger>
                 );
@@ -404,7 +404,7 @@ export function NewPatientPage() {
               {/* Responsável */}
               <div className={S.subSection.root}>
                 <div className={S.subSection.head}>
-                  <User className="size-3.5 text-(--color-text-secondary)" strokeWidth={1.5} />
+                  <User className={S.subSection.icon} strokeWidth={1.5} />
                   <h3 className={S.subSection.title}>Responsável</h3>
                   <span className={S.subSection.tag}>Opcional</span>
                   <span className={cn(S.subSection.hint, "ml-1")}>· para menores ou pacientes com tutela</span>
@@ -568,7 +568,7 @@ export function NewPatientPage() {
               </FormGrid>
 
               <div className={S.infoNote}>
-                <Info className="mt-px size-[14px] shrink-0" strokeWidth={1.5} />
+                <Info className={S.infoNoteIcon} strokeWidth={1.5} />
                 <div>
                   Esses dados são apenas um registro inicial. A <strong>anamnese completa</strong>,
                   prescrições e evoluções (SOAP) são registradas no prontuário após o cadastro.

@@ -279,6 +279,32 @@ export const monthGrid = {
   ),
 };
 
+// ── Day column (sidebar detail panel) ────────────────────────────
+export const dayColHead = cn('px-6 py-3 border-b border-(--color-border) sticky top-0 bg-(--color-bg-page) z-10');
+export const dayHeadBaseline = cn('flex items-baseline gap-2');
+export const dayDateNum = cn('text-3xl font-medium tabular-nums font-mono text-(--color-text-primary)');
+export const dayBodyCol = cn('flex-1 relative border-l border-(--color-border)');
+export const nowTimeLabel = cn('absolute left-3 -top-[8px] text-[10px] font-mono tabular-nums text-(--color-primary)');
+export const apptTimeMono = cn('font-mono tabular-nums mr-1');
+
+// ── Dialog forms ──────────────────────────────────────────────────
+export const formBody = cn('grid gap-4 py-2');
+export const formRow = cn('grid grid-cols-2 gap-3');
+export const formField = cn('flex flex-col gap-1.5');
+export const formFooter = cn('flex justify-end gap-2 pt-2');
+export const optionalLabel = cn('text-(--color-text-tertiary) font-normal text-xs');
+export const sheetInfoRow = cn('flex flex-col gap-1');
+export const cancelBtn = cn('gap-1.5 text-(--color-danger) border-(--color-danger)/30 hover:bg-(--color-danger)/5');
+
+// ── Patient selection (search + pill) ────────────────────────────
+export const patSearchPill = cn('flex items-center gap-2 p-2 rounded-(--radius-sm) border border-(--color-border) bg-(--color-bg-surface)');
+export const patAvatarSm = cn('w-6 h-6 rounded-full bg-(--color-primary)/10 flex items-center justify-center text-[10px] font-medium text-(--color-primary) shrink-0');
+export const patAvatarLg = cn('w-10 h-10 rounded-full bg-(--color-primary)/10 flex items-center justify-center text-sm font-medium text-(--color-primary) shrink-0');
+export const patSearchName = cn('text-sm text-(--color-text-primary) flex-1 truncate');
+export const patSearchDrop = cn('absolute top-full left-0 right-0 z-50 mt-1 rounded-(--radius-card) border border-(--color-border) bg-(--color-bg-card) shadow-lg overflow-hidden max-h-48 overflow-y-auto');
+export const patSearchRow = cn('w-full text-left px-3 py-2 text-sm hover:bg-(--color-bg-surface) flex items-center gap-2 transition-colors');
+export const patProfileLink = cn('flex items-center gap-1 text-xs text-(--color-primary) hover:underline shrink-0');
+
 // ── Sheet (detail + new) ──────────────────────────────────────────
 export const sheet = {
   eyebrow: cn("text-xs text-(--color-text-tertiary) font-medium uppercase tracking-wide"),
@@ -312,4 +338,20 @@ export const sheet = {
   notes: cn("text-sm text-(--color-text-secondary) leading-relaxed"),
   notesEmpty: cn("text-sm text-(--color-text-tertiary) italic"),
   actions: cn("flex items-center gap-2 pt-4 border-t border-(--color-border) mt-4"),
+  patientBody: cn("flex-1 min-w-0"),
 };
+export const weekHeaderMin = cn('min-w-[560px]');
+export const dayOfWeekText = cn('text-[10px] uppercase');
+export const dayHeaderMin = cn('min-w-[280px]');
+export const dayHeaderText = cn('text-sm text-(--color-text-secondary)');
+export const apptCountText = cn('text-xs text-(--color-primary)');
+export const emptyDayCalIcon = cn('size-7 text-(--color-text-tertiary)');
+export const sheetKvText = cn('text-sm text-(--color-text-primary)');
+export const patSearchWrap = cn('relative');
+export const cancelDialogText = cn('text-sm text-(--color-text-secondary)');
+export const detailSheetPanel = cn('w-[400px] sm:w-[480px] overflow-y-auto');
+export const editDialogWidth = cn('sm:max-w-[480px]');
+export const newApptDialogWidth = cn('sm:max-w-[520px]');
+export const cancelDialogWidth = cn('sm:max-w-[400px]');
+export const patClearBtn = cn('text-(--color-text-tertiary) hover:text-(--color-text-primary)');
+export const headerCalIcon = cn('size-5 text-(--color-text-secondary)');

@@ -146,11 +146,11 @@ function conductLabel(tag: RecordConductTagsItem): string {
 
 function DetailSkeleton() {
   return (
-    <div className="flex flex-col gap-[18px] px-6 pt-6 pb-[60px]">
+    <div className={S.skeleton.root}>
       <Skeleton className="h-4 w-64" />
-      <Skeleton className="h-[120px] rounded-[14px]" />
-      <Skeleton className="h-[200px] rounded-[12px]" />
-      <Skeleton className="h-[160px] rounded-[12px]" />
+      <Skeleton className={S.skeleton.headerCard} />
+      <Skeleton className={S.skeleton.bodyCard} />
+      <Skeleton className={S.skeleton.sectionCard} />
     </div>
   );
 }
@@ -218,7 +218,7 @@ function TagsSection({ record }: { record: MedicalRecord }): ReactNode {
           <>
             <div className={S.tags.label}>Status clínico</div>
             <div>
-              <Badge clinicalStatus={record.clinicalStatus as NonNullable<RecordClinicalStatus>} className="gap-[6px] rounded-full px-[10px] py-1 text-[12px]">
+              <Badge clinicalStatus={record.clinicalStatus as NonNullable<RecordClinicalStatus>} className={S.badgeStatus}>
                 <span className={S.tags.dot} />
                 {clinicalStatusLabel(record.clinicalStatus)}
               </Badge>
@@ -230,7 +230,7 @@ function TagsSection({ record }: { record: MedicalRecord }): ReactNode {
             <div className={S.tags.label}>Condutas</div>
             <div className={S.tags.list}>
               {record.conductTags.map((t) => (
-                <Badge key={t} variant="outline" className="rounded-full bg-(--color-bg-surface) px-[10px] py-1 text-[12px] font-medium text-(--color-text-secondary)">{conductLabel(t)}</Badge>
+                <Badge key={t} variant="outline" className={S.badgeConduct}>{conductLabel(t)}</Badge>
               ))}
             </div>
           </>
@@ -318,7 +318,7 @@ function TraceabilitySection({ record }: { record: MedicalRecord }) {
       <div className={S.section.traceBar} />
       <div className={S.section.head}>
         <div className={S.section.title}>
-          <ShieldCheck className="size-4 text-(--color-primary)" />
+          <ShieldCheck className={S.traceShieldIcon} />
           Rastreabilidade do registro
         </div>
         <div className={S.section.sub}>Auditoria, origem e revisão humana</div>
@@ -334,13 +334,13 @@ function TraceabilitySection({ record }: { record: MedicalRecord }) {
           <div className={S.trace.key}>Status</div>
           <div className={S.trace.val}>
             {record.isLocked ? (
-              <span className="inline-flex items-center gap-[6px] rounded-full border border-(--color-success) bg-(--color-success-surface) px-[10px] py-1 text-[12px] font-medium text-(--color-success)">
-                <span className="size-[6px] rounded-full bg-current" />
+              <span className={S.signedBadge}>
+                <span className={S.statusDot} />
                 Assinado e imutável
               </span>
             ) : (
-              <span className="inline-flex items-center gap-[6px] rounded-full border border-(--color-border) bg-(--color-bg-surface) px-[10px] py-1 text-[12px] font-medium text-(--color-text-secondary)">
-                <span className="size-[6px] rounded-full bg-current" />
+              <span className={S.draftBadge}>
+                <span className={S.statusDot} />
                 Rascunho
               </span>
             )}
@@ -350,12 +350,12 @@ function TraceabilitySection({ record }: { record: MedicalRecord }) {
           <div className={S.trace.key}>Origem do conteúdo</div>
           <div className={S.trace.val}>
             {isAI ? (
-              <Badge origin="ai" className="gap-[6px] rounded-full px-[11px] py-[5px] text-[12px]">
+              <Badge origin="ai" className={S.badgeOrigin}>
                 <Sparkles className="size-[11px]" />
                 Gerado por IA e aprovado
               </Badge>
             ) : (
-              <Badge origin="manual" className="gap-[6px] rounded-full px-[11px] py-[5px] text-[12px]">
+              <Badge origin="manual" className={S.badgeOrigin}>
                 <Pencil className="size-[11px]" />
                 Registro manual
               </Badge>
@@ -461,12 +461,12 @@ function RecordDetailView({
               </span>
               <span className={S.header.metaSep} />
               {isAI ? (
-                <Badge origin="ai" className="gap-[6px] rounded-full px-[11px] py-[5px] text-[12px]">
+                <Badge origin="ai" className={S.badgeOrigin}>
                   <Sparkles className="size-[11px]" />
                   Aprovado a partir de IA
                 </Badge>
               ) : (
-                <Badge origin="manual" className="gap-[6px] rounded-full px-[11px] py-[5px] text-[12px]">
+                <Badge origin="manual" className={S.badgeOrigin}>
                   <Pencil className="size-[11px]" />
                   Registro manual
                 </Badge>
@@ -480,11 +480,11 @@ function RecordDetailView({
               onClick={() => navigate({ to: "/patients/$patientId", params: { patientId: patient.id } })}
             >
               <AvatarInitials name={patient.name} colorIndex={getAvatarColorIndex(patient.id)} size="sm" />
-              <div className="min-w-0 flex-1">
+              <div className={S.header.patBody}>
                 <div className={S.header.patName}>{patient.name}</div>
                 <div className={S.header.patMeta}>{age !== null ? `${age} anos` : "—"}</div>
               </div>
-              <ChevronRight className="size-[14px] shrink-0 text-(--color-text-tertiary)" />
+              <ChevronRight className={S.chevronIcon} />
             </div>
             <div className={S.header.actions}>
               <Button variant="outline" size="sm">
@@ -516,7 +516,7 @@ function RecordDetailView({
             disabled={!prev}
             onClick={() => prev && goToRecord(prev)}
           >
-            <ChevronLeft className="size-[14px] shrink-0" />
+            <ChevronLeft className={S.nav.chevron} />
             <span className={S.nav.stack}>
               <span className={S.nav.label}>Evolução anterior</span>
               {prev && (
@@ -549,7 +549,7 @@ function RecordDetailView({
                 </span>
               )}
             </span>
-            <ChevronRight className="size-[14px] shrink-0" />
+            <ChevronRight className={S.nav.chevron} />
           </button>
         </nav>
       </div>

@@ -704,7 +704,7 @@ function DayPopover({
           </div>
           <button
             onClick={onClose}
-            className="flex size-7 items-center justify-center rounded-[6px] text-(--color-text-tertiary) hover:bg-(--color-bg-surface)"
+            className={S.shCloseBtn}
           >
             <X className="size-4" />
           </button>
@@ -722,7 +722,7 @@ function DayPopover({
                   {toTimeStr(a.startAt)} – {toTimeStr(a.endAt)}
                 </span>
                 <span className={S.popName}>{p?.name ?? "—"}</span>
-                <span className="shrink-0 text-[10px] text-(--color-text-tertiary)">
+                <span className={S.apptTimeLabel}>
                   {TYPE_LABELS[a.type as AppointmentType]}
                 </span>
               </button>
@@ -798,7 +798,7 @@ function MonthView({
                     className={cn(S.monthEvtBase, evtCls, a.id === highlightId && "ring-1 ring-(--color-primary)")}
                     onClick={(e) => { e.stopPropagation(); onApptClick(a.id); }}
                   >
-                    <span className="font-mono text-[10px] tabular-nums">
+                    <span className={S.apptMonoTime}>
                       {toTimeStr(a.startAt)}
                     </span>
                     <span className="truncate">{patientMap.get(a.patientId)?.name ?? "—"}</span>
@@ -954,9 +954,9 @@ function AppointmentDetailSheet({
           <div className={S.shTitleBlock}>
             <span className={S.shEyebrow}>{editing ? "Editar agendamento" : "Agendamento"}</span>
             {!editing && (
-              <div className="flex items-center gap-2">
+              <div className={S.shStatusRow}>
                 <span className={S.statusBadge({ status })}>
-                  <span className="size-1.5 rounded-full bg-current" />
+                  <span className={S.statusDot} />
                   {STATUS_LABELS[status]}
                 </span>
               </div>
@@ -964,7 +964,7 @@ function AppointmentDetailSheet({
           </div>
           <button
             onClick={onClose}
-            className="flex size-7 items-center justify-center rounded-[6px] text-(--color-text-tertiary) hover:bg-(--color-bg-surface)"
+            className={S.shCloseBtn}
           >
             <X className="size-4" />
           </button>
@@ -1321,7 +1321,7 @@ function NewAppointmentSheet({
           </div>
           <button
             onClick={onClose}
-            className="flex size-7 items-center justify-center rounded-[6px] text-(--color-text-tertiary) hover:bg-(--color-bg-surface)"
+            className={S.shCloseBtn}
           >
             <X className="size-4" />
           </button>
@@ -1356,7 +1356,7 @@ function NewAppointmentSheet({
             ) : (
               <div className={S.searchWrap}>
                 <div className={S.searchBox({ error: !!errors.patient })}>
-                  <Search className="size-3.5 shrink-0 text-(--color-text-tertiary)" />
+                  <Search className={S.searchIcon} />
                   <input
                     ref={inputRef}
                     className={S.searchInput}
@@ -1470,7 +1470,7 @@ function NewAppointmentSheet({
           {/* Conflict warning */}
           {conflict && (
             <div className={S.conflictBanner}>
-              <AlertTriangle className="mt-0.5 size-4 shrink-0 text-(--color-warning)" />
+              <AlertTriangle className={S.conflictIcon} />
               <div>
                 <p className={S.conflictTitle}>Conflito de horário</p>
                 <p className={S.conflictDesc}>
@@ -1638,7 +1638,7 @@ export function AgendaPage() {
           <Button variant="outline" size="sm" onClick={goToday}>
             Hoje
           </Button>
-          <div className="flex items-center gap-0.5">
+          <div className={S.arrowBtnRow}>
             <button className={S.agArrowBtn} onClick={goPrev} aria-label="Anterior">
               <ChevronLeft className="size-3.5" />
             </button>
@@ -1684,9 +1684,9 @@ export function AgendaPage() {
         {/* Main view */}
         <div className={S.agBody}>
           {apptQuery.isLoading ? (
-            <div className="flex flex-col gap-2 p-6">
+            <div className={S.skeletonRoot}>
               {Array.from({ length: 8 }).map((_, i) => (
-                <Skeleton key={i} className="h-12 w-full rounded-(--radius-card-sm)" />
+                <Skeleton key={i} className={S.skeletonDayCard} />
               ))}
             </div>
           ) : (

@@ -404,7 +404,7 @@ export function NewEvolutionPage() {
     return (
       <div className={S.page.errorState}>
         <p className="text-sm">Paciente não encontrado ou erro ao carregar.</p>
-        <Link to="/patients" className="text-sm text-(--color-primary-text) underline">
+        <Link to="/patients" className={S.page.errorLink}>
           Voltar para pacientes
         </Link>
       </div>
@@ -416,16 +416,16 @@ export function NewEvolutionPage() {
 
 function PageSkeleton() {
   return (
-    <div className="flex flex-col gap-[18px] p-6">
+    <div className={S.skeleton.root}>
       <Skeleton className="h-4 w-64" />
       <Skeleton className="h-8 w-48" />
-      <Skeleton className="h-[60px] rounded-(--radius-card)" />
-      <div className="grid grid-cols-[200px_1fr] gap-7">
-        <div className="flex flex-col gap-2">
-          {[...Array(5)].map((_, i) => <Skeleton key={i} className="h-9 rounded-[8px]" />)}
+      <Skeleton className={S.skeleton.patientCard} />
+      <div className={S.skeleton.grid}>
+        <div className={S.skeleton.navStack}>
+          {[...Array(5)].map((_, i) => <Skeleton key={i} className={S.skeleton.navItem} />)}
         </div>
-        <div className="flex flex-col gap-[18px]">
-          {[...Array(3)].map((_, i) => <Skeleton key={i} className="h-[160px] rounded-[12px]" />)}
+        <div className={S.skeleton.contentStack}>
+          {[...Array(3)].map((_, i) => <Skeleton key={i} className={S.skeleton.contentSection} />)}
         </div>
       </div>
     </div>
@@ -611,7 +611,7 @@ function NewEvolutionForm({ patient }: { patient: Patient }) {
             <div className={S.patientCard.meta}>
               {age !== null && <span>{age} anos</span>}
               {age !== null && " · "}
-              <span className="font-mono tabular-nums">{patient.documentId}</span>
+              <span className={S.monoDate}>{patient.documentId}</span>
             </div>
           </div>
         </div>
@@ -701,7 +701,7 @@ function NewEvolutionForm({ patient }: { patient: Patient }) {
                 <button
                   type="button"
                   onClick={() => setShowPrevVitals((v) => !v)}
-                  className="inline-flex cursor-pointer items-center gap-1 border-0 bg-transparent text-[12px] text-(--color-text-secondary) hover:text-(--color-primary-text)"
+                  className={S.vitals.prevToggle}
                 >
                   {showPrevVitals ? <ChevronUp className="size-[13px]" /> : <ChevronDown className="size-[13px]" />}
                   Vitais anteriores
@@ -715,7 +715,7 @@ function NewEvolutionForm({ patient }: { patient: Patient }) {
                   <History className="size-[12px]" />
                   <span>Última evolução registrada</span>
                 </div>
-                <p className="text-[12px] italic text-(--color-text-tertiary)">Nenhum vital anterior disponível</p>
+                <p className={S.vitals.prevEmpty}>Nenhum vital anterior disponível</p>
               </div>
             )}
 
@@ -957,7 +957,7 @@ function NewEvolutionForm({ patient }: { patient: Patient }) {
                     <span className={S.upload.icon}>
                       {f.name.endsWith(".pdf") ? <FileText className="size-4" /> : <FileText className="size-4" />}
                     </span>
-                    <div className="min-w-0 flex-1">
+                    <div className={S.upload.body}>
                       <div className={S.upload.name}>{f.name}</div>
                       <div className={S.upload.size}>{f.size}</div>
                     </div>

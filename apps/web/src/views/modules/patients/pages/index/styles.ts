@@ -9,6 +9,8 @@ export const toolbar = {
   searchInput: cn('flex-1 bg-transparent text-sm-body text-(--color-text-primary) placeholder:text-(--color-text-tertiary) focus:outline-none'),
   searchKbd: cn('shrink-0 rounded-[4px] border border-(--color-border) px-1.5 py-0.5 font-mono text-2xs text-(--color-text-tertiary)'),
   clearBtn: cn('rounded-[6px] px-2 py-1.5 text-sm text-(--color-primary-text) transition-colors duration-(--duration-fast) ease-out hover:bg-(--color-primary-surface)'),
+  clearIcon: cn('mr-1 inline size-3.5'),
+  searchIcon: cn('size-4 shrink-0 text-(--color-text-tertiary)'),
   count: cn('font-mono text-sm tabular-nums text-(--color-text-tertiary)'),
 };
 
@@ -34,6 +36,13 @@ export const tableRow = {
   insuranceEmpty: cn('text-xs text-(--color-text-tertiary)'),
   actionWrapper: cn('relative flex justify-end'),
   actionBtn: cn('flex size-8 items-center justify-center rounded-[8px] text-(--color-text-tertiary) transition-all duration-(--duration-fast) ease-out hover:bg-(--color-bg-card) hover:text-(--color-text-primary)'),
+  dangerItem: cn('text-(--color-danger) hover:bg-(--color-danger-surface) focus:bg-(--color-danger-surface)'),
+  skeletonRoot: cn('grid items-center gap-4 border-b border-(--color-border) px-[18px] py-[14px] last:border-b-0'),
+  skeletonNameCell: cn('flex items-center gap-3'),
+  skeletonAvatar: cn('size-8 shrink-0 rounded-full'),
+  skeletonStatusBadge: cn('h-5 w-20 rounded-full'),
+  skeletonBadgeSm: cn('h-5 w-6 rounded-full'),
+  skeletonActionBtn: cn('ml-auto size-7 rounded-[8px]'),
 };
 
 export const patientCard = {
@@ -53,7 +62,12 @@ export const skeletonCard = {
   top: cn('flex items-center gap-3'),
   nameBlock: cn('flex-1 space-y-1.5'),
   details: cn('space-y-2'),
+  avatar: cn('size-10 shrink-0 rounded-full'),
 };
+
+export const statsGrid = cn('mb-6 grid grid-cols-3 gap-3');
+
+export const statsDelta = cn('font-medium text-(--color-success)');
 
 export const cardsGrid = cn('grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-3');
 

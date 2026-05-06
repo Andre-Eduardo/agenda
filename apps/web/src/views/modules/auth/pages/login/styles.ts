@@ -14,6 +14,7 @@ export const leftPanel = {
   subtitle: cn('mb-6 leading-relaxed text-sm text-(--color-text-secondary)'),
   footer: cn('flex items-center justify-between border-t border-(--color-border) pt-3.5 text-2xs text-(--color-text-tertiary)'),
   footerLeft: cn('flex items-center gap-1.5'),
+  version: cn('font-mono'),
 };
 
 export const form = cn('flex flex-col gap-3.5');
@@ -29,6 +30,8 @@ export const field = {
   rememberText: cn('text-xs text-(--color-text-secondary)'),
   checkbox: cn('h-3.5 w-3.5 cursor-pointer rounded-[3px] border border-(--color-border) accent-(--color-primary)'),
   submitBtn: cn('mt-1 w-full bg-(--color-primary) text-sm font-medium hover:bg-(--color-primary-hover)'),
+  passwordHeader: cn('mb-1.5 flex justify-between'),
+  inputWrap: cn('relative'),
 };
 
 export const usernameInput = cva('pl-9 text-sm', {
@@ -47,4 +50,5 @@ export const rightPanel = {
   title: cn('mb-2 text-xl font-medium leading-snug tracking-tight text-(--color-bg-page)'),
   highlight: cn('text-(--color-ai-text)'),
   description: cn('text-xs leading-relaxed text-(--color-text-tertiary)'),
+  art: cn('absolute inset-0 h-full w-full'),
 };

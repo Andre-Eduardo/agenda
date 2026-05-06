@@ -178,7 +178,7 @@ function PatientTableRow({
               Agendar consulta
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem className="text-(--color-danger) hover:bg-(--color-danger-surface) focus:bg-(--color-danger-surface)">
+            <DropdownMenuItem className={S.tableRow.dangerItem}>
               <Archive className="size-3.5" />
               Arquivar paciente
             </DropdownMenuItem>
@@ -192,11 +192,11 @@ function PatientTableRow({
 function SkeletonTableRow() {
   return (
     <div
-      className="grid items-center gap-4 border-b border-(--color-border) px-[18px] py-[14px] last:border-b-0"
+      className={S.tableRow.skeletonRoot}
       style={{ gridTemplateColumns: TABLE_COLS }}
     >
-      <div className="flex items-center gap-3">
-        <Skeleton className="size-8 shrink-0 rounded-full" />
+      <div className={S.tableRow.skeletonNameCell}>
+        <Skeleton className={S.tableRow.skeletonAvatar} />
         <div className="flex-1 space-y-1.5">
           <Skeleton className="h-3.5 w-32" />
           <Skeleton className="h-3 w-24" />
@@ -204,9 +204,9 @@ function SkeletonTableRow() {
       </div>
       <Skeleton className="h-4 w-8" />
       <Skeleton className="h-4 w-28" />
-      <Skeleton className="h-5 w-20 rounded-full" />
-      <Skeleton className="h-5 w-6 rounded-full" />
-      <Skeleton className="ml-auto size-7 rounded-[8px]" />
+      <Skeleton className={S.tableRow.skeletonStatusBadge} />
+      <Skeleton className={S.tableRow.skeletonBadgeSm} />
+      <Skeleton className={S.tableRow.skeletonActionBtn} />
     </div>
   );
 }
@@ -244,7 +244,7 @@ function SkeletonCard() {
   return (
     <div className={S.skeletonCard.root}>
       <div className={S.skeletonCard.top}>
-        <Skeleton className="size-10 shrink-0 rounded-full" />
+        <Skeleton className={S.skeletonCard.avatar} />
         <div className={S.skeletonCard.nameBlock}>
           <Skeleton className="h-4 w-36" />
           <Skeleton className="h-3 w-28" />
@@ -442,13 +442,13 @@ export function PatientsPage() {
       }
     >
       {/* Stats */}
-      <div className="mb-6 grid grid-cols-3 gap-3">
+      <div className={S.statsGrid}>
         <StatTile
           label="Total de pacientes"
           value={totalAll}
           delta={
             <span>
-              <span className="font-medium text-(--color-success)">+4</span> nos últimos 30 dias
+              <span className={S.statsDelta}>+4</span> nos últimos 30 dias
             </span>
           }
           loading={statsQuery.isLoading}
@@ -476,7 +476,7 @@ export function PatientsPage() {
       <div className={S.toolbar.root}>
         {/* Search */}
         <div className={S.toolbar.search}>
-          <Search className="size-4 shrink-0 text-(--color-text-tertiary)" strokeWidth={1.5} />
+          <Search className={S.toolbar.searchIcon} strokeWidth={1.5} />
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
@@ -505,7 +505,7 @@ export function PatientsPage() {
 
         {hasFilters && (
           <button className={S.toolbar.clearBtn} onClick={clearFilters}>
-            <X className="mr-1 inline size-3.5" />
+            <X className={S.toolbar.clearIcon} />
             Limpar filtros
           </button>
         )}

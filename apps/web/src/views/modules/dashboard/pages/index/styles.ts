@@ -176,5 +176,24 @@ export const upInfo = cn('flex-1 min-w-0');
 export const upName = cn('text-sm font-medium text-(--color-text-primary) truncate');
 export const upType = cn('text-[11px] text-(--color-text-secondary) mt-0.5 truncate');
 
+export const agentLabel = cn('text-(--color-text-secondary)');
+export const skeletonGreeting = cn('h-7 w-48 mb-1');
+export const skeletonStatValue = cn('h-6 w-8 mb-1');
+export const skeletonListCol = cn('flex flex-col gap-4');
+export const skeletonListRow = cn('flex items-start gap-3');
+export const skeletonApptCol = cn('flex flex-col gap-3');
+export const skeletonApptRow = cn('flex items-center gap-3');
+export const skeletonAvatar = cn('h-8 w-8 rounded-full shrink-0');
+export const skeletonNameMd = cn('h-3.5 w-32 mb-1.5');
+export const skeletonNameSm = cn('h-3.5 w-28 mb-1.5');
+export const skeletonStatusBadge = cn('h-5 w-20 rounded-full');
+export const patientInitialsAvatar = cn(
+  'flex h-8 w-8 shrink-0 items-center justify-center rounded-full',
+  'bg-(--color-text-tertiary)/15 text-[11px] font-medium text-(--color-text-secondary)',
+);
+export const upChevron = cn('text-(--color-text-tertiary) shrink-0');
+export const evolDate = cn('font-mono tabular-nums');
+export const apptStartBtn = cn('shrink-0 gap-1.5');;
+
 // Skeleton loader
 export const skeletonRow = cn('flex items-center gap-3 py-3.5');

@@ -17,6 +17,7 @@ export const actionTile = {
   label: cn('text-[14px] font-medium leading-[1.3] text-(--color-text-primary)'),
   sub: cn('mt-[3px] text-[12px] leading-[1.4] text-(--color-text-secondary)'),
   chevron: cn('size-[14px] shrink-0 text-(--color-text-tertiary)'),
+  body: cn('min-w-0 flex-1'),
 };
 
 // Info group section divider
@@ -93,7 +94,27 @@ export const skeleton = {
   headerLeft: cn('flex items-center gap-[18px]'),
   headerRight: cn('flex gap-2'),
   actionGrid: cn('grid grid-cols-4 gap-[10px]'),
+  headerAvatar: cn('size-12 rounded-full'),
+  nameStack: cn('flex flex-col gap-2'),
+  actionCard: cn('h-[82px] rounded-[12px]'),
+  recordCard: cn('h-[160px] rounded-(--radius-card)'),
+  listStack: cn('flex flex-col gap-3'),
+  formItem: cn('h-14 w-full rounded-[10px]'),
 };
 
 // Two-column layout
 export const twoCol = cn('grid grid-cols-2 gap-[14px] max-[1100px]:grid-cols-1');
+
+// Stats summary row
+export const statsGrid = cn('grid grid-cols-4 gap-3');
+
+// Alert badge className override
+export const alertBadge = cn('rounded-(--radius-badge) px-2 py-[3px] text-xs gap-[5px]');
+
+// Danger dropdown item
+export const dangerItem = cn('text-(--color-danger) hover:bg-(--color-danger-surface) focus:bg-(--color-danger-surface)');
+
+// Mono tertiary metadata
+export const monoTertiary = cn('font-mono tabular-nums text-(--color-text-tertiary)');
+export const monoDate = cn('font-mono tabular-nums');
+export const secLinkBtn = cn('h-auto p-0 text-xs');

@@ -9,7 +9,10 @@ export const statTile = {
   label: cn('text-sm leading-[1.4] text-(--color-text-secondary)'),
   value: cn('mt-1 font-mono text-xl font-medium leading-[1.2] tabular-nums text-(--color-text-primary)'),
   delta: cn('mt-0.5 text-xs leading-[1.4] text-(--color-success)'),
+  skeleton: cn('mt-1 h-7 w-14'),
 };
+
+export const clinicalBadgeDot = cn('text-[8px] leading-none');
 
 export const clinicalBadge = cva(
   'inline-flex items-center gap-1 rounded-(--radius-badge) px-[10px] py-1 text-xs font-medium',
@@ -43,4 +46,5 @@ export const appointment = {
   time: cn('mt-[2px] font-mono text-xs leading-[1.4] tabular-nums text-(--color-text-secondary)'),
   badgeRow: cn('flex flex-wrap gap-1.5'),
   actionRow: cn('flex gap-2 mt-1'),
+  skeletonStack: cn('flex flex-col gap-2'),
 };

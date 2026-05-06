@@ -229,7 +229,7 @@ function SectionCard({
 
 function SecLink({ children, onClick }: { children: ReactNode; onClick?: () => void }) {
   return (
-    <Button variant="link" size="sm" onClick={onClick} className="h-auto p-0 text-xs">
+    <Button variant="link" size="sm" onClick={onClick} className={S.secLinkBtn}>
       {children}
     </Button>
   );
@@ -268,7 +268,7 @@ function ActionTile({
       <span className={cn(S.actionTile.iconBase, ai ? S.actionTile.iconAI : S.actionTile.iconDefault)}>
         {icon}
       </span>
-      <div className="min-w-0 flex-1">
+      <div className={S.actionTile.body}>
         <div className={S.actionTile.label}>{label}</div>
         <div className={S.actionTile.sub}>{sub}</div>
       </div>
@@ -281,7 +281,7 @@ function AlertBadge({ alert }: { alert: PatientAlert }) {
   return (
     <Badge
       severity={alert.severity as 'HIGH' | 'MEDIUM' | 'LOW'}
-      className="rounded-(--radius-badge) px-2 py-[3px] text-xs gap-[5px]"
+      className={S.alertBadge}
     >
       <TriangleAlert className="size-[10px]" />
       {alert.title}
@@ -307,7 +307,7 @@ function MoreMenu() {
           Imprimir resumo
         </DropdownMenuItem>
         <DropdownMenuSeparator />
-        <DropdownMenuItem className="text-(--color-danger) hover:bg-(--color-danger-surface) focus:bg-(--color-danger-surface)">
+        <DropdownMenuItem className={S.dangerItem}>
           <Archive />
           Arquivar paciente
         </DropdownMenuItem>
@@ -328,8 +328,8 @@ function DetailSkeleton() {
       <Skeleton className="h-4 w-48" />
       <div className={S.skeleton.headerShell}>
         <div className={S.skeleton.headerLeft}>
-          <Skeleton className="size-12 rounded-full" />
-          <div className="flex flex-col gap-2">
+          <Skeleton className={S.skeleton.headerAvatar} />
+          <div className={S.skeleton.nameStack}>
             <Skeleton className="h-6 w-48" />
             <Skeleton className="h-4 w-72" />
           </div>
@@ -340,9 +340,9 @@ function DetailSkeleton() {
         </div>
       </div>
       <div className={S.skeleton.actionGrid}>
-        {[...Array(4)].map((_, i) => <Skeleton key={i} className="h-[82px] rounded-[12px]" />)}
+        {[...Array(4)].map((_, i) => <Skeleton key={i} className={S.skeleton.actionCard} />)}
       </div>
-      <Skeleton className="h-[160px] rounded-(--radius-card)" />
+      <Skeleton className={S.skeleton.recordCard} />
     </div>
   );
 }
@@ -362,7 +362,7 @@ function RecordsContent({
 
   if (isLoading) {
     return (
-      <div className="flex flex-col gap-3">
+      <div className={S.skeleton.listStack}>
         {[...Array(3)].map((_, i) => <Skeleton key={i} className="h-16 w-full" />)}
       </div>
     );
@@ -434,7 +434,7 @@ function ProfileContent({
 }) {
   if (isLoading) {
     return (
-      <div className="flex flex-col gap-3">
+      <div className={S.skeleton.listStack}>
         {[...Array(3)].map((_, i) => <Skeleton key={i} className="h-10 w-full" />)}
       </div>
     );
@@ -495,8 +495,8 @@ function FormsContent({
 }) {
   if (isLoading) {
     return (
-      <div className="flex flex-col gap-2">
-        {[...Array(2)].map((_, i) => <Skeleton key={i} className="h-14 w-full rounded-[10px]" />)}
+      <div className={S.skeleton.nameStack}>
+        {[...Array(2)].map((_, i) => <Skeleton key={i} className={S.skeleton.formItem} />)}
       </div>
     );
   }
@@ -517,7 +517,7 @@ function FormsContent({
               <div className={S.formItem.title}>Formulário clínico</div>
               <div className={S.formItem.meta}>
                 {dateLabel}{" "}
-                <span className="font-mono tabular-nums">{formatDate(dateField)}</span>
+                <span className={S.monoDate}>{formatDate(dateField)}</span>
                 {" · "}{formStatusLabel(f.status)}
               </div>
             </div>
@@ -669,9 +669,9 @@ function PatientProfile({ patient }: { patient: Patient }) {
           <>
             {age !== null && <span>{age} anos</span>}
             {age !== null && <span className="text-(--color-text-tertiary)">·</span>}
-            <span className="font-mono tabular-nums">nasc. {dob}</span>
+            <span className={S.monoDate}>nasc. {dob}</span>
             <span className="text-(--color-text-tertiary)">·</span>
-            <span className="font-mono tabular-nums">{patient.documentId}</span>
+            <span className={S.monoDate}>{patient.documentId}</span>
             {patient.gender && (
               <>
                 <span className="text-(--color-text-tertiary)">·</span>
@@ -685,7 +685,7 @@ function PatientProfile({ patient }: { patient: Patient }) {
               </>
             )}
             <span className="text-(--color-text-tertiary)">·</span>
-            <span className="font-mono tabular-nums text-(--color-text-tertiary)">
+            <span className={S.monoTertiary}>
               ID {patient.id.slice(0, 8).toUpperCase()}
             </span>
           </>
@@ -725,7 +725,7 @@ function PatientProfile({ patient }: { patient: Patient }) {
       </div>
 
       {/* Resumo clínico */}
-      <div className="grid grid-cols-4 gap-3">
+      <div className={S.statsGrid}>
         <StatTile label="Próxima consulta" value="—" icon={<CalendarClock className="size-4" />} />
         <StatTile
           label="Última consulta"

@@ -92,7 +92,7 @@ export function LoginPage() {
             {/* Username */}
             <div>
               <label className={S.field.label}>{t("auth.login.form.username")}</label>
-              <div className="relative">
+              <div className={S.field.inputWrap}>
                 <Mail size={13} className={S.field.icon} />
                 <Input
                   {...register("username")}
@@ -109,13 +109,13 @@ export function LoginPage() {
 
             {/* Password */}
             <div>
-              <div className="mb-1.5 flex justify-between">
+              <div className={S.field.passwordHeader}>
                 <label className={S.field.labelInline}>{t("auth.login.form.password")}</label>
                 <button type="button" className={S.field.forgotBtn}>
                   {t("auth.login.form.forgotPassword")}
                 </button>
               </div>
-              <div className="relative">
+              <div className={S.field.inputWrap}>
                 <Lock size={13} className={S.field.icon} />
                 <Input
                   {...register("password")}
@@ -155,7 +155,7 @@ export function LoginPage() {
             <ShieldCheck size={11} />
             <span>{t("auth.login.footer.security")}</span>
           </div>
-          <span className="font-mono">v1.0.0</span>
+          <span className={S.leftPanel.version}>v1.0.0</span>
         </div>
       </div>
 
@@ -178,7 +178,7 @@ export function LoginPage() {
 function DecorativeArt() {
   return (
     <svg
-      className="absolute inset-0 h-full w-full"
+      className={S.rightPanel.art}
       viewBox="0 0 480 640"
       preserveAspectRatio="xMidYMid slice"
       aria-hidden="true"

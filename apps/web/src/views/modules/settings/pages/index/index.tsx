@@ -138,7 +138,7 @@ function GeneralSection() {
       <p className={S.pageSub}>Preferências da aplicação, notificações e idioma.</p>
       <div className={cn(S.formCard, 'p-16')}>
         <div className={S.placeholder}>
-          <Sliders size={28} className="text-(--color-text-tertiary)" />
+          <Sliders size={28} className={S.placeholderIcon} />
           <div className={S.placeholderTitle}>Em breve</div>
           <div className={S.placeholderSub}>Configurações gerais serão exibidas aqui.</div>
         </div>
@@ -285,7 +285,7 @@ function ProfileForm() {
 
   return (
     <div>
-      <div className="flex items-end justify-between gap-4 mb-1">
+      <div className={S.profileHeader}>
         <div>
           <h1 className={S.pageTitle}>Perfil do profissional</h1>
           <p className={S.pageSub}>
@@ -320,9 +320,9 @@ function ProfileForm() {
 
         {/* Tab content */}
         {isLoading ? (
-          <div className="p-8 flex flex-col gap-4">
+          <div className={S.skeletonTabContent}>
             <Skeleton className="h-4 w-48" />
-            <div className="grid grid-cols-2 gap-4">
+            <div className={S.skeletonGrid}>
               <Skeleton className="h-10" />
               <Skeleton className="h-10" />
             </div>
@@ -448,7 +448,7 @@ function ProfileForm() {
                     span={8}
                   >
                     <Input
-                      className="font-mono"
+                      className={S.monoInput}
                       placeholder={profDef?.registry === 'CRM' ? 'Ex.: 84321' : 'Número'}
                       value={registryNum}
                       onChange={e => setRegistryNum(e.target.value)}
@@ -476,7 +476,7 @@ function ProfileForm() {
                     <div className={S.aiTitle}>
                       <span className={S.aiBadgeInline}>IA</span>
                       Agente clínico ativo:{' '}
-                      <span className="text-(--color-text-primary) font-medium">
+                      <span className={S.agentName}>
                         {specialty || 'Clínica geral'}
                       </span>
                     </div>
@@ -513,7 +513,7 @@ function ProfileForm() {
                   </Field>
                   <Field label="Telefone de contato" optional span={4}>
                     <Input
-                      className="font-mono"
+                      className={S.monoInput}
                       placeholder="(00) 0000-0000"
                       value={officePhone}
                       onChange={e => setOfficePhone(e.target.value)}
@@ -526,7 +526,7 @@ function ProfileForm() {
                     hint={cepLoading ? 'Buscando endereço…' : 'Preenche os demais campos.'}
                   >
                     <Input
-                      className="font-mono"
+                      className={S.monoInput}
                       placeholder="00000-000"
                       value={officeCep}
                       onChange={e => {
@@ -548,7 +548,7 @@ function ProfileForm() {
                   </Field>
                   <Field label="Número" optional span={3}>
                     <Input
-                      className="font-mono"
+                      className={S.monoInput}
                       placeholder="123"
                       value={officeNumber}
                       onChange={e => setOfficeNumber(e.target.value)}
@@ -609,12 +609,12 @@ function ProfileForm() {
                 {/* Change password */}
                 <div className={S.subSection}>
                   <div className={S.subSectionHead}>
-                    <KeyRound size={14} className="text-(--color-text-secondary)" />
+                    <KeyRound size={14} className={S.subSectionIcon} />
                     Redefinir senha
                   </div>
                   <div className={S.grid}>
                     <Field label="Senha atual" required span={4}>
-                      <div className="relative">
+                      <div className={S.pwdInputWrap}>
                         <Input
                           type={showPwd ? 'text' : 'password'}
                           placeholder="••••••••"
@@ -625,7 +625,7 @@ function ProfileForm() {
                         <button
                           type="button"
                           onClick={() => setShowPwd(v => !v)}
-                          className="absolute right-3 top-1/2 -translate-y-1/2 text-(--color-text-tertiary) hover:text-(--color-text-secondary)"
+                          className={S.pwdRevealBtn}
                           aria-label={showPwd ? 'Ocultar senha' : 'Mostrar senha'}
                         >
                           {showPwd ? '🙈' : '👁'}
@@ -691,7 +691,7 @@ function ProfileForm() {
                 {/* Sessions */}
                 <div className={S.subSection}>
                   <div className={S.subSectionHead}>
-                    <MonitorSmartphone size={14} className="text-(--color-text-secondary)" />
+                    <MonitorSmartphone size={14} className={S.subSectionIcon} />
                     Sessões ativas
                     <span className={S.subSectionTag}>3 sessões</span>
                   </div>
@@ -802,7 +802,7 @@ function SessionRow({
       <div className={S.sessionIcon}>
         <Icon size={17} />
       </div>
-      <div className="flex-1 min-w-0">
+      <div className={S.sessionNameCell}>
         <div className={S.sessionDevice}>
           {device}
           {current && <span className={S.sessionBadge}>Esta sessão</span>}
@@ -811,7 +811,7 @@ function SessionRow({
       </div>
       <div className={S.sessionWhen}>{when}</div>
       {!current && (
-        <Button variant="ghost" size="sm" className="text-(--color-text-tertiary) hover:text-(--color-danger)">
+        <Button variant="ghost" size="sm" className={S.sessionEndBtn}>
           <LogOut size={13} />
           Encerrar
         </Button>

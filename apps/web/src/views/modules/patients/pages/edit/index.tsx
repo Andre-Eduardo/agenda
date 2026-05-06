@@ -121,7 +121,7 @@ function tabHasValues(tab: TabKey, values: Partial<FormValues>): boolean {
 function SectionHead({ num, title, subtitle }: { num: string; title: string; subtitle?: string }) {
   return (
     <div className={S.section.head}>
-      <div className="flex items-start gap-3">
+      <div className={S.section.inner}>
         <span className={S.section.num}>{num}</span>
         <div>
           <h2 className={S.section.title}>{title}</h2>
@@ -141,17 +141,17 @@ export function EditPatientPage() {
 
   if (isLoading) {
     return (
-      <div className="flex flex-col gap-4 p-6">
+      <div className={S.page.skeletonStack}>
         <Skeleton className="h-4 w-48" />
         <Skeleton className="h-8 w-64" />
-        <Skeleton className="h-[400px] rounded-(--radius-card)" />
+        <Skeleton className={S.page.skeletonCard400} />
       </div>
     );
   }
 
   if (isError || !patient) {
     return (
-      <div className="flex flex-col items-center justify-center gap-4 p-12 text-(--color-text-secondary)">
+      <div className={S.page.errorState}>
         <p className="text-sm">Paciente não encontrado.</p>
         <Button variant="outline" size="sm" onClick={() => navigate({ to: "/patients" })}>
           Voltar
@@ -316,7 +316,7 @@ function EditPatientForm({ patient }: { patient: Patient }) {
                   <span className={cn(S.tabNum, tab === t.key && S.tabNumActive, filled && S.tabNumFilled)}>
                     {filled ? <Check className="size-[11px]" strokeWidth={2.5} /> : t.num}
                   </span>
-                  <TabIcon className="hidden size-[14px] sm:block" strokeWidth={1.5} />
+                  <TabIcon className={S.tabIcon} strokeWidth={1.5} />
                   {t.label}
                 </TabsTrigger>
               );
@@ -412,7 +412,7 @@ function EditPatientForm({ patient }: { patient: Patient }) {
               {/* Responsável */}
               <div className={S.subSection.root}>
                 <div className={S.subSection.head}>
-                  <User className="size-3.5 text-(--color-text-secondary)" strokeWidth={1.5} />
+                  <User className={S.subSection.icon} strokeWidth={1.5} />
                   <h3 className={S.subSection.title}>Responsável</h3>
                   <span className={S.subSection.tag}>Opcional</span>
                   <span className={cn(S.subSection.hint, "ml-1")}>
@@ -531,7 +531,7 @@ function EditPatientForm({ patient }: { patient: Patient }) {
               </FormGrid>
 
               <div className={S.infoNote}>
-                <Info className="mt-px size-[14px] shrink-0" strokeWidth={1.5} />
+                <Info className={S.infoNoteIcon} strokeWidth={1.5} />
                 <div>
                   Esses dados são apenas um registro inicial. A{" "}
                   <strong>anamnese completa</strong>, prescrições e evoluções (SOAP) são

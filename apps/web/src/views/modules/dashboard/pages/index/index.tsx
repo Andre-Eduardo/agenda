@@ -169,7 +169,7 @@ export function DashboardPage() {
       <div className={S.header}>
         <div>
           {isLoading ? (
-            <Skeleton className="h-7 w-48 mb-1" />
+            <Skeleton className={S.skeletonGreeting} />
           ) : (
             <h1 className={S.greeting}>{greeting()}, {firstName}</h1>
           )}
@@ -177,7 +177,7 @@ export function DashboardPage() {
         </div>
         <div className={S.agentBadge}>
           <span className={S.agentDot} />
-          <span className="text-(--color-text-secondary)">Agente IA ativo</span>
+          <span className={S.agentLabel}>Agente IA ativo</span>
           <Sparkles size={12} />
         </div>
       </div>
@@ -246,12 +246,12 @@ export function DashboardPage() {
             </div>
             <div className={S.sectionBody}>
               {recentQuery.isLoading ? (
-                <div className="flex flex-col gap-4">
+                <div className={S.skeletonListCol}>
                   {Array.from({ length: 3 }).map((_, i) => (
-                    <div key={i} className="flex items-start gap-3">
-                      <Skeleton className="h-8 w-8 rounded-full shrink-0" />
+                    <div key={i} className={S.skeletonListRow}>
+                      <Skeleton className={S.skeletonAvatar} />
                       <div className="flex-1">
-                        <Skeleton className="h-3.5 w-32 mb-1.5" />
+                        <Skeleton className={S.skeletonNameMd} />
                         <Skeleton className="h-3 w-full" />
                       </div>
                     </div>
@@ -375,7 +375,7 @@ function StatCard({
       </div>
       <div>
         {loading ? (
-          <Skeleton className="h-6 w-8 mb-1" />
+          <Skeleton className={S.skeletonStatValue} />
         ) : (
           <div className={S.statValue}>{value}</div>
         )}
@@ -401,7 +401,7 @@ function ApptRow({ apt }: { apt: Appointment }) {
 
       {/* Patient placeholder (no patient enrichment here) */}
       <div className={S.apptPatBtn}>
-        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-(--color-text-tertiary)/15 text-[11px] font-medium text-(--color-text-secondary)">
+        <div className={S.patientInitialsAvatar}>
           —
         </div>
         <div className="min-w-0">
@@ -420,7 +420,7 @@ function ApptRow({ apt }: { apt: Appointment }) {
 
       {/* Action */}
       {isActive && (
-        <Button size="sm" variant="outline" className="shrink-0 gap-1.5">
+        <Button size="sm" variant="outline" className={S.apptStartBtn}>
           <Stethoscope size={12} />
           Iniciar
         </Button>
@@ -446,12 +446,12 @@ function RecentRecordRow({ record }: { record: ClinicalRecord }) {
 
   return (
     <div className={S.evolRow}>
-      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-(--color-text-tertiary)/15 text-[11px] font-medium text-(--color-text-secondary)">
+      <div className={S.patientInitialsAvatar}>
         P
       </div>
       <div className={S.evolBody}>
         <div className={S.evolMeta}>
-          {dateLabel && <span className="font-mono tabular-nums">{dateLabel}</span>}
+          {dateLabel && <span className={S.evolDate}>{dateLabel}</span>}
           {record.attendanceType && (
             <>
               <span>·</span>
@@ -486,7 +486,7 @@ function UpcomingRow({ apt }: { apt: Appointment }) {
         <div className={S.upName}>Paciente</div>
         <div className={S.upType}>{TYPE_LABELS[apt.type] ?? apt.type}</div>
       </div>
-      <ChevronRight size={14} className="text-(--color-text-tertiary) shrink-0" />
+      <ChevronRight size={14} className={S.upChevron} />
     </div>
   );
 }
@@ -515,16 +515,16 @@ function QuickAction({
 
 function AppointmentSkeleton({ rows, compact }: { rows: number; compact?: boolean }) {
   return (
-    <div className="flex flex-col gap-3">
+    <div className={S.skeletonApptCol}>
       {Array.from({ length: rows }).map((_, i) => (
-        <div key={i} className="flex items-center gap-3">
+        <div key={i} className={S.skeletonApptRow}>
           {!compact && <Skeleton className="h-9 w-12" />}
-          <Skeleton className="h-8 w-8 rounded-full shrink-0" />
+          <Skeleton className={S.skeletonAvatar} />
           <div className="flex-1">
-            <Skeleton className="h-3.5 w-28 mb-1.5" />
+            <Skeleton className={S.skeletonNameSm} />
             <Skeleton className="h-3 w-20" />
           </div>
-          <Skeleton className="h-5 w-20 rounded-full" />
+          <Skeleton className={S.skeletonStatusBadge} />
         </div>
       ))}
     </div>

@@ -68,6 +68,15 @@ export const tabNum = cva(
   },
 );
 
+export const placeholderIcon = cn('text-(--color-text-tertiary)');
+export const profileHeader = cn('flex items-end justify-between gap-4 mb-1');
+export const skeletonTabContent = cn('p-8 flex flex-col gap-4');
+export const skeletonGrid = cn('grid grid-cols-2 gap-4');
+export const agentName = cn('text-(--color-text-primary) font-medium');
+export const subSectionIcon = cn('text-(--color-text-secondary)');
+export const pwdRevealBtn = cn('absolute right-3 top-1/2 -translate-y-1/2 text-(--color-text-tertiary) hover:text-(--color-text-secondary)');
+export const sessionEndBtn = cn('text-(--color-text-tertiary) hover:text-(--color-danger)');
+
 // Form sections inside the card
 export const formSection = cn('p-6');
 export const sectionHead = cn('flex items-start gap-3 mb-5');
@@ -188,3 +197,6 @@ export const footerActions = cn('flex items-center gap-2');
 export const placeholder = cn('flex flex-col items-center gap-3 py-16 text-center');
 export const placeholderTitle = cn('text-sm font-medium text-(--color-text-primary)');
 export const placeholderSub = cn('text-xs text-(--color-text-secondary)');
+export const monoInput = cn('font-mono');
+export const pwdInputWrap = cn('relative');
+export const sessionNameCell = cn('flex-1 min-w-0');

@@ -25,6 +25,7 @@ export const header = {
   ),
   patName: cn('text-[13px] font-medium text-(--color-text-primary)'),
   patMeta: cn('mt-[2px] text-[11px] text-(--color-text-tertiary)'),
+  patBody: cn('min-w-0 flex-1'),
   actions: cn('flex gap-2'),
 };
 
@@ -103,6 +104,26 @@ export const trace = {
   ),
 };
 
+// Skeleton shell
+export const skeleton = {
+  root: cn('flex flex-col gap-[18px] px-6 pt-6 pb-[60px]'),
+  headerCard: cn('h-[120px] rounded-[14px]'),
+  bodyCard: cn('h-[200px] rounded-[12px]'),
+  sectionCard: cn('h-[160px] rounded-[12px]'),
+};
+
+// Badge overrides
+export const badgeStatus = cn('gap-[6px] rounded-full px-[10px] py-1 text-[12px]');
+export const badgeConduct = cn('rounded-full bg-(--color-bg-surface) px-[10px] py-1 text-[12px] font-medium text-(--color-text-secondary)');
+export const badgeOrigin = cn('gap-[6px] rounded-full px-[11px] py-[5px] text-[12px]');
+
+// Signature status chips
+export const signedBadge = cn('inline-flex items-center gap-[6px] rounded-full border border-(--color-success) bg-(--color-success-surface) px-[10px] py-1 text-[12px] font-medium text-(--color-success)');
+export const draftBadge = cn('inline-flex items-center gap-[6px] rounded-full border border-(--color-border) bg-(--color-bg-surface) px-[10px] py-1 text-[12px] font-medium text-(--color-text-secondary)');
+
+// Nav chevron icon
+export const chevronIcon = cn('size-[14px] shrink-0 text-(--color-text-tertiary)');
+
 export const nav = {
   root: cn('mt-6 grid grid-cols-[1fr_auto_1fr] items-stretch gap-[14px] rounded-[12px] border border-(--color-border) bg-(--color-bg-card) p-[14px]'),
   btn: cn(
@@ -117,6 +138,7 @@ export const nav = {
   stack: cn('flex flex-col gap-[2px]'),
   label: cn('text-[13px] font-medium leading-[1.3]'),
   sub: cn('text-[11px] leading-[1.3] text-(--color-text-tertiary)'),
+  chevron: cn('size-[14px] shrink-0'),
   center: cn(
     'inline-flex cursor-pointer items-center whitespace-nowrap rounded-[8px]',
     'border-0 bg-transparent px-[18px] py-[10px]',
@@ -124,3 +146,5 @@ export const nav = {
     'transition-colors hover:bg-(--color-bg-surface) hover:text-(--color-primary-text)',
   ),
 };
+export const traceShieldIcon = cn('size-4 text-(--color-primary)');
+export const statusDot = cn('size-[6px] rounded-full bg-current');

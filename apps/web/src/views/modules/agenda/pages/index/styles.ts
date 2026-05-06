@@ -490,6 +490,16 @@ export const conflictBanner = cn(
 export const conflictTitle = cn('text-xs font-medium text-(--color-warning)');
 export const conflictDesc = cn('mt-0.5 text-xs text-(--color-text-secondary)');
 
+// ── Misc ───────────────────────────────────────────────────────────────────
+
+export const shCloseBtn = cn('flex size-7 items-center justify-center rounded-[6px] text-(--color-text-tertiary) hover:bg-(--color-bg-surface)');
+export const apptTimeLabel = cn('shrink-0 text-[10px] text-(--color-text-tertiary)');
+export const apptMonoTime = cn('font-mono text-[10px] tabular-nums');
+export const statusDot = cn('size-1.5 rounded-full bg-current');
+export const searchIcon = cn('size-3.5 shrink-0 text-(--color-text-tertiary)');
+export const conflictIcon = cn('mt-0.5 size-4 shrink-0 text-(--color-warning)');
+export const skeletonRoot = cn('flex flex-col gap-2 p-6');
+
 // ── Cancel confirm modal ───────────────────────────────────────────────────
 
 export const modalOverlay = cn('fixed inset-0 z-[60] flex items-center justify-center bg-black/40');
@@ -504,3 +514,6 @@ export const modalIcon = cn(
 export const modalTitle = cn('text-sm font-medium text-(--color-text-primary)');
 export const modalDesc = cn('mt-0.5 text-xs text-(--color-text-secondary)');
 export const modalActions = cn('mt-4 flex items-center justify-end gap-2');
+export const shStatusRow = cn('flex items-center gap-2');
+export const arrowBtnRow = cn('flex items-center gap-0.5');
+export const skeletonDayCard = cn('h-12 w-full rounded-(--radius-card-sm)');

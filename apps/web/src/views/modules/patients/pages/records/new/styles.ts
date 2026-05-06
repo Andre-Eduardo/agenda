@@ -5,6 +5,17 @@ export const page = {
   root: cn('flex flex-col pb-[80px] bg-(--color-bg-page)'),
   top: cn('px-6 pt-6'),
   errorState: cn('flex flex-col items-center justify-center gap-4 p-12 text-(--color-text-secondary)'),
+  errorLink: cn('text-sm text-(--color-primary-text) underline'),
+};
+
+export const skeleton = {
+  root: cn('flex flex-col gap-[18px] p-6'),
+  grid: cn('grid grid-cols-[200px_1fr] gap-7'),
+  patientCard: cn('h-[60px] rounded-(--radius-card)'),
+  navStack: cn('flex flex-col gap-2'),
+  navItem: cn('h-9 rounded-[8px]'),
+  contentStack: cn('flex flex-col gap-[18px]'),
+  contentSection: cn('h-[160px] rounded-[12px]'),
 };
 
 export const patientCard = {
@@ -53,6 +64,8 @@ export const vitals = {
   paSep: cn('font-mono text-[15px] text-(--color-text-tertiary)'),
   warn: cn('mt-1 flex items-center gap-1 text-[11px] text-(--color-warning)'),
   prevBox: cn('mb-3 rounded-[8px] border border-(--color-border) bg-(--color-bg-surface) p-3'),
+  prevToggle: cn('inline-flex cursor-pointer items-center gap-1 border-0 bg-transparent text-[12px] text-(--color-text-secondary) hover:text-(--color-primary-text)'),
+  prevEmpty: cn('text-[12px] italic text-(--color-text-tertiary)'),
   prevHead: cn('mb-[10px] flex items-center gap-[6px] text-[12px] text-(--color-text-tertiary)'),
   prevGrid: cn('grid grid-cols-6 gap-3'),
   prevLabel: cn('text-[11px] uppercase tracking-[0.04em] text-(--color-text-tertiary)'),
@@ -131,6 +144,7 @@ export const upload = {
   name: cn('min-w-0 flex-1 truncate text-[13px] text-(--color-text-primary)'),
   size: cn('text-[11px] text-(--color-text-tertiary)'),
   remove: cn('flex size-7 cursor-pointer items-center justify-center rounded-[6px] border-0 bg-transparent text-(--color-text-tertiary) transition-colors hover:bg-(--color-bg-card) hover:text-(--color-danger)'),
+  body: cn('min-w-0 flex-1'),
 };
 
 export const footer = {
@@ -160,3 +174,4 @@ export const modal = {
   chip: cn('inline-flex items-center gap-1 rounded-(--radius-badge) bg-(--color-primary-surface) px-[6px] py-[2px] text-[11px] font-medium text-(--color-primary-text)'),
   actions: cn('mt-4 flex items-center justify-end gap-3'),
 };
+export const monoDate = cn('font-mono tabular-nums');
