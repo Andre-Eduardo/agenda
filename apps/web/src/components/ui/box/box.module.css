@@ -1,0 +1,29 @@
+/*
+ * box.module.css — exemplo mínimo do padrão CSS Modules + @apply + nesting.
+ *
+ * O Box em si não tem estilos por padrão.
+ * Este arquivo documenta como ESTENDER o Box em componentes filhos.
+ *
+ * Padrão de uso:
+ *
+ *   .root {
+ *     @apply rounded-(--radius-card) border border-(--color-border) bg-(--color-bg-card) p-4;
+ *
+ *     & .header {
+ *       @apply flex items-center gap-2 font-medium text-(--color-text-primary);
+ *     }
+ *
+ *     &:hover {
+ *       @apply border-(--color-border-hover);
+ *     }
+ *   }
+ *
+ * No componente:
+ *   import { clsx } from 'clsx';
+ *   import styles from './card.module.css';
+ *   <Box className={clsx(styles.root, isActive && styles.active)} />
+ *
+ * Para misturar com classes utilitárias dinâmicas de runtime:
+ *   import { cn } from '@/lib/utils';
+ *   <Box className={cn(styles.root, 'mt-4')} />
+ */
