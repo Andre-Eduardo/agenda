@@ -38,8 +38,8 @@ import {
   CheckCircle2,
   Phone,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/componentes/button";
+import { Skeleton } from "@/components/ui/componentes/skeleton";
 import { useAppStore } from "@/store/appStore";
 import { cn } from "@/lib/utils";
 import * as S from "./styles";

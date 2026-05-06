@@ -29,17 +29,17 @@ import {
   UserRound,
 } from 'lucide-react';
 import { toast } from 'sonner';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { Button } from '@/components/ui/componentes/button';
+import { Input } from '@/components/ui/componentes/input';
+import { Label } from '@/components/ui/componentes/label';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import { Skeleton } from '@/components/ui/skeleton';
+} from '@/components/ui/componentes/select';
+import { Skeleton } from '@/components/ui/componentes/skeleton';
 import { cn } from '@/lib/utils';
 import * as S from './styles';
 

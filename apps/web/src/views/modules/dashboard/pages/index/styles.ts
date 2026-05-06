@@ -10,10 +10,10 @@ export const greeting = cn('text-[22px] font-medium text-(--color-text-primary) 
 export const dateLabel = cn('text-sm text-(--color-text-secondary) mt-0.5');
 export const agentBadge = cn(
   'flex items-center gap-2 px-3 py-1.5 rounded-(--radius-card)',
-  'border border-(--color-ai-border) bg-(--color-ai-surface)',
+  'border border-(--color-ai-border) bg-(--color-ai-bg)',
   'text-xs text-(--color-ai-text)',
 );
-export const agentDot = cn('w-1.5 h-1.5 rounded-full bg-(--color-ai-accent)');
+export const agentDot = cn('w-1.5 h-1.5 rounded-full bg-(--color-ai-badge-bg)');
 
 // Alerts bar
 export const alertsBar = cn(
@@ -145,7 +145,7 @@ export const evolName = cn(
 export const evolExcerpt = cn('text-xs text-(--color-text-secondary) mt-1 line-clamp-2 leading-relaxed');
 export const aiBadge = cn(
   'inline-flex items-center gap-1 px-1.5 py-0.5 rounded-[4px]',
-  'bg-(--color-ai-surface) text-(--color-ai-text) text-[10px]',
+  'bg-(--color-ai-bg) text-(--color-ai-text) text-[10px]',
 );
 
 // Quick actions

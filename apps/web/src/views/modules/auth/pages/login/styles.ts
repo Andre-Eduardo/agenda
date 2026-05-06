@@ -42,9 +42,9 @@ export const passwordInput = cva('pl-9 pr-10 text-sm', {
 });
 
 export const rightPanel = {
-  root: cn('relative hidden overflow-hidden bg-[#0F172A] lg:block'),
+  root: cn('relative hidden overflow-hidden bg-(--color-text-primary) lg:block'),
   overlay: cn('absolute inset-0 z-10 flex flex-col justify-end p-10'),
-  title: cn('mb-2 text-xl font-medium leading-snug tracking-tight text-[#F8FAFC]'),
-  highlight: cn('text-[#5EEAD4]'),
-  description: cn('text-xs leading-relaxed text-[#94A3B8]'),
+  title: cn('mb-2 text-xl font-medium leading-snug tracking-tight text-(--color-bg-page)'),
+  highlight: cn('text-(--color-ai-text)'),
+  description: cn('text-xs leading-relaxed text-(--color-text-tertiary)'),
 };

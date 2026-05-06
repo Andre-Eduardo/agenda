@@ -1,5 +1,5 @@
 import { useTranslation } from "react-i18next";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/componentes/button";
 import { useCan, type Permission } from "@/hooks/useCan";
 
 interface FormActionsProps {

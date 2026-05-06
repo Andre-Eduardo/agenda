@@ -24,18 +24,18 @@ import {
   type CreatePatientDto,
   CreatePatientDtoGender,
 } from "@agenda-app/client";
-import { Button } from "@/components/ui/button";
-import { SectionCard as UISectionCard, SectionCardHeader, SectionCardTitle, SectionCardBody } from "@/components/ui/card";
+import { Button } from "@/components/ui/componentes/button";
+import { SectionCard as UISectionCard, SectionCardHeader, SectionCardTitle, SectionCardBody } from "@/components/ui/componentes/card";
 import {
   Breadcrumb, BreadcrumbItem, BreadcrumbLink,
   BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb";
-import { PageHeader } from "@/components/ui/page-header";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { NativeSelect } from "@/components/ui/native-select";
-import { Field, FormGrid } from "@/components/ui/field";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+} from "@/components/ui/componentes/breadcrumb";
+import { PageHeader } from "@/components/ui/componentes/page-header";
+import { Input } from "@/components/ui/componentes/input";
+import { Textarea } from "@/components/ui/componentes/textarea";
+import { NativeSelect } from "@/components/ui/componentes/native-select";
+import { Field, FormGrid } from "@/components/ui/componentes/field";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/componentes/tabs";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import * as S from "./styles";

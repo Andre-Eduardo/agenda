@@ -32,29 +32,29 @@ import {
   useUpdateAppointment,
 } from "@agenda-app/client";
 
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/componentes/button";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+} from "@/components/ui/componentes/dialog";
+import { Input } from "@/components/ui/componentes/input";
+import { Label } from "@/components/ui/componentes/label";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from "@/components/ui/componentes/select";
 import {
   Sheet,
   SheetContent,
   SheetHeader,
   SheetTitle,
-} from "@/components/ui/sheet";
-import { Textarea } from "@/components/ui/textarea";
+} from "@/components/ui/componentes/sheet";
+import { Textarea } from "@/components/ui/componentes/textarea";
 import { cn } from "@/lib/utils";
 
 import * as S from "./styles";

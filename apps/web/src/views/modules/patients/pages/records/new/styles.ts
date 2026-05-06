@@ -83,10 +83,10 @@ export const soap = {
     {
       variants: {
         v: {
-          s: 'bg-[#EDE9FE] text-[#7C3AED] dark:bg-[#2E1065] dark:text-[#C4B5FD]',
-          o: 'bg-[#DBEAFE] text-[#2563EB] dark:bg-[#1E3A5F] dark:text-[#93C5FD]',
-          a: 'bg-[#D1FAE5] text-[#059669] dark:bg-[#064E3B] dark:text-[#6EE7B7]',
-          p: 'bg-[#FEF3C7] text-[#D97706] dark:bg-[#451A03] dark:text-[#FCD34D]',
+          s: 'bg-(--color-primary-surface) text-(--color-primary-text)',
+          o: 'bg-(--color-primary-surface) text-(--color-primary-text)',
+          a: 'bg-(--color-success-surface) text-(--color-success)',
+          p: 'bg-(--color-warning-surface) text-(--color-warning)',
         },
       },
     },

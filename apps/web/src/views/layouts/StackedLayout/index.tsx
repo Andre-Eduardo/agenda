@@ -18,9 +18,9 @@ import {
 import { useAppStore } from "@/store/appStore";
 import { useCan, type Permission } from "@/hooks/useCan";
 import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
-import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/componentes/button";
+import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/componentes/sheet";
+import { Avatar, AvatarFallback } from "@/components/ui/componentes/avatar";
 
 interface NavItem {
   icon: LucideIcon;

@@ -25,8 +25,8 @@ import {
   UserPlus,
 } from 'lucide-react';
 import { Page } from '@/views/components/Page';
-import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
+import { Button } from '@/components/ui/componentes/button';
+import { Skeleton } from '@/components/ui/componentes/skeleton';
 import * as S from './styles';
 
 // ─── Route ──────────────────────────────────────────────────────────────────

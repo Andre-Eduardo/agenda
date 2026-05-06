@@ -14,14 +14,14 @@ export const aiNudge = {
   title: cn('flex items-center gap-[6px] text-[13px] font-medium leading-[1.3] text-(--color-ai-text)'),
   badge: cn('rounded-[4px] bg-(--color-ai-badge-bg) px-[5px] py-px text-[10px] font-medium tracking-[0.06em] text-white'),
   sub: cn('mt-0.5 text-xs leading-[1.5] text-(--color-ai-text) opacity-85'),
-  btn: cn('inline-flex shrink-0 items-center gap-[5px] rounded-[6px] bg-(--color-ai-badge-bg) px-[11px] py-1.5 text-xs font-medium text-white transition-colors hover:bg-[#0F766E]'),
+  btn: cn('inline-flex shrink-0 items-center gap-[5px] rounded-[6px] bg-(--color-ai-badge-bg) px-[11px] py-1.5 text-xs font-medium text-white transition-colors hover:bg-(--color-ai-border)'),
 };
 
 
 // Contador numérico nos triggers de tab (usado dentro de TabsTrigger)
 export const tabNum = cn('inline-flex size-[22px] shrink-0 items-center justify-center rounded-full border border-(--color-border) bg-(--color-bg-card) text-[11px] font-semibold tabular-nums text-(--color-text-secondary)');
 export const tabNumActive = cn('border-(--color-primary) bg-(--color-primary) text-white');
-export const tabNumFilled = cn('border-[#A7F3D0] bg-(--color-success-surface) text-(--color-success)');
+export const tabNumFilled = cn('border-(--color-success)/40 bg-(--color-success-surface) text-(--color-success)');
 
 // Form section
 export const section = {
@@ -62,8 +62,7 @@ export const subSection = {
 
 // Info note (Saúde section)
 export const infoNote = cn(
-  'mt-4 flex items-start gap-[10px] rounded-[8px] border border-[#C7D2FE] bg-[#EEF2FF] p-3 text-xs leading-[1.5] text-[#3730A3]',
-  'dark:bg-[#1E1B4B] dark:text-[#C7D2FE] dark:border-[#312E81]',
+  'mt-4 flex items-start gap-[10px] rounded-[8px] border border-(--color-primary-border) bg-(--color-primary-surface) p-3 text-xs leading-[1.5] text-(--color-primary-text)',
 );
 
 // Sticky footer

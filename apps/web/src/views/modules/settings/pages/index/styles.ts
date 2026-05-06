@@ -118,14 +118,14 @@ export const photoHint = cn('text-[11px] text-(--color-text-tertiary)');
 // AI nudge
 export const aiNudge = cn(
   'flex items-start gap-3 mt-5 p-4 rounded-(--radius-card)',
-  'border border-(--color-ai-border) bg-(--color-ai-surface)',
+  'border border-(--color-ai-border) bg-(--color-ai-bg)',
 );
-export const aiIcon = cn('shrink-0 text-(--color-ai-accent) mt-0.5');
+export const aiIcon = cn('shrink-0 text-(--color-ai-border) mt-0.5');
 export const aiTitle = cn('text-xs font-medium text-(--color-text-primary) flex items-center gap-2');
 export const aiSub = cn('text-[11px] text-(--color-text-secondary) mt-1 leading-relaxed');
 export const aiBadgeInline = cn(
   'inline-flex items-center px-1.5 py-0.5 rounded-[3px] text-[9px] font-medium uppercase tracking-wider',
-  'bg-(--color-ai-accent) text-white',
+  'bg-(--color-ai-badge-bg) text-white',
 );
 
 // Password meter

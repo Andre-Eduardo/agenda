@@ -8,8 +8,8 @@ import { useTranslation } from "react-i18next";
 import { Eye, EyeOff, Lock, Mail, ShieldCheck } from "lucide-react";
 import { useSignIn } from "@agenda-app/client";
 import { useAppStore } from "@/store/appStore";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/componentes/input";
+import { Button } from "@/components/ui/componentes/button";
 import * as S from "./styles";
 
 export const Route = createFileRoute("/_auth/auth/login")({

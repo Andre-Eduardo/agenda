@@ -2,8 +2,8 @@ import {useEffect} from "react";
 import { useTranslation } from "react-i18next";
 import { AlertTriangle, ShieldOff } from "lucide-react";
 import {useQueryErrorResetBoundary} from "@tanstack/react-query";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/componentes/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/componentes/card";
 import {useRouterErrorHandler} from "@/hooks/useRouterErrorHandler";
 import {isForbiddenError, isUnauthorizedError} from "@/views/components/QueryErrorHandler";
 

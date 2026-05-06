@@ -22,20 +22,20 @@ import type { UseQueryResult } from "@tanstack/react-query";
 import { useSearchPatients, useSearchAppointments } from "@agenda-app/client";
 import type { Patient, PatientGender } from "@agenda-app/client";
 import { Page } from "@/views/components/Page";
-import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Badge } from "@/components/ui/badge";
-import { AvatarInitials, avatarColorVariants } from "@/components/ui/avatar";
-import { StatTile } from "@/components/ui/stat-tile";
-import { SegmentedControl } from "@/components/ui/segmented-control";
+import { Button } from "@/components/ui/componentes/button";
+import { Skeleton } from "@/components/ui/componentes/skeleton";
+import { Badge } from "@/components/ui/componentes/badge";
+import { AvatarInitials, avatarColorVariants } from "@/components/ui/componentes/avatar";
+import { StatTile } from "@/components/ui/componentes/stat-tile";
+import { SegmentedControl } from "@/components/ui/componentes/segmented-control";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { EmptyStateCard } from "@/components/ui/empty-state";
+} from "@/components/ui/componentes/dropdown-menu";
+import { EmptyStateCard } from "@/components/ui/componentes/empty-state";
 import { cn } from "@/lib/utils";
 import * as S from "./styles";
 

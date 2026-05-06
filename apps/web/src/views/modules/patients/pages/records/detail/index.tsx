@@ -14,10 +14,10 @@ import {
 } from "lucide-react";
 import type { ReactNode } from "react";
 import type { UseQueryResult } from "@tanstack/react-query";
-import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Badge } from "@/components/ui/badge";
-import { AvatarInitials } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/componentes/button";
+import { Skeleton } from "@/components/ui/componentes/skeleton";
+import { Badge } from "@/components/ui/componentes/badge";
+import { AvatarInitials } from "@/components/ui/componentes/avatar";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -25,7 +25,7 @@ import {
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb";
+} from "@/components/ui/componentes/breadcrumb";
 import { useGetRecord, useGetPatient, useSearchRecords } from "@agenda-app/client";
 import type {
   Record as MedicalRecord,

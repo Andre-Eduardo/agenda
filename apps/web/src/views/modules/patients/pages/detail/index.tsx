@@ -20,16 +20,16 @@ import {
 } from "lucide-react";
 import { type ReactNode } from "react";
 import type { UseQueryResult } from "@tanstack/react-query";
-import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
-import { AvatarInitials, avatarColorVariants } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/componentes/button";
+import { Skeleton } from "@/components/ui/componentes/skeleton";
+import { AvatarInitials, avatarColorVariants } from "@/components/ui/componentes/avatar";
 import {
   SectionCard as UISectionCard,
   SectionCardHeader,
   SectionCardTitle,
   SectionCardBody,
-} from "@/components/ui/card";
-import { KV as UIKv, KVGrid } from "@/components/ui/kv";
+} from "@/components/ui/componentes/card";
+import { KV as UIKv, KVGrid } from "@/components/ui/componentes/kv";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -37,18 +37,18 @@ import {
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb";
-import { EntityHeader } from "@/components/ui/page-header";
-import { StatTile } from "@/components/ui/stat-tile";
-import { EmptyState } from "@/components/ui/empty-state";
+} from "@/components/ui/componentes/breadcrumb";
+import { EntityHeader } from "@/components/ui/componentes/page-header";
+import { StatTile } from "@/components/ui/componentes/stat-tile";
+import { EmptyState } from "@/components/ui/componentes/empty-state";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Badge } from "@/components/ui/badge";
+} from "@/components/ui/componentes/dropdown-menu";
+import { Badge } from "@/components/ui/componentes/badge";
 import {
   useGetPatient,
   useGetClinicalProfile,

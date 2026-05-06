@@ -30,14 +30,14 @@ import {
   CreateRecordDtoConductTagsItem,
   CreateRecordDtoTemplateType,
 } from "@agenda-app/client";
-import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { NativeSelect } from "@/components/ui/native-select";
-import { PageHeader } from "@/components/ui/page-header";
-import { Field, FormGrid } from "@/components/ui/field";
-import { AvatarInitials } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/componentes/button";
+import { Skeleton } from "@/components/ui/componentes/skeleton";
+import { Input } from "@/components/ui/componentes/input";
+import { Textarea } from "@/components/ui/componentes/textarea";
+import { NativeSelect } from "@/components/ui/componentes/native-select";
+import { PageHeader } from "@/components/ui/componentes/page-header";
+import { Field, FormGrid } from "@/components/ui/componentes/field";
+import { AvatarInitials } from "@/components/ui/componentes/avatar";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -45,7 +45,7 @@ import {
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb";
+} from "@/components/ui/componentes/breadcrumb";
 import { cn } from "@/lib/utils";
 import { useAppStore } from "@/store/appStore";
 import { toast } from "sonner";

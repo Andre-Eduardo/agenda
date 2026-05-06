@@ -23,19 +23,19 @@ import {
   type Patient,
   UpdatePatientInputDtoGender,
 } from "@agenda-app/client";
-import { Button } from "@/components/ui/button";
-import { SectionCard as UISectionCard } from "@/components/ui/card";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/componentes/button";
+import { SectionCard as UISectionCard } from "@/components/ui/componentes/card";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/componentes/tabs";
 import {
   Breadcrumb, BreadcrumbItem, BreadcrumbLink,
   BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb";
-import { PageHeader } from "@/components/ui/page-header";
-import { Input, inputVariants } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { NativeSelect } from "@/components/ui/native-select";
-import { Field, FormGrid } from "@/components/ui/field";
-import { Skeleton } from "@/components/ui/skeleton";
+} from "@/components/ui/componentes/breadcrumb";
+import { PageHeader } from "@/components/ui/componentes/page-header";
+import { Input, inputVariants } from "@/components/ui/componentes/input";
+import { Textarea } from "@/components/ui/componentes/textarea";
+import { NativeSelect } from "@/components/ui/componentes/native-select";
+import { Field, FormGrid } from "@/components/ui/componentes/field";
+import { Skeleton } from "@/components/ui/componentes/skeleton";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import * as S from "./styles";

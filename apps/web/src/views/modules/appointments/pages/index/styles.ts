@@ -25,7 +25,7 @@ export const periodLabel = cn(
 );
 export const arrowsGroup = cn("flex items-center");
 export const arrowBtn = cn(
-  "p-1.5 rounded-(--radius-sm) text-(--color-text-secondary) hover:text-(--color-text-primary) hover:bg-(--color-bg-surface) transition-colors",
+  "p-1.5 rounded-(--radius-button) text-(--color-text-secondary) hover:text-(--color-text-primary) hover:bg-(--color-bg-surface) transition-colors",
 );
 
 // ── Status filter chips ────────────────────────────────────────────
@@ -36,20 +36,13 @@ export const statusChip = cva(
   {
     variants: {
       status: {
-        SCHEDULED:
-          "border-blue-200 text-blue-700 dark:border-blue-800 dark:text-blue-300",
-        CONFIRMED:
-          "border-emerald-200 text-emerald-700 dark:border-emerald-800 dark:text-emerald-300",
-        COMPLETED:
-          "border-(--color-border) text-(--color-text-secondary)",
-        CANCELLED:
-          "border-red-200 text-red-700 dark:border-red-800 dark:text-red-300",
-        NO_SHOW:
-          "border-amber-200 text-amber-700 dark:border-amber-800 dark:text-amber-300",
-        ARRIVED:
-          "border-violet-200 text-violet-700 dark:border-violet-800 dark:text-violet-300",
-        IN_PROGRESS:
-          "border-cyan-200 text-cyan-700 dark:border-cyan-800 dark:text-cyan-300",
+        SCHEDULED:   "border-(--color-primary-border) text-(--color-primary-text)",
+        CONFIRMED:   "border-(--color-success)/30 text-(--color-success)",
+        COMPLETED:   "border-(--color-border) text-(--color-text-secondary)",
+        CANCELLED:   "border-(--color-danger)/30 text-(--color-danger)",
+        NO_SHOW:     "border-(--color-warning)/30 text-(--color-warning)",
+        ARRIVED:     "border-(--color-primary-border) text-(--color-primary-text)",
+        IN_PROGRESS: "border-(--color-info)/30 text-(--color-info)",
       },
       active: {
         true: "",
@@ -62,13 +55,13 @@ export const statusChip = cva(
 export const statusDot = cva("w-1.5 h-1.5 rounded-full shrink-0", {
   variants: {
     status: {
-      SCHEDULED: "bg-blue-500",
-      CONFIRMED: "bg-emerald-500",
-      COMPLETED: "bg-(--color-text-tertiary)",
-      CANCELLED: "bg-red-500",
-      NO_SHOW: "bg-amber-500",
-      ARRIVED: "bg-violet-500",
-      IN_PROGRESS: "bg-cyan-500",
+      SCHEDULED:   "bg-(--color-primary)",
+      CONFIRMED:   "bg-(--color-success)",
+      COMPLETED:   "bg-(--color-text-tertiary)",
+      CANCELLED:   "bg-(--color-danger)",
+      NO_SHOW:     "bg-(--color-warning)",
+      ARRIVED:     "bg-(--color-primary)",
+      IN_PROGRESS: "bg-(--color-info)",
     },
   },
 });
@@ -82,10 +75,10 @@ export const calBody = cn("flex-1 overflow-auto");
 
 // ── Segmented control (Day/Week/Month) ────────────────────────────
 export const segmented = cn(
-  "flex items-center rounded-(--radius-sm) border border-(--color-border) bg-(--color-bg-surface) p-0.5 gap-0.5",
+  "flex items-center rounded-(--radius-button) border border-(--color-border) bg-(--color-bg-surface) p-0.5 gap-0.5",
 );
 export const segmentBtn = cva(
-  "px-3 py-1 text-xs font-medium rounded-[calc(var(--radius-sm)-2px)] transition-colors",
+  "px-3 py-1 text-xs font-medium rounded-[6px] transition-colors",
   {
     variants: {
       active: {
@@ -196,17 +189,17 @@ export const grid = {
 
 // ── Appointment block ─────────────────────────────────────────────
 export const apptBlock = cva(
-  "absolute rounded-(--radius-sm) border overflow-hidden cursor-pointer transition-all hover:shadow-sm group",
+  "absolute rounded-(--radius-data) border overflow-hidden cursor-pointer transition-all hover:shadow-sm group",
   {
     variants: {
       status: {
-        SCHEDULED: "bg-blue-50 border-blue-200 dark:bg-blue-950 dark:border-blue-800",
-        CONFIRMED: "bg-emerald-50 border-emerald-200 dark:bg-emerald-950 dark:border-emerald-800",
-        COMPLETED: "bg-(--color-bg-surface) border-(--color-border)",
-        CANCELLED: "bg-red-50 border-red-200 dark:bg-red-950 dark:border-red-800 opacity-60",
-        NO_SHOW: "bg-amber-50 border-amber-200 dark:bg-amber-950 dark:border-amber-800 opacity-60",
-        ARRIVED: "bg-violet-50 border-violet-200 dark:bg-violet-950 dark:border-violet-800",
-        IN_PROGRESS: "bg-cyan-50 border-cyan-200 dark:bg-cyan-950 dark:border-cyan-800",
+        SCHEDULED:   "bg-(--color-primary-surface) border-(--color-primary-border)",
+        CONFIRMED:   "bg-(--color-success-surface) border-(--color-success)/30",
+        COMPLETED:   "bg-(--color-bg-surface) border-(--color-border)",
+        CANCELLED:   "bg-(--color-danger-surface) border-(--color-danger)/30 opacity-60",
+        NO_SHOW:     "bg-(--color-warning-surface) border-(--color-warning)/30 opacity-60",
+        ARRIVED:     "bg-(--color-primary-surface) border-(--color-primary-border)",
+        IN_PROGRESS: "bg-(--color-info-surface) border-(--color-info)/30",
       },
       highlight: {
         true: "ring-2 ring-(--color-primary) ring-offset-1",
@@ -219,13 +212,13 @@ export const apptBlock = cva(
 export const apptBar = cva("absolute left-0 top-0 bottom-0 w-0.5", {
   variants: {
     status: {
-      SCHEDULED: "bg-blue-500",
-      CONFIRMED: "bg-emerald-500",
-      COMPLETED: "bg-(--color-text-tertiary)",
-      CANCELLED: "bg-red-400",
-      NO_SHOW: "bg-amber-500",
-      ARRIVED: "bg-violet-500",
-      IN_PROGRESS: "bg-cyan-500",
+      SCHEDULED:   "bg-(--color-primary)",
+      CONFIRMED:   "bg-(--color-success)",
+      COMPLETED:   "bg-(--color-text-tertiary)",
+      CANCELLED:   "bg-(--color-danger)",
+      NO_SHOW:     "bg-(--color-warning)",
+      ARRIVED:     "bg-(--color-primary)",
+      IN_PROGRESS: "bg-(--color-info)",
     },
   },
 });
@@ -270,13 +263,13 @@ export const monthGrid = {
     {
       variants: {
         status: {
-          SCHEDULED: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200",
-          CONFIRMED: "bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200",
-          COMPLETED: "bg-(--color-bg-surface) text-(--color-text-secondary)",
-          CANCELLED: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200 opacity-60",
-          NO_SHOW: "bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200",
-          ARRIVED: "bg-violet-100 text-violet-800 dark:bg-violet-900 dark:text-violet-200",
-          IN_PROGRESS: "bg-cyan-100 text-cyan-800 dark:bg-cyan-900 dark:text-cyan-200",
+          SCHEDULED:   "bg-(--color-primary-surface) text-(--color-primary-text)",
+          CONFIRMED:   "bg-(--color-success-surface) text-(--color-success)",
+          COMPLETED:   "bg-(--color-bg-surface) text-(--color-text-secondary)",
+          CANCELLED:   "bg-(--color-danger-surface) text-(--color-danger) opacity-60",
+          NO_SHOW:     "bg-(--color-warning-surface) text-(--color-warning)",
+          ARRIVED:     "bg-(--color-primary-surface) text-(--color-primary-text)",
+          IN_PROGRESS: "bg-(--color-info-surface) text-(--color-info)",
         },
       },
     },
@@ -294,13 +287,13 @@ export const sheet = {
     {
       variants: {
         status: {
-          SCHEDULED: "bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300",
-          CONFIRMED: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-300",
-          COMPLETED: "bg-(--color-bg-surface) text-(--color-text-secondary)",
-          CANCELLED: "bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300",
-          NO_SHOW: "bg-amber-100 text-amber-700 dark:bg-amber-900 dark:text-amber-300",
-          ARRIVED: "bg-violet-100 text-violet-700 dark:bg-violet-900 dark:text-violet-300",
-          IN_PROGRESS: "bg-cyan-100 text-cyan-700 dark:bg-cyan-900 dark:text-cyan-300",
+          SCHEDULED:   "bg-(--color-primary-surface) text-(--color-primary-text)",
+          CONFIRMED:   "bg-(--color-success-surface) text-(--color-success)",
+          COMPLETED:   "bg-(--color-bg-surface) text-(--color-text-secondary)",
+          CANCELLED:   "bg-(--color-danger-surface) text-(--color-danger)",
+          NO_SHOW:     "bg-(--color-warning-surface) text-(--color-warning)",
+          ARRIVED:     "bg-(--color-primary-surface) text-(--color-primary-text)",
+          IN_PROGRESS: "bg-(--color-info-surface) text-(--color-info)",
         },
       },
     },
