@@ -41,14 +41,14 @@ src/
 
 Todos os tokens vivem em [`src/app/globals.css`](src/app/globals.css). **Nunca usar cores hardcoded** — sempre via tokens.
 
-### Dois padrões: CSS Modules (componentes) + styles.ts (páginas/variantes)
+### Padrão unificado: CSS Modules + `@apply` em toda a aplicação
 
-| Onde usar                                                | Padrão                              | Arquivo                |
-| -------------------------------------------------------- | ----------------------------------- | ---------------------- |
-| Primitivos UI (`components/ui/`, `components/clinical/`) | **CSS Modules** + `@apply` + `clsx` | `Component.module.css` |
-| Páginas e features (`views/modules/`)                    | **`styles.ts`** + `cn()` + `cva`    | `styles.ts`            |
-| Wrapper simples (1-2 classes)                            | `cn()` inline no JSX                | —                      |
-| Componente puro de lógica                                | nenhum                              | —                      |
+| Onde usar                                                | Padrão                              | Arquivo                  |
+| -------------------------------------------------------- | ----------------------------------- | ------------------------ |
+| Primitivos UI e páginas (`components/`, `views/`)        | **CSS Modules** + `@apply` + `clsx` | `styles.module.css`      |
+| Variantes (`cva`)                                        | Definido no `.tsx`, refs ao módulo  | — (topo do tsx)          |
+| Wrapper simples (1-2 classes)                            | `cn()` inline no JSX                | —                        |
+| Componente puro de lógica                                | nenhum                              | —                        |
 
 **Nunca inline classes longas diretamente no JSX** — use sempre o arquivo de estilos.
 
@@ -106,59 +106,46 @@ import {cn} from '@/lib/utils';
 
 ---
 
-### Padrão B: styles.ts + `cva` (páginas e variantes complexas)
+### Padrão B: CSS Modules para páginas (mesma estrutura do Padrão A)
 
 ```
 views/modules/patients/pages/detail/
-  index.tsx    ← JSX/lógica apenas
-  styles.ts    ← todas as classes Tailwind
+  index.tsx          ← JSX/lógica + cva() no topo referenciando o módulo
+  styles.module.css  ← todas as classes via @apply
 ```
 
-**`styles.ts` — estrutura:**
+**`styles.module.css` com variantes `cva`:**
 
-```ts
-import {cn} from '@/lib/utils';
+```css
+/* styles.module.css */
+@import "tailwindcss";
+
+.badgeBase { @apply inline-flex items-center rounded-(--radius-badge) px-2 py-0.5 text-xs; }
+.badgeSeverityHigh   { @apply bg-(--color-danger)/10 text-(--color-danger); }
+.badgeSeverityMedium { @apply bg-(--color-warning)/10 text-(--color-warning); }
+.badgeSeverityLow    { @apply bg-(--color-text-secondary)/10 text-(--color-text-secondary); }
+```
+
+**`index.tsx` — cva no topo do arquivo:**
+
+```tsx
 import {cva} from 'class-variance-authority';
+import styles from './styles.module.css';
 
-// String estática
-export const card = cn('rounded-(--radius-card) border border-(--color-border) bg-(--color-bg-card) p-4');
-
-// Variante com cva
-export const badge = cva('inline-flex items-center rounded-(--radius-badge) px-2 py-0.5 text-xs', {
+const badge = cva(styles.badgeBase, {
     variants: {
         severity: {
-            HIGH: 'bg-(--color-danger)/10 text-(--color-danger)',
-            MEDIUM: 'bg-(--color-warning)/10 text-(--color-warning)',
-            LOW: 'bg-(--color-text-secondary)/10 text-(--color-text-secondary)',
+            HIGH:   styles.badgeSeverityHigh,
+            MEDIUM: styles.badgeSeverityMedium,
+            LOW:    styles.badgeSeverityLow,
         },
     },
 });
 
-// Namespace para sub-elementos de componente complexo
-export const timeline = {
-    root: cn('relative flex flex-col gap-0'),
-    item: cn('relative flex gap-3 pb-6'),
-    dot: cn('mt-1 h-2 w-2 rounded-full bg-(--color-primary) shrink-0'),
-};
+<span className={badge({severity: 'HIGH'})}>...</span>
 ```
 
-**Uso no JSX:**
-
-```tsx
-// Poucos exports (≤ 5): named imports
-import {card, badge} from './styles';
-<div className={card}>
-    <span className={badge({severity: 'HIGH'})}>...</span>
-</div>;
-
-// Muitos exports (> 5): namespace
-import * as S from './styles';
-<div className={S.root}>
-    <header className={S.header}>...</header>
-</div>;
-```
-
-**Quando criar `styles.ts`:**
+**Quando criar `styles.module.css`:**
 
 | Condição                                    | Criar?                               |
 | ------------------------------------------- | ------------------------------------ |

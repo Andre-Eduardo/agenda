@@ -1,0 +1,109 @@
+@import "tailwindcss";
+
+/* ── Layout ─────────────────────────────────────────────────────────────────── */
+
+.statsGrid {
+    @apply mb-6 grid grid-cols-4 gap-3;
+}
+
+.mainGrid {
+    @apply grid grid-cols-[1.4fr_1fr] gap-4;
+}
+
+/* ── StatTile ───────────────────────────────────────────────────────────────── */
+
+.statTileRoot {
+    @apply rounded-(--radius-card) border border-(--color-border) bg-(--color-bg-card) px-4 py-[14px];
+}
+
+.statTileLabel {
+    @apply text-sm leading-[1.4] text-(--color-text-secondary);
+}
+
+.statTileValue {
+    @apply mt-1 font-mono text-xl font-medium leading-[1.2] tabular-nums text-(--color-text-primary);
+}
+
+.statTileDelta {
+    @apply mt-0.5 text-xs leading-[1.4] text-(--color-success);
+}
+
+.statTileSkeleton {
+    @apply mt-1 h-7 w-14;
+}
+
+/* ── ClinicalBadge ──────────────────────────────────────────────────────────── */
+
+.clinicalBadgeDot {
+    @apply text-[8px] leading-none;
+}
+
+.clinicalBadge {
+    @apply inline-flex items-center gap-1 rounded-(--radius-badge) px-[10px] py-1 text-xs font-medium;
+}
+
+.clinicalBadgeAiSoft {
+    @apply border border-(--color-ai-border)/30 bg-(--color-ai-bg) text-(--color-ai-text);
+}
+
+.clinicalBadgePrimary {
+    @apply border border-(--color-primary-border) bg-(--color-primary-surface) text-(--color-primary-text);
+}
+
+.clinicalBadgeNeutral {
+    @apply border border-(--color-border) bg-(--color-bg-surface) text-(--color-text-secondary);
+}
+
+.clinicalBadgeInfo {
+    @apply border border-(--color-info)/30 bg-(--color-info-surface) text-(--color-info);
+}
+
+/* ── AI action button ───────────────────────────────────────────────────────── */
+
+.aiActionButton {
+    @apply inline-flex items-center gap-2 rounded-(--radius-button) bg-(--color-ai-badge-bg) px-3 py-[7px] text-[13px] font-medium text-white transition-all duration-(--duration-fast) ease-out hover:opacity-90 focus-visible:outline-none;
+}
+
+/* ── PanelCard ──────────────────────────────────────────────────────────────── */
+
+.panelCardRoot {
+    @apply rounded-(--radius-card) border border-(--color-border) bg-(--color-bg-card) shadow-none;
+}
+
+.panelCardHeader {
+    @apply flex-row items-center justify-between space-y-0 px-4 py-3;
+}
+
+.panelCardTitle {
+    @apply text-sm-body font-medium text-(--color-text-primary);
+}
+
+.panelCardContent {
+    @apply flex flex-col gap-3 px-4 pb-4 pt-0;
+}
+
+.panelCardEmpty {
+    @apply flex items-center justify-center py-8 text-sm text-(--color-text-tertiary);
+}
+
+/* ── Appointment ────────────────────────────────────────────────────────────── */
+
+.appointmentTitle {
+    @apply text-lead font-medium leading-[1.3] text-(--color-text-primary);
+}
+
+.appointmentTime {
+    @apply mt-[2px] font-mono text-xs leading-[1.4] tabular-nums text-(--color-text-secondary);
+}
+
+.appointmentBadgeRow {
+    @apply flex flex-wrap gap-1.5;
+}
+
+.appointmentActionRow {
+    @apply mt-1 flex gap-2;
+}
+
+.appointmentSkeletonStack {
+    @apply flex flex-col gap-2;
+}

@@ -34,8 +34,58 @@ import {Input} from '@/components/ui/componentes/input';
 import {Label} from '@/components/ui/componentes/label';
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@/components/ui/componentes/select';
 import {Skeleton} from '@/components/ui/componentes/skeleton';
+import {cva} from 'class-variance-authority';
 import {cn} from '@/lib/utils';
-import * as S from './styles';
+import styles from './styles.module.css';
+
+const SPAN_CLASSES: Record<number, string> = {
+    1: 'col-span-1', 2: 'col-span-2', 3: 'col-span-3', 4: 'col-span-4',
+    5: 'col-span-5', 6: 'col-span-6', 7: 'col-span-7', 8: 'col-span-8',
+    9: 'col-span-9', 10: 'col-span-10', 11: 'col-span-11', 12: 'col-span-12',
+};
+
+const sideNavItem = cva(styles.sideNavItemBase, {
+    variants: {active: {true: styles.sideNavItemActive, false: styles.sideNavItemInactive}},
+    defaultVariants: {active: false},
+});
+
+const tab = cva(styles.tabBase, {
+    variants: {active: {true: styles.tabActive, false: styles.tabInactive}},
+    defaultVariants: {active: false},
+});
+
+const tabNum = cva(styles.tabNumBase, {
+    variants: {
+        active: {true: styles.tabNumActive, false: styles.tabNumInactive},
+        filled: {true: styles.tabNumFilled, false: ''},
+    },
+    defaultVariants: {active: false, filled: false},
+});
+
+const pwdBarFill = cva(styles.pwdBarFillBase, {
+    variants: {
+        level: {
+            weak: styles.pwdBarFillWeak,
+            med: styles.pwdBarFillMed,
+            strong: styles.pwdBarFillStrong,
+        },
+    },
+});
+
+const pwdLabel = cva('', {
+    variants: {
+        level: {
+            weak: styles.pwdLabelWeak,
+            med: styles.pwdLabelMed,
+            strong: styles.pwdLabelStrong,
+        },
+    },
+});
+
+const sessionRow = cva(styles.sessionRowBase, {
+    variants: {current: {true: styles.sessionRowCurrent, false: styles.sessionRowDefault}},
+    defaultVariants: {current: false},
+});
 
 // ─── Route ───────────────────────────────────────────────────────────────────
 
@@ -124,21 +174,21 @@ export function SettingsPage() {
     const [section, setSection] = useState<Section>('perfil');
 
     return (
-        <div className={S.page}>
+        <div className={styles.page}>
             {/* Breadcrumb */}
-            <nav className={S.breadcrumb}>
-                <span className={S.breadcrumbLink}>Configurações</span>
-                <span className={S.breadcrumbSep}>›</span>
-                <span className={S.breadcrumbCurrent}>{section === 'perfil' ? 'Perfil' : 'Geral'}</span>
+            <nav className={styles.breadcrumb}>
+                <span className={styles.breadcrumbLink}>Configurações</span>
+                <span className={styles.breadcrumbSep}>›</span>
+                <span className={styles.breadcrumbCurrent}>{section === 'perfil' ? 'Perfil' : 'Geral'}</span>
             </nav>
 
-            <div className={S.layout}>
+            <div className={styles.layout}>
                 {/* Side nav */}
-                <aside className={S.sideNav}>
-                    <div className={S.sideNavTitle}>Configurações</div>
+                <aside className={styles.sideNav}>
+                    <div className={styles.sideNavTitle}>Configurações</div>
                     <button
                         type="button"
-                        className={S.sideNavItem({active: section === 'perfil'})}
+                        className={sideNavItem({active: section === 'perfil'})}
                         onClick={() => setSection('perfil')}
                     >
                         <UserRound size={15} />
@@ -146,7 +196,7 @@ export function SettingsPage() {
                     </button>
                     <button
                         type="button"
-                        className={S.sideNavItem({active: section === 'geral'})}
+                        className={sideNavItem({active: section === 'geral'})}
                         onClick={() => setSection('geral')}
                     >
                         <Sliders size={15} />
@@ -155,7 +205,7 @@ export function SettingsPage() {
                 </aside>
 
                 {/* Content */}
-                <div className={S.content}>
+                <div className={styles.content}>
                     {section === 'perfil' && <ProfileForm />}
                     {section === 'geral' && <GeneralSection />}
                 </div>
@@ -169,13 +219,13 @@ export function SettingsPage() {
 function GeneralSection() {
     return (
         <div>
-            <h1 className={S.pageTitle}>Geral</h1>
-            <p className={S.pageSub}>Preferências da aplicação, notificações e idioma.</p>
-            <div className={cn(S.formCard, 'p-16')}>
-                <div className={S.placeholder}>
-                    <Sliders size={28} className={S.placeholderIcon} />
-                    <div className={S.placeholderTitle}>Em breve</div>
-                    <div className={S.placeholderSub}>Configurações gerais serão exibidas aqui.</div>
+            <h1 className={styles.pageTitle}>Geral</h1>
+            <p className={styles.pageSub}>Preferências da aplicação, notificações e idioma.</p>
+            <div className={cn(styles.formCard, 'p-16')}>
+                <div className={styles.placeholder}>
+                    <Sliders size={28} className={styles.placeholderIcon} />
+                    <div className={styles.placeholderTitle}>Em breve</div>
+                    <div className={styles.placeholderSub}>Configurações gerais serão exibidas aqui.</div>
                 </div>
             </div>
         </div>
@@ -333,27 +383,27 @@ function ProfileForm() {
 
     return (
         <div>
-            <div className={S.profileHeader}>
+            <div className={styles.profileHeader}>
                 <div>
-                    <h1 className={S.pageTitle}>Perfil do profissional</h1>
-                    <p className={S.pageSub}>
+                    <h1 className={styles.pageTitle}>Perfil do profissional</h1>
+                    <p className={styles.pageSub}>
                         Seus dados profissionais são usados para personalizar o sistema e selecionar o agente de IA
                         adequado para seus atendimentos.
                     </p>
                 </div>
             </div>
 
-            <div className={S.formCard}>
+            <div className={styles.formCard}>
                 {/* Tab bar */}
-                <div className={S.tabList}>
+                <div className={styles.tabList}>
                     {PROFILE_TABS.map((t, _i) => {
                         const active = t.key === tab;
                         const filled = tabFilled[t.key] && !active;
                         const Icon = t.icon;
 
                         return (
-                            <button type="button" key={t.key} className={S.tab({active})} onClick={() => setTab(t.key)}>
-                                <span className={S.tabNum({active, filled})}>
+                            <button type="button" key={t.key} className={tab({active})} onClick={() => setTab(t.key)}>
+                                <span className={tabNum({active, filled})}>
                                     {filled ? <Check size={10} /> : t.num}
                                 </span>
                                 <Icon size={14} className="shrink-0" />
@@ -365,9 +415,9 @@ function ProfileForm() {
 
                 {/* Tab content */}
                 {isLoading ? (
-                    <div className={S.skeletonTabContent}>
+                    <div className={styles.skeletonTabContent}>
                         <Skeleton className="h-4 w-48" />
-                        <div className={S.skeletonGrid}>
+                        <div className={styles.skeletonGrid}>
                             <Skeleton className="h-10" />
                             <Skeleton className="h-10" />
                         </div>
@@ -376,21 +426,21 @@ function ProfileForm() {
                     <>
                         {/* ─── 1. Identity ─── */}
                         {tab === 'identity' && (
-                            <div className={S.formSection}>
-                                <div className={S.sectionHead}>
-                                    <span className={S.sectionNum}>1</span>
+                            <div className={styles.formSection}>
+                                <div className={styles.sectionHead}>
+                                    <span className={styles.sectionNum}>1</span>
                                     <div>
-                                        <div className={S.sectionTitle}>Foto e identidade</div>
-                                        <div className={S.sectionSub}>
+                                        <div className={styles.sectionTitle}>Foto e identidade</div>
+                                        <div className={styles.sectionSub}>
                                             Como você aparece no sistema e suas credenciais de acesso.
                                         </div>
                                     </div>
                                 </div>
 
                                 {/* Photo */}
-                                <div className={S.photoRow}>
-                                    <div className={S.photoCircle}>
-                                        <span className={S.photoInitials}>
+                                <div className={styles.photoRow}>
+                                    <div className={styles.photoCircle}>
+                                        <span className={styles.photoInitials}>
                                             {name
                                                 ? name
                                                       .split(' ')
@@ -401,16 +451,16 @@ function ProfileForm() {
                                                 : '—'}
                                         </span>
                                     </div>
-                                    <div className={S.photoActions}>
+                                    <div className={styles.photoActions}>
                                         <Button variant="outline" size="sm">
                                             <Camera size={13} />
                                             Alterar foto
                                         </Button>
-                                        <p className={S.photoHint}>JPG ou PNG · até 5 MB · proporção 1:1</p>
+                                        <p className={styles.photoHint}>JPG ou PNG · até 5 MB · proporção 1:1</p>
                                     </div>
                                 </div>
 
-                                <div className={S.grid}>
+                                <div className={styles.grid}>
                                     <Field label="Nome completo" required span={6}>
                                         <Input
                                             placeholder="Nome completo"
@@ -432,18 +482,18 @@ function ProfileForm() {
 
                         {/* ─── 2. Professional data ─── */}
                         {tab === 'pro' && (
-                            <div className={S.formSection}>
-                                <div className={S.sectionHead}>
-                                    <span className={S.sectionNum}>2</span>
+                            <div className={styles.formSection}>
+                                <div className={styles.sectionHead}>
+                                    <span className={styles.sectionNum}>2</span>
                                     <div>
-                                        <div className={S.sectionTitle}>Dados profissionais</div>
-                                        <div className={S.sectionSub}>
+                                        <div className={styles.sectionTitle}>Dados profissionais</div>
+                                        <div className={styles.sectionSub}>
                                             Definem sua identidade clínica e o agente de IA usado nos atendimentos.
                                         </div>
                                     </div>
                                 </div>
 
-                                <div className={S.grid}>
+                                <div className={styles.grid}>
                                     <Field label="Profissão" required span={6}>
                                         <Select
                                             value={profession}
@@ -499,7 +549,7 @@ function ProfileForm() {
                                         span={8}
                                     >
                                         <Input
-                                            className={S.monoInput}
+                                            className={styles.monoInput}
                                             placeholder={profDef?.registry === 'CRM' ? 'Ex.: 84321' : 'Número'}
                                             value={registryNum}
                                             onChange={(e) => setRegistryNum(e.target.value)}
@@ -523,15 +573,15 @@ function ProfileForm() {
                                 </div>
 
                                 {/* AI nudge */}
-                                <div className={S.aiNudge}>
-                                    <Sparkles size={14} className={S.aiIcon} />
+                                <div className={styles.aiNudge}>
+                                    <Sparkles size={14} className={styles.aiIcon} />
                                     <div>
-                                        <div className={S.aiTitle}>
-                                            <span className={S.aiBadgeInline}>IA</span>
+                                        <div className={styles.aiTitle}>
+                                            <span className={styles.aiBadgeInline}>IA</span>
                                             Agente clínico ativo:{' '}
-                                            <span className={S.agentName}>{specialty || 'Clínica geral'}</span>
+                                            <span className={styles.agentName}>{specialty || 'Clínica geral'}</span>
                                         </div>
-                                        <p className={S.aiSub}>
+                                        <p className={styles.aiSub}>
                                             Profissão e especialidade definem qual agente de IA é ativado no chat
                                             clínico dos pacientes. Revise se o agente exibido não corresponder à sua
                                             atuação.
@@ -543,18 +593,18 @@ function ProfileForm() {
 
                         {/* ─── 3. Office ─── */}
                         {tab === 'office' && (
-                            <div className={S.formSection}>
-                                <div className={S.sectionHead}>
-                                    <span className={S.sectionNum}>3</span>
+                            <div className={styles.formSection}>
+                                <div className={styles.sectionHead}>
+                                    <span className={styles.sectionNum}>3</span>
                                     <div>
-                                        <div className={S.sectionTitle}>Dados do consultório</div>
-                                        <div className={S.sectionSub}>
+                                        <div className={styles.sectionTitle}>Dados do consultório</div>
+                                        <div className={styles.sectionSub}>
                                             Informações do local de atendimento — todos os campos são opcionais.
                                         </div>
                                     </div>
                                 </div>
 
-                                <div className={S.grid}>
+                                <div className={styles.grid}>
                                     <Field label="Nome do consultório ou clínica" optional span={8}>
                                         <Input
                                             placeholder="Ex.: Clínica Espaço Saúde"
@@ -564,7 +614,7 @@ function ProfileForm() {
                                     </Field>
                                     <Field label="Telefone de contato" optional span={4}>
                                         <Input
-                                            className={S.monoInput}
+                                            className={styles.monoInput}
                                             placeholder="(00) 0000-0000"
                                             value={officePhone}
                                             onChange={(e) => setOfficePhone(e.target.value)}
@@ -577,7 +627,7 @@ function ProfileForm() {
                                         hint={cepLoading ? 'Buscando endereço…' : 'Preenche os demais campos.'}
                                     >
                                         <Input
-                                            className={S.monoInput}
+                                            className={styles.monoInput}
                                             placeholder="00000-000"
                                             value={officeCep}
                                             onChange={(e) => {
@@ -600,7 +650,7 @@ function ProfileForm() {
                                     </Field>
                                     <Field label="Número" optional span={3}>
                                         <Input
-                                            className={S.monoInput}
+                                            className={styles.monoInput}
                                             placeholder="123"
                                             value={officeNumber}
                                             onChange={(e) => setOfficeNumber(e.target.value)}
@@ -649,26 +699,26 @@ function ProfileForm() {
 
                         {/* ─── 4. Security ─── */}
                         {tab === 'security' && (
-                            <div className={S.formSection}>
-                                <div className={S.sectionHead}>
-                                    <span className={S.sectionNum}>4</span>
+                            <div className={styles.formSection}>
+                                <div className={styles.sectionHead}>
+                                    <span className={styles.sectionNum}>4</span>
                                     <div>
-                                        <div className={S.sectionTitle}>Segurança e acesso</div>
-                                        <div className={S.sectionSub}>
+                                        <div className={styles.sectionTitle}>Segurança e acesso</div>
+                                        <div className={styles.sectionSub}>
                                             Gerenciamento das credenciais e sessões abertas.
                                         </div>
                                     </div>
                                 </div>
 
                                 {/* Change password */}
-                                <div className={S.subSection}>
-                                    <div className={S.subSectionHead}>
-                                        <KeyRound size={14} className={S.subSectionIcon} />
+                                <div className={styles.subSection}>
+                                    <div className={styles.subSectionHead}>
+                                        <KeyRound size={14} className={styles.subSectionIcon} />
                                         Redefinir senha
                                     </div>
-                                    <div className={S.grid}>
+                                    <div className={styles.grid}>
                                         <Field label="Senha atual" required span={4}>
-                                            <div className={S.pwdInputWrap}>
+                                            <div className={styles.pwdInputWrap}>
                                                 <Input
                                                     type={showPwd ? 'text' : 'password'}
                                                     placeholder="••••••••"
@@ -679,7 +729,7 @@ function ProfileForm() {
                                                 <button
                                                     type="button"
                                                     onClick={() => setShowPwd((v) => !v)}
-                                                    className={S.pwdRevealBtn}
+                                                    className={styles.pwdRevealBtn}
                                                     aria-label={showPwd ? 'Ocultar senha' : 'Mostrar senha'}
                                                 >
                                                     {showPwd ? '🙈' : '👁'}
@@ -700,14 +750,14 @@ function ProfileForm() {
                                                 onChange={(e) => setNewPwd(e.target.value)}
                                             />
                                             {pwdStrength && (
-                                                <div className={S.pwdMeter}>
-                                                    <div className={S.pwdBar}>
+                                                <div className={styles.pwdMeter}>
+                                                    <div className={styles.pwdBar}>
                                                         <div
-                                                            className={S.pwdBarFill({level: pwdStrength.level})}
+                                                            className={pwdBarFill({level: pwdStrength.level})}
                                                             style={{width: `${pwdStrength.pct}%`}}
                                                         />
                                                     </div>
-                                                    <span className={S.pwdLabel({level: pwdStrength.level})}>
+                                                    <span className={pwdLabel({level: pwdStrength.level})}>
                                                         {pwdStrength.label}
                                                     </span>
                                                 </div>
@@ -743,13 +793,13 @@ function ProfileForm() {
                                 </div>
 
                                 {/* Sessions */}
-                                <div className={S.subSection}>
-                                    <div className={S.subSectionHead}>
-                                        <MonitorSmartphone size={14} className={S.subSectionIcon} />
+                                <div className={styles.subSection}>
+                                    <div className={styles.subSectionHead}>
+                                        <MonitorSmartphone size={14} className={styles.subSectionIcon} />
                                         Sessões ativas
-                                        <span className={S.subSectionTag}>3 sessões</span>
+                                        <span className={styles.subSectionTag}>3 sessões</span>
                                     </div>
-                                    <div className={S.sessionList}>
+                                    <div className={styles.sessionList}>
                                         <SessionRow
                                             current
                                             device="MacBook Pro"
@@ -784,15 +834,15 @@ function ProfileForm() {
             </div>
 
             {/* Footer */}
-            <div className={S.footer}>
-                <div className={S.footerMeta}>
+            <div className={styles.footer}>
+                <div className={styles.footerMeta}>
                     <Lock size={11} />
                     <span>Dados criptografados em repouso · LGPD</span>
-                    <span className={S.footerStep}>
+                    <span className={styles.footerStep}>
                         Etapa {tabIdx + 1} de {PROFILE_TABS.length}
                     </span>
                 </div>
-                <div className={S.footerActions}>
+                <div className={styles.footerActions}>
                     <Button variant="outline" onClick={() => window.history.back()}>
                         Cancelar
                     </Button>
@@ -833,7 +883,7 @@ function Field({
 }: {
     label: string;
     children: React.ReactNode;
-    span?: keyof typeof S.span;
+    span?: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12;
     required?: boolean;
     optional?: boolean;
     hint?: string;
@@ -842,15 +892,15 @@ function Field({
     const id = useId();
 
     return (
-        <div className={S.span[span]}>
-            <Label htmlFor={id} className={S.fieldLabel}>
+        <div className={SPAN_CLASSES[span]}>
+            <Label htmlFor={id} className={styles.fieldLabel}>
                 {label}
-                {required && <span className={S.fieldRequired}>*</span>}
-                {optional && <span className={S.fieldOptional}>(opcional)</span>}
+                {required && <span className={styles.fieldRequired}>*</span>}
+                {optional && <span className={styles.fieldOptional}>(opcional)</span>}
             </Label>
             <div id={id}>{children}</div>
-            {hint && !error && <p className={S.fieldHint}>{hint}</p>}
-            {error && <p className={S.fieldError}>{error}</p>}
+            {hint && !error && <p className={styles.fieldHint}>{hint}</p>}
+            {error && <p className={styles.fieldError}>{error}</p>}
         </div>
     );
 }
@@ -872,22 +922,22 @@ function SessionRow({
     const Icon = isPhone ? Smartphone : Laptop;
 
     return (
-        <div className={S.sessionRow({current})}>
-            <div className={S.sessionIcon}>
+        <div className={sessionRow({current})}>
+            <div className={styles.sessionIcon}>
                 <Icon size={17} />
             </div>
-            <div className={S.sessionNameCell}>
-                <div className={S.sessionDevice}>
+            <div className={styles.sessionNameCell}>
+                <div className={styles.sessionDevice}>
                     {device}
-                    {current && <span className={S.sessionBadge}>Esta sessão</span>}
+                    {current && <span className={styles.sessionBadge}>Esta sessão</span>}
                 </div>
-                <div className={S.sessionSub}>
+                <div className={styles.sessionSub}>
                     {os} · {loc}
                 </div>
             </div>
-            <div className={S.sessionWhen}>{when}</div>
+            <div className={styles.sessionWhen}>{when}</div>
             {!current && (
-                <Button variant="ghost" size="sm" className={S.sessionEndBtn}>
+                <Button variant="ghost" size="sm" className={styles.sessionEndBtn}>
                     <LogOut size={13} />
                     Encerrar
                 </Button>

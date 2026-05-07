@@ -1,0 +1,402 @@
+@import "tailwindcss";
+
+/* ── Page ────────────────────────────────────────────────────────────────────── */
+
+.page {
+    @apply flex flex-col gap-6 p-6 max-w-[1200px] mx-auto w-full;
+}
+
+/* ── Header ──────────────────────────────────────────────────────────────────── */
+
+.header {
+    @apply flex items-start justify-between gap-4 flex-wrap;
+}
+
+.greeting {
+    @apply text-[22px] font-medium text-(--color-text-primary) leading-snug;
+}
+
+.dateLabel {
+    @apply text-sm text-(--color-text-secondary) mt-0.5;
+}
+
+.agentBadge {
+    @apply flex items-center gap-2 px-3 py-1.5 rounded-(--radius-card);
+    @apply border border-(--color-ai-border) bg-(--color-ai-bg);
+    @apply text-xs text-(--color-ai-text);
+}
+
+.agentDot {
+    @apply w-1.5 h-1.5 rounded-full bg-(--color-ai-badge-bg);
+}
+
+.agentLabel {
+    @apply text-(--color-text-secondary);
+}
+
+/* ── Alerts bar ──────────────────────────────────────────────────────────────── */
+
+.alertsBar {
+    @apply rounded-(--radius-card) border border-(--color-warning)/30 bg-(--color-warning)/5 p-4;
+}
+
+.alertsHead {
+    @apply flex items-center gap-2 text-sm font-medium text-(--color-warning) mb-3;
+}
+
+.alertsList {
+    @apply flex flex-col gap-2;
+}
+
+.alertRowBase {
+    @apply flex items-start gap-3 rounded-[6px] p-3;
+}
+
+.alertRowPrimary {
+    @apply bg-(--color-primary)/8;
+}
+
+.alertRowWarning {
+    @apply bg-(--color-warning)/8;
+}
+
+.alertTitle {
+    @apply text-sm font-medium text-(--color-text-primary) leading-snug;
+}
+
+.alertDesc {
+    @apply text-xs text-(--color-text-secondary) mt-0.5;
+}
+
+.alertBtn {
+    @apply ml-auto shrink-0 flex items-center gap-1 text-xs text-(--color-primary);
+    @apply hover:text-(--color-primary)/80 transition-colors whitespace-nowrap self-center;
+}
+
+/* ── Stats ───────────────────────────────────────────────────────────────────── */
+
+.statsGrid {
+    @apply grid grid-cols-2 sm:grid-cols-4 gap-3;
+}
+
+.statCard {
+    @apply flex items-center gap-3 p-4 rounded-(--radius-card);
+    @apply border border-(--color-border) bg-(--color-bg-card);
+}
+
+.statIconBase {
+    @apply flex items-center justify-center w-9 h-9 rounded-[8px] shrink-0;
+}
+
+.statIconNeutral {
+    @apply bg-(--color-text-secondary)/10 text-(--color-text-secondary);
+}
+
+.statIconSuccess {
+    @apply bg-(--color-success)/10 text-(--color-success);
+}
+
+.statIconMuted {
+    @apply bg-(--color-text-tertiary)/10 text-(--color-text-tertiary);
+}
+
+.statIconPrimary {
+    @apply bg-(--color-primary)/10 text-(--color-primary);
+}
+
+.statValue {
+    @apply text-2xl font-medium text-(--color-text-primary) font-mono tabular-nums leading-none;
+}
+
+.statLabel {
+    @apply text-xs text-(--color-text-secondary) mt-1;
+}
+
+/* ── Layout ──────────────────────────────────────────────────────────────────── */
+
+.cols {
+    @apply grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-6 items-start;
+}
+
+.colMain {
+    @apply flex flex-col gap-6;
+}
+
+.colSide {
+    @apply flex flex-col gap-6;
+}
+
+/* ── Section cards ───────────────────────────────────────────────────────────── */
+
+.sectionCard {
+    @apply rounded-(--radius-card) border border-(--color-border) bg-(--color-bg-card);
+}
+
+.sectionHead {
+    @apply flex items-center justify-between gap-4 px-5 pt-5 pb-4;
+}
+
+.sectionTitle {
+    @apply text-sm font-medium text-(--color-text-primary);
+}
+
+.sectionSub {
+    @apply text-[11px] text-(--color-text-tertiary) mt-0.5;
+}
+
+.sectionBody {
+    @apply px-5 pb-5;
+}
+
+.secLink {
+    @apply flex items-center gap-1 text-xs text-(--color-primary);
+    @apply hover:text-(--color-primary)/80 transition-colors;
+}
+
+/* ── Today appointments ──────────────────────────────────────────────────────── */
+
+.apptList {
+    @apply flex flex-col divide-y divide-(--color-border);
+}
+
+.apptRow {
+    @apply flex items-center gap-3 py-3.5 first:pt-0 last:pb-0;
+}
+
+.apptTime {
+    @apply flex flex-col items-end w-12 shrink-0;
+}
+
+.apptTimeStart {
+    @apply text-sm font-medium font-mono tabular-nums text-(--color-text-primary) leading-none;
+}
+
+.apptTimeEnd {
+    @apply text-[11px] text-(--color-text-tertiary) font-mono tabular-nums mt-0.5;
+}
+
+.apptPatBtn {
+    @apply flex items-center gap-2.5 flex-1 min-w-0 hover:opacity-75 transition-opacity text-left;
+}
+
+.apptPatName {
+    @apply text-sm font-medium text-(--color-text-primary) truncate leading-none;
+}
+
+.apptPatType {
+    @apply flex items-center gap-1 text-[11px] text-(--color-text-tertiary) mt-0.5;
+}
+
+.apptStartBtn {
+    @apply shrink-0 gap-1.5;
+}
+
+/* ── Status badge ────────────────────────────────────────────────────────────── */
+
+.statusBadgeBase {
+    @apply inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[11px] font-medium shrink-0;
+}
+
+.statusBadgeScheduled {
+    @apply bg-(--color-text-tertiary)/10 text-(--color-text-secondary);
+}
+
+.statusBadgeConfirmed {
+    @apply bg-(--color-primary)/10 text-(--color-primary);
+}
+
+.statusBadgeCompleted {
+    @apply bg-(--color-success)/10 text-(--color-success);
+}
+
+.statusBadgeCancelled {
+    @apply bg-(--color-danger)/10 text-(--color-danger);
+}
+
+.statusBadgeNoShow {
+    @apply bg-(--color-warning)/10 text-(--color-warning);
+}
+
+.statusBadgeArrived {
+    @apply bg-(--color-primary)/15 text-(--color-primary);
+}
+
+.statusBadgeInProgress {
+    @apply bg-(--color-primary)/15 text-(--color-primary);
+}
+
+.statusDot {
+    @apply w-1.5 h-1.5 rounded-full bg-current shrink-0;
+}
+
+/* ── Empty state ─────────────────────────────────────────────────────────────── */
+
+.empty {
+    @apply flex flex-col items-center gap-3 py-8 text-center;
+}
+
+.emptyIcon {
+    @apply text-(--color-text-tertiary);
+}
+
+.emptyTitle {
+    @apply text-sm font-medium text-(--color-text-primary);
+}
+
+.emptySub {
+    @apply text-xs text-(--color-text-secondary) max-w-[220px];
+}
+
+/* ── Recent records ──────────────────────────────────────────────────────────── */
+
+.evolList {
+    @apply flex flex-col gap-4;
+}
+
+.evolRow {
+    @apply flex items-start gap-3;
+}
+
+.evolBody {
+    @apply flex-1 min-w-0;
+}
+
+.evolMeta {
+    @apply flex items-center gap-2 flex-wrap text-[11px] text-(--color-text-tertiary);
+}
+
+.evolName {
+    @apply text-sm font-medium text-(--color-text-primary) leading-snug;
+    @apply hover:underline underline-offset-2 cursor-pointer;
+}
+
+.evolExcerpt {
+    @apply text-xs text-(--color-text-secondary) mt-1 line-clamp-2 leading-relaxed;
+}
+
+.evolDate {
+    @apply font-mono tabular-nums;
+}
+
+.aiBadge {
+    @apply inline-flex items-center gap-1 px-1.5 py-0.5 rounded-[4px];
+    @apply bg-(--color-ai-bg) text-(--color-ai-text) text-[10px];
+}
+
+/* ── Quick actions ───────────────────────────────────────────────────────────── */
+
+.qaGrid {
+    @apply grid grid-cols-2 gap-2;
+}
+
+.qaBtn {
+    @apply flex items-center gap-3 p-3 rounded-[8px] text-left;
+    @apply border border-(--color-border) bg-(--color-bg-surface);
+    @apply hover:bg-(--color-bg-card) hover:border-(--color-primary)/30;
+    @apply transition-all cursor-pointer;
+}
+
+.qaIcon {
+    @apply flex items-center justify-center w-8 h-8 rounded-[6px] shrink-0;
+    @apply bg-(--color-primary)/10 text-(--color-primary);
+}
+
+.qaLabel {
+    @apply text-xs font-medium text-(--color-text-primary) leading-snug;
+}
+
+.qaSub {
+    @apply text-[10px] text-(--color-text-tertiary) mt-0.5;
+}
+
+/* ── Upcoming appointments ───────────────────────────────────────────────────── */
+
+.upList {
+    @apply flex flex-col divide-y divide-(--color-border);
+}
+
+.upRow {
+    @apply flex items-center gap-3 py-3 first:pt-0 last:pb-0;
+    @apply hover:opacity-75 transition-opacity cursor-pointer;
+}
+
+.upDate {
+    @apply flex flex-col w-14 shrink-0;
+}
+
+.upDay {
+    @apply text-xs font-medium text-(--color-text-primary);
+}
+
+.upTime {
+    @apply text-[11px] text-(--color-text-tertiary) font-mono tabular-nums mt-0.5;
+}
+
+.upInfo {
+    @apply flex-1 min-w-0;
+}
+
+.upName {
+    @apply text-sm font-medium text-(--color-text-primary) truncate;
+}
+
+.upType {
+    @apply text-[11px] text-(--color-text-secondary) mt-0.5 truncate;
+}
+
+.upChevron {
+    @apply text-(--color-text-tertiary) shrink-0;
+}
+
+/* ── Patient initials avatar ─────────────────────────────────────────────────── */
+
+.patientInitialsAvatar {
+    @apply flex h-8 w-8 shrink-0 items-center justify-center rounded-full;
+    @apply bg-(--color-text-tertiary)/15 text-[11px] font-medium text-(--color-text-secondary);
+}
+
+/* ── Skeleton ────────────────────────────────────────────────────────────────── */
+
+.skeletonGreeting {
+    @apply h-7 w-48 mb-1;
+}
+
+.skeletonStatValue {
+    @apply h-6 w-8 mb-1;
+}
+
+.skeletonListCol {
+    @apply flex flex-col gap-4;
+}
+
+.skeletonListRow {
+    @apply flex items-start gap-3;
+}
+
+.skeletonApptCol {
+    @apply flex flex-col gap-3;
+}
+
+.skeletonApptRow {
+    @apply flex items-center gap-3;
+}
+
+.skeletonAvatar {
+    @apply h-8 w-8 rounded-full shrink-0;
+}
+
+.skeletonNameMd {
+    @apply h-3.5 w-32 mb-1.5;
+}
+
+.skeletonNameSm {
+    @apply h-3.5 w-28 mb-1.5;
+}
+
+.skeletonStatusBadge {
+    @apply h-5 w-20 rounded-full;
+}
+
+.skeletonRow {
+    @apply flex items-center gap-3 py-3.5;
+}

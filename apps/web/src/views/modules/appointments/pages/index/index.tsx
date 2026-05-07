@@ -25,8 +25,145 @@ import {Label} from '@/components/ui/componentes/label';
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@/components/ui/componentes/select';
 import {Sheet, SheetContent, SheetHeader, SheetTitle} from '@/components/ui/componentes/sheet';
 import {Textarea} from '@/components/ui/componentes/textarea';
+import {cva} from 'class-variance-authority';
 import {cn} from '@/lib/utils';
-import * as S from './styles';
+import styles from './styles.module.css';
+
+// ── Local variants ────────────────────────────────────────────────────────────
+
+const statusChip = cva(styles.statusChipBase, {
+    variants: {
+        status: {
+            SCHEDULED: styles.statusChipScheduled,
+            CONFIRMED: styles.statusChipConfirmed,
+            COMPLETED: styles.statusChipCompleted,
+            CANCELLED: styles.statusChipCancelled,
+            NO_SHOW: styles.statusChipNoShow,
+            ARRIVED: styles.statusChipArrived,
+            IN_PROGRESS: styles.statusChipInProgress,
+        },
+        active: {true: '', false: styles.statusChipInactive},
+    },
+});
+
+const statusDot = cva(styles.statusDotBase, {
+    variants: {
+        status: {
+            SCHEDULED: styles.statusDotScheduled,
+            CONFIRMED: styles.statusDotConfirmed,
+            COMPLETED: styles.statusDotCompleted,
+            CANCELLED: styles.statusDotCancelled,
+            NO_SHOW: styles.statusDotNoShow,
+            ARRIVED: styles.statusDotArrived,
+            IN_PROGRESS: styles.statusDotInProgress,
+        },
+    },
+});
+
+const segmentBtn = cva(styles.segmentBtnBase, {
+    variants: {
+        active: {true: styles.segmentBtnActive, false: styles.segmentBtnInactive},
+    },
+});
+
+const miniCell = cva(styles.miniCellBase, {
+    variants: {
+        inMonth: {true: '', false: styles.miniCellOutMonth},
+        isToday: {true: '', false: ''},
+        isSelected: {true: styles.miniCellSelected, false: ''},
+        inWeek: {true: styles.miniCellInWeek, false: ''},
+        hasAppts: {true: '', false: ''},
+    },
+});
+
+const gridDayHead = cva(styles.gridDayHeadBase, {
+    variants: {
+        isToday: {true: styles.gridDayHeadToday, false: styles.gridDayHeadDefault},
+    },
+});
+
+const gridDayHeadNum = cva(styles.gridDayHeadNumBase, {
+    variants: {
+        isToday: {true: styles.gridDayHeadNumToday, false: ''},
+    },
+});
+
+const gridDayCol = cva(styles.gridDayColBase, {
+    variants: {
+        isToday: {true: styles.gridDayColToday, false: ''},
+    },
+});
+
+const apptBlock = cva(styles.apptBlockBase, {
+    variants: {
+        status: {
+            SCHEDULED: styles.apptBlockScheduled,
+            CONFIRMED: styles.apptBlockConfirmed,
+            COMPLETED: styles.apptBlockCompleted,
+            CANCELLED: styles.apptBlockCancelled,
+            NO_SHOW: styles.apptBlockNoShow,
+            ARRIVED: styles.apptBlockArrived,
+            IN_PROGRESS: styles.apptBlockInProgress,
+        },
+        highlight: {true: styles.apptBlockHighlight, false: ''},
+    },
+});
+
+const apptBar = cva(styles.apptBarBase, {
+    variants: {
+        status: {
+            SCHEDULED: styles.apptBarScheduled,
+            CONFIRMED: styles.apptBarConfirmed,
+            COMPLETED: styles.apptBarCompleted,
+            CANCELLED: styles.apptBarCancelled,
+            NO_SHOW: styles.apptBarNoShow,
+            ARRIVED: styles.apptBarArrived,
+            IN_PROGRESS: styles.apptBarInProgress,
+        },
+    },
+});
+
+const monthGridCell = cva(styles.monthGridCellBase, {
+    variants: {
+        inMonth: {true: '', false: styles.monthGridCellOutMonth},
+        isToday: {true: styles.monthGridCellToday, false: ''},
+    },
+});
+
+const monthGridCellNum = cva(styles.monthGridCellNumBase, {
+    variants: {
+        inMonth: {true: styles.monthGridCellNumInMonth, false: styles.monthGridCellNumOutMonth},
+        isToday: {true: styles.monthGridCellNumToday, false: styles.monthGridCellNumNotToday},
+    },
+});
+
+const monthGridEvt = cva(styles.monthGridEvtBase, {
+    variants: {
+        status: {
+            SCHEDULED: styles.monthGridEvtScheduled,
+            CONFIRMED: styles.monthGridEvtConfirmed,
+            COMPLETED: styles.monthGridEvtCompleted,
+            CANCELLED: styles.monthGridEvtCancelled,
+            NO_SHOW: styles.monthGridEvtNoShow,
+            ARRIVED: styles.monthGridEvtArrived,
+            IN_PROGRESS: styles.monthGridEvtInProgress,
+        },
+    },
+});
+
+const sheetStatusBadge = cva(styles.sheetStatusBadgeBase, {
+    variants: {
+        status: {
+            SCHEDULED: styles.sheetStatusBadgeScheduled,
+            CONFIRMED: styles.sheetStatusBadgeConfirmed,
+            COMPLETED: styles.sheetStatusBadgeCompleted,
+            CANCELLED: styles.sheetStatusBadgeCancelled,
+            NO_SHOW: styles.sheetStatusBadgeNoShow,
+            ARRIVED: styles.sheetStatusBadgeArrived,
+            IN_PROGRESS: styles.sheetStatusBadgeInProgress,
+        },
+    },
+});
 
 // ── Route ─────────────────────────────────────────────────────────
 export const Route = createFileRoute('/_stackedLayout/appointments')({
@@ -295,17 +432,17 @@ function ApptBlock({apt, patients, style, compact, highlight, onClick}: ApptBloc
     return (
         <button
             type="button"
-            className={S.apptBlock({status: apt.status, highlight: highlight ?? false})}
+            className={apptBlock({status: apt.status, highlight: highlight ?? false})}
             style={style}
             onClick={onClick}
         >
-            <span className={S.apptBar({status: apt.status})} />
-            <div className={S.apptContent}>
-                <div className={S.apptTime}>
+            <span className={apptBar({status: apt.status})} />
+            <div className={styles.apptContent}>
+                <div className={styles.apptTime}>
                     {apt.start} – {apt.end}
                 </div>
-                <div className={S.apptName}>{getPatientName(patients, apt.patientId)}</div>
-                {!compact && <div className={S.apptType}>{TYPE_LABELS[apt.type]}</div>}
+                <div className={styles.apptName}>{getPatientName(patients, apt.patientId)}</div>
+                {!compact && <div className={styles.apptType}>{TYPE_LABELS[apt.type]}</div>}
             </div>
         </button>
     );
@@ -330,28 +467,28 @@ function WeekView({appts, patients, cursor, today, now, highlightId, onSlotClick
     const days = Array.from({length: 7}, (_, i) => addDays(ws, i));
 
     return (
-        <div className={S.weekHeaderMin}>
+        <div className={styles.weekHeaderMin}>
             {/* Header row */}
-            <div className={S.grid.weekHead}>
-                <div className={S.grid.timeColHead} />
+            <div className={styles.gridWeekHead}>
+                <div className={styles.gridTimeColHead} />
                 {days.map((d, i) => {
                     const isToday = sameDay(d, today);
 
                     return (
-                        <div key={i} className={S.grid.dayHead({isToday})}>
-                            <div className={S.dayOfWeekText}>{WEEKDAYS_SHORT[d.getDay()]}</div>
-                            <div className={S.grid.dayHeadNum({isToday})}>{d.getDate()}</div>
+                        <div key={i} className={gridDayHead({isToday})}>
+                            <div className={styles.dayOfWeekText}>{WEEKDAYS_SHORT[d.getDay()]}</div>
+                            <div className={gridDayHeadNum({isToday})}>{d.getDate()}</div>
                         </div>
                     );
                 })}
             </div>
 
             {/* Body */}
-            <div className={S.grid.body}>
-                <div className={S.grid.timeCol}>
+            <div className={styles.gridBody}>
+                <div className={styles.gridTimeCol}>
                     {HOURS.map((h) => (
-                        <div key={h} className={S.grid.timeRow} style={{height: HOUR_H_WEEK}}>
-                            <span className={S.grid.timeLabel}>{String(h).padStart(2, '0')}:00</span>
+                        <div key={h} className={styles.gridTimeRow} style={{height: HOUR_H_WEEK}}>
+                            <span className={styles.gridTimeLabel}>{String(h).padStart(2, '0')}:00</span>
                         </div>
                     ))}
                 </div>
@@ -362,18 +499,18 @@ function WeekView({appts, patients, cursor, today, now, highlightId, onSlotClick
                     const positioned = layoutOverlaps(dayAppts);
 
                     return (
-                        <div key={di} className={S.grid.dayCol({isToday})} style={{height: HOUR_H_WEEK * HOURS.length}}>
+                        <div key={di} className={gridDayCol({isToday})} style={{height: HOUR_H_WEEK * HOURS.length}}>
                             {HOURS.map((h, hi) => (
                                 <div
                                     key={h}
-                                    className={S.grid.slot}
+                                    className={styles.gridSlot}
                                     style={{top: hi * HOUR_H_WEEK, height: HOUR_H_WEEK}}
                                     onClick={() => onSlotClick(d, `${String(h).padStart(2, '0')}:00`)}
                                 />
                             ))}
                             {nowTop != null && nowTop >= 0 && (
-                                <div className={S.grid.nowLine} style={{top: nowTop}}>
-                                    <span className={S.grid.nowDot} />
+                                <div className={styles.gridNowLine} style={{top: nowTop}}>
+                                    <span className={styles.gridNowDot} />
                                 </div>
                             )}
                             {positioned.map(({apt, lane, lanes}) => {
@@ -419,42 +556,42 @@ function DayView({appts, patients, cursor, today, now, highlightId, onSlotClick,
     const positioned = layoutOverlaps(dayAppts);
 
     return (
-        <div className={S.dayHeaderMin}>
-            <div className={S.dayColHead}>
-                <div className={S.dayHeaderText}>{WEEKDAYS_LONG[cursor.getDay()]}</div>
-                <div className={S.dayHeadBaseline}>
-                    <span className={S.dayDateNum}>{cursor.getDate()}</span>
-                    <span className={S.dayHeaderText}>
+        <div className={styles.dayHeaderMin}>
+            <div className={styles.dayColHead}>
+                <div className={styles.dayHeaderText}>{WEEKDAYS_LONG[cursor.getDay()]}</div>
+                <div className={styles.dayHeadBaseline}>
+                    <span className={styles.dayDateNum}>{cursor.getDate()}</span>
+                    <span className={styles.dayHeaderText}>
                         {MONTH_NAMES[cursor.getMonth()]} · {cursor.getFullYear()}
                     </span>
                     {dayAppts.length > 0 && (
-                        <span className={S.apptCountText}>
+                        <span className={styles.apptCountText}>
                             {dayAppts.length} {dayAppts.length === 1 ? 'consulta' : 'consultas'}
                         </span>
                     )}
                 </div>
             </div>
-            <div className={S.grid.body}>
-                <div className={S.grid.timeCol}>
+            <div className={styles.gridBody}>
+                <div className={styles.gridTimeCol}>
                     {HOURS.map((h) => (
-                        <div key={h} className={S.grid.timeRow} style={{height: HOUR_H_DAY}}>
-                            <span className={S.grid.timeLabel}>{String(h).padStart(2, '0')}:00</span>
+                        <div key={h} className={styles.gridTimeRow} style={{height: HOUR_H_DAY}}>
+                            <span className={styles.gridTimeLabel}>{String(h).padStart(2, '0')}:00</span>
                         </div>
                     ))}
                 </div>
-                <div className={S.dayBodyCol} style={{height: HOUR_H_DAY * HOURS.length}}>
+                <div className={styles.dayBodyCol} style={{height: HOUR_H_DAY * HOURS.length}}>
                     {HOURS.map((h, hi) => (
                         <div
                             key={h}
-                            className={S.grid.slot}
+                            className={styles.gridSlot}
                             style={{top: hi * HOUR_H_DAY, height: HOUR_H_DAY}}
                             onClick={() => onSlotClick(cursor, `${String(h).padStart(2, '0')}:00`)}
                         />
                     ))}
                     {nowTop != null && nowTop >= 0 && (
-                        <div className={S.grid.nowLine} style={{top: nowTop}}>
-                            <span className={S.grid.nowDot} />
-                            <span className={S.nowTimeLabel}>
+                        <div className={styles.gridNowLine} style={{top: nowTop}}>
+                            <span className={styles.gridNowDot} />
+                            <span className={styles.nowTimeLabel}>
                                 {String(now.h).padStart(2, '0')}:{String(now.m).padStart(2, '0')}
                             </span>
                         </div>
@@ -481,10 +618,10 @@ function DayView({appts, patients, cursor, today, now, highlightId, onSlotClick,
                         );
                     })}
                     {dayAppts.length === 0 && (
-                        <div className={S.grid.emptyDay}>
-                            <CalendarX2 className={S.emptyDayCalIcon} />
-                            <div className={S.grid.emptyDayTitle}>Sem consultas neste dia</div>
-                            <div className={S.grid.emptyDaySub}>
+                        <div className={styles.gridEmptyDay}>
+                            <CalendarX2 className={styles.emptyDayCalIcon} />
+                            <div className={styles.gridEmptyDayTitle}>Sem consultas neste dia</div>
+                            <div className={styles.gridEmptyDaySub}>
                                 Clique em qualquer horário ou use &quot;Novo agendamento&quot;.
                             </div>
                         </div>
@@ -509,14 +646,14 @@ function MonthView({appts, patients, cursor, today, highlightId, onSlotClick, on
 
     return (
         <div>
-            <div className={S.monthGrid.head}>
+            <div className={styles.monthGridHead}>
                 {WEEKDAYS_SHORT.map((w, i) => (
-                    <div key={i} className={S.monthGrid.headCell}>
+                    <div key={i} className={styles.monthGridHeadCell}>
                         {w.charAt(0).toUpperCase() + w.slice(1, 3)}
                     </div>
                 ))}
             </div>
-            <div className={S.monthGrid.grid}>
+            <div className={styles.monthGridGrid}>
                 {cells.map((d, i) => {
                     const inMonth = d.getMonth() === cursor.getMonth();
                     const isToday = sameDay(d, today);
@@ -529,13 +666,13 @@ function MonthView({appts, patients, cursor, today, highlightId, onSlotClick, on
                     return (
                         <div
                             key={i}
-                            className={S.monthGrid.cell({inMonth, isToday})}
+                            className={monthGridCell({inMonth, isToday})}
                             onClick={() => onSlotClick(d, '09:00')}
                         >
-                            <div className={S.monthGrid.cellHead}>
+                            <div className={styles.monthGridCellHead}>
                                 <button
                                     type="button"
-                                    className={S.monthGrid.cellNum({isToday, inMonth})}
+                                    className={monthGridCellNum({isToday, inMonth})}
                                     onClick={(e) => {
                                         e.stopPropagation();
                                         onGotoDay(d);
@@ -549,7 +686,7 @@ function MonthView({appts, patients, cursor, today, highlightId, onSlotClick, on
                                     key={a.id}
                                     type="button"
                                     className={cn(
-                                        S.monthGrid.evt({status: a.status}),
+                                        monthGridEvt({status: a.status}),
                                         a.id === highlightId ? 'ring-1 ring-(--color-primary)' : ''
                                     )}
                                     onClick={(e) => {
@@ -557,11 +694,11 @@ function MonthView({appts, patients, cursor, today, highlightId, onSlotClick, on
                                         onApptClick(a.id);
                                     }}
                                 >
-                                    <span className={S.apptTimeMono}>{a.start}</span>
+                                    <span className={styles.apptTimeMono}>{a.start}</span>
                                     {getPatientName(patients, a.patientId).split(' ').slice(0, 2).join(' ')}
                                 </button>
                             ))}
-                            {more > 0 && <div className={S.monthGrid.moreBtn}>+{more} mais</div>}
+                            {more > 0 && <div className={styles.monthGridMoreBtn}>+{more} mais</div>}
                         </div>
                     );
                 })}
@@ -611,34 +748,34 @@ function MiniCalendar({cursor, view, appts, today, onPickDay}: MiniCalProps) {
     const label = `${MONTH_NAMES[mc.getMonth()].slice(0, 3)} ${mc.getFullYear()}`;
 
     return (
-        <div className={S.mini.root}>
-            <div className={S.mini.head}>
-                <span className={S.mini.monthLabel}>{label}</span>
-                <div className={S.mini.arrows}>
+        <div className={styles.miniRoot}>
+            <div className={styles.miniHead}>
+                <span className={styles.miniMonthLabel}>{label}</span>
+                <div className={styles.miniArrows}>
                     <button
                         type="button"
-                        className={S.mini.arrowBtn}
+                        className={styles.miniArrowBtn}
                         onClick={() => setMc(new Date(mc.getFullYear(), mc.getMonth() - 1, 1))}
                     >
                         <ChevronLeft className="size-3" />
                     </button>
                     <button
                         type="button"
-                        className={S.mini.arrowBtn}
+                        className={styles.miniArrowBtn}
                         onClick={() => setMc(new Date(mc.getFullYear(), mc.getMonth() + 1, 1))}
                     >
                         <ChevronRight className="size-3" />
                     </button>
                 </div>
             </div>
-            <div className={S.mini.dowRow}>
+            <div className={styles.miniDowRow}>
                 {WEEKDAYS_SHORT.map((w, i) => (
-                    <div key={i} className={S.mini.dowCell}>
+                    <div key={i} className={styles.miniDowCell}>
                         {w.charAt(0).toUpperCase()}
                     </div>
                 ))}
             </div>
-            <div className={S.mini.grid}>
+            <div className={styles.miniGrid}>
                 {cells.map((d, i) => {
                     const inMonth = d.getMonth() === mc.getMonth();
                     const isToday = sameDay(d, today);
@@ -650,7 +787,7 @@ function MiniCalendar({cursor, view, appts, today, onPickDay}: MiniCalProps) {
                         <button
                             key={i}
                             type="button"
-                            className={S.mini.cell({
+                            className={miniCell({
                                 inMonth,
                                 isToday: isToday && !isSelected,
                                 isSelected,
@@ -660,11 +797,11 @@ function MiniCalendar({cursor, view, appts, today, onPickDay}: MiniCalProps) {
                             onClick={() => onPickDay(d)}
                         >
                             {isToday && !isSelected ? (
-                                <span className={S.mini.todayNum}>{d.getDate()}</span>
+                                <span className={styles.miniTodayNum}>{d.getDate()}</span>
                             ) : (
                                 <span
                                     className={cn(
-                                        S.mini.cellNum,
+                                        styles.miniCellNum,
                                         // eslint-disable-next-line no-nested-ternary -- conditional class chain is clearest as nested
                                         isSelected
                                             ? 'text-white'
@@ -676,12 +813,12 @@ function MiniCalendar({cursor, view, appts, today, onPickDay}: MiniCalProps) {
                                     {d.getDate()}
                                 </span>
                             )}
-                            {has && !isSelected && <span className={S.mini.dot} />}
+                            {has && !isSelected && <span className={styles.miniDot} />}
                         </button>
                     );
                 })}
             </div>
-            <button type="button" className={S.mini.todayBtn} onClick={() => onPickDay(today)}>
+            <button type="button" className={styles.miniTodayBtn} onClick={() => onPickDay(today)}>
                 Voltar para hoje
             </button>
         </div>
@@ -711,12 +848,12 @@ function AppointmentDetailSheet({apt, patients, onClose, onEdit, onCancel, onOpe
 
     return (
         <Sheet open onOpenChange={(o) => !o && onClose()}>
-            <SheetContent className={S.detailSheetPanel}>
+            <SheetContent className={styles.detailSheetPanel}>
                 <SheetHeader>
                     <SheetTitle className="sr-only">Detalhes do agendamento</SheetTitle>
-                    <div className={S.sheetInfoRow}>
-                        <span className={S.sheet.eyebrow}>Agendamento</span>
-                        <span className={S.sheet.statusBadge({status: apt.status})}>
+                    <div className={styles.sheetInfoRow}>
+                        <span className={styles.sheetEyebrow}>Agendamento</span>
+                        <span className={sheetStatusBadge({status: apt.status})}>
                             <span
                                 className={cn('w-1.5 h-1.5 rounded-full shrink-0', {
                                     'bg-blue-500': apt.status === 'SCHEDULED',
@@ -735,63 +872,63 @@ function AppointmentDetailSheet({apt, patients, onClose, onEdit, onCancel, onOpe
 
                 <div className="mt-6">
                     {/* Patient card */}
-                    <div className={S.sheet.patientCard}>
-                        <div className={S.patAvatarLg}>{patient ? getInitials(patient.name) : '?'}</div>
-                        <div className={S.sheet.patientBody}>
-                            <div className={S.sheet.patientName}>{patient?.name ?? '—'}</div>
+                    <div className={styles.sheetPatientCard}>
+                        <div className={styles.patAvatarLg}>{patient ? getInitials(patient.name) : '?'}</div>
+                        <div className={styles.sheetPatientBody}>
+                            <div className={styles.sheetPatientName}>{patient?.name ?? '—'}</div>
                             {asStr(patient?.email) && (
-                                <div className={S.sheet.patientMeta}>{asStr(patient?.email)}</div>
+                                <div className={styles.sheetPatientMeta}>{asStr(patient?.email)}</div>
                             )}
                         </div>
-                        <button type="button" className={S.patProfileLink} onClick={() => onOpenPatient(apt.patientId)}>
+                        <button type="button" className={styles.patProfileLink} onClick={() => onOpenPatient(apt.patientId)}>
                             Ver perfil <ArrowUpRight className="size-3" />
                         </button>
                     </div>
 
                     {/* Schedule */}
-                    <div className={S.sheet.section}>
-                        <div className={S.sheet.sectionTitle}>Horário</div>
-                        <div className={S.sheet.kvGrid}>
-                            <div className={S.sheet.kv}>
-                                <span className={S.sheet.kvKey}>Data</span>
-                                <span className={S.sheetKvText}>
+                    <div className={styles.sheetSection}>
+                        <div className={styles.sheetSectionTitle}>Horário</div>
+                        <div className={styles.sheetKvGrid}>
+                            <div className={styles.sheetKv}>
+                                <span className={styles.sheetKvKey}>Data</span>
+                                <span className={styles.sheetKvText}>
                                     {WEEKDAYS_LONG[date.getDay()]}, {da} de {MONTH_NAMES[mo - 1]} de {y}
                                 </span>
                             </div>
-                            <div className={S.sheet.kv}>
-                                <span className={S.sheet.kvKey}>Horário</span>
-                                <span className={S.sheet.kvVal}>
+                            <div className={styles.sheetKv}>
+                                <span className={styles.sheetKvKey}>Horário</span>
+                                <span className={styles.sheetKvVal}>
                                     {apt.start} – {apt.end}
                                 </span>
                             </div>
-                            <div className={S.sheet.kv}>
-                                <span className={S.sheet.kvKey}>Duração</span>
-                                <span className={S.sheet.kvVal}>{durLabel}</span>
+                            <div className={styles.sheetKv}>
+                                <span className={styles.sheetKvKey}>Duração</span>
+                                <span className={styles.sheetKvVal}>{durLabel}</span>
                             </div>
-                            <div className={S.sheet.kv}>
-                                <span className={S.sheet.kvKey}>Tipo</span>
-                                <span className={S.sheetKvText}>{TYPE_LABELS[apt.type]}</span>
+                            <div className={styles.sheetKv}>
+                                <span className={styles.sheetKvKey}>Tipo</span>
+                                <span className={styles.sheetKvText}>{TYPE_LABELS[apt.type]}</span>
                             </div>
                         </div>
                     </div>
 
                     {/* Notes */}
-                    <div className={S.sheet.section}>
-                        <div className={S.sheet.sectionTitle}>Observações</div>
+                    <div className={styles.sheetSection}>
+                        <div className={styles.sheetSectionTitle}>Observações</div>
                         {apt.note ? (
-                            <p className={S.sheet.notes}>{apt.note}</p>
+                            <p className={styles.sheetNotes}>{apt.note}</p>
                         ) : (
-                            <p className={S.sheet.notesEmpty}>Sem observações registradas.</p>
+                            <p className={styles.sheetNotesEmpty}>Sem observações registradas.</p>
                         )}
                     </div>
 
                     {/* Actions */}
                     {!isDone && (
-                        <div className={S.sheet.actions}>
+                        <div className={styles.sheetActions}>
                             <Button size="sm" variant="outline" className="gap-1.5" onClick={onEdit}>
                                 <Pencil className="size-3.5" /> Editar
                             </Button>
-                            <Button size="sm" variant="outline" className={S.cancelBtn} onClick={onCancel}>
+                            <Button size="sm" variant="outline" className={styles.cancelBtn} onClick={onCancel}>
                                 <Trash2 className="size-3.5" /> Cancelar consulta
                             </Button>
                         </div>
@@ -845,23 +982,23 @@ function EditAppointmentDialog({apt, onClose, onSaved}: EditDialogProps) {
 
     return (
         <Dialog open onOpenChange={(o) => !o && onClose()}>
-            <DialogContent className={S.editDialogWidth}>
+            <DialogContent className={styles.editDialogWidth}>
                 <DialogHeader>
                     <DialogTitle>Editar agendamento</DialogTitle>
                 </DialogHeader>
-                <div className={S.formBody}>
-                    <div className={S.formRow}>
-                        <div className={S.formField}>
+                <div className={styles.formBody}>
+                    <div className={styles.formRow}>
+                        <div className={styles.formField}>
                             <Label>Data</Label>
                             <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
                         </div>
-                        <div className={S.formField}>
+                        <div className={styles.formField}>
                             <Label>Horário</Label>
                             <Input type="time" value={startTime} onChange={(e) => setStartTime(e.target.value)} />
                         </div>
                     </div>
-                    <div className={S.formRow}>
-                        <div className={S.formField}>
+                    <div className={styles.formRow}>
+                        <div className={styles.formField}>
                             <Label>Duração</Label>
                             <Select value={String(durMin)} onValueChange={(v) => setDurMin(Number(v))}>
                                 <SelectTrigger>
@@ -878,7 +1015,7 @@ function EditAppointmentDialog({apt, onClose, onSaved}: EditDialogProps) {
                                 </SelectContent>
                             </Select>
                         </div>
-                        <div className={S.formField}>
+                        <div className={styles.formField}>
                             <Label>Tipo</Label>
                             <Select value={type} onValueChange={(v) => setType(v as AppointmentType)}>
                                 <SelectTrigger>
@@ -894,9 +1031,9 @@ function EditAppointmentDialog({apt, onClose, onSaved}: EditDialogProps) {
                             </Select>
                         </div>
                     </div>
-                    <div className={S.formField}>
+                    <div className={styles.formField}>
                         <Label>
-                            Observações <span className={S.optionalLabel}>opcional</span>
+                            Observações <span className={styles.optionalLabel}>opcional</span>
                         </Label>
                         <Textarea
                             rows={3}
@@ -906,7 +1043,7 @@ function EditAppointmentDialog({apt, onClose, onSaved}: EditDialogProps) {
                         />
                     </div>
                 </div>
-                <div className={S.formFooter}>
+                <div className={styles.formFooter}>
                     <Button variant="outline" onClick={onClose}>
                         Cancelar
                     </Button>
@@ -984,28 +1121,28 @@ function NewAppointmentDialog({prefill, defaultMemberId, onClose, onSaved}: NewA
 
     return (
         <Dialog open onOpenChange={(o) => !o && onClose()}>
-            <DialogContent className={S.newApptDialogWidth}>
+            <DialogContent className={styles.newApptDialogWidth}>
                 <DialogHeader>
                     <DialogTitle>Novo agendamento</DialogTitle>
                 </DialogHeader>
-                <div className={S.formBody}>
+                <div className={styles.formBody}>
                     {/* Patient */}
-                    <div className={cn(S.formField, 'relative')}>
+                    <div className={cn(styles.formField, 'relative')}>
                         <Label>Paciente</Label>
                         {selectedPatient ? (
-                            <div className={S.patSearchPill}>
-                                <div className={S.patAvatarSm}>{getInitials(selectedPatient.name)}</div>
-                                <span className={S.patSearchName}>{selectedPatient.name}</span>
+                            <div className={styles.patSearchPill}>
+                                <div className={styles.patAvatarSm}>{getInitials(selectedPatient.name)}</div>
+                                <span className={styles.patSearchName}>{selectedPatient.name}</span>
                                 <button
                                     type="button"
-                                    className={S.patClearBtn}
+                                    className={styles.patClearBtn}
                                     onClick={() => setSelectedPatient(null)}
                                 >
                                     <X className="size-3.5" />
                                 </button>
                             </div>
                         ) : (
-                            <div className={S.patSearchWrap}>
+                            <div className={styles.patSearchWrap}>
                                 <Input
                                     placeholder="Buscar paciente..."
                                     value={patientSearch}
@@ -1017,19 +1154,19 @@ function NewAppointmentDialog({prefill, defaultMemberId, onClose, onSaved}: NewA
                                     onBlur={() => setTimeout(() => setShowDrop(false), 200)}
                                 />
                                 {showDrop && patientsList.length > 0 && (
-                                    <div className={S.patSearchDrop}>
+                                    <div className={styles.patSearchDrop}>
                                         {patientsList.map((p) => (
                                             <button
                                                 key={p.id}
                                                 type="button"
-                                                className={S.patSearchRow}
+                                                className={styles.patSearchRow}
                                                 onMouseDown={() => {
                                                     setSelectedPatient(p);
                                                     setPatientSearch('');
                                                     setShowDrop(false);
                                                 }}
                                             >
-                                                <div className={S.patAvatarSm}>{getInitials(p.name)}</div>
+                                                <div className={styles.patAvatarSm}>{getInitials(p.name)}</div>
                                                 <span className="truncate">{p.name}</span>
                                             </button>
                                         ))}
@@ -1039,19 +1176,19 @@ function NewAppointmentDialog({prefill, defaultMemberId, onClose, onSaved}: NewA
                         )}
                     </div>
 
-                    <div className={S.formRow}>
-                        <div className={S.formField}>
+                    <div className={styles.formRow}>
+                        <div className={styles.formField}>
                             <Label>Data</Label>
                             <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
                         </div>
-                        <div className={S.formField}>
+                        <div className={styles.formField}>
                             <Label>Horário</Label>
                             <Input type="time" value={startTime} onChange={(e) => setStartTime(e.target.value)} />
                         </div>
                     </div>
 
-                    <div className={S.formRow}>
-                        <div className={S.formField}>
+                    <div className={styles.formRow}>
+                        <div className={styles.formField}>
                             <Label>Duração</Label>
                             <Select value={String(durMin)} onValueChange={(v) => setDurMin(Number(v))}>
                                 <SelectTrigger>
@@ -1068,7 +1205,7 @@ function NewAppointmentDialog({prefill, defaultMemberId, onClose, onSaved}: NewA
                                 </SelectContent>
                             </Select>
                         </div>
-                        <div className={S.formField}>
+                        <div className={styles.formField}>
                             <Label>Tipo</Label>
                             <Select value={type} onValueChange={(v) => setType(v as CreateAppointmentDtoType)}>
                                 <SelectTrigger>
@@ -1085,9 +1222,9 @@ function NewAppointmentDialog({prefill, defaultMemberId, onClose, onSaved}: NewA
                         </div>
                     </div>
 
-                    <div className={S.formField}>
+                    <div className={styles.formField}>
                         <Label>
-                            Observações <span className={S.optionalLabel}>opcional</span>
+                            Observações <span className={styles.optionalLabel}>opcional</span>
                         </Label>
                         <Textarea
                             rows={2}
@@ -1097,7 +1234,7 @@ function NewAppointmentDialog({prefill, defaultMemberId, onClose, onSaved}: NewA
                         />
                     </div>
                 </div>
-                <div className={S.formFooter}>
+                <div className={styles.formFooter}>
                     <Button variant="outline" onClick={onClose}>
                         Cancelar
                     </Button>
@@ -1139,14 +1276,14 @@ function CancelDialog({apt, onClose, onCancelled}: CancelDialogProps) {
 
     return (
         <Dialog open onOpenChange={(o) => !o && onClose()}>
-            <DialogContent className={S.cancelDialogWidth}>
+            <DialogContent className={styles.cancelDialogWidth}>
                 <DialogHeader>
                     <DialogTitle>Cancelar consulta</DialogTitle>
                 </DialogHeader>
-                <p className={S.cancelDialogText}>Tem certeza que deseja cancelar esta consulta?</p>
-                <div className={cn(S.formField, 'mt-2')}>
+                <p className={styles.cancelDialogText}>Tem certeza que deseja cancelar esta consulta?</p>
+                <div className={cn(styles.formField, 'mt-2')}>
                     <Label>
-                        Motivo <span className={S.optionalLabel}>opcional</span>
+                        Motivo <span className={styles.optionalLabel}>opcional</span>
                     </Label>
                     <Textarea
                         rows={2}
@@ -1155,7 +1292,7 @@ function CancelDialog({apt, onClose, onCancelled}: CancelDialogProps) {
                         onChange={(e) => setReason(e.target.value)}
                     />
                 </div>
-                <div className={S.formFooter}>
+                <div className={styles.formFooter}>
                     <Button variant="outline" onClick={onClose}>
                         Voltar
                     </Button>
@@ -1288,20 +1425,20 @@ export function AppointmentsPage() {
     };
 
     return (
-        <div className={S.page}>
+        <div className={styles.page}>
             {/* Header */}
-            <div className={S.header}>
-                <div className={S.headerLeft}>
-                    <CalendarDays className={S.headerCalIcon} />
-                    <h1 className={S.pageTitle}>Agenda</h1>
+            <div className={styles.header}>
+                <div className={styles.headerLeft}>
+                    <CalendarDays className={styles.headerCalIcon} />
+                    <h1 className={styles.pageTitle}>Agenda</h1>
                 </div>
-                <div className={S.headerRight}>
-                    <div className={S.segmented}>
+                <div className={styles.headerRight}>
+                    <div className={styles.segmented}>
                         {(['day', 'week', 'month'] as ViewMode[]).map((v) => (
                             <button
                                 key={v}
                                 type="button"
-                                className={S.segmentBtn({active: view === v})}
+                                className={segmentBtn({active: view === v})}
                                 onClick={() => setView(v)}
                             >
                                 {({day: 'Dia', week: 'Semana', month: 'Mês'} as const)[v]}
@@ -1315,30 +1452,30 @@ export function AppointmentsPage() {
             </div>
 
             {/* Period nav + status filters */}
-            <div className={S.periodBar}>
-                <div className={S.periodLeft}>
+            <div className={styles.periodBar}>
+                <div className={styles.periodLeft}>
                     <Button size="sm" variant="outline" onClick={goToday}>
                         Hoje
                     </Button>
-                    <div className={S.arrowsGroup}>
-                        <button type="button" className={S.arrowBtn} onClick={goPrev}>
+                    <div className={styles.arrowsGroup}>
+                        <button type="button" className={styles.arrowBtn} onClick={goPrev}>
                             <ChevronLeft className="size-4" />
                         </button>
-                        <button type="button" className={S.arrowBtn} onClick={goNext}>
+                        <button type="button" className={styles.arrowBtn} onClick={goNext}>
                             <ChevronRight className="size-4" />
                         </button>
                     </div>
-                    <span className={S.periodLabel}>{periodLabel}</span>
+                    <span className={styles.periodLabel}>{periodLabel}</span>
                 </div>
-                <div className={S.statusFilterRow}>
+                <div className={styles.statusFilterRow}>
                     {ALL_STATUSES.map((s) => (
                         <button
                             key={s}
                             type="button"
-                            className={S.statusChip({status: s, active: statusFilters.has(s)})}
+                            className={statusChip({status: s, active: statusFilters.has(s)})}
                             onClick={() => toggleStatus(s)}
                         >
-                            <span className={S.statusDot({status: s})} />
+                            <span className={statusDot({status: s})} />
                             {STATUS_LABELS[s]}
                         </button>
                     ))}
@@ -1346,8 +1483,8 @@ export function AppointmentsPage() {
             </div>
 
             {/* Main layout */}
-            <div className={S.mainLayout}>
-                <aside className={S.sidebar}>
+            <div className={styles.mainLayout}>
+                <aside className={styles.sidebar}>
                     <MiniCalendar
                         cursor={cursor}
                         view={view}
@@ -1360,7 +1497,7 @@ export function AppointmentsPage() {
                         }}
                     />
                 </aside>
-                <div className={S.calBody}>
+                <div className={styles.calBody}>
                     {view === 'day' && <DayView {...sharedProps} />}
                     {view === 'week' && <WeekView {...sharedProps} />}
                     {view === 'month' && (

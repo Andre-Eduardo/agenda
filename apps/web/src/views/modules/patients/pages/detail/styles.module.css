@@ -1,0 +1,264 @@
+@import "tailwindcss";
+
+/* ── Page ────────────────────────────────────────────────────────────────────── */
+
+.pageRoot {
+    @apply flex flex-col gap-[18px] p-6 bg-(--color-bg-page);
+}
+
+.pageErrorState {
+    @apply flex flex-col items-center justify-center gap-4 p-12 text-(--color-text-secondary);
+}
+
+/* ── Action grid ─────────────────────────────────────────────────────────────── */
+
+.actionGrid {
+    @apply grid grid-cols-4 gap-[10px];
+}
+
+.actionTileRoot {
+    @apply flex cursor-pointer items-center gap-3 rounded-[12px] border border-(--color-border) bg-(--color-bg-card) px-4 py-[14px] text-left transition-colors hover:border-(--color-border-hover) hover:bg-(--color-bg-surface);
+}
+
+.actionTileIconBase {
+    @apply inline-flex size-[38px] shrink-0 items-center justify-center rounded-[10px];
+}
+
+.actionTileIconAI {
+    @apply bg-(--color-ai-bg) text-(--color-ai-text);
+}
+
+.actionTileIconDefault {
+    @apply bg-(--color-primary-surface) text-(--color-primary-text);
+}
+
+.actionTileLabel {
+    @apply text-[14px] font-medium leading-[1.3] text-(--color-text-primary);
+}
+
+.actionTileSub {
+    @apply mt-[3px] text-[12px] leading-[1.4] text-(--color-text-secondary);
+}
+
+.actionTileChevron {
+    @apply size-[14px] shrink-0 text-(--color-text-tertiary);
+}
+
+.actionTileBody {
+    @apply min-w-0 flex-1;
+}
+
+/* ── Info group ──────────────────────────────────────────────────────────────── */
+
+.infoGroupRoot {
+    @apply border-b border-(--color-border) py-[14px] first:pt-0 last:border-none last:pb-0;
+}
+
+.infoGroupTitle {
+    @apply mb-3 text-[12px] font-medium uppercase tracking-[0.06em] text-(--color-text-tertiary);
+}
+
+/* ── Emergency ───────────────────────────────────────────────────────────────── */
+
+.emergencyBox {
+    @apply mt-3 rounded-[8px] bg-(--color-bg-surface) px-3 py-[10px];
+}
+
+.emergencyLabel {
+    @apply mb-2 text-[11px] font-medium uppercase tracking-[0.06em] text-(--color-text-tertiary);
+}
+
+/* ── Allergy ─────────────────────────────────────────────────────────────────── */
+
+.allergyBox {
+    @apply flex gap-[10px] rounded-[8px] border border-(--color-danger)/30 bg-(--color-danger-surface) p-3;
+}
+
+.allergyIcon {
+    @apply mt-[1px] size-[14px] shrink-0 text-(--color-danger);
+}
+
+.allergyText {
+    @apply text-[13px] leading-[1.4] text-(--color-danger);
+}
+
+/* ── Profile text ────────────────────────────────────────────────────────────── */
+
+.profileText {
+    @apply text-[13px] leading-[1.5] text-(--color-text-primary);
+}
+
+.profileTextSecondary {
+    @apply text-[13px] leading-[1.5] text-(--color-text-secondary);
+}
+
+.profileTextEmpty {
+    @apply text-[13px] italic text-(--color-text-tertiary);
+}
+
+/* ── Record row ──────────────────────────────────────────────────────────────── */
+
+.recordRow {
+    @apply grid cursor-pointer grid-cols-[80px_12px_1fr_auto] items-start gap-[14px] border-b border-(--color-border) py-[14px] first:pt-0 last:border-none last:pb-0;
+}
+
+.recordRow:hover .recordSummary {
+    color: var(--color-text-primary);
+}
+
+.recordDateText {
+    @apply text-[13px] font-medium leading-[1.2] text-(--color-text-primary);
+}
+
+.recordTime {
+    @apply mt-[2px] font-mono text-[12px] tabular-nums text-(--color-text-tertiary);
+}
+
+.recordDot {
+    @apply mt-[5px] size-[10px] rounded-full bg-(--color-primary);
+    box-shadow: 0 0 0 3px var(--color-primary-surface);
+}
+
+.recordTags {
+    @apply mb-[6px] flex flex-wrap items-center gap-[6px];
+}
+
+.recordTypeTag {
+    @apply inline-flex items-center rounded-(--radius-badge) border border-(--color-border) bg-(--color-bg-surface) px-2 py-[1px] text-xs text-(--color-text-secondary);
+}
+
+.recordAiTag {
+    @apply inline-flex items-center gap-1 rounded-(--radius-badge) bg-(--color-ai-bg) px-2 py-[1px] text-xs text-(--color-ai-text);
+}
+
+.recordSummary {
+    @apply line-clamp-2 text-[13px] leading-[1.5] text-(--color-text-secondary) transition-colors duration-[120ms];
+}
+
+.recordChevron {
+    @apply mt-[3px] size-[14px] shrink-0 text-(--color-text-tertiary);
+}
+
+/* ── Form item ───────────────────────────────────────────────────────────────── */
+
+.formItemRootBase {
+    @apply flex items-center gap-3 rounded-[10px] border border-(--color-border) px-[14px] py-3;
+}
+
+.formItemRootDone {
+    @apply bg-(--color-bg-surface);
+}
+
+.formItemIconBase {
+    @apply size-4 shrink-0;
+}
+
+.formItemIconDone {
+    @apply text-(--color-success);
+}
+
+.formItemIconNotDone {
+    @apply text-(--color-text-tertiary);
+}
+
+.formBadgeBase {
+    @apply inline-flex items-center rounded-(--radius-badge) border px-2 py-[2px] text-xs font-medium;
+}
+
+.formBadgeDone {
+    @apply border-(--color-success)/30 bg-(--color-success-surface) text-(--color-success);
+}
+
+.formBadgeNotDone {
+    @apply border-(--color-border) bg-(--color-bg-surface) text-(--color-text-secondary);
+}
+
+.formItemBody {
+    @apply min-w-0 flex-1;
+}
+
+.formItemTitle {
+    @apply text-[13px] font-medium text-(--color-text-primary);
+}
+
+.formItemMeta {
+    @apply mt-[2px] text-[12px] text-(--color-text-tertiary);
+}
+
+/* ── Skeleton ────────────────────────────────────────────────────────────────── */
+
+.skeletonRoot {
+    @apply flex flex-col gap-[18px] p-6;
+}
+
+.skeletonHeaderShell {
+    @apply flex items-center justify-between gap-[18px] rounded-(--radius-card) border border-(--color-border) bg-(--color-bg-card) px-5 py-[18px];
+}
+
+.skeletonHeaderLeft {
+    @apply flex items-center gap-[18px];
+}
+
+.skeletonHeaderRight {
+    @apply flex gap-2;
+}
+
+.skeletonActionGrid {
+    @apply grid grid-cols-4 gap-[10px];
+}
+
+.skeletonHeaderAvatar {
+    @apply size-12 rounded-full;
+}
+
+.skeletonNameStack {
+    @apply flex flex-col gap-2;
+}
+
+.skeletonActionCard {
+    @apply h-[82px] rounded-[12px];
+}
+
+.skeletonRecordCard {
+    @apply h-[160px] rounded-(--radius-card);
+}
+
+.skeletonListStack {
+    @apply flex flex-col gap-3;
+}
+
+.skeletonFormItem {
+    @apply h-14 w-full rounded-[10px];
+}
+
+/* ── Layout ──────────────────────────────────────────────────────────────────── */
+
+.twoCol {
+    @apply grid grid-cols-2 gap-[14px] max-[1100px]:grid-cols-1;
+}
+
+.statsGrid {
+    @apply grid grid-cols-4 gap-3;
+}
+
+/* ── Misc ────────────────────────────────────────────────────────────────────── */
+
+.alertBadge {
+    @apply rounded-(--radius-badge) px-2 py-[3px] text-xs gap-[5px];
+}
+
+.dangerItem {
+    @apply text-(--color-danger) hover:bg-(--color-danger-surface) focus:bg-(--color-danger-surface);
+}
+
+.monoTertiary {
+    @apply font-mono tabular-nums text-(--color-text-tertiary);
+}
+
+.monoDate {
+    @apply font-mono tabular-nums;
+}
+
+.secLinkBtn {
+    @apply h-auto p-0 text-xs;
+}

@@ -49,9 +49,44 @@ import {NativeSelect} from '@/components/ui/componentes/native-select';
 import {PageHeader} from '@/components/ui/componentes/page-header';
 import {Skeleton} from '@/components/ui/componentes/skeleton';
 import {Textarea} from '@/components/ui/componentes/textarea';
+import {cva} from 'class-variance-authority';
+import {clsx} from 'clsx';
 import {cn} from '@/lib/utils';
 import {useAppStore} from '@/store/appStore';
-import * as S from './styles';
+import styles from './styles.module.css';
+
+// ── Local variants ────────────────────────────────────────────────────────────
+
+const imcTag = cva(styles.imcTagBase, {
+    variants: {
+        tone: {
+            ok: styles.imcTagOk,
+            warn: styles.imcTagWarn,
+            bad: styles.imcTagBad,
+        },
+    },
+});
+
+const soapLetter = cva(styles.soapLetterBase, {
+    variants: {
+        v: {
+            s: styles.soapLetterS,
+            o: styles.soapLetterO,
+            a: styles.soapLetterA,
+            p: styles.soapLetterP,
+        },
+    },
+});
+
+const conductChip = cva(styles.conductChipBase, {
+    variants: {
+        on: {
+            true: styles.conductChipOn,
+            false: styles.conductChipOff,
+        },
+    },
+    defaultVariants: {on: false},
+});
 
 export const Route = createFileRoute('/_stackedLayout/patients/$patientId/records/new')({
     component: NewEvolutionPage,
@@ -277,18 +312,18 @@ function SoapField({
     }, [value]);
 
     return (
-        <div className={S.soap.field}>
-            <div className={S.soap.head}>
-                <span className={S.soap.letter({v: letter})}>{letter.toUpperCase()}</span>
+        <div className={styles.soapField}>
+            <div className={styles.soapHead}>
+                <span className={soapLetter({v: letter})}>{letter.toUpperCase()}</span>
                 <div>
-                    <div className={S.soap.title}>{title}</div>
-                    <div className={S.soap.hint}>{hint}</div>
+                    <div className={styles.soapTitle}>{title}</div>
+                    <div className={styles.soapHint}>{hint}</div>
                 </div>
             </div>
             {children}
             <textarea
                 ref={ref}
-                className={S.soap.textarea}
+                className={styles.soapTextarea}
                 rows={4}
                 value={value}
                 onChange={(e) => onChange(e.target.value)}
@@ -312,10 +347,10 @@ function VitalCell({
     children: ReactNode;
 }) {
     return (
-        <div className={cn(S.vitals.cell, wide && S.vitals.cellWide, readonly && S.vitals.cellReadonly)}>
-            <div className={S.vitals.head}>
-                <span className={S.vitals.label}>{label}</span>
-                <span className={S.vitals.unit}>{unit}</span>
+        <div className={clsx(styles.vitalsCell, wide && styles.vitalsCellWide, readonly && styles.vitalsCellReadonly)}>
+            <div className={styles.vitalsHead}>
+                <span className={styles.vitalsLabel}>{label}</span>
+                <span className={styles.vitalsUnit}>{unit}</span>
             </div>
             {children}
         </div>
@@ -326,7 +361,7 @@ function VitalAlert({val, range}: {val: string; range: {min: number; max: number
     if (!isVitalOutOfRange(val, range)) return null;
 
     return (
-        <div className={S.vitals.warn}>
+        <div className={styles.vitalsWarn}>
             <AlertTriangle className="size-[10px]" />
             Fora da faixa ({range.min}–{range.max})
         </div>
@@ -348,51 +383,51 @@ function PublishModal({
         ATTENDANCE_OPTIONS.find((o) => o.value === summary.attendanceType)?.label ?? summary.attendanceType;
 
     return (
-        <div className={S.modal.backdrop} onClick={onCancel}>
-            <div className={S.modal.panel} onClick={(e) => e.stopPropagation()}>
-                <div className={S.modal.head}>
-                    <span className={cn(S.modal.icon, S.modal.iconOk)}>
+        <div className={styles.modalBackdrop} onClick={onCancel}>
+            <div className={styles.modalPanel} onClick={(e) => e.stopPropagation()}>
+                <div className={styles.modalHead}>
+                    <span className={clsx(styles.modalIcon, styles.modalIconOk)}>
                         <CheckCircle2 className="size-[18px]" />
                     </span>
                     <div>
-                        <h3 className={S.modal.title}>Publicar evolução?</h3>
-                        <p className={S.modal.sub}>Após publicar, o registro é imutável e não pode ser editado.</p>
+                        <h3 className={styles.modalTitle}>Publicar evolução?</h3>
+                        <p className={styles.modalSub}>Após publicar, o registro é imutável e não pode ser editado.</p>
                     </div>
                 </div>
 
-                <div className={S.modal.summary}>
-                    <div className={S.modal.summaryRow}>
-                        <span className={S.modal.summaryLabel}>Paciente</span>
-                        <span className={S.modal.summaryValue}>{summary.patient.name}</span>
+                <div className={styles.modalSummary}>
+                    <div className={styles.modalSummaryRow}>
+                        <span className={styles.modalSummaryLabel}>Paciente</span>
+                        <span className={styles.modalSummaryValue}>{summary.patient.name}</span>
                     </div>
-                    <div className={S.modal.summaryRow}>
-                        <span className={S.modal.summaryLabel}>Tipo</span>
-                        <span className={S.modal.summaryValue}>{attendanceLabel}</span>
+                    <div className={styles.modalSummaryRow}>
+                        <span className={styles.modalSummaryLabel}>Tipo</span>
+                        <span className={styles.modalSummaryValue}>{attendanceLabel}</span>
                     </div>
-                    <div className={S.modal.summaryRow}>
-                        <span className={S.modal.summaryLabel}>Data e hora</span>
-                        <span className={cn(S.modal.summaryValue, 'font-mono tabular-nums text-[13px]')}>
+                    <div className={styles.modalSummaryRow}>
+                        <span className={styles.modalSummaryLabel}>Data e hora</span>
+                        <span className={cn(styles.modalSummaryValue, 'font-mono tabular-nums text-[13px]')}>
                             {summary.date} · {summary.time || '—'}
                         </span>
                     </div>
-                    <div className={S.modal.summaryRow}>
-                        <span className={S.modal.summaryLabel}>Conteúdo</span>
-                        <div className={S.modal.chips}>
-                            {summary.hasSoap && <span className={S.modal.chip}>SOAP</span>}
+                    <div className={styles.modalSummaryRow}>
+                        <span className={styles.modalSummaryLabel}>Conteúdo</span>
+                        <div className={styles.modalChips}>
+                            {summary.hasSoap && <span className={styles.modalChip}>SOAP</span>}
                             {summary.vitalsCount > 0 && (
-                                <span className={S.modal.chip}>
+                                <span className={styles.modalChip}>
                                     <Activity className="size-[10px]" />
                                     {summary.vitalsCount} vitais
                                 </span>
                             )}
                             {summary.conductCount > 0 && (
-                                <span className={S.modal.chip}>
+                                <span className={styles.modalChip}>
                                     <Tag className="size-[10px]" />
                                     {summary.conductCount} condutas
                                 </span>
                             )}
                             {summary.fileCount > 0 && (
-                                <span className={S.modal.chip}>
+                                <span className={styles.modalChip}>
                                     <Paperclip className="size-[10px]" />
                                     {summary.fileCount} anexos
                                 </span>
@@ -401,7 +436,7 @@ function PublishModal({
                     </div>
                 </div>
 
-                <div className={S.modal.actions}>
+                <div className={styles.modalActions}>
                     <Button variant="outline" size="sm" onClick={onCancel} disabled={loading}>
                         Voltar e revisar
                     </Button>
@@ -434,18 +469,18 @@ function PublishModal({
 
 function DiscardModal({onCancel, onConfirm}: {onCancel: () => void; onConfirm: () => void}) {
     return (
-        <div className={S.modal.backdrop} onClick={onCancel}>
-            <div className={S.modal.panel} onClick={(e) => e.stopPropagation()}>
-                <div className={S.modal.head}>
-                    <span className={cn(S.modal.icon, S.modal.iconWarn)}>
+        <div className={styles.modalBackdrop} onClick={onCancel}>
+            <div className={styles.modalPanel} onClick={(e) => e.stopPropagation()}>
+                <div className={styles.modalHead}>
+                    <span className={clsx(styles.modalIcon, styles.modalIconWarn)}>
                         <AlertTriangle className="size-[18px]" />
                     </span>
                     <div>
-                        <h3 className={S.modal.title}>Descartar alterações?</h3>
-                        <p className={S.modal.sub}>Há informações não salvas. Esta ação não pode ser desfeita.</p>
+                        <h3 className={styles.modalTitle}>Descartar alterações?</h3>
+                        <p className={styles.modalSub}>Há informações não salvas. Esta ação não pode ser desfeita.</p>
                     </div>
                 </div>
-                <div className={S.modal.actions}>
+                <div className={styles.modalActions}>
                     <Button variant="outline" size="sm" onClick={onCancel}>
                         Continuar editando
                     </Button>
@@ -468,9 +503,9 @@ export function NewEvolutionPage() {
 
     if (isError || !patient) {
         return (
-            <div className={S.page.errorState}>
+            <div className={styles.pageErrorState}>
                 <p className="text-sm">Paciente não encontrado ou erro ao carregar.</p>
-                <Link to="/patients" className={S.page.errorLink}>
+                <Link to="/patients" className={styles.pageErrorLink}>
                     Voltar para pacientes
                 </Link>
             </div>
@@ -482,19 +517,19 @@ export function NewEvolutionPage() {
 
 function PageSkeleton() {
     return (
-        <div className={S.skeleton.root}>
+        <div className={styles.skeletonRoot}>
             <Skeleton className="h-4 w-64" />
             <Skeleton className="h-8 w-48" />
-            <Skeleton className={S.skeleton.patientCard} />
-            <div className={S.skeleton.grid}>
-                <div className={S.skeleton.navStack}>
+            <Skeleton className={styles.skeletonPatientCard} />
+            <div className={styles.skeletonGrid}>
+                <div className={styles.skeletonNavStack}>
                     {[...Array(5)].map((_, i) => (
-                        <Skeleton key={i} className={S.skeleton.navItem} />
+                        <Skeleton key={i} className={styles.skeletonNavItem} />
                     ))}
                 </div>
-                <div className={S.skeleton.contentStack}>
+                <div className={styles.skeletonContentStack}>
                     {[...Array(3)].map((_, i) => (
-                        <Skeleton key={i} className={S.skeleton.contentSection} />
+                        <Skeleton key={i} className={styles.skeletonContentSection} />
                     ))}
                 </div>
             </div>
@@ -668,8 +703,8 @@ function NewEvolutionForm({patient}: {patient: Patient}) {
 
     // ── Render ─────────────────────────────────────────────────────────────────
     return (
-        <div className={S.page.root}>
-            <div className={S.page.top}>
+        <div className={styles.pageRoot}>
+            <div className={styles.pageTop}>
                 {/* Breadcrumb */}
                 <Breadcrumb>
                     <BreadcrumbList>
@@ -697,54 +732,54 @@ function NewEvolutionForm({patient}: {patient: Patient}) {
                 <PageHeader title="Nova evolução" className="mt-5" />
 
                 {/* Patient card */}
-                <div className={S.patientCard.root}>
+                <div className={styles.patientCardRoot}>
                     <AvatarInitials name={patient.name} colorIndex={getAvatarColorIndex(patient.id)} size="sm" />
-                    <div className={S.patientCard.info}>
-                        <Link to="/patients/$patientId" params={{patientId: patient.id}} className={S.patientCard.name}>
+                    <div className={styles.patientCardInfo}>
+                        <Link to="/patients/$patientId" params={{patientId: patient.id}} className={styles.patientCardName}>
                             {patient.name}
                         </Link>
-                        <div className={S.patientCard.meta}>
+                        <div className={styles.patientCardMeta}>
                             {age !== null && <span>{age} anos</span>}
                             {age !== null && ' · '}
-                            <span className={S.monoDate}>{patient.documentId}</span>
+                            <span className={styles.monoDate}>{patient.documentId}</span>
                         </div>
                     </div>
                 </div>
             </div>
 
             {/* Two-column layout */}
-            <div className={S.layout.root}>
+            <div className={styles.layoutRoot}>
                 {/* TOC sidebar */}
-                <aside className={S.layout.toc}>
-                    <div className={S.layout.tocTitle}>Seções</div>
+                <aside className={styles.layoutToc}>
+                    <div className={styles.layoutTocTitle}>Seções</div>
                     {TOC_SECTIONS.map((sec) => (
                         <button
                             key={sec.id}
                             type="button"
-                            className={cn(S.layout.tocItem, activeSec === sec.id && S.layout.tocItemActive)}
+                            className={clsx(styles.layoutTocItem, activeSec === sec.id && styles.layoutTocItemActive)}
                             onClick={() => jumpTo(sec.id)}
                         >
                             {sec.icon}
                             <span>{sec.label}</span>
                         </button>
                     ))}
-                    <div className={S.layout.tocFoot}>
+                    <div className={styles.layoutTocFoot}>
                         <Lock className="size-[11px]" />
                         <span>Salvo ao publicar</span>
                     </div>
                 </aside>
 
                 {/* Content */}
-                <div className={S.layout.content}>
+                <div className={styles.layoutContent}>
                     {/* ── Atendimento ─────────────────────────────────────────────── */}
-                    <section id="sec-attend" className={S.section.root}>
-                        <div className={S.section.head}>
-                            <span className={S.section.icon}>
+                    <section id="sec-attend" className={styles.sectionRoot}>
+                        <div className={styles.sectionHead}>
+                            <span className={styles.sectionIcon}>
                                 <ClipboardList className="size-[14px]" />
                             </span>
-                            <div className={S.section.headRight}>
-                                <h2 className={S.section.title}>Dados do atendimento</h2>
-                                <div className={S.section.sub}>Contexto clínico desse registro.</div>
+                            <div className={styles.sectionHeadRight}>
+                                <h2 className={styles.sectionTitle}>Dados do atendimento</h2>
+                                <div className={styles.sectionSub}>Contexto clínico desse registro.</div>
                             </div>
                         </div>
 
@@ -789,20 +824,20 @@ function NewEvolutionForm({patient}: {patient: Patient}) {
                     </section>
 
                     {/* ── Sinais vitais ─────────────────────────────────────────── */}
-                    <section id="sec-vitais" className={S.section.root}>
-                        <div className={S.section.head}>
-                            <span className={S.section.icon}>
+                    <section id="sec-vitais" className={styles.sectionRoot}>
+                        <div className={styles.sectionHead}>
+                            <span className={styles.sectionIcon}>
                                 <Activity className="size-[14px]" />
                             </span>
-                            <div className={S.section.headRight}>
-                                <h2 className={S.section.title}>Sinais vitais</h2>
-                                <div className={S.section.sub}>Preencha apenas o que foi aferido.</div>
+                            <div className={styles.sectionHeadRight}>
+                                <h2 className={styles.sectionTitle}>Sinais vitais</h2>
+                                <div className={styles.sectionSub}>Preencha apenas o que foi aferido.</div>
                             </div>
-                            <div className={S.section.headAside}>
+                            <div className={styles.sectionHeadAside}>
                                 <button
                                     type="button"
                                     onClick={() => setShowPrevVitals((v) => !v)}
-                                    className={S.vitals.prevToggle}
+                                    className={styles.vitalsPrevToggle}
                                 >
                                     {showPrevVitals ? (
                                         <ChevronUp className="size-[13px]" />
@@ -815,28 +850,28 @@ function NewEvolutionForm({patient}: {patient: Patient}) {
                         </div>
 
                         {showPrevVitals && (
-                            <div className={S.vitals.prevBox}>
-                                <div className={S.vitals.prevHead}>
+                            <div className={styles.vitalsPrevBox}>
+                                <div className={styles.vitalsPrevHead}>
                                     <History className="size-[12px]" />
                                     <span>Última evolução registrada</span>
                                 </div>
-                                <p className={S.vitals.prevEmpty}>Nenhum vital anterior disponível</p>
+                                <p className={styles.vitalsPrevEmpty}>Nenhum vital anterior disponível</p>
                             </div>
                         )}
 
-                        <div className={S.vitals.grid}>
+                        <div className={styles.vitalsGrid}>
                             <VitalCell label="Pressão arterial" unit="mmHg" wide>
-                                <div className={S.vitals.paRow}>
+                                <div className={styles.vitalsPaRow}>
                                     <input
-                                        className={S.vitals.input}
+                                        className={styles.vitalsInput}
                                         inputMode="numeric"
                                         placeholder="128"
                                         value={vitals.sys}
                                         onChange={(e) => setVitals((v) => ({...v, sys: e.target.value}))}
                                     />
-                                    <span className={S.vitals.paSep}>/</span>
+                                    <span className={styles.vitalsPaSep}>/</span>
                                     <input
-                                        className={S.vitals.input}
+                                        className={styles.vitalsInput}
                                         inputMode="numeric"
                                         placeholder="82"
                                         value={vitals.dia}
@@ -849,7 +884,7 @@ function NewEvolutionForm({patient}: {patient: Patient}) {
 
                             <VitalCell label="Frequência cardíaca" unit="bpm">
                                 <input
-                                    className={S.vitals.input}
+                                    className={styles.vitalsInput}
                                     inputMode="numeric"
                                     placeholder="72"
                                     value={vitals.hr}
@@ -860,7 +895,7 @@ function NewEvolutionForm({patient}: {patient: Patient}) {
 
                             <VitalCell label="Saturação O₂" unit="%">
                                 <input
-                                    className={S.vitals.input}
+                                    className={styles.vitalsInput}
                                     inputMode="numeric"
                                     placeholder="98"
                                     value={vitals.spo2}
@@ -871,7 +906,7 @@ function NewEvolutionForm({patient}: {patient: Patient}) {
 
                             <VitalCell label="Temperatura" unit="°C">
                                 <input
-                                    className={S.vitals.input}
+                                    className={styles.vitalsInput}
                                     inputMode="decimal"
                                     placeholder="36.5"
                                     value={vitals.temp}
@@ -882,7 +917,7 @@ function NewEvolutionForm({patient}: {patient: Patient}) {
 
                             <VitalCell label="Peso" unit="kg">
                                 <input
-                                    className={S.vitals.input}
+                                    className={styles.vitalsInput}
                                     inputMode="decimal"
                                     placeholder="70.0"
                                     value={vitals.weight}
@@ -892,7 +927,7 @@ function NewEvolutionForm({patient}: {patient: Patient}) {
 
                             <VitalCell label="Altura" unit="cm">
                                 <input
-                                    className={S.vitals.input}
+                                    className={styles.vitalsInput}
                                     inputMode="numeric"
                                     placeholder="170"
                                     value={vitals.height}
@@ -903,33 +938,33 @@ function NewEvolutionForm({patient}: {patient: Patient}) {
                             <VitalCell label="IMC" unit="kg/m²" readonly>
                                 {bmi ? (
                                     <div className="flex items-baseline gap-1">
-                                        <span className={S.vitals.imcValue}>{bmi.value}</span>
-                                        <span className={S.imcTag({tone: bmi.tone})}>
+                                        <span className={styles.vitalsImcValue}>{bmi.value}</span>
+                                        <span className={imcTag({tone: bmi.tone})}>
                                             {getBmiLabel(parseFloat(bmi.value))}
                                         </span>
                                     </div>
                                 ) : (
-                                    <span className={S.vitals.imcEmpty}>— automático</span>
+                                    <span className={styles.vitalsImcEmpty}>— automático</span>
                                 )}
                             </VitalCell>
                         </div>
                     </section>
 
                     {/* ── SOAP ─────────────────────────────────────────────────── */}
-                    <section id="sec-soap" className={S.section.root}>
-                        <div className={S.section.head}>
-                            <span className={S.section.icon}>
+                    <section id="sec-soap" className={styles.sectionRoot}>
+                        <div className={styles.sectionHead}>
+                            <span className={styles.sectionIcon}>
                                 <FileText className="size-[14px]" />
                             </span>
-                            <div className={S.section.headRight}>
-                                <h2 className={S.section.title}>Evolução clínica · SOAP</h2>
-                                <div className={S.section.sub}>
+                            <div className={styles.sectionHeadRight}>
+                                <h2 className={styles.sectionTitle}>Evolução clínica · SOAP</h2>
+                                <div className={styles.sectionSub}>
                                     Subjetivo, Objetivo, Avaliação, Plano. Os campos crescem conforme você escreve.
                                 </div>
                             </div>
                         </div>
 
-                        <div className={S.soap.stack}>
+                        <div className={styles.soapStack}>
                             <SoapField
                                 letter="s"
                                 title="Subjetivo"
@@ -948,7 +983,7 @@ function NewEvolutionForm({patient}: {patient: Patient}) {
                                 placeholder="Exame físico, achados clínicos, resultados de exames…"
                             >
                                 {vitalsCount > 0 && (
-                                    <div className={S.soap.vitalsRef}>
+                                    <div className={styles.soapVitalsRef}>
                                         <Activity className="size-[12px]" />
                                         <span>Vitais aferidos:</span>
                                         {vitals.sys && vitals.dia && (
@@ -1001,14 +1036,14 @@ function NewEvolutionForm({patient}: {patient: Patient}) {
                     </section>
 
                     {/* ── Classificações ─────────────────────────────────────── */}
-                    <section id="sec-class" className={S.section.root}>
-                        <div className={S.section.head}>
-                            <span className={S.section.icon}>
+                    <section id="sec-class" className={styles.sectionRoot}>
+                        <div className={styles.sectionHead}>
+                            <span className={styles.sectionIcon}>
                                 <Tag className="size-[14px]" />
                             </span>
-                            <div className={S.section.headRight}>
-                                <h2 className={S.section.title}>Classificações e tags</h2>
-                                <div className={S.section.sub}>Estruturam o registro para filtros e relatórios.</div>
+                            <div className={styles.sectionHeadRight}>
+                                <h2 className={styles.sectionTitle}>Classificações e tags</h2>
+                                <div className={styles.sectionSub}>Estruturam o registro para filtros e relatórios.</div>
                             </div>
                         </div>
 
@@ -1027,7 +1062,7 @@ function NewEvolutionForm({patient}: {patient: Patient}) {
                             </Field>
 
                             <Field label="Conduta" optional cols={12}>
-                                <div className={S.conductGrid}>
+                                <div className={styles.conductGrid}>
                                     {CONDUCT_TAGS.map((t) => {
                                         const on = conductTags.includes(t.value);
 
@@ -1035,7 +1070,7 @@ function NewEvolutionForm({patient}: {patient: Patient}) {
                                             <button
                                                 key={t.value}
                                                 type="button"
-                                                className={S.conductChip({on})}
+                                                className={conductChip({on})}
                                                 onClick={() => toggleConduct(t.value)}
                                             >
                                                 {t.icon}
@@ -1060,21 +1095,21 @@ function NewEvolutionForm({patient}: {patient: Patient}) {
                     </section>
 
                     {/* ── Anexos ───────────────────────────────────────────────── */}
-                    <section id="sec-files" className={S.section.root}>
-                        <div className={S.section.head}>
-                            <span className={S.section.icon}>
+                    <section id="sec-files" className={styles.sectionRoot}>
+                        <div className={styles.sectionHead}>
+                            <span className={styles.sectionIcon}>
                                 <Paperclip className="size-[14px]" />
                             </span>
-                            <div className={S.section.headRight}>
-                                <h2 className={S.section.title}>Anexos</h2>
-                                <div className={S.section.sub}>Vincule arquivos relacionados a esse atendimento.</div>
+                            <div className={styles.sectionHeadRight}>
+                                <h2 className={styles.sectionTitle}>Anexos</h2>
+                                <div className={styles.sectionSub}>Vincule arquivos relacionados a esse atendimento.</div>
                             </div>
                         </div>
 
-                        <button type="button" className={S.upload.zone} onClick={() => fileInputRef.current?.click()}>
+                        <button type="button" className={styles.uploadZone} onClick={() => fileInputRef.current?.click()}>
                             <UploadCloud className="size-[22px]" />
-                            <div className={S.upload.title}>Clique para enviar ou arraste arquivos aqui</div>
-                            <div className={S.upload.sub}>Imagens e PDFs · até 25 MB cada</div>
+                            <div className={styles.uploadTitle}>Clique para enviar ou arraste arquivos aqui</div>
+                            <div className={styles.uploadSub}>Imagens e PDFs · até 25 MB cada</div>
                             <input
                                 ref={fileInputRef}
                                 type="file"
@@ -1085,23 +1120,23 @@ function NewEvolutionForm({patient}: {patient: Patient}) {
                         </button>
 
                         {files.length > 0 && (
-                            <div className={S.upload.list}>
+                            <div className={styles.uploadList}>
                                 {files.map((f) => (
-                                    <div key={f.id} className={S.upload.row}>
-                                        <span className={S.upload.icon}>
+                                    <div key={f.id} className={styles.uploadRow}>
+                                        <span className={styles.uploadIcon}>
                                             {f.name.endsWith('.pdf') ? (
                                                 <FileText className="size-4" />
                                             ) : (
                                                 <FileText className="size-4" />
                                             )}
                                         </span>
-                                        <div className={S.upload.body}>
-                                            <div className={S.upload.name}>{f.name}</div>
-                                            <div className={S.upload.size}>{f.size}</div>
+                                        <div className={styles.uploadBody}>
+                                            <div className={styles.uploadName}>{f.name}</div>
+                                            <div className={styles.uploadSize}>{f.size}</div>
                                         </div>
                                         <button
                                             type="button"
-                                            className={S.upload.remove}
+                                            className={styles.uploadRemove}
                                             onClick={() => setFiles((prev) => prev.filter((x) => x.id !== f.id))}
                                             aria-label="Remover arquivo"
                                         >
@@ -1116,12 +1151,12 @@ function NewEvolutionForm({patient}: {patient: Patient}) {
             </div>
 
             {/* Sticky footer */}
-            <div className={S.footer.root}>
-                <div className={S.footer.meta}>
+            <div className={styles.footerRoot}>
+                <div className={styles.footerMeta}>
                     <Lock className="size-3" strokeWidth={1.5} />
                     <span>Após publicar, o registro é imutável · LGPD</span>
                 </div>
-                <div className={S.footer.actions}>
+                <div className={styles.footerActions}>
                     <Button variant="outline" size="sm" type="button" onClick={handleCancel}>
                         Cancelar
                     </Button>

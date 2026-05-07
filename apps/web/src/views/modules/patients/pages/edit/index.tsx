@@ -41,8 +41,9 @@ import {PageHeader} from '@/components/ui/componentes/page-header';
 import {Skeleton} from '@/components/ui/componentes/skeleton';
 import {Tabs, TabsList, TabsTrigger, TabsContent} from '@/components/ui/componentes/tabs';
 import {Textarea} from '@/components/ui/componentes/textarea';
+import {clsx} from 'clsx';
 import {cn} from '@/lib/utils';
-import * as S from './styles';
+import styles from '../new/styles.module.css';
 
 export const Route = createFileRoute('/_stackedLayout/patients/$patientId/edit')({
     component: EditPatientPage,
@@ -149,12 +150,12 @@ function tabHasValues(tab: TabKey, values: Partial<FormValues>): boolean {
 
 function SectionHead({num, title, subtitle}: {num: string; title: string; subtitle?: string}) {
     return (
-        <div className={S.section.head}>
-            <div className={S.section.inner}>
-                <span className={S.section.num}>{num}</span>
+        <div className={styles.sectionHead}>
+            <div className={styles.sectionInner}>
+                <span className={styles.sectionNum}>{num}</span>
                 <div>
-                    <h2 className={S.section.title}>{title}</h2>
-                    {subtitle && <p className={S.section.sub}>{subtitle}</p>}
+                    <h2 className={styles.sectionTitle}>{title}</h2>
+                    {subtitle && <p className={styles.sectionSub}>{subtitle}</p>}
                 </div>
             </div>
         </div>
@@ -170,17 +171,17 @@ export function EditPatientPage() {
 
     if (isLoading) {
         return (
-            <div className={S.page.skeletonStack}>
+            <div className={styles.pageSkeletonStack}>
                 <Skeleton className="h-4 w-48" />
                 <Skeleton className="h-8 w-64" />
-                <Skeleton className={S.page.skeletonCard400} />
+                <Skeleton className={styles.pageSkeletonCard400} />
             </div>
         );
     }
 
     if (isError || !patient) {
         return (
-            <div className={S.page.errorState}>
+            <div className={styles.pageErrorState}>
                 <p className="text-sm">Paciente não encontrado.</p>
                 <Button variant="outline" size="sm" onClick={() => navigate({to: '/patients'})}>
                     Voltar
@@ -309,7 +310,7 @@ function EditPatientForm({patient}: {patient: Patient}) {
     }
 
     return (
-        <div className={S.page.root}>
+        <div className={styles.pageRoot}>
             {/* Breadcrumb */}
             <Breadcrumb>
                 <BreadcrumbList>
@@ -350,15 +351,15 @@ function EditPatientForm({patient}: {patient: Patient}) {
                                 return (
                                     <TabsTrigger key={t.key} value={t.key}>
                                         <span
-                                            className={cn(
-                                                S.tabNum,
-                                                tab === t.key && S.tabNumActive,
-                                                filled && S.tabNumFilled
+                                            className={clsx(
+                                                styles.tabNum,
+                                                tab === t.key && styles.tabNumActive,
+                                                filled && styles.tabNumFilled
                                             )}
                                         >
                                             {filled ? <Check className="size-[11px]" strokeWidth={2.5} /> : t.num}
                                         </span>
-                                        <TabIcon className={S.tabIcon} strokeWidth={1.5} />
+                                        <TabIcon className={styles.tabIcon} strokeWidth={1.5} />
                                         {t.label}
                                     </TabsTrigger>
                                 );
@@ -367,7 +368,7 @@ function EditPatientForm({patient}: {patient: Patient}) {
 
                         {/* ── Tab 1: Identificação ──────────────────────────── */}
                         <TabsContent value="identity">
-                            <div className={S.section.root}>
+                            <div className={styles.sectionRoot}>
                                 <SectionHead
                                     num="1"
                                     title="Identificação pessoal"
@@ -425,7 +426,7 @@ function EditPatientForm({patient}: {patient: Patient}) {
 
                         {/* ── Tab 2: Contato ─────────────────────────────────── */}
                         <TabsContent value="contact">
-                            <div className={S.section.root}>
+                            <div className={styles.sectionRoot}>
                                 <SectionHead
                                     num="2"
                                     title="Contato"
@@ -454,12 +455,12 @@ function EditPatientForm({patient}: {patient: Patient}) {
                                 </FormGrid>
 
                                 {/* Responsável */}
-                                <div className={S.subSection.root}>
-                                    <div className={S.subSection.head}>
-                                        <User className={S.subSection.icon} strokeWidth={1.5} />
-                                        <h3 className={S.subSection.title}>Responsável</h3>
-                                        <span className={S.subSection.tag}>Opcional</span>
-                                        <span className={cn(S.subSection.hint, 'ml-1')}>
+                                <div className={styles.subSectionRoot}>
+                                    <div className={styles.subSectionHead}>
+                                        <User className={styles.subSectionIcon} strokeWidth={1.5} />
+                                        <h3 className={styles.subSectionTitle}>Responsável</h3>
+                                        <span className={styles.subSectionTag}>Opcional</span>
+                                        <span className={cn(styles.subSectionHint, 'ml-1')}>
                                             · para menores ou pacientes com tutela
                                         </span>
                                     </div>
@@ -482,7 +483,7 @@ function EditPatientForm({patient}: {patient: Patient}) {
 
                         {/* ── Tab 3: Endereço ───────────────────────────────── */}
                         <TabsContent value="address">
-                            <div className={S.section.root}>
+                            <div className={styles.sectionRoot}>
                                 <SectionHead num="3" title="Endereço" subtitle="Todos os campos são opcionais." />
 
                                 <FormGrid>
@@ -560,7 +561,7 @@ function EditPatientForm({patient}: {patient: Patient}) {
 
                         {/* ── Tab 4: Saúde ──────────────────────────────────── */}
                         <TabsContent value="health">
-                            <div className={S.section.root}>
+                            <div className={styles.sectionRoot}>
                                 <SectionHead
                                     num="4"
                                     title="Informações de saúde"
@@ -588,8 +589,8 @@ function EditPatientForm({patient}: {patient: Patient}) {
                                     </Field>
                                 </FormGrid>
 
-                                <div className={S.infoNote}>
-                                    <Info className={S.infoNoteIcon} strokeWidth={1.5} />
+                                <div className={styles.infoNote}>
+                                    <Info className={styles.infoNoteIcon} strokeWidth={1.5} />
                                     <div>
                                         Esses dados são apenas um registro inicial. A <strong>anamnese completa</strong>
                                         , prescrições e evoluções (SOAP) são registradas no prontuário após o cadastro.
@@ -600,16 +601,16 @@ function EditPatientForm({patient}: {patient: Patient}) {
                     </Tabs>
 
                     {/* Sticky footer */}
-                    <div className={S.footer.root}>
-                        <div className={S.footer.meta}>
+                    <div className={styles.footerRoot}>
+                        <div className={styles.footerMeta}>
                             <Lock className="size-3" strokeWidth={1.5} />
                             <span>Dados criptografados em repouso · LGPD</span>
-                            <span className={S.footer.step}>
+                            <span className={styles.footerStep}>
                                 Etapa {tabIdx + 1} de {TABS.length}
                             </span>
                         </div>
 
-                        <div className={S.footer.actions}>
+                        <div className={styles.footerActions}>
                             <Button type="button" variant="outline" size="sm" onClick={goBack}>
                                 Cancelar
                             </Button>

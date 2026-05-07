@@ -1,0 +1,245 @@
+@import "tailwindcss";
+
+/* ── Toolbar ─────────────────────────────────────────────────────────────────── */
+
+.toolbarRoot {
+    @apply mb-3.5 flex flex-wrap items-center gap-2.5;
+}
+
+.toolbarSearch {
+    @apply flex min-w-[280px] flex-1 items-center gap-2 rounded-(--radius-input) border border-(--color-border) bg-(--color-bg-card) px-3 py-[9px] transition-all duration-(--duration-fast) ease-out focus-within:border-(--color-primary);
+}
+
+.toolbarSearchInput {
+    @apply flex-1 bg-transparent text-sm-body text-(--color-text-primary) placeholder:text-(--color-text-tertiary) focus:outline-none;
+}
+
+.toolbarSearchKbd {
+    @apply shrink-0 rounded-[4px] border border-(--color-border) px-1.5 py-0.5 font-mono text-2xs text-(--color-text-tertiary);
+}
+
+.toolbarClearBtn {
+    @apply rounded-[6px] px-2 py-1.5 text-sm text-(--color-primary-text) transition-colors duration-(--duration-fast) ease-out hover:bg-(--color-primary-surface);
+}
+
+.toolbarClearIcon {
+    @apply mr-1 inline size-3.5;
+}
+
+.toolbarSearchIcon {
+    @apply size-4 shrink-0 text-(--color-text-tertiary);
+}
+
+.toolbarCount {
+    @apply font-mono text-sm tabular-nums text-(--color-text-tertiary);
+}
+
+/* ── Table ───────────────────────────────────────────────────────────────────── */
+
+.tableRoot {
+    @apply overflow-hidden rounded-(--radius-card) border border-(--color-border) bg-(--color-bg-card);
+}
+
+.tableHead {
+    @apply grid items-center gap-4 border-b border-(--color-border) bg-(--color-bg-surface) px-[18px] py-[11px];
+}
+
+.tableHeadCell {
+    @apply text-2xs font-medium uppercase tracking-[0.06em] text-(--color-text-tertiary);
+}
+
+.tableFooter {
+    @apply border-t border-(--color-border);
+}
+
+/* ── Table row ───────────────────────────────────────────────────────────────── */
+
+.tableRowRoot {
+    @apply grid cursor-pointer items-center gap-4 border-b border-(--color-border) px-[18px] py-[14px] transition-colors duration-(--duration-fast) ease-out last:border-b-0 hover:bg-(--color-bg-surface);
+}
+
+.tableRowNameCell {
+    @apply flex min-w-0 items-center gap-3;
+}
+
+.tableRowNameBlock {
+    @apply min-w-0;
+}
+
+.tableRowName {
+    @apply truncate text-sm-body font-medium text-(--color-text-primary);
+}
+
+.tableRowEmail {
+    @apply truncate text-xs text-(--color-text-tertiary);
+}
+
+.tableRowAgeWrapper {
+    @apply group relative cursor-help;
+}
+
+.tableRowAge {
+    @apply font-mono text-sm-body tabular-nums text-(--color-text-primary);
+}
+
+.tableRowAgeUnit {
+    @apply ml-0.5 text-(--color-text-tertiary);
+}
+
+.tableRowAgeTooltip {
+    @apply pointer-events-none absolute left-0 top-[calc(100%+6px)] z-10 whitespace-nowrap rounded-[6px] bg-(--color-text-primary) px-2 py-1 font-mono text-2xs tabular-nums text-(--color-bg-card) opacity-0 transition-opacity duration-(--duration-fast) ease-out group-hover:opacity-100;
+}
+
+.tableRowDocument {
+    @apply font-mono text-sm tabular-nums text-(--color-text-secondary);
+}
+
+.tableRowInsuranceBadge {
+    @apply inline-flex items-center rounded-(--radius-badge) border border-(--color-border) bg-(--color-bg-surface) px-2 py-0.5 text-xs font-medium text-(--color-text-secondary);
+}
+
+.tableRowInsuranceEmpty {
+    @apply text-xs text-(--color-text-tertiary);
+}
+
+.tableRowActionWrapper {
+    @apply relative flex justify-end;
+}
+
+.tableRowActionBtn {
+    @apply flex size-8 items-center justify-center rounded-[8px] text-(--color-text-tertiary) transition-all duration-(--duration-fast) ease-out hover:bg-(--color-bg-card) hover:text-(--color-text-primary);
+}
+
+.tableRowDangerItem {
+    @apply text-(--color-danger) hover:bg-(--color-danger-surface) focus:bg-(--color-danger-surface);
+}
+
+.tableRowSkeletonRoot {
+    @apply grid items-center gap-4 border-b border-(--color-border) px-[18px] py-[14px] last:border-b-0;
+}
+
+.tableRowSkeletonNameCell {
+    @apply flex items-center gap-3;
+}
+
+.tableRowSkeletonAvatar {
+    @apply size-8 shrink-0 rounded-full;
+}
+
+.tableRowSkeletonStatusBadge {
+    @apply h-5 w-20 rounded-full;
+}
+
+.tableRowSkeletonBadgeSm {
+    @apply h-5 w-6 rounded-full;
+}
+
+.tableRowSkeletonActionBtn {
+    @apply ml-auto size-7 rounded-[8px];
+}
+
+/* ── Patient card ────────────────────────────────────────────────────────────── */
+
+.patientCardRoot {
+    @apply flex cursor-pointer flex-col gap-3 rounded-(--radius-card) border border-(--color-border) bg-(--color-bg-card) p-4 transition-colors duration-(--duration-fast) ease-out hover:border-(--color-border-hover);
+}
+
+.patientCardTop {
+    @apply flex items-start gap-3;
+}
+
+.patientCardNameBlock {
+    @apply min-w-0 flex-1;
+}
+
+.patientCardName {
+    @apply truncate text-sm-body font-medium text-(--color-text-primary);
+}
+
+.patientCardMeta {
+    @apply mt-0.5 text-xs text-(--color-text-tertiary);
+}
+
+.patientCardDetails {
+    @apply flex flex-col gap-1.5;
+}
+
+.patientCardDetailRow {
+    @apply flex items-center justify-between;
+}
+
+.patientCardDetailLabel {
+    @apply text-2xs text-(--color-text-tertiary);
+}
+
+.patientCardDetailValue {
+    @apply font-mono text-2xs tabular-nums text-(--color-text-secondary);
+}
+
+/* ── Skeleton card ───────────────────────────────────────────────────────────── */
+
+.skeletonCardRoot {
+    @apply flex flex-col gap-3 rounded-(--radius-card) border border-(--color-border) bg-(--color-bg-card) p-4;
+}
+
+.skeletonCardTop {
+    @apply flex items-center gap-3;
+}
+
+.skeletonCardNameBlock {
+    @apply flex-1 space-y-1.5;
+}
+
+.skeletonCardDetails {
+    @apply space-y-2;
+}
+
+.skeletonCardAvatar {
+    @apply size-10 shrink-0 rounded-full;
+}
+
+/* ── Stats ───────────────────────────────────────────────────────────────────── */
+
+.statsGrid {
+    @apply mb-6 grid grid-cols-3 gap-3;
+}
+
+.statsDelta {
+    @apply font-medium text-(--color-success);
+}
+
+/* ── Cards grid ──────────────────────────────────────────────────────────────── */
+
+.cardsGrid {
+    @apply grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-3;
+}
+
+.cardsFooter {
+    @apply mt-3.5 rounded-(--radius-card) border border-(--color-border) bg-(--color-bg-card);
+}
+
+/* ── Pagination ──────────────────────────────────────────────────────────────── */
+
+.paginationRoot {
+    @apply flex items-center justify-between px-[18px] py-[14px];
+}
+
+.paginationInfo {
+    @apply text-sm text-(--color-text-secondary);
+}
+
+.paginationInfoStrong {
+    @apply font-medium tabular-nums text-(--color-text-primary);
+}
+
+.paginationControls {
+    @apply flex items-center gap-1;
+}
+
+.paginationBtnDisabled {
+    @apply inline-flex h-8 min-w-8 cursor-not-allowed items-center justify-center gap-1 rounded-[8px] border border-(--color-border) px-2.5 text-sm font-medium text-(--color-text-secondary) opacity-45;
+}
+
+.paginationBtnActive {
+    @apply inline-flex h-8 min-w-8 items-center justify-center rounded-[8px] border border-(--color-primary) bg-(--color-primary) px-2.5 text-sm font-medium text-white;
+}

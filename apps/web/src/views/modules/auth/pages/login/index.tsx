@@ -1,6 +1,7 @@
 import {useState, useMemo} from 'react';
 import {useSignIn} from '@agenda-app/client';
 import {zodResolver} from '@hookform/resolvers/zod';
+import {cva} from 'class-variance-authority';
 import {useQueryClient} from '@tanstack/react-query';
 import {createFileRoute, useNavigate, useRouter} from '@tanstack/react-router';
 import {Eye, EyeOff, Lock, Mail, ShieldCheck} from 'lucide-react';
@@ -10,13 +11,25 @@ import {z} from 'zod';
 import {Button} from '@/components/ui/componentes/button';
 import {Input} from '@/components/ui/componentes/input';
 import {useAppStore} from '@/store/appStore';
-import * as S from './styles';
+import styles from './styles.module.css';
 
 export const Route = createFileRoute('/_auth/auth/login')({
     validateSearch: (search: Record<string, unknown>): {redirect?: string} => ({
         redirect: typeof search.redirect === 'string' ? search.redirect : undefined,
     }),
     component: LoginPage,
+});
+
+// ── Variants ─────────────────────────────────────────────────────────────────
+
+const usernameInput = cva(styles.usernameInputBase, {
+    variants: {error: {true: styles.usernameInputError, false: ''}},
+    defaultVariants: {error: false},
+});
+
+const passwordInput = cva(styles.passwordInputBase, {
+    variants: {error: {true: styles.passwordInputError, false: ''}},
+    defaultVariants: {error: false},
 });
 
 export function LoginPage() {
@@ -70,101 +83,101 @@ export function LoginPage() {
     const onSubmit = (values: LoginData) => signIn({data: values});
 
     return (
-        <div className={S.login.root}>
+        <div className={styles.loginRoot}>
             {/* Left: form */}
-            <div className={S.leftPanel.root}>
+            <div className={styles.leftPanelRoot}>
                 {/* Logo */}
-                <div className={S.leftPanel.logo}>
-                    <div className={S.leftPanel.logoIcon}>
+                <div className={styles.leftPanelLogo}>
+                    <div className={styles.leftPanelLogoIcon}>
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
                             <path d="M9 12h6M12 9v6" stroke="#fff" strokeWidth="2.2" strokeLinecap="round" />
                         </svg>
                     </div>
-                    <span className={S.leftPanel.logoText}>Clínico</span>
+                    <span className={styles.leftPanelLogoText}>Clínico</span>
                 </div>
 
                 {/* Form */}
                 <div>
-                    <h1 className={S.leftPanel.title}>{t('auth.login.title')}</h1>
-                    <p className={S.leftPanel.subtitle}>{t('auth.login.subtitle')}</p>
+                    <h1 className={styles.leftPanelTitle}>{t('auth.login.title')}</h1>
+                    <p className={styles.leftPanelSubtitle}>{t('auth.login.subtitle')}</p>
 
-                    <form onSubmit={handleSubmit(onSubmit)} className={S.form} noValidate>
+                    <form onSubmit={handleSubmit(onSubmit)} className={styles.form} noValidate>
                         {/* Username */}
                         <div>
-                            <label className={S.field.label}>{t('auth.login.form.username')}</label>
-                            <div className={S.field.inputWrap}>
-                                <Mail size={13} className={S.field.icon} />
+                            <label className={styles.fieldLabel}>{t('auth.login.form.username')}</label>
+                            <div className={styles.fieldInputWrap}>
+                                <Mail size={13} className={styles.fieldIcon} />
                                 <Input
                                     {...register('username')}
                                     type="text"
                                     autoComplete="username"
                                     placeholder="dr.silva"
-                                    className={S.usernameInput({error: !!errors.username})}
+                                    className={usernameInput({error: !!errors.username})}
                                 />
                             </div>
-                            {errors.username?.message && <p className={S.field.error}>{errors.username.message}</p>}
+                            {errors.username?.message && <p className={styles.fieldError}>{errors.username.message}</p>}
                         </div>
 
                         {/* Password */}
                         <div>
-                            <div className={S.field.passwordHeader}>
-                                <label className={S.field.labelInline}>{t('auth.login.form.password')}</label>
-                                <button type="button" className={S.field.forgotBtn}>
+                            <div className={styles.fieldPasswordHeader}>
+                                <label className={styles.fieldLabelInline}>{t('auth.login.form.password')}</label>
+                                <button type="button" className={styles.fieldForgotBtn}>
                                     {t('auth.login.form.forgotPassword')}
                                 </button>
                             </div>
-                            <div className={S.field.inputWrap}>
-                                <Lock size={13} className={S.field.icon} />
+                            <div className={styles.fieldInputWrap}>
+                                <Lock size={13} className={styles.fieldIcon} />
                                 <Input
                                     {...register('password')}
                                     type={showPassword ? 'text' : 'password'}
                                     autoComplete="current-password"
-                                    className={S.passwordInput({error: !!errors.password?.message})}
+                                    className={passwordInput({error: !!errors.password?.message})}
                                 />
                                 <button
                                     type="button"
                                     onClick={() => setShowPassword((v) => !v)}
-                                    className={S.field.revealBtn}
+                                    className={styles.fieldRevealBtn}
                                     aria-label={showPassword ? 'Ocultar senha' : 'Mostrar senha'}
                                 >
                                     {showPassword ? <EyeOff size={14} /> : <Eye size={14} />}
                                 </button>
                             </div>
-                            {errors.password?.message && <p className={S.field.error}>{errors.password.message}</p>}
+                            {errors.password?.message && <p className={styles.fieldError}>{errors.password.message}</p>}
                         </div>
 
                         {/* Remember me */}
-                        <label className={S.field.rememberLabel}>
-                            <input type="checkbox" className={S.field.checkbox} />
-                            <span className={S.field.rememberText}>{t('auth.login.form.rememberMe')}</span>
+                        <label className={styles.fieldRememberLabel}>
+                            <input type="checkbox" className={styles.fieldCheckbox} />
+                            <span className={styles.fieldRememberText}>{t('auth.login.form.rememberMe')}</span>
                         </label>
 
-                        <Button type="submit" disabled={isPending} className={S.field.submitBtn}>
+                        <Button type="submit" disabled={isPending} className={styles.fieldSubmitBtn}>
                             {isPending ? t('states.loading') : t('auth.login.form.submit')}
                         </Button>
                     </form>
                 </div>
 
                 {/* Footer */}
-                <div className={S.leftPanel.footer}>
-                    <div className={S.leftPanel.footerLeft}>
+                <div className={styles.leftPanelFooter}>
+                    <div className={styles.leftPanelFooterLeft}>
                         <ShieldCheck size={11} />
                         <span>{t('auth.login.footer.security')}</span>
                     </div>
-                    <span className={S.leftPanel.version}>v1.0.0</span>
+                    <span className={styles.leftPanelVersion}>v1.0.0</span>
                 </div>
             </div>
 
             {/* Right: decorative panel */}
-            <div className={S.rightPanel.root}>
+            <div className={styles.rightPanelRoot}>
                 <DecorativeArt />
-                <div className={S.rightPanel.overlay}>
-                    <h2 className={S.rightPanel.title}>
+                <div className={styles.rightPanelOverlay}>
+                    <h2 className={styles.rightPanelTitle}>
                         {t('auth.login.panel.title')}
                         <br />
-                        <span className={S.rightPanel.highlight}>{t('auth.login.panel.highlight')}</span>
+                        <span className={styles.rightPanelHighlight}>{t('auth.login.panel.highlight')}</span>
                     </h2>
-                    <p className={S.rightPanel.description}>{t('auth.login.panel.description')}</p>
+                    <p className={styles.rightPanelDescription}>{t('auth.login.panel.description')}</p>
                 </div>
             </div>
         </div>
@@ -173,7 +186,7 @@ export function LoginPage() {
 
 function DecorativeArt() {
     return (
-        <svg className={S.rightPanel.art} viewBox="0 0 480 640" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+        <svg className={styles.rightPanelArt} viewBox="0 0 480 640" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
             <defs>
                 <pattern id="login-dot-grid" x="0" y="0" width="22" height="22" patternUnits="userSpaceOnUse">
                     <circle cx="1.5" cy="1.5" r="0.9" fill="#334155" />

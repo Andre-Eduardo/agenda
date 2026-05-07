@@ -22,10 +22,38 @@ import {
     Stethoscope,
     UserPlus,
 } from 'lucide-react';
+import {cva} from 'class-variance-authority';
 import {Button} from '@/components/ui/componentes/button';
 import {Skeleton} from '@/components/ui/componentes/skeleton';
 import {Page} from '@/views/components/Page';
-import * as S from './styles';
+import styles from './styles.module.css';
+
+const statIcon = cva(styles.statIconBase, {
+    variants: {
+        tone: {
+            neutral: styles.statIconNeutral,
+            success: styles.statIconSuccess,
+            muted: styles.statIconMuted,
+            primary: styles.statIconPrimary,
+        },
+    },
+    defaultVariants: {tone: 'neutral'},
+});
+
+const statusBadge = cva(styles.statusBadgeBase, {
+    variants: {
+        status: {
+            SCHEDULED: styles.statusBadgeScheduled,
+            CONFIRMED: styles.statusBadgeConfirmed,
+            COMPLETED: styles.statusBadgeCompleted,
+            CANCELLED: styles.statusBadgeCancelled,
+            NO_SHOW: styles.statusBadgeNoShow,
+            ARRIVED: styles.statusBadgeArrived,
+            IN_PROGRESS: styles.statusBadgeInProgress,
+        },
+    },
+    defaultVariants: {status: 'SCHEDULED'},
+});
 
 // ─── Route ──────────────────────────────────────────────────────────────────
 
@@ -193,28 +221,28 @@ export function DashboardPage() {
     const isLoading = apptQuery.isLoading || userQuery.isLoading;
 
     return (
-        <Page title="Dashboard" className={S.page}>
+        <Page title="Dashboard" className={styles.page}>
             {/* ── Header ─────────────────────────────────────────────────────── */}
-            <div className={S.header}>
+            <div className={styles.header}>
                 <div>
                     {isLoading ? (
-                        <Skeleton className={S.skeletonGreeting} />
+                        <Skeleton className={styles.skeletonGreeting} />
                     ) : (
-                        <h1 className={S.greeting}>
+                        <h1 className={styles.greeting}>
                             {greeting()}, {firstName}
                         </h1>
                     )}
-                    <p className={S.dateLabel}>{fmtFullDate()}</p>
+                    <p className={styles.dateLabel}>{fmtFullDate()}</p>
                 </div>
-                <div className={S.agentBadge}>
-                    <span className={S.agentDot} />
-                    <span className={S.agentLabel}>Agente IA ativo</span>
+                <div className={styles.agentBadge}>
+                    <span className={styles.agentDot} />
+                    <span className={styles.agentLabel}>Agente IA ativo</span>
                     <Sparkles size={12} />
                 </div>
             </div>
 
             {/* ── Stats ──────────────────────────────────────────────────────── */}
-            <div className={S.statsGrid}>
+            <div className={styles.statsGrid}>
                 <StatCard
                     label="Consultas hoje"
                     value={counts.total}
@@ -246,39 +274,39 @@ export function DashboardPage() {
             </div>
 
             {/* ── Two-column body ────────────────────────────────────────────── */}
-            <div className={S.cols}>
+            <div className={styles.cols}>
                 {/* Left column */}
-                <div className={S.colMain}>
+                <div className={styles.colMain}>
                     {/* Today's appointments */}
-                    <section className={S.sectionCard}>
-                        <div className={S.sectionHead}>
+                    <section className={styles.sectionCard}>
+                        <div className={styles.sectionHead}>
                             <div>
-                                <div className={S.sectionTitle}>Consultas de hoje</div>
+                                <div className={styles.sectionTitle}>Consultas de hoje</div>
                                 {counts.total > 0 && (
-                                    <div className={S.sectionSub}>
+                                    <div className={styles.sectionSub}>
                                         {counts.total}{' '}
                                         {counts.total === 1 ? 'consulta agendada' : 'consultas agendadas'}
                                     </div>
                                 )}
                             </div>
-                            <button type="button" className={S.secLink} onClick={() => navigate({to: '/appointments'})}>
+                            <button type="button" className={styles.secLink} onClick={() => navigate({to: '/appointments'})}>
                                 Ver agenda <ArrowUpRight size={12} />
                             </button>
                         </div>
-                        <div className={S.sectionBody}>
+                        <div className={styles.sectionBody}>
                             {/* eslint-disable-next-line no-nested-ternary -- loading/empty/list pattern is a clear render branch */}
                             {isLoading ? (
                                 <AppointmentSkeleton rows={3} />
                             ) : todayAppts.length === 0 ? (
-                                <div className={S.empty}>
-                                    <CalendarX2 size={28} className={S.emptyIcon} />
-                                    <div className={S.emptyTitle}>Sem consultas hoje</div>
-                                    <p className={S.emptySub}>
+                                <div className={styles.empty}>
+                                    <CalendarX2 size={28} className={styles.emptyIcon} />
+                                    <div className={styles.emptyTitle}>Sem consultas hoje</div>
+                                    <p className={styles.emptySub}>
                                         Aproveite para revisar pendências ou criar novos agendamentos.
                                     </p>
                                 </div>
                             ) : (
-                                <div className={S.apptList}>
+                                <div className={styles.apptList}>
                                     {todayAppts.map((apt) => (
                                         <ApptRow key={apt.id} apt={apt} />
                                     ))}
@@ -288,37 +316,37 @@ export function DashboardPage() {
                     </section>
 
                     {/* Recent records */}
-                    <section className={S.sectionCard}>
-                        <div className={S.sectionHead}>
+                    <section className={styles.sectionCard}>
+                        <div className={styles.sectionHead}>
                             <div>
-                                <div className={S.sectionTitle}>Atividade recente</div>
-                                <div className={S.sectionSub}>Últimas evoluções registradas</div>
+                                <div className={styles.sectionTitle}>Atividade recente</div>
+                                <div className={styles.sectionSub}>Últimas evoluções registradas</div>
                             </div>
-                            <button type="button" className={S.secLink}>
+                            <button type="button" className={styles.secLink}>
                                 Ver todas <ArrowUpRight size={12} />
                             </button>
                         </div>
-                        <div className={S.sectionBody}>
+                        <div className={styles.sectionBody}>
                             {/* eslint-disable-next-line no-nested-ternary -- loading/empty/list pattern is a clear render branch */}
                             {recentQuery.isLoading ? (
-                                <div className={S.skeletonListCol}>
+                                <div className={styles.skeletonListCol}>
                                     {Array.from({length: 3}).map((_, i) => (
-                                        <div key={i} className={S.skeletonListRow}>
-                                            <Skeleton className={S.skeletonAvatar} />
+                                        <div key={i} className={styles.skeletonListRow}>
+                                            <Skeleton className={styles.skeletonAvatar} />
                                             <div className="flex-1">
-                                                <Skeleton className={S.skeletonNameMd} />
+                                                <Skeleton className={styles.skeletonNameMd} />
                                                 <Skeleton className="h-3 w-full" />
                                             </div>
                                         </div>
                                     ))}
                                 </div>
                             ) : recentRecords.length === 0 ? (
-                                <div className={S.empty}>
-                                    <FileText size={24} className={S.emptyIcon} />
-                                    <div className={S.emptyTitle}>Nenhuma evolução registrada</div>
+                                <div className={styles.empty}>
+                                    <FileText size={24} className={styles.emptyIcon} />
+                                    <div className={styles.emptyTitle}>Nenhuma evolução registrada</div>
                                 </div>
                             ) : (
-                                <div className={S.evolList}>
+                                <div className={styles.evolList}>
                                     {recentRecords.map((rec) => (
                                         <RecentRecordRow key={rec.id} record={rec} />
                                     ))}
@@ -329,14 +357,14 @@ export function DashboardPage() {
                 </div>
 
                 {/* Right column */}
-                <div className={S.colSide}>
+                <div className={styles.colSide}>
                     {/* Quick actions */}
-                    <section className={S.sectionCard}>
-                        <div className={S.sectionHead}>
-                            <div className={S.sectionTitle}>Ações rápidas</div>
+                    <section className={styles.sectionCard}>
+                        <div className={styles.sectionHead}>
+                            <div className={styles.sectionTitle}>Ações rápidas</div>
                         </div>
-                        <div className={S.sectionBody}>
-                            <div className={S.qaGrid}>
+                        <div className={styles.sectionBody}>
+                            <div className={styles.qaGrid}>
                                 <QuickAction
                                     icon={<UserPlus size={16} />}
                                     label="Novo paciente"
@@ -363,24 +391,24 @@ export function DashboardPage() {
                     </section>
 
                     {/* Upcoming appointments */}
-                    <section className={S.sectionCard}>
-                        <div className={S.sectionHead}>
+                    <section className={styles.sectionCard}>
+                        <div className={styles.sectionHead}>
                             <div>
-                                <div className={S.sectionTitle}>Próximas consultas</div>
-                                <div className={S.sectionSub}>A partir de amanhã</div>
+                                <div className={styles.sectionTitle}>Próximas consultas</div>
+                                <div className={styles.sectionSub}>A partir de amanhã</div>
                             </div>
-                            <button type="button" className={S.secLink} onClick={() => navigate({to: '/appointments'})}>
+                            <button type="button" className={styles.secLink} onClick={() => navigate({to: '/appointments'})}>
                                 Ver agenda <ArrowUpRight size={12} />
                             </button>
                         </div>
-                        <div className={S.sectionBody}>
+                        <div className={styles.sectionBody}>
                             {/* eslint-disable-next-line no-nested-ternary -- loading/empty/list pattern is a clear render branch */}
                             {isLoading ? (
                                 <AppointmentSkeleton rows={3} compact />
                             ) : upcomingAppts.length === 0 ? (
-                                <div className={S.empty}>
-                                    <CalendarX2 size={22} className={S.emptyIcon} />
-                                    <div className={S.emptyTitle}>Nenhuma consulta agendada</div>
+                                <div className={styles.empty}>
+                                    <CalendarX2 size={22} className={styles.emptyIcon} />
+                                    <div className={styles.emptyTitle}>Nenhuma consulta agendada</div>
                                     <Button
                                         variant="outline"
                                         size="sm"
@@ -392,7 +420,7 @@ export function DashboardPage() {
                                     </Button>
                                 </div>
                             ) : (
-                                <div className={S.upList}>
+                                <div className={styles.upList}>
                                     {upcomingAppts.map((apt) => (
                                         <UpcomingRow key={apt.id} apt={apt} />
                                     ))}
@@ -422,11 +450,11 @@ function StatCard({
     loading?: boolean;
 }) {
     return (
-        <div className={S.statCard}>
-            <div className={S.statIcon({tone})}>{icon}</div>
+        <div className={styles.statCard}>
+            <div className={statIcon({tone})}>{icon}</div>
             <div>
-                {loading ? <Skeleton className={S.skeletonStatValue} /> : <div className={S.statValue}>{value}</div>}
-                <div className={S.statLabel}>{label}</div>
+                {loading ? <Skeleton className={styles.skeletonStatValue} /> : <div className={styles.statValue}>{value}</div>}
+                <div className={styles.statLabel}>{label}</div>
             </div>
         </div>
     );
@@ -439,31 +467,31 @@ function ApptRow({apt}: {apt: Appointment}) {
     const isActive = ACTIVE_STATUSES.has(status);
 
     return (
-        <div className={S.apptRow}>
+        <div className={styles.apptRow}>
             {/* Time */}
-            <div className={S.apptTime}>
-                <span className={S.apptTimeStart}>{start}</span>
-                <span className={S.apptTimeEnd}>{end}</span>
+            <div className={styles.apptTime}>
+                <span className={styles.apptTimeStart}>{start}</span>
+                <span className={styles.apptTimeEnd}>{end}</span>
             </div>
 
             {/* Patient placeholder (no patient enrichment here) */}
-            <div className={S.apptPatBtn}>
-                <div className={S.patientInitialsAvatar}>—</div>
+            <div className={styles.apptPatBtn}>
+                <div className={styles.patientInitialsAvatar}>—</div>
                 <div className="min-w-0">
-                    <div className={S.apptPatName}>Paciente</div>
-                    <div className={S.apptPatType}>{TYPE_LABELS[apt.type] ?? apt.type}</div>
+                    <div className={styles.apptPatName}>Paciente</div>
+                    <div className={styles.apptPatType}>{TYPE_LABELS[apt.type] ?? apt.type}</div>
                 </div>
             </div>
 
             {/* Status badge */}
-            <span className={S.statusBadge({status})}>
-                <span className={S.statusDot} />
+            <span className={statusBadge({status})}>
+                <span className={styles.statusDot} />
                 {STATUS_LABELS[status] ?? status}
             </span>
 
             {/* Action */}
             {isActive && (
-                <Button size="sm" variant="outline" className={S.apptStartBtn}>
+                <Button size="sm" variant="outline" className={styles.apptStartBtn}>
                     <Stethoscope size={12} />
                     Iniciar
                 </Button>
@@ -489,11 +517,11 @@ function RecentRecordRow({record}: {record: ClinicalRecord}) {
         'Sem conteúdo';
 
     return (
-        <div className={S.evolRow}>
-            <div className={S.patientInitialsAvatar}>P</div>
-            <div className={S.evolBody}>
-                <div className={S.evolMeta}>
-                    {dateLabel && <span className={S.evolDate}>{dateLabel}</span>}
+        <div className={styles.evolRow}>
+            <div className={styles.patientInitialsAvatar}>P</div>
+            <div className={styles.evolBody}>
+                <div className={styles.evolMeta}>
+                    {dateLabel && <span className={styles.evolDate}>{dateLabel}</span>}
                     {record.attendanceType && (
                         <>
                             <span>·</span>
@@ -501,13 +529,13 @@ function RecentRecordRow({record}: {record: ClinicalRecord}) {
                         </>
                     )}
                     {record.source === 'AI' && (
-                        <span className={S.aiBadge}>
+                        <span className={styles.aiBadge}>
                             <Sparkles size={9} />
                             Origem IA
                         </span>
                     )}
                 </div>
-                <div className={S.evolExcerpt}>{excerpt}</div>
+                <div className={styles.evolExcerpt}>{excerpt}</div>
             </div>
         </div>
     );
@@ -519,16 +547,16 @@ function UpcomingRow({apt}: {apt: Appointment}) {
     const timeLabel = fmtTime(apt.startAt);
 
     return (
-        <div className={S.upRow}>
-            <div className={S.upDate}>
-                <span className={S.upDay}>{dayLabel}</span>
-                <span className={S.upTime}>{timeLabel}</span>
+        <div className={styles.upRow}>
+            <div className={styles.upDate}>
+                <span className={styles.upDay}>{dayLabel}</span>
+                <span className={styles.upTime}>{timeLabel}</span>
             </div>
-            <div className={S.upInfo}>
-                <div className={S.upName}>Paciente</div>
-                <div className={S.upType}>{TYPE_LABELS[apt.type] ?? apt.type}</div>
+            <div className={styles.upInfo}>
+                <div className={styles.upName}>Paciente</div>
+                <div className={styles.upType}>{TYPE_LABELS[apt.type] ?? apt.type}</div>
             </div>
-            <ChevronRight size={14} className={S.upChevron} />
+            <ChevronRight size={14} className={styles.upChevron} />
         </div>
     );
 }
@@ -545,11 +573,11 @@ function QuickAction({
     onClick?: () => void;
 }) {
     return (
-        <button type="button" className={S.qaBtn} onClick={onClick}>
-            <span className={S.qaIcon}>{icon}</span>
+        <button type="button" className={styles.qaBtn} onClick={onClick}>
+            <span className={styles.qaIcon}>{icon}</span>
             <div>
-                <div className={S.qaLabel}>{label}</div>
-                {sub && <div className={S.qaSub}>{sub}</div>}
+                <div className={styles.qaLabel}>{label}</div>
+                {sub && <div className={styles.qaSub}>{sub}</div>}
             </div>
         </button>
     );
@@ -557,16 +585,16 @@ function QuickAction({
 
 function AppointmentSkeleton({rows, compact}: {rows: number; compact?: boolean}) {
     return (
-        <div className={S.skeletonApptCol}>
+        <div className={styles.skeletonApptCol}>
             {Array.from({length: rows}).map((_, i) => (
-                <div key={i} className={S.skeletonApptRow}>
+                <div key={i} className={styles.skeletonApptRow}>
                     {!compact && <Skeleton className="h-9 w-12" />}
-                    <Skeleton className={S.skeletonAvatar} />
+                    <Skeleton className={styles.skeletonAvatar} />
                     <div className="flex-1">
-                        <Skeleton className={S.skeletonNameSm} />
+                        <Skeleton className={styles.skeletonNameSm} />
                         <Skeleton className="h-3 w-20" />
                     </div>
-                    <Skeleton className={S.skeletonStatusBadge} />
+                    <Skeleton className={styles.skeletonStatusBadge} />
                 </div>
             ))}
         </div>

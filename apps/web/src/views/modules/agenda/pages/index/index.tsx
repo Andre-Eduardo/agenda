@@ -40,9 +40,205 @@ import {
 } from 'lucide-react';
 import {Button} from '@/components/ui/componentes/button';
 import {Skeleton} from '@/components/ui/componentes/skeleton';
+import {cva} from 'class-variance-authority';
 import {cn} from '@/lib/utils';
 import {useAppStore} from '@/store/appStore';
-import * as S from './styles';
+import styles from './styles.module.css';
+
+// ── CVA definitions ────────────────────────────────────────────────────────
+
+const segmentedBtn = cva(styles.segmentedBtnBase, {
+    variants: {
+        active: {
+            true: styles.segmentedBtnActive,
+            false: styles.segmentedBtnInactive,
+        },
+    },
+    defaultVariants: {active: false},
+});
+
+const statusChip = cva(styles.statusChipBase, {
+    variants: {
+        status: {
+            scheduled: styles.statusChipScheduled,
+            confirmed: styles.statusChipConfirmed,
+            done: styles.statusChipDone,
+            cancelled: styles.statusChipCancelled,
+            noshow: styles.statusChipNoshow,
+        },
+        off: {
+            true: styles.statusChipOff,
+            false: '',
+        },
+    },
+    defaultVariants: {off: false},
+});
+
+const miniCalCell = cva(styles.miniCalCellBase, {
+    variants: {
+        state: {
+            default: styles.miniCalCellDefault,
+            off: styles.miniCalCellOff,
+            today: styles.miniCalCellToday,
+            selected: styles.miniCalCellSelected,
+            inWeek: styles.miniCalCellInWeek,
+        },
+    },
+    defaultVariants: {state: 'default'},
+});
+
+const dayHead = cva(styles.dayHeadBase, {
+    variants: {
+        today: {true: styles.dayHeadToday, false: ''},
+    },
+});
+
+const dayHeadNum = cva(styles.dayHeadNumBase, {
+    variants: {
+        today: {
+            true: styles.dayHeadNumToday,
+            false: styles.dayHeadNumDefault,
+        },
+    },
+});
+
+const dayCol = cva(styles.dayColBase, {
+    variants: {
+        today: {true: styles.dayColToday, false: ''},
+    },
+});
+
+const monthCell = cva(styles.monthCellBase, {
+    variants: {
+        off: {
+            true: styles.monthCellOff,
+            false: styles.monthCellOn,
+        },
+    },
+    defaultVariants: {off: false},
+});
+
+const monthCellNum = cva(styles.monthCellNumBase, {
+    variants: {
+        today: {
+            true: styles.monthCellNumToday,
+            false: styles.monthCellNumDefault,
+        },
+    },
+    defaultVariants: {today: false},
+});
+
+const apptBlock = cva(styles.apptBlockBase, {
+    variants: {
+        status: {
+            SCHEDULED: styles.apptBlockScheduled,
+            CONFIRMED: styles.apptBlockConfirmed,
+            COMPLETED: styles.apptBlockCompleted,
+            CANCELLED: styles.apptBlockCancelled,
+            NO_SHOW: styles.apptBlockNoShow,
+            ARRIVED: styles.apptBlockArrived,
+            IN_PROGRESS: styles.apptBlockInProgress,
+        },
+        highlight: {
+            true: styles.apptBlockHighlight,
+            false: '',
+        },
+    },
+    defaultVariants: {highlight: false},
+});
+
+const statusBadge = cva(styles.statusBadgeBase, {
+    variants: {
+        status: {
+            SCHEDULED: styles.statusBadgeScheduled,
+            CONFIRMED: styles.statusBadgeConfirmed,
+            COMPLETED: styles.statusBadgeCompleted,
+            CANCELLED: styles.statusBadgeCancelled,
+            NO_SHOW: styles.statusBadgeNoShow,
+            ARRIVED: styles.statusBadgeArrived,
+            IN_PROGRESS: styles.statusBadgeInProgress,
+        },
+    },
+});
+
+const shNotes = cva(styles.shNotesBase, {
+    variants: {
+        empty: {
+            true: styles.shNotesEmpty,
+            false: styles.shNotesFull,
+        },
+    },
+});
+
+const searchBox = cva(styles.searchBoxBase, {
+    variants: {
+        error: {
+            true: styles.searchBoxError,
+            false: styles.searchBoxDefault,
+        },
+    },
+    defaultVariants: {error: false},
+});
+
+// ── Record / array lookup tables ───────────────────────────────────────────
+
+const avatarVariants = [
+    styles.avatarV0,
+    styles.avatarV1,
+    styles.avatarV2,
+    styles.avatarV3,
+    styles.avatarV4,
+    styles.avatarV5,
+    styles.avatarV6,
+];
+
+const statusDotCls: Record<string, string> = {
+    scheduled: styles.statusDotScheduled,
+    confirmed: styles.statusDotConfirmed,
+    done: styles.statusDotDone,
+    cancelled: styles.statusDotCancelled,
+    noshow: styles.statusDotNoshow,
+};
+
+const apptBarCls: Record<string, string> = {
+    SCHEDULED: styles.apptBarScheduled,
+    CONFIRMED: styles.apptBarConfirmed,
+    COMPLETED: styles.apptBarCompleted,
+    CANCELLED: styles.apptBarCancelled,
+    NO_SHOW: styles.apptBarNoShow,
+    ARRIVED: styles.apptBarArrived,
+    IN_PROGRESS: styles.apptBarInProgress,
+};
+
+const apptTimeCls: Record<string, string> = {
+    SCHEDULED: styles.apptTimeScheduled,
+    CONFIRMED: styles.apptTimeConfirmed,
+    COMPLETED: styles.apptTimeCompleted,
+    CANCELLED: styles.apptTimeCancelled,
+    NO_SHOW: styles.apptTimeNoShow,
+    ARRIVED: styles.apptTimeArrived,
+    IN_PROGRESS: styles.apptTimeInProgress,
+};
+
+const apptNameCls: Record<string, string> = {
+    SCHEDULED: styles.apptNameScheduled,
+    CONFIRMED: styles.apptNameConfirmed,
+    COMPLETED: styles.apptNameCompleted,
+    CANCELLED: styles.apptNameCancelled,
+    NO_SHOW: styles.apptNameNoShow,
+    ARRIVED: styles.apptNameArrived,
+    IN_PROGRESS: styles.apptNameInProgress,
+};
+
+const monthEvtCls: Record<string, string> = {
+    scheduled: styles.monthEvtScheduled,
+    confirmed: styles.monthEvtConfirmed,
+    done: styles.monthEvtDone,
+    cancelled: styles.monthEvtCancelled,
+    noshow: styles.monthEvtNoshow,
+    ARRIVED: styles.monthEvtArrived,
+    IN_PROGRESS: styles.monthEvtInProgress,
+};
 
 export const Route = createFileRoute('/_stackedLayout/appointments')({
     component: AgendaPage,
@@ -313,7 +509,7 @@ function getAvatarVariant(id: string): string {
     // eslint-disable-next-line no-bitwise -- standard string-hash uint32 pattern
     for (let i = 0; i < id.length; i++) hash = (hash * 31 + id.charCodeAt(i)) >>> 0;
 
-    return S.avatarVariants[hash % S.avatarVariants.length];
+    return avatarVariants[hash % avatarVariants.length];
 }
 
 function getInitials(name: string): string {
@@ -347,12 +543,12 @@ function ApptBlock({
     const name = patient?.name ?? '—';
 
     return (
-        <button type="button" className={S.apptBlock({status: apt.status, highlight})} style={style} onClick={onClick}>
-            <div className={cn(S.apptBar, S.apptBarCls[apt.status])} />
-            <div className={S.apptContent}>
-                <div className={cn(S.apptTimeBase, S.apptTimeCls[apt.status])}>{timeStr}</div>
-                <div className={cn(S.apptNameBase, S.apptNameCls[apt.status])}>{name}</div>
-                {!compact && <div className={S.apptTypeLbl}>{TYPE_LABELS[apt.type]}</div>}
+        <button type="button" className={apptBlock({status: apt.status, highlight})} style={style} onClick={onClick}>
+            <div className={cn(styles.apptBar, apptBarCls[apt.status])} />
+            <div className={styles.apptContent}>
+                <div className={cn(styles.apptTimeBase, apptTimeCls[apt.status])}>{timeStr}</div>
+                <div className={cn(styles.apptNameBase, apptNameCls[apt.status])}>{name}</div>
+                {!compact && <div className={styles.apptTypeLbl}>{TYPE_LABELS[apt.type]}</div>}
             </div>
         </button>
     );
@@ -402,13 +598,13 @@ function MiniCalendar({
     const label = `${MONTH_NAMES_SHORT[monthCursor.getMonth()]} ${monthCursor.getFullYear()}`;
 
     return (
-        <div className={S.miniCal.root}>
-            <div className={S.miniCal.head}>
-                <span className={S.miniCal.monthLabel}>{label}</span>
-                <div className={S.miniCal.arrowsRow}>
+        <div className={styles.miniCalRoot}>
+            <div className={styles.miniCalHead}>
+                <span className={styles.miniCalMonthLabel}>{label}</span>
+                <div className={styles.miniCalArrowsRow}>
                     <button
                         type="button"
-                        className={S.miniCal.arrowBtn}
+                        className={styles.miniCalArrowBtn}
                         onClick={() =>
                             setMonthCursor(new Date(monthCursor.getFullYear(), monthCursor.getMonth() - 1, 1))
                         }
@@ -417,7 +613,7 @@ function MiniCalendar({
                     </button>
                     <button
                         type="button"
-                        className={S.miniCal.arrowBtn}
+                        className={styles.miniCalArrowBtn}
                         onClick={() =>
                             setMonthCursor(new Date(monthCursor.getFullYear(), monthCursor.getMonth() + 1, 1))
                         }
@@ -427,15 +623,15 @@ function MiniCalendar({
                 </div>
             </div>
 
-            <div className={S.miniCal.dowRow}>
+            <div className={styles.miniCalDowRow}>
                 {WEEKDAYS_SHORT.map((w) => (
-                    <div key={w} className={S.miniCal.dowCell}>
+                    <div key={w} className={styles.miniCalDowCell}>
                         {w[0]}
                     </div>
                 ))}
             </div>
 
-            <div className={S.miniCal.grid}>
+            <div className={styles.miniCalGrid}>
                 {cells.map((d, i) => {
                     const inMonth = d.getMonth() === monthCursor.getMonth();
                     const isToday = sameDay(d, today);
@@ -451,15 +647,15 @@ function MiniCalendar({
                     else if (isToday) state = 'today';
 
                     return (
-                        <button type="button" key={i} className={S.miniCalCell({state})} onClick={() => onPickDay(d)}>
-                            <span className={S.miniCalNum}>{d.getDate()}</span>
-                            {hasAppt && state !== 'selected' && <span className={S.miniCalDot} />}
+                        <button type="button" key={i} className={miniCalCell({state})} onClick={() => onPickDay(d)}>
+                            <span className={styles.miniCalNum}>{d.getDate()}</span>
+                            {hasAppt && state !== 'selected' && <span className={styles.miniCalDot} />}
                         </button>
                     );
                 })}
             </div>
 
-            <button type="button" className={S.miniCal.todayBtn} onClick={() => onPickDay(new Date())}>
+            <button type="button" className={styles.miniCalTodayBtn} onClick={() => onPickDay(new Date())}>
                 <Calendar className="size-3" />
                 Voltar para hoje
             </button>
@@ -495,15 +691,15 @@ function DayView({
     return (
         <div>
             {/* Day header */}
-            <div className={S.dayViewHead}>
-                <div className={S.dayViewDow}>{WEEKDAYS_LONG[cursor.getDay()]}</div>
-                <div className={S.dayViewNumRow}>
-                    <span className={S.dayViewNum}>{cursor.getDate()}</span>
-                    <span className={S.dayViewMonth}>
+            <div className={styles.dayViewHead}>
+                <div className={styles.dayViewDow}>{WEEKDAYS_LONG[cursor.getDay()]}</div>
+                <div className={styles.dayViewNumRow}>
+                    <span className={styles.dayViewNum}>{cursor.getDate()}</span>
+                    <span className={styles.dayViewMonth}>
                         {MONTH_NAMES[cursor.getMonth()]} · {cursor.getFullYear()}
                     </span>
                     {dayAppts.length > 0 && (
-                        <span className={S.dayViewCount}>
+                        <span className={styles.dayViewCount}>
                             {dayAppts.length} {dayAppts.length === 1 ? 'consulta' : 'consultas'}
                         </span>
                     )}
@@ -513,20 +709,20 @@ function DayView({
             {/* Time grid */}
             <div className="flex">
                 {/* Time labels */}
-                <div className={S.timeCol}>
+                <div className={styles.timeCol}>
                     {HOURS.map((h) => (
-                        <div key={h} className={S.timeRow} style={{height: DAY_HOUR_H}}>
-                            <span className={S.timeLbl}>{String(h).padStart(2, '0')}:00</span>
+                        <div key={h} className={styles.timeRow} style={{height: DAY_HOUR_H}}>
+                            <span className={styles.timeLbl}>{String(h).padStart(2, '0')}:00</span>
                         </div>
                     ))}
                 </div>
 
                 {/* Day column */}
-                <div className={S.dayColSolo} style={{height: DAY_HOUR_H * HOURS.length}}>
+                <div className={styles.dayColSolo} style={{height: DAY_HOUR_H * HOURS.length}}>
                     {HOURS.map((h, hi) => (
                         <div
                             key={h}
-                            className={S.hourSlot}
+                            className={styles.hourSlot}
                             style={{top: hi * DAY_HOUR_H, height: DAY_HOUR_H}}
                             onClick={() =>
                                 onSlotClick({
@@ -538,10 +734,10 @@ function DayView({
                     ))}
 
                     {nowTop != null && nowTop >= 0 && nowTop <= DAY_HOUR_H * HOURS.length && (
-                        <div className={S.nowLine} style={{top: nowTop}}>
-                            <span className={S.nowDot} />
-                            <div className={S.nowBar} />
-                            <span className={S.nowTime}>
+                        <div className={styles.nowLine} style={{top: nowTop}}>
+                            <span className={styles.nowDot} />
+                            <div className={styles.nowBar} />
+                            <span className={styles.nowTime}>
                                 {String(now.h).padStart(2, '0')}:{String(now.m).padStart(2, '0')}
                             </span>
                         </div>
@@ -574,10 +770,10 @@ function DayView({
                     })}
 
                     {dayAppts.length === 0 && (
-                        <div className={S.emptyDay}>
+                        <div className={styles.emptyDay}>
                             <CalendarX2 className="size-7" strokeWidth={1.5} />
-                            <div className={S.emptyDayTitle}>Sem consultas neste dia</div>
-                            <div className={S.emptyDaySub}>
+                            <div className={styles.emptyDayTitle}>Sem consultas neste dia</div>
+                            <div className={styles.emptyDaySub}>
                                 Clique em qualquer horário ou use &quot;Novo agendamento&quot; acima.
                             </div>
                         </div>
@@ -611,29 +807,29 @@ function WeekView({
     const now = {h: today.getHours(), m: today.getMinutes()};
 
     return (
-        <div className={S.weekGrid}>
+        <div className={styles.weekGrid}>
             {/* Header */}
-            <div className={S.weekHead}>
-                <div className={S.timeColHead} />
+            <div className={styles.weekHead}>
+                <div className={styles.timeColHead} />
                 {days.map((d, i) => {
                     const isToday = sameDay(d, today);
 
                     return (
-                        <div key={i} className={S.dayHead({today: isToday})}>
-                            <span className={S.dayHeadDow}>{WEEKDAYS_SHORT[d.getDay()]}</span>
-                            <span className={S.dayHeadNum({today: isToday})}>{d.getDate()}</span>
+                        <div key={i} className={dayHead({today: isToday})}>
+                            <span className={styles.dayHeadDow}>{WEEKDAYS_SHORT[d.getDay()]}</span>
+                            <span className={dayHeadNum({today: isToday})}>{d.getDate()}</span>
                         </div>
                     );
                 })}
             </div>
 
             {/* Body */}
-            <div className={S.weekBody}>
+            <div className={styles.weekBody}>
                 {/* Time column */}
-                <div className={S.timeCol}>
+                <div className={styles.timeCol}>
                     {HOURS.map((h) => (
-                        <div key={h} className={S.timeRow} style={{height: WEEK_HOUR_H}}>
-                            <span className={S.timeLbl}>{String(h).padStart(2, '0')}:00</span>
+                        <div key={h} className={styles.timeRow} style={{height: WEEK_HOUR_H}}>
+                            <span className={styles.timeLbl}>{String(h).padStart(2, '0')}:00</span>
                         </div>
                     ))}
                 </div>
@@ -648,13 +844,13 @@ function WeekView({
                     return (
                         <div
                             key={di}
-                            className={S.dayCol({today: isToday})}
+                            className={dayCol({today: isToday})}
                             style={{height: WEEK_HOUR_H * HOURS.length}}
                         >
                             {HOURS.map((h, hi) => (
                                 <div
                                     key={h}
-                                    className={S.hourSlot}
+                                    className={styles.hourSlot}
                                     style={{top: hi * WEEK_HOUR_H, height: WEEK_HOUR_H}}
                                     onClick={() =>
                                         onSlotClick({
@@ -666,9 +862,9 @@ function WeekView({
                             ))}
 
                             {nowTop != null && nowTop >= 0 && nowTop <= WEEK_HOUR_H * HOURS.length && (
-                                <div className={S.nowLine} style={{top: nowTop}}>
-                                    <span className={S.nowDot} />
-                                    <div className={S.nowBar} />
+                                <div className={styles.nowLine} style={{top: nowTop}}>
+                                    <span className={styles.nowDot} />
+                                    <div className={styles.nowBar} />
                                 </div>
                             )}
 
@@ -737,20 +933,20 @@ function DayPopover({
     }, [onClose]);
 
     return (
-        <div className={S.popOverlay} onClick={onClose}>
-            <div className={S.popContent} onClick={(e) => e.stopPropagation()}>
-                <div className={S.popHead}>
+        <div className={styles.popOverlay} onClick={onClose}>
+            <div className={styles.popContent} onClick={(e) => e.stopPropagation()}>
+                <div className={styles.popHead}>
                     <div>
-                        <div className={S.popDow}>{WEEKDAYS_LONG[date.getDay()]}</div>
-                        <div className={S.popDate}>
+                        <div className={styles.popDow}>{WEEKDAYS_LONG[date.getDay()]}</div>
+                        <div className={styles.popDate}>
                             {date.getDate()} de {MONTH_NAMES[date.getMonth()]}
                         </div>
                     </div>
-                    <button type="button" onClick={onClose} className={S.shCloseBtn}>
+                    <button type="button" onClick={onClose} className={styles.shCloseBtn}>
                         <X className="size-4" />
                     </button>
                 </div>
-                <div className={S.popList}>
+                <div className={styles.popList}>
                     {dayAppts.map((a) => {
                         const p = patientMap.get(a.patientId);
 
@@ -758,17 +954,17 @@ function DayPopover({
                             <button
                                 type="button"
                                 key={a.id}
-                                className={S.popRow}
+                                className={styles.popRow}
                                 onClick={() => {
                                     onApptClick(a.id);
                                     onClose();
                                 }}
                             >
-                                <span className={S.popTime}>
+                                <span className={styles.popTime}>
                                     {toTimeStr(a.startAt)} – {toTimeStr(a.endAt)}
                                 </span>
-                                <span className={S.popName}>{p?.name ?? '—'}</span>
-                                <span className={S.apptTimeLabel}>{TYPE_LABELS[a.type]}</span>
+                                <span className={styles.popName}>{p?.name ?? '—'}</span>
+                                <span className={styles.apptTimeLabel}>{TYPE_LABELS[a.type]}</span>
                             </button>
                         );
                     })}
@@ -804,15 +1000,15 @@ function MonthView({
     const [expandDay, setExpandDay] = useState<string | null>(null);
 
     return (
-        <div className={S.monthWrapper}>
-            <div className={S.monthHead}>
+        <div className={styles.monthWrapper}>
+            <div className={styles.monthHead}>
                 {WEEKDAYS_SHORT.map((w) => (
-                    <div key={w} className={S.monthHeadCell}>
+                    <div key={w} className={styles.monthHeadCell}>
                         {w}
                     </div>
                 ))}
             </div>
-            <div className={S.monthCells}>
+            <div className={styles.monthCells}>
                 {cells.map((d, i) => {
                     const inMonth = d.getMonth() === cursor.getMonth();
                     const isToday = sameDay(d, today);
@@ -826,12 +1022,12 @@ function MonthView({
                     return (
                         <div
                             key={i}
-                            className={S.monthCell({off: !inMonth})}
+                            className={monthCell({off: !inMonth})}
                             onClick={() => onSlotClick({dateStr: dStr, timeStr: '09:00'})}
                         >
                             <button
                                 type="button"
-                                className={S.monthCellNum({today: isToday})}
+                                className={monthCellNum({today: isToday})}
                                 onClick={(e) => {
                                     e.stopPropagation();
                                     onGotoDay(d);
@@ -841,14 +1037,14 @@ function MonthView({
                             </button>
                             {visible.map((a) => {
                                 const displayStatus = API_TO_DISPLAY[a.status];
-                                const evtCls = S.monthEvtCls[displayStatus] ?? S.monthEvtCls[a.status as string];
+                                const evtCls = monthEvtCls[displayStatus] ?? monthEvtCls[a.status as string];
 
                                 return (
                                     <button
                                         type="button"
                                         key={a.id}
                                         className={cn(
-                                            S.monthEvtBase,
+                                            styles.monthEvtBase,
                                             evtCls,
                                             a.id === highlightId && 'ring-1 ring-(--color-primary)'
                                         )}
@@ -857,7 +1053,7 @@ function MonthView({
                                             onApptClick(a.id);
                                         }}
                                     >
-                                        <span className={S.apptMonoTime}>{toTimeStr(a.startAt)}</span>
+                                        <span className={styles.apptMonoTime}>{toTimeStr(a.startAt)}</span>
                                         <span className="truncate">{patientMap.get(a.patientId)?.name ?? '—'}</span>
                                     </button>
                                 );
@@ -865,7 +1061,7 @@ function MonthView({
                             {more > 0 && (
                                 <button
                                     type="button"
-                                    className={S.monthMoreBtn}
+                                    className={styles.monthMoreBtn}
                                     onClick={(e) => {
                                         e.stopPropagation();
                                         setExpandDay(dStr);
@@ -1019,45 +1215,45 @@ function AppointmentDetailSheet({
 
     return (
         <>
-            <div className={S.sheetOverlay} onClick={onClose} />
-            <div className={S.sheetPanel}>
+            <div className={styles.sheetOverlay} onClick={onClose} />
+            <div className={styles.sheetPanel}>
                 {/* Head */}
-                <div className={S.shHead}>
-                    <div className={S.shTitleBlock}>
-                        <span className={S.shEyebrow}>{editing ? 'Editar agendamento' : 'Agendamento'}</span>
+                <div className={styles.shHead}>
+                    <div className={styles.shTitleBlock}>
+                        <span className={styles.shEyebrow}>{editing ? 'Editar agendamento' : 'Agendamento'}</span>
                         {!editing && (
-                            <div className={S.shStatusRow}>
-                                <span className={S.statusBadge({status})}>
-                                    <span className={S.statusDot} />
+                            <div className={styles.shStatusRow}>
+                                <span className={statusBadge({status})}>
+                                    <span className={styles.statusDot} />
                                     {STATUS_LABELS[status]}
                                 </span>
                             </div>
                         )}
                     </div>
-                    <button type="button" onClick={onClose} className={S.shCloseBtn}>
+                    <button type="button" onClick={onClose} className={styles.shCloseBtn}>
                         <X className="size-4" />
                     </button>
                 </div>
 
                 {/* Body */}
-                <div className={S.shBody}>
+                <div className={styles.shBody}>
                     {/* Patient */}
-                    <div className={S.shPatientCard}>
+                    <div className={styles.shPatientCard}>
                         {patient && (
-                            <div className={cn(S.avatarSm, getAvatarVariant(patient.id))}>
+                            <div className={cn(styles.avatarSm, getAvatarVariant(patient.id))}>
                                 {getInitials(patient.name)}
                             </div>
                         )}
-                        <div className={S.shPatientInfo}>
-                            <div className={S.shPatientName}>{patient?.name ?? '—'}</div>
+                        <div className={styles.shPatientInfo}>
+                            <div className={styles.shPatientName}>{patient?.name ?? '—'}</div>
                             {patient && patientEmail(patient) && (
-                                <div className={S.shPatientMeta}>{patientEmail(patient)}</div>
+                                <div className={styles.shPatientMeta}>{patientEmail(patient)}</div>
                             )}
                         </div>
                         {patient && (
                             <button
                                 type="button"
-                                className={S.shPatientLink}
+                                className={styles.shPatientLink}
                                 onClick={() => onNavigateToPatient(patient.id)}
                             >
                                 Ver perfil <ArrowUpRight className="size-3" />
@@ -1067,55 +1263,55 @@ function AppointmentDetailSheet({
 
                     {/* Schedule — view or edit */}
                     {!editing ? (
-                        <div className={S.shSection}>
-                            <div className={S.shSecHead}>Horário</div>
-                            <div className={S.shInfoGrid}>
-                                <div className={S.shKV}>
-                                    <span className={S.shK}>Data</span>
-                                    <span className={S.shV}>{dateLabel}</span>
+                        <div className={styles.shSection}>
+                            <div className={styles.shSecHead}>Horário</div>
+                            <div className={styles.shInfoGrid}>
+                                <div className={styles.shKV}>
+                                    <span className={styles.shK}>Data</span>
+                                    <span className={styles.shV}>{dateLabel}</span>
                                 </div>
-                                <div className={S.shKV}>
-                                    <span className={S.shK}>Horário</span>
-                                    <span className={S.shVMono}>
+                                <div className={styles.shKV}>
+                                    <span className={styles.shK}>Horário</span>
+                                    <span className={styles.shVMono}>
                                         {toTimeStr(apt.startAt)} – {toTimeStr(apt.endAt)}
                                     </span>
                                 </div>
-                                <div className={S.shKV}>
-                                    <span className={S.shK}>Duração</span>
-                                    <span className={S.shV}>{durLabel}</span>
+                                <div className={styles.shKV}>
+                                    <span className={styles.shK}>Duração</span>
+                                    <span className={styles.shV}>{durLabel}</span>
                                 </div>
-                                <div className={S.shKV}>
-                                    <span className={S.shK}>Tipo</span>
-                                    <span className={S.shV}>{TYPE_LABELS[apt.type]}</span>
+                                <div className={styles.shKV}>
+                                    <span className={styles.shK}>Tipo</span>
+                                    <span className={styles.shV}>{TYPE_LABELS[apt.type]}</span>
                                 </div>
                             </div>
                         </div>
                     ) : (
-                        <div className={S.shSection}>
-                            <div className={S.shSecHead}>Editar horário</div>
-                            <div className={S.formGrid}>
+                        <div className={styles.shSection}>
+                            <div className={styles.shSecHead}>Editar horário</div>
+                            <div className={styles.formGrid}>
                                 <div>
-                                    <label className={S.fieldLabel}>Data</label>
+                                    <label className={styles.fieldLabel}>Data</label>
                                     <input
                                         type="date"
-                                        className={S.inputBase}
+                                        className={styles.inputBase}
                                         value={editDate}
                                         onChange={(e) => setEditDate(e.target.value)}
                                     />
                                 </div>
                                 <div>
-                                    <label className={S.fieldLabel}>Horário de início</label>
+                                    <label className={styles.fieldLabel}>Horário de início</label>
                                     <input
                                         type="time"
-                                        className={S.inputBase}
+                                        className={styles.inputBase}
                                         value={editStart}
                                         onChange={(e) => setEditStart(e.target.value)}
                                     />
                                 </div>
                                 <div>
-                                    <label className={S.fieldLabel}>Duração</label>
+                                    <label className={styles.fieldLabel}>Duração</label>
                                     <select
-                                        className={S.selectBase}
+                                        className={styles.selectBase}
                                         value={editDuration}
                                         onChange={(e) => setEditDuration(Number(e.target.value))}
                                     >
@@ -1127,9 +1323,9 @@ function AppointmentDetailSheet({
                                     </select>
                                 </div>
                                 <div>
-                                    <label className={S.fieldLabel}>Tipo</label>
+                                    <label className={styles.fieldLabel}>Tipo</label>
                                     <select
-                                        className={S.selectBase}
+                                        className={styles.selectBase}
                                         value={editType}
                                         onChange={(e) => setEditType(e.target.value as AppointmentType)}
                                     >
@@ -1146,19 +1342,19 @@ function AppointmentDetailSheet({
 
                     {/* Notes */}
                     {!editing ? (
-                        <div className={S.shSection}>
-                            <div className={S.shSecHead}>Observações</div>
-                            <p className={S.shNotes({empty: !apptNote(apt)})}>
+                        <div className={styles.shSection}>
+                            <div className={styles.shSecHead}>Observações</div>
+                            <p className={shNotes({empty: !apptNote(apt)})}>
                                 {apptNote(apt) || 'Sem observações registradas.'}
                             </p>
                         </div>
                     ) : (
                         <div>
-                            <label className={S.fieldLabel}>
+                            <label className={styles.fieldLabel}>
                                 Observações <span className="text-(--color-text-tertiary)">opcional</span>
                             </label>
                             <textarea
-                                className={S.textareaBase}
+                                className={styles.textareaBase}
                                 rows={3}
                                 placeholder="Informações adicionais..."
                                 value={editNote}
@@ -1169,7 +1365,7 @@ function AppointmentDetailSheet({
                 </div>
 
                 {/* Footer actions */}
-                <div className={S.shFoot}>
+                <div className={styles.shFoot}>
                     {editing ? (
                         <>
                             <Button variant="ghost" size="sm" onClick={() => setEditing(false)}>
@@ -1230,38 +1426,38 @@ function AppointmentDetailSheet({
             {/* Cancel confirm */}
             {showCancel && (
                 <div
-                    className={S.modalOverlay}
+                    className={styles.modalOverlay}
                     onClick={(e) => {
                         e.stopPropagation();
                         setShowCancel(false);
                     }}
                 >
-                    <div className={S.modal} onClick={(e) => e.stopPropagation()}>
-                        <div className={S.modalHead}>
-                            <div className={S.modalIcon}>
+                    <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
+                        <div className={styles.modalHead}>
+                            <div className={styles.modalIcon}>
                                 <AlertTriangle className="size-5" />
                             </div>
                             <div>
-                                <p className={S.modalTitle}>Cancelar agendamento?</p>
-                                <p className={S.modalDesc}>
+                                <p className={styles.modalTitle}>Cancelar agendamento?</p>
+                                <p className={styles.modalDesc}>
                                     A consulta de {patient?.name ?? '—'} em {toTimeStr(apt.startAt)} será marcada como
                                     cancelada.
                                 </p>
                             </div>
                         </div>
                         <div>
-                            <label className={S.fieldLabel}>
+                            <label className={styles.fieldLabel}>
                                 Motivo do cancelamento <span className="text-(--color-danger)">*</span>
                             </label>
                             <textarea
-                                className={S.textareaBase}
+                                className={styles.textareaBase}
                                 rows={2}
                                 placeholder="Informe o motivo..."
                                 value={cancelReason}
                                 onChange={(e) => setCancelReason(e.target.value)}
                             />
                         </div>
-                        <div className={S.modalActions}>
+                        <div className={styles.modalActions}>
                             <Button variant="ghost" size="sm" onClick={() => setShowCancel(false)}>
                                 Voltar
                             </Button>
@@ -1397,38 +1593,38 @@ function NewAppointmentSheet({
 
     return (
         <>
-            <div className={S.sheetOverlay} onClick={onClose} />
-            <div className={S.sheetPanel}>
+            <div className={styles.sheetOverlay} onClick={onClose} />
+            <div className={styles.sheetPanel}>
                 {/* Head */}
-                <div className={S.shHead}>
-                    <div className={S.shTitleBlock}>
-                        <span className={S.shEyebrow}>Novo</span>
-                        <span className={S.shH}>Novo agendamento</span>
+                <div className={styles.shHead}>
+                    <div className={styles.shTitleBlock}>
+                        <span className={styles.shEyebrow}>Novo</span>
+                        <span className={styles.shH}>Novo agendamento</span>
                     </div>
-                    <button type="button" onClick={onClose} className={S.shCloseBtn}>
+                    <button type="button" onClick={onClose} className={styles.shCloseBtn}>
                         <X className="size-4" />
                     </button>
                 </div>
 
                 {/* Body */}
-                <div className={S.shBody}>
+                <div className={styles.shBody}>
                     {/* Patient */}
                     <div>
-                        <label className={S.fieldLabel}>
+                        <label className={styles.fieldLabel}>
                             Paciente <span className="text-(--color-danger)">*</span>
                         </label>
                         {patient ? (
-                            <div className={S.patientPill}>
-                                <div className={cn(S.avatarSm, getAvatarVariant(patient.id))}>
+                            <div className={styles.patientPill}>
+                                <div className={cn(styles.avatarSm, getAvatarVariant(patient.id))}>
                                     {getInitials(patient.name)}
                                 </div>
-                                <div className={S.ppInfo}>
-                                    <div className={S.ppName}>{patient.name}</div>
-                                    {patientEmail(patient) && <div className={S.ppMeta}>{patientEmail(patient)}</div>}
+                                <div className={styles.ppInfo}>
+                                    <div className={styles.ppName}>{patient.name}</div>
+                                    {patientEmail(patient) && <div className={styles.ppMeta}>{patientEmail(patient)}</div>}
                                 </div>
                                 <button
                                     type="button"
-                                    className={S.ppClear}
+                                    className={styles.ppClear}
                                     onClick={() => {
                                         setPatient(null);
                                         setPatientQuery('');
@@ -1439,12 +1635,12 @@ function NewAppointmentSheet({
                                 </button>
                             </div>
                         ) : (
-                            <div className={S.searchWrap}>
-                                <div className={S.searchBox({error: !!errors.patient})}>
-                                    <Search className={S.searchIcon} />
+                            <div className={styles.searchWrap}>
+                                <div className={searchBox({error: !!errors.patient})}>
+                                    <Search className={styles.searchIcon} />
                                     <input
                                         ref={inputRef}
-                                        className={S.searchInput}
+                                        className={styles.searchInput}
                                         placeholder="Buscar pelo nome..."
                                         value={patientQuery}
                                         onFocus={() => setShowSugg(true)}
@@ -1455,13 +1651,13 @@ function NewAppointmentSheet({
                                     />
                                 </div>
                                 {showSugg && patientQuery && (
-                                    <div className={S.suggList}>
+                                    <div className={styles.suggList}>
                                         {suggestions.length > 0 ? (
                                             suggestions.map((p) => (
                                                 <button
                                                     type="button"
                                                     key={p.id}
-                                                    className={S.suggRow}
+                                                    className={styles.suggRow}
                                                     onMouseDown={(e) => e.preventDefault()}
                                                     onClick={() => {
                                                         setPatient(p);
@@ -1476,70 +1672,70 @@ function NewAppointmentSheet({
                                                         });
                                                     }}
                                                 >
-                                                    <div className={cn(S.avatarSm, getAvatarVariant(p.id))}>
+                                                    <div className={cn(styles.avatarSm, getAvatarVariant(p.id))}>
                                                         {getInitials(p.name)}
                                                     </div>
                                                     <div>
-                                                        <div className={S.suggName}>{p.name}</div>
+                                                        <div className={styles.suggName}>{p.name}</div>
                                                         {patientEmail(p) && (
-                                                            <div className={S.suggMeta}>{patientEmail(p)}</div>
+                                                            <div className={styles.suggMeta}>{patientEmail(p)}</div>
                                                         )}
                                                     </div>
                                                 </button>
                                             ))
                                         ) : (
-                                            <div className={S.suggEmpty}>Nenhum paciente encontrado.</div>
+                                            <div className={styles.suggEmpty}>Nenhum paciente encontrado.</div>
                                         )}
                                     </div>
                                 )}
                             </div>
                         )}
                         {errors.patient && (
-                            <p className={S.fieldErr}>
+                            <p className={styles.fieldErr}>
                                 <AlertCircle className="size-3" /> {errors.patient}
                             </p>
                         )}
                     </div>
 
                     {/* Date / time / duration / type */}
-                    <div className={S.formGrid}>
+                    <div className={styles.formGrid}>
                         <div>
-                            <label className={S.fieldLabel}>
+                            <label className={styles.fieldLabel}>
                                 Data <span className="text-(--color-danger)">*</span>
                             </label>
                             <input
                                 type="date"
-                                className={cn(S.inputBase, errors.date && S.inputErr)}
+                                className={cn(styles.inputBase, errors.date && styles.inputErr)}
                                 value={date}
                                 onChange={(e) => setDate(e.target.value)}
                             />
-                            {dateLabel && !errors.date && <p className={S.fieldHint}>{dateLabel}</p>}
+                            {dateLabel && !errors.date && <p className={styles.fieldHint}>{dateLabel}</p>}
                             {errors.date && (
-                                <p className={S.fieldErr}>
+                                <p className={styles.fieldErr}>
                                     <AlertCircle className="size-3" /> {errors.date}
                                 </p>
                             )}
                         </div>
                         <div>
-                            <label className={S.fieldLabel}>
+                            <label className={styles.fieldLabel}>
                                 Horário <span className="text-(--color-danger)">*</span>
                             </label>
                             <input
                                 type="time"
-                                className={cn(S.inputBase, errors.start && S.inputErr)}
+                                className={cn(styles.inputBase, errors.start && styles.inputErr)}
                                 value={start}
                                 onChange={(e) => setStart(e.target.value)}
                             />
                             {errors.start && (
-                                <p className={S.fieldErr}>
+                                <p className={styles.fieldErr}>
                                     <AlertCircle className="size-3" /> {errors.start}
                                 </p>
                             )}
                         </div>
                         <div>
-                            <label className={S.fieldLabel}>Duração</label>
+                            <label className={styles.fieldLabel}>Duração</label>
                             <select
-                                className={S.selectBase}
+                                className={styles.selectBase}
                                 value={duration}
                                 onChange={(e) => setDuration(Number(e.target.value))}
                             >
@@ -1551,9 +1747,9 @@ function NewAppointmentSheet({
                             </select>
                         </div>
                         <div>
-                            <label className={S.fieldLabel}>Tipo</label>
+                            <label className={styles.fieldLabel}>Tipo</label>
                             <select
-                                className={S.selectBase}
+                                className={styles.selectBase}
                                 value={type}
                                 onChange={(e) => setType(e.target.value as AppointmentType)}
                             >
@@ -1568,11 +1764,11 @@ function NewAppointmentSheet({
 
                     {/* Conflict warning */}
                     {conflict && (
-                        <div className={S.conflictBanner}>
-                            <AlertTriangle className={S.conflictIcon} />
+                        <div className={styles.conflictBanner}>
+                            <AlertTriangle className={styles.conflictIcon} />
                             <div>
-                                <p className={S.conflictTitle}>Conflito de horário</p>
-                                <p className={S.conflictDesc}>
+                                <p className={styles.conflictTitle}>Conflito de horário</p>
+                                <p className={styles.conflictDesc}>
                                     Já existe consulta das {toTimeStr(conflict.startAt)} às {toTimeStr(conflict.endAt)}{' '}
                                     nesse dia.
                                 </p>
@@ -1582,11 +1778,11 @@ function NewAppointmentSheet({
 
                     {/* Notes */}
                     <div>
-                        <label className={S.fieldLabel}>
+                        <label className={styles.fieldLabel}>
                             Observações <span className="text-(--color-text-tertiary)">opcional</span>
                         </label>
                         <textarea
-                            className={S.textareaBase}
+                            className={styles.textareaBase}
                             rows={3}
                             placeholder="Informações adicionais sobre a consulta..."
                             value={note}
@@ -1596,7 +1792,7 @@ function NewAppointmentSheet({
                 </div>
 
                 {/* Footer */}
-                <div className={S.shFoot}>
+                <div className={styles.shFoot}>
                     <Button variant="ghost" size="sm" onClick={onClose}>
                         Cancelar
                     </Button>
@@ -1720,17 +1916,17 @@ export function AgendaPage() {
     };
 
     return (
-        <div className={S.agPage}>
+        <div className={styles.agPage}>
             {/* Header */}
-            <div className={S.agHeader}>
-                <h1 className={S.agHeaderTitle}>Agenda</h1>
-                <div className={S.agHeaderRight}>
-                    <div className={S.segmented.root}>
+            <div className={styles.agHeader}>
+                <h1 className={styles.agHeaderTitle}>Agenda</h1>
+                <div className={styles.agHeaderRight}>
+                    <div className={styles.segmentedRoot}>
                         {(['day', 'week', 'month'] as View[]).map((v) => (
                             <button
                                 type="button"
                                 key={v}
-                                className={S.segmentedBtn({active: view === v})}
+                                className={segmentedBtn({active: view === v})}
                                 onClick={() => setView(v)}
                             >
                                 {({day: 'Dia', week: 'Semana', month: 'Mês'} as const)[v]}
@@ -1751,23 +1947,23 @@ export function AgendaPage() {
             </div>
 
             {/* Period nav */}
-            <div className={S.agPeriod}>
-                <div className={S.agPeriodLeft}>
+            <div className={styles.agPeriod}>
+                <div className={styles.agPeriodLeft}>
                     <Button variant="outline" size="sm" onClick={goToday}>
                         Hoje
                     </Button>
-                    <div className={S.arrowBtnRow}>
-                        <button type="button" className={S.agArrowBtn} onClick={goPrev} aria-label="Anterior">
+                    <div className={styles.arrowBtnRow}>
+                        <button type="button" className={styles.agArrowBtn} onClick={goPrev} aria-label="Anterior">
                             <ChevronLeft className="size-3.5" />
                         </button>
-                        <button type="button" className={S.agArrowBtn} onClick={goNext} aria-label="Próximo">
+                        <button type="button" className={styles.agArrowBtn} onClick={goNext} aria-label="Próximo">
                             <ChevronRight className="size-3.5" />
                         </button>
                     </div>
-                    <span className={S.agPeriodLabel}>{periodLabel}</span>
+                    <span className={styles.agPeriodLabel}>{periodLabel}</span>
                 </div>
 
-                <div className={S.statusFiltersRow}>
+                <div className={styles.statusFiltersRow}>
                     {DISPLAY_STATUS_DEF.map(({key, label}) => {
                         const on = statusFilters.has(key);
 
@@ -1775,10 +1971,10 @@ export function AgendaPage() {
                             <button
                                 type="button"
                                 key={key}
-                                className={S.statusChip({status: key, off: !on})}
+                                className={statusChip({status: key, off: !on})}
                                 onClick={() => toggleStatus(key)}
                             >
-                                <span className={cn(S.chipDot, S.statusDotCls[key])} />
+                                <span className={cn(styles.chipDot, statusDotCls[key])} />
                                 {label}
                             </button>
                         );
@@ -1787,9 +1983,9 @@ export function AgendaPage() {
             </div>
 
             {/* Calendar layout */}
-            <div className={S.agLayout}>
+            <div className={styles.agLayout}>
                 {/* Sidebar mini calendar */}
-                <aside className={S.agSide}>
+                <aside className={styles.agSide}>
                     <MiniCalendar
                         cursor={cursor}
                         view={view}
@@ -1803,11 +1999,11 @@ export function AgendaPage() {
                 </aside>
 
                 {/* Main view */}
-                <div className={S.agBody}>
+                <div className={styles.agBody}>
                     {apptQuery.isLoading ? (
-                        <div className={S.skeletonRoot}>
+                        <div className={styles.skeletonRoot}>
                             {Array.from({length: 8}).map((_, i) => (
-                                <Skeleton key={i} className={S.skeletonDayCard} />
+                                <Skeleton key={i} className={styles.skeletonDayCard} />
                             ))}
                         </div>
                     ) : (

@@ -69,8 +69,29 @@ import {KV as UIKv, KVGrid} from '@/components/ui/componentes/kv';
 import {EntityHeader} from '@/components/ui/componentes/page-header';
 import {Skeleton} from '@/components/ui/componentes/skeleton';
 import {StatTile} from '@/components/ui/componentes/stat-tile';
-import {cn} from '@/lib/utils';
-import * as S from './styles';
+import {cva} from 'class-variance-authority';
+import {clsx} from 'clsx';
+import styles from './styles.module.css';
+
+const formItemRoot = cva(styles.formItemRootBase, {
+    variants: {done: {true: styles.formItemRootDone, false: ''}},
+    defaultVariants: {done: false},
+});
+
+const formItemIcon = cva(styles.formItemIconBase, {
+    variants: {done: {true: styles.formItemIconDone, false: styles.formItemIconNotDone}},
+    defaultVariants: {done: false},
+});
+
+const formBadge = cva(styles.formBadgeBase, {
+    variants: {
+        done: {
+            true: styles.formBadgeDone,
+            false: styles.formBadgeNotDone,
+        },
+    },
+    defaultVariants: {done: false},
+});
 
 export const Route = createFileRoute('/_stackedLayout/patients/$patientId')({
     component: PatientDetailPage,
@@ -230,7 +251,7 @@ function SectionCard({
 
 function SecLink({children, onClick}: {children: ReactNode; onClick?: () => void}) {
     return (
-        <Button variant="link" size="sm" onClick={onClick} className={S.secLinkBtn}>
+        <Button variant="link" size="sm" onClick={onClick} className={styles.secLinkBtn}>
             {children}
         </Button>
     );
@@ -242,8 +263,8 @@ function KV({label, value, mono = false}: {label: string; value?: string | null;
 
 function InfoGroup({title, children}: {title: string; children: ReactNode}) {
     return (
-        <div className={S.infoGroup.root}>
-            <h4 className={S.infoGroup.title}>{title}</h4>
+        <div className={styles.infoGroupRoot}>
+            <h4 className={styles.infoGroupTitle}>{title}</h4>
             {children}
         </div>
     );
@@ -263,22 +284,22 @@ function ActionTile({
     onClick?: () => void;
 }) {
     return (
-        <button type="button" onClick={onClick} className={S.actionTile.root}>
-            <span className={cn(S.actionTile.iconBase, ai ? S.actionTile.iconAI : S.actionTile.iconDefault)}>
+        <button type="button" onClick={onClick} className={styles.actionTileRoot}>
+            <span className={clsx(styles.actionTileIconBase, ai ? styles.actionTileIconAI : styles.actionTileIconDefault)}>
                 {icon}
             </span>
-            <div className={S.actionTile.body}>
-                <div className={S.actionTile.label}>{label}</div>
-                <div className={S.actionTile.sub}>{sub}</div>
+            <div className={styles.actionTileBody}>
+                <div className={styles.actionTileLabel}>{label}</div>
+                <div className={styles.actionTileSub}>{sub}</div>
             </div>
-            <ChevronRight className={S.actionTile.chevron} />
+            <ChevronRight className={styles.actionTileChevron} />
         </button>
     );
 }
 
 function AlertBadge({alert}: {alert: PatientAlert}) {
     return (
-        <Badge severity={alert.severity as 'HIGH' | 'MEDIUM' | 'LOW'} className={S.alertBadge}>
+        <Badge severity={alert.severity as 'HIGH' | 'MEDIUM' | 'LOW'} className={styles.alertBadge}>
             <TriangleAlert className="size-[10px]" />
             {alert.title}
         </Badge>
@@ -303,7 +324,7 @@ function MoreMenu() {
                     Imprimir resumo
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem className={S.dangerItem}>
+                <DropdownMenuItem className={styles.dangerItem}>
                     <Archive />
                     Arquivar paciente
                 </DropdownMenuItem>
@@ -320,27 +341,27 @@ function EmptySection({label}: {label: string}) {
 
 function DetailSkeleton() {
     return (
-        <div className={S.skeleton.root}>
+        <div className={styles.skeletonRoot}>
             <Skeleton className="h-4 w-48" />
-            <div className={S.skeleton.headerShell}>
-                <div className={S.skeleton.headerLeft}>
-                    <Skeleton className={S.skeleton.headerAvatar} />
-                    <div className={S.skeleton.nameStack}>
+            <div className={styles.skeletonHeaderShell}>
+                <div className={styles.skeletonHeaderLeft}>
+                    <Skeleton className={styles.skeletonHeaderAvatar} />
+                    <div className={styles.skeletonNameStack}>
                         <Skeleton className="h-6 w-48" />
                         <Skeleton className="h-4 w-72" />
                     </div>
                 </div>
-                <div className={S.skeleton.headerRight}>
+                <div className={styles.skeletonHeaderRight}>
                     <Skeleton className="h-9 w-32" />
                     <Skeleton className="h-9 w-9" />
                 </div>
             </div>
-            <div className={S.skeleton.actionGrid}>
+            <div className={styles.skeletonActionGrid}>
                 {[...Array(4)].map((_, i) => (
-                    <Skeleton key={i} className={S.skeleton.actionCard} />
+                    <Skeleton key={i} className={styles.skeletonActionCard} />
                 ))}
             </div>
-            <Skeleton className={S.skeleton.recordCard} />
+            <Skeleton className={styles.skeletonRecordCard} />
         </div>
     );
 }
@@ -360,7 +381,7 @@ function RecordsContent({
 
     if (isLoading) {
         return (
-            <div className={S.skeleton.listStack}>
+            <div className={styles.skeletonListStack}>
                 {[...Array(3)].map((_, i) => (
                     <Skeleton key={i} className="h-16 w-full" />
                 ))}
@@ -381,7 +402,7 @@ function RecordsContent({
                 return (
                     <div
                         key={r.id}
-                        className={S.record.row}
+                        className={styles.recordRow}
                         onClick={() =>
                             navigate({
                                 to: '/patients/$patientId/records/$recordId',
@@ -390,25 +411,25 @@ function RecordsContent({
                         }
                     >
                         <div className="text-right">
-                            <div className={S.record.dateText}>{formatDateShort(eventDate)}</div>
-                            <div className={S.record.time}>{formatTime(eventDate)}</div>
+                            <div className={styles.recordDateText}>{formatDateShort(eventDate)}</div>
+                            <div className={styles.recordTime}>{formatTime(eventDate)}</div>
                         </div>
-                        <div className={S.record.dot} />
+                        <div className={styles.recordDot} />
                         <div className="min-w-0">
-                            <div className={S.record.tags}>
-                                <span className={S.record.typeTag}>
+                            <div className={styles.recordTags}>
+                                <span className={styles.recordTypeTag}>
                                     {r.attendanceType ? attendanceTypeLabel(r.attendanceType) : 'Consulta'}
                                 </span>
                                 {isAI && (
-                                    <span className={S.record.aiTag}>
+                                    <span className={styles.recordAiTag}>
                                         <Sparkles className="size-[11px]" />
                                         Origem IA
                                     </span>
                                 )}
                             </div>
-                            <p className={S.record.summary}>{title ?? description ?? 'Sem descrição'}</p>
+                            <p className={styles.recordSummary}>{title ?? description ?? 'Sem descrição'}</p>
                         </div>
-                        <ChevronRight className={S.record.chevron} />
+                        <ChevronRight className={styles.recordChevron} />
                     </div>
                 );
             })}
@@ -439,7 +460,7 @@ function ProfileContent({
 }) {
     if (isLoading) {
         return (
-            <div className={S.skeleton.listStack}>
+            <div className={styles.skeletonListStack}>
                 {[...Array(3)].map((_, i) => (
                     <Skeleton key={i} className="h-10 w-full" />
                 ))}
@@ -453,40 +474,40 @@ function ProfileContent({
         <>
             {allergiesText && (
                 <InfoGroup title="Alergias conhecidas">
-                    <div className={S.allergy.box}>
-                        <TriangleAlert className={S.allergy.icon} />
-                        <p className={S.allergy.text}>{allergiesText}</p>
+                    <div className={styles.allergyBox}>
+                        <TriangleAlert className={styles.allergyIcon} />
+                        <p className={styles.allergyText}>{allergiesText}</p>
                     </div>
                 </InfoGroup>
             )}
             {conditionsText && (
                 <InfoGroup title="Condições crônicas">
-                    <p className={S.profileText}>{conditionsText}</p>
+                    <p className={styles.profileText}>{conditionsText}</p>
                 </InfoGroup>
             )}
             {medicationsText && (
                 <InfoGroup title="Medicações em uso">
-                    <p className={S.profileText}>{medicationsText}</p>
+                    <p className={styles.profileText}>{medicationsText}</p>
                 </InfoGroup>
             )}
             {surgicalHistoryText && (
                 <InfoGroup title="Histórico cirúrgico">
-                    <p className={S.profileText}>{surgicalHistoryText}</p>
+                    <p className={styles.profileText}>{surgicalHistoryText}</p>
                 </InfoGroup>
             )}
             {familyHistoryText && (
                 <InfoGroup title="Histórico familiar">
-                    <p className={S.profileText}>{familyHistoryText}</p>
+                    <p className={styles.profileText}>{familyHistoryText}</p>
                 </InfoGroup>
             )}
             {socialHistoryText && (
                 <InfoGroup title="Histórico social">
-                    <p className={S.profileText}>{socialHistoryText}</p>
+                    <p className={styles.profileText}>{socialHistoryText}</p>
                 </InfoGroup>
             )}
             {generalNotesText && (
                 <InfoGroup title="Observações gerais">
-                    <p className={S.profileTextSecondary}>{generalNotesText}</p>
+                    <p className={styles.profileTextSecondary}>{generalNotesText}</p>
                 </InfoGroup>
             )}
         </>
@@ -496,9 +517,9 @@ function ProfileContent({
 function FormsContent({isLoading, forms}: {isLoading: boolean; forms: PatientForm[]}) {
     if (isLoading) {
         return (
-            <div className={S.skeleton.nameStack}>
+            <div className={styles.skeletonNameStack}>
                 {[...Array(2)].map((_, i) => (
-                    <Skeleton key={i} className={S.skeleton.formItem} />
+                    <Skeleton key={i} className={styles.skeletonFormItem} />
                 ))}
             </div>
         );
@@ -514,17 +535,17 @@ function FormsContent({isLoading, forms}: {isLoading: boolean; forms: PatientFor
                 const dateLabel = isDone ? 'Concluído em' : 'Iniciado em';
 
                 return (
-                    <div key={f.id} className={S.formItemRoot({done: isDone})}>
-                        <ClipboardList className={S.formItemIcon({done: isDone})} />
-                        <div className={S.formItem.body}>
-                            <div className={S.formItem.title}>Formulário clínico</div>
-                            <div className={S.formItem.meta}>
-                                {dateLabel} <span className={S.monoDate}>{formatDate(dateField)}</span>
+                    <div key={f.id} className={formItemRoot({done: isDone})}>
+                        <ClipboardList className={formItemIcon({done: isDone})} />
+                        <div className={styles.formItemBody}>
+                            <div className={styles.formItemTitle}>Formulário clínico</div>
+                            <div className={styles.formItemMeta}>
+                                {dateLabel} <span className={styles.monoDate}>{formatDate(dateField)}</span>
                                 {' · '}
                                 {formStatusLabel(f.status)}
                             </div>
                         </div>
-                        <span className={S.formBadge({done: isDone})}>{formStatusLabel(f.status)}</span>
+                        <span className={formBadge({done: isDone})}>{formStatusLabel(f.status)}</span>
                     </div>
                 );
             })}
@@ -544,7 +565,7 @@ export function PatientDetailPage() {
 
     if (isError || !patient) {
         return (
-            <div className={S.page.errorState}>
+            <div className={styles.pageErrorState}>
                 <p className="text-sm">Paciente não encontrado ou erro ao carregar.</p>
                 <Button variant="outline" size="sm" onClick={() => navigate({to: '/patients'})}>
                     Voltar para pacientes
@@ -646,7 +667,7 @@ function PatientProfile({patient}: {patient: Patient}) {
         generalNotesText;
 
     return (
-        <div className={S.page.root}>
+        <div className={styles.pageRoot}>
             {/* Breadcrumb */}
             <Breadcrumb>
                 <BreadcrumbList>
@@ -670,9 +691,9 @@ function PatientProfile({patient}: {patient: Patient}) {
                     <>
                         {age !== null && <span>{age} anos</span>}
                         {age !== null && <span className="text-(--color-text-tertiary)">·</span>}
-                        <span className={S.monoDate}>nasc. {dob}</span>
+                        <span className={styles.monoDate}>nasc. {dob}</span>
                         <span className="text-(--color-text-tertiary)">·</span>
-                        <span className={S.monoDate}>{patient.documentId}</span>
+                        <span className={styles.monoDate}>{patient.documentId}</span>
                         {patient.gender && (
                             <>
                                 <span className="text-(--color-text-tertiary)">·</span>
@@ -686,7 +707,7 @@ function PatientProfile({patient}: {patient: Patient}) {
                             </>
                         )}
                         <span className="text-(--color-text-tertiary)">·</span>
-                        <span className={S.monoTertiary}>ID {patient.id.slice(0, 8).toUpperCase()}</span>
+                        <span className={styles.monoTertiary}>ID {patient.id.slice(0, 8).toUpperCase()}</span>
                     </>
                 }
                 actions={
@@ -711,7 +732,7 @@ function PatientProfile({patient}: {patient: Patient}) {
             />
 
             {/* Action grid */}
-            <div className={S.actionGrid}>
+            <div className={styles.actionGrid}>
                 <ActionTile
                     icon={<FilePlus className="size-[18px]" />}
                     label="Nova evolução"
@@ -737,7 +758,7 @@ function PatientProfile({patient}: {patient: Patient}) {
             </div>
 
             {/* Resumo clínico */}
-            <div className={S.statsGrid}>
+            <div className={styles.statsGrid}>
                 <StatTile label="Próxima consulta" value="—" icon={<CalendarClock className="size-4" />} />
                 <StatTile
                     label="Última consulta"
@@ -785,7 +806,7 @@ function PatientProfile({patient}: {patient: Patient}) {
             </SectionCard>
 
             {/* Two-col: patient info + initial health */}
-            <div className={S.twoCol}>
+            <div className={styles.twoCol}>
                 {/* Informações do paciente */}
                 <SectionCard
                     title="Informações do paciente"
@@ -817,8 +838,8 @@ function PatientProfile({patient}: {patient: Patient}) {
                             <KV label="E-mail" value={email} />
                         </KVGrid>
                         {(emergencyName ?? emergencyPhone) && (
-                            <div className={S.emergency.box}>
-                                <p className={S.emergency.label}>Responsável</p>
+                            <div className={styles.emergencyBox}>
+                                <p className={styles.emergencyLabel}>Responsável</p>
                                 <KVGrid>
                                     <KV label="Nome" value={emergencyName} />
                                     <KV label="Telefone" value={emergencyPhone} mono />
@@ -829,9 +850,9 @@ function PatientProfile({patient}: {patient: Patient}) {
 
                     <InfoGroup title="Endereço">
                         {addrLine ? (
-                            <p className={S.profileText}>{addrLine}</p>
+                            <p className={styles.profileText}>{addrLine}</p>
                         ) : (
-                            <p className={S.profileTextEmpty}>Não informado</p>
+                            <p className={styles.profileTextEmpty}>Não informado</p>
                         )}
                     </InfoGroup>
                 </SectionCard>

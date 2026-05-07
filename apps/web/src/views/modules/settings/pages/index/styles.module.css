@@ -1,0 +1,374 @@
+@import "tailwindcss";
+
+/* ── Outer shell ─────────────────────────────────────────────────────────────── */
+
+.page {
+    @apply flex flex-col gap-0 h-full;
+}
+
+.breadcrumb {
+    @apply flex items-center gap-1.5 text-xs text-(--color-text-tertiary) px-6 pt-5 pb-0;
+}
+
+.breadcrumbLink {
+    @apply hover:text-(--color-text-secondary) transition-colors cursor-pointer;
+}
+
+.breadcrumbSep {
+    @apply text-(--color-text-tertiary);
+}
+
+.breadcrumbCurrent {
+    @apply text-(--color-text-primary);
+}
+
+/* ── Layout ──────────────────────────────────────────────────────────────────── */
+
+.layout {
+    @apply flex flex-1 gap-0;
+}
+
+.sideNav {
+    @apply w-52 shrink-0 border-r border-(--color-border) py-6 px-4 flex flex-col gap-1;
+}
+
+.sideNavTitle {
+    @apply text-[11px] font-medium text-(--color-text-tertiary) uppercase tracking-wider px-2 mb-2;
+}
+
+.sideNavItemBase {
+    @apply flex items-center gap-2.5 w-full px-2 py-2 rounded-[6px] text-sm transition-colors text-left;
+}
+
+.sideNavItemActive {
+    @apply bg-(--color-primary)/10 text-(--color-primary) font-medium;
+}
+
+.sideNavItemInactive {
+    @apply text-(--color-text-secondary) hover:bg-(--color-bg-card) hover:text-(--color-text-primary);
+}
+
+.content {
+    @apply flex-1 min-w-0 px-8 py-6 overflow-y-auto;
+}
+
+/* ── Page header ─────────────────────────────────────────────────────────────── */
+
+.pageTitle {
+    @apply text-[20px] font-medium text-(--color-text-primary) leading-snug;
+}
+
+.pageSub {
+    @apply text-sm text-(--color-text-secondary) mt-1 max-w-[560px] leading-relaxed;
+}
+
+.profileHeader {
+    @apply flex items-end justify-between gap-4 mb-1;
+}
+
+/* ── Form card ───────────────────────────────────────────────────────────────── */
+
+.formCard {
+    @apply mt-5 rounded-(--radius-card) border border-(--color-border) bg-(--color-bg-card) overflow-hidden;
+}
+
+/* ── Tabs ────────────────────────────────────────────────────────────────────── */
+
+.tabList {
+    @apply flex border-b border-(--color-border) bg-(--color-bg-surface) px-5 gap-1 overflow-x-auto;
+}
+
+.tabBase {
+    @apply flex items-center gap-2 px-4 py-3.5 text-sm border-b-2 -mb-px transition-colors whitespace-nowrap;
+}
+
+.tabActive {
+    @apply border-(--color-primary) text-(--color-primary) font-medium;
+}
+
+.tabInactive {
+    @apply border-transparent text-(--color-text-secondary) hover:text-(--color-text-primary);
+}
+
+.tabNumBase {
+    @apply flex items-center justify-center w-5 h-5 rounded-full text-[11px] font-medium shrink-0;
+}
+
+.tabNumActive {
+    @apply bg-(--color-primary) text-white;
+}
+
+.tabNumInactive {
+    @apply bg-(--color-text-tertiary)/20 text-(--color-text-secondary);
+}
+
+.tabNumFilled {
+    @apply bg-(--color-success)/15 text-(--color-success);
+}
+
+/* ── Skeleton ────────────────────────────────────────────────────────────────── */
+
+.skeletonTabContent {
+    @apply p-8 flex flex-col gap-4;
+}
+
+.skeletonGrid {
+    @apply grid grid-cols-2 gap-4;
+}
+
+/* ── Form sections ───────────────────────────────────────────────────────────── */
+
+.formSection {
+    @apply p-6;
+}
+
+.sectionHead {
+    @apply flex items-start gap-3 mb-5;
+}
+
+.sectionNum {
+    @apply flex items-center justify-center w-7 h-7 rounded-full shrink-0;
+    @apply bg-(--color-primary)/10 text-(--color-primary) text-sm font-medium;
+}
+
+.sectionTitle {
+    @apply text-sm font-medium text-(--color-text-primary) leading-snug;
+}
+
+.sectionSub {
+    @apply text-xs text-(--color-text-secondary) mt-0.5 leading-relaxed;
+}
+
+/* ── Grid ────────────────────────────────────────────────────────────────────── */
+
+.grid {
+    @apply grid grid-cols-12 gap-4;
+}
+
+/* ── Fields ──────────────────────────────────────────────────────────────────── */
+
+.fieldLabel {
+    @apply text-xs font-medium text-(--color-text-secondary) mb-1.5 flex items-center gap-1;
+}
+
+.fieldRequired {
+    @apply text-(--color-warning) text-xs;
+}
+
+.fieldOptional {
+    @apply text-(--color-text-tertiary) text-[10px] font-normal;
+}
+
+.fieldHint {
+    @apply text-[11px] text-(--color-text-tertiary) mt-1;
+}
+
+.fieldError {
+    @apply text-[11px] text-(--color-warning) mt-1;
+}
+
+/* ── Photo row ───────────────────────────────────────────────────────────────── */
+
+.photoRow {
+    @apply flex items-center gap-5 mb-6;
+}
+
+.photoCircle {
+    @apply w-20 h-20 rounded-full overflow-hidden shrink-0;
+    @apply border-2 border-(--color-border) bg-(--color-bg-surface);
+    @apply flex items-center justify-center;
+}
+
+.photoInitials {
+    @apply text-2xl font-medium text-(--color-text-tertiary);
+}
+
+.photoActions {
+    @apply flex flex-col gap-2;
+}
+
+.photoHint {
+    @apply text-[11px] text-(--color-text-tertiary);
+}
+
+/* ── AI nudge ────────────────────────────────────────────────────────────────── */
+
+.aiNudge {
+    @apply flex items-start gap-3 mt-5 p-4 rounded-(--radius-card);
+    @apply border border-(--color-ai-border) bg-(--color-ai-bg);
+}
+
+.aiIcon {
+    @apply shrink-0 text-(--color-ai-border) mt-0.5;
+}
+
+.aiTitle {
+    @apply text-xs font-medium text-(--color-text-primary) flex items-center gap-2;
+}
+
+.aiSub {
+    @apply text-[11px] text-(--color-text-secondary) mt-1 leading-relaxed;
+}
+
+.aiBadgeInline {
+    @apply inline-flex items-center px-1.5 py-0.5 rounded-[3px] text-[9px] font-medium uppercase tracking-wider;
+    @apply bg-(--color-ai-badge-bg) text-white;
+}
+
+.agentName {
+    @apply text-(--color-text-primary) font-medium;
+}
+
+/* ── Password meter ──────────────────────────────────────────────────────────── */
+
+.pwdMeter {
+    @apply mt-2;
+}
+
+.pwdBar {
+    @apply h-1 rounded-full bg-(--color-border) overflow-hidden;
+}
+
+.pwdBarFillBase {
+    @apply h-full rounded-full transition-all;
+}
+
+.pwdBarFillWeak {
+    @apply bg-(--color-danger);
+}
+
+.pwdBarFillMed {
+    @apply bg-(--color-warning);
+}
+
+.pwdBarFillStrong {
+    @apply bg-(--color-success);
+}
+
+.pwdLabelWeak {
+    @apply text-[11px] mt-1 text-(--color-danger);
+}
+
+.pwdLabelMed {
+    @apply text-[11px] mt-1 text-(--color-warning);
+}
+
+.pwdLabelStrong {
+    @apply text-[11px] mt-1 text-(--color-success);
+}
+
+.pwdInputWrap {
+    @apply relative;
+}
+
+.pwdRevealBtn {
+    @apply absolute right-3 top-1/2 -translate-y-1/2 text-(--color-text-tertiary) hover:text-(--color-text-secondary);
+}
+
+/* ── Sub-sections ────────────────────────────────────────────────────────────── */
+
+.subSection {
+    @apply border-t border-(--color-border) pt-5 mt-5 first:border-t-0 first:pt-0 first:mt-0;
+}
+
+.subSectionHead {
+    @apply flex items-center gap-2 mb-4 text-sm font-medium text-(--color-text-primary);
+}
+
+.subSectionTag {
+    @apply text-[11px] text-(--color-text-tertiary) font-normal;
+    @apply bg-(--color-bg-surface) border border-(--color-border) rounded-full px-2 py-0.5;
+}
+
+.subSectionIcon {
+    @apply text-(--color-text-secondary);
+}
+
+/* ── Sessions ────────────────────────────────────────────────────────────────── */
+
+.sessionList {
+    @apply flex flex-col gap-2;
+}
+
+.sessionRowBase {
+    @apply flex items-center gap-3 p-3 rounded-[8px] border border-(--color-border);
+}
+
+.sessionRowCurrent {
+    @apply bg-(--color-primary)/5 border-(--color-primary)/20;
+}
+
+.sessionRowDefault {
+    @apply bg-(--color-bg-surface);
+}
+
+.sessionIcon {
+    @apply w-9 h-9 flex items-center justify-center rounded-[6px] bg-(--color-bg-card) text-(--color-text-secondary) shrink-0;
+}
+
+.sessionDevice {
+    @apply text-sm font-medium text-(--color-text-primary) flex items-center gap-2;
+}
+
+.sessionBadge {
+    @apply text-[10px] bg-(--color-primary)/10 text-(--color-primary) rounded-full px-2 py-0.5;
+}
+
+.sessionSub {
+    @apply text-[11px] text-(--color-text-tertiary);
+}
+
+.sessionWhen {
+    @apply ml-auto text-xs text-(--color-text-tertiary) shrink-0;
+}
+
+.sessionNameCell {
+    @apply flex-1 min-w-0;
+}
+
+.sessionEndBtn {
+    @apply text-(--color-text-tertiary) hover:text-(--color-danger);
+}
+
+/* ── Footer ──────────────────────────────────────────────────────────────────── */
+
+.footer {
+    @apply border-t border-(--color-border) px-8 py-4;
+    @apply flex items-center justify-between gap-4 bg-(--color-bg-surface);
+}
+
+.footerMeta {
+    @apply flex items-center gap-2 text-xs text-(--color-text-tertiary);
+}
+
+.footerStep {
+    @apply ml-4 text-xs text-(--color-text-tertiary);
+}
+
+.footerActions {
+    @apply flex items-center gap-2;
+}
+
+/* ── Placeholder ─────────────────────────────────────────────────────────────── */
+
+.placeholder {
+    @apply flex flex-col items-center gap-3 py-16 text-center;
+}
+
+.placeholderTitle {
+    @apply text-sm font-medium text-(--color-text-primary);
+}
+
+.placeholderSub {
+    @apply text-xs text-(--color-text-secondary);
+}
+
+.placeholderIcon {
+    @apply text-(--color-text-tertiary);
+}
+
+/* ── Misc ────────────────────────────────────────────────────────────────────── */
+
+.monoInput {
+    @apply font-mono;
+}

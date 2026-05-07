@@ -1,0 +1,145 @@
+@import "tailwindcss";
+
+/* ── Login root ──────────────────────────────────────────────────────────────── */
+
+.loginRoot {
+    @apply grid min-h-screen grid-cols-1 lg:grid-cols-[1fr_1.1fr];
+}
+
+/* ── Left panel ──────────────────────────────────────────────────────────────── */
+
+.leftPanelRoot {
+    @apply flex flex-col justify-between bg-(--color-bg-card) px-10 py-8;
+}
+
+.leftPanelLogo {
+    @apply flex items-center gap-2.5;
+}
+
+.leftPanelLogoIcon {
+    @apply flex h-7 w-7 items-center justify-center rounded-[6px] bg-(--color-primary);
+}
+
+.leftPanelLogoText {
+    @apply text-sm-body font-medium tracking-tight text-(--color-text-primary);
+}
+
+.leftPanelTitle {
+    @apply mb-1.5 text-xl font-medium tracking-tight text-(--color-text-primary);
+}
+
+.leftPanelSubtitle {
+    @apply mb-6 leading-relaxed text-sm text-(--color-text-secondary);
+}
+
+.leftPanelFooter {
+    @apply flex items-center justify-between border-t border-(--color-border) pt-3.5 text-2xs text-(--color-text-tertiary);
+}
+
+.leftPanelFooterLeft {
+    @apply flex items-center gap-1.5;
+}
+
+.leftPanelVersion {
+    @apply font-mono;
+}
+
+/* ── Form ───────────────────────────────────────────────────────────────────── */
+
+.form {
+    @apply flex flex-col gap-3.5;
+}
+
+/* ── Fields ─────────────────────────────────────────────────────────────────── */
+
+.fieldLabel {
+    @apply mb-1.5 block text-xs font-medium text-(--color-text-secondary);
+}
+
+.fieldLabelInline {
+    @apply text-xs font-medium text-(--color-text-secondary);
+}
+
+.fieldIcon {
+    @apply absolute left-3 top-1/2 -translate-y-1/2 text-(--color-text-tertiary);
+}
+
+.fieldError {
+    @apply mt-1 text-2xs text-(--color-warning);
+}
+
+.fieldRevealBtn {
+    @apply absolute right-3 top-1/2 -translate-y-1/2 text-(--color-text-tertiary) hover:text-(--color-text-secondary);
+}
+
+.fieldForgotBtn {
+    @apply cursor-pointer text-xs font-medium text-(--color-primary) hover:text-(--color-primary-hover);
+}
+
+.fieldRememberLabel {
+    @apply flex cursor-pointer items-center gap-2;
+}
+
+.fieldRememberText {
+    @apply text-xs text-(--color-text-secondary);
+}
+
+.fieldCheckbox {
+    @apply h-3.5 w-3.5 cursor-pointer rounded-[3px] border border-(--color-border) accent-(--color-primary);
+}
+
+.fieldSubmitBtn {
+    @apply mt-1 w-full bg-(--color-primary) text-sm font-medium hover:bg-(--color-primary-hover);
+}
+
+.fieldPasswordHeader {
+    @apply mb-1.5 flex justify-between;
+}
+
+.fieldInputWrap {
+    @apply relative;
+}
+
+/* ── Inputs com variante de erro ─────────────────────────────────────────────── */
+
+.usernameInputBase {
+    @apply pl-9 text-sm;
+}
+
+.usernameInputError {
+    @apply border-(--color-warning);
+}
+
+.passwordInputBase {
+    @apply pl-9 pr-10 text-sm;
+}
+
+.passwordInputError {
+    @apply border-(--color-warning);
+}
+
+/* ── Right panel ─────────────────────────────────────────────────────────────── */
+
+.rightPanelRoot {
+    @apply relative hidden overflow-hidden bg-(--color-text-primary) lg:block;
+}
+
+.rightPanelOverlay {
+    @apply absolute inset-0 z-10 flex flex-col justify-end p-10;
+}
+
+.rightPanelTitle {
+    @apply mb-2 text-xl font-medium leading-snug tracking-tight text-(--color-bg-page);
+}
+
+.rightPanelHighlight {
+    @apply text-(--color-ai-text);
+}
+
+.rightPanelDescription {
+    @apply text-xs leading-relaxed text-(--color-text-tertiary);
+}
+
+.rightPanelArt {
+    @apply absolute inset-0 h-full w-full;
+}

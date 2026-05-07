@@ -37,8 +37,9 @@ import {NativeSelect} from '@/components/ui/componentes/native-select';
 import {PageHeader} from '@/components/ui/componentes/page-header';
 import {Tabs, TabsList, TabsTrigger, TabsContent} from '@/components/ui/componentes/tabs';
 import {Textarea} from '@/components/ui/componentes/textarea';
+import {clsx} from 'clsx';
 import {cn} from '@/lib/utils';
-import * as S from './styles';
+import styles from './styles.module.css';
 
 export const Route = createFileRoute('/_stackedLayout/patients/new')({
     component: NewPatientPage,
@@ -137,12 +138,12 @@ function tabHasValues(tab: TabKey, values: Partial<FormValues>): boolean {
 
 function SectionHead({num, title, subtitle}: {num: string; title: string; subtitle?: string}) {
     return (
-        <div className={S.section.head}>
-            <div className={S.section.inner}>
-                <span className={S.section.num}>{num}</span>
+        <div className={styles.sectionHead}>
+            <div className={styles.sectionInner}>
+                <span className={styles.sectionNum}>{num}</span>
                 <div>
-                    <h2 className={S.section.title}>{title}</h2>
-                    {subtitle && <p className={S.section.sub}>{subtitle}</p>}
+                    <h2 className={styles.sectionTitle}>{title}</h2>
+                    {subtitle && <p className={styles.sectionSub}>{subtitle}</p>}
                 </div>
             </div>
         </div>
@@ -263,7 +264,7 @@ export function NewPatientPage() {
     }, [zipValue]);
 
     return (
-        <div className={S.page.root}>
+        <div className={styles.pageRoot}>
             {/* Breadcrumb */}
             <Breadcrumb>
                 <BreadcrumbList>
@@ -294,21 +295,21 @@ export function NewPatientPage() {
             />
 
             {/* AI nudge */}
-            <div className={S.aiNudge.root}>
-                <span className={S.aiNudge.icon}>
+            <div className={styles.aiNudgeRoot}>
+                <span className={styles.aiNudgeIcon}>
                     <Sparkles className="size-3.5" strokeWidth={1.5} />
                 </span>
-                <div className={S.aiNudge.body}>
-                    <div className={S.aiNudge.title}>
-                        <span className={S.aiNudge.badge}>IA</span>
+                <div className={styles.aiNudgeBody}>
+                    <div className={styles.aiNudgeTitle}>
+                        <span className={styles.aiNudgeBadge}>IA</span>
                         Acelerar cadastro
                     </div>
-                    <p className={S.aiNudge.sub}>
+                    <p className={styles.aiNudgeSub}>
                         Envie um documento (RG, CNH ou ficha) e a IA pré-preenche identificação e endereço · você revisa
                         antes de salvar.
                     </p>
                 </div>
-                <button type="button" className={S.aiNudge.btn}>
+                <button type="button" className={styles.aiNudgeBtn}>
                     <Upload className="size-3" strokeWidth={1.5} />
                     Anexar documento
                 </button>
@@ -326,15 +327,15 @@ export function NewPatientPage() {
                                 return (
                                     <TabsTrigger key={t.key} value={t.key}>
                                         <span
-                                            className={cn(
-                                                S.tabNum,
-                                                tab === t.key && S.tabNumActive,
-                                                filled && S.tabNumFilled
+                                            className={clsx(
+                                                styles.tabNum,
+                                                tab === t.key && styles.tabNumActive,
+                                                filled && styles.tabNumFilled
                                             )}
                                         >
                                             {filled ? <Check className="size-[11px]" strokeWidth={2.5} /> : t.num}
                                         </span>
-                                        <TabIcon className={S.tabIcon} strokeWidth={1.5} />
+                                        <TabIcon className={styles.tabIcon} strokeWidth={1.5} />
                                         {t.label}
                                     </TabsTrigger>
                                 );
@@ -343,7 +344,7 @@ export function NewPatientPage() {
 
                         {/* ── Tab 1: Identificação ─────────────────────────────── */}
                         <TabsContent value="identity">
-                            <div className={S.section.root}>
+                            <div className={styles.sectionRoot}>
                                 <SectionHead
                                     num="1"
                                     title="Identificação pessoal"
@@ -351,17 +352,17 @@ export function NewPatientPage() {
                                 />
 
                                 {/* Photo uploader (UI only) */}
-                                <div className={S.photo.root}>
-                                    <div className={cn(S.photo.frame, 'group')}>
+                                <div className={styles.photoRoot}>
+                                    <div className={clsx(styles.photoFrame, 'group')}>
                                         <Camera className="size-[22px]" strokeWidth={1.5} />
-                                        <span className={S.photo.text}>Clique para adicionar foto</span>
+                                        <span className={styles.photoText}>Clique para adicionar foto</span>
                                     </div>
-                                    <div className={S.photo.meta}>
-                                        <span className={S.photo.title}>Foto do paciente</span>
-                                        <span className={S.photo.sub}>
+                                    <div className={styles.photoMeta}>
+                                        <span className={styles.photoTitle}>Foto do paciente</span>
+                                        <span className={styles.photoSub}>
                                             JPG ou PNG · até 5 MB · proporção 1:1 recomendada
                                         </span>
-                                        <span className={cn(S.photo.sub, 'mt-1 text-(--color-text-tertiary)')}>
+                                        <span className={cn(styles.photoSub, 'mt-1 text-(--color-text-tertiary)')}>
                                             Opcional · ajuda na identificação visual
                                         </span>
                                     </div>
@@ -424,7 +425,7 @@ export function NewPatientPage() {
 
                         {/* ── Tab 2: Contato ────────────────────────────────────── */}
                         <TabsContent value="contact">
-                            <div className={S.section.root}>
+                            <div className={styles.sectionRoot}>
                                 <SectionHead
                                     num="2"
                                     title="Contato"
@@ -453,12 +454,12 @@ export function NewPatientPage() {
                                 </FormGrid>
 
                                 {/* Responsável */}
-                                <div className={S.subSection.root}>
-                                    <div className={S.subSection.head}>
-                                        <User className={S.subSection.icon} strokeWidth={1.5} />
-                                        <h3 className={S.subSection.title}>Responsável</h3>
-                                        <span className={S.subSection.tag}>Opcional</span>
-                                        <span className={cn(S.subSection.hint, 'ml-1')}>
+                                <div className={styles.subSectionRoot}>
+                                    <div className={styles.subSectionHead}>
+                                        <User className={styles.subSectionIcon} strokeWidth={1.5} />
+                                        <h3 className={styles.subSectionTitle}>Responsável</h3>
+                                        <span className={styles.subSectionTag}>Opcional</span>
+                                        <span className={cn(styles.subSectionHint, 'ml-1')}>
                                             · para menores ou pacientes com tutela
                                         </span>
                                     </div>
@@ -491,7 +492,7 @@ export function NewPatientPage() {
 
                         {/* ── Tab 3: Endereço ───────────────────────────────────── */}
                         <TabsContent value="address">
-                            <div className={S.section.root}>
+                            <div className={styles.sectionRoot}>
                                 <SectionHead num="3" title="Endereço" subtitle="Todos os campos são opcionais." />
 
                                 <FormGrid>
@@ -569,7 +570,7 @@ export function NewPatientPage() {
 
                         {/* ── Tab 4: Saúde ─────────────────────────────────────── */}
                         <TabsContent value="health">
-                            <div className={S.section.root}>
+                            <div className={styles.sectionRoot}>
                                 <SectionHead
                                     num="4"
                                     title="Informações de saúde"
@@ -615,8 +616,8 @@ export function NewPatientPage() {
                                     </Field>
                                 </FormGrid>
 
-                                <div className={S.infoNote}>
-                                    <Info className={S.infoNoteIcon} strokeWidth={1.5} />
+                                <div className={styles.infoNote}>
+                                    <Info className={styles.infoNoteIcon} strokeWidth={1.5} />
                                     <div>
                                         Esses dados são apenas um registro inicial. A <strong>anamnese completa</strong>
                                         , prescrições e evoluções (SOAP) são registradas no prontuário após o cadastro.
@@ -627,16 +628,16 @@ export function NewPatientPage() {
                     </Tabs>
 
                     {/* Sticky footer */}
-                    <div className={S.footer.root}>
-                        <div className={S.footer.meta}>
+                    <div className={styles.footerRoot}>
+                        <div className={styles.footerMeta}>
                             <Lock className="size-3" strokeWidth={1.5} />
                             <span>Dados criptografados em repouso · LGPD</span>
-                            <span className={S.footer.step}>
+                            <span className={styles.footerStep}>
                                 Etapa {tabIdx + 1} de {TABS.length}
                             </span>
                         </div>
 
-                        <div className={S.footer.actions}>
+                        <div className={styles.footerActions}>
                             <Button
                                 type="button"
                                 variant="outline"

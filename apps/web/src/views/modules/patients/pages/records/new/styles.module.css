@@ -1,0 +1,427 @@
+@import "tailwindcss";
+
+/* ── Page ────────────────────────────────────────────────────────────────────── */
+
+.pageRoot {
+    @apply flex flex-col pb-[80px] bg-(--color-bg-page);
+}
+
+.pageTop {
+    @apply px-6 pt-6;
+}
+
+.pageErrorState {
+    @apply flex flex-col items-center justify-center gap-4 p-12 text-(--color-text-secondary);
+}
+
+.pageErrorLink {
+    @apply text-sm text-(--color-primary-text) underline;
+}
+
+/* ── Skeleton ────────────────────────────────────────────────────────────────── */
+
+.skeletonRoot {
+    @apply flex flex-col gap-[18px] p-6;
+}
+
+.skeletonGrid {
+    @apply grid grid-cols-[200px_1fr] gap-7;
+}
+
+.skeletonPatientCard {
+    @apply h-[60px] rounded-(--radius-card);
+}
+
+.skeletonNavStack {
+    @apply flex flex-col gap-2;
+}
+
+.skeletonNavItem {
+    @apply h-9 rounded-[8px];
+}
+
+.skeletonContentStack {
+    @apply flex flex-col gap-[18px];
+}
+
+.skeletonContentSection {
+    @apply h-[160px] rounded-[12px];
+}
+
+/* ── Patient card ────────────────────────────────────────────────────────────── */
+
+.patientCardRoot {
+    @apply mt-4 flex items-center gap-3 rounded-(--radius-card) border border-(--color-border) bg-(--color-bg-card) px-4 py-[10px];
+}
+
+.patientCardInfo {
+    @apply min-w-0;
+}
+
+.patientCardName {
+    @apply cursor-pointer text-[14px] font-medium text-(--color-text-primary) transition-colors hover:text-(--color-primary-text);
+}
+
+.patientCardMeta {
+    @apply mt-[2px] text-[12px] text-(--color-text-tertiary);
+}
+
+/* ── Layout ──────────────────────────────────────────────────────────────────── */
+
+.layoutRoot {
+    @apply mx-6 mt-[18px] grid grid-cols-[200px_1fr] gap-7 items-start;
+}
+
+.layoutToc {
+    @apply sticky top-6 flex flex-col gap-[2px];
+}
+
+.layoutTocTitle {
+    @apply px-[10px] pb-2 text-[11px] font-medium uppercase tracking-[0.06em] text-(--color-text-tertiary);
+}
+
+.layoutTocItem {
+    @apply flex cursor-pointer items-center gap-[10px] rounded-[8px] border-0 bg-transparent px-[10px] py-2;
+    @apply text-[13px] text-(--color-text-secondary) transition-colors hover:bg-(--color-bg-surface) hover:text-(--color-text-primary);
+}
+
+.layoutTocItemActive {
+    @apply bg-(--color-primary-surface) text-(--color-primary-text);
+}
+
+.layoutTocFoot {
+    @apply mt-2 flex items-center gap-[6px] border-t border-(--color-border) px-[10px] pt-2 text-[11px] text-(--color-text-tertiary);
+}
+
+.layoutContent {
+    @apply min-w-0;
+}
+
+/* ── Section ─────────────────────────────────────────────────────────────────── */
+
+.sectionRoot {
+    @apply mb-[18px] rounded-[12px] border border-(--color-border) bg-(--color-bg-card) px-[24px] pb-[24px] pt-[22px];
+}
+
+.sectionHead {
+    @apply mb-[18px] flex items-start gap-3 border-b border-dashed border-(--color-border) pb-[14px];
+}
+
+.sectionIcon {
+    @apply inline-flex size-[28px] shrink-0 items-center justify-center rounded-[8px] bg-(--color-primary-surface) text-(--color-primary-text);
+}
+
+.sectionHeadRight {
+    @apply flex-1 min-w-0;
+}
+
+.sectionHeadAside {
+    @apply ml-auto shrink-0;
+}
+
+.sectionTitle {
+    @apply text-[16px] font-medium leading-[1.3] tracking-[-0.01em] text-(--color-text-primary);
+}
+
+.sectionSub {
+    @apply mt-[2px] text-[12px] text-(--color-text-tertiary);
+}
+
+/* ── Vitals ──────────────────────────────────────────────────────────────────── */
+
+.vitalsGrid {
+    @apply grid grid-cols-3 gap-3;
+}
+
+.vitalsCell {
+    @apply rounded-[10px] border border-(--color-border) bg-(--color-bg-surface) p-3;
+}
+
+.vitalsCellWide {
+    @apply col-span-2;
+}
+
+.vitalsCellReadonly {
+    @apply bg-(--color-bg-page);
+}
+
+.vitalsHead {
+    @apply mb-[6px] flex items-center justify-between;
+}
+
+.vitalsLabel {
+    @apply text-[11px] uppercase tracking-[0.04em] text-(--color-text-tertiary);
+}
+
+.vitalsUnit {
+    @apply text-[11px] text-(--color-text-tertiary);
+}
+
+.vitalsInput {
+    @apply w-full border-0 bg-transparent p-0 font-mono tabular-nums text-[15px] text-(--color-text-primary);
+    @apply placeholder:text-(--color-text-tertiary) focus:outline-none;
+}
+
+.vitalsPaRow {
+    @apply flex items-center gap-1;
+}
+
+.vitalsPaSep {
+    @apply font-mono text-[15px] text-(--color-text-tertiary);
+}
+
+.vitalsWarn {
+    @apply mt-1 flex items-center gap-1 text-[11px] text-(--color-warning);
+}
+
+.vitalsPrevBox {
+    @apply mb-3 rounded-[8px] border border-(--color-border) bg-(--color-bg-surface) p-3;
+}
+
+.vitalsPrevToggle {
+    @apply inline-flex cursor-pointer items-center gap-1 border-0 bg-transparent text-[12px] text-(--color-text-secondary) hover:text-(--color-primary-text);
+}
+
+.vitalsPrevEmpty {
+    @apply text-[12px] italic text-(--color-text-tertiary);
+}
+
+.vitalsPrevHead {
+    @apply mb-[10px] flex items-center gap-[6px] text-[12px] text-(--color-text-tertiary);
+}
+
+.vitalsPrevGrid {
+    @apply grid grid-cols-6 gap-3;
+}
+
+.vitalsPrevLabel {
+    @apply text-[11px] uppercase tracking-[0.04em] text-(--color-text-tertiary);
+}
+
+.vitalsPrevValue {
+    @apply mt-[2px] font-mono tabular-nums text-[14px] text-(--color-text-primary);
+}
+
+.vitalsImcValue {
+    @apply text-[16px] font-medium font-mono tabular-nums text-(--color-text-primary);
+}
+
+.vitalsImcEmpty {
+    @apply text-[13px] italic text-(--color-text-tertiary);
+}
+
+/* ── IMC tag (cva) ───────────────────────────────────────────────────────────── */
+
+.imcTagBase {
+    @apply ml-2 inline-flex items-center rounded-(--radius-badge) px-2 py-[2px] text-[11px] font-medium;
+}
+
+.imcTagOk {
+    @apply bg-(--color-success-surface) text-(--color-success);
+}
+
+.imcTagWarn {
+    @apply bg-(--color-warning-surface) text-(--color-warning);
+}
+
+.imcTagBad {
+    @apply bg-(--color-danger-surface) text-(--color-danger);
+}
+
+/* ── SOAP ────────────────────────────────────────────────────────────────────── */
+
+.soapStack {
+    @apply flex flex-col divide-y divide-(--color-border);
+}
+
+.soapField {
+    @apply py-[16px] first:pt-0 last:pb-0;
+}
+
+.soapHead {
+    @apply mb-[10px] flex items-start gap-3;
+}
+
+.soapLetterBase {
+    @apply inline-flex size-[26px] shrink-0 items-center justify-center rounded-[6px] text-[13px] font-medium;
+}
+
+.soapLetterS {
+    @apply bg-(--color-primary-surface) text-(--color-primary-text);
+}
+
+.soapLetterO {
+    @apply bg-(--color-primary-surface) text-(--color-primary-text);
+}
+
+.soapLetterA {
+    @apply bg-(--color-success-surface) text-(--color-success);
+}
+
+.soapLetterP {
+    @apply bg-(--color-warning-surface) text-(--color-warning);
+}
+
+.soapTitle {
+    @apply text-[14px] font-medium leading-[1.3] text-(--color-text-primary);
+}
+
+.soapHint {
+    @apply mt-[1px] text-[12px] text-(--color-text-tertiary);
+}
+
+.soapVitalsRef {
+    @apply mb-2 flex flex-wrap items-center gap-[6px] rounded-[6px] bg-(--color-bg-surface) px-3 py-[6px] text-[12px] text-(--color-text-secondary);
+}
+
+.soapTextarea {
+    @apply mt-2 w-full resize-none overflow-hidden rounded-(--radius-input) border border-(--color-border) bg-(--color-bg-card);
+    @apply px-3 py-[9px] text-sm leading-[1.6] text-(--color-text-primary);
+    @apply placeholder:text-(--color-text-tertiary);
+    @apply hover:border-(--color-border-hover) focus:border-(--color-primary) focus:outline-none;
+}
+
+/* ── Conduct ─────────────────────────────────────────────────────────────────── */
+
+.conductGrid {
+    @apply flex flex-wrap gap-2;
+}
+
+.conductChipBase {
+    @apply inline-flex cursor-pointer items-center gap-[6px] rounded-(--radius-badge) border px-3 py-[6px] text-[13px] transition-colors;
+}
+
+.conductChipOn {
+    @apply border-(--color-primary) bg-(--color-primary-surface) text-(--color-primary-text);
+}
+
+.conductChipOff {
+    @apply border-(--color-border) bg-(--color-bg-card) text-(--color-text-secondary) hover:border-(--color-border-hover) hover:text-(--color-text-primary);
+}
+
+/* ── Upload ──────────────────────────────────────────────────────────────────── */
+
+.uploadZone {
+    @apply flex flex-col items-center justify-center gap-2 rounded-[10px] border-[1.5px] border-dashed border-(--color-border);
+    @apply cursor-pointer py-[28px] text-(--color-text-tertiary) transition-colors;
+    @apply hover:border-(--color-primary) hover:bg-(--color-primary-surface) hover:text-(--color-primary-text);
+}
+
+.uploadTitle {
+    @apply text-[13px] font-medium text-(--color-text-primary);
+}
+
+.uploadSub {
+    @apply text-[12px] text-(--color-text-tertiary);
+}
+
+.uploadList {
+    @apply mt-3 flex flex-col gap-2;
+}
+
+.uploadRow {
+    @apply flex items-center gap-3 rounded-[8px] border border-(--color-border) bg-(--color-bg-surface) px-3 py-[10px];
+}
+
+.uploadIcon {
+    @apply size-4 shrink-0 text-(--color-text-tertiary);
+}
+
+.uploadName {
+    @apply min-w-0 flex-1 truncate text-[13px] text-(--color-text-primary);
+}
+
+.uploadSize {
+    @apply text-[11px] text-(--color-text-tertiary);
+}
+
+.uploadRemove {
+    @apply flex size-7 cursor-pointer items-center justify-center rounded-[6px] border-0 bg-transparent text-(--color-text-tertiary) transition-colors hover:bg-(--color-bg-card) hover:text-(--color-danger);
+}
+
+.uploadBody {
+    @apply min-w-0 flex-1;
+}
+
+/* ── Footer ──────────────────────────────────────────────────────────────────── */
+
+.footerRoot {
+    @apply fixed bottom-0 left-0 right-0 z-30 flex items-center justify-between gap-4;
+    @apply border-t border-(--color-border) bg-(--color-bg-card) px-8 py-[14px];
+}
+
+.footerMeta {
+    @apply flex items-center gap-[10px] text-xs text-(--color-text-tertiary);
+}
+
+.footerActions {
+    @apply flex items-center gap-[10px];
+}
+
+/* ── Modal ───────────────────────────────────────────────────────────────────── */
+
+.modalBackdrop {
+    @apply fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm;
+}
+
+.modalPanel {
+    @apply w-[420px] max-w-[calc(100vw-32px)] rounded-[16px] border border-(--color-border) bg-(--color-bg-card) p-6 shadow-xl;
+}
+
+.modalHead {
+    @apply mb-4 flex items-start gap-3;
+}
+
+.modalIcon {
+    @apply inline-flex size-[38px] shrink-0 items-center justify-center rounded-[10px];
+}
+
+.modalIconOk {
+    @apply bg-(--color-success-surface) text-(--color-success);
+}
+
+.modalIconWarn {
+    @apply bg-(--color-warning-surface) text-(--color-warning);
+}
+
+.modalTitle {
+    @apply text-[16px] font-medium text-(--color-text-primary);
+}
+
+.modalSub {
+    @apply mt-[2px] text-sm text-(--color-text-secondary);
+}
+
+.modalSummary {
+    @apply mb-5 divide-y divide-(--color-border) overflow-hidden rounded-[8px] border border-(--color-border) bg-(--color-bg-surface);
+}
+
+.modalSummaryRow {
+    @apply flex items-center justify-between gap-2 px-4 py-[10px] text-[13px];
+}
+
+.modalSummaryLabel {
+    @apply text-(--color-text-secondary);
+}
+
+.modalSummaryValue {
+    @apply font-medium text-(--color-text-primary);
+}
+
+.modalChips {
+    @apply flex flex-wrap gap-1;
+}
+
+.modalChip {
+    @apply inline-flex items-center gap-1 rounded-(--radius-badge) bg-(--color-primary-surface) px-[6px] py-[2px] text-[11px] font-medium text-(--color-primary-text);
+}
+
+.modalActions {
+    @apply mt-4 flex items-center justify-end gap-3;
+}
+
+/* ── Misc ────────────────────────────────────────────────────────────────────── */
+
+.monoDate {
+    @apply font-mono tabular-nums;
+}

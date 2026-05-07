@@ -36,7 +36,7 @@ import {SegmentedControl} from '@/components/ui/componentes/segmented-control';
 import {Skeleton} from '@/components/ui/componentes/skeleton';
 import {StatTile} from '@/components/ui/componentes/stat-tile';
 import {Page} from '@/views/components/Page';
-import * as S from './styles';
+import styles from './styles.module.css';
 
 export const Route = createFileRoute('/_stackedLayout/patients')({
     component: PatientsPage,
@@ -112,45 +112,45 @@ function PatientTableRow({patient, onClick}: {patient: Patient; onClick: () => v
     const age = getAge(patient.birthDate);
 
     return (
-        <div className={S.tableRow.root} style={{gridTemplateColumns: TABLE_COLS}} onClick={onClick}>
-            <div className={S.tableRow.nameCell}>
+        <div className={styles.tableRowRoot} style={{gridTemplateColumns: TABLE_COLS}} onClick={onClick}>
+            <div className={styles.tableRowNameCell}>
                 <PatientAvatar name={patient.name} id={patient.id} />
-                <div className={S.tableRow.nameBlock}>
-                    <p className={S.tableRow.name}>{patient.name}</p>
-                    <p className={S.tableRow.email}>{typeof patient.email === 'string' ? patient.email : '—'}</p>
+                <div className={styles.tableRowNameBlock}>
+                    <p className={styles.tableRowName}>{patient.name}</p>
+                    <p className={styles.tableRowEmail}>{typeof patient.email === 'string' ? patient.email : '—'}</p>
                 </div>
             </div>
 
-            <div className={S.tableRow.ageWrapper}>
-                <span className={S.tableRow.age}>
+            <div className={styles.tableRowAgeWrapper}>
+                <span className={styles.tableRowAge}>
                     {age !== null ? (
                         <>
                             {age}
-                            <span className={S.tableRow.ageUnit}> anos</span>
+                            <span className={styles.tableRowAgeUnit}> anos</span>
                         </>
                     ) : (
                         '—'
                     )}
                 </span>
                 {age !== null && (
-                    <span className={S.tableRow.ageTooltip}>Nasc. {formatBirthDate(patient.birthDate)}</span>
+                    <span className={styles.tableRowAgeTooltip}>Nasc. {formatBirthDate(patient.birthDate)}</span>
                 )}
             </div>
 
-            <p className={S.tableRow.document}>{patient.documentId}</p>
+            <p className={styles.tableRowDocument}>{patient.documentId}</p>
 
             {patient.insurancePlan ? (
-                <span className={S.tableRow.insuranceBadge}>{patient.insurancePlan.name}</span>
+                <span className={styles.tableRowInsuranceBadge}>{patient.insurancePlan.name}</span>
             ) : (
-                <span className={S.tableRow.insuranceEmpty}>—</span>
+                <span className={styles.tableRowInsuranceEmpty}>—</span>
             )}
 
             <GenderBadge gender={patient.gender} />
 
-            <div className={S.tableRow.actionWrapper} onClick={(e) => e.stopPropagation()}>
+            <div className={styles.tableRowActionWrapper} onClick={(e) => e.stopPropagation()}>
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                        <button type="button" aria-label="Ações" className={S.tableRow.actionBtn}>
+                        <button type="button" aria-label="Ações" className={styles.tableRowActionBtn}>
                             <MoreHorizontal className="size-4" strokeWidth={1.5} />
                         </button>
                     </DropdownMenuTrigger>
@@ -168,7 +168,7 @@ function PatientTableRow({patient, onClick}: {patient: Patient; onClick: () => v
                             Agendar consulta
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem className={S.tableRow.dangerItem}>
+                        <DropdownMenuItem className={styles.tableRowDangerItem}>
                             <Archive className="size-3.5" />
                             Arquivar paciente
                         </DropdownMenuItem>
@@ -181,9 +181,9 @@ function PatientTableRow({patient, onClick}: {patient: Patient; onClick: () => v
 
 function SkeletonTableRow() {
     return (
-        <div className={S.tableRow.skeletonRoot} style={{gridTemplateColumns: TABLE_COLS}}>
-            <div className={S.tableRow.skeletonNameCell}>
-                <Skeleton className={S.tableRow.skeletonAvatar} />
+        <div className={styles.tableRowSkeletonRoot} style={{gridTemplateColumns: TABLE_COLS}}>
+            <div className={styles.tableRowSkeletonNameCell}>
+                <Skeleton className={styles.tableRowSkeletonAvatar} />
                 <div className="flex-1 space-y-1.5">
                     <Skeleton className="h-3.5 w-32" />
                     <Skeleton className="h-3 w-24" />
@@ -191,9 +191,9 @@ function SkeletonTableRow() {
             </div>
             <Skeleton className="h-4 w-8" />
             <Skeleton className="h-4 w-28" />
-            <Skeleton className={S.tableRow.skeletonStatusBadge} />
-            <Skeleton className={S.tableRow.skeletonBadgeSm} />
-            <Skeleton className={S.tableRow.skeletonActionBtn} />
+            <Skeleton className={styles.tableRowSkeletonStatusBadge} />
+            <Skeleton className={styles.tableRowSkeletonBadgeSm} />
+            <Skeleton className={styles.tableRowSkeletonActionBtn} />
         </div>
     );
 }
@@ -202,24 +202,24 @@ function PatientCard({patient, onClick}: {patient: Patient; onClick: () => void}
     const age = getAge(patient.birthDate);
 
     return (
-        <div className={S.patientCard.root} onClick={onClick}>
-            <div className={S.patientCard.top}>
+        <div className={styles.patientCardRoot} onClick={onClick}>
+            <div className={styles.patientCardTop}>
                 <PatientAvatar name={patient.name} id={patient.id} size="lg" />
-                <div className={S.patientCard.nameBlock}>
-                    <p className={S.patientCard.name}>{patient.name}</p>
-                    <p className={S.patientCard.meta}>
+                <div className={styles.patientCardNameBlock}>
+                    <p className={styles.patientCardName}>{patient.name}</p>
+                    <p className={styles.patientCardMeta}>
                         {age !== null ? `${age} anos` : '—'} · {typeof patient.email === 'string' ? patient.email : '—'}
                     </p>
                 </div>
             </div>
-            <div className={S.patientCard.details}>
-                <div className={S.patientCard.detailRow}>
-                    <span className={S.patientCard.detailLabel}>Documento</span>
-                    <span className={S.patientCard.detailValue}>{patient.documentId}</span>
+            <div className={styles.patientCardDetails}>
+                <div className={styles.patientCardDetailRow}>
+                    <span className={styles.patientCardDetailLabel}>Documento</span>
+                    <span className={styles.patientCardDetailValue}>{patient.documentId}</span>
                 </div>
-                <div className={S.patientCard.detailRow}>
-                    <span className={S.patientCard.detailLabel}>Convênio</span>
-                    <span className={S.patientCard.detailValue}>{patient.insurancePlan?.name ?? '—'}</span>
+                <div className={styles.patientCardDetailRow}>
+                    <span className={styles.patientCardDetailLabel}>Convênio</span>
+                    <span className={styles.patientCardDetailValue}>{patient.insurancePlan?.name ?? '—'}</span>
                 </div>
             </div>
         </div>
@@ -228,15 +228,15 @@ function PatientCard({patient, onClick}: {patient: Patient; onClick: () => void}
 
 function SkeletonCard() {
     return (
-        <div className={S.skeletonCard.root}>
-            <div className={S.skeletonCard.top}>
-                <Skeleton className={S.skeletonCard.avatar} />
-                <div className={S.skeletonCard.nameBlock}>
+        <div className={styles.skeletonCardRoot}>
+            <div className={styles.skeletonCardTop}>
+                <Skeleton className={styles.skeletonCardAvatar} />
+                <div className={styles.skeletonCardNameBlock}>
                     <Skeleton className="h-4 w-36" />
                     <Skeleton className="h-3 w-28" />
                 </div>
             </div>
-            <div className={S.skeletonCard.details}>
+            <div className={styles.skeletonCardDetails}>
                 <Skeleton className="h-3 w-full" />
                 <Skeleton className="h-3 w-full" />
             </div>
@@ -246,21 +246,21 @@ function SkeletonCard() {
 
 function Pagination({from, to, total}: {from: number; to: number; total: number}) {
     return (
-        <div className={S.pagination.root}>
-            <p className={S.pagination.info}>
-                Mostrando <strong className={S.pagination.infoStrong}>{from}</strong>–
-                <strong className={S.pagination.infoStrong}>{to}</strong> de{' '}
-                <strong className={S.pagination.infoStrong}>{total}</strong> pacientes
+        <div className={styles.paginationRoot}>
+            <p className={styles.paginationInfo}>
+                Mostrando <strong className={styles.paginationInfoStrong}>{from}</strong>–
+                <strong className={styles.paginationInfoStrong}>{to}</strong> de{' '}
+                <strong className={styles.paginationInfoStrong}>{total}</strong> pacientes
             </p>
-            <div className={S.pagination.controls}>
-                <button type="button" disabled className={S.pagination.btnDisabled}>
+            <div className={styles.paginationControls}>
+                <button type="button" disabled className={styles.paginationBtnDisabled}>
                     <ChevronLeft className="size-3.5" />
                     Anterior
                 </button>
-                <button type="button" className={S.pagination.btnActive}>
+                <button type="button" className={styles.paginationBtnActive}>
                     1
                 </button>
-                <button type="button" disabled className={S.pagination.btnDisabled}>
+                <button type="button" disabled className={styles.paginationBtnDisabled}>
                     Próxima
                     <ChevronRight className="size-3.5" />
                 </button>
@@ -310,10 +310,10 @@ function PatientsContent({
 
     if (layout === 'table') {
         return (
-            <div className={S.table.root}>
-                <div className={S.table.head} style={{gridTemplateColumns: TABLE_COLS}}>
+            <div className={styles.tableRoot}>
+                <div className={styles.tableHead} style={{gridTemplateColumns: TABLE_COLS}}>
                     {['Paciente', 'Idade', 'Documento', 'Convênio', 'Gênero', ''].map((h, i) => (
-                        <span key={i} className={S.table.headCell}>
+                        <span key={i} className={styles.tableHeadCell}>
                             {h}
                         </span>
                     ))}
@@ -323,7 +323,7 @@ function PatientsContent({
                     ? Array.from({length: 8}).map((_, i) => <SkeletonTableRow key={i} />)
                     : patients.map((p) => <PatientTableRow key={p.id} patient={p} onClick={() => onOpen(p)} />)}
 
-                <div className={S.table.footer}>
+                <div className={styles.tableFooter}>
                     <Pagination from={Math.min(1, patients.length)} to={patients.length} total={totalCount} />
                 </div>
             </div>
@@ -332,12 +332,12 @@ function PatientsContent({
 
     return (
         <>
-            <div className={S.cardsGrid}>
+            <div className={styles.cardsGrid}>
                 {isLoading
                     ? Array.from({length: 6}).map((_, i) => <SkeletonCard key={i} />)
                     : patients.map((p) => <PatientCard key={p.id} patient={p} onClick={() => onOpen(p)} />)}
             </div>
-            <div className={S.cardsFooter}>
+            <div className={styles.cardsFooter}>
                 <Pagination from={Math.min(1, patients.length)} to={patients.length} total={totalCount} />
             </div>
         </>
@@ -421,13 +421,13 @@ export function PatientsPage() {
             }
         >
             {/* Stats */}
-            <div className={S.statsGrid}>
+            <div className={styles.statsGrid}>
                 <StatTile
                     label="Total de pacientes"
                     value={totalAll}
                     delta={
                         <span>
-                            <span className={S.statsDelta}>+4</span> nos últimos 30 dias
+                            <span className={styles.statsDelta}>+4</span> nos últimos 30 dias
                         </span>
                     }
                     loading={statsQuery.isLoading}
@@ -452,17 +452,17 @@ export function PatientsPage() {
             </div>
 
             {/* Toolbar */}
-            <div className={S.toolbar.root}>
+            <div className={styles.toolbarRoot}>
                 {/* Search */}
-                <div className={S.toolbar.search}>
-                    <Search className={S.toolbar.searchIcon} strokeWidth={1.5} />
+                <div className={styles.toolbarSearch}>
+                    <Search className={styles.toolbarSearchIcon} strokeWidth={1.5} />
                     <input
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
                         placeholder="Buscar por nome ou documento…"
-                        className={S.toolbar.searchInput}
+                        className={styles.toolbarSearchInput}
                     />
-                    <span className={S.toolbar.searchKbd}>⌘K</span>
+                    <span className={styles.toolbarSearchKbd}>⌘K</span>
                 </div>
 
                 {/* Status filter */}
@@ -483,13 +483,13 @@ export function PatientsPage() {
                 </SegmentedControl>
 
                 {hasFilters && (
-                    <button type="button" className={S.toolbar.clearBtn} onClick={clearFilters}>
-                        <X className={S.toolbar.clearIcon} />
+                    <button type="button" className={styles.toolbarClearBtn} onClick={clearFilters}>
+                        <X className={styles.toolbarClearIcon} />
                         Limpar filtros
                     </button>
                 )}
 
-                <span className={S.toolbar.count}>
+                <span className={styles.toolbarCount}>
                     {isLoading ? '…' : `${patients.length} resultado${patients.length !== 1 ? 's' : ''}`}
                 </span>
             </div>
