@@ -1,3 +1,4 @@
+@import "tailwindcss";
 .base {
     @apply min-h-[80px] resize-y;
 }

@@ -1,3 +1,4 @@
+@import "tailwindcss";
 .progressRoot {
     @apply relative h-4 w-full overflow-hidden rounded-full bg-secondary;
 }

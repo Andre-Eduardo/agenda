@@ -1,3 +1,4 @@
+@import "tailwindcss";
 .base {
     @apply appearance-none pr-8 bg-no-repeat bg-[right_10px_center];
 

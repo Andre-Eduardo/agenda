@@ -1,3 +1,4 @@
+@import "tailwindcss";
 .base {
     @apply animate-pulse rounded-md bg-muted;
 }

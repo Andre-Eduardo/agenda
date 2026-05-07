@@ -1,3 +1,4 @@
+@import "tailwindcss";
 .base {
     @apply shrink-0 bg-border;
 }

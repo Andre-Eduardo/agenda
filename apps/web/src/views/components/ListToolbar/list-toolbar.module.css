@@ -1,3 +1,4 @@
+@import "tailwindcss";
 .root {
     @apply mb-4 flex flex-wrap items-center justify-between gap-3;
 }
