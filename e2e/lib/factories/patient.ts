@@ -3,7 +3,7 @@ import {uuidv7} from 'uuidv7';
 import {prisma} from './prisma';
 
 export type CreatePatientEntry = {
-    professionalId: string;
+    clinicId: string;
     name?: string;
     documentId?: string;
     email?: string;
@@ -16,7 +16,7 @@ export type CreatedPatient = {
     personId: string;
     name: string;
     documentId: string;
-    professionalId: string;
+    clinicId: string;
 };
 
 function randomDigits(length: number): string {
@@ -37,7 +37,6 @@ export async function createTestPatient(entry: CreatePatientEntry): Promise<Crea
         data: {
             id: uuidv7(),
             name,
-            documentId,
             phone: entry.phone ?? null,
             personType: 'NATURAL',
             createdAt: now,
@@ -51,7 +50,7 @@ export async function createTestPatient(entry: CreatePatientEntry): Promise<Crea
             documentId,
             email: entry.email ?? null,
             birthDate: entry.birthDate ?? null,
-            professionalId: entry.professionalId,
+            clinicId: entry.clinicId,
             createdAt: now,
             updatedAt: now,
         },
@@ -62,7 +61,7 @@ export async function createTestPatient(entry: CreatePatientEntry): Promise<Crea
         personId: person.id,
         name,
         documentId,
-        professionalId: entry.professionalId,
+        clinicId: entry.clinicId,
     };
 }
 

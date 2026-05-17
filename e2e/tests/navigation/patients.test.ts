@@ -2,10 +2,12 @@ import {test} from '@fixtures/test';
 
 test.describe('Patients navigation', () => {
     let professionalId: string;
+    let clinicId: string;
 
     test.beforeEach(async ({createAuthenticatedProfessional}) => {
         const professional = await createAuthenticatedProfessional();
         professionalId = professional.id;
+        clinicId = professional.clinicId;
     });
 
     test('should load the patients list page', async ({patientListPage}) => {
@@ -19,14 +21,14 @@ test.describe('Patients navigation', () => {
     });
 
     test('should load the patient detail page', async ({createPatient, patientDetailPage}) => {
-        const patient = await createPatient({professionalId});
+        const patient = await createPatient({clinicId});
 
         await patientDetailPage.navigate(patient.id);
         await patientDetailPage.verifyPageLoaded(patient.name);
     });
 
     test('should load the patient edit page', async ({createPatient, patientEditPage}) => {
-        const patient = await createPatient({professionalId});
+        const patient = await createPatient({clinicId});
 
         await patientEditPage.navigate(patient.id);
         await patientEditPage.verifyPageLoaded();

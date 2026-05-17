@@ -22,7 +22,4 @@ export const permission = z
 export const permissions = z
     .array(permission)
     .transform((value) => new Set<Permission>(value))
-    .openapi({
-        enumName: 'Permission',
-        isArray: true,
-    });
+    .openapi('Permission');

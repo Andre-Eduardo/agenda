@@ -1,7 +1,7 @@
 import {useEffect} from 'react';
 import type {ApiProblem} from '@agenda-app/client';
 import {useQueryClient} from '@tanstack/react-query';
-import {AxiosError} from 'axios';
+import {AxiosError} from '@automo/client';
 import {useTranslation} from 'react-i18next';
 import {toast} from 'sonner';
 

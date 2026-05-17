@@ -4,12 +4,13 @@
   "private": true,
   "type": "module",
   "main": "./dist/index.mjs",
-  "types": "./dist/index.d.ts",
   "exports": {
     ".": {
+      "development": "./src/index.ts",
       "types": "./dist/index.d.ts",
       "import": "./dist/index.mjs"
-    }
+    },
+    "./api-client": "./src/api-client.ts"
   },
   "scripts": {
     "lint": "oxlint && oxfmt --check",
@@ -30,10 +31,10 @@
     "@stylistic/eslint-plugin": "^5.10.0",
     "eslint-plugin-sort-export-all": "^2.1.0",
     "orval": "^7.6.0",
-    "oxfmt": "^0.41.0",
-    "oxlint": "^1.56.0",
-    "oxlint-tsgolint": "^0.18.0",
-    "typescript": "^5.8.3",
+    "oxfmt": "^0.49.0",
+    "oxlint": "^1.64.0",
+    "oxlint-tsgolint": "^0.22.1",
+    "typescript": "^6.0.2",
     "vite": "^6.2.0",
     "vite-plugin-dts": "^4.5.3"
   }

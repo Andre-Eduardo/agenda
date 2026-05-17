@@ -1,43 +1,24 @@
 import {randomBytes} from 'node:crypto';
 import {uuidv7} from 'uuidv7';
+import type {AiSpecialtyGroup} from '@prisma/client';
 import {prisma} from './prisma';
 import type {CreatedUser, CreateUserEntry} from './user';
 import {createTestUser} from './user';
 
-function randomDigits(length: number): string {
-    let out = '';
-    for (const byte of randomBytes(length)) {
-        out += (byte % 10).toString();
-    }
-    return out;
-}
-
-export type Specialty =
-    | 'PSICOLOGIA'
-    | 'MEDICINA'
-    | 'FISIOTERAPIA'
-    | 'FONOAUDIOLOGIA'
-    | 'NUTRICAO'
-    | 'TERAPIA_OCUPACIONAL'
-    | 'ENFERMAGEM'
-    | 'OUTROS';
-
 export type CreateProfessionalEntry = {
     user?: CreateUserEntry | CreatedUser;
-    personName?: string;
-    documentId?: string;
+    displayName?: string;
     specialty?: string;
-    specialtyNormalized?: Specialty;
-    configColor?: string;
+    specialtyNormalized?: AiSpecialtyGroup;
+    color?: string;
 };
 
 export type CreatedProfessional = {
     id: string;
-    personId: string;
-    configId: string;
+    clinicMemberId: string;
+    clinicId: string;
     userId: string;
     user: CreatedUser;
-    personName: string;
 };
 
 function isCreatedUser(value: CreateUserEntry | CreatedUser | undefined): value is CreatedUser {
@@ -52,27 +33,31 @@ export async function createTestProfessional(
     const user = isCreatedUser(entry.user)
         ? entry.user
         : await createTestUser({
-              name: entry.personName ?? `Prof ${suffix}`,
+              name: entry.displayName ?? `Prof ${suffix}`,
               ...(entry.user ?? {}),
           });
 
     const now = new Date();
 
-    const person = await prisma.person.create({
+    const clinic = await prisma.clinic.create({
         data: {
             id: uuidv7(),
-            name: entry.personName ?? user.name,
-            documentId: entry.documentId ?? `000.000.${randomDigits(3)}-${randomDigits(2)}`,
-            personType: 'NATURAL',
+            name: `Clínica ${suffix}`,
+            isPersonalClinic: true,
             createdAt: now,
             updatedAt: now,
         },
     });
 
-    const config = await prisma.professionalConfig.create({
+    const clinicMember = await prisma.clinicMember.create({
         data: {
             id: uuidv7(),
-            color: entry.configColor ?? '#4F46E5',
+            clinicId: clinic.id,
+            userId: user.id,
+            role: 'PROFESSIONAL',
+            displayName: entry.displayName ?? user.name,
+            color: entry.color ?? '#4F46E5',
+            isActive: true,
             createdAt: now,
             updatedAt: now,
         },
@@ -81,11 +66,9 @@ export async function createTestProfessional(
     const professional = await prisma.professional.create({
         data: {
             id: uuidv7(),
-            personId: person.id,
-            configId: config.id,
-            userId: user.id,
+            clinicMemberId: clinicMember.id,
             specialty: entry.specialty ?? 'Clínica Geral',
-            specialtyNormalized: entry.specialtyNormalized ?? 'MEDICINA',
+            specialtyNormalized: entry.specialtyNormalized ?? null,
             createdAt: now,
             updatedAt: now,
         },
@@ -93,11 +76,10 @@ export async function createTestProfessional(
 
     return {
         id: professional.id,
-        personId: person.id,
-        configId: config.id,
+        clinicMemberId: clinicMember.id,
+        clinicId: clinic.id,
         userId: user.id,
         user,
-        personName: person.name,
     };
 }
 

@@ -1,6 +1,7 @@
 {
   "compilerOptions": {
-    "target": "ES2023",
+    "baseUrl": ".",
+    "target": "ES2024",
     "module": "CommonJS",
     "skipLibCheck": true,
     "resolveJsonModule": true,

@@ -1,12 +1,21 @@
 import {OpenApiGeneratorV3, OpenAPIRegistry} from '@asteasolutions/zod-to-openapi';
-import type {SchemaObject as OpenApiSchema} from '@asteasolutions/zod-to-openapi/dist/types';
 import type {ApiPropertyOptions} from '@nestjs/swagger';
 import type {SchemasObject} from '@nestjs/swagger/dist/interfaces/open-api-spec.interface';
 import type {AnyZodObject} from 'zod';
 
+// Derive schema types from the V3 generator to ensure openapi30/openapi31 consistency
+type OpenApiComponents = NonNullable<ReturnType<OpenApiGeneratorV3['generateComponents']>['components']>;
+type OpenApiSchemas = NonNullable<OpenApiComponents['schemas']>;
+type SchemaOrRef = OpenApiSchemas[string];
+type OpenApiSchema = Exclude<SchemaOrRef, {$ref: string}>;
+
 type SchemaObjectForMetadataFactory = ApiPropertyOptions & {
     'x-param-object'?: boolean;
 };
+
+function isSchemaObject(obj: SchemaOrRef | undefined): obj is OpenApiSchema {
+    return obj !== undefined && !('$ref' in obj);
+}
 
 export function generateOpenApiSchema(zodDto: AnyZodObject, hideDefinitions?: string[]): OpenApiSchema {
     const hideKeys = hideDefinitions?.reduce((acc, key) => ({...acc, [key]: true}), {}) ?? {};
@@ -22,7 +31,11 @@ export function generateOpenApiSchema(zodDto: AnyZodObject, hideDefinitions?: st
     registry.register(refId, filteredSchema);
     const generator = new OpenApiGeneratorV3(registry.definitions);
 
-    return generator.generateComponents().components.schemas[refId];
+    const schema = generator.generateComponents().components.schemas?.[refId];
+    if (!isSchemaObject(schema)) {
+        throw new Error(`Expected SchemaObject for key '${refId}'`);
+    }
+    return schema;
 }
 
 export function generateNestSwaggerSchema(zodDto: AnyZodObject, hideDefinitions?: string[]): SchemasObject {
@@ -41,6 +54,9 @@ export function generateNestSwaggerSchema(zodDto: AnyZodObject, hideDefinitions?
     const allSchemas = generator.generateComponents().components.schemas ?? {};
 
     const generatedSchema = allSchemas[refId];
+    if (!isSchemaObject(generatedSchema)) {
+        throw new Error(`Expected SchemaObject for key '${refId}'`);
+    }
 
     convertSchemaObject(generatedSchema, allSchemas);
 
@@ -64,7 +80,7 @@ export function generateNestSwaggerSchema(zodDto: AnyZodObject, hideDefinitions?
  */
 function convertSchemaObject(
     schemaObject: OpenApiSchema,
-    allSchemas: Record<string, OpenApiSchema> = {},
+    allSchemas: OpenApiSchemas = {},
     required?: boolean
 ): void {
     if ('$ref' in schemaObject) {
@@ -82,7 +98,7 @@ function convertSchemaObject(
             const refName = (subSchemaObject.$ref as string).split('/').pop() ?? '';
             const resolved = allSchemas[refName];
 
-            if (resolved && !('$ref' in resolved)) {
+            if (isSchemaObject(resolved)) {
                 properties[key] = {...resolved};
             }
 
