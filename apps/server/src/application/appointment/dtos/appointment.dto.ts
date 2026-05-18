@@ -37,6 +37,7 @@ export class AppointmentDto extends EntityDto {
     status: AppointmentStatus;
 
     @ApiProperty({
+        type: 'string',
         format: 'date-time',
         nullable: true,
         description: 'When the appointment was canceled',
@@ -50,6 +51,7 @@ export class AppointmentDto extends EntityDto {
     note: string | null;
 
     @ApiProperty({
+        type: 'string',
         format: 'date-time',
         nullable: true,
         description: 'When the patient arrived at the reception',
@@ -57,6 +59,7 @@ export class AppointmentDto extends EntityDto {
     arrivedAt: string | null;
 
     @ApiProperty({
+        type: 'string',
         format: 'date-time',
         nullable: true,
         description: 'When the patient was called to the room',

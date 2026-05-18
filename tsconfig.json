@@ -1,6 +1,5 @@
 {
   "compilerOptions": {
-    "baseUrl": ".",
     "target": "ES2024",
     "module": "CommonJS",
     "skipLibCheck": true,
@@ -25,7 +24,7 @@
     "paths": {
       "*": ["./*"],
       "@agenda-app/*": [
-        "packages/*/src"
+        "./packages/*/src"
       ]
     }
   },

@@ -1,7 +1,7 @@
 import {defineConfig} from 'orval';
 
 const orvalConfig: ReturnType<typeof defineConfig> = defineConfig({
-    automo: {
+    agenda: {
         input: '../../apps/server/openapi.json',
         output: {
             mode: 'tags',

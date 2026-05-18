@@ -1,6 +1,5 @@
 import {OpenApiGeneratorV3, OpenAPIRegistry} from '@asteasolutions/zod-to-openapi';
 import type {ApiPropertyOptions} from '@nestjs/swagger';
-import type {SchemasObject} from '@nestjs/swagger/dist/interfaces/open-api-spec.interface';
 import type {AnyZodObject} from 'zod';
 
 // Derive schema types from the V3 generator to ensure openapi30/openapi31 consistency
@@ -31,14 +30,14 @@ export function generateOpenApiSchema(zodDto: AnyZodObject, hideDefinitions?: st
     registry.register(refId, filteredSchema);
     const generator = new OpenApiGeneratorV3(registry.definitions);
 
-    const schema = generator.generateComponents().components.schemas?.[refId];
+    const schema = generator.generateComponents().components?.schemas?.[refId];
     if (!isSchemaObject(schema)) {
         throw new Error(`Expected SchemaObject for key '${refId}'`);
     }
     return schema;
 }
 
-export function generateNestSwaggerSchema(zodDto: AnyZodObject, hideDefinitions?: string[]): SchemasObject {
+export function generateNestSwaggerSchema(zodDto: AnyZodObject, hideDefinitions?: string[]): OpenApiSchemas {
     const hideKeys = hideDefinitions?.reduce((acc, key) => ({...acc, [key]: true}), {}) ?? {};
     const canOmit = typeof (zodDto as unknown as Record<string, unknown>).omit === 'function';
     const filteredSchema = canOmit
@@ -51,7 +50,7 @@ export function generateNestSwaggerSchema(zodDto: AnyZodObject, hideDefinitions?
 
     registry.register(refId, filteredSchema);
     const generator = new OpenApiGeneratorV3(registry.definitions);
-    const allSchemas = generator.generateComponents().components.schemas ?? {};
+    const allSchemas = generator.generateComponents().components?.schemas ?? {};
 
     const generatedSchema = allSchemas[refId];
     if (!isSchemaObject(generatedSchema)) {
@@ -60,7 +59,7 @@ export function generateNestSwaggerSchema(zodDto: AnyZodObject, hideDefinitions?
 
     convertSchemaObject(generatedSchema, allSchemas);
 
-    return generatedSchema.properties;
+    return generatedSchema.properties ?? {};
 }
 
 /**

@@ -81,16 +81,17 @@ export class RecordDto extends EntityDto {
     @ApiProperty({nullable: true, description: 'Free notes'})
     freeNotes: string | null;
 
-    @ApiProperty({format: 'date-time', nullable: true, description: 'Event date (clinical event)'})
+    @ApiProperty({type: 'string', format: 'date-time', nullable: true, description: 'Event date (clinical event)'})
     eventDate: string | null;
 
-    @ApiProperty({format: 'uuid', nullable: true, description: 'Linked appointment ID'})
+    @ApiProperty({type: 'string', format: 'uuid', nullable: true, description: 'Linked appointment ID'})
     appointmentId: string | null;
 
     @ApiProperty({enum: RecordSource, description: 'Origin of the record'})
     source: RecordSource;
 
     @ApiProperty({
+        type: 'string',
         format: 'uuid',
         nullable: true,
         description: 'ID of the imported document if applicable',
@@ -103,10 +104,11 @@ export class RecordDto extends EntityDto {
     @ApiProperty({description: 'Whether the record is locked (signed)'})
     isLocked: boolean;
 
-    @ApiProperty({format: 'date-time', nullable: true, description: 'When the record was signed'})
+    @ApiProperty({type: 'string', format: 'date-time', nullable: true, description: 'When the record was signed'})
     signedAt: string | null;
 
     @ApiProperty({
+        type: 'string',
         format: 'uuid',
         nullable: true,
         description: 'ID of the member who signed the record',

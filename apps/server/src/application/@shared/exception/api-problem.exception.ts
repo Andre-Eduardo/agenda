@@ -2,7 +2,7 @@
 import {HttpStatus} from '@nestjs/common/enums/http-status.enum';
 import {ApiProperty} from '@nestjs/swagger';
 
-export class ApiProblem<T extends string = string> {
+export class ApiProblem {
     @ApiProperty({
         description: 'A short, human-readable summary of the problem',
         example: 'Invalid input',
@@ -10,11 +10,12 @@ export class ApiProblem<T extends string = string> {
     title!: string;
 
     @ApiProperty({
+        type: 'string',
         format: 'uri',
         description: 'A URI reference that identifies the problem type',
         example: 'https://developer.mozilla.org/docs/Web/HTTP/Status/400',
     })
-    type!: T;
+    type!: string;
 
     @ApiProperty({
         description: 'A human-readable explanation specific to this occurrence of the problem',
@@ -36,7 +37,7 @@ export class ApiProblem<T extends string = string> {
     instance!: string;
 }
 
-export interface UnexpectedErrorFormatter<T extends ApiProblem> {
+export interface UnexpectedErrorFormatter<T extends ApiProblem = ApiProblem> {
     unexpectedError(): T;
 }
 

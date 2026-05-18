@@ -6,11 +6,11 @@ export const getBaseURL = () => {
         return import.meta.env.VITE_API_URL;
     }
 
-    if (typeof window === 'undefined') {
+    if (globalThis.window === undefined) {
         return 'http://localhost:3000';
     }
 
-    const {origin} = window.location;
+    const {origin} = globalThis.location;
 
     if (import.meta.env.PROD) {
         return origin;

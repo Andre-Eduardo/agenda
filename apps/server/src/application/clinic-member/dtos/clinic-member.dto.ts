@@ -23,7 +23,7 @@ export class ClinicMemberDto extends EntityDto {
     @ApiProperty({description: 'Is the membership active'})
     isActive: boolean;
 
-    @ApiProperty({format: 'uuid', nullable: true, description: 'Inviter member id'})
+    @ApiProperty({type: 'string', format: 'uuid', nullable: true, description: 'Inviter member id'})
     invitedByMemberId: string | null;
 
     constructor(member: ClinicMember) {

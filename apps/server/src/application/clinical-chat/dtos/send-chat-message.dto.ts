@@ -28,7 +28,7 @@ export class ChatInteractionLogDto {
     @ApiProperty({format: 'uuid'})
     userMessageId: string;
 
-    @ApiProperty({format: 'uuid', nullable: true})
+    @ApiProperty({type: 'string', format: 'uuid', nullable: true})
     assistantMessageId: string | null;
 
     @ApiProperty({nullable: true})

@@ -20,7 +20,7 @@ const problemTitles: Record<ApiProblemType, string> = {
     [ApiProblemType.UNAUTHENTICATED]: 'Authentication required',
 };
 
-type ProblemDetails = ApiProblem<ApiProblemType>;
+type ProblemDetails = ApiProblem & {type: ApiProblemType};
 
 type InvalidInputProblem = ProblemDetails & {
     type: ApiProblemType.INVALID_INPUT;

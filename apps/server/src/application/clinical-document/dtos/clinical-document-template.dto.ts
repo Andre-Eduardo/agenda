@@ -5,7 +5,7 @@ import {ClinicalDocumentType} from '@domain/clinical-document/entities';
 
 @ApiSchema({name: 'ClinicalDocumentTemplate'})
 export class ClinicalDocumentTemplateDto extends EntityDto {
-    @ApiPropertyOptional({format: 'uuid', nullable: true})
+    @ApiPropertyOptional({type: 'string', format: 'uuid', nullable: true})
     clinicId: string | null;
 
     @ApiProperty({enum: ClinicalDocumentType})

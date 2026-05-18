@@ -19,7 +19,7 @@ export class PatientChatSessionDto extends EntityDto {
     @ApiProperty({format: 'uuid', description: 'ClinicMember owner of the session'})
     memberId: string;
 
-    @ApiProperty({format: 'uuid', nullable: true})
+    @ApiProperty({type: 'string', format: 'uuid', nullable: true})
     agentProfileId: string | null;
 
     /**
@@ -47,7 +47,7 @@ export class PatientChatSessionDto extends EntityDto {
     @ApiProperty({format: 'date-time'})
     lastActivityAt: string;
 
-    @ApiProperty({format: 'date-time', nullable: true})
+    @ApiProperty({type: 'string', format: 'date-time', nullable: true})
     deletedAt: string | null;
 
     constructor(entity: PatientChatSession, resolvedAgent?: AiAgentProfile | null) {

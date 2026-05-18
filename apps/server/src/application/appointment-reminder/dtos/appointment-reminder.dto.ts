@@ -23,10 +23,10 @@ export class AppointmentReminderDto extends EntityDto {
     @ApiProperty({format: 'date-time'})
     scheduledAt: string;
 
-    @ApiProperty({format: 'date-time', nullable: true})
+    @ApiProperty({type: 'string', format: 'date-time', nullable: true})
     sentAt: string | null;
 
-    @ApiProperty({format: 'date-time', nullable: true})
+    @ApiProperty({type: 'string', format: 'date-time', nullable: true})
     failedAt: string | null;
 
     @ApiProperty()

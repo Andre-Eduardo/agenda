@@ -81,7 +81,7 @@ export class PatientDto extends EntityDto {
     @ApiProperty({format: 'uuid', description: 'The clinic this patient belongs to'})
     clinicId: string;
 
-    @ApiProperty({format: 'date-time', nullable: true, description: 'The patient birth date'})
+    @ApiProperty({type: 'string', format: 'date-time', nullable: true, description: 'The patient birth date'})
     birthDate: string | null;
 
     @ApiProperty({nullable: true, description: 'The patient email'})
@@ -96,13 +96,13 @@ export class PatientDto extends EntityDto {
     @ApiProperty({nullable: true, type: PatientAddressDto, description: 'Patient address'})
     address: PatientAddressDto | null;
 
-    @ApiProperty({nullable: true, format: 'uuid', description: 'Insurance plan ID'})
+    @ApiProperty({type: 'string', nullable: true, format: 'uuid', description: 'Insurance plan ID'})
     insurancePlanId: string | null;
 
     @ApiProperty({nullable: true, description: 'Insurance card number'})
     insuranceCardNumber: string | null;
 
-    @ApiProperty({nullable: true, format: 'date-time', description: 'Insurance valid until'})
+    @ApiProperty({type: 'string', nullable: true, format: 'date-time', description: 'Insurance valid until'})
     insuranceValidUntil: string | null;
 
     @ApiProperty({

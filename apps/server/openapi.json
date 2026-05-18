@@ -6668,7 +6668,7 @@
             "example": "Invalid input"
           },
           "type": {
-            "type": "object",
+            "type": "string",
             "format": "uri",
             "description": "A URI reference that identifies the problem type",
             "example": "https://developer.mozilla.org/docs/Web/HTTP/Status/400"
@@ -7199,7 +7199,7 @@
             "description": "Is the membership active"
           },
           "invitedByMemberId": {
-            "type": "object",
+            "type": "string",
             "format": "uuid",
             "nullable": true,
             "description": "Inviter member id"
@@ -7386,7 +7386,7 @@
             "type": "boolean"
           },
           "grantedByMemberId": {
-            "type": "object",
+            "type": "string",
             "format": "uuid",
             "nullable": true
           },
@@ -7904,7 +7904,7 @@
             "description": "The clinic this patient belongs to"
           },
           "birthDate": {
-            "type": "object",
+            "type": "string",
             "format": "date-time",
             "nullable": true,
             "description": "The patient birth date"
@@ -7934,7 +7934,7 @@
             ]
           },
           "insurancePlanId": {
-            "type": "object",
+            "type": "string",
             "nullable": true,
             "format": "uuid",
             "description": "Insurance plan ID"
@@ -7945,7 +7945,7 @@
             "description": "Insurance card number"
           },
           "insuranceValidUntil": {
-            "type": "object",
+            "type": "string",
             "nullable": true,
             "format": "date-time",
             "description": "Insurance valid until"
@@ -8230,7 +8230,7 @@
             "description": "The appointment status"
           },
           "canceledAt": {
-            "type": "object",
+            "type": "string",
             "format": "date-time",
             "nullable": true,
             "description": "When the appointment was canceled"
@@ -8246,13 +8246,13 @@
             "description": "Notes about the appointment"
           },
           "arrivedAt": {
-            "type": "object",
+            "type": "string",
             "format": "date-time",
             "nullable": true,
             "description": "When the patient arrived at the reception"
           },
           "calledAt": {
-            "type": "object",
+            "type": "string",
             "format": "date-time",
             "nullable": true,
             "description": "When the patient was called to the room"
@@ -8389,12 +8389,12 @@
             "format": "date-time"
           },
           "sentAt": {
-            "type": "object",
+            "type": "string",
             "format": "date-time",
             "nullable": true
           },
           "failedAt": {
-            "type": "object",
+            "type": "string",
             "format": "date-time",
             "nullable": true
           },
@@ -8799,13 +8799,13 @@
             "description": "Free notes"
           },
           "eventDate": {
-            "type": "object",
+            "type": "string",
             "format": "date-time",
             "nullable": true,
             "description": "Event date (clinical event)"
           },
           "appointmentId": {
-            "type": "object",
+            "type": "string",
             "format": "uuid",
             "nullable": true,
             "description": "Linked appointment ID"
@@ -8819,7 +8819,7 @@
             "description": "Origin of the record"
           },
           "importedDocumentId": {
-            "type": "object",
+            "type": "string",
             "format": "uuid",
             "nullable": true,
             "description": "ID of the imported document if applicable"
@@ -8833,13 +8833,13 @@
             "description": "Whether the record is locked (signed)"
           },
           "signedAt": {
-            "type": "object",
+            "type": "string",
             "format": "date-time",
             "nullable": true,
             "description": "When the record was signed"
           },
           "signedByMemberId": {
-            "type": "object",
+            "type": "string",
             "format": "uuid",
             "nullable": true,
             "description": "ID of the member who signed the record"
@@ -8933,7 +8933,7 @@
             "format": "date-time"
           },
           "relockedAt": {
-            "type": "object",
+            "type": "string",
             "format": "date-time",
             "nullable": true
           }
@@ -9516,13 +9516,13 @@
             "description": "Whether this is a public system template (clinicId is null)"
           },
           "clinicId": {
-            "type": "object",
+            "type": "string",
             "format": "uuid",
             "nullable": true,
             "description": "Owner clinic ID (null for public templates)"
           },
           "createdByMemberId": {
-            "type": "object",
+            "type": "string",
             "format": "uuid",
             "nullable": true,
             "description": "Member who created the template (null for public templates)"
@@ -9801,7 +9801,7 @@
             "description": "Optional JSON schema for validation"
           },
           "publishedAt": {
-            "type": "object",
+            "type": "string",
             "format": "date-time",
             "nullable": true,
             "description": "When this version was published"
@@ -9879,7 +9879,7 @@
             "description": "ClinicMember who applied/filled the form"
           },
           "responsibleProfessionalId": {
-            "type": "object",
+            "type": "string",
             "format": "uuid",
             "nullable": true,
             "description": "Professional clinically responsible"
@@ -9915,7 +9915,7 @@
             "format": "date-time"
           },
           "completedAt": {
-            "type": "object",
+            "type": "string",
             "format": "date-time",
             "nullable": true
           }
@@ -10199,7 +10199,7 @@
             "description": "ClinicMember owner of the session"
           },
           "agentProfileId": {
-            "type": "object",
+            "type": "string",
             "format": "uuid",
             "nullable": true
           },
@@ -10230,7 +10230,7 @@
             "format": "date-time"
           },
           "deletedAt": {
-            "type": "object",
+            "type": "string",
             "format": "date-time",
             "nullable": true
           }
@@ -10350,7 +10350,7 @@
             "format": "uuid"
           },
           "assistantMessageId": {
-            "type": "object",
+            "type": "string",
             "format": "uuid",
             "nullable": true
           },
@@ -10536,7 +10536,7 @@
             "format": "uuid"
           },
           "memberId": {
-            "type": "object",
+            "type": "string",
             "format": "uuid",
             "nullable": true,
             "description": "Member-specific snapshot (null = generic)"
@@ -10561,7 +10561,7 @@
             "type": "string"
           },
           "builtAt": {
-            "type": "object",
+            "type": "string",
             "format": "date-time",
             "nullable": true
           }
@@ -10817,7 +10817,7 @@
             "nullable": true
           },
           "planChangedAt": {
-            "type": "object",
+            "type": "string",
             "format": "date-time",
             "nullable": true
           },
@@ -11228,7 +11228,7 @@
             "format": "uuid"
           },
           "importedDocumentId": {
-            "type": "object",
+            "type": "string",
             "format": "uuid",
             "nullable": true
           },
@@ -11302,7 +11302,7 @@
             "nullable": true
           },
           "eventDate": {
-            "type": "object",
+            "type": "string",
             "format": "date-time",
             "nullable": true
           },
@@ -11329,17 +11329,17 @@
             "description": "Whether a human review is required before approval"
           },
           "approvedByMemberId": {
-            "type": "object",
+            "type": "string",
             "format": "uuid",
             "nullable": true
           },
           "approvedAt": {
-            "type": "object",
+            "type": "string",
             "format": "date-time",
             "nullable": true
           },
           "recordId": {
-            "type": "object",
+            "type": "string",
             "format": "uuid",
             "nullable": true,
             "description": "ID of the Record created upon approval"
@@ -11554,7 +11554,7 @@
             ]
           },
           "templateId": {
-            "type": "object",
+            "type": "string",
             "format": "uuid",
             "nullable": true
           },
@@ -11563,12 +11563,12 @@
             "additionalProperties": true
           },
           "fileId": {
-            "type": "object",
+            "type": "string",
             "format": "uuid",
             "nullable": true
           },
           "generatedAt": {
-            "type": "object",
+            "type": "string",
             "format": "date-time",
             "nullable": true
           },
@@ -11581,12 +11581,12 @@
             ]
           },
           "appointmentId": {
-            "type": "object",
+            "type": "string",
             "format": "uuid",
             "nullable": true
           },
           "recordId": {
-            "type": "object",
+            "type": "string",
             "format": "uuid",
             "nullable": true
           }
@@ -11623,7 +11623,7 @@
             "description": "The date and time the entity was last updated"
           },
           "clinicId": {
-            "type": "object",
+            "type": "string",
             "format": "uuid",
             "nullable": true
           },
@@ -12140,12 +12140,12 @@
             "type": "number"
           },
           "paidAt": {
-            "type": "object",
+            "type": "string",
             "format": "date-time",
             "nullable": true
           },
           "insurancePlanId": {
-            "type": "object",
+            "type": "string",
             "format": "uuid",
             "nullable": true
           },
@@ -12339,7 +12339,7 @@
             "type": "number"
           },
           "paidAt": {
-            "type": "object",
+            "type": "string",
             "format": "date-time",
             "nullable": true
           },

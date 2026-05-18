@@ -21,6 +21,7 @@ export class FormTemplateVersionDto extends EntityDto {
     schemaJson: unknown;
 
     @ApiProperty({
+        type: 'string',
         format: 'date-time',
         nullable: true,
         description: 'When this version was published',

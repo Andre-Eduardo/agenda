@@ -75,7 +75,7 @@ export class PreEvolutionDto {
     @ApiProperty({nullable: true, description: 'Suggested free notes'})
     freeNotes!: string | null;
 
-    @ApiProperty({format: 'date-time', nullable: true, description: 'Suggested event date'})
+    @ApiProperty({type: 'string', format: 'date-time', nullable: true, description: 'Suggested event date'})
     eventDate!: string | null;
 
     // Metadata & Flow

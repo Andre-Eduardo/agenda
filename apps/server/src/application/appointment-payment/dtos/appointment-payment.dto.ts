@@ -26,10 +26,10 @@ export class AppointmentPaymentDto extends EntityDto {
     @ApiProperty()
     amountBrl: number;
 
-    @ApiProperty({format: 'date-time', nullable: true})
+    @ApiProperty({type: 'string', format: 'date-time', nullable: true})
     paidAt: string | null;
 
-    @ApiProperty({format: 'uuid', nullable: true})
+    @ApiProperty({type: 'string', format: 'uuid', nullable: true})
     insurancePlanId: string | null;
 
     @ApiProperty({nullable: true})

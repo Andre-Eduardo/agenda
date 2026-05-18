@@ -20,25 +20,25 @@ export class ClinicalDocumentDto extends EntityDto {
     @ApiProperty({enum: ClinicalDocumentType})
     type: ClinicalDocumentType;
 
-    @ApiPropertyOptional({format: 'uuid', nullable: true})
+    @ApiPropertyOptional({type: 'string', format: 'uuid', nullable: true})
     templateId: string | null;
 
     @ApiProperty({type: 'object', additionalProperties: true})
     contentJson: unknown;
 
-    @ApiPropertyOptional({format: 'uuid', nullable: true})
+    @ApiPropertyOptional({type: 'string', format: 'uuid', nullable: true})
     fileId: string | null;
 
-    @ApiPropertyOptional({format: 'date-time', nullable: true})
+    @ApiPropertyOptional({type: 'string', format: 'date-time', nullable: true})
     generatedAt: string | null;
 
     @ApiProperty({enum: ClinicalDocumentStatus})
     status: ClinicalDocumentStatus;
 
-    @ApiPropertyOptional({format: 'uuid', nullable: true})
+    @ApiPropertyOptional({type: 'string', format: 'uuid', nullable: true})
     appointmentId: string | null;
 
-    @ApiPropertyOptional({format: 'uuid', nullable: true})
+    @ApiPropertyOptional({type: 'string', format: 'uuid', nullable: true})
     recordId: string | null;
 
     constructor(document: ClinicalDocument) {

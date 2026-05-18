@@ -19,7 +19,7 @@ export class RecordAmendmentDto extends EntityDto {
     @ApiProperty({format: 'date-time'})
     reopenedAt: string;
 
-    @ApiProperty({format: 'date-time', nullable: true})
+    @ApiProperty({type: 'string', format: 'date-time', nullable: true})
     relockedAt: string | null;
 
     constructor(amendment: RecordAmendment) {

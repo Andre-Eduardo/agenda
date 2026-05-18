@@ -22,7 +22,7 @@ export class DocumentPermissionDto extends EntityDto {
     @ApiProperty({enum: DocumentEntityType}) entityType: DocumentEntityType;
     @ApiProperty({format: 'uuid'}) entityId: string;
     @ApiProperty() canView: boolean;
-    @ApiProperty({format: 'uuid', nullable: true}) grantedByMemberId: string | null;
+    @ApiProperty({type: 'string', format: 'uuid', nullable: true}) grantedByMemberId: string | null;
     @ApiProperty({nullable: true}) reason: string | null;
 
     constructor(permission: DocumentPermission) {

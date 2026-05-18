@@ -15,6 +15,7 @@ export class PatientFormDto extends EntityDto {
     createdByMemberId: string;
 
     @ApiProperty({
+        type: 'string',
         format: 'uuid',
         nullable: true,
         description: 'Professional clinically responsible',
@@ -39,7 +40,7 @@ export class PatientFormDto extends EntityDto {
     @ApiProperty({format: 'date-time'})
     appliedAt: string;
 
-    @ApiProperty({format: 'date-time', nullable: true})
+    @ApiProperty({type: 'string', format: 'date-time', nullable: true})
     completedAt: string | null;
 
     constructor(form: PatientForm) {

@@ -24,7 +24,7 @@ export class DraftEvolutionDto extends EntityDto {
     @ApiProperty({format: 'uuid'})
     createdByMemberId: string;
 
-    @ApiProperty({format: 'uuid', nullable: true})
+    @ApiProperty({type: 'string', format: 'uuid', nullable: true})
     importedDocumentId: string | null;
 
     @ApiProperty({enum: EvolutionTemplateType, nullable: true})
@@ -57,7 +57,7 @@ export class DraftEvolutionDto extends EntityDto {
     @ApiProperty({nullable: true})
     freeNotes: string | null;
 
-    @ApiProperty({format: 'date-time', nullable: true})
+    @ApiProperty({type: 'string', format: 'date-time', nullable: true})
     eventDate: string | null;
 
     @ApiProperty({nullable: true, description: 'Overall AI confidence score (0.0-1.0)'})
@@ -72,13 +72,14 @@ export class DraftEvolutionDto extends EntityDto {
     @ApiProperty({description: 'Whether a human review is required before approval'})
     reviewRequired: boolean;
 
-    @ApiProperty({format: 'uuid', nullable: true})
+    @ApiProperty({type: 'string', format: 'uuid', nullable: true})
     approvedByMemberId: string | null;
 
-    @ApiProperty({format: 'date-time', nullable: true})
+    @ApiProperty({type: 'string', format: 'date-time', nullable: true})
     approvedAt: string | null;
 
     @ApiProperty({
+        type: 'string',
         format: 'uuid',
         nullable: true,
         description: 'ID of the Record created upon approval',

@@ -20,6 +20,7 @@ export class FormTemplateDto extends EntityDto {
     isPublic: boolean;
 
     @ApiProperty({
+        type: 'string',
         format: 'uuid',
         nullable: true,
         description: 'Owner clinic ID (null for public templates)',
@@ -27,6 +28,7 @@ export class FormTemplateDto extends EntityDto {
     clinicId: string | null;
 
     @ApiProperty({
+        type: 'string',
         format: 'uuid',
         nullable: true,
         description: 'Member who created the template (null for public templates)',

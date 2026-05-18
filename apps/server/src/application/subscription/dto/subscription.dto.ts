@@ -44,7 +44,7 @@ export class SubscriptionDto {
     @ApiProperty({enum: Object.keys(PLAN_LIMITS), nullable: true})
     previousPlanCode: PlanCode | null;
 
-    @ApiProperty({format: 'date-time', nullable: true})
+    @ApiProperty({type: 'string', format: 'date-time', nullable: true})
     planChangedAt: string | null;
 
     @ApiProperty({format: 'date-time'})

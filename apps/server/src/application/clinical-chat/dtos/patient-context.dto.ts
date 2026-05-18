@@ -17,6 +17,7 @@ export class PatientContextSnapshotDto extends EntityDto {
     patientId: string;
 
     @ApiProperty({
+        type: 'string',
         format: 'uuid',
         nullable: true,
         description: 'Member-specific snapshot (null = generic)',
@@ -38,7 +39,7 @@ export class PatientContextSnapshotDto extends EntityDto {
     @ApiProperty()
     status: string;
 
-    @ApiProperty({format: 'date-time', nullable: true})
+    @ApiProperty({type: 'string', format: 'date-time', nullable: true})
     builtAt: string | null;
 
     constructor(entity: PatientContextSnapshot) {

@@ -28,7 +28,7 @@ export class FormFieldIndexDto {
     @ApiProperty({nullable: true})
     valueBoolean: boolean | null;
 
-    @ApiProperty({format: 'date-time', nullable: true})
+    @ApiProperty({type: 'string', format: 'date-time', nullable: true})
     valueDate: string | null;
 
     @ApiProperty({nullable: true})
