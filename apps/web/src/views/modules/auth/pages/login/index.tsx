@@ -1,9 +1,9 @@
 import {useState, useMemo} from 'react';
 import {useSignIn} from '@agenda-app/client';
 import {zodResolver} from '@hookform/resolvers/zod';
-import {cva} from 'class-variance-authority';
 import {useQueryClient} from '@tanstack/react-query';
 import {createFileRoute, useNavigate, useRouter} from '@tanstack/react-router';
+import {cva} from 'class-variance-authority';
 import {Eye, EyeOff, Lock, Mail, ShieldCheck} from 'lucide-react';
 import {useForm} from 'react-hook-form';
 import {useTranslation} from 'react-i18next';
@@ -148,7 +148,11 @@ export function LoginPage() {
 
                         {/* Remember me */}
                         <label className={styles.fieldRememberLabel}>
-                            <input type="checkbox" className={styles.fieldCheckbox} />
+                            <input
+                                type="checkbox"
+                                aria-label={t('auth.login.form.rememberMe')}
+                                className={styles.fieldCheckbox}
+                            />
                             <span className={styles.fieldRememberText}>{t('auth.login.form.rememberMe')}</span>
                         </label>
 
@@ -186,7 +190,12 @@ export function LoginPage() {
 
 function DecorativeArt() {
     return (
-        <svg className={styles.rightPanelArt} viewBox="0 0 480 640" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+        <svg
+            className={styles.rightPanelArt}
+            viewBox="0 0 480 640"
+            preserveAspectRatio="xMidYMid slice"
+            aria-hidden="true"
+        >
             <defs>
                 <pattern id="login-dot-grid" x="0" y="0" width="22" height="22" patternUnits="userSpaceOnUse">
                     <circle cx="1.5" cy="1.5" r="0.9" fill="#334155" />

@@ -11,11 +11,7 @@
  */
 export function mapValues<T extends object, V>(object: T, mapper: (value: T[keyof T]) => V): {[K in keyof T]: V};
 
-export function mapValues<
-    T extends {[key in keyof T]?: N},
-    M extends object,
-    N extends PropertyKey | undefined | null | NonNullable<unknown>,
->(
+export function mapValues<T extends object, M extends object>(
     ref: T,
     mapping: M
 ): {

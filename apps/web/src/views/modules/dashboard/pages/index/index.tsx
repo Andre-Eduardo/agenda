@@ -6,9 +6,13 @@ import {
     AppointmentType,
     type Appointment,
     type Record as ClinicalRecord,
+    type SearchRecordsAttendanceType,
+    type SearchRecordsClinicalStatus,
+    type SearchRecordsSource,
 } from '@agenda-app/client';
 import type {UseQueryResult} from '@tanstack/react-query';
 import {createFileRoute, useNavigate} from '@tanstack/react-router';
+import {cva} from 'class-variance-authority';
 import {
     ArrowUpRight,
     CalendarX2,
@@ -22,7 +26,6 @@ import {
     Stethoscope,
     UserPlus,
 } from 'lucide-react';
-import {cva} from 'class-variance-authority';
 import {Button} from '@/components/ui/componentes/button';
 import {Skeleton} from '@/components/ui/componentes/skeleton';
 import {Page} from '@/views/components/Page';
@@ -159,7 +162,7 @@ const TYPE_LABELS: Record<string, string> = {
     [AppointmentType.PROCEDURE]: 'Procedimento',
 };
 
-const ACTIVE_STATUSES = new Set([
+const ACTIVE_STATUSES = new Set<AppointmentStatus>([
     AppointmentStatus.SCHEDULED,
     AppointmentStatus.CONFIRMED,
     AppointmentStatus.ARRIVED,
@@ -209,11 +212,11 @@ export function DashboardPage() {
         limit: 5,
         cursor: null,
         patientId: '',
-        attendanceType: undefined as unknown as string,
-        clinicalStatus: undefined as unknown as string,
+        attendanceType: undefined as unknown as SearchRecordsAttendanceType,
+        clinicalStatus: undefined as unknown as SearchRecordsClinicalStatus,
         dateStart: '',
         dateEnd: '',
-        source: undefined as unknown as string,
+        source: undefined as unknown as SearchRecordsSource,
         sort: {eventDate: 'desc'},
     }) as unknown as UseQueryResult<PaginatedPage<ClinicalRecord>>;
 
@@ -289,7 +292,11 @@ export function DashboardPage() {
                                     </div>
                                 )}
                             </div>
-                            <button type="button" className={styles.secLink} onClick={() => navigate({to: '/appointments'})}>
+                            <button
+                                type="button"
+                                className={styles.secLink}
+                                onClick={() => navigate({to: '/appointments'})}
+                            >
                                 Ver agenda <ArrowUpRight size={12} />
                             </button>
                         </div>
@@ -397,7 +404,11 @@ export function DashboardPage() {
                                 <div className={styles.sectionTitle}>Próximas consultas</div>
                                 <div className={styles.sectionSub}>A partir de amanhã</div>
                             </div>
-                            <button type="button" className={styles.secLink} onClick={() => navigate({to: '/appointments'})}>
+                            <button
+                                type="button"
+                                className={styles.secLink}
+                                onClick={() => navigate({to: '/appointments'})}
+                            >
                                 Ver agenda <ArrowUpRight size={12} />
                             </button>
                         </div>
@@ -453,7 +464,11 @@ function StatCard({
         <div className={styles.statCard}>
             <div className={statIcon({tone})}>{icon}</div>
             <div>
-                {loading ? <Skeleton className={styles.skeletonStatValue} /> : <div className={styles.statValue}>{value}</div>}
+                {loading ? (
+                    <Skeleton className={styles.skeletonStatValue} />
+                ) : (
+                    <div className={styles.statValue}>{value}</div>
+                )}
                 <div className={styles.statLabel}>{label}</div>
             </div>
         </div>
@@ -503,7 +518,7 @@ function ApptRow({apt}: {apt: Appointment}) {
 function RecentRecordRow({record}: {record: ClinicalRecord}) {
     const dateLabel = record.eventDate
         ? (() => {
-              const [_y, m, d] = (record.eventDate as string).split('-').map(Number);
+              const [_y, m, d] = record.eventDate.split('-').map(Number);
               const months = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
 
               return `${String(d).padStart(2, '0')} ${months[m - 1]}`;
@@ -527,12 +542,6 @@ function RecentRecordRow({record}: {record: ClinicalRecord}) {
                             <span>·</span>
                             <span>{record.attendanceType}</span>
                         </>
-                    )}
-                    {record.source === 'AI' && (
-                        <span className={styles.aiBadge}>
-                            <Sparkles size={9} />
-                            Origem IA
-                        </span>
                     )}
                 </div>
                 <div className={styles.evolExcerpt}>{excerpt}</div>

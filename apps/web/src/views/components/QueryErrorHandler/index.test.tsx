@@ -1,5 +1,5 @@
-import {AxiosError} from 'axios';
-import type {AxiosRequestHeaders} from 'axios';
+import {AxiosError, type AxiosRequestHeaders} from '@agenda-app/client';
+import {describe, expect, it} from 'vitest';
 import {isApiError, isForbiddenError, isUnauthorizedError, isUnexpectedError, QueryErrorHandler} from '.';
 
 describe('QueryErrorHandler utility functions', () => {

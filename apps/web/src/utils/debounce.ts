@@ -21,7 +21,7 @@ export const debounce = <F extends AnyFunction>(
 ): ((...args: Parameters<F>) => void) & {cancel: () => void} => {
     let timeoutId: ReturnType<typeof setTimeout>;
 
-    const debouncedFn = function debouncedFn<U>(this: U, ...args: Parameters<F>) {
+    const debouncedFn = function debouncedFn(this: unknown, ...args: Parameters<F>) {
         clearTimeout(timeoutId);
         timeoutId = setTimeout(() => fn.apply(this, args), ms);
     };

@@ -1,7 +1,6 @@
 import {useEffect} from 'react';
-import type {ApiProblem} from '@agenda-app/client';
+import {AxiosError, type ApiProblem} from '@agenda-app/client';
 import {useQueryClient} from '@tanstack/react-query';
-import {AxiosError} from '@automo/client';
 import {useTranslation} from 'react-i18next';
 import {toast} from 'sonner';
 
@@ -12,8 +11,7 @@ export const isApiError = (error: unknown): error is ApiError => error instanceo
 const getStatus = (error: unknown): number | undefined => {
     if (!isApiError(error)) return undefined;
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access -- AxiosError generic is correctly narrowed via isApiError
-    return error.response?.status as number | undefined;
+    return error.response?.status;
 };
 
 export const isUnauthorizedError = (error: unknown): error is ApiError => getStatus(error) === 401;
@@ -51,15 +49,14 @@ export const QueryErrorHandler = () => {
                     }
 
                     if (isApiError(error)) {
-                        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access -- AxiosError<ApiProblem> generic narrowed via isApiError
-                        const problem = error.response?.data as ApiProblem | undefined;
+                        const problem = error.response?.data;
 
                         toast.error(problem?.title ?? t('states.error'), {
                             description: problem?.detail,
                         });
                     } else {
                         toast.error(t('states.error'), {
-                            description: (error as Error).message,
+                            description: error.message,
                         });
                     }
                 },

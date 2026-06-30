@@ -10,6 +10,7 @@ import {
 } from '@agenda-app/client';
 import type {UseQueryResult} from '@tanstack/react-query';
 import {createFileRoute} from '@tanstack/react-router';
+import {cva} from 'class-variance-authority';
 import {
     Briefcase,
     Camera,
@@ -34,14 +35,22 @@ import {Input} from '@/components/ui/componentes/input';
 import {Label} from '@/components/ui/componentes/label';
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@/components/ui/componentes/select';
 import {Skeleton} from '@/components/ui/componentes/skeleton';
-import {cva} from 'class-variance-authority';
 import {cn} from '@/lib/utils';
 import styles from './styles.module.css';
 
 const SPAN_CLASSES: Record<number, string> = {
-    1: 'col-span-1', 2: 'col-span-2', 3: 'col-span-3', 4: 'col-span-4',
-    5: 'col-span-5', 6: 'col-span-6', 7: 'col-span-7', 8: 'col-span-8',
-    9: 'col-span-9', 10: 'col-span-10', 11: 'col-span-11', 12: 'col-span-12',
+    1: 'col-span-1',
+    2: 'col-span-2',
+    3: 'col-span-3',
+    4: 'col-span-4',
+    5: 'col-span-5',
+    6: 'col-span-6',
+    7: 'col-span-7',
+    8: 'col-span-8',
+    9: 'col-span-9',
+    10: 'col-span-10',
+    11: 'col-span-11',
+    12: 'col-span-12',
 };
 
 const sideNavItem = cva(styles.sideNavItemBase, {
@@ -49,7 +58,7 @@ const sideNavItem = cva(styles.sideNavItemBase, {
     defaultVariants: {active: false},
 });
 
-const tab = cva(styles.tabBase, {
+const tabButton = cva(styles.tabBase, {
     variants: {active: {true: styles.tabActive, false: styles.tabInactive}},
     defaultVariants: {active: false},
 });
@@ -261,7 +270,7 @@ function ProfileForm() {
 
     if (user && !identityInitialized) {
         setName(user.name ?? '');
-        setEmail((user.email as string) ?? '');
+        setEmail((user.email as unknown as string) ?? '');
         setIdentityInitialized(true);
     }
 
@@ -402,10 +411,13 @@ function ProfileForm() {
                         const Icon = t.icon;
 
                         return (
-                            <button type="button" key={t.key} className={tab({active})} onClick={() => setTab(t.key)}>
-                                <span className={tabNum({active, filled})}>
-                                    {filled ? <Check size={10} /> : t.num}
-                                </span>
+                            <button
+                                type="button"
+                                key={t.key}
+                                className={tabButton({active})}
+                                onClick={() => setTab(t.key)}
+                            >
+                                <span className={tabNum({active, filled})}>{filled ? <Check size={10} /> : t.num}</span>
                                 <Icon size={14} className="shrink-0" />
                                 <span>{t.label}</span>
                             </button>

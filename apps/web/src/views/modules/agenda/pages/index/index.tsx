@@ -20,6 +20,7 @@ import type {
 import type {UseQueryResult} from '@tanstack/react-query';
 import {useQueryClient} from '@tanstack/react-query';
 import {createFileRoute, useNavigate} from '@tanstack/react-router';
+import {cva} from 'class-variance-authority';
 import {
     Plus,
     ChevronLeft,
@@ -40,7 +41,6 @@ import {
 } from 'lucide-react';
 import {Button} from '@/components/ui/componentes/button';
 import {Skeleton} from '@/components/ui/componentes/skeleton';
-import {cva} from 'class-variance-authority';
 import {cn} from '@/lib/utils';
 import {useAppStore} from '@/store/appStore';
 import styles from './styles.module.css';
@@ -842,11 +842,7 @@ function WeekView({
                     const nowTop = isToday ? (now.h + now.m / 60 - START_HOUR) * WEEK_HOUR_H : null;
 
                     return (
-                        <div
-                            key={di}
-                            className={dayCol({today: isToday})}
-                            style={{height: WEEK_HOUR_H * HOURS.length}}
-                        >
+                        <div key={di} className={dayCol({today: isToday})} style={{height: WEEK_HOUR_H * HOURS.length}}>
                             {HOURS.map((h, hi) => (
                                 <div
                                     key={h}
@@ -1295,6 +1291,7 @@ function AppointmentDetailSheet({
                                     <input
                                         type="date"
                                         className={styles.inputBase}
+                                        aria-label="Data do agendamento"
                                         value={editDate}
                                         onChange={(e) => setEditDate(e.target.value)}
                                     />
@@ -1304,6 +1301,7 @@ function AppointmentDetailSheet({
                                     <input
                                         type="time"
                                         className={styles.inputBase}
+                                        aria-label="Horário de início"
                                         value={editStart}
                                         onChange={(e) => setEditStart(e.target.value)}
                                     />
@@ -1357,6 +1355,7 @@ function AppointmentDetailSheet({
                                 className={styles.textareaBase}
                                 rows={3}
                                 placeholder="Informações adicionais..."
+                                aria-label="Observações"
                                 value={editNote}
                                 onChange={(e) => setEditNote(e.target.value)}
                             />
@@ -1453,6 +1452,7 @@ function AppointmentDetailSheet({
                                 className={styles.textareaBase}
                                 rows={2}
                                 placeholder="Informe o motivo..."
+                                aria-label="Motivo do cancelamento"
                                 value={cancelReason}
                                 onChange={(e) => setCancelReason(e.target.value)}
                             />
@@ -1620,7 +1620,9 @@ function NewAppointmentSheet({
                                 </div>
                                 <div className={styles.ppInfo}>
                                     <div className={styles.ppName}>{patient.name}</div>
-                                    {patientEmail(patient) && <div className={styles.ppMeta}>{patientEmail(patient)}</div>}
+                                    {patientEmail(patient) && (
+                                        <div className={styles.ppMeta}>{patientEmail(patient)}</div>
+                                    )}
                                 </div>
                                 <button
                                     type="button"
@@ -1642,6 +1644,7 @@ function NewAppointmentSheet({
                                         ref={inputRef}
                                         className={styles.searchInput}
                                         placeholder="Buscar pelo nome..."
+                                        aria-label="Buscar paciente"
                                         value={patientQuery}
                                         onFocus={() => setShowSugg(true)}
                                         onChange={(e) => {
@@ -1706,6 +1709,7 @@ function NewAppointmentSheet({
                             <input
                                 type="date"
                                 className={cn(styles.inputBase, errors.date && styles.inputErr)}
+                                aria-label="Data"
                                 value={date}
                                 onChange={(e) => setDate(e.target.value)}
                             />
@@ -1723,6 +1727,7 @@ function NewAppointmentSheet({
                             <input
                                 type="time"
                                 className={cn(styles.inputBase, errors.start && styles.inputErr)}
+                                aria-label="Horário"
                                 value={start}
                                 onChange={(e) => setStart(e.target.value)}
                             />
@@ -1785,6 +1790,7 @@ function NewAppointmentSheet({
                             className={styles.textareaBase}
                             rows={3}
                             placeholder="Informações adicionais sobre a consulta..."
+                            aria-label="Observações"
                             value={note}
                             onChange={(e) => setNote(e.target.value)}
                         />

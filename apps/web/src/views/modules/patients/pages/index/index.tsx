@@ -460,6 +460,7 @@ export function PatientsPage() {
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
                         placeholder="Buscar por nome ou documento…"
+                        aria-label="Buscar pacientes"
                         className={styles.toolbarSearchInput}
                     />
                     <span className={styles.toolbarSearchKbd}>⌘K</span>

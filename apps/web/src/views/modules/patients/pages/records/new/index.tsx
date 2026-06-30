@@ -10,6 +10,8 @@ import {
     type Patient,
 } from '@agenda-app/client';
 import {createFileRoute, useNavigate, Link} from '@tanstack/react-router';
+import {cva} from 'class-variance-authority';
+import {clsx} from 'clsx';
 import {
     ClipboardList,
     Activity,
@@ -49,8 +51,6 @@ import {NativeSelect} from '@/components/ui/componentes/native-select';
 import {PageHeader} from '@/components/ui/componentes/page-header';
 import {Skeleton} from '@/components/ui/componentes/skeleton';
 import {Textarea} from '@/components/ui/componentes/textarea';
-import {cva} from 'class-variance-authority';
-import {clsx} from 'clsx';
 import {cn} from '@/lib/utils';
 import {useAppStore} from '@/store/appStore';
 import styles from './styles.module.css';
@@ -328,6 +328,7 @@ function SoapField({
                 value={value}
                 onChange={(e) => onChange(e.target.value)}
                 placeholder={placeholder}
+                aria-label={title}
             />
         </div>
     );
@@ -735,7 +736,11 @@ function NewEvolutionForm({patient}: {patient: Patient}) {
                 <div className={styles.patientCardRoot}>
                     <AvatarInitials name={patient.name} colorIndex={getAvatarColorIndex(patient.id)} size="sm" />
                     <div className={styles.patientCardInfo}>
-                        <Link to="/patients/$patientId" params={{patientId: patient.id}} className={styles.patientCardName}>
+                        <Link
+                            to="/patients/$patientId"
+                            params={{patientId: patient.id}}
+                            className={styles.patientCardName}
+                        >
                             {patient.name}
                         </Link>
                         <div className={styles.patientCardMeta}>
@@ -866,6 +871,7 @@ function NewEvolutionForm({patient}: {patient: Patient}) {
                                         className={styles.vitalsInput}
                                         inputMode="numeric"
                                         placeholder="128"
+                                        aria-label="Pressão arterial sistólica"
                                         value={vitals.sys}
                                         onChange={(e) => setVitals((v) => ({...v, sys: e.target.value}))}
                                     />
@@ -874,6 +880,7 @@ function NewEvolutionForm({patient}: {patient: Patient}) {
                                         className={styles.vitalsInput}
                                         inputMode="numeric"
                                         placeholder="82"
+                                        aria-label="Pressão arterial diastólica"
                                         value={vitals.dia}
                                         onChange={(e) => setVitals((v) => ({...v, dia: e.target.value}))}
                                     />
@@ -887,6 +894,7 @@ function NewEvolutionForm({patient}: {patient: Patient}) {
                                     className={styles.vitalsInput}
                                     inputMode="numeric"
                                     placeholder="72"
+                                    aria-label="Frequência cardíaca"
                                     value={vitals.hr}
                                     onChange={(e) => setVitals((v) => ({...v, hr: e.target.value}))}
                                 />
@@ -898,6 +906,7 @@ function NewEvolutionForm({patient}: {patient: Patient}) {
                                     className={styles.vitalsInput}
                                     inputMode="numeric"
                                     placeholder="98"
+                                    aria-label="Saturação O₂"
                                     value={vitals.spo2}
                                     onChange={(e) => setVitals((v) => ({...v, spo2: e.target.value}))}
                                 />
@@ -909,6 +918,7 @@ function NewEvolutionForm({patient}: {patient: Patient}) {
                                     className={styles.vitalsInput}
                                     inputMode="decimal"
                                     placeholder="36.5"
+                                    aria-label="Temperatura"
                                     value={vitals.temp}
                                     onChange={(e) => setVitals((v) => ({...v, temp: e.target.value}))}
                                 />
@@ -920,6 +930,7 @@ function NewEvolutionForm({patient}: {patient: Patient}) {
                                     className={styles.vitalsInput}
                                     inputMode="decimal"
                                     placeholder="70.0"
+                                    aria-label="Peso"
                                     value={vitals.weight}
                                     onChange={(e) => setVitals((v) => ({...v, weight: e.target.value}))}
                                 />
@@ -930,6 +941,7 @@ function NewEvolutionForm({patient}: {patient: Patient}) {
                                     className={styles.vitalsInput}
                                     inputMode="numeric"
                                     placeholder="170"
+                                    aria-label="Altura"
                                     value={vitals.height}
                                     onChange={(e) => setVitals((v) => ({...v, height: e.target.value}))}
                                 />
@@ -1043,7 +1055,9 @@ function NewEvolutionForm({patient}: {patient: Patient}) {
                             </span>
                             <div className={styles.sectionHeadRight}>
                                 <h2 className={styles.sectionTitle}>Classificações e tags</h2>
-                                <div className={styles.sectionSub}>Estruturam o registro para filtros e relatórios.</div>
+                                <div className={styles.sectionSub}>
+                                    Estruturam o registro para filtros e relatórios.
+                                </div>
                             </div>
                         </div>
 
@@ -1102,11 +1116,17 @@ function NewEvolutionForm({patient}: {patient: Patient}) {
                             </span>
                             <div className={styles.sectionHeadRight}>
                                 <h2 className={styles.sectionTitle}>Anexos</h2>
-                                <div className={styles.sectionSub}>Vincule arquivos relacionados a esse atendimento.</div>
+                                <div className={styles.sectionSub}>
+                                    Vincule arquivos relacionados a esse atendimento.
+                                </div>
                             </div>
                         </div>
 
-                        <button type="button" className={styles.uploadZone} onClick={() => fileInputRef.current?.click()}>
+                        <button
+                            type="button"
+                            className={styles.uploadZone}
+                            onClick={() => fileInputRef.current?.click()}
+                        >
                             <UploadCloud className="size-[22px]" />
                             <div className={styles.uploadTitle}>Clique para enviar ou arraste arquivos aqui</div>
                             <div className={styles.uploadSub}>Imagens e PDFs · até 25 MB cada</div>
@@ -1115,6 +1135,7 @@ function NewEvolutionForm({patient}: {patient: Patient}) {
                                 type="file"
                                 multiple
                                 style={{display: 'none'}}
+                                aria-label="Enviar arquivos relacionados ao atendimento"
                                 onChange={handleFileAdd}
                             />
                         </button>

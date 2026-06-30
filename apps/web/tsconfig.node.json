@@ -9,5 +9,5 @@
     "strictNullChecks": true,
     "outDir": "dist"
   },
-  "include": ["vite.config.ts"]
+  "include": ["vite.config.ts", "src/views/modules/routes.ts"]
 }

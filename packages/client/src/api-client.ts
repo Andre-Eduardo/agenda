@@ -1,5 +1,8 @@
-import type {AxiosError, AxiosRequestConfig} from 'axios';
+import type {AxiosError, AxiosRequestConfig, AxiosRequestHeaders} from 'axios';
 import axios from 'axios';
+
+export {AxiosError} from 'axios';
+export type {AxiosRequestHeaders} from 'axios';
 
 export const getBaseURL = () => {
     if (import.meta.env.VITE_API_URL) {
