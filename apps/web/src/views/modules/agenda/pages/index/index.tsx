@@ -930,7 +930,7 @@ function DayPopover({
 
     return (
         <div className={styles.popOverlay} onClick={onClose}>
-            <div className={styles.popContent} onClick={(e) => e.stopPropagation()}>
+            <div className="nome-relevante" onClick={(e) => e.stopPropagation()}>
                 <div className={styles.popHead}>
                     <div>
                         <div className={styles.popDow}>{WEEKDAYS_LONG[date.getDay()]}</div>

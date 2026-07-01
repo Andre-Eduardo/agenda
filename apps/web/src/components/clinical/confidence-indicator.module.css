@@ -1,4 +1,4 @@
-@import "tailwindcss";
+@reference "../../app/globals.css";
 .root {
     @apply inline-flex items-center gap-1 text-xs;
 }

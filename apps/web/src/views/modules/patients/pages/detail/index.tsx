@@ -69,40 +69,249 @@ import {KV as UIKv, KVGrid} from '@/components/ui/componentes/kv';
 import {EntityHeader} from '@/components/ui/componentes/page-header';
 import {Skeleton} from '@/components/ui/componentes/skeleton';
 import {StatTile} from '@/components/ui/componentes/stat-tile';
-import {cva} from 'class-variance-authority';
-import {clsx} from 'clsx';
-import styles from './styles.module.css';
-
-const formItemRoot = cva(styles.formItemRootBase, {
-    variants: {done: {true: styles.formItemRootDone, false: ''}},
-    defaultVariants: {done: false},
-});
-
-const formItemIcon = cva(styles.formItemIconBase, {
-    variants: {done: {true: styles.formItemIconDone, false: styles.formItemIconNotDone}},
-    defaultVariants: {done: false},
-});
-
-const formBadge = cva(styles.formBadgeBase, {
-    variants: {
-        done: {
-            true: styles.formBadgeDone,
-            false: styles.formBadgeNotDone,
-        },
-    },
-    defaultVariants: {done: false},
-});
+import {css, cx} from '@/styled-system/css';
 
 export const Route = createFileRoute('/_stackedLayout/patients/$patientId')({
     component: PatientDetailPage,
 });
 
-// ── Paginated wrapper (void-cast pattern for broken Orval types) ─────────────
+// ── Paginated wrapper ────────────────────────────────────────────────────────
 
 interface PaginatedPage<T> {
     totalCount: number;
     data: T[];
 }
+
+// ── Styles ────────────────────────────────────────────────────────────────────
+
+const pageRoot = css({display: 'flex', flexDirection: 'column', gap: '[18px]', p: '6', bg: 'bg.page'});
+
+const pageErrorState = css({
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '4',
+    p: '12',
+    color: 'text.secondary',
+});
+
+const actionGrid = css({display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0, 1fr))', gap: '[10px]'});
+
+const actionTileRoot = css({
+    display: 'flex',
+    cursor: 'pointer',
+    alignItems: 'center',
+    gap: '3',
+    rounded: '[12px]',
+    borderWidth: '1px',
+    borderStyle: 'solid',
+    borderColor: 'border',
+    bg: 'bg.card',
+    px: '4',
+    py: '[14px]',
+    textAlign: 'left',
+    transitionProperty: 'color, background-color, border-color',
+    transitionDuration: 'fast',
+    transitionTimingFunction: 'ease-out',
+    _hover: {borderColor: 'border.hover', bg: 'bg.surface'},
+});
+
+const actionTileIconBase = css({
+    display: 'inline-flex',
+    w: '[38px]',
+    h: '[38px]',
+    flexShrink: '0',
+    alignItems: 'center',
+    justifyContent: 'center',
+    rounded: '[10px]',
+});
+
+const actionTileIconAI = css({bg: 'ai.bg', color: 'ai.text'});
+const actionTileIconDefault = css({bg: 'primary.surface', color: 'primary.text'});
+const actionTileBody = css({minW: '0', flex: '1'});
+const actionTileLabel = css({fontSize: 'sm-body', fontWeight: 'medium', lineHeight: '[1.3]', color: 'text.primary'});
+const actionTileSub = css({mt: '[3px]', fontSize: 'xs', lineHeight: '[1.4]', color: 'text.secondary'});
+const actionTileChevron = css({w: '[14px]', h: '[14px]', flexShrink: '0', color: 'text.tertiary'});
+
+const statsGrid = css({display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0, 1fr))', gap: '3'});
+
+const twoCol = css({
+    display: 'grid',
+    gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
+    gap: '[14px]',
+    '@media (max-width: 1100px)': {gridTemplateColumns: 'repeat(1, minmax(0, 1fr))'},
+});
+
+const infoGroupRoot = css({
+    borderBottomWidth: '1px',
+    borderBottomStyle: 'solid',
+    borderBottomColor: 'border',
+    py: '[14px]',
+    _first: {pt: '0'},
+    _last: {borderBottomWidth: '0', pb: '0'},
+});
+
+const infoGroupTitle = css({
+    mb: '3',
+    fontSize: 'xs',
+    fontWeight: 'medium',
+    textTransform: 'uppercase',
+    letterSpacing: '[0.06em]',
+    color: 'text.tertiary',
+});
+
+const emergencyBox = css({mt: '3', rounded: '[8px]', bg: 'bg.surface', px: '3', py: '[10px]'});
+
+const emergencyLabel = css({
+    mb: '2',
+    fontSize: '[11px]',
+    fontWeight: 'medium',
+    textTransform: 'uppercase',
+    letterSpacing: '[0.06em]',
+    color: 'text.tertiary',
+});
+
+const allergyBox = css({
+    display: 'flex',
+    gap: '[10px]',
+    rounded: '[8px]',
+    borderWidth: '1px',
+    borderStyle: 'solid',
+    borderColor: 'danger/30',
+    bg: 'danger.surface',
+    p: '3',
+});
+
+const allergyIcon = css({mt: '[1px]', w: '[14px]', h: '[14px]', flexShrink: '0', color: 'danger'});
+const allergyText = css({fontSize: 'sm', lineHeight: '[1.4]', color: 'danger'});
+
+const profileText = css({fontSize: 'sm', lineHeight: '[1.5]', color: 'text.primary'});
+const profileTextSecondary = css({fontSize: 'sm', lineHeight: '[1.5]', color: 'text.secondary'});
+const profileTextEmpty = css({fontSize: 'sm', fontStyle: 'italic', color: 'text.tertiary'});
+
+const recordRow = css({
+    display: 'grid',
+    cursor: 'pointer',
+    gridTemplateColumns: '80px 12px 1fr auto',
+    alignItems: 'flex-start',
+    gap: '[14px]',
+    borderBottomWidth: '1px',
+    borderBottomStyle: 'solid',
+    borderBottomColor: 'border',
+    py: '[14px]',
+    _first: {pt: '0'},
+    _last: {borderBottomWidth: '0', pb: '0'},
+});
+
+const recordDateText = css({fontSize: 'sm', fontWeight: 'medium', lineHeight: '[1.2]', color: 'text.primary'});
+const recordTime = css({mt: '[2px]', fontFamily: 'mono', fontSize: 'xs', fontVariantNumeric: 'tabular-nums', color: 'text.tertiary'});
+
+const recordDotBase = css({mt: '[5px]', w: '[10px]', h: '[10px]', rounded: 'full', bg: 'primary'});
+
+const recordTags = css({mb: '[6px]', display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '[6px]'});
+
+const recordTypeTag = css({
+    display: 'inline-flex',
+    alignItems: 'center',
+    rounded: 'badge',
+    borderWidth: '1px',
+    borderStyle: 'solid',
+    borderColor: 'border',
+    bg: 'bg.surface',
+    px: '2',
+    py: '[1px]',
+    fontSize: 'xs',
+    color: 'text.secondary',
+});
+
+const recordAiTag = css({
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: '1',
+    rounded: 'badge',
+    bg: 'ai.bg',
+    px: '2',
+    py: '[1px]',
+    fontSize: 'xs',
+    color: 'ai.text',
+});
+
+const recordSummary = css({
+    lineClamp: '2',
+    fontSize: 'sm',
+    lineHeight: '[1.5]',
+    color: 'text.secondary',
+    transitionProperty: 'color',
+    transitionDuration: '[120ms]',
+    '[data-record-row]:hover &': {color: 'text.primary'},
+});
+
+const recordChevron = css({mt: '[3px]', w: '[14px]', h: '[14px]', flexShrink: '0', color: 'text.tertiary'});
+
+const formItemRootBase = css({
+    display: 'flex',
+    alignItems: 'center',
+    gap: '3',
+    rounded: '[10px]',
+    borderWidth: '1px',
+    borderStyle: 'solid',
+    borderColor: 'border',
+    px: '[14px]',
+    py: '3',
+});
+const formItemRootDone = css({bg: 'bg.surface'});
+const formItemIconBase = css({w: '4', h: '4', flexShrink: '0'});
+const formItemIconDone = css({color: 'success'});
+const formItemIconNotDone = css({color: 'text.tertiary'});
+const formBadgeBase = css({
+    display: 'inline-flex',
+    alignItems: 'center',
+    rounded: 'badge',
+    borderWidth: '1px',
+    borderStyle: 'solid',
+    px: '2',
+    py: '[2px]',
+    fontSize: 'xs',
+    fontWeight: 'medium',
+});
+const formBadgeDone = css({borderColor: 'success/30', bg: 'success.surface', color: 'success'});
+const formBadgeNotDone = css({borderColor: 'border', bg: 'bg.surface', color: 'text.secondary'});
+const formItemBody = css({minW: '0', flex: '1'});
+const formItemTitle = css({fontSize: 'sm', fontWeight: 'medium', color: 'text.primary'});
+const formItemMeta = css({mt: '[2px]', fontSize: 'xs', color: 'text.tertiary'});
+
+const skeletonRoot = css({display: 'flex', flexDirection: 'column', gap: '[18px]', p: '6'});
+
+const skeletonHeaderShell = css({
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: '[18px]',
+    rounded: 'card',
+    borderWidth: '1px',
+    borderStyle: 'solid',
+    borderColor: 'border',
+    bg: 'bg.card',
+    px: '5',
+    py: '[18px]',
+});
+
+const skeletonHeaderLeft = css({display: 'flex', alignItems: 'center', gap: '[18px]'});
+const skeletonHeaderRight = css({display: 'flex', gap: '2'});
+const skeletonActionGrid = css({display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0, 1fr))', gap: '[10px]'});
+const skeletonHeaderAvatar = css({w: '12', h: '12', rounded: 'full'});
+const skeletonNameStack = css({display: 'flex', flexDirection: 'column', gap: '2'});
+const skeletonActionCard = css({h: '[82px]', rounded: '[12px]'});
+const skeletonRecordCard = css({h: '[160px]', rounded: 'card'});
+const skeletonListStack = css({display: 'flex', flexDirection: 'column', gap: '3'});
+const skeletonFormItem = css({h: '14', w: 'full', rounded: '[10px]'});
+
+const alertBadge = css({rounded: 'badge', px: '2', py: '[3px]', fontSize: 'xs', gap: '[5px]'});
+const dangerItem = css({color: 'danger', _hover: {bg: 'danger.surface'}, _focus: {bg: 'danger.surface'}});
+const monoTertiary = css({fontFamily: 'mono', fontVariantNumeric: 'tabular-nums', color: 'text.tertiary'});
+const monoDate = css({fontFamily: 'mono', fontVariantNumeric: 'tabular-nums'});
+const secLinkBtn = css({h: 'auto', p: '0', fontSize: 'xs'});
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -251,7 +460,7 @@ function SectionCard({
 
 function SecLink({children, onClick}: {children: ReactNode; onClick?: () => void}) {
     return (
-        <Button variant="link" size="sm" onClick={onClick} className={styles.secLinkBtn}>
+        <Button variant="link" size="sm" onClick={onClick} className={secLinkBtn}>
             {children}
         </Button>
     );
@@ -263,8 +472,8 @@ function KV({label, value, mono = false}: {label: string; value?: string | null;
 
 function InfoGroup({title, children}: {title: string; children: ReactNode}) {
     return (
-        <div className={styles.infoGroupRoot}>
-            <h4 className={styles.infoGroupTitle}>{title}</h4>
+        <div className={infoGroupRoot}>
+            <h4 className={infoGroupTitle}>{title}</h4>
             {children}
         </div>
     );
@@ -284,22 +493,20 @@ function ActionTile({
     onClick?: () => void;
 }) {
     return (
-        <button type="button" onClick={onClick} className={styles.actionTileRoot}>
-            <span className={clsx(styles.actionTileIconBase, ai ? styles.actionTileIconAI : styles.actionTileIconDefault)}>
-                {icon}
-            </span>
-            <div className={styles.actionTileBody}>
-                <div className={styles.actionTileLabel}>{label}</div>
-                <div className={styles.actionTileSub}>{sub}</div>
+        <button type="button" onClick={onClick} className={actionTileRoot}>
+            <span className={cx(actionTileIconBase, ai ? actionTileIconAI : actionTileIconDefault)}>{icon}</span>
+            <div className={actionTileBody}>
+                <div className={actionTileLabel}>{label}</div>
+                <div className={actionTileSub}>{sub}</div>
             </div>
-            <ChevronRight className={styles.actionTileChevron} />
+            <ChevronRight className={actionTileChevron} />
         </button>
     );
 }
 
 function AlertBadge({alert}: {alert: PatientAlert}) {
     return (
-        <Badge severity={alert.severity as 'HIGH' | 'MEDIUM' | 'LOW'} className={styles.alertBadge}>
+        <Badge severity={alert.severity as 'HIGH' | 'MEDIUM' | 'LOW'} className={alertBadge}>
             <TriangleAlert className="size-[10px]" />
             {alert.title}
         </Badge>
@@ -324,7 +531,7 @@ function MoreMenu() {
                     Imprimir resumo
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem className={styles.dangerItem}>
+                <DropdownMenuItem className={dangerItem}>
                     <Archive />
                     Arquivar paciente
                 </DropdownMenuItem>
@@ -341,27 +548,27 @@ function EmptySection({label}: {label: string}) {
 
 function DetailSkeleton() {
     return (
-        <div className={styles.skeletonRoot}>
+        <div className={skeletonRoot}>
             <Skeleton className="h-4 w-48" />
-            <div className={styles.skeletonHeaderShell}>
-                <div className={styles.skeletonHeaderLeft}>
-                    <Skeleton className={styles.skeletonHeaderAvatar} />
-                    <div className={styles.skeletonNameStack}>
+            <div className={skeletonHeaderShell}>
+                <div className={skeletonHeaderLeft}>
+                    <Skeleton className={skeletonHeaderAvatar} />
+                    <div className={skeletonNameStack}>
                         <Skeleton className="h-6 w-48" />
                         <Skeleton className="h-4 w-72" />
                     </div>
                 </div>
-                <div className={styles.skeletonHeaderRight}>
+                <div className={skeletonHeaderRight}>
                     <Skeleton className="h-9 w-32" />
                     <Skeleton className="h-9 w-9" />
                 </div>
             </div>
-            <div className={styles.skeletonActionGrid}>
+            <div className={skeletonActionGrid}>
                 {[...Array(4)].map((_, i) => (
-                    <Skeleton key={i} className={styles.skeletonActionCard} />
+                    <Skeleton key={i} className={skeletonActionCard} />
                 ))}
             </div>
-            <Skeleton className={styles.skeletonRecordCard} />
+            <Skeleton className={skeletonRecordCard} />
         </div>
     );
 }
@@ -381,7 +588,7 @@ function RecordsContent({
 
     if (isLoading) {
         return (
-            <div className={styles.skeletonListStack}>
+            <div className={skeletonListStack}>
                 {[...Array(3)].map((_, i) => (
                     <Skeleton key={i} className="h-16 w-full" />
                 ))}
@@ -402,7 +609,8 @@ function RecordsContent({
                 return (
                     <div
                         key={r.id}
-                        className={styles.recordRow}
+                        data-record-row
+                        className={recordRow}
                         onClick={() =>
                             navigate({
                                 to: '/patients/$patientId/records/$recordId',
@@ -411,25 +619,28 @@ function RecordsContent({
                         }
                     >
                         <div className="text-right">
-                            <div className={styles.recordDateText}>{formatDateShort(eventDate)}</div>
-                            <div className={styles.recordTime}>{formatTime(eventDate)}</div>
+                            <div className={recordDateText}>{formatDateShort(eventDate)}</div>
+                            <div className={recordTime}>{formatTime(eventDate)}</div>
                         </div>
-                        <div className={styles.recordDot} />
+                        <div
+                            className={recordDotBase}
+                            style={{boxShadow: '0 0 0 3px var(--color-primary-surface)'}}
+                        />
                         <div className="min-w-0">
-                            <div className={styles.recordTags}>
-                                <span className={styles.recordTypeTag}>
+                            <div className={recordTags}>
+                                <span className={recordTypeTag}>
                                     {r.attendanceType ? attendanceTypeLabel(r.attendanceType) : 'Consulta'}
                                 </span>
                                 {isAI && (
-                                    <span className={styles.recordAiTag}>
+                                    <span className={recordAiTag}>
                                         <Sparkles className="size-[11px]" />
                                         Origem IA
                                     </span>
                                 )}
                             </div>
-                            <p className={styles.recordSummary}>{title ?? description ?? 'Sem descrição'}</p>
+                            <p className={recordSummary}>{title ?? description ?? 'Sem descrição'}</p>
                         </div>
-                        <ChevronRight className={styles.recordChevron} />
+                        <ChevronRight className={recordChevron} />
                     </div>
                 );
             })}
@@ -460,7 +671,7 @@ function ProfileContent({
 }) {
     if (isLoading) {
         return (
-            <div className={styles.skeletonListStack}>
+            <div className={skeletonListStack}>
                 {[...Array(3)].map((_, i) => (
                     <Skeleton key={i} className="h-10 w-full" />
                 ))}
@@ -474,40 +685,40 @@ function ProfileContent({
         <>
             {allergiesText && (
                 <InfoGroup title="Alergias conhecidas">
-                    <div className={styles.allergyBox}>
-                        <TriangleAlert className={styles.allergyIcon} />
-                        <p className={styles.allergyText}>{allergiesText}</p>
+                    <div className={allergyBox}>
+                        <TriangleAlert className={allergyIcon} />
+                        <p className={allergyText}>{allergiesText}</p>
                     </div>
                 </InfoGroup>
             )}
             {conditionsText && (
                 <InfoGroup title="Condições crônicas">
-                    <p className={styles.profileText}>{conditionsText}</p>
+                    <p className={profileText}>{conditionsText}</p>
                 </InfoGroup>
             )}
             {medicationsText && (
                 <InfoGroup title="Medicações em uso">
-                    <p className={styles.profileText}>{medicationsText}</p>
+                    <p className={profileText}>{medicationsText}</p>
                 </InfoGroup>
             )}
             {surgicalHistoryText && (
                 <InfoGroup title="Histórico cirúrgico">
-                    <p className={styles.profileText}>{surgicalHistoryText}</p>
+                    <p className={profileText}>{surgicalHistoryText}</p>
                 </InfoGroup>
             )}
             {familyHistoryText && (
                 <InfoGroup title="Histórico familiar">
-                    <p className={styles.profileText}>{familyHistoryText}</p>
+                    <p className={profileText}>{familyHistoryText}</p>
                 </InfoGroup>
             )}
             {socialHistoryText && (
                 <InfoGroup title="Histórico social">
-                    <p className={styles.profileText}>{socialHistoryText}</p>
+                    <p className={profileText}>{socialHistoryText}</p>
                 </InfoGroup>
             )}
             {generalNotesText && (
                 <InfoGroup title="Observações gerais">
-                    <p className={styles.profileTextSecondary}>{generalNotesText}</p>
+                    <p className={profileTextSecondary}>{generalNotesText}</p>
                 </InfoGroup>
             )}
         </>
@@ -517,9 +728,9 @@ function ProfileContent({
 function FormsContent({isLoading, forms}: {isLoading: boolean; forms: PatientForm[]}) {
     if (isLoading) {
         return (
-            <div className={styles.skeletonNameStack}>
+            <div className={skeletonNameStack}>
                 {[...Array(2)].map((_, i) => (
-                    <Skeleton key={i} className={styles.skeletonFormItem} />
+                    <Skeleton key={i} className={skeletonFormItem} />
                 ))}
             </div>
         );
@@ -535,17 +746,19 @@ function FormsContent({isLoading, forms}: {isLoading: boolean; forms: PatientFor
                 const dateLabel = isDone ? 'Concluído em' : 'Iniciado em';
 
                 return (
-                    <div key={f.id} className={formItemRoot({done: isDone})}>
-                        <ClipboardList className={formItemIcon({done: isDone})} />
-                        <div className={styles.formItemBody}>
-                            <div className={styles.formItemTitle}>Formulário clínico</div>
-                            <div className={styles.formItemMeta}>
-                                {dateLabel} <span className={styles.monoDate}>{formatDate(dateField)}</span>
+                    <div key={f.id} className={cx(formItemRootBase, isDone && formItemRootDone)}>
+                        <ClipboardList className={cx(formItemIconBase, isDone ? formItemIconDone : formItemIconNotDone)} />
+                        <div className={formItemBody}>
+                            <div className={formItemTitle}>Formulário clínico</div>
+                            <div className={formItemMeta}>
+                                {dateLabel} <span className={monoDate}>{formatDate(dateField)}</span>
                                 {' · '}
                                 {formStatusLabel(f.status)}
                             </div>
                         </div>
-                        <span className={formBadge({done: isDone})}>{formStatusLabel(f.status)}</span>
+                        <span className={cx(formBadgeBase, isDone ? formBadgeDone : formBadgeNotDone)}>
+                            {formStatusLabel(f.status)}
+                        </span>
                     </div>
                 );
             })}
@@ -565,7 +778,7 @@ export function PatientDetailPage() {
 
     if (isError || !patient) {
         return (
-            <div className={styles.pageErrorState}>
+            <div className={pageErrorState}>
                 <p className="text-sm">Paciente não encontrado ou erro ao carregar.</p>
                 <Button variant="outline" size="sm" onClick={() => navigate({to: '/patients'})}>
                     Voltar para pacientes
@@ -582,8 +795,6 @@ function PatientProfile({patient}: {patient: Patient}) {
     const age = getAge(patient.birthDate);
     const dob = formatDate(patient.birthDate);
     const gender = genderLabel(patient.gender);
-
-    // ── Data fetching ──────────────────────────────────────────────────────────
 
     const clinicalProfile = useGetClinicalProfile(patient.id);
 
@@ -621,8 +832,6 @@ function PatientProfile({patient}: {patient: Patient}) {
         cursor: null,
         limit: 10,
     }) as unknown as UseQueryResult<PaginatedPage<PatientForm>>;
-
-    // ── Derived data ──────────────────────────────────────────────────────────
 
     const alerts = alertsQuery.data?.data ?? [];
     const records = recordsQuery.data?.data ?? [];
@@ -667,7 +876,7 @@ function PatientProfile({patient}: {patient: Patient}) {
         generalNotesText;
 
     return (
-        <div className={styles.pageRoot}>
+        <div className={pageRoot}>
             {/* Breadcrumb */}
             <Breadcrumb>
                 <BreadcrumbList>
@@ -683,7 +892,7 @@ function PatientProfile({patient}: {patient: Patient}) {
                 </BreadcrumbList>
             </Breadcrumb>
 
-            {/* Patient header — sticky */}
+            {/* Patient header */}
             <EntityHeader
                 avatar={<PatientAvatar name={patient.name} id={patient.id} />}
                 name={patient.name}
@@ -691,9 +900,9 @@ function PatientProfile({patient}: {patient: Patient}) {
                     <>
                         {age !== null && <span>{age} anos</span>}
                         {age !== null && <span className="text-(--color-text-tertiary)">·</span>}
-                        <span className={styles.monoDate}>nasc. {dob}</span>
+                        <span className={monoDate}>nasc. {dob}</span>
                         <span className="text-(--color-text-tertiary)">·</span>
-                        <span className={styles.monoDate}>{patient.documentId}</span>
+                        <span className={monoDate}>{patient.documentId}</span>
                         {patient.gender && (
                             <>
                                 <span className="text-(--color-text-tertiary)">·</span>
@@ -707,7 +916,7 @@ function PatientProfile({patient}: {patient: Patient}) {
                             </>
                         )}
                         <span className="text-(--color-text-tertiary)">·</span>
-                        <span className={styles.monoTertiary}>ID {patient.id.slice(0, 8).toUpperCase()}</span>
+                        <span className={monoTertiary}>ID {patient.id.slice(0, 8).toUpperCase()}</span>
                     </>
                 }
                 actions={
@@ -732,7 +941,7 @@ function PatientProfile({patient}: {patient: Patient}) {
             />
 
             {/* Action grid */}
-            <div className={styles.actionGrid}>
+            <div className={actionGrid}>
                 <ActionTile
                     icon={<FilePlus className="size-[18px]" />}
                     label="Nova evolução"
@@ -758,7 +967,7 @@ function PatientProfile({patient}: {patient: Patient}) {
             </div>
 
             {/* Resumo clínico */}
-            <div className={styles.statsGrid}>
+            <div className={statsGrid}>
                 <StatTile label="Próxima consulta" value="—" icon={<CalendarClock className="size-4" />} />
                 <StatTile
                     label="Última consulta"
@@ -805,8 +1014,8 @@ function PatientProfile({patient}: {patient: Patient}) {
                 <RecordsContent isLoading={recordsQuery.isLoading} records={records} patientId={patient.id} />
             </SectionCard>
 
-            {/* Two-col: patient info + initial health */}
-            <div className={styles.twoCol}>
+            {/* Two-col */}
+            <div className={twoCol}>
                 {/* Informações do paciente */}
                 <SectionCard
                     title="Informações do paciente"
@@ -838,8 +1047,8 @@ function PatientProfile({patient}: {patient: Patient}) {
                             <KV label="E-mail" value={email} />
                         </KVGrid>
                         {(emergencyName ?? emergencyPhone) && (
-                            <div className={styles.emergencyBox}>
-                                <p className={styles.emergencyLabel}>Responsável</p>
+                            <div className={emergencyBox}>
+                                <p className={emergencyLabel}>Responsável</p>
                                 <KVGrid>
                                     <KV label="Nome" value={emergencyName} />
                                     <KV label="Telefone" value={emergencyPhone} mono />
@@ -850,9 +1059,9 @@ function PatientProfile({patient}: {patient: Patient}) {
 
                     <InfoGroup title="Endereço">
                         {addrLine ? (
-                            <p className={styles.profileText}>{addrLine}</p>
+                            <p className={profileText}>{addrLine}</p>
                         ) : (
-                            <p className={styles.profileTextEmpty}>Não informado</p>
+                            <p className={profileTextEmpty}>Não informado</p>
                         )}
                     </InfoGroup>
                 </SectionCard>

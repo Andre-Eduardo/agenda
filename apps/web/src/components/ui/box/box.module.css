@@ -1,4 +1,4 @@
-@import "tailwindcss";
+@reference "../../../app/globals.css";
 /*
  * box.module.css — exemplo mínimo do padrão CSS Modules + @apply + nesting.
  *

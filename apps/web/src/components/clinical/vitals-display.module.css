@@ -1,4 +1,4 @@
-@import "tailwindcss";
+@reference "../../app/globals.css";
 .grid {
     @apply grid grid-cols-4 gap-2;
 }

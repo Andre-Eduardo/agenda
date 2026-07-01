@@ -16,6 +16,7 @@ import {
 } from '@agenda-app/client';
 import type {UseQueryResult} from '@tanstack/react-query';
 import {createFileRoute, useNavigate} from '@tanstack/react-router';
+import {cva} from 'class-variance-authority';
 import {CalendarDays, CalendarX2, ChevronLeft, ChevronRight, Plus, X, ArrowUpRight, Pencil, Trash2} from 'lucide-react';
 import {toast} from 'sonner';
 import {Button} from '@/components/ui/componentes/button';
@@ -25,7 +26,6 @@ import {Label} from '@/components/ui/componentes/label';
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@/components/ui/componentes/select';
 import {Sheet, SheetContent, SheetHeader, SheetTitle} from '@/components/ui/componentes/sheet';
 import {Textarea} from '@/components/ui/componentes/textarea';
-import {cva} from 'class-variance-authority';
 import {cn} from '@/lib/utils';
 import styles from './styles.module.css';
 
@@ -880,7 +880,11 @@ function AppointmentDetailSheet({apt, patients, onClose, onEdit, onCancel, onOpe
                                 <div className={styles.sheetPatientMeta}>{asStr(patient?.email)}</div>
                             )}
                         </div>
-                        <button type="button" className={styles.patProfileLink} onClick={() => onOpenPatient(apt.patientId)}>
+                        <button
+                            type="button"
+                            className={styles.patProfileLink}
+                            onClick={() => onOpenPatient(apt.patientId)}
+                        >
                             Ver perfil <ArrowUpRight className="size-3" />
                         </button>
                     </div>

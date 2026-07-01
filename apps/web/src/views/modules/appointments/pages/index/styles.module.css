@@ -1,4 +1,4 @@
-@import "tailwindcss";
+@reference "../../../../../app/globals.css";
 
 /* ── Page layout ─────────────────────────────────────────────────────────────── */
 
@@ -54,23 +54,55 @@
     @apply inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border transition-colors cursor-pointer select-none;
 }
 
-.statusChipScheduled  { @apply border-(--color-primary-border) text-(--color-primary-text); }
-.statusChipConfirmed  { @apply border-(--color-success)/30 text-(--color-success); }
-.statusChipCompleted  { @apply border-(--color-border) text-(--color-text-secondary); }
-.statusChipCancelled  { @apply border-(--color-danger)/30 text-(--color-danger); }
-.statusChipNoShow     { @apply border-(--color-warning)/30 text-(--color-warning); }
-.statusChipArrived    { @apply border-(--color-primary-border) text-(--color-primary-text); }
-.statusChipInProgress { @apply border-(--color-info)/30 text-(--color-info); }
-.statusChipInactive   { @apply opacity-40; }
+.statusChipScheduled {
+    @apply border-(--color-primary-border) text-(--color-primary-text);
+}
+.statusChipConfirmed {
+    @apply border-(--color-success)/30 text-(--color-success);
+}
+.statusChipCompleted {
+    @apply border-(--color-border) text-(--color-text-secondary);
+}
+.statusChipCancelled {
+    @apply border-(--color-danger)/30 text-(--color-danger);
+}
+.statusChipNoShow {
+    @apply border-(--color-warning)/30 text-(--color-warning);
+}
+.statusChipArrived {
+    @apply border-(--color-primary-border) text-(--color-primary-text);
+}
+.statusChipInProgress {
+    @apply border-(--color-info)/30 text-(--color-info);
+}
+.statusChipInactive {
+    @apply opacity-40;
+}
 
-.statusDotBase        { @apply w-1.5 h-1.5 rounded-full shrink-0; }
-.statusDotScheduled   { @apply bg-(--color-primary); }
-.statusDotConfirmed   { @apply bg-(--color-success); }
-.statusDotCompleted   { @apply bg-(--color-text-tertiary); }
-.statusDotCancelled   { @apply bg-(--color-danger); }
-.statusDotNoShow      { @apply bg-(--color-warning); }
-.statusDotArrived     { @apply bg-(--color-primary); }
-.statusDotInProgress  { @apply bg-(--color-info); }
+.statusDotBase {
+    @apply w-1.5 h-1.5 rounded-full shrink-0;
+}
+.statusDotScheduled {
+    @apply bg-(--color-primary);
+}
+.statusDotConfirmed {
+    @apply bg-(--color-success);
+}
+.statusDotCompleted {
+    @apply bg-(--color-text-tertiary);
+}
+.statusDotCancelled {
+    @apply bg-(--color-danger);
+}
+.statusDotNoShow {
+    @apply bg-(--color-warning);
+}
+.statusDotArrived {
+    @apply bg-(--color-primary);
+}
+.statusDotInProgress {
+    @apply bg-(--color-info);
+}
 
 /* ── Main layout ─────────────────────────────────────────────────────────────── */
 
@@ -92,179 +124,454 @@
     @apply flex items-center rounded-(--radius-button) border border-(--color-border) bg-(--color-bg-surface) p-0.5 gap-0.5;
 }
 
-.segmentBtnBase     { @apply px-3 py-1 text-xs font-medium rounded-[6px] transition-colors; }
-.segmentBtnActive   { @apply bg-(--color-bg-card) text-(--color-text-primary) shadow-sm; }
-.segmentBtnInactive { @apply text-(--color-text-secondary) hover:text-(--color-text-primary); }
+.segmentBtnBase {
+    @apply px-3 py-1 text-xs font-medium rounded-[6px] transition-colors;
+}
+.segmentBtnActive {
+    @apply bg-(--color-bg-card) text-(--color-text-primary) shadow-sm;
+}
+.segmentBtnInactive {
+    @apply text-(--color-text-secondary) hover:text-(--color-text-primary);
+}
 
 /* ── Mini calendar ───────────────────────────────────────────────────────────── */
 
-.miniRoot       { @apply select-none; }
-.miniHead       { @apply flex items-center justify-between mb-2; }
-.miniMonthLabel { @apply text-xs font-medium text-(--color-text-primary); }
-.miniArrows     { @apply flex items-center gap-0.5; }
-.miniArrowBtn   { @apply p-0.5 rounded text-(--color-text-secondary) hover:text-(--color-text-primary) hover:bg-(--color-bg-surface) transition-colors; }
-.miniDowRow     { @apply grid grid-cols-7 mb-1; }
-.miniDowCell    { @apply text-center text-[10px] text-(--color-text-tertiary) py-0.5; }
-.miniGrid       { @apply grid grid-cols-7; }
+.miniRoot {
+    @apply select-none;
+}
+.miniHead {
+    @apply flex items-center justify-between mb-2;
+}
+.miniMonthLabel {
+    @apply text-xs font-medium text-(--color-text-primary);
+}
+.miniArrows {
+    @apply flex items-center gap-0.5;
+}
+.miniArrowBtn {
+    @apply p-0.5 rounded text-(--color-text-secondary) hover:text-(--color-text-primary) hover:bg-(--color-bg-surface) transition-colors;
+}
+.miniDowRow {
+    @apply grid grid-cols-7 mb-1;
+}
+.miniDowCell {
+    @apply text-center text-[10px] text-(--color-text-tertiary) py-0.5;
+}
+.miniGrid {
+    @apply grid grid-cols-7;
+}
 
-.miniCellBase     { @apply relative flex flex-col items-center justify-start py-0.5 cursor-pointer rounded; }
-.miniCellOutMonth { @apply opacity-30; }
-.miniCellSelected { @apply bg-(--color-primary); color: white !important; }
-.miniCellInWeek   { @apply bg-(--color-primary)/10; }
+.miniCellBase {
+    @apply relative flex flex-col items-center justify-start py-0.5 cursor-pointer rounded;
+}
+.miniCellOutMonth {
+    @apply opacity-30;
+}
+.miniCellSelected {
+    @apply bg-(--color-primary);
+    color: white !important;
+}
+.miniCellInWeek {
+    @apply bg-(--color-primary)/10;
+}
 
-.miniCellNum  { @apply text-[11px] leading-5 w-5 h-5 flex items-center justify-center rounded-full; }
-.miniTodayNum { @apply text-[11px] leading-5 w-5 h-5 flex items-center justify-center rounded-full bg-(--color-primary) text-white font-medium; }
-.miniDot      { @apply w-1 h-1 rounded-full bg-(--color-primary) mt-[1px]; }
-.miniTodayBtn { @apply mt-2 w-full text-[10px] text-(--color-text-secondary) hover:text-(--color-text-primary) text-center py-1 rounded transition-colors; }
+.miniCellNum {
+    @apply text-[11px] leading-5 w-5 h-5 flex items-center justify-center rounded-full;
+}
+.miniTodayNum {
+    @apply text-[11px] leading-5 w-5 h-5 flex items-center justify-center rounded-full bg-(--color-primary) text-white font-medium;
+}
+.miniDot {
+    @apply w-1 h-1 rounded-full bg-(--color-primary) mt-[1px];
+}
+.miniTodayBtn {
+    @apply mt-2 w-full text-[10px] text-(--color-text-secondary) hover:text-(--color-text-primary) text-center py-1 rounded transition-colors;
+}
 
 /* ── Week/Day grid ───────────────────────────────────────────────────────────── */
 
-.gridWeekHead  { @apply flex border-b border-(--color-border) sticky top-0 z-10 bg-(--color-bg-page); }
-.gridTimeColHead { @apply w-14 shrink-0; }
-.gridBody      { @apply flex; }
-.gridTimeCol   { @apply w-14 shrink-0; }
-.gridTimeRow   { @apply border-b border-(--color-border) flex items-start justify-end pr-2; }
-.gridTimeLabel { @apply text-[10px] text-(--color-text-tertiary) tabular-nums font-mono -mt-[6px]; }
-.gridSlot      { @apply absolute inset-x-0 border-b border-(--color-border)/40 cursor-pointer hover:bg-(--color-bg-surface) transition-colors; }
-.gridNowLine   { @apply absolute left-0 right-0 z-10 border-t-2 border-(--color-primary) pointer-events-none; }
-.gridNowDot    { @apply absolute -left-[5px] -top-[5px] w-[10px] h-[10px] rounded-full bg-(--color-primary); }
-.gridEmptyDay  { @apply absolute inset-0 flex flex-col items-center justify-center gap-2 text-(--color-text-tertiary) pointer-events-none; }
-.gridEmptyDayTitle { @apply text-sm font-medium text-(--color-text-secondary); }
-.gridEmptyDaySub   { @apply text-xs text-(--color-text-tertiary) text-center max-w-[200px]; }
+.gridWeekHead {
+    @apply flex border-b border-(--color-border) sticky top-0 z-10 bg-(--color-bg-page);
+}
+.gridTimeColHead {
+    @apply w-14 shrink-0;
+}
+.gridBody {
+    @apply flex;
+}
+.gridTimeCol {
+    @apply w-14 shrink-0;
+}
+.gridTimeRow {
+    @apply border-b border-(--color-border) flex items-start justify-end pr-2;
+}
+.gridTimeLabel {
+    @apply text-[10px] text-(--color-text-tertiary) tabular-nums font-mono -mt-[6px];
+}
+.gridSlot {
+    @apply absolute inset-x-0 border-b border-(--color-border)/40 cursor-pointer hover:bg-(--color-bg-surface) transition-colors;
+}
+.gridNowLine {
+    @apply absolute left-0 right-0 z-10 border-t-2 border-(--color-primary) pointer-events-none;
+}
+.gridNowDot {
+    @apply absolute -left-[5px] -top-[5px] w-[10px] h-[10px] rounded-full bg-(--color-primary);
+}
+.gridEmptyDay {
+    @apply absolute inset-0 flex flex-col items-center justify-center gap-2 text-(--color-text-tertiary) pointer-events-none;
+}
+.gridEmptyDayTitle {
+    @apply text-sm font-medium text-(--color-text-secondary);
+}
+.gridEmptyDaySub {
+    @apply text-xs text-(--color-text-tertiary) text-center max-w-[200px];
+}
 
-.gridDayHeadBase    { @apply flex-1 text-center py-2 text-xs font-medium border-l border-(--color-border); }
-.gridDayHeadToday   { @apply text-(--color-primary); }
-.gridDayHeadDefault { @apply text-(--color-text-secondary); }
+.gridDayHeadBase {
+    @apply flex-1 text-center py-2 text-xs font-medium border-l border-(--color-border);
+}
+.gridDayHeadToday {
+    @apply text-(--color-primary);
+}
+.gridDayHeadDefault {
+    @apply text-(--color-text-secondary);
+}
 
-.gridDayHeadNumBase    { @apply text-base font-medium leading-7 w-7 h-7 flex items-center justify-center rounded-full mx-auto; }
-.gridDayHeadNumToday   { @apply bg-(--color-primary) text-white; }
+.gridDayHeadNumBase {
+    @apply text-base font-medium leading-7 w-7 h-7 flex items-center justify-center rounded-full mx-auto;
+}
+.gridDayHeadNumToday {
+    @apply bg-(--color-primary) text-white;
+}
 
-.gridDayColBase    { @apply flex-1 relative border-l border-(--color-border) border-b border-(--color-border); }
-.gridDayColToday   { @apply bg-(--color-primary)/[0.02]; }
+.gridDayColBase {
+    @apply flex-1 relative border-l border-(--color-border) border-b border-(--color-border);
+}
+.gridDayColToday {
+    @apply bg-(--color-primary)/[0.02];
+}
 
 /* ── Appointment block ───────────────────────────────────────────────────────── */
 
-.apptBlockBase      { @apply absolute rounded-(--radius-data) border overflow-hidden cursor-pointer transition-all hover:shadow-sm group; }
-.apptBlockScheduled { @apply bg-(--color-primary-surface) border-(--color-primary-border); }
-.apptBlockConfirmed { @apply bg-(--color-success-surface) border-(--color-success)/30; }
-.apptBlockCompleted { @apply bg-(--color-bg-surface) border-(--color-border); }
-.apptBlockCancelled { @apply bg-(--color-danger-surface) border-(--color-danger)/30 opacity-60; }
-.apptBlockNoShow    { @apply bg-(--color-warning-surface) border-(--color-warning)/30 opacity-60; }
-.apptBlockArrived   { @apply bg-(--color-primary-surface) border-(--color-primary-border); }
-.apptBlockInProgress { @apply bg-(--color-info-surface) border-(--color-info)/30; }
-.apptBlockHighlight { @apply ring-2 ring-(--color-primary) ring-offset-1; }
+.apptBlockBase {
+    @apply absolute rounded-(--radius-data) border overflow-hidden cursor-pointer transition-all hover:shadow-sm;
+}
+.apptBlockScheduled {
+    @apply bg-(--color-primary-surface) border-(--color-primary-border);
+}
+.apptBlockConfirmed {
+    @apply bg-(--color-success-surface) border-(--color-success)/30;
+}
+.apptBlockCompleted {
+    @apply bg-(--color-bg-surface) border-(--color-border);
+}
+.apptBlockCancelled {
+    @apply bg-(--color-danger-surface) border-(--color-danger)/30 opacity-60;
+}
+.apptBlockNoShow {
+    @apply bg-(--color-warning-surface) border-(--color-warning)/30 opacity-60;
+}
+.apptBlockArrived {
+    @apply bg-(--color-primary-surface) border-(--color-primary-border);
+}
+.apptBlockInProgress {
+    @apply bg-(--color-info-surface) border-(--color-info)/30;
+}
+.apptBlockHighlight {
+    @apply ring-2 ring-(--color-primary) ring-offset-1;
+}
 
-.apptBarBase        { @apply absolute left-0 top-0 bottom-0 w-0.5; }
-.apptBarScheduled   { @apply bg-(--color-primary); }
-.apptBarConfirmed   { @apply bg-(--color-success); }
-.apptBarCompleted   { @apply bg-(--color-text-tertiary); }
-.apptBarCancelled   { @apply bg-(--color-danger); }
-.apptBarNoShow      { @apply bg-(--color-warning); }
-.apptBarArrived     { @apply bg-(--color-primary); }
-.apptBarInProgress  { @apply bg-(--color-info); }
+.apptBarBase {
+    @apply absolute left-0 top-0 bottom-0 w-0.5;
+}
+.apptBarScheduled {
+    @apply bg-(--color-primary);
+}
+.apptBarConfirmed {
+    @apply bg-(--color-success);
+}
+.apptBarCompleted {
+    @apply bg-(--color-text-tertiary);
+}
+.apptBarCancelled {
+    @apply bg-(--color-danger);
+}
+.apptBarNoShow {
+    @apply bg-(--color-warning);
+}
+.apptBarArrived {
+    @apply bg-(--color-primary);
+}
+.apptBarInProgress {
+    @apply bg-(--color-info);
+}
 
-.apptContent { @apply pl-2 pr-1 py-0.5 overflow-hidden; }
-.apptTime    { @apply text-[10px] font-mono tabular-nums text-(--color-text-secondary) truncate; }
-.apptName    { @apply text-xs font-medium text-(--color-text-primary) truncate leading-4; }
-.apptType    { @apply text-[10px] text-(--color-text-tertiary) truncate; }
+.apptContent {
+    @apply pl-2 pr-1 py-0.5 overflow-hidden;
+}
+.apptTime {
+    @apply text-[10px] font-mono tabular-nums text-(--color-text-secondary) truncate;
+}
+.apptName {
+    @apply text-xs font-medium text-(--color-text-primary) truncate leading-4;
+}
+.apptType {
+    @apply text-[10px] text-(--color-text-tertiary) truncate;
+}
 
 /* ── Month grid ──────────────────────────────────────────────────────────────── */
 
-.monthGridHead     { @apply grid grid-cols-7 border-b border-(--color-border) bg-(--color-bg-page) sticky top-0 z-10; }
-.monthGridHeadCell { @apply text-center py-2 text-xs font-medium text-(--color-text-secondary) border-l border-(--color-border) first:border-l-0; }
-.monthGridGrid     { @apply grid grid-cols-7; }
-.monthGridCellHead { @apply flex items-center justify-between mb-1; }
-.monthGridMoreBtn  { @apply text-[10px] text-(--color-text-secondary) hover:text-(--color-text-primary) cursor-pointer; }
+.monthGridHead {
+    @apply grid grid-cols-7 border-b border-(--color-border) bg-(--color-bg-page) sticky top-0 z-10;
+}
+.monthGridHeadCell {
+    @apply text-center py-2 text-xs font-medium text-(--color-text-secondary) border-l border-(--color-border) first:border-l-0;
+}
+.monthGridGrid {
+    @apply grid grid-cols-7;
+}
+.monthGridCellHead {
+    @apply flex items-center justify-between mb-1;
+}
+.monthGridMoreBtn {
+    @apply text-[10px] text-(--color-text-secondary) hover:text-(--color-text-primary) cursor-pointer;
+}
 
-.monthGridCellBase      { @apply min-h-[100px] border-b border-r border-(--color-border) p-1 cursor-pointer hover:bg-(--color-bg-surface)/50 transition-colors; }
-.monthGridCellOutMonth  { @apply bg-(--color-bg-surface)/30; }
-.monthGridCellToday     { @apply bg-(--color-primary)/5; }
+.monthGridCellBase {
+    @apply min-h-[100px] border-b border-r border-(--color-border) p-1 cursor-pointer hover:bg-(--color-bg-surface)/50 transition-colors;
+}
+.monthGridCellOutMonth {
+    @apply bg-(--color-bg-surface)/30;
+}
+.monthGridCellToday {
+    @apply bg-(--color-primary)/5;
+}
 
-.monthGridCellNumBase    { @apply w-6 h-6 flex items-center justify-center rounded-full text-xs cursor-pointer transition-colors; }
-.monthGridCellNumInMonth { @apply text-(--color-text-secondary); }
-.monthGridCellNumOutMonth { @apply text-(--color-text-tertiary); }
+.monthGridCellNumBase {
+    @apply w-6 h-6 flex items-center justify-center rounded-full text-xs cursor-pointer transition-colors;
+}
+.monthGridCellNumInMonth {
+    @apply text-(--color-text-secondary);
+}
+.monthGridCellNumOutMonth {
+    @apply text-(--color-text-tertiary);
+}
 /* isToday defined after inMonth to win the cascade on text color */
-.monthGridCellNumToday   { @apply bg-(--color-primary) text-white font-medium hover:bg-(--color-primary); }
-.monthGridCellNumNotToday { @apply hover:bg-(--color-bg-surface); }
+.monthGridCellNumToday {
+    @apply bg-(--color-primary) text-white font-medium hover:bg-(--color-primary);
+}
+.monthGridCellNumNotToday {
+    @apply hover:bg-(--color-bg-surface);
+}
 
-.monthGridEvtBase        { @apply w-full text-left px-1.5 py-0.5 rounded text-[10px] truncate mb-0.5 font-medium; }
-.monthGridEvtScheduled   { @apply bg-(--color-primary-surface) text-(--color-primary-text); }
-.monthGridEvtConfirmed   { @apply bg-(--color-success-surface) text-(--color-success); }
-.monthGridEvtCompleted   { @apply bg-(--color-bg-surface) text-(--color-text-secondary); }
-.monthGridEvtCancelled   { @apply bg-(--color-danger-surface) text-(--color-danger) opacity-60; }
-.monthGridEvtNoShow      { @apply bg-(--color-warning-surface) text-(--color-warning); }
-.monthGridEvtArrived     { @apply bg-(--color-primary-surface) text-(--color-primary-text); }
-.monthGridEvtInProgress  { @apply bg-(--color-info-surface) text-(--color-info); }
+.monthGridEvtBase {
+    @apply w-full text-left px-1.5 py-0.5 rounded text-[10px] truncate mb-0.5 font-medium;
+}
+.monthGridEvtScheduled {
+    @apply bg-(--color-primary-surface) text-(--color-primary-text);
+}
+.monthGridEvtConfirmed {
+    @apply bg-(--color-success-surface) text-(--color-success);
+}
+.monthGridEvtCompleted {
+    @apply bg-(--color-bg-surface) text-(--color-text-secondary);
+}
+.monthGridEvtCancelled {
+    @apply bg-(--color-danger-surface) text-(--color-danger) opacity-60;
+}
+.monthGridEvtNoShow {
+    @apply bg-(--color-warning-surface) text-(--color-warning);
+}
+.monthGridEvtArrived {
+    @apply bg-(--color-primary-surface) text-(--color-primary-text);
+}
+.monthGridEvtInProgress {
+    @apply bg-(--color-info-surface) text-(--color-info);
+}
 
 /* ── Day column ──────────────────────────────────────────────────────────────── */
 
-.dayColHead      { @apply px-6 py-3 border-b border-(--color-border) sticky top-0 bg-(--color-bg-page) z-10; }
-.dayHeadBaseline { @apply flex items-baseline gap-2; }
-.dayDateNum      { @apply text-3xl font-medium tabular-nums font-mono text-(--color-text-primary); }
-.dayBodyCol      { @apply flex-1 relative border-l border-(--color-border); }
-.nowTimeLabel    { @apply absolute left-3 -top-[8px] text-[10px] font-mono tabular-nums text-(--color-primary); }
-.apptTimeMono    { @apply font-mono tabular-nums mr-1; }
+.dayColHead {
+    @apply px-6 py-3 border-b border-(--color-border) sticky top-0 bg-(--color-bg-page) z-10;
+}
+.dayHeadBaseline {
+    @apply flex items-baseline gap-2;
+}
+.dayDateNum {
+    @apply text-3xl font-medium tabular-nums font-mono text-(--color-text-primary);
+}
+.dayBodyCol {
+    @apply flex-1 relative border-l border-(--color-border);
+}
+.nowTimeLabel {
+    @apply absolute left-3 -top-[8px] text-[10px] font-mono tabular-nums text-(--color-primary);
+}
+.apptTimeMono {
+    @apply font-mono tabular-nums mr-1;
+}
 
 /* ── Dialog forms ────────────────────────────────────────────────────────────── */
 
-.formBody      { @apply grid gap-4 py-2; }
-.formRow       { @apply grid grid-cols-2 gap-3; }
-.formField     { @apply flex flex-col gap-1.5; }
-.formFooter    { @apply flex justify-end gap-2 pt-2; }
-.optionalLabel { @apply text-(--color-text-tertiary) font-normal text-xs; }
-.sheetInfoRow  { @apply flex flex-col gap-1; }
-.cancelBtn     { @apply gap-1.5 text-(--color-danger) border-(--color-danger)/30 hover:bg-(--color-danger)/5; }
+.formBody {
+    @apply grid gap-4 py-2;
+}
+.formRow {
+    @apply grid grid-cols-2 gap-3;
+}
+.formField {
+    @apply flex flex-col gap-1.5;
+}
+.formFooter {
+    @apply flex justify-end gap-2 pt-2;
+}
+.optionalLabel {
+    @apply text-(--color-text-tertiary) font-normal text-xs;
+}
+.sheetInfoRow {
+    @apply flex flex-col gap-1;
+}
+.cancelBtn {
+    @apply gap-1.5 text-(--color-danger) border-(--color-danger)/30 hover:bg-(--color-danger)/5;
+}
 
 /* ── Patient search ──────────────────────────────────────────────────────────── */
 
-.patSearchPill   { @apply flex items-center gap-2 p-2 rounded-(--radius-sm) border border-(--color-border) bg-(--color-bg-surface); }
-.patAvatarSm     { @apply w-6 h-6 rounded-full bg-(--color-primary)/10 flex items-center justify-center text-[10px] font-medium text-(--color-primary) shrink-0; }
-.patAvatarLg     { @apply w-10 h-10 rounded-full bg-(--color-primary)/10 flex items-center justify-center text-sm font-medium text-(--color-primary) shrink-0; }
-.patSearchName   { @apply text-sm text-(--color-text-primary) flex-1 truncate; }
-.patSearchDrop   { @apply absolute top-full left-0 right-0 z-50 mt-1 rounded-(--radius-card) border border-(--color-border) bg-(--color-bg-card) shadow-lg overflow-hidden max-h-48 overflow-y-auto; }
-.patSearchRow    { @apply w-full text-left px-3 py-2 text-sm hover:bg-(--color-bg-surface) flex items-center gap-2 transition-colors; }
-.patProfileLink  { @apply flex items-center gap-1 text-xs text-(--color-primary) hover:underline shrink-0; }
+.patSearchPill {
+    @apply flex items-center gap-2 p-2 rounded-(--radius-sm) border border-(--color-border) bg-(--color-bg-surface);
+}
+.patAvatarSm {
+    @apply w-6 h-6 rounded-full bg-(--color-primary)/10 flex items-center justify-center text-[10px] font-medium text-(--color-primary) shrink-0;
+}
+.patAvatarLg {
+    @apply w-10 h-10 rounded-full bg-(--color-primary)/10 flex items-center justify-center text-sm font-medium text-(--color-primary) shrink-0;
+}
+.patSearchName {
+    @apply text-sm text-(--color-text-primary) flex-1 truncate;
+}
+.patSearchDrop {
+    @apply absolute top-full left-0 right-0 z-50 mt-1 rounded-(--radius-card) border border-(--color-border) bg-(--color-bg-card) shadow-lg overflow-hidden max-h-48 overflow-y-auto;
+}
+.patSearchRow {
+    @apply w-full text-left px-3 py-2 text-sm hover:bg-(--color-bg-surface) flex items-center gap-2 transition-colors;
+}
+.patProfileLink {
+    @apply flex items-center gap-1 text-xs text-(--color-primary) hover:underline shrink-0;
+}
 
 /* ── Sheet ───────────────────────────────────────────────────────────────────── */
 
-.sheetEyebrow    { @apply text-xs text-(--color-text-tertiary) font-medium uppercase tracking-wide; }
-.sheetPatientCard { @apply flex items-center gap-3 p-3 rounded-(--radius-card) bg-(--color-bg-surface) border border-(--color-border); }
-.sheetPatientName { @apply text-sm font-medium text-(--color-text-primary); }
-.sheetPatientMeta { @apply text-xs text-(--color-text-secondary); }
-.sheetSection      { @apply border-t border-(--color-border) pt-4 mt-4; }
-.sheetSectionTitle { @apply text-xs font-medium text-(--color-text-tertiary) uppercase tracking-wide mb-3; }
-.sheetKvGrid       { @apply grid grid-cols-2 gap-3; }
-.sheetKv           { @apply flex flex-col gap-0.5; }
-.sheetKvKey        { @apply text-xs text-(--color-text-tertiary); }
-.sheetKvVal        { @apply text-sm text-(--color-text-primary) font-mono tabular-nums; }
-.sheetNotes        { @apply text-sm text-(--color-text-secondary) leading-relaxed; }
-.sheetNotesEmpty   { @apply text-sm text-(--color-text-tertiary) italic; }
-.sheetActions      { @apply flex items-center gap-2 pt-4 border-t border-(--color-border) mt-4; }
-.sheetPatientBody  { @apply flex-1 min-w-0; }
+.sheetEyebrow {
+    @apply text-xs text-(--color-text-tertiary) font-medium uppercase tracking-wide;
+}
+.sheetPatientCard {
+    @apply flex items-center gap-3 p-3 rounded-(--radius-card) bg-(--color-bg-surface) border border-(--color-border);
+}
+.sheetPatientName {
+    @apply text-sm font-medium text-(--color-text-primary);
+}
+.sheetPatientMeta {
+    @apply text-xs text-(--color-text-secondary);
+}
+.sheetSection {
+    @apply border-t border-(--color-border) pt-4 mt-4;
+}
+.sheetSectionTitle {
+    @apply text-xs font-medium text-(--color-text-tertiary) uppercase tracking-wide mb-3;
+}
+.sheetKvGrid {
+    @apply grid grid-cols-2 gap-3;
+}
+.sheetKv {
+    @apply flex flex-col gap-0.5;
+}
+.sheetKvKey {
+    @apply text-xs text-(--color-text-tertiary);
+}
+.sheetKvVal {
+    @apply text-sm text-(--color-text-primary) font-mono tabular-nums;
+}
+.sheetNotes {
+    @apply text-sm text-(--color-text-secondary) leading-relaxed;
+}
+.sheetNotesEmpty {
+    @apply text-sm text-(--color-text-tertiary) italic;
+}
+.sheetActions {
+    @apply flex items-center gap-2 pt-4 border-t border-(--color-border) mt-4;
+}
+.sheetPatientBody {
+    @apply flex-1 min-w-0;
+}
 
-.sheetStatusBadgeBase        { @apply inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium; }
-.sheetStatusBadgeScheduled   { @apply bg-(--color-primary-surface) text-(--color-primary-text); }
-.sheetStatusBadgeConfirmed   { @apply bg-(--color-success-surface) text-(--color-success); }
-.sheetStatusBadgeCompleted   { @apply bg-(--color-bg-surface) text-(--color-text-secondary); }
-.sheetStatusBadgeCancelled   { @apply bg-(--color-danger-surface) text-(--color-danger); }
-.sheetStatusBadgeNoShow      { @apply bg-(--color-warning-surface) text-(--color-warning); }
-.sheetStatusBadgeArrived     { @apply bg-(--color-primary-surface) text-(--color-primary-text); }
-.sheetStatusBadgeInProgress  { @apply bg-(--color-info-surface) text-(--color-info); }
+.sheetStatusBadgeBase {
+    @apply inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium;
+}
+.sheetStatusBadgeScheduled {
+    @apply bg-(--color-primary-surface) text-(--color-primary-text);
+}
+.sheetStatusBadgeConfirmed {
+    @apply bg-(--color-success-surface) text-(--color-success);
+}
+.sheetStatusBadgeCompleted {
+    @apply bg-(--color-bg-surface) text-(--color-text-secondary);
+}
+.sheetStatusBadgeCancelled {
+    @apply bg-(--color-danger-surface) text-(--color-danger);
+}
+.sheetStatusBadgeNoShow {
+    @apply bg-(--color-warning-surface) text-(--color-warning);
+}
+.sheetStatusBadgeArrived {
+    @apply bg-(--color-primary-surface) text-(--color-primary-text);
+}
+.sheetStatusBadgeInProgress {
+    @apply bg-(--color-info-surface) text-(--color-info);
+}
 
 /* ── Misc ────────────────────────────────────────────────────────────────────── */
 
-.weekHeaderMin     { @apply min-w-[560px]; }
-.dayOfWeekText     { @apply text-[10px] uppercase; }
-.dayHeaderMin      { @apply min-w-[280px]; }
-.dayHeaderText     { @apply text-sm text-(--color-text-secondary); }
-.apptCountText     { @apply text-xs text-(--color-primary); }
-.emptyDayCalIcon   { @apply size-7 text-(--color-text-tertiary); }
-.sheetKvText       { @apply text-sm text-(--color-text-primary); }
-.patSearchWrap     { @apply relative; }
-.cancelDialogText  { @apply text-sm text-(--color-text-secondary); }
-.detailSheetPanel  { @apply w-[400px] sm:w-[480px] overflow-y-auto; }
-.editDialogWidth   { @apply sm:max-w-[480px]; }
-.newApptDialogWidth { @apply sm:max-w-[520px]; }
-.cancelDialogWidth { @apply sm:max-w-[400px]; }
-.patClearBtn       { @apply text-(--color-text-tertiary) hover:text-(--color-text-primary); }
-.headerCalIcon     { @apply size-5 text-(--color-text-secondary); }
+.weekHeaderMin {
+    @apply min-w-[560px];
+}
+.dayOfWeekText {
+    @apply text-[10px] uppercase;
+}
+.dayHeaderMin {
+    @apply min-w-[280px];
+}
+.dayHeaderText {
+    @apply text-sm text-(--color-text-secondary);
+}
+.apptCountText {
+    @apply text-xs text-(--color-primary);
+}
+.emptyDayCalIcon {
+    @apply size-7 text-(--color-text-tertiary);
+}
+.sheetKvText {
+    @apply text-sm text-(--color-text-primary);
+}
+.patSearchWrap {
+    @apply relative;
+}
+.cancelDialogText {
+    @apply text-sm text-(--color-text-secondary);
+}
+.detailSheetPanel {
+    @apply w-[400px] sm:w-[480px] overflow-y-auto;
+}
+.editDialogWidth {
+    @apply sm:max-w-[480px];
+}
+.newApptDialogWidth {
+    @apply sm:max-w-[520px];
+}
+.cancelDialogWidth {
+    @apply sm:max-w-[400px];
+}
+.patClearBtn {
+    @apply text-(--color-text-tertiary) hover:text-(--color-text-primary);
+}
+.headerCalIcon {
+    @apply size-5 text-(--color-text-secondary);
+}

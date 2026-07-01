@@ -1,4 +1,4 @@
-@import "tailwindcss";
+@reference "../../../../../app/globals.css";
 
 /* ── Page layout ─────────────────────────────────────────────────────────── */
 
@@ -105,11 +105,21 @@
 
 /* ── Status dot color classes ─────────────────────────────────────────────── */
 
-.statusDotScheduled { @apply bg-(--color-primary); }
-.statusDotConfirmed { @apply bg-(--color-success); }
-.statusDotDone { @apply bg-(--color-text-tertiary); }
-.statusDotCancelled { @apply bg-(--color-danger); }
-.statusDotNoshow { @apply bg-(--color-warning); }
+.statusDotScheduled {
+    @apply bg-(--color-primary);
+}
+.statusDotConfirmed {
+    @apply bg-(--color-success);
+}
+.statusDotDone {
+    @apply bg-(--color-text-tertiary);
+}
+.statusDotCancelled {
+    @apply bg-(--color-danger);
+}
+.statusDotNoshow {
+    @apply bg-(--color-warning);
+}
 
 /* ── Avatar ──────────────────────────────────────────────────────────────── */
 
@@ -117,13 +127,27 @@
     @apply flex size-8 shrink-0 items-center justify-center rounded-full text-xs font-medium;
 }
 
-.avatarV0 { @apply bg-(--color-primary-surface) text-(--color-primary-text); }
-.avatarV1 { @apply bg-(--color-info-surface) text-(--color-info); }
-.avatarV2 { @apply bg-(--color-success-surface) text-(--color-success); }
-.avatarV3 { @apply bg-(--color-warning-surface) text-(--color-warning); }
-.avatarV4 { @apply bg-(--color-danger-surface) text-(--color-danger); }
-.avatarV5 { @apply bg-(--color-ai-bg) text-(--color-ai-text); }
-.avatarV6 { @apply bg-(--color-bg-surface) text-(--color-text-secondary); }
+.avatarV0 {
+    @apply bg-(--color-primary-surface) text-(--color-primary-text);
+}
+.avatarV1 {
+    @apply bg-(--color-info-surface) text-(--color-info);
+}
+.avatarV2 {
+    @apply bg-(--color-success-surface) text-(--color-success);
+}
+.avatarV3 {
+    @apply bg-(--color-warning-surface) text-(--color-warning);
+}
+.avatarV4 {
+    @apply bg-(--color-danger-surface) text-(--color-danger);
+}
+.avatarV5 {
+    @apply bg-(--color-ai-bg) text-(--color-ai-text);
+}
+.avatarV6 {
+    @apply bg-(--color-bg-surface) text-(--color-text-secondary);
+}
 
 /* ── Mini calendar ────────────────────────────────────────────────────────── */
 
@@ -321,7 +345,8 @@
 
 /* ── Month view ─────────────────────────────────────────────────────────── */
 
-.monthWrapper {}
+.monthWrapper {
+}
 
 .monthHead {
     @apply grid grid-cols-7 border-b border-(--color-border) bg-(--color-bg-card);
@@ -365,13 +390,27 @@
 
 /* ── Month event status classes ──────────────────────────────────────────── */
 
-.monthEvtScheduled { @apply bg-(--color-primary-surface) text-(--color-primary-text); }
-.monthEvtConfirmed { @apply bg-(--color-success-surface) text-(--color-success); }
-.monthEvtDone { @apply bg-(--color-bg-surface) text-(--color-text-secondary); }
-.monthEvtCancelled { @apply bg-(--color-danger-surface) text-(--color-danger); }
-.monthEvtNoshow { @apply bg-(--color-warning-surface) text-(--color-warning); }
-.monthEvtArrived { @apply bg-(--color-info-surface) text-(--color-info); }
-.monthEvtInProgress { @apply bg-(--color-success-surface) text-(--color-success); }
+.monthEvtScheduled {
+    @apply bg-(--color-primary-surface) text-(--color-primary-text);
+}
+.monthEvtConfirmed {
+    @apply bg-(--color-success-surface) text-(--color-success);
+}
+.monthEvtDone {
+    @apply bg-(--color-bg-surface) text-(--color-text-secondary);
+}
+.monthEvtCancelled {
+    @apply bg-(--color-danger-surface) text-(--color-danger);
+}
+.monthEvtNoshow {
+    @apply bg-(--color-warning-surface) text-(--color-warning);
+}
+.monthEvtArrived {
+    @apply bg-(--color-info-surface) text-(--color-info);
+}
+.monthEvtInProgress {
+    @apply bg-(--color-success-surface) text-(--color-success);
+}
 
 .monthMoreBtn {
     @apply rounded-[4px] px-1 py-0.5 text-[11px] text-(--color-text-tertiary) hover:bg-(--color-bg-surface) hover:text-(--color-text-secondary);
@@ -383,13 +422,27 @@
     @apply absolute cursor-pointer overflow-hidden rounded-[6px] px-1.5 py-1 text-left transition-all duration-(--duration-fast) hover:brightness-95;
 }
 
-.apptBlockScheduled { @apply bg-(--color-primary-surface); }
-.apptBlockConfirmed { @apply bg-(--color-success-surface); }
-.apptBlockCompleted { @apply bg-(--color-bg-surface); }
-.apptBlockCancelled { @apply bg-(--color-danger-surface); }
-.apptBlockNoShow { @apply bg-(--color-warning-surface); }
-.apptBlockArrived { @apply bg-(--color-info-surface); }
-.apptBlockInProgress { @apply bg-(--color-success-surface); }
+.apptBlockScheduled {
+    @apply bg-(--color-primary-surface);
+}
+.apptBlockConfirmed {
+    @apply bg-(--color-success-surface);
+}
+.apptBlockCompleted {
+    @apply bg-(--color-bg-surface);
+}
+.apptBlockCancelled {
+    @apply bg-(--color-danger-surface);
+}
+.apptBlockNoShow {
+    @apply bg-(--color-warning-surface);
+}
+.apptBlockArrived {
+    @apply bg-(--color-info-surface);
+}
+.apptBlockInProgress {
+    @apply bg-(--color-success-surface);
+}
 
 .apptBlockHighlight {
     @apply ring-2 ring-(--color-primary) ring-offset-1;
@@ -401,13 +454,27 @@
 
 /* ── Appointment bar status classes ──────────────────────────────────────── */
 
-.apptBarScheduled { @apply bg-(--color-primary); }
-.apptBarConfirmed { @apply bg-(--color-success); }
-.apptBarCompleted { @apply bg-(--color-text-tertiary); }
-.apptBarCancelled { @apply bg-(--color-danger); }
-.apptBarNoShow { @apply bg-(--color-warning); }
-.apptBarArrived { @apply bg-(--color-info); }
-.apptBarInProgress { @apply bg-(--color-success); }
+.apptBarScheduled {
+    @apply bg-(--color-primary);
+}
+.apptBarConfirmed {
+    @apply bg-(--color-success);
+}
+.apptBarCompleted {
+    @apply bg-(--color-text-tertiary);
+}
+.apptBarCancelled {
+    @apply bg-(--color-danger);
+}
+.apptBarNoShow {
+    @apply bg-(--color-warning);
+}
+.apptBarArrived {
+    @apply bg-(--color-info);
+}
+.apptBarInProgress {
+    @apply bg-(--color-success);
+}
 
 .apptContent {
     @apply ml-2 min-w-0;
@@ -419,13 +486,27 @@
 
 /* ── Appointment time status classes ─────────────────────────────────────── */
 
-.apptTimeScheduled { @apply text-(--color-primary); }
-.apptTimeConfirmed { @apply text-(--color-success); }
-.apptTimeCompleted { @apply text-(--color-text-tertiary); }
-.apptTimeCancelled { @apply text-(--color-danger); }
-.apptTimeNoShow { @apply text-(--color-warning); }
-.apptTimeArrived { @apply text-(--color-info); }
-.apptTimeInProgress { @apply text-(--color-success); }
+.apptTimeScheduled {
+    @apply text-(--color-primary);
+}
+.apptTimeConfirmed {
+    @apply text-(--color-success);
+}
+.apptTimeCompleted {
+    @apply text-(--color-text-tertiary);
+}
+.apptTimeCancelled {
+    @apply text-(--color-danger);
+}
+.apptTimeNoShow {
+    @apply text-(--color-warning);
+}
+.apptTimeArrived {
+    @apply text-(--color-info);
+}
+.apptTimeInProgress {
+    @apply text-(--color-success);
+}
 
 .apptNameBase {
     @apply truncate text-[11px] font-medium leading-[1.3];
@@ -433,13 +514,27 @@
 
 /* ── Appointment name status classes ─────────────────────────────────────── */
 
-.apptNameScheduled { @apply text-(--color-primary-text); }
-.apptNameConfirmed { @apply text-(--color-success); }
-.apptNameCompleted { @apply text-(--color-text-secondary); }
-.apptNameCancelled { @apply text-(--color-danger); }
-.apptNameNoShow { @apply text-(--color-warning); }
-.apptNameArrived { @apply text-(--color-info); }
-.apptNameInProgress { @apply text-(--color-success); }
+.apptNameScheduled {
+    @apply text-(--color-primary-text);
+}
+.apptNameConfirmed {
+    @apply text-(--color-success);
+}
+.apptNameCompleted {
+    @apply text-(--color-text-secondary);
+}
+.apptNameCancelled {
+    @apply text-(--color-danger);
+}
+.apptNameNoShow {
+    @apply text-(--color-warning);
+}
+.apptNameArrived {
+    @apply text-(--color-info);
+}
+.apptNameInProgress {
+    @apply text-(--color-success);
+}
 
 .apptTypeLbl {
     @apply truncate text-[10px] text-(--color-text-tertiary);
@@ -525,13 +620,27 @@
     @apply inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium;
 }
 
-.statusBadgeScheduled { @apply bg-(--color-primary-surface) text-(--color-primary-text); }
-.statusBadgeConfirmed { @apply bg-(--color-success-surface) text-(--color-success); }
-.statusBadgeCompleted { @apply bg-(--color-bg-surface) text-(--color-text-secondary); }
-.statusBadgeCancelled { @apply bg-(--color-danger-surface) text-(--color-danger); }
-.statusBadgeNoShow { @apply bg-(--color-warning-surface) text-(--color-warning); }
-.statusBadgeArrived { @apply bg-(--color-info-surface) text-(--color-info); }
-.statusBadgeInProgress { @apply bg-(--color-success-surface) text-(--color-success); }
+.statusBadgeScheduled {
+    @apply bg-(--color-primary-surface) text-(--color-primary-text);
+}
+.statusBadgeConfirmed {
+    @apply bg-(--color-success-surface) text-(--color-success);
+}
+.statusBadgeCompleted {
+    @apply bg-(--color-bg-surface) text-(--color-text-secondary);
+}
+.statusBadgeCancelled {
+    @apply bg-(--color-danger-surface) text-(--color-danger);
+}
+.statusBadgeNoShow {
+    @apply bg-(--color-warning-surface) text-(--color-warning);
+}
+.statusBadgeArrived {
+    @apply bg-(--color-info-surface) text-(--color-info);
+}
+.statusBadgeInProgress {
+    @apply bg-(--color-success-surface) text-(--color-success);
+}
 
 .shStatusRow {
     @apply flex items-center gap-2;
@@ -557,7 +666,8 @@
     @apply flex shrink-0 items-center gap-0.5 text-xs text-(--color-primary-text) transition-colors duration-(--duration-fast) hover:underline;
 }
 
-.shSection {}
+.shSection {
+}
 
 .shSecHead {
     @apply mb-2 text-xs font-medium uppercase tracking-[0.06em] text-(--color-text-tertiary);

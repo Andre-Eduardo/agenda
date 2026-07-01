@@ -12,6 +12,8 @@ import type {
 } from '@agenda-app/client';
 import type {UseQueryResult} from '@tanstack/react-query';
 import {createFileRoute, useNavigate, Link} from '@tanstack/react-router';
+import {cva} from 'class-variance-authority';
+import {clsx} from 'clsx';
 import {
     ChevronRight,
     ChevronLeft,
@@ -37,8 +39,6 @@ import {
 } from '@/components/ui/componentes/breadcrumb';
 import {Button} from '@/components/ui/componentes/button';
 import {Skeleton} from '@/components/ui/componentes/skeleton';
-import {cva} from 'class-variance-authority';
-import {clsx} from 'clsx';
 import {cn} from '@/lib/utils';
 import styles from './styles.module.css';
 

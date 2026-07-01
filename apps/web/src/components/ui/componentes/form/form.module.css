@@ -1,4 +1,4 @@
-@import "tailwindcss";
+@reference "../../../../app/globals.css";
 .formItem {
     @apply space-y-2;
 }

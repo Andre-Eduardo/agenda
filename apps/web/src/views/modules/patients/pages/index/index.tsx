@@ -36,7 +36,7 @@ import {SegmentedControl} from '@/components/ui/componentes/segmented-control';
 import {Skeleton} from '@/components/ui/componentes/skeleton';
 import {StatTile} from '@/components/ui/componentes/stat-tile';
 import {Page} from '@/views/components/Page';
-import styles from './styles.module.css';
+import {css} from '@/styled-system/css';
 
 export const Route = createFileRoute('/_stackedLayout/patients')({
     component: PatientsPage,
@@ -45,15 +45,365 @@ export const Route = createFileRoute('/_stackedLayout/patients')({
 // ── Types ────────────────────────────────────────────────────────────────────
 
 type Layout = 'table' | 'cards';
-// NOTE: Patient API does not yet expose a `status` field.
-// This filter is a UI placeholder — wire to SearchPatientsParams when the
-// backend adds status support.
 type StatusFilter = 'all' | 'active' | 'inactive';
 
 interface PatientPage {
     totalCount: number;
     data: Patient[];
 }
+
+// ── Styles ────────────────────────────────────────────────────────────────────
+
+const statsGrid = css({mb: '6', display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: '3'});
+
+const statsDelta = css({fontWeight: 'medium', color: 'success'});
+
+const toolbarRoot = css({mb: '3.5', display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '2.5'});
+
+const toolbarSearch = css({
+    display: 'flex',
+    minW: '[280px]',
+    flex: '1',
+    alignItems: 'center',
+    gap: '2',
+    rounded: 'input',
+    borderWidth: '1px',
+    borderStyle: 'solid',
+    borderColor: 'border',
+    bg: 'bg.card',
+    px: '3',
+    py: '[9px]',
+    transitionProperty: 'all',
+    transitionDuration: 'fast',
+    transitionTimingFunction: 'ease-out',
+    _focusWithin: {borderColor: 'primary'},
+});
+
+const toolbarSearchInput = css({
+    flex: '1',
+    bg: 'transparent',
+    fontSize: 'sm-body',
+    color: 'text.primary',
+    _placeholder: {color: 'text.tertiary'},
+    _focus: {outline: 'none'},
+});
+
+const toolbarSearchKbd = css({
+    flexShrink: '0',
+    rounded: '[4px]',
+    borderWidth: '1px',
+    borderStyle: 'solid',
+    borderColor: 'border',
+    px: '1.5',
+    py: '0.5',
+    fontFamily: 'mono',
+    fontSize: '2xs',
+    color: 'text.tertiary',
+});
+
+const toolbarClearBtn = css({
+    rounded: '[6px]',
+    px: '2',
+    py: '1.5',
+    fontSize: 'sm',
+    color: 'primary.text',
+    transitionProperty: 'color, background-color',
+    transitionDuration: 'fast',
+    transitionTimingFunction: 'ease-out',
+    _hover: {bg: 'primary.surface'},
+});
+
+const toolbarClearIcon = css({mr: '1', display: 'inline', w: '3.5', h: '3.5'});
+
+const toolbarSearchIcon = css({w: '4', h: '4', flexShrink: '0', color: 'text.tertiary'});
+
+const toolbarCount = css({fontFamily: 'mono', fontSize: 'sm', fontVariantNumeric: 'tabular-nums', color: 'text.tertiary'});
+
+const tableRoot = css({
+    overflow: 'hidden',
+    rounded: 'card',
+    borderWidth: '1px',
+    borderStyle: 'solid',
+    borderColor: 'border',
+    bg: 'bg.card',
+});
+
+const tableHead = css({
+    display: 'grid',
+    alignItems: 'center',
+    gap: '4',
+    borderBottomWidth: '1px',
+    borderBottomStyle: 'solid',
+    borderBottomColor: 'border',
+    bg: 'bg.surface',
+    px: '[18px]',
+    py: '[11px]',
+});
+
+const tableHeadCell = css({
+    fontSize: '2xs',
+    fontWeight: 'medium',
+    textTransform: 'uppercase',
+    letterSpacing: '[0.06em]',
+    color: 'text.tertiary',
+});
+
+const tableFooter = css({
+    borderTopWidth: '1px',
+    borderTopStyle: 'solid',
+    borderTopColor: 'border',
+});
+
+const tableRowRoot = css({
+    display: 'grid',
+    cursor: 'pointer',
+    alignItems: 'center',
+    gap: '4',
+    borderBottomWidth: '1px',
+    borderBottomStyle: 'solid',
+    borderBottomColor: 'border',
+    px: '[18px]',
+    py: '[14px]',
+    transitionProperty: 'color, background-color',
+    transitionDuration: 'fast',
+    transitionTimingFunction: 'ease-out',
+    _last: {borderBottomWidth: '0'},
+    _hover: {bg: 'bg.surface'},
+});
+
+const tableRowNameCell = css({display: 'flex', minW: '0', alignItems: 'center', gap: '3'});
+
+const tableRowNameBlock = css({minW: '0'});
+
+const tableRowName = css({
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    whiteSpace: 'nowrap',
+    fontSize: 'sm-body',
+    fontWeight: 'medium',
+    color: 'text.primary',
+});
+
+const tableRowEmail = css({
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    whiteSpace: 'nowrap',
+    fontSize: 'xs',
+    color: 'text.tertiary',
+});
+
+const tableRowAgeWrapper = css({
+    position: 'relative',
+    cursor: 'help',
+    '&:hover [data-age-tooltip]': {opacity: '1'},
+});
+
+const tableRowAge = css({fontFamily: 'mono', fontSize: 'sm-body', fontVariantNumeric: 'tabular-nums', color: 'text.primary'});
+
+const tableRowAgeUnit = css({ml: '0.5', color: 'text.tertiary'});
+
+const tableRowAgeTooltip = css({
+    pointerEvents: 'none',
+    position: 'absolute',
+    left: '0',
+    top: '[calc(100%+6px)]',
+    zIndex: '10',
+    whiteSpace: 'nowrap',
+    rounded: '[6px]',
+    bg: 'text.primary',
+    px: '2',
+    py: '1',
+    fontFamily: 'mono',
+    fontSize: '2xs',
+    fontVariantNumeric: 'tabular-nums',
+    color: 'bg.card',
+    opacity: '0',
+    transitionProperty: 'opacity',
+    transitionDuration: 'fast',
+    transitionTimingFunction: 'ease-out',
+});
+
+const tableRowDocument = css({fontFamily: 'mono', fontSize: 'sm', fontVariantNumeric: 'tabular-nums', color: 'text.secondary'});
+
+const tableRowInsuranceBadge = css({
+    display: 'inline-flex',
+    alignItems: 'center',
+    rounded: 'badge',
+    borderWidth: '1px',
+    borderStyle: 'solid',
+    borderColor: 'border',
+    bg: 'bg.surface',
+    px: '2',
+    py: '0.5',
+    fontSize: 'xs',
+    fontWeight: 'medium',
+    color: 'text.secondary',
+});
+
+const tableRowInsuranceEmpty = css({fontSize: 'xs', color: 'text.tertiary'});
+
+const tableRowActionWrapper = css({position: 'relative', display: 'flex', justifyContent: 'flex-end'});
+
+const tableRowActionBtn = css({
+    display: 'flex',
+    w: '8',
+    h: '8',
+    alignItems: 'center',
+    justifyContent: 'center',
+    rounded: '[8px]',
+    color: 'text.tertiary',
+    transitionProperty: 'all',
+    transitionDuration: 'fast',
+    transitionTimingFunction: 'ease-out',
+    _hover: {bg: 'bg.card', color: 'text.primary'},
+});
+
+const tableRowDangerItem = css({
+    color: 'danger',
+    _hover: {bg: 'danger.surface'},
+    _focus: {bg: 'danger.surface'},
+});
+
+const tableRowSkeletonRoot = css({
+    display: 'grid',
+    alignItems: 'center',
+    gap: '4',
+    borderBottomWidth: '1px',
+    borderBottomStyle: 'solid',
+    borderBottomColor: 'border',
+    px: '[18px]',
+    py: '[14px]',
+    _last: {borderBottomWidth: '0'},
+});
+
+const tableRowSkeletonNameCell = css({display: 'flex', alignItems: 'center', gap: '3'});
+
+const tableRowSkeletonAvatar = css({w: '8', h: '8', flexShrink: '0', rounded: 'full'});
+
+const tableRowSkeletonStatusBadge = css({h: '5', w: '20', rounded: 'full'});
+
+const tableRowSkeletonBadgeSm = css({h: '5', w: '6', rounded: 'full'});
+
+const tableRowSkeletonActionBtn = css({ml: 'auto', w: '7', h: '7', rounded: '[8px]'});
+
+const patientCardRoot = css({
+    display: 'flex',
+    cursor: 'pointer',
+    flexDirection: 'column',
+    gap: '3',
+    rounded: 'card',
+    borderWidth: '1px',
+    borderStyle: 'solid',
+    borderColor: 'border',
+    bg: 'bg.card',
+    p: '4',
+    transitionProperty: 'color, background-color, border-color',
+    transitionDuration: 'fast',
+    transitionTimingFunction: 'ease-out',
+    _hover: {borderColor: 'border.hover'},
+});
+
+const patientCardTop = css({display: 'flex', alignItems: 'flex-start', gap: '3'});
+
+const patientCardNameBlock = css({minW: '0', flex: '1'});
+
+const patientCardName = css({
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    whiteSpace: 'nowrap',
+    fontSize: 'sm-body',
+    fontWeight: 'medium',
+    color: 'text.primary',
+});
+
+const patientCardMeta = css({mt: '0.5', fontSize: 'xs', color: 'text.tertiary'});
+
+const patientCardDetails = css({display: 'flex', flexDirection: 'column', gap: '1.5'});
+
+const patientCardDetailRow = css({display: 'flex', alignItems: 'center', justifyContent: 'space-between'});
+
+const patientCardDetailLabel = css({fontSize: '2xs', color: 'text.tertiary'});
+
+const patientCardDetailValue = css({fontFamily: 'mono', fontSize: '2xs', fontVariantNumeric: 'tabular-nums', color: 'text.secondary'});
+
+const skeletonCardRoot = css({
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '3',
+    rounded: 'card',
+    borderWidth: '1px',
+    borderStyle: 'solid',
+    borderColor: 'border',
+    bg: 'bg.card',
+    p: '4',
+});
+
+const skeletonCardTop = css({display: 'flex', alignItems: 'center', gap: '3'});
+
+const skeletonCardNameBlock = css({flex: '1', display: 'flex', flexDirection: 'column', gap: '1.5'});
+
+const skeletonCardDetails = css({display: 'flex', flexDirection: 'column', gap: '2'});
+
+const skeletonCardAvatar = css({w: '10', h: '10', flexShrink: '0', rounded: 'full'});
+
+const cardsGrid = css({
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+    gap: '3',
+});
+
+const cardsFooter = css({
+    mt: '3.5',
+    rounded: 'card',
+    borderWidth: '1px',
+    borderStyle: 'solid',
+    borderColor: 'border',
+    bg: 'bg.card',
+});
+
+const paginationRoot = css({display: 'flex', alignItems: 'center', justifyContent: 'space-between', px: '[18px]', py: '[14px]'});
+
+const paginationInfo = css({fontSize: 'sm', color: 'text.secondary'});
+
+const paginationInfoStrong = css({fontWeight: 'medium', fontVariantNumeric: 'tabular-nums', color: 'text.primary'});
+
+const paginationControls = css({display: 'flex', alignItems: 'center', gap: '1'});
+
+const paginationBtnDisabled = css({
+    display: 'inline-flex',
+    h: '8',
+    minW: '8',
+    cursor: 'not-allowed',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '1',
+    rounded: '[8px]',
+    borderWidth: '1px',
+    borderStyle: 'solid',
+    borderColor: 'border',
+    px: '2.5',
+    fontSize: 'sm',
+    fontWeight: 'medium',
+    color: 'text.secondary',
+    opacity: '0.45',
+});
+
+const paginationBtnActive = css({
+    display: 'inline-flex',
+    h: '8',
+    minW: '8',
+    alignItems: 'center',
+    justifyContent: 'center',
+    rounded: '[8px]',
+    borderWidth: '1px',
+    borderStyle: 'solid',
+    borderColor: 'primary',
+    bg: 'primary',
+    px: '2.5',
+    fontSize: 'sm',
+    fontWeight: 'medium',
+    color: 'white',
+});
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -112,45 +462,47 @@ function PatientTableRow({patient, onClick}: {patient: Patient; onClick: () => v
     const age = getAge(patient.birthDate);
 
     return (
-        <div className={styles.tableRowRoot} style={{gridTemplateColumns: TABLE_COLS}} onClick={onClick}>
-            <div className={styles.tableRowNameCell}>
+        <div className={tableRowRoot} style={{gridTemplateColumns: TABLE_COLS}} onClick={onClick}>
+            <div className={tableRowNameCell}>
                 <PatientAvatar name={patient.name} id={patient.id} />
-                <div className={styles.tableRowNameBlock}>
-                    <p className={styles.tableRowName}>{patient.name}</p>
-                    <p className={styles.tableRowEmail}>{typeof patient.email === 'string' ? patient.email : '—'}</p>
+                <div className={tableRowNameBlock}>
+                    <p className={tableRowName}>{patient.name}</p>
+                    <p className={tableRowEmail}>{typeof patient.email === 'string' ? patient.email : '—'}</p>
                 </div>
             </div>
 
-            <div className={styles.tableRowAgeWrapper}>
-                <span className={styles.tableRowAge}>
+            <div className={tableRowAgeWrapper}>
+                <span className={tableRowAge}>
                     {age !== null ? (
                         <>
                             {age}
-                            <span className={styles.tableRowAgeUnit}> anos</span>
+                            <span className={tableRowAgeUnit}> anos</span>
                         </>
                     ) : (
                         '—'
                     )}
                 </span>
                 {age !== null && (
-                    <span className={styles.tableRowAgeTooltip}>Nasc. {formatBirthDate(patient.birthDate)}</span>
+                    <span data-age-tooltip className={tableRowAgeTooltip}>
+                        Nasc. {formatBirthDate(patient.birthDate)}
+                    </span>
                 )}
             </div>
 
-            <p className={styles.tableRowDocument}>{patient.documentId}</p>
+            <p className={tableRowDocument}>{patient.documentId}</p>
 
             {patient.insurancePlan ? (
-                <span className={styles.tableRowInsuranceBadge}>{patient.insurancePlan.name}</span>
+                <span className={tableRowInsuranceBadge}>{patient.insurancePlan.name}</span>
             ) : (
-                <span className={styles.tableRowInsuranceEmpty}>—</span>
+                <span className={tableRowInsuranceEmpty}>—</span>
             )}
 
             <GenderBadge gender={patient.gender} />
 
-            <div className={styles.tableRowActionWrapper} onClick={(e) => e.stopPropagation()}>
+            <div className={tableRowActionWrapper} onClick={(e) => e.stopPropagation()}>
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                        <button type="button" aria-label="Ações" className={styles.tableRowActionBtn}>
+                        <button type="button" aria-label="Ações" className={tableRowActionBtn}>
                             <MoreHorizontal className="size-4" strokeWidth={1.5} />
                         </button>
                     </DropdownMenuTrigger>
@@ -168,7 +520,7 @@ function PatientTableRow({patient, onClick}: {patient: Patient; onClick: () => v
                             Agendar consulta
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem className={styles.tableRowDangerItem}>
+                        <DropdownMenuItem className={tableRowDangerItem}>
                             <Archive className="size-3.5" />
                             Arquivar paciente
                         </DropdownMenuItem>
@@ -181,9 +533,9 @@ function PatientTableRow({patient, onClick}: {patient: Patient; onClick: () => v
 
 function SkeletonTableRow() {
     return (
-        <div className={styles.tableRowSkeletonRoot} style={{gridTemplateColumns: TABLE_COLS}}>
-            <div className={styles.tableRowSkeletonNameCell}>
-                <Skeleton className={styles.tableRowSkeletonAvatar} />
+        <div className={tableRowSkeletonRoot} style={{gridTemplateColumns: TABLE_COLS}}>
+            <div className={tableRowSkeletonNameCell}>
+                <Skeleton className={tableRowSkeletonAvatar} />
                 <div className="flex-1 space-y-1.5">
                     <Skeleton className="h-3.5 w-32" />
                     <Skeleton className="h-3 w-24" />
@@ -191,9 +543,9 @@ function SkeletonTableRow() {
             </div>
             <Skeleton className="h-4 w-8" />
             <Skeleton className="h-4 w-28" />
-            <Skeleton className={styles.tableRowSkeletonStatusBadge} />
-            <Skeleton className={styles.tableRowSkeletonBadgeSm} />
-            <Skeleton className={styles.tableRowSkeletonActionBtn} />
+            <Skeleton className={tableRowSkeletonStatusBadge} />
+            <Skeleton className={tableRowSkeletonBadgeSm} />
+            <Skeleton className={tableRowSkeletonActionBtn} />
         </div>
     );
 }
@@ -202,24 +554,24 @@ function PatientCard({patient, onClick}: {patient: Patient; onClick: () => void}
     const age = getAge(patient.birthDate);
 
     return (
-        <div className={styles.patientCardRoot} onClick={onClick}>
-            <div className={styles.patientCardTop}>
+        <div className={patientCardRoot} onClick={onClick}>
+            <div className={patientCardTop}>
                 <PatientAvatar name={patient.name} id={patient.id} size="lg" />
-                <div className={styles.patientCardNameBlock}>
-                    <p className={styles.patientCardName}>{patient.name}</p>
-                    <p className={styles.patientCardMeta}>
+                <div className={patientCardNameBlock}>
+                    <p className={patientCardName}>{patient.name}</p>
+                    <p className={patientCardMeta}>
                         {age !== null ? `${age} anos` : '—'} · {typeof patient.email === 'string' ? patient.email : '—'}
                     </p>
                 </div>
             </div>
-            <div className={styles.patientCardDetails}>
-                <div className={styles.patientCardDetailRow}>
-                    <span className={styles.patientCardDetailLabel}>Documento</span>
-                    <span className={styles.patientCardDetailValue}>{patient.documentId}</span>
+            <div className={patientCardDetails}>
+                <div className={patientCardDetailRow}>
+                    <span className={patientCardDetailLabel}>Documento</span>
+                    <span className={patientCardDetailValue}>{patient.documentId}</span>
                 </div>
-                <div className={styles.patientCardDetailRow}>
-                    <span className={styles.patientCardDetailLabel}>Convênio</span>
-                    <span className={styles.patientCardDetailValue}>{patient.insurancePlan?.name ?? '—'}</span>
+                <div className={patientCardDetailRow}>
+                    <span className={patientCardDetailLabel}>Convênio</span>
+                    <span className={patientCardDetailValue}>{patient.insurancePlan?.name ?? '—'}</span>
                 </div>
             </div>
         </div>
@@ -228,15 +580,15 @@ function PatientCard({patient, onClick}: {patient: Patient; onClick: () => void}
 
 function SkeletonCard() {
     return (
-        <div className={styles.skeletonCardRoot}>
-            <div className={styles.skeletonCardTop}>
-                <Skeleton className={styles.skeletonCardAvatar} />
-                <div className={styles.skeletonCardNameBlock}>
+        <div className={skeletonCardRoot}>
+            <div className={skeletonCardTop}>
+                <Skeleton className={skeletonCardAvatar} />
+                <div className={skeletonCardNameBlock}>
                     <Skeleton className="h-4 w-36" />
                     <Skeleton className="h-3 w-28" />
                 </div>
             </div>
-            <div className={styles.skeletonCardDetails}>
+            <div className={skeletonCardDetails}>
                 <Skeleton className="h-3 w-full" />
                 <Skeleton className="h-3 w-full" />
             </div>
@@ -246,21 +598,21 @@ function SkeletonCard() {
 
 function Pagination({from, to, total}: {from: number; to: number; total: number}) {
     return (
-        <div className={styles.paginationRoot}>
-            <p className={styles.paginationInfo}>
-                Mostrando <strong className={styles.paginationInfoStrong}>{from}</strong>–
-                <strong className={styles.paginationInfoStrong}>{to}</strong> de{' '}
-                <strong className={styles.paginationInfoStrong}>{total}</strong> pacientes
+        <div className={paginationRoot}>
+            <p className={paginationInfo}>
+                Mostrando <strong className={paginationInfoStrong}>{from}</strong>–
+                <strong className={paginationInfoStrong}>{to}</strong> de{' '}
+                <strong className={paginationInfoStrong}>{total}</strong> pacientes
             </p>
-            <div className={styles.paginationControls}>
-                <button type="button" disabled className={styles.paginationBtnDisabled}>
+            <div className={paginationControls}>
+                <button type="button" disabled className={paginationBtnDisabled}>
                     <ChevronLeft className="size-3.5" />
                     Anterior
                 </button>
-                <button type="button" className={styles.paginationBtnActive}>
+                <button type="button" className={paginationBtnActive}>
                     1
                 </button>
-                <button type="button" disabled className={styles.paginationBtnDisabled}>
+                <button type="button" disabled className={paginationBtnDisabled}>
                     Próxima
                     <ChevronRight className="size-3.5" />
                 </button>
@@ -287,8 +639,6 @@ function PatientsContent({
     setSearch: (v: string) => void;
     totalCount: number;
     onOpen: (p: Patient) => void;
-    // NOTE: statusFilter is intentionally not propagated here — filtering happens
-    // at the API layer once the backend adds status support.
 }) {
     if (!isLoading && patients.length === 0) {
         return (
@@ -310,10 +660,10 @@ function PatientsContent({
 
     if (layout === 'table') {
         return (
-            <div className={styles.tableRoot}>
-                <div className={styles.tableHead} style={{gridTemplateColumns: TABLE_COLS}}>
+            <div className={tableRoot}>
+                <div className={tableHead} style={{gridTemplateColumns: TABLE_COLS}}>
                     {['Paciente', 'Idade', 'Documento', 'Convênio', 'Gênero', ''].map((h, i) => (
-                        <span key={i} className={styles.tableHeadCell}>
+                        <span key={i} className={tableHeadCell}>
                             {h}
                         </span>
                     ))}
@@ -323,7 +673,7 @@ function PatientsContent({
                     ? Array.from({length: 8}).map((_, i) => <SkeletonTableRow key={i} />)
                     : patients.map((p) => <PatientTableRow key={p.id} patient={p} onClick={() => onOpen(p)} />)}
 
-                <div className={styles.tableFooter}>
+                <div className={tableFooter}>
                     <Pagination from={Math.min(1, patients.length)} to={patients.length} total={totalCount} />
                 </div>
             </div>
@@ -332,12 +682,12 @@ function PatientsContent({
 
     return (
         <>
-            <div className={styles.cardsGrid}>
+            <div className={cardsGrid}>
                 {isLoading
                     ? Array.from({length: 6}).map((_, i) => <SkeletonCard key={i} />)
                     : patients.map((p) => <PatientCard key={p.id} patient={p} onClick={() => onOpen(p)} />)}
             </div>
-            <div className={styles.cardsFooter}>
+            <div className={cardsFooter}>
                 <Pagination from={Math.min(1, patients.length)} to={patients.length} total={totalCount} />
             </div>
         </>
@@ -421,13 +771,13 @@ export function PatientsPage() {
             }
         >
             {/* Stats */}
-            <div className={styles.statsGrid}>
+            <div className={statsGrid}>
                 <StatTile
                     label="Total de pacientes"
                     value={totalAll}
                     delta={
                         <span>
-                            <span className={styles.statsDelta}>+4</span> nos últimos 30 dias
+                            <span className={statsDelta}>+4</span> nos últimos 30 dias
                         </span>
                     }
                     loading={statsQuery.isLoading}
@@ -452,28 +802,25 @@ export function PatientsPage() {
             </div>
 
             {/* Toolbar */}
-            <div className={styles.toolbarRoot}>
-                {/* Search */}
-                <div className={styles.toolbarSearch}>
-                    <Search className={styles.toolbarSearchIcon} strokeWidth={1.5} />
+            <div className={toolbarRoot}>
+                <div className={toolbarSearch}>
+                    <Search className={toolbarSearchIcon} strokeWidth={1.5} />
                     <input
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
                         placeholder="Buscar por nome ou documento…"
                         aria-label="Buscar pacientes"
-                        className={styles.toolbarSearchInput}
+                        className={toolbarSearchInput}
                     />
-                    <span className={styles.toolbarSearchKbd}>⌘K</span>
+                    <span className={toolbarSearchKbd}>⌘K</span>
                 </div>
 
-                {/* Status filter */}
                 <SegmentedControl value={statusFilter} onValueChange={(v) => setStatusFilter(v as StatusFilter)}>
                     <SegmentedControl.Item value="all">Todos</SegmentedControl.Item>
                     <SegmentedControl.Item value="active">Ativos</SegmentedControl.Item>
                     <SegmentedControl.Item value="inactive">Inativos</SegmentedControl.Item>
                 </SegmentedControl>
 
-                {/* Layout toggle */}
                 <SegmentedControl value={layout} onValueChange={(v) => setLayout(v as Layout)}>
                     <SegmentedControl.Item value="table" title="Tabela">
                         <Rows3 className="size-[15px]" />
@@ -484,13 +831,13 @@ export function PatientsPage() {
                 </SegmentedControl>
 
                 {hasFilters && (
-                    <button type="button" className={styles.toolbarClearBtn} onClick={clearFilters}>
-                        <X className={styles.toolbarClearIcon} />
+                    <button type="button" className={toolbarClearBtn} onClick={clearFilters}>
+                        <X className={toolbarClearIcon} />
                         Limpar filtros
                     </button>
                 )}
 
-                <span className={styles.toolbarCount}>
+                <span className={toolbarCount}>
                     {isLoading ? '…' : `${patients.length} resultado${patients.length !== 1 ? 's' : ''}`}
                 </span>
             </div>

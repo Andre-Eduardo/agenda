@@ -43,12 +43,12 @@ Todos os tokens vivem em [`src/app/globals.css`](src/app/globals.css). **Nunca u
 
 ### Padrão unificado: CSS Modules + `@apply` em toda a aplicação
 
-| Onde usar                                                | Padrão                              | Arquivo                  |
-| -------------------------------------------------------- | ----------------------------------- | ------------------------ |
-| Primitivos UI e páginas (`components/`, `views/`)        | **CSS Modules** + `@apply` + `clsx` | `styles.module.css`      |
-| Variantes (`cva`)                                        | Definido no `.tsx`, refs ao módulo  | — (topo do tsx)          |
-| Wrapper simples (1-2 classes)                            | `cn()` inline no JSX                | —                        |
-| Componente puro de lógica                                | nenhum                              | —                        |
+| Onde usar                                         | Padrão                              | Arquivo             |
+| ------------------------------------------------- | ----------------------------------- | ------------------- |
+| Primitivos UI e páginas (`components/`, `views/`) | **CSS Modules** + `@apply` + `clsx` | `styles.module.css` |
+| Variantes (`cva`)                                 | Definido no `.tsx`, refs ao módulo  | — (topo do tsx)     |
+| Wrapper simples (1-2 classes)                     | `cn()` inline no JSX                | —                   |
+| Componente puro de lógica                         | nenhum                              | —                   |
 
 **Nunca inline classes longas diretamente no JSX** — use sempre o arquivo de estilos.
 
@@ -118,12 +118,20 @@ views/modules/patients/pages/detail/
 
 ```css
 /* styles.module.css */
-@import "tailwindcss";
+@import 'tailwindcss';
 
-.badgeBase { @apply inline-flex items-center rounded-(--radius-badge) px-2 py-0.5 text-xs; }
-.badgeSeverityHigh   { @apply bg-(--color-danger)/10 text-(--color-danger); }
-.badgeSeverityMedium { @apply bg-(--color-warning)/10 text-(--color-warning); }
-.badgeSeverityLow    { @apply bg-(--color-text-secondary)/10 text-(--color-text-secondary); }
+.badgeBase {
+    @apply inline-flex items-center rounded-(--radius-badge) px-2 py-0.5 text-xs;
+}
+.badgeSeverityHigh {
+    @apply bg-(--color-danger)/10 text-(--color-danger);
+}
+.badgeSeverityMedium {
+    @apply bg-(--color-warning)/10 text-(--color-warning);
+}
+.badgeSeverityLow {
+    @apply bg-(--color-text-secondary)/10 text-(--color-text-secondary);
+}
 ```
 
 **`index.tsx` — cva no topo do arquivo:**
@@ -135,14 +143,14 @@ import styles from './styles.module.css';
 const badge = cva(styles.badgeBase, {
     variants: {
         severity: {
-            HIGH:   styles.badgeSeverityHigh,
+            HIGH: styles.badgeSeverityHigh,
             MEDIUM: styles.badgeSeverityMedium,
-            LOW:    styles.badgeSeverityLow,
+            LOW: styles.badgeSeverityLow,
         },
     },
 });
 
-<span className={badge({severity: 'HIGH'})}>...</span>
+<span className={badge({severity: 'HIGH'})}>...</span>;
 ```
 
 **Quando criar `styles.module.css`:**

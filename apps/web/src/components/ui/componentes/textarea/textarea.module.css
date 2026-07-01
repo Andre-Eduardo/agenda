@@ -1,4 +1,4 @@
-@import "tailwindcss";
+@reference "../../../../app/globals.css";
 .base {
     @apply min-h-[80px] resize-y;
 }

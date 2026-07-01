@@ -1,4 +1,4 @@
-@import "tailwindcss";
+@reference "../../../app/globals.css";
 .nav {
     @apply flex items-center gap-1 text-sm text-(--color-text-secondary);
 }

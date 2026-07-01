@@ -37,9 +37,7 @@ import {NativeSelect} from '@/components/ui/componentes/native-select';
 import {PageHeader} from '@/components/ui/componentes/page-header';
 import {Tabs, TabsList, TabsTrigger, TabsContent} from '@/components/ui/componentes/tabs';
 import {Textarea} from '@/components/ui/componentes/textarea';
-import {clsx} from 'clsx';
-import {cn} from '@/lib/utils';
-import styles from './styles.module.css';
+import {css, cx} from '@/styled-system/css';
 
 export const Route = createFileRoute('/_stackedLayout/patients/new')({
     component: NewPatientPage,
@@ -89,19 +87,14 @@ type TabKey = (typeof TABS)[number]['key'];
 // ── Schema ───────────────────────────────────────────────────────────────────
 
 const schema = z.object({
-    // Tab 1 — Identificação
     name: z.string().min(1, 'Nome é obrigatório'),
     documentId: z.string().min(1, 'Documento é obrigatório'),
     birthDate: z.string().optional().nullable(),
     gender: z.enum(['MALE', 'FEMALE', 'OTHER']).optional().nullable(),
-
-    // Tab 2 — Contato
     phone: z.string().optional().nullable(),
     email: z.string().email('E-mail inválido').optional().nullable().or(z.literal('')),
     emergencyContactName: z.string().optional().nullable(),
     emergencyContactPhone: z.string().optional().nullable(),
-
-    // Tab 3 — Endereço
     zipCode: z.string().optional().nullable(),
     street: z.string().optional().nullable(),
     number: z.string().optional().nullable(),
@@ -109,13 +102,294 @@ const schema = z.object({
     neighborhood: z.string().optional().nullable(),
     city: z.string().optional().nullable(),
     state: z.string().optional().nullable(),
-
-    // Tab 4 — Saúde (UI only — API doesn't have these fields yet)
     allergies: z.string().optional().nullable(),
     notes: z.string().optional().nullable(),
 });
 
 type FormValues = z.infer<typeof schema>;
+
+// ── Styles ────────────────────────────────────────────────────────────────────
+
+const pageRoot = css({
+    display: 'flex',
+    flexDirection: 'column',
+    p: '6',
+    pb: '24',
+    bg: 'bg.page',
+});
+
+const aiNudgeRoot = css({
+    mt: '[18px]',
+    display: 'flex',
+    alignItems: 'flex-start',
+    gap: '[10px]',
+    borderLeftWidth: '[3px]',
+    borderLeftStyle: 'solid',
+    borderLeftColor: 'ai.border',
+    bg: 'ai.bg',
+    px: '[14px]',
+    py: '3',
+});
+
+const aiNudgeIcon = css({
+    display: 'inline-flex',
+    w: '7',
+    h: '7',
+    flexShrink: '0',
+    alignItems: 'center',
+    justifyContent: 'center',
+    rounded: '[6px]',
+    bg: 'ai.badgeBg',
+    color: 'white',
+});
+
+const aiNudgeBody = css({flex: '1'});
+
+const aiNudgeTitle = css({
+    display: 'flex',
+    alignItems: 'center',
+    gap: '[6px]',
+    fontSize: 'sm',
+    fontWeight: 'medium',
+    lineHeight: '[1.3]',
+    color: 'ai.text',
+});
+
+const aiNudgeBadge = css({
+    rounded: '[4px]',
+    bg: 'ai.badgeBg',
+    px: '[5px]',
+    py: '[1px]',
+    fontSize: '[10px]',
+    fontWeight: 'medium',
+    letterSpacing: '[0.06em]',
+    color: 'white',
+});
+
+const aiNudgeSub = css({
+    mt: '0.5',
+    fontSize: 'xs',
+    lineHeight: '[1.5]',
+    color: 'ai.text',
+    opacity: '0.85',
+});
+
+const aiNudgeBtn = css({
+    display: 'inline-flex',
+    flexShrink: '0',
+    alignItems: 'center',
+    gap: '[5px]',
+    rounded: '[6px]',
+    bg: 'ai.badgeBg',
+    px: '[11px]',
+    py: '1.5',
+    fontSize: 'xs',
+    fontWeight: 'medium',
+    color: 'white',
+    transitionProperty: 'color, background-color',
+    transitionDuration: 'fast',
+    transitionTimingFunction: 'ease-out',
+    _hover: {bg: 'ai.border'},
+});
+
+const tabNum = css({
+    display: 'inline-flex',
+    w: '[22px]',
+    h: '[22px]',
+    flexShrink: '0',
+    alignItems: 'center',
+    justifyContent: 'center',
+    rounded: 'full',
+    borderWidth: '1px',
+    borderStyle: 'solid',
+    borderColor: 'border',
+    bg: 'bg.card',
+    fontSize: '[11px]',
+    fontWeight: 'semibold',
+    fontVariantNumeric: 'tabular-nums',
+    color: 'text.secondary',
+});
+
+const tabNumActive = css({borderColor: 'primary', bg: 'primary', color: 'white'});
+
+const tabNumFilled = css({borderColor: 'success/40', bg: 'success.surface', color: 'success'});
+
+const tabIcon = css({display: {base: 'none', sm: 'block'}, w: '[14px]', h: '[14px]'});
+
+const sectionRoot = css({p: '7'});
+
+const sectionHead = css({mb: '[18px]', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '4'});
+
+const sectionNum = css({
+    display: 'inline-flex',
+    w: '6',
+    h: '6',
+    flexShrink: '0',
+    alignItems: 'center',
+    justifyContent: 'center',
+    rounded: '[6px]',
+    bg: 'primary.surface',
+    fontFamily: 'mono',
+    fontSize: 'xs',
+    fontWeight: 'medium',
+    fontVariantNumeric: 'tabular-nums',
+    color: 'primary.text',
+});
+
+const sectionTitle = css({
+    fontSize: 'base',
+    fontWeight: 'medium',
+    lineHeight: '[1.3]',
+    letterSpacing: '[-0.005em]',
+    color: 'text.primary',
+});
+
+const sectionSub = css({mt: '0.5', fontSize: 'sm', lineHeight: '[1.4]', color: 'text.tertiary'});
+
+const sectionInner = css({display: 'flex', alignItems: 'flex-start', gap: '3'});
+
+const photoRoot = css({mb: '[18px]', display: 'flex', alignItems: 'center', gap: '4'});
+
+const photoFrame = css({
+    position: 'relative',
+    display: 'flex',
+    w: '24',
+    h: '24',
+    flexShrink: '0',
+    cursor: 'pointer',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '1',
+    overflow: 'hidden',
+    rounded: '[14px]',
+    borderWidth: '[1.5px]',
+    borderStyle: 'dashed',
+    borderColor: 'border',
+    bg: 'bg.surface',
+    color: 'text.tertiary',
+    transitionProperty: 'all',
+    transitionDuration: 'fast',
+    transitionTimingFunction: 'ease-out',
+    _hover: {borderColor: 'primary', bg: 'primary.surface', color: 'primary.text'},
+});
+
+const photoText = css({
+    textAlign: 'center',
+    fontSize: '[11px]',
+    fontWeight: 'medium',
+    lineHeight: '[1.3]',
+    px: '1',
+});
+
+const photoOverlay = css({
+    position: 'absolute',
+    inset: '0',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '1',
+    bg: 'black/55',
+    fontSize: '[11px]',
+    fontWeight: 'medium',
+    color: 'white',
+    opacity: '0',
+    transitionProperty: 'opacity',
+    transitionDuration: 'fast',
+    transitionTimingFunction: 'ease-out',
+    '[data-photo-frame]:hover &': {opacity: '1'},
+});
+
+const photoMeta = css({display: 'flex', flexDirection: 'column', gap: '1'});
+
+const photoTitle = css({fontSize: 'sm-body', fontWeight: 'medium', color: 'text.primary'});
+
+const photoSub = css({fontSize: 'xs', lineHeight: '[1.4]', color: 'text.tertiary'});
+
+const subSectionRoot = css({mt: '[18px]', rounded: '[10px]', bg: 'bg.surface', p: '4'});
+
+const subSectionHead = css({mb: '[14px]', display: 'flex', alignItems: 'center', gap: '2'});
+
+const subSectionTitle = css({fontSize: 'sm', fontWeight: 'medium', lineHeight: '[1.3]', color: 'text.primary'});
+
+const subSectionTag = css({
+    rounded: '[4px]',
+    borderWidth: '1px',
+    borderStyle: 'solid',
+    borderColor: 'border',
+    bg: 'bg.card',
+    px: '[7px]',
+    py: '0.5',
+    fontSize: '[11px]',
+    color: 'text.tertiary',
+});
+
+const subSectionHint = css({fontSize: 'xs', color: 'text.tertiary'});
+
+const subSectionIcon = css({w: '3.5', h: '3.5', color: 'text.secondary'});
+
+const infoNoteIcon = css({mt: 'px', w: '[14px]', h: '[14px]', flexShrink: '0'});
+
+const infoNote = css({
+    mt: '4',
+    display: 'flex',
+    alignItems: 'flex-start',
+    gap: '[10px]',
+    rounded: '[8px]',
+    borderWidth: '1px',
+    borderStyle: 'solid',
+    borderColor: 'primary.border',
+    bg: 'primary.surface',
+    p: '3',
+    fontSize: 'xs',
+    lineHeight: '[1.5]',
+    color: 'primary.text',
+});
+
+const footerRoot = css({
+    position: 'fixed',
+    bottom: '0',
+    left: '0',
+    right: '0',
+    zIndex: '30',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: '4',
+    borderTopWidth: '1px',
+    borderTopStyle: 'solid',
+    borderTopColor: 'border',
+    bg: 'bg.card',
+    px: '8',
+    py: '[14px]',
+});
+
+const footerMeta = css({
+    display: 'flex',
+    alignItems: 'center',
+    gap: '[10px]',
+    fontSize: 'xs',
+    lineHeight: '[1.4]',
+    color: 'text.tertiary',
+});
+
+const footerStep = css({
+    ml: '1',
+    rounded: 'full',
+    borderWidth: '1px',
+    borderStyle: 'solid',
+    borderColor: 'border',
+    bg: 'bg.surface',
+    px: '[10px]',
+    py: '1',
+    fontSize: '[11px]',
+    fontWeight: 'medium',
+    letterSpacing: '[0.02em]',
+    color: 'text.secondary',
+});
+
+const footerActions = css({display: 'flex', alignItems: 'center', gap: '[10px]'});
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -138,12 +412,12 @@ function tabHasValues(tab: TabKey, values: Partial<FormValues>): boolean {
 
 function SectionHead({num, title, subtitle}: {num: string; title: string; subtitle?: string}) {
     return (
-        <div className={styles.sectionHead}>
-            <div className={styles.sectionInner}>
-                <span className={styles.sectionNum}>{num}</span>
+        <div className={sectionHead}>
+            <div className={sectionInner}>
+                <span className={sectionNum}>{num}</span>
                 <div>
-                    <h2 className={styles.sectionTitle}>{title}</h2>
-                    {subtitle && <p className={styles.sectionSub}>{subtitle}</p>}
+                    <h2 className={sectionTitle}>{title}</h2>
+                    {subtitle && <p className={sectionSub}>{subtitle}</p>}
                 </div>
             </div>
         </div>
@@ -211,7 +485,6 @@ export function NewPatientPage() {
         if (!isLast) setTab(TABS[tabIdx + 1].key);
     }
 
-    // Re-render lucide icons when tab changes
     useEffect(() => {
         if (typeof window !== 'undefined' && (window as {lucide?: {createIcons: () => void}}).lucide) {
             (window as {lucide?: {createIcons: () => void}}).lucide?.createIcons();
@@ -247,7 +520,6 @@ export function NewPatientPage() {
         createPatient.mutate({data: dto});
     };
 
-    // Simulate zip code auto-fill (UI-only demo)
     const zipValue = watch('zipCode') ?? '';
 
     useEffect(() => {
@@ -264,7 +536,7 @@ export function NewPatientPage() {
     }, [zipValue]);
 
     return (
-        <div className={styles.pageRoot}>
+        <div className={pageRoot}>
             {/* Breadcrumb */}
             <Breadcrumb>
                 <BreadcrumbList>
@@ -295,21 +567,21 @@ export function NewPatientPage() {
             />
 
             {/* AI nudge */}
-            <div className={styles.aiNudgeRoot}>
-                <span className={styles.aiNudgeIcon}>
+            <div className={aiNudgeRoot}>
+                <span className={aiNudgeIcon}>
                     <Sparkles className="size-3.5" strokeWidth={1.5} />
                 </span>
-                <div className={styles.aiNudgeBody}>
-                    <div className={styles.aiNudgeTitle}>
-                        <span className={styles.aiNudgeBadge}>IA</span>
+                <div className={aiNudgeBody}>
+                    <div className={aiNudgeTitle}>
+                        <span className={aiNudgeBadge}>IA</span>
                         Acelerar cadastro
                     </div>
-                    <p className={styles.aiNudgeSub}>
+                    <p className={aiNudgeSub}>
                         Envie um documento (RG, CNH ou ficha) e a IA pré-preenche identificação e endereço · você revisa
                         antes de salvar.
                     </p>
                 </div>
-                <button type="button" className={styles.aiNudgeBtn}>
+                <button type="button" className={aiNudgeBtn}>
                     <Upload className="size-3" strokeWidth={1.5} />
                     Anexar documento
                 </button>
@@ -326,16 +598,10 @@ export function NewPatientPage() {
 
                                 return (
                                     <TabsTrigger key={t.key} value={t.key}>
-                                        <span
-                                            className={clsx(
-                                                styles.tabNum,
-                                                tab === t.key && styles.tabNumActive,
-                                                filled && styles.tabNumFilled
-                                            )}
-                                        >
+                                        <span className={cx(tabNum, tab === t.key && tabNumActive, filled && tabNumFilled)}>
                                             {filled ? <Check className="size-[11px]" strokeWidth={2.5} /> : t.num}
                                         </span>
-                                        <TabIcon className={styles.tabIcon} strokeWidth={1.5} />
+                                        <TabIcon className={tabIcon} strokeWidth={1.5} />
                                         {t.label}
                                     </TabsTrigger>
                                 );
@@ -344,7 +610,7 @@ export function NewPatientPage() {
 
                         {/* ── Tab 1: Identificação ─────────────────────────────── */}
                         <TabsContent value="identity">
-                            <div className={styles.sectionRoot}>
+                            <div className={sectionRoot}>
                                 <SectionHead
                                     num="1"
                                     title="Identificação pessoal"
@@ -352,17 +618,21 @@ export function NewPatientPage() {
                                 />
 
                                 {/* Photo uploader (UI only) */}
-                                <div className={styles.photoRoot}>
-                                    <div className={clsx(styles.photoFrame, 'group')}>
+                                <div className={photoRoot}>
+                                    <div data-photo-frame className={photoFrame}>
                                         <Camera className="size-[22px]" strokeWidth={1.5} />
-                                        <span className={styles.photoText}>Clique para adicionar foto</span>
+                                        <span className={photoText}>Clique para adicionar foto</span>
+                                        <div className={photoOverlay}>
+                                            <Camera className="size-4" strokeWidth={1.5} />
+                                            Alterar foto
+                                        </div>
                                     </div>
-                                    <div className={styles.photoMeta}>
-                                        <span className={styles.photoTitle}>Foto do paciente</span>
-                                        <span className={styles.photoSub}>
+                                    <div className={photoMeta}>
+                                        <span className={photoTitle}>Foto do paciente</span>
+                                        <span className={photoSub}>
                                             JPG ou PNG · até 5 MB · proporção 1:1 recomendada
                                         </span>
-                                        <span className={cn(styles.photoSub, 'mt-1 text-(--color-text-tertiary)')}>
+                                        <span className={cx(photoSub, css({mt: '1'}))}>
                                             Opcional · ajuda na identificação visual
                                         </span>
                                     </div>
@@ -425,7 +695,7 @@ export function NewPatientPage() {
 
                         {/* ── Tab 2: Contato ────────────────────────────────────── */}
                         <TabsContent value="contact">
-                            <div className={styles.sectionRoot}>
+                            <div className={sectionRoot}>
                                 <SectionHead
                                     num="2"
                                     title="Contato"
@@ -454,12 +724,12 @@ export function NewPatientPage() {
                                 </FormGrid>
 
                                 {/* Responsável */}
-                                <div className={styles.subSectionRoot}>
-                                    <div className={styles.subSectionHead}>
-                                        <User className={styles.subSectionIcon} strokeWidth={1.5} />
-                                        <h3 className={styles.subSectionTitle}>Responsável</h3>
-                                        <span className={styles.subSectionTag}>Opcional</span>
-                                        <span className={cn(styles.subSectionHint, 'ml-1')}>
+                                <div className={subSectionRoot}>
+                                    <div className={subSectionHead}>
+                                        <User className={subSectionIcon} strokeWidth={1.5} />
+                                        <h3 className={subSectionTitle}>Responsável</h3>
+                                        <span className={subSectionTag}>Opcional</span>
+                                        <span className={cx(subSectionHint, css({ml: '1'}))}>
                                             · para menores ou pacientes com tutela
                                         </span>
                                     </div>
@@ -492,7 +762,7 @@ export function NewPatientPage() {
 
                         {/* ── Tab 3: Endereço ───────────────────────────────────── */}
                         <TabsContent value="address">
-                            <div className={styles.sectionRoot}>
+                            <div className={sectionRoot}>
                                 <SectionHead num="3" title="Endereço" subtitle="Todos os campos são opcionais." />
 
                                 <FormGrid>
@@ -570,7 +840,7 @@ export function NewPatientPage() {
 
                         {/* ── Tab 4: Saúde ─────────────────────────────────────── */}
                         <TabsContent value="health">
-                            <div className={styles.sectionRoot}>
+                            <div className={sectionRoot}>
                                 <SectionHead
                                     num="4"
                                     title="Informações de saúde"
@@ -616,8 +886,8 @@ export function NewPatientPage() {
                                     </Field>
                                 </FormGrid>
 
-                                <div className={styles.infoNote}>
-                                    <Info className={styles.infoNoteIcon} strokeWidth={1.5} />
+                                <div className={infoNote}>
+                                    <Info className={infoNoteIcon} strokeWidth={1.5} />
                                     <div>
                                         Esses dados são apenas um registro inicial. A <strong>anamnese completa</strong>
                                         , prescrições e evoluções (SOAP) são registradas no prontuário após o cadastro.
@@ -628,16 +898,16 @@ export function NewPatientPage() {
                     </Tabs>
 
                     {/* Sticky footer */}
-                    <div className={styles.footerRoot}>
-                        <div className={styles.footerMeta}>
+                    <div className={footerRoot}>
+                        <div className={footerMeta}>
                             <Lock className="size-3" strokeWidth={1.5} />
                             <span>Dados criptografados em repouso · LGPD</span>
-                            <span className={styles.footerStep}>
+                            <span className={footerStep}>
                                 Etapa {tabIdx + 1} de {TABS.length}
                             </span>
                         </div>
 
-                        <div className={styles.footerActions}>
+                        <div className={footerActions}>
                             <Button
                                 type="button"
                                 variant="outline"

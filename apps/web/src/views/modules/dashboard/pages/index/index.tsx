@@ -12,7 +12,6 @@ import {
 } from '@agenda-app/client';
 import type {UseQueryResult} from '@tanstack/react-query';
 import {createFileRoute, useNavigate} from '@tanstack/react-router';
-import {cva} from 'class-variance-authority';
 import {
     ArrowUpRight,
     CalendarX2,
@@ -29,42 +28,485 @@ import {
 import {Button} from '@/components/ui/componentes/button';
 import {Skeleton} from '@/components/ui/componentes/skeleton';
 import {Page} from '@/views/components/Page';
-import styles from './styles.module.css';
+import {css, cva} from '@/styled-system/css';
 
-const statIcon = cva(styles.statIconBase, {
+// ── Styles ────────────────────────────────────────────────────────────────────
+
+const page = css({
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '6',
+    p: '6',
+    maxW: '[1200px]',
+    mx: 'auto',
+    w: 'full',
+});
+
+const header = css({
+    display: 'flex',
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+    gap: '4',
+    flexWrap: 'wrap',
+});
+
+const greetingText = css({
+    fontSize: '[22px]',
+    fontWeight: 'medium',
+    color: 'text.primary',
+    lineHeight: 'snug',
+});
+
+const dateLabel = css({
+    fontSize: 'sm',
+    color: 'text.secondary',
+    mt: '0.5',
+});
+
+const agentBadge = css({
+    display: 'flex',
+    alignItems: 'center',
+    gap: '2',
+    px: '3',
+    py: '1.5',
+    rounded: 'card',
+    borderWidth: '1px',
+    borderStyle: 'solid',
+    borderColor: 'ai.border',
+    bg: 'ai.bg',
+    fontSize: 'xs',
+    color: 'ai.text',
+});
+
+const agentDot = css({
+    w: '1.5',
+    h: '1.5',
+    rounded: 'full',
+    bg: 'ai.badgeBg',
+});
+
+const agentLabel = css({
+    color: 'text.secondary',
+});
+
+const statsGrid = css({
+    display: 'grid',
+    gridTemplateColumns: {base: 'repeat(2, minmax(0, 1fr))', sm: 'repeat(4, minmax(0, 1fr))'},
+    gap: '3',
+});
+
+const statCard = css({
+    display: 'flex',
+    alignItems: 'center',
+    gap: '3',
+    p: '4',
+    rounded: 'card',
+    borderWidth: '1px',
+    borderStyle: 'solid',
+    borderColor: 'border',
+    bg: 'bg.card',
+});
+
+const statIcon = cva({
+    base: {
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        w: '9',
+        h: '9',
+        rounded: '[8px]',
+        flexShrink: '0',
+    },
     variants: {
         tone: {
-            neutral: styles.statIconNeutral,
-            success: styles.statIconSuccess,
-            muted: styles.statIconMuted,
-            primary: styles.statIconPrimary,
+            neutral: {bg: 'text.secondary/10', color: 'text.secondary'},
+            success: {bg: 'success/10', color: 'success'},
+            muted: {bg: 'text.tertiary/10', color: 'text.tertiary'},
+            primary: {bg: 'primary/10', color: 'primary'},
         },
     },
     defaultVariants: {tone: 'neutral'},
 });
 
-const statusBadge = cva(styles.statusBadgeBase, {
+const statValue = css({
+    fontSize: '2xl',
+    fontWeight: 'medium',
+    color: 'text.primary',
+    fontFamily: 'mono',
+    fontVariantNumeric: 'tabular-nums',
+    lineHeight: 'none',
+});
+
+const statLabel = css({
+    fontSize: 'xs',
+    color: 'text.secondary',
+    mt: '1',
+});
+
+const cols = css({
+    display: 'grid',
+    gridTemplateColumns: {base: 'repeat(1, minmax(0, 1fr))', lg: '1fr 340px'},
+    gap: '6',
+    alignItems: 'flex-start',
+});
+
+const colMain = css({
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '6',
+});
+
+const colSide = css({
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '6',
+});
+
+const sectionCard = css({
+    rounded: 'card',
+    borderWidth: '1px',
+    borderStyle: 'solid',
+    borderColor: 'border',
+    bg: 'bg.card',
+});
+
+const sectionHead = css({
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: '4',
+    px: '5',
+    pt: '5',
+    pb: '4',
+});
+
+const sectionTitle = css({
+    fontSize: 'sm',
+    fontWeight: 'medium',
+    color: 'text.primary',
+});
+
+const sectionSub = css({
+    fontSize: '[11px]',
+    color: 'text.tertiary',
+    mt: '0.5',
+});
+
+const sectionBody = css({
+    px: '5',
+    pb: '5',
+});
+
+const secLink = css({
+    display: 'flex',
+    alignItems: 'center',
+    gap: '1',
+    fontSize: 'xs',
+    color: 'primary',
+    transitionProperty: 'color',
+    transitionDuration: 'base',
+    _hover: {color: 'primary/80'},
+});
+
+const apptList = css({
+    display: 'flex',
+    flexDirection: 'column',
+    '& > * + *': {
+        borderTopWidth: '1px',
+        borderTopStyle: 'solid',
+        borderTopColor: 'border',
+    },
+});
+
+const apptRow = css({
+    display: 'flex',
+    alignItems: 'center',
+    gap: '3',
+    py: '3.5',
+    _first: {pt: '0'},
+    _last: {pb: '0'},
+});
+
+const apptTime = css({
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'flex-end',
+    w: '12',
+    flexShrink: '0',
+});
+
+const apptTimeStart = css({
+    fontSize: 'sm',
+    fontWeight: 'medium',
+    fontFamily: 'mono',
+    fontVariantNumeric: 'tabular-nums',
+    color: 'text.primary',
+    lineHeight: 'none',
+});
+
+const apptTimeEnd = css({
+    fontSize: '[11px]',
+    color: 'text.tertiary',
+    fontFamily: 'mono',
+    fontVariantNumeric: 'tabular-nums',
+    mt: '0.5',
+});
+
+const apptPatBtn = css({
+    display: 'flex',
+    alignItems: 'center',
+    gap: '2.5',
+    flex: '1',
+    minW: '0',
+    transitionProperty: 'opacity',
+    transitionDuration: 'base',
+    textAlign: 'left',
+    _hover: {opacity: '0.75'},
+});
+
+const apptPatName = css({
+    fontSize: 'sm',
+    fontWeight: 'medium',
+    color: 'text.primary',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    whiteSpace: 'nowrap',
+    lineHeight: 'none',
+});
+
+const apptPatType = css({
+    display: 'flex',
+    alignItems: 'center',
+    gap: '1',
+    fontSize: '[11px]',
+    color: 'text.tertiary',
+    mt: '0.5',
+});
+
+const apptStartBtn = css({
+    flexShrink: '0',
+    gap: '1.5',
+});
+
+const statusBadge = cva({
+    base: {
+        display: 'inline-flex',
+        alignItems: 'center',
+        gap: '1.5',
+        rounded: 'full',
+        px: '2',
+        py: '0.5',
+        fontSize: '[11px]',
+        fontWeight: 'medium',
+        flexShrink: '0',
+    },
     variants: {
         status: {
-            SCHEDULED: styles.statusBadgeScheduled,
-            CONFIRMED: styles.statusBadgeConfirmed,
-            COMPLETED: styles.statusBadgeCompleted,
-            CANCELLED: styles.statusBadgeCancelled,
-            NO_SHOW: styles.statusBadgeNoShow,
-            ARRIVED: styles.statusBadgeArrived,
-            IN_PROGRESS: styles.statusBadgeInProgress,
+            SCHEDULED: {bg: 'text.tertiary/10', color: 'text.secondary'},
+            CONFIRMED: {bg: 'primary/10', color: 'primary'},
+            COMPLETED: {bg: 'success/10', color: 'success'},
+            CANCELLED: {bg: 'danger/10', color: 'danger'},
+            NO_SHOW: {bg: 'warning/10', color: 'warning'},
+            ARRIVED: {bg: 'primary/15', color: 'primary'},
+            IN_PROGRESS: {bg: 'primary/15', color: 'primary'},
         },
     },
     defaultVariants: {status: 'SCHEDULED'},
 });
 
-// ─── Route ──────────────────────────────────────────────────────────────────
+const statusDot = css({
+    w: '1.5',
+    h: '1.5',
+    rounded: 'full',
+    bg: 'currentColor',
+    flexShrink: '0',
+});
+
+const empty = css({
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    gap: '3',
+    py: '8',
+    textAlign: 'center',
+});
+
+const emptyIcon = css({color: 'text.tertiary'});
+
+const emptyTitle = css({
+    fontSize: 'sm',
+    fontWeight: 'medium',
+    color: 'text.primary',
+});
+
+const emptySub = css({
+    fontSize: 'xs',
+    color: 'text.secondary',
+    maxW: '[220px]',
+});
+
+const evolList = css({display: 'flex', flexDirection: 'column', gap: '4'});
+
+const evolRow = css({display: 'flex', alignItems: 'flex-start', gap: '3'});
+
+const evolBody = css({flex: '1', minW: '0'});
+
+const evolMeta = css({
+    display: 'flex',
+    alignItems: 'center',
+    gap: '2',
+    flexWrap: 'wrap',
+    fontSize: '[11px]',
+    color: 'text.tertiary',
+});
+
+const evolExcerpt = css({
+    fontSize: 'xs',
+    color: 'text.secondary',
+    mt: '1',
+    lineClamp: '2',
+    lineHeight: 'relaxed',
+});
+
+const evolDate = css({fontFamily: 'mono', fontVariantNumeric: 'tabular-nums'});
+
+const patientInitialsAvatar = css({
+    display: 'flex',
+    h: '8',
+    w: '8',
+    flexShrink: '0',
+    alignItems: 'center',
+    justifyContent: 'center',
+    rounded: 'full',
+    bg: 'text.tertiary/15',
+    fontSize: '[11px]',
+    fontWeight: 'medium',
+    color: 'text.secondary',
+});
+
+const qaGrid = css({
+    display: 'grid',
+    gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
+    gap: '2',
+});
+
+const qaBtn = css({
+    display: 'flex',
+    alignItems: 'center',
+    gap: '3',
+    p: '3',
+    rounded: '[8px]',
+    textAlign: 'left',
+    borderWidth: '1px',
+    borderStyle: 'solid',
+    borderColor: 'border',
+    bg: 'bg.surface',
+    transitionProperty: 'all',
+    transitionDuration: 'base',
+    cursor: 'pointer',
+    _hover: {bg: 'bg.card', borderColor: 'primary/30'},
+});
+
+const qaIcon = css({
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    w: '8',
+    h: '8',
+    rounded: '[6px]',
+    flexShrink: '0',
+    bg: 'primary/10',
+    color: 'primary',
+});
+
+const qaLabel = css({
+    fontSize: 'xs',
+    fontWeight: 'medium',
+    color: 'text.primary',
+    lineHeight: 'snug',
+});
+
+const qaSub = css({
+    fontSize: '[10px]',
+    color: 'text.tertiary',
+    mt: '0.5',
+});
+
+const upList = css({
+    display: 'flex',
+    flexDirection: 'column',
+    '& > * + *': {
+        borderTopWidth: '1px',
+        borderTopStyle: 'solid',
+        borderTopColor: 'border',
+    },
+});
+
+const upRow = css({
+    display: 'flex',
+    alignItems: 'center',
+    gap: '3',
+    py: '3',
+    cursor: 'pointer',
+    transitionProperty: 'opacity',
+    transitionDuration: 'base',
+    _first: {pt: '0'},
+    _last: {pb: '0'},
+    _hover: {opacity: '0.75'},
+});
+
+const upDate = css({display: 'flex', flexDirection: 'column', w: '14', flexShrink: '0'});
+
+const upDay = css({fontSize: 'xs', fontWeight: 'medium', color: 'text.primary'});
+
+const upTime = css({
+    fontSize: '[11px]',
+    color: 'text.tertiary',
+    fontFamily: 'mono',
+    fontVariantNumeric: 'tabular-nums',
+    mt: '0.5',
+});
+
+const upInfo = css({flex: '1', minW: '0'});
+
+const upName = css({
+    fontSize: 'sm',
+    fontWeight: 'medium',
+    color: 'text.primary',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    whiteSpace: 'nowrap',
+});
+
+const upType = css({
+    fontSize: '[11px]',
+    color: 'text.secondary',
+    mt: '0.5',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    whiteSpace: 'nowrap',
+});
+
+const upChevron = css({color: 'text.tertiary', flexShrink: '0'});
+
+const skeletonGreeting = css({h: '7', w: '48', mb: '1'});
+const skeletonStatValue = css({h: '6', w: '8', mb: '1'});
+const skeletonListCol = css({display: 'flex', flexDirection: 'column', gap: '4'});
+const skeletonListRow = css({display: 'flex', alignItems: 'flex-start', gap: '3'});
+const skeletonApptCol = css({display: 'flex', flexDirection: 'column', gap: '3'});
+const skeletonApptRow = css({display: 'flex', alignItems: 'center', gap: '3'});
+const skeletonAvatar = css({h: '8', w: '8', rounded: 'full', flexShrink: '0'});
+const skeletonNameMd = css({h: '3.5', w: '32', mb: '1.5'});
+const skeletonNameSm = css({h: '3.5', w: '28', mb: '1.5'});
+const skeletonStatusBadge = css({h: '5', w: '20', rounded: 'full'});
+
+// ─── Route ───────────────────────────────────────────────────────────────────
 
 export const Route = createFileRoute('/_stackedLayout/dashboard')({
     component: DashboardPage,
 });
 
-// ─── Types ───────────────────────────────────────────────────────────────────
+// ─── Types ────────────────────────────────────────────────────────────────────
 
 interface PaginatedPage<T> {
     data: T[];
@@ -74,7 +516,7 @@ interface PaginatedPage<T> {
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
 function toDateStr(iso: string) {
-    return iso.slice(0, 10); // YYYY-MM-DD
+    return iso.slice(0, 10);
 }
 
 function todayStr() {
@@ -169,17 +611,15 @@ const ACTIVE_STATUSES = new Set<AppointmentStatus>([
     AppointmentStatus.IN_PROGRESS,
 ]);
 
-// ─── Page ────────────────────────────────────────────────────────────────────
+// ─── Page ─────────────────────────────────────────────────────────────────────
 
 export function DashboardPage() {
     const navigate = useNavigate();
 
-    // Current user
     const userQuery = useGetCurrentUser();
     const user = userQuery.data;
     const firstName = user?.name?.split(' ')[0] ?? '…';
 
-    // Appointments — fetch a generous batch, filter client-side
     const apptQuery = useSearchAppointments({
         term: '',
         limit: 200,
@@ -206,7 +646,6 @@ export function DashboardPage() {
         pending: todayAppts.filter((a) => ACTIVE_STATUSES.has(a.status)).length,
     };
 
-    // Recent records (evolutions)
     const recentQuery = useSearchRecords({
         term: '',
         limit: 5,
@@ -224,28 +663,28 @@ export function DashboardPage() {
     const isLoading = apptQuery.isLoading || userQuery.isLoading;
 
     return (
-        <Page title="Dashboard" className={styles.page}>
-            {/* ── Header ─────────────────────────────────────────────────────── */}
-            <div className={styles.header}>
+        <Page title="Dashboard" className={page}>
+            {/* ── Header ────────────────────────────────────────────────────── */}
+            <div className={header}>
                 <div>
                     {isLoading ? (
-                        <Skeleton className={styles.skeletonGreeting} />
+                        <Skeleton className={skeletonGreeting} />
                     ) : (
-                        <h1 className={styles.greeting}>
+                        <h1 className={greetingText}>
                             {greeting()}, {firstName}
                         </h1>
                     )}
-                    <p className={styles.dateLabel}>{fmtFullDate()}</p>
+                    <p className={dateLabel}>{fmtFullDate()}</p>
                 </div>
-                <div className={styles.agentBadge}>
-                    <span className={styles.agentDot} />
-                    <span className={styles.agentLabel}>Agente IA ativo</span>
+                <div className={agentBadge}>
+                    <span className={agentDot} />
+                    <span className={agentLabel}>Agente IA ativo</span>
                     <Sparkles size={12} />
                 </div>
             </div>
 
-            {/* ── Stats ──────────────────────────────────────────────────────── */}
-            <div className={styles.statsGrid}>
+            {/* ── Stats ─────────────────────────────────────────────────────── */}
+            <div className={statsGrid}>
                 <StatCard
                     label="Consultas hoje"
                     value={counts.total}
@@ -276,17 +715,17 @@ export function DashboardPage() {
                 />
             </div>
 
-            {/* ── Two-column body ────────────────────────────────────────────── */}
-            <div className={styles.cols}>
+            {/* ── Two-column body ───────────────────────────────────────────── */}
+            <div className={cols}>
                 {/* Left column */}
-                <div className={styles.colMain}>
+                <div className={colMain}>
                     {/* Today's appointments */}
-                    <section className={styles.sectionCard}>
-                        <div className={styles.sectionHead}>
+                    <section className={sectionCard}>
+                        <div className={sectionHead}>
                             <div>
-                                <div className={styles.sectionTitle}>Consultas de hoje</div>
+                                <div className={sectionTitle}>Consultas de hoje</div>
                                 {counts.total > 0 && (
-                                    <div className={styles.sectionSub}>
+                                    <div className={sectionSub}>
                                         {counts.total}{' '}
                                         {counts.total === 1 ? 'consulta agendada' : 'consultas agendadas'}
                                     </div>
@@ -294,26 +733,26 @@ export function DashboardPage() {
                             </div>
                             <button
                                 type="button"
-                                className={styles.secLink}
+                                className={secLink}
                                 onClick={() => navigate({to: '/appointments'})}
                             >
                                 Ver agenda <ArrowUpRight size={12} />
                             </button>
                         </div>
-                        <div className={styles.sectionBody}>
+                        <div className={sectionBody}>
                             {/* eslint-disable-next-line no-nested-ternary -- loading/empty/list pattern is a clear render branch */}
                             {isLoading ? (
                                 <AppointmentSkeleton rows={3} />
                             ) : todayAppts.length === 0 ? (
-                                <div className={styles.empty}>
-                                    <CalendarX2 size={28} className={styles.emptyIcon} />
-                                    <div className={styles.emptyTitle}>Sem consultas hoje</div>
-                                    <p className={styles.emptySub}>
+                                <div className={empty}>
+                                    <CalendarX2 size={28} className={emptyIcon} />
+                                    <div className={emptyTitle}>Sem consultas hoje</div>
+                                    <p className={emptySub}>
                                         Aproveite para revisar pendências ou criar novos agendamentos.
                                     </p>
                                 </div>
                             ) : (
-                                <div className={styles.apptList}>
+                                <div className={apptList}>
                                     {todayAppts.map((apt) => (
                                         <ApptRow key={apt.id} apt={apt} />
                                     ))}
@@ -323,37 +762,37 @@ export function DashboardPage() {
                     </section>
 
                     {/* Recent records */}
-                    <section className={styles.sectionCard}>
-                        <div className={styles.sectionHead}>
+                    <section className={sectionCard}>
+                        <div className={sectionHead}>
                             <div>
-                                <div className={styles.sectionTitle}>Atividade recente</div>
-                                <div className={styles.sectionSub}>Últimas evoluções registradas</div>
+                                <div className={sectionTitle}>Atividade recente</div>
+                                <div className={sectionSub}>Últimas evoluções registradas</div>
                             </div>
-                            <button type="button" className={styles.secLink}>
+                            <button type="button" className={secLink}>
                                 Ver todas <ArrowUpRight size={12} />
                             </button>
                         </div>
-                        <div className={styles.sectionBody}>
+                        <div className={sectionBody}>
                             {/* eslint-disable-next-line no-nested-ternary -- loading/empty/list pattern is a clear render branch */}
                             {recentQuery.isLoading ? (
-                                <div className={styles.skeletonListCol}>
+                                <div className={skeletonListCol}>
                                     {Array.from({length: 3}).map((_, i) => (
-                                        <div key={i} className={styles.skeletonListRow}>
-                                            <Skeleton className={styles.skeletonAvatar} />
+                                        <div key={i} className={skeletonListRow}>
+                                            <Skeleton className={skeletonAvatar} />
                                             <div className="flex-1">
-                                                <Skeleton className={styles.skeletonNameMd} />
+                                                <Skeleton className={skeletonNameMd} />
                                                 <Skeleton className="h-3 w-full" />
                                             </div>
                                         </div>
                                     ))}
                                 </div>
                             ) : recentRecords.length === 0 ? (
-                                <div className={styles.empty}>
-                                    <FileText size={24} className={styles.emptyIcon} />
-                                    <div className={styles.emptyTitle}>Nenhuma evolução registrada</div>
+                                <div className={empty}>
+                                    <FileText size={24} className={emptyIcon} />
+                                    <div className={emptyTitle}>Nenhuma evolução registrada</div>
                                 </div>
                             ) : (
-                                <div className={styles.evolList}>
+                                <div className={evolList}>
                                     {recentRecords.map((rec) => (
                                         <RecentRecordRow key={rec.id} record={rec} />
                                     ))}
@@ -364,14 +803,14 @@ export function DashboardPage() {
                 </div>
 
                 {/* Right column */}
-                <div className={styles.colSide}>
+                <div className={colSide}>
                     {/* Quick actions */}
-                    <section className={styles.sectionCard}>
-                        <div className={styles.sectionHead}>
-                            <div className={styles.sectionTitle}>Ações rápidas</div>
+                    <section className={sectionCard}>
+                        <div className={sectionHead}>
+                            <div className={sectionTitle}>Ações rápidas</div>
                         </div>
-                        <div className={styles.sectionBody}>
-                            <div className={styles.qaGrid}>
+                        <div className={sectionBody}>
+                            <div className={qaGrid}>
                                 <QuickAction
                                     icon={<UserPlus size={16} />}
                                     label="Novo paciente"
@@ -398,28 +837,28 @@ export function DashboardPage() {
                     </section>
 
                     {/* Upcoming appointments */}
-                    <section className={styles.sectionCard}>
-                        <div className={styles.sectionHead}>
+                    <section className={sectionCard}>
+                        <div className={sectionHead}>
                             <div>
-                                <div className={styles.sectionTitle}>Próximas consultas</div>
-                                <div className={styles.sectionSub}>A partir de amanhã</div>
+                                <div className={sectionTitle}>Próximas consultas</div>
+                                <div className={sectionSub}>A partir de amanhã</div>
                             </div>
                             <button
                                 type="button"
-                                className={styles.secLink}
+                                className={secLink}
                                 onClick={() => navigate({to: '/appointments'})}
                             >
                                 Ver agenda <ArrowUpRight size={12} />
                             </button>
                         </div>
-                        <div className={styles.sectionBody}>
+                        <div className={sectionBody}>
                             {/* eslint-disable-next-line no-nested-ternary -- loading/empty/list pattern is a clear render branch */}
                             {isLoading ? (
                                 <AppointmentSkeleton rows={3} compact />
                             ) : upcomingAppts.length === 0 ? (
-                                <div className={styles.empty}>
-                                    <CalendarX2 size={22} className={styles.emptyIcon} />
-                                    <div className={styles.emptyTitle}>Nenhuma consulta agendada</div>
+                                <div className={empty}>
+                                    <CalendarX2 size={22} className={emptyIcon} />
+                                    <div className={emptyTitle}>Nenhuma consulta agendada</div>
                                     <Button
                                         variant="outline"
                                         size="sm"
@@ -431,7 +870,7 @@ export function DashboardPage() {
                                     </Button>
                                 </div>
                             ) : (
-                                <div className={styles.upList}>
+                                <div className={upList}>
                                     {upcomingAppts.map((apt) => (
                                         <UpcomingRow key={apt.id} apt={apt} />
                                     ))}
@@ -445,7 +884,7 @@ export function DashboardPage() {
     );
 }
 
-// ─── Sub-components ──────────────────────────────────────────────────────────
+// ─── Sub-components ───────────────────────────────────────────────────────────
 
 function StatCard({
     label,
@@ -461,15 +900,15 @@ function StatCard({
     loading?: boolean;
 }) {
     return (
-        <div className={styles.statCard}>
+        <div className={statCard}>
             <div className={statIcon({tone})}>{icon}</div>
             <div>
                 {loading ? (
-                    <Skeleton className={styles.skeletonStatValue} />
+                    <Skeleton className={skeletonStatValue} />
                 ) : (
-                    <div className={styles.statValue}>{value}</div>
+                    <div className={statValue}>{value}</div>
                 )}
-                <div className={styles.statLabel}>{label}</div>
+                <div className={statLabel}>{label}</div>
             </div>
         </div>
     );
@@ -482,31 +921,27 @@ function ApptRow({apt}: {apt: Appointment}) {
     const isActive = ACTIVE_STATUSES.has(status);
 
     return (
-        <div className={styles.apptRow}>
-            {/* Time */}
-            <div className={styles.apptTime}>
-                <span className={styles.apptTimeStart}>{start}</span>
-                <span className={styles.apptTimeEnd}>{end}</span>
+        <div className={apptRow}>
+            <div className={apptTime}>
+                <span className={apptTimeStart}>{start}</span>
+                <span className={apptTimeEnd}>{end}</span>
             </div>
 
-            {/* Patient placeholder (no patient enrichment here) */}
-            <div className={styles.apptPatBtn}>
-                <div className={styles.patientInitialsAvatar}>—</div>
+            <div className={apptPatBtn}>
+                <div className={patientInitialsAvatar}>—</div>
                 <div className="min-w-0">
-                    <div className={styles.apptPatName}>Paciente</div>
-                    <div className={styles.apptPatType}>{TYPE_LABELS[apt.type] ?? apt.type}</div>
+                    <div className={apptPatName}>Paciente</div>
+                    <div className={apptPatType}>{TYPE_LABELS[apt.type] ?? apt.type}</div>
                 </div>
             </div>
 
-            {/* Status badge */}
             <span className={statusBadge({status})}>
-                <span className={styles.statusDot} />
+                <span className={statusDot} />
                 {STATUS_LABELS[status] ?? status}
             </span>
 
-            {/* Action */}
             {isActive && (
-                <Button size="sm" variant="outline" className={styles.apptStartBtn}>
+                <Button size="sm" variant="outline" className={apptStartBtn}>
                     <Stethoscope size={12} />
                     Iniciar
                 </Button>
@@ -532,11 +967,11 @@ function RecentRecordRow({record}: {record: ClinicalRecord}) {
         'Sem conteúdo';
 
     return (
-        <div className={styles.evolRow}>
-            <div className={styles.patientInitialsAvatar}>P</div>
-            <div className={styles.evolBody}>
-                <div className={styles.evolMeta}>
-                    {dateLabel && <span className={styles.evolDate}>{dateLabel}</span>}
+        <div className={evolRow}>
+            <div className={patientInitialsAvatar}>P</div>
+            <div className={evolBody}>
+                <div className={evolMeta}>
+                    {dateLabel && <span className={evolDate}>{dateLabel}</span>}
                     {record.attendanceType && (
                         <>
                             <span>·</span>
@@ -544,7 +979,7 @@ function RecentRecordRow({record}: {record: ClinicalRecord}) {
                         </>
                     )}
                 </div>
-                <div className={styles.evolExcerpt}>{excerpt}</div>
+                <div className={evolExcerpt}>{excerpt}</div>
             </div>
         </div>
     );
@@ -556,16 +991,16 @@ function UpcomingRow({apt}: {apt: Appointment}) {
     const timeLabel = fmtTime(apt.startAt);
 
     return (
-        <div className={styles.upRow}>
-            <div className={styles.upDate}>
-                <span className={styles.upDay}>{dayLabel}</span>
-                <span className={styles.upTime}>{timeLabel}</span>
+        <div className={upRow}>
+            <div className={upDate}>
+                <span className={upDay}>{dayLabel}</span>
+                <span className={upTime}>{timeLabel}</span>
             </div>
-            <div className={styles.upInfo}>
-                <div className={styles.upName}>Paciente</div>
-                <div className={styles.upType}>{TYPE_LABELS[apt.type] ?? apt.type}</div>
+            <div className={upInfo}>
+                <div className={upName}>Paciente</div>
+                <div className={upType}>{TYPE_LABELS[apt.type] ?? apt.type}</div>
             </div>
-            <ChevronRight size={14} className={styles.upChevron} />
+            <ChevronRight size={14} className={upChevron} />
         </div>
     );
 }
@@ -582,11 +1017,11 @@ function QuickAction({
     onClick?: () => void;
 }) {
     return (
-        <button type="button" className={styles.qaBtn} onClick={onClick}>
-            <span className={styles.qaIcon}>{icon}</span>
+        <button type="button" className={qaBtn} onClick={onClick}>
+            <span className={qaIcon}>{icon}</span>
             <div>
-                <div className={styles.qaLabel}>{label}</div>
-                {sub && <div className={styles.qaSub}>{sub}</div>}
+                <div className={qaLabel}>{label}</div>
+                {sub && <div className={qaSub}>{sub}</div>}
             </div>
         </button>
     );
@@ -594,16 +1029,16 @@ function QuickAction({
 
 function AppointmentSkeleton({rows, compact}: {rows: number; compact?: boolean}) {
     return (
-        <div className={styles.skeletonApptCol}>
+        <div className={skeletonApptCol}>
             {Array.from({length: rows}).map((_, i) => (
-                <div key={i} className={styles.skeletonApptRow}>
+                <div key={i} className={skeletonApptRow}>
                     {!compact && <Skeleton className="h-9 w-12" />}
-                    <Skeleton className={styles.skeletonAvatar} />
+                    <Skeleton className={skeletonAvatar} />
                     <div className="flex-1">
-                        <Skeleton className={styles.skeletonNameSm} />
+                        <Skeleton className={skeletonNameSm} />
                         <Skeleton className="h-3 w-20" />
                     </div>
-                    <Skeleton className={styles.skeletonStatusBadge} />
+                    <Skeleton className={skeletonStatusBadge} />
                 </div>
             ))}
         </div>

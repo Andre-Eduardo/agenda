@@ -2,14 +2,13 @@ import type {ReactNode} from 'react';
 import {useSearchPatients, useSearchAppointments} from '@agenda-app/client';
 import type {Appointment} from '@agenda-app/client';
 import type {UseQueryResult} from '@tanstack/react-query';
-import {cva} from 'class-variance-authority';
 import {createFileRoute, useNavigate} from '@tanstack/react-router';
 import {Play} from 'lucide-react';
 import {Button} from '@/components/ui/componentes/button';
 import {Card, CardContent, CardHeader} from '@/components/ui/componentes/card';
 import {Skeleton} from '@/components/ui/componentes/skeleton';
 import {Page} from '@/views/components/Page';
-import styles from './styles.module.css';
+import {css, cva} from '@/styled-system/css';
 
 export const Route = createFileRoute('/_stackedLayout/')({
     component: DashboardPage,
@@ -27,18 +26,184 @@ interface AppointmentPage {
     data: Appointment[];
 }
 
-// ── Variants ─────────────────────────────────────────────────────────────────
+// ── Styles ────────────────────────────────────────────────────────────────────
 
-const clinicalBadge = cva(styles.clinicalBadge, {
+const statsGrid = css({
+    mb: '6',
+    display: 'grid',
+    gridTemplateColumns: 'repeat(4, minmax(0, 1fr))',
+    gap: '3',
+});
+
+const mainGrid = css({
+    display: 'grid',
+    gridTemplateColumns: '1.4fr 1fr',
+    gap: '4',
+});
+
+const statTileRoot = css({
+    rounded: 'card',
+    borderWidth: '1px',
+    borderStyle: 'solid',
+    borderColor: 'border',
+    bg: 'bg.card',
+    px: '4',
+    py: '[14px]',
+});
+
+const statTileLabel = css({
+    fontSize: 'sm',
+    lineHeight: '[1.4]',
+    color: 'text.secondary',
+});
+
+const statTileValue = css({
+    mt: '1',
+    fontFamily: 'mono',
+    fontSize: 'xl',
+    fontWeight: 'medium',
+    lineHeight: '[1.2]',
+    fontVariantNumeric: 'tabular-nums',
+    color: 'text.primary',
+});
+
+const statTileDelta = css({
+    mt: '0.5',
+    fontSize: 'xs',
+    lineHeight: '[1.4]',
+    color: 'success',
+});
+
+const statTileSkeleton = css({
+    mt: '1',
+    h: '7',
+    w: '14',
+});
+
+const clinicalBadgeDot = css({
+    fontSize: '[8px]',
+    lineHeight: '1',
+});
+
+const clinicalBadge = cva({
+    base: {
+        display: 'inline-flex',
+        alignItems: 'center',
+        gap: '1',
+        rounded: 'badge',
+        px: '[10px]',
+        py: '1',
+        fontSize: 'xs',
+        fontWeight: 'medium',
+    },
     variants: {
         variant: {
-            'ai-soft': styles.clinicalBadgeAiSoft,
-            primary: styles.clinicalBadgePrimary,
-            neutral: styles.clinicalBadgeNeutral,
-            info: styles.clinicalBadgeInfo,
+            'ai-soft': {
+                borderWidth: '1px',
+                borderStyle: 'solid',
+                borderColor: 'ai.border/30',
+                bg: 'ai.bg',
+                color: 'ai.text',
+            },
+            primary: {
+                borderWidth: '1px',
+                borderStyle: 'solid',
+                borderColor: 'primary.border',
+                bg: 'primary.surface',
+                color: 'primary.text',
+            },
+            neutral: {
+                borderWidth: '1px',
+                borderStyle: 'solid',
+                borderColor: 'border',
+                bg: 'bg.surface',
+                color: 'text.secondary',
+            },
+            info: {
+                borderWidth: '1px',
+                borderStyle: 'solid',
+                borderColor: 'info/30',
+                bg: 'info.surface',
+                color: 'info',
+            },
         },
     },
     defaultVariants: {variant: 'neutral'},
+});
+
+const panelCardRoot = css({
+    rounded: 'card',
+    borderWidth: '1px',
+    borderStyle: 'solid',
+    borderColor: 'border',
+    bg: 'bg.card',
+    boxShadow: 'none',
+});
+
+const panelCardHeader = css({
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    px: '4',
+    py: '3',
+});
+
+const panelCardTitle = css({
+    fontSize: 'sm-body',
+    fontWeight: 'medium',
+    color: 'text.primary',
+});
+
+const panelCardContent = css({
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '3',
+    px: '4',
+    pb: '4',
+    pt: '0',
+});
+
+const panelCardEmpty = css({
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    py: '8',
+    fontSize: 'sm',
+    color: 'text.tertiary',
+});
+
+const appointmentTitle = css({
+    fontSize: 'lead',
+    fontWeight: 'medium',
+    lineHeight: '[1.3]',
+    color: 'text.primary',
+});
+
+const appointmentTime = css({
+    mt: '[2px]',
+    fontFamily: 'mono',
+    fontSize: 'xs',
+    lineHeight: '[1.4]',
+    fontVariantNumeric: 'tabular-nums',
+    color: 'text.secondary',
+});
+
+const appointmentBadgeRow = css({
+    display: 'flex',
+    flexWrap: 'wrap',
+    gap: '1.5',
+});
+
+const appointmentActionRow = css({
+    mt: '1',
+    display: 'flex',
+    gap: '2',
+});
+
+const appointmentSkeletonStack = css({
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '2',
 });
 
 // ── Sub-components ────────────────────────────────────────────────────────────
@@ -55,12 +220,16 @@ function StatTile({
     loading?: boolean;
 }) {
     return (
-        <div className={styles.statTileRoot}>
-            <p className={styles.statTileLabel}>{label}</p>
+        <div className={statTileRoot}>
+            <p className={statTileLabel}>{label}</p>
 
-            {loading ? <Skeleton className={styles.statTileSkeleton} /> : <p className={styles.statTileValue}>{value}</p>}
+            {loading ? (
+                <Skeleton className={statTileSkeleton} />
+            ) : (
+                <p className={statTileValue}>{value}</p>
+            )}
 
-            {delta && !loading && <p className={styles.statTileDelta}>{delta}</p>}
+            {delta && !loading && <p className={statTileDelta}>{delta}</p>}
         </div>
     );
 }
@@ -76,7 +245,7 @@ function ClinicalBadge({
 }) {
     return (
         <span className={clinicalBadge({variant})}>
-            {dot && <span className={styles.clinicalBadgeDot}>●</span>}
+            {dot && <span className={clinicalBadgeDot}>●</span>}
             {children}
         </span>
     );
@@ -130,7 +299,7 @@ function NextAppointmentContent({
 }) {
     if (isLoading) {
         return (
-            <div className={styles.appointmentSkeletonStack}>
+            <div className={appointmentSkeletonStack}>
                 <Skeleton className="h-5 w-40" />
                 <Skeleton className="h-4 w-56" />
                 <Skeleton className="h-8 w-32" />
@@ -139,21 +308,21 @@ function NextAppointmentContent({
     }
 
     if (!appointment) {
-        return <div className={styles.panelCardEmpty}>Nenhuma consulta agendada</div>;
+        return <div className={panelCardEmpty}>Nenhuma consulta agendada</div>;
     }
 
     return (
         <>
             <div>
-                <p className={styles.appointmentTitle}>Consulta agendada</p>
-                <p className={styles.appointmentTime}>
+                <p className={appointmentTitle}>Consulta agendada</p>
+                <p className={appointmentTime}>
                     {formatTime(appointment.startAt)} · {appointment.durationMinutes} min
                 </p>
             </div>
-            <div className={styles.appointmentBadgeRow}>
+            <div className={appointmentBadgeRow}>
                 <ClinicalBadge variant="neutral">{appointmentTypeLabel(appointment.type)}</ClinicalBadge>
             </div>
-            <div className={styles.appointmentActionRow}>
+            <div className={appointmentActionRow}>
                 <Button size="sm" onClick={onNavigate}>
                     <Play className="size-4" />
                     Ver pacientes
@@ -223,7 +392,7 @@ export function DashboardPage() {
     return (
         <Page title="Hoje" subtitle={getPageSubtitle(totalAppointments, appointmentsQuery.isLoading)}>
             {/* Stat tiles */}
-            <div className={styles.statsGrid}>
+            <div className={statsGrid}>
                 <StatTile
                     label="Consultas agendadas"
                     value={totalAppointments ?? '—'}
@@ -234,22 +403,22 @@ export function DashboardPage() {
                 <StatTile label="Tempo médio consulta" value="—" />
             </div>
 
-            <div className={styles.mainGrid}>
+            <div className={mainGrid}>
                 {/* AI pre-evolutions */}
-                <Card className={styles.panelCardRoot}>
-                    <CardHeader className={styles.panelCardHeader}>
-                        <h3 className={styles.panelCardTitle}>Pré-evoluções aguardando revisão</h3>
+                <Card className={panelCardRoot}>
+                    <CardHeader className={panelCardHeader}>
+                        <h3 className={panelCardTitle}>Pré-evoluções aguardando revisão</h3>
                         <ClinicalBadge variant="ai-soft">— pendentes</ClinicalBadge>
                     </CardHeader>
-                    <CardContent className={styles.panelCardContent}>
-                        <div className={styles.panelCardEmpty}>Nenhuma pré-evolução pendente</div>
+                    <CardContent className={panelCardContent}>
+                        <div className={panelCardEmpty}>Nenhuma pré-evolução pendente</div>
                     </CardContent>
                 </Card>
 
                 {/* Next appointment */}
-                <Card className={styles.panelCardRoot}>
-                    <CardHeader className={styles.panelCardHeader}>
-                        <h3 className={styles.panelCardTitle}>Próxima consulta</h3>
+                <Card className={panelCardRoot}>
+                    <CardHeader className={panelCardHeader}>
+                        <h3 className={panelCardTitle}>Próxima consulta</h3>
                         <NextBadge
                             isLoading={appointmentsQuery.isLoading}
                             isSoon={nextIsSoon}
@@ -257,7 +426,7 @@ export function DashboardPage() {
                             appointment={nextAppointment}
                         />
                     </CardHeader>
-                    <CardContent className={styles.panelCardContent}>
+                    <CardContent className={panelCardContent}>
                         <NextAppointmentContent
                             isLoading={appointmentsQuery.isLoading}
                             appointment={nextAppointment}

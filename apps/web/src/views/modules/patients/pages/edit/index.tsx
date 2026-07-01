@@ -41,9 +41,8 @@ import {PageHeader} from '@/components/ui/componentes/page-header';
 import {Skeleton} from '@/components/ui/componentes/skeleton';
 import {Tabs, TabsList, TabsTrigger, TabsContent} from '@/components/ui/componentes/tabs';
 import {Textarea} from '@/components/ui/componentes/textarea';
-import {clsx} from 'clsx';
 import {cn} from '@/lib/utils';
-import styles from '../new/styles.module.css';
+import {css, cx} from '@/styled-system/css';
 
 export const Route = createFileRoute('/_stackedLayout/patients/$patientId/edit')({
     component: EditPatientPage,
@@ -93,18 +92,13 @@ type TabKey = (typeof TABS)[number]['key'];
 // ── Schema ────────────────────────────────────────────────────────────────────
 
 const schema = z.object({
-    // Tab 1 — Identificação (no documentId — cannot be changed after creation)
     name: z.string().min(1, 'Nome é obrigatório'),
     birthDate: z.string().optional().nullable(),
     gender: z.enum(['MALE', 'FEMALE', 'OTHER']).optional().nullable(),
-
-    // Tab 2 — Contato
     phone: z.string().optional().nullable(),
     email: z.string().email('E-mail inválido').optional().nullable().or(z.literal('')),
     emergencyContactName: z.string().optional().nullable(),
     emergencyContactPhone: z.string().optional().nullable(),
-
-    // Tab 3 — Endereço
     zipCode: z.string().optional().nullable(),
     street: z.string().optional().nullable(),
     number: z.string().optional().nullable(),
@@ -112,13 +106,169 @@ const schema = z.object({
     neighborhood: z.string().optional().nullable(),
     city: z.string().optional().nullable(),
     state: z.string().optional().nullable(),
-
-    // Tab 4 — Saúde (UI-only; stored in clinical profile, not in UpdatePatientInputDto)
     allergies: z.string().optional().nullable(),
     notes: z.string().optional().nullable(),
 });
 
 type FormValues = z.infer<typeof schema>;
+
+// ── Styles ────────────────────────────────────────────────────────────────────
+
+const pageRoot = css({display: 'flex', flexDirection: 'column', p: '6', pb: '24', bg: 'bg.page'});
+
+const pageSkeletonStack = css({display: 'flex', flexDirection: 'column', gap: '4', p: '6'});
+
+const pageSkeletonCard400 = css({h: '[400px]', rounded: 'card'});
+
+const pageErrorState = css({
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '4',
+    p: '12',
+    color: 'text.secondary',
+});
+
+const tabNum = css({
+    display: 'inline-flex',
+    w: '[22px]',
+    h: '[22px]',
+    flexShrink: '0',
+    alignItems: 'center',
+    justifyContent: 'center',
+    rounded: 'full',
+    borderWidth: '1px',
+    borderStyle: 'solid',
+    borderColor: 'border',
+    bg: 'bg.card',
+    fontSize: '[11px]',
+    fontWeight: 'semibold',
+    fontVariantNumeric: 'tabular-nums',
+    color: 'text.secondary',
+});
+
+const tabNumActive = css({borderColor: 'primary', bg: 'primary', color: 'white'});
+
+const tabNumFilled = css({borderColor: 'success/40', bg: 'success.surface', color: 'success'});
+
+const tabIcon = css({display: {base: 'none', sm: 'block'}, w: '[14px]', h: '[14px]'});
+
+const sectionRoot = css({p: '7'});
+
+const sectionHead = css({mb: '[18px]', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '4'});
+
+const sectionNum = css({
+    display: 'inline-flex',
+    w: '6',
+    h: '6',
+    flexShrink: '0',
+    alignItems: 'center',
+    justifyContent: 'center',
+    rounded: '[6px]',
+    bg: 'primary.surface',
+    fontFamily: 'mono',
+    fontSize: 'xs',
+    fontWeight: 'medium',
+    fontVariantNumeric: 'tabular-nums',
+    color: 'primary.text',
+});
+
+const sectionTitle = css({
+    fontSize: 'base',
+    fontWeight: 'medium',
+    lineHeight: '[1.3]',
+    letterSpacing: '[-0.005em]',
+    color: 'text.primary',
+});
+
+const sectionSub = css({mt: '0.5', fontSize: 'sm', lineHeight: '[1.4]', color: 'text.tertiary'});
+
+const sectionInner = css({display: 'flex', alignItems: 'flex-start', gap: '3'});
+
+const subSectionRoot = css({mt: '[18px]', rounded: '[10px]', bg: 'bg.surface', p: '4'});
+
+const subSectionHead = css({mb: '[14px]', display: 'flex', alignItems: 'center', gap: '2'});
+
+const subSectionTitle = css({fontSize: 'sm', fontWeight: 'medium', lineHeight: '[1.3]', color: 'text.primary'});
+
+const subSectionTag = css({
+    rounded: '[4px]',
+    borderWidth: '1px',
+    borderStyle: 'solid',
+    borderColor: 'border',
+    bg: 'bg.card',
+    px: '[7px]',
+    py: '0.5',
+    fontSize: '[11px]',
+    color: 'text.tertiary',
+});
+
+const subSectionHint = css({fontSize: 'xs', color: 'text.tertiary'});
+
+const subSectionIcon = css({w: '3.5', h: '3.5', color: 'text.secondary'});
+
+const infoNoteIcon = css({mt: 'px', w: '[14px]', h: '[14px]', flexShrink: '0'});
+
+const infoNote = css({
+    mt: '4',
+    display: 'flex',
+    alignItems: 'flex-start',
+    gap: '[10px]',
+    rounded: '[8px]',
+    borderWidth: '1px',
+    borderStyle: 'solid',
+    borderColor: 'primary.border',
+    bg: 'primary.surface',
+    p: '3',
+    fontSize: 'xs',
+    lineHeight: '[1.5]',
+    color: 'primary.text',
+});
+
+const footerRoot = css({
+    position: 'fixed',
+    bottom: '0',
+    left: '0',
+    right: '0',
+    zIndex: '30',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: '4',
+    borderTopWidth: '1px',
+    borderTopStyle: 'solid',
+    borderTopColor: 'border',
+    bg: 'bg.card',
+    px: '8',
+    py: '[14px]',
+});
+
+const footerMeta = css({
+    display: 'flex',
+    alignItems: 'center',
+    gap: '[10px]',
+    fontSize: 'xs',
+    lineHeight: '[1.4]',
+    color: 'text.tertiary',
+});
+
+const footerStep = css({
+    ml: '1',
+    rounded: 'full',
+    borderWidth: '1px',
+    borderStyle: 'solid',
+    borderColor: 'border',
+    bg: 'bg.surface',
+    px: '[10px]',
+    py: '1',
+    fontSize: '[11px]',
+    fontWeight: 'medium',
+    letterSpacing: '[0.02em]',
+    color: 'text.secondary',
+});
+
+const footerActions = css({display: 'flex', alignItems: 'center', gap: '[10px]'});
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -126,7 +276,6 @@ function asStr(v: unknown): string | null {
     return typeof v === 'string' && v ? v : null;
 }
 
-/** Safely extract a string from Orval-generated nullable-object types like PatientInsurancePlanId. */
 function toNullableStr(v: unknown): string | null {
     return typeof v === 'string' ? v : null;
 }
@@ -150,12 +299,12 @@ function tabHasValues(tab: TabKey, values: Partial<FormValues>): boolean {
 
 function SectionHead({num, title, subtitle}: {num: string; title: string; subtitle?: string}) {
     return (
-        <div className={styles.sectionHead}>
-            <div className={styles.sectionInner}>
-                <span className={styles.sectionNum}>{num}</span>
+        <div className={sectionHead}>
+            <div className={sectionInner}>
+                <span className={sectionNum}>{num}</span>
                 <div>
-                    <h2 className={styles.sectionTitle}>{title}</h2>
-                    {subtitle && <p className={styles.sectionSub}>{subtitle}</p>}
+                    <h2 className={sectionTitle}>{title}</h2>
+                    {subtitle && <p className={sectionSub}>{subtitle}</p>}
                 </div>
             </div>
         </div>
@@ -171,17 +320,17 @@ export function EditPatientPage() {
 
     if (isLoading) {
         return (
-            <div className={styles.pageSkeletonStack}>
+            <div className={pageSkeletonStack}>
                 <Skeleton className="h-4 w-48" />
                 <Skeleton className="h-8 w-64" />
-                <Skeleton className={styles.pageSkeletonCard400} />
+                <Skeleton className={pageSkeletonCard400} />
             </div>
         );
     }
 
     if (isError || !patient) {
         return (
-            <div className={styles.pageErrorState}>
+            <div className={pageErrorState}>
                 <p className="text-sm">Paciente não encontrado.</p>
                 <Button variant="outline" size="sm" onClick={() => navigate({to: '/patients'})}>
                     Voltar
@@ -280,7 +429,6 @@ function EditPatientForm({patient}: {patient: Patient}) {
                       country: 'BR',
                   }
                 : null,
-            // Preserve existing insurance data (PatientInsurance* types are nullable-object in Orval)
             insurancePlanId: toNullableStr(patient.insurancePlanId),
             insuranceCardNumber: toNullableStr(patient.insuranceCardNumber),
             insuranceValidUntil: toNullableStr(patient.insuranceValidUntil),
@@ -289,7 +437,6 @@ function EditPatientForm({patient}: {patient: Patient}) {
         updatePatient.mutate({id: patient.id, data: dto});
     };
 
-    // Simulate zip code auto-fill
     const zipValue = watch('zipCode') ?? '';
 
     useEffect(() => {
@@ -310,7 +457,7 @@ function EditPatientForm({patient}: {patient: Patient}) {
     }
 
     return (
-        <div className={styles.pageRoot}>
+        <div className={pageRoot}>
             {/* Breadcrumb */}
             <Breadcrumb>
                 <BreadcrumbList>
@@ -350,16 +497,10 @@ function EditPatientForm({patient}: {patient: Patient}) {
 
                                 return (
                                     <TabsTrigger key={t.key} value={t.key}>
-                                        <span
-                                            className={clsx(
-                                                styles.tabNum,
-                                                tab === t.key && styles.tabNumActive,
-                                                filled && styles.tabNumFilled
-                                            )}
-                                        >
+                                        <span className={cx(tabNum, tab === t.key && tabNumActive, filled && tabNumFilled)}>
                                             {filled ? <Check className="size-[11px]" strokeWidth={2.5} /> : t.num}
                                         </span>
-                                        <TabIcon className={styles.tabIcon} strokeWidth={1.5} />
+                                        <TabIcon className={tabIcon} strokeWidth={1.5} />
                                         {t.label}
                                     </TabsTrigger>
                                 );
@@ -368,7 +509,7 @@ function EditPatientForm({patient}: {patient: Patient}) {
 
                         {/* ── Tab 1: Identificação ──────────────────────────── */}
                         <TabsContent value="identity">
-                            <div className={styles.sectionRoot}>
+                            <div className={sectionRoot}>
                                 <SectionHead
                                     num="1"
                                     title="Identificação pessoal"
@@ -385,7 +526,7 @@ function EditPatientForm({patient}: {patient: Patient}) {
                                     <div
                                         className={cn(
                                             inputVariants({appearance: 'mono'}),
-                                            'cursor-not-allowed bg-(--color-bg-surface) text-(--color-text-secondary)'
+                                            css({cursor: 'not-allowed', bg: 'bg.surface', color: 'text.secondary'})
                                         )}
                                     >
                                         {patient.documentId}
@@ -426,7 +567,7 @@ function EditPatientForm({patient}: {patient: Patient}) {
 
                         {/* ── Tab 2: Contato ─────────────────────────────────── */}
                         <TabsContent value="contact">
-                            <div className={styles.sectionRoot}>
+                            <div className={sectionRoot}>
                                 <SectionHead
                                     num="2"
                                     title="Contato"
@@ -455,12 +596,12 @@ function EditPatientForm({patient}: {patient: Patient}) {
                                 </FormGrid>
 
                                 {/* Responsável */}
-                                <div className={styles.subSectionRoot}>
-                                    <div className={styles.subSectionHead}>
-                                        <User className={styles.subSectionIcon} strokeWidth={1.5} />
-                                        <h3 className={styles.subSectionTitle}>Responsável</h3>
-                                        <span className={styles.subSectionTag}>Opcional</span>
-                                        <span className={cn(styles.subSectionHint, 'ml-1')}>
+                                <div className={subSectionRoot}>
+                                    <div className={subSectionHead}>
+                                        <User className={subSectionIcon} strokeWidth={1.5} />
+                                        <h3 className={subSectionTitle}>Responsável</h3>
+                                        <span className={subSectionTag}>Opcional</span>
+                                        <span className={cx(subSectionHint, css({ml: '1'}))}>
                                             · para menores ou pacientes com tutela
                                         </span>
                                     </div>
@@ -483,7 +624,7 @@ function EditPatientForm({patient}: {patient: Patient}) {
 
                         {/* ── Tab 3: Endereço ───────────────────────────────── */}
                         <TabsContent value="address">
-                            <div className={styles.sectionRoot}>
+                            <div className={sectionRoot}>
                                 <SectionHead num="3" title="Endereço" subtitle="Todos os campos são opcionais." />
 
                                 <FormGrid>
@@ -561,7 +702,7 @@ function EditPatientForm({patient}: {patient: Patient}) {
 
                         {/* ── Tab 4: Saúde ──────────────────────────────────── */}
                         <TabsContent value="health">
-                            <div className={styles.sectionRoot}>
+                            <div className={sectionRoot}>
                                 <SectionHead
                                     num="4"
                                     title="Informações de saúde"
@@ -589,8 +730,8 @@ function EditPatientForm({patient}: {patient: Patient}) {
                                     </Field>
                                 </FormGrid>
 
-                                <div className={styles.infoNote}>
-                                    <Info className={styles.infoNoteIcon} strokeWidth={1.5} />
+                                <div className={infoNote}>
+                                    <Info className={infoNoteIcon} strokeWidth={1.5} />
                                     <div>
                                         Esses dados são apenas um registro inicial. A <strong>anamnese completa</strong>
                                         , prescrições e evoluções (SOAP) são registradas no prontuário após o cadastro.
@@ -601,16 +742,16 @@ function EditPatientForm({patient}: {patient: Patient}) {
                     </Tabs>
 
                     {/* Sticky footer */}
-                    <div className={styles.footerRoot}>
-                        <div className={styles.footerMeta}>
+                    <div className={footerRoot}>
+                        <div className={footerMeta}>
                             <Lock className="size-3" strokeWidth={1.5} />
                             <span>Dados criptografados em repouso · LGPD</span>
-                            <span className={styles.footerStep}>
+                            <span className={footerStep}>
                                 Etapa {tabIdx + 1} de {TABS.length}
                             </span>
                         </div>
 
-                        <div className={styles.footerActions}>
+                        <div className={footerActions}>
                             <Button type="button" variant="outline" size="sm" onClick={goBack}>
                                 Cancelar
                             </Button>

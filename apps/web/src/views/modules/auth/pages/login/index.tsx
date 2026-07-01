@@ -3,7 +3,6 @@ import {useSignIn} from '@agenda-app/client';
 import {zodResolver} from '@hookform/resolvers/zod';
 import {useQueryClient} from '@tanstack/react-query';
 import {createFileRoute, useNavigate, useRouter} from '@tanstack/react-router';
-import {cva} from 'class-variance-authority';
 import {Eye, EyeOff, Lock, Mail, ShieldCheck} from 'lucide-react';
 import {useForm} from 'react-hook-form';
 import {useTranslation} from 'react-i18next';
@@ -11,7 +10,7 @@ import {z} from 'zod';
 import {Button} from '@/components/ui/componentes/button';
 import {Input} from '@/components/ui/componentes/input';
 import {useAppStore} from '@/store/appStore';
-import styles from './styles.module.css';
+import {css, cx} from '@/styled-system/css';
 
 export const Route = createFileRoute('/_auth/auth/login')({
     validateSearch: (search: Record<string, unknown>): {redirect?: string} => ({
@@ -20,17 +19,224 @@ export const Route = createFileRoute('/_auth/auth/login')({
     component: LoginPage,
 });
 
-// ── Variants ─────────────────────────────────────────────────────────────────
+// ── Styles ────────────────────────────────────────────────────────────────────
 
-const usernameInput = cva(styles.usernameInputBase, {
-    variants: {error: {true: styles.usernameInputError, false: ''}},
-    defaultVariants: {error: false},
+const loginRoot = css({
+    display: 'grid',
+    minH: 'screen',
+    gridTemplateColumns: {base: 'repeat(1, minmax(0, 1fr))', lg: '1fr 1.1fr'},
 });
 
-const passwordInput = cva(styles.passwordInputBase, {
-    variants: {error: {true: styles.passwordInputError, false: ''}},
-    defaultVariants: {error: false},
+const leftPanelRoot = css({
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'space-between',
+    bg: 'bg.card',
+    px: '10',
+    py: '8',
 });
+
+const leftPanelLogo = css({
+    display: 'flex',
+    alignItems: 'center',
+    gap: '2.5',
+});
+
+const leftPanelLogoIcon = css({
+    display: 'flex',
+    h: '7',
+    w: '7',
+    alignItems: 'center',
+    justifyContent: 'center',
+    rounded: '[6px]',
+    bg: 'primary',
+});
+
+const leftPanelLogoText = css({
+    fontSize: 'sm-body',
+    fontWeight: 'medium',
+    letterSpacing: 'tight',
+    color: 'text.primary',
+});
+
+const leftPanelTitle = css({
+    mb: '1.5',
+    fontSize: 'xl',
+    fontWeight: 'medium',
+    letterSpacing: 'tight',
+    color: 'text.primary',
+});
+
+const leftPanelSubtitle = css({
+    mb: '6',
+    lineHeight: 'relaxed',
+    fontSize: 'sm',
+    color: 'text.secondary',
+});
+
+const leftPanelFooter = css({
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    borderTopWidth: '1px',
+    borderTopStyle: 'solid',
+    borderTopColor: 'border',
+    pt: '3.5',
+    fontSize: '2xs',
+    color: 'text.tertiary',
+});
+
+const leftPanelFooterLeft = css({
+    display: 'flex',
+    alignItems: 'center',
+    gap: '1.5',
+});
+
+const leftPanelVersion = css({
+    fontFamily: 'mono',
+});
+
+const form = css({
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '3.5',
+});
+
+const fieldLabel = css({
+    mb: '1.5',
+    display: 'block',
+    fontSize: 'xs',
+    fontWeight: 'medium',
+    color: 'text.secondary',
+});
+
+const fieldLabelInline = css({
+    fontSize: 'xs',
+    fontWeight: 'medium',
+    color: 'text.secondary',
+});
+
+const fieldIcon = css({
+    position: 'absolute',
+    left: '3',
+    top: '50%',
+    transform: 'translateY(-50%)',
+    color: 'text.tertiary',
+});
+
+const fieldError = css({
+    mt: '1',
+    fontSize: '2xs',
+    color: 'warning',
+});
+
+const fieldRevealBtn = css({
+    position: 'absolute',
+    right: '3',
+    top: '50%',
+    transform: 'translateY(-50%)',
+    color: 'text.tertiary',
+    _hover: {color: 'text.secondary'},
+});
+
+const fieldForgotBtn = css({
+    cursor: 'pointer',
+    fontSize: 'xs',
+    fontWeight: 'medium',
+    color: 'primary',
+    _hover: {color: 'primary.hover'},
+});
+
+const fieldRememberLabel = css({
+    display: 'flex',
+    cursor: 'pointer',
+    alignItems: 'center',
+    gap: '2',
+});
+
+const fieldRememberText = css({
+    fontSize: 'xs',
+    color: 'text.secondary',
+});
+
+const fieldCheckbox = css({
+    h: '3.5',
+    w: '3.5',
+    cursor: 'pointer',
+    rounded: '[3px]',
+    borderWidth: '1px',
+    borderStyle: 'solid',
+    borderColor: 'border',
+    accentColor: 'var(--color-primary)',
+});
+
+const fieldSubmitBtn = css({
+    mt: '1',
+    w: 'full',
+    bg: 'primary',
+    fontSize: 'sm',
+    fontWeight: 'medium',
+    _hover: {bg: 'primary.hover'},
+});
+
+const fieldPasswordHeader = css({
+    mb: '1.5',
+    display: 'flex',
+    justifyContent: 'space-between',
+});
+
+const fieldInputWrap = css({
+    position: 'relative',
+});
+
+const usernameInputBase = css({pl: '9', fontSize: 'sm'});
+const passwordInputBase = css({pl: '9', pr: '10', fontSize: 'sm'});
+const inputWithError = css({borderColor: 'warning'});
+
+const rightPanelRoot = css({
+    position: 'relative',
+    display: {base: 'none', lg: 'block'},
+    overflow: 'hidden',
+    bg: 'text.primary',
+});
+
+const rightPanelOverlay = css({
+    position: 'absolute',
+    inset: '0',
+    zIndex: '10',
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'flex-end',
+    p: '10',
+});
+
+const rightPanelTitle = css({
+    mb: '2',
+    fontSize: 'xl',
+    fontWeight: 'medium',
+    lineHeight: 'snug',
+    letterSpacing: 'tight',
+    color: 'bg.page',
+});
+
+const rightPanelHighlight = css({
+    color: 'ai.text',
+});
+
+const rightPanelDescription = css({
+    fontSize: 'xs',
+    lineHeight: 'relaxed',
+    color: 'text.tertiary',
+});
+
+const rightPanelArt = css({
+    position: 'absolute',
+    inset: '0',
+    h: 'full',
+    w: 'full',
+});
+
+// ── Page ──────────────────────────────────────────────────────────────────────
 
 export function LoginPage() {
     const {t} = useTranslation();
@@ -83,105 +289,105 @@ export function LoginPage() {
     const onSubmit = (values: LoginData) => signIn({data: values});
 
     return (
-        <div className={styles.loginRoot}>
+        <div className={loginRoot}>
             {/* Left: form */}
-            <div className={styles.leftPanelRoot}>
+            <div className={leftPanelRoot}>
                 {/* Logo */}
-                <div className={styles.leftPanelLogo}>
-                    <div className={styles.leftPanelLogoIcon}>
+                <div className={leftPanelLogo}>
+                    <div className={leftPanelLogoIcon}>
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
                             <path d="M9 12h6M12 9v6" stroke="#fff" strokeWidth="2.2" strokeLinecap="round" />
                         </svg>
                     </div>
-                    <span className={styles.leftPanelLogoText}>Clínico</span>
+                    <span className={leftPanelLogoText}>Clínico</span>
                 </div>
 
                 {/* Form */}
                 <div>
-                    <h1 className={styles.leftPanelTitle}>{t('auth.login.title')}</h1>
-                    <p className={styles.leftPanelSubtitle}>{t('auth.login.subtitle')}</p>
+                    <h1 className={leftPanelTitle}>{t('auth.login.title')}</h1>
+                    <p className={leftPanelSubtitle}>{t('auth.login.subtitle')}</p>
 
-                    <form onSubmit={handleSubmit(onSubmit)} className={styles.form} noValidate>
+                    <form onSubmit={handleSubmit(onSubmit)} className={form} noValidate>
                         {/* Username */}
                         <div>
-                            <label className={styles.fieldLabel}>{t('auth.login.form.username')}</label>
-                            <div className={styles.fieldInputWrap}>
-                                <Mail size={13} className={styles.fieldIcon} />
+                            <label className={fieldLabel}>{t('auth.login.form.username')}</label>
+                            <div className={fieldInputWrap}>
+                                <Mail size={13} className={fieldIcon} />
                                 <Input
                                     {...register('username')}
                                     type="text"
                                     autoComplete="username"
                                     placeholder="dr.silva"
-                                    className={usernameInput({error: !!errors.username})}
+                                    className={cx(usernameInputBase, errors.username && inputWithError)}
                                 />
                             </div>
-                            {errors.username?.message && <p className={styles.fieldError}>{errors.username.message}</p>}
+                            {errors.username?.message && <p className={fieldError}>{errors.username.message}</p>}
                         </div>
 
                         {/* Password */}
                         <div>
-                            <div className={styles.fieldPasswordHeader}>
-                                <label className={styles.fieldLabelInline}>{t('auth.login.form.password')}</label>
-                                <button type="button" className={styles.fieldForgotBtn}>
+                            <div className={fieldPasswordHeader}>
+                                <label className={fieldLabelInline}>{t('auth.login.form.password')}</label>
+                                <button type="button" className={fieldForgotBtn}>
                                     {t('auth.login.form.forgotPassword')}
                                 </button>
                             </div>
-                            <div className={styles.fieldInputWrap}>
-                                <Lock size={13} className={styles.fieldIcon} />
+                            <div className={fieldInputWrap}>
+                                <Lock size={13} className={fieldIcon} />
                                 <Input
                                     {...register('password')}
                                     type={showPassword ? 'text' : 'password'}
                                     autoComplete="current-password"
-                                    className={passwordInput({error: !!errors.password?.message})}
+                                    className={cx(passwordInputBase, errors.password?.message && inputWithError)}
                                 />
                                 <button
                                     type="button"
                                     onClick={() => setShowPassword((v) => !v)}
-                                    className={styles.fieldRevealBtn}
+                                    className={fieldRevealBtn}
                                     aria-label={showPassword ? 'Ocultar senha' : 'Mostrar senha'}
                                 >
                                     {showPassword ? <EyeOff size={14} /> : <Eye size={14} />}
                                 </button>
                             </div>
-                            {errors.password?.message && <p className={styles.fieldError}>{errors.password.message}</p>}
+                            {errors.password?.message && <p className={fieldError}>{errors.password.message}</p>}
                         </div>
 
                         {/* Remember me */}
-                        <label className={styles.fieldRememberLabel}>
+                        <label className={fieldRememberLabel}>
                             <input
                                 type="checkbox"
                                 aria-label={t('auth.login.form.rememberMe')}
-                                className={styles.fieldCheckbox}
+                                className={fieldCheckbox}
                             />
-                            <span className={styles.fieldRememberText}>{t('auth.login.form.rememberMe')}</span>
+                            <span className={fieldRememberText}>{t('auth.login.form.rememberMe')}</span>
                         </label>
 
-                        <Button type="submit" disabled={isPending} className={styles.fieldSubmitBtn}>
+                        <Button type="submit" disabled={isPending} className={fieldSubmitBtn}>
                             {isPending ? t('states.loading') : t('auth.login.form.submit')}
                         </Button>
                     </form>
                 </div>
 
                 {/* Footer */}
-                <div className={styles.leftPanelFooter}>
-                    <div className={styles.leftPanelFooterLeft}>
+                <div className={leftPanelFooter}>
+                    <div className={leftPanelFooterLeft}>
                         <ShieldCheck size={11} />
                         <span>{t('auth.login.footer.security')}</span>
                     </div>
-                    <span className={styles.leftPanelVersion}>v1.0.0</span>
+                    <span className={leftPanelVersion}>v1.0.0</span>
                 </div>
             </div>
 
             {/* Right: decorative panel */}
-            <div className={styles.rightPanelRoot}>
+            <div className={rightPanelRoot}>
                 <DecorativeArt />
-                <div className={styles.rightPanelOverlay}>
-                    <h2 className={styles.rightPanelTitle}>
+                <div className={rightPanelOverlay}>
+                    <h2 className={rightPanelTitle}>
                         {t('auth.login.panel.title')}
                         <br />
-                        <span className={styles.rightPanelHighlight}>{t('auth.login.panel.highlight')}</span>
+                        <span className={rightPanelHighlight}>{t('auth.login.panel.highlight')}</span>
                     </h2>
-                    <p className={styles.rightPanelDescription}>{t('auth.login.panel.description')}</p>
+                    <p className={rightPanelDescription}>{t('auth.login.panel.description')}</p>
                 </div>
             </div>
         </div>
@@ -191,7 +397,7 @@ export function LoginPage() {
 function DecorativeArt() {
     return (
         <svg
-            className={styles.rightPanelArt}
+            className={rightPanelArt}
             viewBox="0 0 480 640"
             preserveAspectRatio="xMidYMid slice"
             aria-hidden="true"
