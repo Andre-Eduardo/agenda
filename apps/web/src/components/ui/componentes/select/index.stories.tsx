@@ -1,4 +1,5 @@
 import type {Meta, StoryObj} from '@storybook/react-vite';
+import {css} from '@/styled-system/css';
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from './index';
 
 const meta = {
@@ -14,7 +15,7 @@ type Story = StoryObj<typeof meta>;
 export const Default: Story = {
     render: () => (
         <Select>
-            <SelectTrigger className="w-[220px]">
+            <SelectTrigger className={css({w: '[220px]'})}>
                 <SelectValue placeholder="Selecione uma opção" />
             </SelectTrigger>
             <SelectContent>

@@ -1,6 +1,6 @@
 import * as React from 'react';
-import {clsx} from 'clsx';
-import styles from './segmented-control.module.css';
+import {cx} from '@/styled-system/css';
+import {item, itemSelected, itemUnselected, root} from './styles';
 
 // ── SegmentedControl ──────────────────────────────────────────────────────────
 //
@@ -13,7 +13,7 @@ export interface SegmentedControlProps extends React.ComponentProps<'div'> {
 
 function SegmentedControl({value, onValueChange, className, children, ref, ...props}: SegmentedControlProps) {
     return (
-        <div ref={ref} role="group" className={clsx(styles.root, className)} {...props}>
+        <div ref={ref} role="group" className={cx(root, className)} {...props}>
             {React.Children.map(children, (child) => {
                 if (!React.isValidElement(child)) return child;
                 return React.cloneElement(child as React.ReactElement<SegmentedControlItemProps>, {
@@ -51,7 +51,7 @@ function SegmentedControlItem({
             role="radio"
             aria-checked={_selected}
             onClick={() => _onSelect?.(value)}
-            className={clsx(styles.item, _selected ? styles.itemSelected : styles.itemUnselected, className)}
+            className={cx(item, _selected ? itemSelected : itemUnselected, className)}
             {...props}
         >
             {children}

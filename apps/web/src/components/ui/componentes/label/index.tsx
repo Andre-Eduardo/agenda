@@ -1,9 +1,9 @@
 import * as LabelPrimitive from '@radix-ui/react-label';
-import {clsx} from 'clsx';
-import styles from './label.module.css';
+import {cx} from '@/styled-system/css';
+import {base} from './styles';
 
 function Label({className, ref, ...props}: React.ComponentProps<typeof LabelPrimitive.Root>) {
-    return <LabelPrimitive.Root ref={ref} className={clsx(styles.base, className)} {...props} />;
+    return <LabelPrimitive.Root ref={ref} className={cx(base, className)} {...props} />;
 }
 
 export {Label};

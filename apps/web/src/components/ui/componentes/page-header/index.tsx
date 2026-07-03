@@ -1,5 +1,21 @@
-import {clsx} from 'clsx';
-import styles from './page-header.module.css';
+import {cx} from '@/styled-system/css';
+import {
+    entityHeader,
+    entityHeaderActions,
+    entityHeaderAlerts,
+    entityHeaderAvatarGroup,
+    entityHeaderMeta,
+    entityHeaderName,
+    entityHeaderNameGroup,
+    entityHeaderRow,
+    entityHeaderSticky,
+    pageHeader,
+    pageHeaderActions,
+    pageHeaderRow,
+    pageHeaderSubtitle,
+    pageHeaderTitle,
+    pageHeaderTitleGroup,
+} from './styles';
 
 // ── PageHeader ────────────────────────────────────────────────────────────────
 
@@ -12,14 +28,14 @@ export interface PageHeaderProps extends React.ComponentProps<'div'> {
 
 function PageHeader({title, subtitle, actions, breadcrumb, className, ref, ...props}: PageHeaderProps) {
     return (
-        <div ref={ref} className={clsx(styles.pageHeader, className)} {...props}>
+        <div ref={ref} className={cx(pageHeader, className)} {...props}>
             {breadcrumb && <div>{breadcrumb}</div>}
-            <div className={styles.pageHeaderRow}>
-                <div className={styles.pageHeaderTitleGroup}>
-                    <h1 className={styles.pageHeaderTitle}>{title}</h1>
-                    {subtitle && <p className={styles.pageHeaderSubtitle}>{subtitle}</p>}
+            <div className={pageHeaderRow}>
+                <div className={pageHeaderTitleGroup}>
+                    <h1 className={pageHeaderTitle}>{title}</h1>
+                    {subtitle && <p className={pageHeaderSubtitle}>{subtitle}</p>}
                 </div>
-                {actions && <div className={styles.pageHeaderActions}>{actions}</div>}
+                {actions && <div className={pageHeaderActions}>{actions}</div>}
             </div>
         </div>
     );
@@ -50,18 +66,18 @@ function EntityHeader({
     ...props
 }: EntityHeaderProps) {
     return (
-        <div ref={ref} className={clsx(styles.entityHeader, sticky && styles.entityHeaderSticky, className)} {...props}>
-            <div className={styles.entityHeaderRow}>
-                <div className={styles.entityHeaderAvatarGroup}>
+        <div ref={ref} className={cx(entityHeader, sticky && entityHeaderSticky, className)} {...props}>
+            <div className={entityHeaderRow}>
+                <div className={entityHeaderAvatarGroup}>
                     {avatar}
-                    <div className={styles.entityHeaderNameGroup}>
-                        <div className={styles.entityHeaderName}>{name}</div>
-                        {meta && <div className={styles.entityHeaderMeta}>{meta}</div>}
+                    <div className={entityHeaderNameGroup}>
+                        <div className={entityHeaderName}>{name}</div>
+                        {meta && <div className={entityHeaderMeta}>{meta}</div>}
                     </div>
                 </div>
-                {actions && <div className={styles.entityHeaderActions}>{actions}</div>}
+                {actions && <div className={entityHeaderActions}>{actions}</div>}
             </div>
-            {alerts && <div className={styles.entityHeaderAlerts}>{alerts}</div>}
+            {alerts && <div className={entityHeaderAlerts}>{alerts}</div>}
         </div>
     );
 }

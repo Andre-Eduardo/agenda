@@ -1,4 +1,5 @@
 import type {Meta, StoryObj} from '@storybook/react-vite';
+import {css} from '@/styled-system/css';
 import {Button} from '../button';
 import {Popover, PopoverContent, PopoverTrigger} from './index';
 
@@ -18,8 +19,8 @@ export const Default: Story = {
             <PopoverTrigger asChild>
                 <Button variant="outline">Abrir popover</Button>
             </PopoverTrigger>
-            <PopoverContent className="w-[260px]">
-                <p className="text-sm">Conteúdo do popover.</p>
+            <PopoverContent className={css({w: '[260px]'})}>
+                <p className={css({fontSize: 'sm'})}>Conteúdo do popover.</p>
             </PopoverContent>
         </Popover>
     ),

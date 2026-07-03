@@ -1,4 +1,5 @@
 import type {Meta, StoryObj} from '@storybook/react-vite';
+import {css} from '@/styled-system/css';
 import {Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle} from './index';
 
 const meta = {
@@ -13,16 +14,16 @@ type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
     render: () => (
-        <Card className="w-[320px]">
+        <Card className={css({w: '[320px]'})}>
             <CardHeader>
                 <CardTitle>Título do card</CardTitle>
                 <CardDescription>Descrição curta do conteúdo.</CardDescription>
             </CardHeader>
             <CardContent>
-                <p className="text-sm">Conteúdo principal do card.</p>
+                <p className={css({fontSize: 'sm'})}>Conteúdo principal do card.</p>
             </CardContent>
             <CardFooter>
-                <p className="text-xs text-(--color-text-secondary)">Rodapé</p>
+                <p className={css({fontSize: 'xs', color: 'text.secondary'})}>Rodapé</p>
             </CardFooter>
         </Card>
     ),

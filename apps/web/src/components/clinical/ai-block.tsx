@@ -1,7 +1,7 @@
 import type {ReactNode} from 'react';
 import {Sparkles} from 'lucide-react';
-import {cn} from '@/lib/utils';
-import styles from './ai-block.module.css';
+import {cx, css} from '@/styled-system/css';
+import * as styles from './ai-block.styles';
 
 interface AIBlockProps {
     children: ReactNode;
@@ -20,10 +20,10 @@ interface AIBlockProps {
  */
 export function AIBlock({children, label = 'Gerado por IA · aguarda revisão', footer, className}: AIBlockProps) {
     return (
-        <div className={cn(styles.root, className)}>
+        <div className={cx(styles.root, className)}>
             <div className={styles.header}>
                 <span className={styles.badge}>
-                    <Sparkles aria-hidden className="size-3" />
+                    <Sparkles aria-hidden className={css({w: '3', h: '3'})} />
                     IA
                 </span>
                 <span className={styles.label}>{label}</span>

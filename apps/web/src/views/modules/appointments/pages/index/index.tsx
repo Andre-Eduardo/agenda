@@ -16,7 +16,6 @@ import {
 } from '@agenda-app/client';
 import type {UseQueryResult} from '@tanstack/react-query';
 import {createFileRoute, useNavigate} from '@tanstack/react-router';
-import {cva} from 'class-variance-authority';
 import {CalendarDays, CalendarX2, ChevronLeft, ChevronRight, Plus, X, ArrowUpRight, Pencil, Trash2} from 'lucide-react';
 import {toast} from 'sonner';
 import {Button} from '@/components/ui/componentes/button';
@@ -26,144 +25,37 @@ import {Label} from '@/components/ui/componentes/label';
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@/components/ui/componentes/select';
 import {Sheet, SheetContent, SheetHeader, SheetTitle} from '@/components/ui/componentes/sheet';
 import {Textarea} from '@/components/ui/componentes/textarea';
-import {cn} from '@/lib/utils';
-import styles from './styles.module.css';
-
-// ── Local variants ────────────────────────────────────────────────────────────
-
-const statusChip = cva(styles.statusChipBase, {
-    variants: {
-        status: {
-            SCHEDULED: styles.statusChipScheduled,
-            CONFIRMED: styles.statusChipConfirmed,
-            COMPLETED: styles.statusChipCompleted,
-            CANCELLED: styles.statusChipCancelled,
-            NO_SHOW: styles.statusChipNoShow,
-            ARRIVED: styles.statusChipArrived,
-            IN_PROGRESS: styles.statusChipInProgress,
-        },
-        active: {true: '', false: styles.statusChipInactive},
-    },
-});
-
-const statusDot = cva(styles.statusDotBase, {
-    variants: {
-        status: {
-            SCHEDULED: styles.statusDotScheduled,
-            CONFIRMED: styles.statusDotConfirmed,
-            COMPLETED: styles.statusDotCompleted,
-            CANCELLED: styles.statusDotCancelled,
-            NO_SHOW: styles.statusDotNoShow,
-            ARRIVED: styles.statusDotArrived,
-            IN_PROGRESS: styles.statusDotInProgress,
-        },
-    },
-});
-
-const segmentBtn = cva(styles.segmentBtnBase, {
-    variants: {
-        active: {true: styles.segmentBtnActive, false: styles.segmentBtnInactive},
-    },
-});
-
-const miniCell = cva(styles.miniCellBase, {
-    variants: {
-        inMonth: {true: '', false: styles.miniCellOutMonth},
-        isToday: {true: '', false: ''},
-        isSelected: {true: styles.miniCellSelected, false: ''},
-        inWeek: {true: styles.miniCellInWeek, false: ''},
-        hasAppts: {true: '', false: ''},
-    },
-});
-
-const gridDayHead = cva(styles.gridDayHeadBase, {
-    variants: {
-        isToday: {true: styles.gridDayHeadToday, false: styles.gridDayHeadDefault},
-    },
-});
-
-const gridDayHeadNum = cva(styles.gridDayHeadNumBase, {
-    variants: {
-        isToday: {true: styles.gridDayHeadNumToday, false: ''},
-    },
-});
-
-const gridDayCol = cva(styles.gridDayColBase, {
-    variants: {
-        isToday: {true: styles.gridDayColToday, false: ''},
-    },
-});
-
-const apptBlock = cva(styles.apptBlockBase, {
-    variants: {
-        status: {
-            SCHEDULED: styles.apptBlockScheduled,
-            CONFIRMED: styles.apptBlockConfirmed,
-            COMPLETED: styles.apptBlockCompleted,
-            CANCELLED: styles.apptBlockCancelled,
-            NO_SHOW: styles.apptBlockNoShow,
-            ARRIVED: styles.apptBlockArrived,
-            IN_PROGRESS: styles.apptBlockInProgress,
-        },
-        highlight: {true: styles.apptBlockHighlight, false: ''},
-    },
-});
-
-const apptBar = cva(styles.apptBarBase, {
-    variants: {
-        status: {
-            SCHEDULED: styles.apptBarScheduled,
-            CONFIRMED: styles.apptBarConfirmed,
-            COMPLETED: styles.apptBarCompleted,
-            CANCELLED: styles.apptBarCancelled,
-            NO_SHOW: styles.apptBarNoShow,
-            ARRIVED: styles.apptBarArrived,
-            IN_PROGRESS: styles.apptBarInProgress,
-        },
-    },
-});
-
-const monthGridCell = cva(styles.monthGridCellBase, {
-    variants: {
-        inMonth: {true: '', false: styles.monthGridCellOutMonth},
-        isToday: {true: styles.monthGridCellToday, false: ''},
-    },
-});
-
-const monthGridCellNum = cva(styles.monthGridCellNumBase, {
-    variants: {
-        inMonth: {true: styles.monthGridCellNumInMonth, false: styles.monthGridCellNumOutMonth},
-        isToday: {true: styles.monthGridCellNumToday, false: styles.monthGridCellNumNotToday},
-    },
-});
-
-const monthGridEvt = cva(styles.monthGridEvtBase, {
-    variants: {
-        status: {
-            SCHEDULED: styles.monthGridEvtScheduled,
-            CONFIRMED: styles.monthGridEvtConfirmed,
-            COMPLETED: styles.monthGridEvtCompleted,
-            CANCELLED: styles.monthGridEvtCancelled,
-            NO_SHOW: styles.monthGridEvtNoShow,
-            ARRIVED: styles.monthGridEvtArrived,
-            IN_PROGRESS: styles.monthGridEvtInProgress,
-        },
-    },
-});
-
-const sheetStatusBadge = cva(styles.sheetStatusBadgeBase, {
-    variants: {
-        status: {
-            SCHEDULED: styles.sheetStatusBadgeScheduled,
-            CONFIRMED: styles.sheetStatusBadgeConfirmed,
-            COMPLETED: styles.sheetStatusBadgeCompleted,
-            CANCELLED: styles.sheetStatusBadgeCancelled,
-            NO_SHOW: styles.sheetStatusBadgeNoShow,
-            ARRIVED: styles.sheetStatusBadgeArrived,
-            IN_PROGRESS: styles.sheetStatusBadgeInProgress,
-        },
-    },
-});
+import {cx} from '@/styled-system/css';
+import * as styles from './styles';
+import {
+    apptBar,
+    apptBlock,
+    gap1_5,
+    gridDayCol,
+    gridDayHead,
+    gridDayHeadNum,
+    highlightRing,
+    icon3,
+    icon35,
+    icon4,
+    miniCell,
+    miniCellTextPrimary,
+    miniCellTextTertiary,
+    miniCellTextWhite,
+    monthGridCell,
+    monthGridCellNum,
+    monthGridEvt,
+    mt2,
+    mt6,
+    relative,
+    segmentBtn,
+    sheetDotBase,
+    sheetStatusBadge,
+    srOnly,
+    statusChip,
+    statusDot,
+    truncate,
+} from './styles';
 
 // ── Route ─────────────────────────────────────────────────────────
 export const Route = createFileRoute('/_stackedLayout/appointments')({
@@ -685,9 +577,9 @@ function MonthView({appts, patients, cursor, today, highlightId, onSlotClick, on
                                 <button
                                     key={a.id}
                                     type="button"
-                                    className={cn(
+                                    className={cx(
                                         monthGridEvt({status: a.status}),
-                                        a.id === highlightId ? 'ring-1 ring-(--color-primary)' : ''
+                                        a.id === highlightId && highlightRing
                                     )}
                                     onClick={(e) => {
                                         e.stopPropagation();
@@ -757,14 +649,14 @@ function MiniCalendar({cursor, view, appts, today, onPickDay}: MiniCalProps) {
                         className={styles.miniArrowBtn}
                         onClick={() => setMc(new Date(mc.getFullYear(), mc.getMonth() - 1, 1))}
                     >
-                        <ChevronLeft className="size-3" />
+                        <ChevronLeft className={icon3} />
                     </button>
                     <button
                         type="button"
                         className={styles.miniArrowBtn}
                         onClick={() => setMc(new Date(mc.getFullYear(), mc.getMonth() + 1, 1))}
                     >
-                        <ChevronRight className="size-3" />
+                        <ChevronRight className={icon3} />
                     </button>
                 </div>
             </div>
@@ -800,14 +692,14 @@ function MiniCalendar({cursor, view, appts, today, onPickDay}: MiniCalProps) {
                                 <span className={styles.miniTodayNum}>{d.getDate()}</span>
                             ) : (
                                 <span
-                                    className={cn(
+                                    className={cx(
                                         styles.miniCellNum,
                                         // eslint-disable-next-line no-nested-ternary -- conditional class chain is clearest as nested
                                         isSelected
-                                            ? 'text-white'
+                                            ? miniCellTextWhite
                                             : inMonth
-                                              ? 'text-(--color-text-primary)'
-                                              : 'text-(--color-text-tertiary)'
+                                              ? miniCellTextPrimary
+                                              : miniCellTextTertiary
                                     )}
                                 >
                                     {d.getDate()}
@@ -850,27 +742,17 @@ function AppointmentDetailSheet({apt, patients, onClose, onEdit, onCancel, onOpe
         <Sheet open onOpenChange={(o) => !o && onClose()}>
             <SheetContent className={styles.detailSheetPanel}>
                 <SheetHeader>
-                    <SheetTitle className="sr-only">Detalhes do agendamento</SheetTitle>
+                    <SheetTitle className={srOnly}>Detalhes do agendamento</SheetTitle>
                     <div className={styles.sheetInfoRow}>
                         <span className={styles.sheetEyebrow}>Agendamento</span>
                         <span className={sheetStatusBadge({status: apt.status})}>
-                            <span
-                                className={cn('w-1.5 h-1.5 rounded-full shrink-0', {
-                                    'bg-blue-500': apt.status === 'SCHEDULED',
-                                    'bg-emerald-500': apt.status === 'CONFIRMED',
-                                    'bg-slate-400': apt.status === 'COMPLETED',
-                                    'bg-red-500': apt.status === 'CANCELLED',
-                                    'bg-amber-500': apt.status === 'NO_SHOW',
-                                    'bg-violet-500': apt.status === 'ARRIVED',
-                                    'bg-cyan-500': apt.status === 'IN_PROGRESS',
-                                })}
-                            />
+                            <span className={cx(sheetDotBase, statusDot({status: apt.status}))} />
                             {STATUS_LABELS[apt.status]}
                         </span>
                     </div>
                 </SheetHeader>
 
-                <div className="mt-6">
+                <div className={mt6}>
                     {/* Patient card */}
                     <div className={styles.sheetPatientCard}>
                         <div className={styles.patAvatarLg}>{patient ? getInitials(patient.name) : '?'}</div>
@@ -885,7 +767,7 @@ function AppointmentDetailSheet({apt, patients, onClose, onEdit, onCancel, onOpe
                             className={styles.patProfileLink}
                             onClick={() => onOpenPatient(apt.patientId)}
                         >
-                            Ver perfil <ArrowUpRight className="size-3" />
+                            Ver perfil <ArrowUpRight className={icon3} />
                         </button>
                     </div>
 
@@ -929,11 +811,11 @@ function AppointmentDetailSheet({apt, patients, onClose, onEdit, onCancel, onOpe
                     {/* Actions */}
                     {!isDone && (
                         <div className={styles.sheetActions}>
-                            <Button size="sm" variant="outline" className="gap-1.5" onClick={onEdit}>
-                                <Pencil className="size-3.5" /> Editar
+                            <Button size="sm" variant="outline" className={gap1_5} onClick={onEdit}>
+                                <Pencil className={icon35} /> Editar
                             </Button>
                             <Button size="sm" variant="outline" className={styles.cancelBtn} onClick={onCancel}>
-                                <Trash2 className="size-3.5" /> Cancelar consulta
+                                <Trash2 className={icon35} /> Cancelar consulta
                             </Button>
                         </div>
                     )}
@@ -1131,19 +1013,20 @@ function NewAppointmentDialog({prefill, defaultMemberId, onClose, onSaved}: NewA
                 </DialogHeader>
                 <div className={styles.formBody}>
                     {/* Patient */}
-                    <div className={cn(styles.formField, 'relative')}>
+                    <div className={cx(styles.formField, relative)}>
                         <Label>Paciente</Label>
                         {selectedPatient ? (
                             <div className={styles.patSearchPill}>
                                 <div className={styles.patAvatarSm}>{getInitials(selectedPatient.name)}</div>
                                 <span className={styles.patSearchName}>{selectedPatient.name}</span>
-                                <button
+                                    <button
                                     type="button"
                                     className={styles.patClearBtn}
                                     onClick={() => setSelectedPatient(null)}
                                 >
-                                    <X className="size-3.5" />
+                                    <X className={icon35} />
                                 </button>
+
                             </div>
                         ) : (
                             <div className={styles.patSearchWrap}>
@@ -1170,9 +1053,10 @@ function NewAppointmentDialog({prefill, defaultMemberId, onClose, onSaved}: NewA
                                                     setShowDrop(false);
                                                 }}
                                             >
-                                                <div className={styles.patAvatarSm}>{getInitials(p.name)}</div>
-                                                <span className="truncate">{p.name}</span>
-                                            </button>
+                                            <div className={styles.patAvatarSm}>{getInitials(p.name)}</div>
+                                            <span className={truncate}>{p.name}</span>
+                                        </button>
+
                                         ))}
                                     </div>
                                 )}
@@ -1285,7 +1169,7 @@ function CancelDialog({apt, onClose, onCancelled}: CancelDialogProps) {
                     <DialogTitle>Cancelar consulta</DialogTitle>
                 </DialogHeader>
                 <p className={styles.cancelDialogText}>Tem certeza que deseja cancelar esta consulta?</p>
-                <div className={cn(styles.formField, 'mt-2')}>
+                <div className={cx(styles.formField, mt2)}>
                     <Label>
                         Motivo <span className={styles.optionalLabel}>opcional</span>
                     </Label>
@@ -1449,8 +1333,8 @@ export function AppointmentsPage() {
                             </button>
                         ))}
                     </div>
-                    <Button size="sm" className="gap-1.5" onClick={() => setNewAppt(true)}>
-                        <Plus className="size-4" /> Novo agendamento
+                    <Button size="sm" className={gap1_5} onClick={() => setNewAppt(true)}>
+                        <Plus className={icon4} /> Novo agendamento
                     </Button>
                 </div>
             </div>
@@ -1463,10 +1347,10 @@ export function AppointmentsPage() {
                     </Button>
                     <div className={styles.arrowsGroup}>
                         <button type="button" className={styles.arrowBtn} onClick={goPrev}>
-                            <ChevronLeft className="size-4" />
+                            <ChevronLeft className={icon4} />
                         </button>
                         <button type="button" className={styles.arrowBtn} onClick={goNext}>
-                            <ChevronRight className="size-4" />
+                            <ChevronRight className={icon4} />
                         </button>
                     </div>
                     <span className={styles.periodLabel}>{periodLabel}</span>

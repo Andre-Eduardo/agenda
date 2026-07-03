@@ -20,7 +20,6 @@ import type {
 import type {UseQueryResult} from '@tanstack/react-query';
 import {useQueryClient} from '@tanstack/react-query';
 import {createFileRoute, useNavigate} from '@tanstack/react-router';
-import {cva} from 'class-variance-authority';
 import {
     Plus,
     ChevronLeft,
@@ -41,144 +40,33 @@ import {
 } from 'lucide-react';
 import {Button} from '@/components/ui/componentes/button';
 import {Skeleton} from '@/components/ui/componentes/skeleton';
-import {cn} from '@/lib/utils';
 import {useAppStore} from '@/store/appStore';
-import styles from './styles.module.css';
-
-// ── CVA definitions ────────────────────────────────────────────────────────
-
-const segmentedBtn = cva(styles.segmentedBtnBase, {
-    variants: {
-        active: {
-            true: styles.segmentedBtnActive,
-            false: styles.segmentedBtnInactive,
-        },
-    },
-    defaultVariants: {active: false},
-});
-
-const statusChip = cva(styles.statusChipBase, {
-    variants: {
-        status: {
-            scheduled: styles.statusChipScheduled,
-            confirmed: styles.statusChipConfirmed,
-            done: styles.statusChipDone,
-            cancelled: styles.statusChipCancelled,
-            noshow: styles.statusChipNoshow,
-        },
-        off: {
-            true: styles.statusChipOff,
-            false: '',
-        },
-    },
-    defaultVariants: {off: false},
-});
-
-const miniCalCell = cva(styles.miniCalCellBase, {
-    variants: {
-        state: {
-            default: styles.miniCalCellDefault,
-            off: styles.miniCalCellOff,
-            today: styles.miniCalCellToday,
-            selected: styles.miniCalCellSelected,
-            inWeek: styles.miniCalCellInWeek,
-        },
-    },
-    defaultVariants: {state: 'default'},
-});
-
-const dayHead = cva(styles.dayHeadBase, {
-    variants: {
-        today: {true: styles.dayHeadToday, false: ''},
-    },
-});
-
-const dayHeadNum = cva(styles.dayHeadNumBase, {
-    variants: {
-        today: {
-            true: styles.dayHeadNumToday,
-            false: styles.dayHeadNumDefault,
-        },
-    },
-});
-
-const dayCol = cva(styles.dayColBase, {
-    variants: {
-        today: {true: styles.dayColToday, false: ''},
-    },
-});
-
-const monthCell = cva(styles.monthCellBase, {
-    variants: {
-        off: {
-            true: styles.monthCellOff,
-            false: styles.monthCellOn,
-        },
-    },
-    defaultVariants: {off: false},
-});
-
-const monthCellNum = cva(styles.monthCellNumBase, {
-    variants: {
-        today: {
-            true: styles.monthCellNumToday,
-            false: styles.monthCellNumDefault,
-        },
-    },
-    defaultVariants: {today: false},
-});
-
-const apptBlock = cva(styles.apptBlockBase, {
-    variants: {
-        status: {
-            SCHEDULED: styles.apptBlockScheduled,
-            CONFIRMED: styles.apptBlockConfirmed,
-            COMPLETED: styles.apptBlockCompleted,
-            CANCELLED: styles.apptBlockCancelled,
-            NO_SHOW: styles.apptBlockNoShow,
-            ARRIVED: styles.apptBlockArrived,
-            IN_PROGRESS: styles.apptBlockInProgress,
-        },
-        highlight: {
-            true: styles.apptBlockHighlight,
-            false: '',
-        },
-    },
-    defaultVariants: {highlight: false},
-});
-
-const statusBadge = cva(styles.statusBadgeBase, {
-    variants: {
-        status: {
-            SCHEDULED: styles.statusBadgeScheduled,
-            CONFIRMED: styles.statusBadgeConfirmed,
-            COMPLETED: styles.statusBadgeCompleted,
-            CANCELLED: styles.statusBadgeCancelled,
-            NO_SHOW: styles.statusBadgeNoShow,
-            ARRIVED: styles.statusBadgeArrived,
-            IN_PROGRESS: styles.statusBadgeInProgress,
-        },
-    },
-});
-
-const shNotes = cva(styles.shNotesBase, {
-    variants: {
-        empty: {
-            true: styles.shNotesEmpty,
-            false: styles.shNotesFull,
-        },
-    },
-});
-
-const searchBox = cva(styles.searchBoxBase, {
-    variants: {
-        error: {
-            true: styles.searchBoxError,
-            false: styles.searchBoxDefault,
-        },
-    },
-    defaultVariants: {error: false},
-});
+import {cx} from '@/styled-system/css';
+import * as styles from './styles';
+import {
+    apptBlock,
+    dayCol,
+    dayHead,
+    dayHeadNum,
+    flex,
+    highlightRing,
+    icon3,
+    icon35,
+    icon4,
+    icon5,
+    icon7,
+    miniCalCell,
+    monthCell,
+    monthCellNum,
+    searchBox,
+    segmentedBtn,
+    shNotes,
+    statusBadge,
+    statusChip,
+    textDanger,
+    textTertiary,
+    truncate,
+} from './styles';
 
 // ── Record / array lookup tables ───────────────────────────────────────────
 
@@ -544,10 +432,10 @@ function ApptBlock({
 
     return (
         <button type="button" className={apptBlock({status: apt.status, highlight})} style={style} onClick={onClick}>
-            <div className={cn(styles.apptBar, apptBarCls[apt.status])} />
+            <div className={cx(styles.apptBar, apptBarCls[apt.status])} />
             <div className={styles.apptContent}>
-                <div className={cn(styles.apptTimeBase, apptTimeCls[apt.status])}>{timeStr}</div>
-                <div className={cn(styles.apptNameBase, apptNameCls[apt.status])}>{name}</div>
+                <div className={cx(styles.apptTimeBase, apptTimeCls[apt.status])}>{timeStr}</div>
+                <div className={cx(styles.apptNameBase, apptNameCls[apt.status])}>{name}</div>
                 {!compact && <div className={styles.apptTypeLbl}>{TYPE_LABELS[apt.type]}</div>}
             </div>
         </button>
@@ -609,7 +497,7 @@ function MiniCalendar({
                             setMonthCursor(new Date(monthCursor.getFullYear(), monthCursor.getMonth() - 1, 1))
                         }
                     >
-                        <ChevronLeft className="size-3.5" />
+                        <ChevronLeft className={icon35} />
                     </button>
                     <button
                         type="button"
@@ -618,7 +506,7 @@ function MiniCalendar({
                             setMonthCursor(new Date(monthCursor.getFullYear(), monthCursor.getMonth() + 1, 1))
                         }
                     >
-                        <ChevronRight className="size-3.5" />
+                        <ChevronRight className={icon35} />
                     </button>
                 </div>
             </div>
@@ -1039,7 +927,7 @@ function MonthView({
                                     <button
                                         type="button"
                                         key={a.id}
-                                        className={cn(
+                                        className={cx(
                                             styles.monthEvtBase,
                                             evtCls,
                                             a.id === highlightId && 'ring-1 ring-(--color-primary)'
@@ -1236,7 +1124,7 @@ function AppointmentDetailSheet({
                     {/* Patient */}
                     <div className={styles.shPatientCard}>
                         {patient && (
-                            <div className={cn(styles.avatarSm, getAvatarVariant(patient.id))}>
+                            <div className={cx(styles.avatarSm, getAvatarVariant(patient.id))}>
                                 {getInitials(patient.name)}
                             </div>
                         )}
@@ -1615,7 +1503,7 @@ function NewAppointmentSheet({
                         </label>
                         {patient ? (
                             <div className={styles.patientPill}>
-                                <div className={cn(styles.avatarSm, getAvatarVariant(patient.id))}>
+                                <div className={cx(styles.avatarSm, getAvatarVariant(patient.id))}>
                                     {getInitials(patient.name)}
                                 </div>
                                 <div className={styles.ppInfo}>
@@ -1675,7 +1563,7 @@ function NewAppointmentSheet({
                                                         });
                                                     }}
                                                 >
-                                                    <div className={cn(styles.avatarSm, getAvatarVariant(p.id))}>
+                                                    <div className={cx(styles.avatarSm, getAvatarVariant(p.id))}>
                                                         {getInitials(p.name)}
                                                     </div>
                                                     <div>
@@ -1708,7 +1596,7 @@ function NewAppointmentSheet({
                             </label>
                             <input
                                 type="date"
-                                className={cn(styles.inputBase, errors.date && styles.inputErr)}
+                                className={cx(styles.inputBase, errors.date && styles.inputErr)}
                                 aria-label="Data"
                                 value={date}
                                 onChange={(e) => setDate(e.target.value)}
@@ -1726,7 +1614,7 @@ function NewAppointmentSheet({
                             </label>
                             <input
                                 type="time"
-                                className={cn(styles.inputBase, errors.start && styles.inputErr)}
+                                className={cx(styles.inputBase, errors.start && styles.inputErr)}
                                 aria-label="Horário"
                                 value={start}
                                 onChange={(e) => setStart(e.target.value)}
@@ -1980,7 +1868,7 @@ export function AgendaPage() {
                                 className={statusChip({status: key, off: !on})}
                                 onClick={() => toggleStatus(key)}
                             >
-                                <span className={cn(styles.chipDot, statusDotCls[key])} />
+                                <span className={cx(styles.chipDot, statusDotCls[key])} />
                                 {label}
                             </button>
                         );

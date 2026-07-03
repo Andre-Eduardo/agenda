@@ -1,11 +1,18 @@
 import * as ScrollAreaPrimitive from '@radix-ui/react-scroll-area';
-import {clsx} from 'clsx';
-import styles from './scroll-area.module.css';
+import {cx} from '@/styled-system/css';
+import {
+    scrollArea,
+    scrollAreaViewport,
+    scrollBar,
+    scrollBarHorizontal,
+    scrollBarThumb,
+    scrollBarVertical,
+} from './styles';
 
 function ScrollArea({className, children, ref, ...props}: React.ComponentProps<typeof ScrollAreaPrimitive.Root>) {
     return (
-        <ScrollAreaPrimitive.Root ref={ref} className={clsx(styles.scrollArea, className)} {...props}>
-            <ScrollAreaPrimitive.Viewport className={styles.scrollAreaViewport}>
+        <ScrollAreaPrimitive.Root ref={ref} className={cx(scrollArea, className)} {...props}>
+            <ScrollAreaPrimitive.Viewport className={scrollAreaViewport}>
                 {children}
             </ScrollAreaPrimitive.Viewport>
             <ScrollBar />
@@ -24,15 +31,15 @@ function ScrollBar({
         <ScrollAreaPrimitive.ScrollAreaScrollbar
             ref={ref}
             orientation={orientation}
-            className={clsx(
-                styles.scrollBar,
-                orientation === 'vertical' && styles.scrollBarVertical,
-                orientation === 'horizontal' && styles.scrollBarHorizontal,
+            className={cx(
+                scrollBar,
+                orientation === 'vertical' && scrollBarVertical,
+                orientation === 'horizontal' && scrollBarHorizontal,
                 className
             )}
             {...props}
         >
-            <ScrollAreaPrimitive.ScrollAreaThumb className={styles.scrollBarThumb} />
+            <ScrollAreaPrimitive.ScrollAreaThumb className={scrollBarThumb} />
         </ScrollAreaPrimitive.ScrollAreaScrollbar>
     );
 }

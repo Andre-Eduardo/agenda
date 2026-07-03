@@ -1,4 +1,0 @@
-@reference "../../../../app/globals.css";
-.base {
-    @apply animate-pulse rounded-md bg-muted;
-}

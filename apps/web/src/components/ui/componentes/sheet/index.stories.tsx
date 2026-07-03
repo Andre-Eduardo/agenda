@@ -1,4 +1,5 @@
 import type {Meta, StoryObj} from '@storybook/react-vite';
+import {css} from '@/styled-system/css';
 import {Button} from '../button';
 import {Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle, SheetTrigger} from './index';
 
@@ -23,7 +24,7 @@ export const Default: Story = {
                     <SheetTitle>Título</SheetTitle>
                     <SheetDescription>Conteúdo lateral.</SheetDescription>
                 </SheetHeader>
-                <div className="py-4 text-sm">Corpo do sheet.</div>
+                <div className={css({py: '4', fontSize: 'sm'})}>Corpo do sheet.</div>
                 <SheetFooter>
                     <Button>Salvar</Button>
                 </SheetFooter>

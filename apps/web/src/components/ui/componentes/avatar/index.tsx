@@ -1,6 +1,20 @@
 import * as AvatarPrimitive from '@radix-ui/react-avatar';
 import {cn} from '@/lib/utils';
-import styles from './avatar.module.css';
+import {cx} from '@/styled-system/css';
+import {
+    avatar,
+    avatarFallback,
+    avatarImage,
+    avatarLg,
+    avatarMd,
+    avatarSm,
+    avatarXs,
+    initials,
+    initialsLg,
+    initialsMd,
+    initialsSm,
+    initialsXs,
+} from './styles';
 
 // ── Avatar ────────────────────────────────────────────────────────────────────
 
@@ -13,12 +27,12 @@ function Avatar({
     return (
         <AvatarPrimitive.Root
             ref={ref}
-            className={cn(
-                styles.avatar,
-                size === 'xs' && styles.avatarXs,
-                size === 'sm' && styles.avatarSm,
-                (!size || size === 'md') && styles.avatarMd,
-                size === 'lg' && styles.avatarLg,
+            className={cx(
+                avatar,
+                size === 'xs' && avatarXs,
+                size === 'sm' && avatarSm,
+                (!size || size === 'md') && avatarMd,
+                size === 'lg' && avatarLg,
                 className
             )}
             {...props}
@@ -29,13 +43,13 @@ function Avatar({
 // ── AvatarImage ───────────────────────────────────────────────────────────────
 
 function AvatarImage({className, ref, ...props}: React.ComponentProps<typeof AvatarPrimitive.Image>) {
-    return <AvatarPrimitive.Image ref={ref} className={cn(styles.avatarImage, className)} {...props} />;
+    return <AvatarPrimitive.Image ref={ref} className={cx(avatarImage, className)} {...props} />;
 }
 
 // ── AvatarFallback ────────────────────────────────────────────────────────────
 
 function AvatarFallback({className, ref, ...props}: React.ComponentProps<typeof AvatarPrimitive.Fallback>) {
-    return <AvatarPrimitive.Fallback ref={ref} className={cn(styles.avatarFallback, className)} {...props} />;
+    return <AvatarPrimitive.Fallback ref={ref} className={cx(avatarFallback, className)} {...props} />;
 }
 
 // ── Palette para colorir avatares por índice ──────────────────────────────────
@@ -70,7 +84,7 @@ function AvatarInitials({
     size?: 'xs' | 'sm' | 'md' | 'lg';
     className?: string;
 }) {
-    const initials = name
+    const initialsValue = name
         .split(' ')
         .slice(0, 2)
         .map((w) => w[0]?.toUpperCase() ?? '')
@@ -81,16 +95,16 @@ function AvatarInitials({
     return (
         <span
             className={cn(
-                styles.initials,
-                size === 'xs' && styles.initialsXs,
-                size === 'sm' && styles.initialsSm,
-                (!size || size === 'md') && styles.initialsMd,
-                size === 'lg' && styles.initialsLg,
+                initials,
+                size === 'xs' && initialsXs,
+                size === 'sm' && initialsSm,
+                (!size || size === 'md') && initialsMd,
+                size === 'lg' && initialsLg,
                 color, // string Tailwind dinâmica — selecionada por índice
                 className
             )}
         >
-            {initials}
+            {initialsValue}
         </span>
     );
 }

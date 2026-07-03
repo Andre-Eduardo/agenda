@@ -12,8 +12,6 @@ import type {
 } from '@agenda-app/client';
 import type {UseQueryResult} from '@tanstack/react-query';
 import {createFileRoute, useNavigate, Link} from '@tanstack/react-router';
-import {cva} from 'class-variance-authority';
-import {clsx} from 'clsx';
 import {
     ChevronRight,
     ChevronLeft,
@@ -39,19 +37,39 @@ import {
 } from '@/components/ui/componentes/breadcrumb';
 import {Button} from '@/components/ui/componentes/button';
 import {Skeleton} from '@/components/ui/componentes/skeleton';
-import {cn} from '@/lib/utils';
-import styles from './styles.module.css';
-
-const soapLetter = cva(styles.soapLetterBase, {
-    variants: {
-        v: {
-            s: styles.soapLetterS,
-            o: styles.soapLetterO,
-            a: styles.soapLetterA,
-            p: styles.soapLetterP,
-        },
-    },
-});
+import {
+    FilesList,
+    Notes,
+    PageShell,
+    SectionCard,
+    SkeletonRoot,
+    SoapStack,
+    TagsGrid,
+    TraceCard,
+    badgeConduct,
+    badgeOrigin,
+    badgeStatus,
+    breadcrumbMb3,
+    btnIconSize8,
+    chevronNav,
+    chevronPatCard,
+    draftBadge,
+    errorText,
+    icon11,
+    icon13,
+    icon4,
+    pageErrorState,
+    signedBadge,
+    skeletonH120Rounded14,
+    skeletonH160Rounded12,
+    skeletonH200Rounded12,
+    skeletonH4W64,
+    soapLetter,
+    traceEditedChip,
+    traceIdVal,
+    traceMutedInline,
+    traceValMono,
+} from './styles';
 
 export const Route = createFileRoute('/_stackedLayout/patients/$patientId/records/$recordId')({
     component: RecordDetailPage,
@@ -195,14 +213,14 @@ function conductLabel(tag: RecordConductTagsItem): string {
 
 // ── Skeleton ───────────────────────────────────────────────────────────────────
 
-function DetailSkeleton() {
+function DetailSkeleton(): ReactNode {
     return (
-        <div className={styles.skeletonRoot}>
-            <Skeleton className="h-4 w-64" />
-            <Skeleton className={styles.skeletonHeaderCard} />
-            <Skeleton className={styles.skeletonBodyCard} />
-            <Skeleton className={styles.skeletonSectionCard} />
-        </div>
+        <SkeletonRoot>
+            <Skeleton className={skeletonH4W64} />
+            <Skeleton className={skeletonH120Rounded14} />
+            <Skeleton className={skeletonH200Rounded12} />
+            <Skeleton className={skeletonH160Rounded12} />
+        </SkeletonRoot>
     );
 }
 
@@ -215,7 +233,7 @@ const SOAP_DEFS: Array<{key: 's' | 'o' | 'a' | 'p'; letter: string; title: strin
     {key: 'p', letter: 'P', title: 'Plano', desc: 'Conduta, prescrições, exames e retorno'},
 ];
 
-function SoapSection({record}: {record: MedicalRecord}) {
+function SoapSection({record}: {record: MedicalRecord}): ReactNode {
     const contents: Record<'s' | 'o' | 'a' | 'p', string | null> = {
         s: asStr(record.subjective),
         o: asStr(record.objective),
@@ -224,34 +242,30 @@ function SoapSection({record}: {record: MedicalRecord}) {
     };
 
     return (
-        <section className={styles.sectionRoot}>
-            <div className={styles.sectionHead}>
-                <div className={styles.sectionTitle}>Evolução clínica (SOAP)</div>
-                <div className={styles.sectionSub}>Registro estruturado do atendimento</div>
+        <SectionCard>
+            <div className="head">
+                <div className="title">Evolução clínica (SOAP)</div>
+                <div className="sub">Registro estruturado do atendimento</div>
             </div>
-            <div className={styles.soapStack}>
+            <SoapStack>
                 {SOAP_DEFS.map((def) => {
                     const content = contents[def.key];
 
                     return (
-                        <div key={def.key}>
-                            <div className={styles.soapHead}>
+                        <div key={def.key} className="soap-item">
+                            <div className="head">
                                 <span className={soapLetter({v: def.key})}>{def.letter}</span>
                                 <div>
-                                    <div className={styles.soapMetaTitle}>{def.title}</div>
-                                    <div className={styles.soapMetaDesc}>{def.desc}</div>
+                                    <div className="meta-title">{def.title}</div>
+                                    <div className="meta-desc">{def.desc}</div>
                                 </div>
                             </div>
-                            {content ? (
-                                <p className={styles.soapBody}>{content}</p>
-                            ) : (
-                                <p className={styles.soapBodyEmpty}>Não registrado</p>
-                            )}
+                            {content ? <p className="body">{content}</p> : <p className="body-empty">Não registrado</p>}
                         </div>
                     );
                 })}
-            </div>
-        </section>
+            </SoapStack>
+        </SectionCard>
     );
 }
 
@@ -264,20 +278,20 @@ function TagsSection({record}: {record: MedicalRecord}): ReactNode {
     if (!hasStatus && !hasTags) return null;
 
     return (
-        <section className={styles.sectionRoot}>
-            <div className={styles.sectionHead}>
-                <div className={styles.sectionTitle}>Classificações</div>
+        <SectionCard>
+            <div className="head">
+                <div className="title">Classificações</div>
             </div>
-            <div className={styles.tagsGrid}>
+            <TagsGrid>
                 {hasStatus && (
                     <>
-                        <div className={styles.tagsLabel}>Status clínico</div>
+                        <div className="tag-label">Status clínico</div>
                         <div>
                             <Badge
                                 clinicalStatus={record.clinicalStatus as NonNullable<RecordClinicalStatus>}
-                                className={styles.badgeStatus}
+                                className={badgeStatus}
                             >
-                                <span className={styles.tagsDot} />
+                                <span className="tag-dot" />
                                 {clinicalStatusLabel(record.clinicalStatus)}
                             </Badge>
                         </div>
@@ -285,18 +299,18 @@ function TagsSection({record}: {record: MedicalRecord}): ReactNode {
                 )}
                 {hasTags && (
                     <>
-                        <div className={styles.tagsLabel}>Condutas</div>
-                        <div className={styles.tagsList}>
+                        <div className="tag-label">Condutas</div>
+                        <div className="tag-list">
                             {record.conductTags.map((t) => (
-                                <Badge key={t} variant="outline" className={styles.badgeConduct}>
+                                <Badge key={t} variant="outline" className={badgeConduct}>
                                     {conductLabel(t)}
                                 </Badge>
                             ))}
                         </div>
                     </>
                 )}
-            </div>
-        </section>
+            </TagsGrid>
+        </SectionCard>
     );
 }
 
@@ -308,151 +322,143 @@ function NotesSection({record}: {record: MedicalRecord}): ReactNode {
     if (!freeNotes) return null;
 
     return (
-        <section className={styles.sectionRoot}>
-            <div className={styles.sectionHead}>
-                <div className={styles.sectionTitle}>Observações complementares</div>
+        <SectionCard>
+            <div className="head">
+                <div className="title">Observações complementares</div>
             </div>
-            <p className={styles.notes}>{freeNotes}</p>
-        </section>
+            <Notes>{freeNotes}</Notes>
+        </SectionCard>
     );
 }
 
 // ── Files section ──────────────────────────────────────────────────────────────
 
-function FilesSection({record}: {record: MedicalRecord}) {
+function FilesSection({record}: {record: MedicalRecord}): ReactNode {
     return (
-        <section className={styles.sectionRoot}>
-            <div className={styles.sectionHead}>
-                <div className={styles.sectionTitle}>
-                    <Paperclip className="size-4" />
+        <SectionCard>
+            <div className="head">
+                <div className="title">
+                    <Paperclip className={icon4} />
                     Anexos
                 </div>
                 {record.files.length > 0 && (
-                    <div className={styles.sectionSub}>
+                    <div className="sub">
                         {record.files.length} {record.files.length === 1 ? 'arquivo' : 'arquivos'}
                     </div>
                 )}
             </div>
             {record.files.length === 0 ? (
-                <div className={styles.empty}>
-                    <Paperclip className="size-4" />
+                <div className="empty">
+                    <Paperclip className={icon4} />
                     Nenhum anexo nessa evolução.
                 </div>
             ) : (
-                <div className={styles.filesList}>
+                <FilesList>
                     {record.files.map((f) => (
-                        <div key={f.id} className={styles.filesRow}>
-                            <span className={styles.filesIcon}>
-                                <FileText className="size-4" />
+                        <div key={f.id} className="row">
+                            <span className="icon">
+                                <FileText className={icon4} />
                             </span>
-                            <div className="min-w-0">
-                                <div className={styles.filesName}>{f.fileName}</div>
-                                {f.description && <div className={styles.filesSub}>{f.description}</div>}
+                            <div className="body-wrap">
+                                <div className="name">{f.fileName}</div>
+                                {f.description && <div className="sub">{f.description}</div>}
                             </div>
-                            <div className={styles.filesActions}>
-                                <Button variant="ghost" size="icon" className="size-8" asChild>
+                            <div className="actions">
+                                <Button variant="ghost" size="icon" className={btnIconSize8} asChild>
                                     <a href={f.url} target="_blank" rel="noreferrer" aria-label="Visualizar">
-                                        <Eye className="size-[14px]" />
+                                        <Eye className={icon14} />
                                     </a>
                                 </Button>
-                                <Button variant="ghost" size="icon" className="size-8" asChild>
+                                <Button variant="ghost" size="icon" className={btnIconSize8} asChild>
                                     <a href={f.url} download={f.fileName} aria-label="Baixar">
-                                        <Download className="size-[14px]" />
+                                        <Download className={icon14} />
                                     </a>
                                 </Button>
                             </div>
                         </div>
                     ))}
-                </div>
+                </FilesList>
             )}
-        </section>
+        </SectionCard>
     );
 }
 
 // ── Traceability section ───────────────────────────────────────────────────────
 
-function TraceabilitySection({record}: {record: MedicalRecord}) {
+function TraceabilitySection({record}: {record: MedicalRecord}): ReactNode {
     const isAI = record.source === 'IMPORT';
     const publishedAt = asStr(record.signedAt) ?? record.createdAt;
 
     return (
-        <section className={styles.sectionTraceRoot}>
-            <div className={styles.sectionTraceBar} />
-            <div className={styles.sectionHead}>
-                <div className={styles.sectionTitle}>
-                    <ShieldCheck className={styles.traceShieldIcon} />
+        <TraceCard>
+            <div className="bar" />
+            <div className="head">
+                <div className="title">
+                    <ShieldCheck className="shield-icon" />
                     Rastreabilidade do registro
                 </div>
-                <div className={styles.sectionSub}>Auditoria, origem e revisão humana</div>
+                <div className="sub">Auditoria, origem e revisão humana</div>
             </div>
-            <div className={styles.traceGrid}>
-                <div className={styles.traceRow}>
-                    <div className={styles.traceKey}>Publicado em</div>
-                    <div className={clsx(styles.traceVal, styles.traceValMono)}>{formatDateTime(publishedAt)}</div>
+            <div className="trace-grid">
+                <div className="trace-row">
+                    <div className="key">Publicado em</div>
+                    <div className={traceValMono}>{formatDateTime(publishedAt)}</div>
                 </div>
-                <div className={styles.traceRow}>
-                    <div className={styles.traceKey}>Status</div>
-                    <div className={styles.traceVal}>
+                <div className="trace-row">
+                    <div className="key">Status</div>
+                    <div className="val">
                         {record.isLocked ? (
-                            <span className={styles.signedBadge}>
-                                <span className={styles.statusDot} />
+                            <span className={signedBadge}>
+                                <span className="status-dot" />
                                 Assinado e imutável
                             </span>
                         ) : (
-                            <span className={styles.draftBadge}>
-                                <span className={styles.statusDot} />
+                            <span className={draftBadge}>
+                                <span className="status-dot" />
                                 Rascunho
                             </span>
                         )}
                     </div>
                 </div>
-                <div className={styles.traceRow}>
-                    <div className={styles.traceKey}>Origem do conteúdo</div>
-                    <div className={styles.traceVal}>
+                <div className="trace-row">
+                    <div className="key">Origem do conteúdo</div>
+                    <div className="val">
                         {isAI ? (
-                            <Badge origin="ai" className={styles.badgeOrigin}>
-                                <Sparkles className="size-[11px]" />
+                            <Badge origin="ai" className={badgeOrigin}>
+                                <Sparkles className={icon11} />
                                 Gerado por IA e aprovado
                             </Badge>
                         ) : (
-                            <Badge origin="manual" className={styles.badgeOrigin}>
-                                <Pencil className="size-[11px]" />
+                            <Badge origin="manual" className={badgeOrigin}>
+                                <Pencil className={icon11} />
                                 Registro manual
                             </Badge>
                         )}
                     </div>
                 </div>
                 {isAI && (
-                    <div className={styles.traceRow}>
-                        <div className={styles.traceKey}>Revisão humana</div>
-                        <div className={styles.traceVal}>
+                    <div className="trace-row">
+                        <div className="key">Revisão humana</div>
+                        <div className="val">
                             {record.wasHumanEdited ? (
-                                <span className={styles.traceEditedChip}>
-                                    <Pencil className="size-[11px]" />
+                                <span className={traceEditedChip}>
+                                    <Pencil className={icon11} />
                                     Conteúdo editado pelo profissional
                                 </span>
                             ) : (
-                                <span className={styles.traceMuted}>
+                                <span className={traceMutedInline}>
                                     Nenhum campo alterado — sugestão da IA aprovada integralmente.
                                 </span>
                             )}
                         </div>
                     </div>
                 )}
-                <div className={styles.traceRow}>
-                    <div className={styles.traceKey}>ID do registro</div>
-                    <div
-                        className={cn(
-                            styles.traceVal,
-                            styles.traceValMono,
-                            'text-[12px] font-normal text-(--color-text-tertiary)'
-                        )}
-                    >
-                        {record.id}
-                    </div>
+                <div className="trace-row">
+                    <div className="key">ID do registro</div>
+                    <div className={traceIdVal}>{record.id}</div>
                 </div>
             </div>
-        </section>
+        </TraceCard>
     );
 }
 
@@ -486,10 +492,10 @@ function RecordDetailView({
     }
 
     return (
-        <div className={styles.pageRoot}>
-            <div className={styles.pageInner}>
+        <PageShell>
+            <div className="inner">
                 {/* Breadcrumb */}
-                <Breadcrumb className="mb-3">
+                <Breadcrumb className={breadcrumbMb3}>
                     <BreadcrumbList>
                         <BreadcrumbItem>
                             <BreadcrumbLink asChild>
@@ -512,37 +518,37 @@ function RecordDetailView({
                 </Breadcrumb>
 
                 {/* Header */}
-                <header className={styles.headerRoot}>
-                    <div>
-                        <div className={styles.headerEyebrow}>Evolução clínica</div>
-                        <div className={styles.headerTitleRow}>
-                            <span className={styles.headerTitleType}>{typeLabel}</span>
-                            <span className={styles.headerTitleDot}>·</span>
-                            <span className={styles.headerTitleDate}>{formatFullDate(eventDate)}</span>
+                <header className="header">
+                    <div className="left">
+                        <div className="eyebrow">Evolução clínica</div>
+                        <div className="title-row">
+                            <span className="title-type">{typeLabel}</span>
+                            <span className="title-dot">·</span>
+                            <span className="title-date">{formatFullDate(eventDate)}</span>
                         </div>
-                        <div className={styles.headerMeta}>
-                            <span className={styles.headerMetaItem}>
-                                <Clock className="size-[13px]" />
+                        <div className="meta">
+                            <span className="meta-item">
+                                <Clock className={icon13} />
                                 {formatTime(eventDate)}
                             </span>
-                            <span className={styles.headerMetaSep} />
+                            <span className="meta-sep" />
                             {isAI ? (
-                                <Badge origin="ai" className={styles.badgeOrigin}>
-                                    <Sparkles className="size-[11px]" />
+                                <Badge origin="ai" className={badgeOrigin}>
+                                    <Sparkles className={icon11} />
                                     Aprovado a partir de IA
                                 </Badge>
                             ) : (
-                                <Badge origin="manual" className={styles.badgeOrigin}>
-                                    <Pencil className="size-[11px]" />
+                                <Badge origin="manual" className={badgeOrigin}>
+                                    <Pencil className={icon11} />
                                     Registro manual
                                 </Badge>
                             )}
                         </div>
                     </div>
 
-                    <div className={styles.headerAside}>
+                    <div className="aside">
                         <div
-                            className={styles.headerPatCard}
+                            className="pat-card"
                             onClick={() => navigate({to: '/patients/$patientId', params: {patientId: patient.id}})}
                         >
                             <AvatarInitials
@@ -550,19 +556,19 @@ function RecordDetailView({
                                 colorIndex={getAvatarColorIndex(patient.id)}
                                 size="sm"
                             />
-                            <div className={styles.headerPatBody}>
-                                <div className={styles.headerPatName}>{patient.name}</div>
-                                <div className={styles.headerPatMeta}>{age !== null ? `${age} anos` : '—'}</div>
+                            <div className="pat-body">
+                                <div className="pat-name">{patient.name}</div>
+                                <div className="pat-meta">{age !== null ? `${age} anos` : '—'}</div>
                             </div>
-                            <ChevronRight className={styles.chevronIcon} />
+                            <ChevronRight className={chevronPatCard} />
                         </div>
-                        <div className={styles.headerActions}>
+                        <div className="header-actions">
                             <Button variant="outline" size="sm">
-                                <Printer className="size-4" />
+                                <Printer className={icon4} />
                                 Imprimir
                             </Button>
                             <Button variant="outline" size="sm">
-                                <Download className="size-4" />
+                                <Download className={icon4} />
                                 Exportar PDF
                             </Button>
                         </div>
@@ -570,7 +576,7 @@ function RecordDetailView({
                 </header>
 
                 {/* Body */}
-                <div className={styles.body}>
+                <div className="body">
                     <SoapSection record={record} />
                     <TagsSection record={record} />
                     <NotesSection record={record} />
@@ -579,18 +585,13 @@ function RecordDetailView({
                 </div>
 
                 {/* Bottom navigation */}
-                <nav className={styles.navRoot}>
-                    <button
-                        type="button"
-                        className={styles.navBtn}
-                        disabled={!prev}
-                        onClick={() => prev && goToRecord(prev)}
-                    >
-                        <ChevronLeft className={styles.navChevron} />
-                        <span className={styles.navStack}>
-                            <span className={styles.navLabel}>Evolução anterior</span>
+                <nav className="nav">
+                    <button type="button" className="nav-btn" disabled={!prev} onClick={() => prev && goToRecord(prev)}>
+                        <ChevronLeft className={chevronNav} />
+                        <span className="nav-stack">
+                            <span className="nav-label">Evolução anterior</span>
                             {prev && (
-                                <span className={styles.navSub}>
+                                <span className="nav-sub">
                                     {formatShortDate(prev.eventDate ?? prev.createdAt)} ·{' '}
                                     {attendanceLabel(prev.attendanceType)}
                                 </span>
@@ -600,7 +601,7 @@ function RecordDetailView({
 
                     <button
                         type="button"
-                        className={styles.navCenter}
+                        className="nav-center"
                         onClick={() => navigate({to: '/patients/$patientId', params: {patientId: patient.id}})}
                     >
                         Ver todas as evoluções
@@ -608,24 +609,24 @@ function RecordDetailView({
 
                     <button
                         type="button"
-                        className={clsx(styles.navBtn, styles.navBtnEnd)}
+                        className="nav-btn nav-btn-end"
                         disabled={!next}
                         onClick={() => next && goToRecord(next)}
                     >
-                        <span className={styles.navStack}>
-                            <span className={styles.navLabel}>Evolução seguinte</span>
+                        <span className="nav-stack">
+                            <span className="nav-label">Evolução seguinte</span>
                             {next && (
-                                <span className={styles.navSub}>
+                                <span className="nav-sub">
                                     {formatShortDate(next.eventDate ?? next.createdAt)} ·{' '}
                                     {attendanceLabel(next.attendanceType)}
                                 </span>
                             )}
                         </span>
-                        <ChevronRight className={styles.navChevron} />
+                        <ChevronRight className={chevronNav} />
                     </button>
                 </nav>
             </div>
-        </div>
+        </PageShell>
     );
 }
 
@@ -655,8 +656,8 @@ export function RecordDetailPage() {
 
     if (errorRecord || errorPatient || !record || !patient) {
         return (
-            <div className={styles.pageErrorState}>
-                <p className="text-sm">Evolução não encontrada ou erro ao carregar.</p>
+            <div className={pageErrorState}>
+                <p className={errorText}>Evolução não encontrada ou erro ao carregar.</p>
                 <Button
                     variant="outline"
                     size="sm"

@@ -1,7 +1,7 @@
 import type {ReactNode} from 'react';
 import {Inbox, type LucideIcon} from 'lucide-react';
 import {useTranslation} from 'react-i18next';
-import styles from './empty-state.module.css';
+import * as styles from './styles';
 
 interface EmptyStateProps {
     icon?: LucideIcon;
@@ -16,7 +16,7 @@ export function EmptyState({icon: Icon = Inbox, title, message, action}: EmptySt
     return (
         <div className={styles.root}>
             <div className={styles.iconWrapper}>
-                <Icon aria-hidden className="size-8" />
+                <Icon aria-hidden className={styles.icon} />
             </div>
             <p className={styles.title}>{title ?? t('states.empty')}</p>
             {message && <p className={styles.message}>{message}</p>}

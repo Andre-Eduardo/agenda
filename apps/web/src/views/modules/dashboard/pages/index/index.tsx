@@ -29,6 +29,7 @@ import {Button} from '@/components/ui/componentes/button';
 import {Skeleton} from '@/components/ui/componentes/skeleton';
 import {Page} from '@/views/components/Page';
 import {css, cva} from '@/styled-system/css';
+import {flex1, minW0, mt1, skeletonH3Full, skeletonH3W20, skeletonH9W12} from './styles';
 
 // ── Styles ────────────────────────────────────────────────────────────────────
 
@@ -779,14 +780,15 @@ export function DashboardPage() {
                                     {Array.from({length: 3}).map((_, i) => (
                                         <div key={i} className={skeletonListRow}>
                                             <Skeleton className={skeletonAvatar} />
-                                            <div className="flex-1">
+                                            <div className={flex1}>
                                                 <Skeleton className={skeletonNameMd} />
-                                                <Skeleton className="h-3 w-full" />
-                                            </div>
-                                        </div>
-                                    ))}
+                                        <Skeleton className={skeletonH3Full} />
+                                    </div>
                                 </div>
-                            ) : recentRecords.length === 0 ? (
+                            ))}
+                        </div>
+                    ) : recentRecords.length === 0 ? (
+
                                 <div className={empty}>
                                     <FileText size={24} className={emptyIcon} />
                                     <div className={emptyTitle}>Nenhuma evolução registrada</div>
@@ -863,7 +865,7 @@ export function DashboardPage() {
                                         variant="outline"
                                         size="sm"
                                         onClick={() => navigate({to: '/appointments'})}
-                                        className="mt-1"
+                                        className={mt1}
                                     >
                                         <CalendarPlus size={13} />
                                         Criar agendamento
@@ -929,7 +931,7 @@ function ApptRow({apt}: {apt: Appointment}) {
 
             <div className={apptPatBtn}>
                 <div className={patientInitialsAvatar}>—</div>
-                <div className="min-w-0">
+                <div className={minW0}>
                     <div className={apptPatName}>Paciente</div>
                     <div className={apptPatType}>{TYPE_LABELS[apt.type] ?? apt.type}</div>
                 </div>
@@ -1032,11 +1034,11 @@ function AppointmentSkeleton({rows, compact}: {rows: number; compact?: boolean})
         <div className={skeletonApptCol}>
             {Array.from({length: rows}).map((_, i) => (
                 <div key={i} className={skeletonApptRow}>
-                    {!compact && <Skeleton className="h-9 w-12" />}
+                    {!compact && <Skeleton className={skeletonH9W12} />}
                     <Skeleton className={skeletonAvatar} />
-                    <div className="flex-1">
+                    <div className={flex1}>
                         <Skeleton className={skeletonNameSm} />
-                        <Skeleton className="h-3 w-20" />
+                        <Skeleton className={skeletonH3W20} />
                     </div>
                     <Skeleton className={skeletonStatusBadge} />
                 </div>

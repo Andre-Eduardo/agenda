@@ -1,9 +1,11 @@
 import {Loader2} from 'lucide-react';
+import {cx} from '@/styled-system/css';
+import * as styles from './styles';
 
 export function AppLoader() {
     return (
-        <div className="flex h-full min-h-50 w-full items-center justify-center bg-(--color-bg-page)">
-            <Loader2 aria-label="Loading" className="size-8 animate-spin text-(--color-primary)" />
+        <div className={styles.root}>
+            <Loader2 aria-label="Loading" className={cx(styles.icon, 'animate-spin')} />
         </div>
     );
 }

@@ -1,5 +1,6 @@
 import type {Meta, StoryObj} from '@storybook/react-vite';
 import {useForm} from 'react-hook-form';
+import {css} from '@/styled-system/css';
 import {Button} from '../button';
 import {Input} from '../input';
 import {Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage} from './index';
@@ -12,7 +13,7 @@ function FormDemo() {
     return (
         <Form {...form}>
             <form
-                className="w-[320px] space-y-4"
+                className={css({w: '[320px]', display: 'flex', flexDirection: 'column', gap: '4'})}
                 onSubmit={form.handleSubmit((values) => {
                     // eslint-disable-next-line no-console
                     console.log('submit', values);

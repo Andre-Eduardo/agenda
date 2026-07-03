@@ -1,4 +1,5 @@
 import type {Meta, StoryObj} from '@storybook/react-vite';
+import {css} from '@/styled-system/css';
 import {Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow} from './index';
 
 const meta = {
@@ -19,22 +20,24 @@ const rows = [
 
 export const Default: Story = {
     render: () => (
-        <div className="w-[480px]">
+        <div className={css({w: '[480px]'})}>
             <Table>
                 <TableCaption>Lista de consultas recentes.</TableCaption>
                 <TableHeader>
                     <TableRow>
-                        <TableHead className="w-[80px]">ID</TableHead>
+                        <TableHead className={css({w: '[80px]'})}>ID</TableHead>
                         <TableHead>Paciente</TableHead>
-                        <TableHead className="text-right">Status</TableHead>
+                        <TableHead className={css({textAlign: 'right'})}>Status</TableHead>
                     </TableRow>
                 </TableHeader>
                 <TableBody>
                     {rows.map((row) => (
                         <TableRow key={row.id}>
-                            <TableCell className="font-mono tabular-nums">{row.id}</TableCell>
+                            <TableCell className={css({fontFamily: 'mono', fontVariantNumeric: 'tabular-nums'})}>
+                                {row.id}
+                            </TableCell>
                             <TableCell>{row.name}</TableCell>
-                            <TableCell className="text-right">{row.status}</TableCell>
+                            <TableCell className={css({textAlign: 'right'})}>{row.status}</TableCell>
                         </TableRow>
                     ))}
                 </TableBody>

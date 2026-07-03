@@ -1,32 +1,44 @@
-import {cva, type VariantProps} from 'class-variance-authority';
-import {clsx} from 'clsx';
-import {cn} from '@/lib/utils';
-import styles from './card.module.css';
+import {cx} from '@/styled-system/css';
+import type {RecipeVariantProps} from '@/styled-system/css';
+import {
+    card,
+    cardContent,
+    cardDescription,
+    cardFooter,
+    cardHeader,
+    cardTitle,
+    sectionCard,
+    sectionCardBodyVariants,
+    sectionCardHeader,
+    sectionCardHeaderActions,
+    sectionCardHeaderStart,
+    sectionCardTitle,
+} from './styles';
 
 // ── Card ──────────────────────────────────────────────────────────────────────
 
 function Card({className, ref, ...props}: React.ComponentProps<'div'>) {
-    return <div ref={ref} className={clsx(styles.card, className)} {...props} />;
+    return <div ref={ref} className={cx(card, className)} {...props} />;
 }
 
 function CardHeader({className, ref, ...props}: React.ComponentProps<'div'>) {
-    return <div ref={ref} className={clsx(styles.cardHeader, className)} {...props} />;
+    return <div ref={ref} className={cx(cardHeader, className)} {...props} />;
 }
 
 function CardTitle({className, ref, ...props}: React.ComponentProps<'div'>) {
-    return <div ref={ref} className={clsx(styles.cardTitle, className)} {...props} />;
+    return <div ref={ref} className={cx(cardTitle, className)} {...props} />;
 }
 
 function CardDescription({className, ref, ...props}: React.ComponentProps<'div'>) {
-    return <div ref={ref} className={clsx(styles.cardDescription, className)} {...props} />;
+    return <div ref={ref} className={cx(cardDescription, className)} {...props} />;
 }
 
 function CardContent({className, ref, ...props}: React.ComponentProps<'div'>) {
-    return <div ref={ref} className={clsx(styles.cardContent, className)} {...props} />;
+    return <div ref={ref} className={cx(cardContent, className)} {...props} />;
 }
 
 function CardFooter({className, ref, ...props}: React.ComponentProps<'div'>) {
-    return <div ref={ref} className={clsx(styles.cardFooter, className)} {...props} />;
+    return <div ref={ref} className={cx(cardFooter, className)} {...props} />;
 }
 
 // ── SectionCard ───────────────────────────────────────────────────────────────
@@ -34,19 +46,8 @@ function CardFooter({className, ref, ...props}: React.ComponentProps<'div'>) {
 // Card com header bordado + body. Suporta appearance "default" (padding normal),
 // "flush" e "sm".
 
-const sectionCardBodyVariants = cva('', {
-    variants: {
-        appearance: {
-            default: styles.sectionCardBodyDefault,
-            flush: styles.sectionCardBodyFlush,
-            sm: styles.sectionCardBodySm,
-        },
-    },
-    defaultVariants: {appearance: 'default'},
-});
-
 function SectionCard({className, ref, ...props}: React.ComponentProps<'div'>) {
-    return <div ref={ref} className={clsx(styles.sectionCard, className)} {...props} />;
+    return <div ref={ref} className={cx(sectionCard, className)} {...props} />;
 }
 
 function SectionCardHeader({
@@ -57,15 +58,15 @@ function SectionCardHeader({
     ...props
 }: React.ComponentProps<'div'> & {action?: React.ReactNode}) {
     return (
-        <div ref={ref} className={clsx(styles.sectionCardHeader, className)} {...props}>
-            <div className="flex items-center gap-2">{children}</div>
-            {action && <div className="flex items-center gap-1">{action}</div>}
+        <div ref={ref} className={cx(sectionCardHeader, className)} {...props}>
+            <div className={sectionCardHeaderStart}>{children}</div>
+            {action && <div className={sectionCardHeaderActions}>{action}</div>}
         </div>
     );
 }
 
 function SectionCardTitle({className, ref, ...props}: React.ComponentProps<'div'>) {
-    return <div ref={ref} className={clsx(styles.sectionCardTitle, className)} {...props} />;
+    return <div ref={ref} className={cx(sectionCardTitle, className)} {...props} />;
 }
 
 function SectionCardBody({
@@ -73,8 +74,8 @@ function SectionCardBody({
     appearance,
     ref,
     ...props
-}: React.ComponentProps<'div'> & VariantProps<typeof sectionCardBodyVariants>) {
-    return <div ref={ref} className={cn(sectionCardBodyVariants({appearance}), className)} {...props} />;
+}: React.ComponentProps<'div'> & RecipeVariantProps<typeof sectionCardBodyVariants>) {
+    return <div ref={ref} className={cx(sectionCardBodyVariants({appearance}), className)} {...props} />;
 }
 
 export {

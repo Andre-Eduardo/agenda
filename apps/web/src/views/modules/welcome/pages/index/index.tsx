@@ -9,6 +9,13 @@ import {Card, CardContent, CardHeader} from '@/components/ui/componentes/card';
 import {Skeleton} from '@/components/ui/componentes/skeleton';
 import {Page} from '@/views/components/Page';
 import {css, cva} from '@/styled-system/css';
+import {
+    nextBadgeSkeleton,
+    playIcon,
+    skeletonLine,
+    skeletonLineLg,
+    skeletonLineSm,
+} from './styles';
 
 export const Route = createFileRoute('/_stackedLayout/')({
     component: DashboardPage,
@@ -300,9 +307,9 @@ function NextAppointmentContent({
     if (isLoading) {
         return (
             <div className={appointmentSkeletonStack}>
-                <Skeleton className="h-5 w-40" />
-                <Skeleton className="h-4 w-56" />
-                <Skeleton className="h-8 w-32" />
+                <Skeleton className={skeletonLine} />
+                <Skeleton className={skeletonLineSm} />
+                <Skeleton className={skeletonLineLg} />
             </div>
         );
     }
@@ -324,7 +331,7 @@ function NextAppointmentContent({
             </div>
             <div className={appointmentActionRow}>
                 <Button size="sm" onClick={onNavigate}>
-                    <Play className="size-4" />
+                    <Play className={playIcon} />
                     Ver pacientes
                 </Button>
             </div>
@@ -343,7 +350,7 @@ function NextBadge({
     minsUntil: number | null;
     appointment: Appointment | undefined;
 }) {
-    if (isLoading) return <Skeleton className="h-6 w-20" />;
+    if (isLoading) return <Skeleton className={nextBadgeSkeleton} />;
 
     if (isSoon) {
         return (

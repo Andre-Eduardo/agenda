@@ -1,12 +1,12 @@
-import {type VariantProps} from 'class-variance-authority';
+import type {RecipeVariantProps} from '@/styled-system/css';
+import {cx} from '@/styled-system/css';
 import {inputVariants} from '@/components/ui/componentes/input';
-import {cn} from '@/lib/utils';
-import styles from './textarea.module.css';
+import {base} from './styles';
 
-export interface TextareaProps extends React.ComponentProps<'textarea'>, VariantProps<typeof inputVariants> {}
+export type TextareaProps = React.ComponentProps<'textarea'> & RecipeVariantProps<typeof inputVariants>;
 
 function Textarea({className, appearance, state, ref, ...props}: TextareaProps) {
-    return <textarea ref={ref} className={cn(inputVariants({appearance, state}), styles.base, className)} {...props} />;
+    return <textarea ref={ref} className={cx(inputVariants({appearance, state}), base, className)} {...props} />;
 }
 
 export {Textarea};

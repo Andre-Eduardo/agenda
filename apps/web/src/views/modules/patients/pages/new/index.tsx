@@ -38,6 +38,7 @@ import {PageHeader} from '@/components/ui/componentes/page-header';
 import {Tabs, TabsList, TabsTrigger, TabsContent} from '@/components/ui/componentes/tabs';
 import {Textarea} from '@/components/ui/componentes/textarea';
 import {css, cx} from '@/styled-system/css';
+import {errorText, flexCol, icon11, icon14, icon22, icon3, icon35, icon4} from './styles';
 
 export const Route = createFileRoute('/_stackedLayout/patients/new')({
     component: NewPatientPage,
@@ -560,7 +561,7 @@ export function NewPatientPage() {
                 subtitle="Cadastro inicial — anamnese clínica é registrada nas evoluções."
                 actions={
                     <Button variant="outline" size="sm" type="button">
-                        <Upload className="size-4" strokeWidth={1.5} />
+                        <Upload className={icon4} strokeWidth={1.5} />
                         Importar de documento
                     </Button>
                 }
@@ -569,7 +570,7 @@ export function NewPatientPage() {
             {/* AI nudge */}
             <div className={aiNudgeRoot}>
                 <span className={aiNudgeIcon}>
-                    <Sparkles className="size-3.5" strokeWidth={1.5} />
+                    <Sparkles className={icon35} strokeWidth={1.5} />
                 </span>
                 <div className={aiNudgeBody}>
                     <div className={aiNudgeTitle}>
@@ -582,7 +583,7 @@ export function NewPatientPage() {
                     </p>
                 </div>
                 <button type="button" className={aiNudgeBtn}>
-                    <Upload className="size-3" strokeWidth={1.5} />
+                    <Upload className={icon3} strokeWidth={1.5} />
                     Anexar documento
                 </button>
             </div>
@@ -590,7 +591,7 @@ export function NewPatientPage() {
             {/* Form card */}
             <form id="patient-form" onSubmit={handleSubmit(onSubmit)}>
                 <UISectionCard>
-                    <Tabs value={tab} onValueChange={(v) => setTab(v as TabKey)} className="flex flex-col">
+                    <Tabs value={tab} onValueChange={(v) => setTab(v as TabKey)} className={flexCol}>
                         <TabsList>
                             {TABS.map((t) => {
                                 const filled = tab !== t.key && tabHasValues(t.key, values);
@@ -599,7 +600,7 @@ export function NewPatientPage() {
                                 return (
                                     <TabsTrigger key={t.key} value={t.key}>
                                         <span className={cx(tabNum, tab === t.key && tabNumActive, filled && tabNumFilled)}>
-                                            {filled ? <Check className="size-[11px]" strokeWidth={2.5} /> : t.num}
+                                            {filled ? <Check className={icon11} strokeWidth={2.5} /> : t.num}
                                         </span>
                                         <TabIcon className={tabIcon} strokeWidth={1.5} />
                                         {t.label}
@@ -620,10 +621,10 @@ export function NewPatientPage() {
                                 {/* Photo uploader (UI only) */}
                                 <div className={photoRoot}>
                                     <div data-photo-frame className={photoFrame}>
-                                        <Camera className="size-[22px]" strokeWidth={1.5} />
+                                        <Camera className={icon22} strokeWidth={1.5} />
                                         <span className={photoText}>Clique para adicionar foto</span>
                                         <div className={photoOverlay}>
-                                            <Camera className="size-4" strokeWidth={1.5} />
+                                            <Camera className={icon4} strokeWidth={1.5} />
                                             Alterar foto
                                         </div>
                                     </div>
@@ -666,7 +667,7 @@ export function NewPatientPage() {
                                             {...register('birthDate')}
                                             type="date"
                                             appearance="mono"
-                                            leadIcon={<Calendar className="size-[14px]" strokeWidth={1.5} />}
+                                            leadIcon={<Calendar className={icon14} strokeWidth={1.5} />}
                                         />
                                     </Field>
 
@@ -708,7 +709,7 @@ export function NewPatientPage() {
                                             {...register('phone')}
                                             placeholder="(00) 00000-0000"
                                             appearance="mono"
-                                            leadIcon={<Phone className="size-[14px]" strokeWidth={1.5} />}
+                                            leadIcon={<Phone className={icon14} strokeWidth={1.5} />}
                                         />
                                     </Field>
 
@@ -717,7 +718,7 @@ export function NewPatientPage() {
                                             {...register('email')}
                                             type="email"
                                             placeholder="paciente@email.com"
-                                            leadIcon={<Mail className="size-[14px]" strokeWidth={1.5} />}
+                                            leadIcon={<Mail className={icon14} strokeWidth={1.5} />}
                                             state={errors.email ? 'error' : 'default'}
                                         />
                                     </Field>
@@ -782,15 +783,15 @@ export function NewPatientPage() {
                                             appearance="mono"
                                             trailIcon={
                                                 zipLoading ? (
-                                                    <svg
-                                                        className="size-[14px] animate-spin"
-                                                        viewBox="0 0 24 24"
-                                                        fill="none"
-                                                        stroke="currentColor"
-                                                        strokeWidth="1.5"
-                                                    >
-                                                        <path d="M21 12a9 9 0 1 1-6.219-8.56" />
-                                                    </svg>
+                                                        <svg
+                                                            className={cx(icon14, 'animate-spin')}
+                                                            viewBox="0 0 24 24"
+                                                            fill="none"
+                                                            stroke="currentColor"
+                                                            strokeWidth="1.5"
+                                                        >
+                                                            <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+                                                        </svg>
                                                 ) : undefined
                                             }
                                         />
@@ -899,60 +900,60 @@ export function NewPatientPage() {
 
                     {/* Sticky footer */}
                     <div className={footerRoot}>
-                        <div className={footerMeta}>
-                            <Lock className="size-3" strokeWidth={1.5} />
-                            <span>Dados criptografados em repouso · LGPD</span>
-                            <span className={footerStep}>
-                                Etapa {tabIdx + 1} de {TABS.length}
-                            </span>
-                        </div>
+                    <div className={footerMeta}>
+                        <Lock className={icon3} strokeWidth={1.5} />
+                        <span>Dados criptografados em repouso · LGPD</span>
+                        <span className={footerStep}>
+                            Etapa {tabIdx + 1} de {TABS.length}
+                        </span>
+                    </div>
 
-                        <div className={footerActions}>
-                            <Button
-                                type="button"
-                                variant="outline"
-                                size="sm"
-                                onClick={() => navigate({to: '/patients'})}
-                            >
-                                Cancelar
+                    <div className={footerActions}>
+                        <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => navigate({to: '/patients'})}
+                        >
+                            Cancelar
+                        </Button>
+
+                        {!isFirst && (
+                            <Button type="button" variant="outline" size="sm" onClick={goPrev}>
+                                <ChevronLeft className={icon4} strokeWidth={1.5} />
+                                Voltar
                             </Button>
+                        )}
 
-                            {!isFirst && (
-                                <Button type="button" variant="outline" size="sm" onClick={goPrev}>
-                                    <ChevronLeft className="size-4" strokeWidth={1.5} />
-                                    Voltar
-                                </Button>
-                            )}
-
-                            {!isLast ? (
-                                <Button type="button" size="sm" onClick={goNext}>
-                                    Avançar
-                                    <ChevronRight className="size-4" strokeWidth={1.5} />
-                                </Button>
-                            ) : (
-                                <Button type="submit" form="patient-form" size="sm" disabled={createPatient.isPending}>
-                                    {createPatient.isPending ? (
-                                        <>
-                                            <svg
-                                                className="size-4 animate-spin"
-                                                viewBox="0 0 24 24"
-                                                fill="none"
-                                                stroke="currentColor"
-                                                strokeWidth="1.5"
-                                            >
-                                                <path d="M21 12a9 9 0 1 1-6.219-8.56" />
-                                            </svg>
-                                            Salvando…
-                                        </>
-                                    ) : (
-                                        <>
-                                            <User className="size-4" strokeWidth={1.5} />
-                                            Salvar paciente
-                                        </>
-                                    )}
-                                </Button>
-                            )}
-                        </div>
+                        {!isLast ? (
+                            <Button type="button" size="sm" onClick={goNext}>
+                                Avançar
+                                <ChevronRight className={icon4} strokeWidth={1.5} />
+                            </Button>
+                        ) : (
+                            <Button type="submit" form="patient-form" size="sm" disabled={createPatient.isPending}>
+                                {createPatient.isPending ? (
+                                    <>
+                                        <svg
+                                            className={cx(icon4, 'animate-spin')}
+                                            viewBox="0 0 24 24"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            strokeWidth="1.5"
+                                        >
+                                            <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+                                        </svg>
+                                        Salvando…
+                                    </>
+                                ) : (
+                                    <>
+                                        <User className={icon4} strokeWidth={1.5} />
+                                        Salvar paciente
+                                    </>
+                                )}
+                            </Button>
+                        )}
+                    </div>
                     </div>
                 </UISectionCard>
             </form>

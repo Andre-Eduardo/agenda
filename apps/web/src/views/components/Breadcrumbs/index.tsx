@@ -2,7 +2,7 @@ import {Fragment} from 'react';
 import {Link, useMatches} from '@tanstack/react-router';
 import {ChevronRight} from 'lucide-react';
 import {useTranslation} from 'react-i18next';
-import styles from './breadcrumbs.module.css';
+import * as styles from './styles';
 
 export interface BreadcrumbContext {
     breadcrumb?: string;

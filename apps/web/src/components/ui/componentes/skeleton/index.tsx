@@ -1,8 +1,8 @@
-import {clsx} from 'clsx';
-import styles from './skeleton.module.css';
+import {cx} from '@/styled-system/css';
+import {base} from './styles';
 
 function Skeleton({className, ...props}: React.HTMLAttributes<HTMLDivElement>) {
-    return <div className={clsx(styles.base, className)} {...props} />;
+    return <div className={cx(base, className)} {...props} />;
 }
 
 export {Skeleton};

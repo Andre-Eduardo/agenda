@@ -1,6 +1,5 @@
 import {useState} from 'react';
 import {Outlet, Link, useRouterState, useNavigate, createFileRoute, redirect} from '@tanstack/react-router';
-import {clsx} from 'clsx';
 import {
     Calendar,
     ClipboardList,
@@ -21,7 +20,8 @@ import {Button} from '@/components/ui/componentes/button';
 import {Sheet, SheetContent, SheetTitle, SheetTrigger} from '@/components/ui/componentes/sheet';
 import {useCan, type Permission} from '@/hooks/useCan';
 import {useAppStore} from '@/store/appStore';
-import styles from './stacked-layout.module.css';
+import * as styles from './styles';
+import {icon, navLink, srOnly} from './styles';
 
 interface NavItem {
     icon: LucideIcon;
@@ -91,12 +91,8 @@ function NavLink({item, currentPath, onClick}: NavLinkProps) {
     if (!allowed) return null;
 
     return (
-        <Link
-            to={item.path}
-            onClick={onClick}
-            className={clsx(styles.navLink, isActive ? styles.navLinkActive : styles.navLinkInactive)}
-        >
-            <Icon aria-hidden className="size-5" />
+        <Link to={item.path} onClick={onClick} className={navLink({active: isActive})}>
+            <Icon aria-hidden className={icon} />
             {t(item.labelKey)}
         </Link>
     );
@@ -143,7 +139,7 @@ function SidebarContent({onNavigate}: {onNavigate?: () => void}) {
         <div className={styles.sidebarInner}>
             <div className={styles.logoRow}>
                 <div className={styles.logoIcon}>
-                    <Stethoscope aria-hidden className="size-5" />
+                    <Stethoscope aria-hidden className={icon} />
                 </div>
                 <div className={styles.logoTextGroup}>
                     <span className={styles.logoName}>Agenda Saúde</span>
@@ -165,14 +161,14 @@ function SidebarContent({onNavigate}: {onNavigate?: () => void}) {
                     onClick={() => setColorMode(colorMode === 'dark' ? 'light' : 'dark')}
                 >
                     {colorMode === 'dark' ? (
-                        <Sun aria-hidden className="size-5" />
+                        <Sun aria-hidden className={icon} />
                     ) : (
-                        <Moon aria-hidden className="size-5" />
+                        <Moon aria-hidden className={icon} />
                     )}
                     {colorMode === 'dark' ? t('theme.light') : t('theme.dark')}
                 </Button>
                 <Button type="button" variant="ghost" className={styles.sidebarAction} onClick={handleLogout}>
-                    <LogOut aria-hidden className="size-5" />
+                    <LogOut aria-hidden className={icon} />
                     {t('nav.logout')}
                 </Button>
             </div>
@@ -204,11 +200,11 @@ export function StackedLayout() {
                                     className={styles.navMenuButton}
                                     aria-label={t('nav.menu')}
                                 >
-                                    <Menu aria-hidden className="size-5" />
+                                    <Menu aria-hidden className={icon} />
                                 </Button>
                             </SheetTrigger>
                             <SheetContent side="left" className={styles.mobileSheet}>
-                                <SheetTitle className="sr-only">{t('nav.menu')}</SheetTitle>
+                                <SheetTitle className={srOnly}>{t('nav.menu')}</SheetTitle>
                                 <SidebarContent onNavigate={() => setMobileOpen(false)} />
                             </SheetContent>
                         </Sheet>
@@ -216,7 +212,7 @@ export function StackedLayout() {
 
                     {/* TODO: link this to /user-profile once that route is registered */}
                     <div className={styles.userChip}>
-                        <Avatar className="size-8">
+                        <Avatar className={styles.avatar}>
                             <AvatarFallback className={styles.avatarFallback}>{initials}</AvatarFallback>
                         </Avatar>
                     </div>

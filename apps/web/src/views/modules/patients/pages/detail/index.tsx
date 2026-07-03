@@ -70,6 +70,26 @@ import {EntityHeader} from '@/components/ui/componentes/page-header';
 import {Skeleton} from '@/components/ui/componentes/skeleton';
 import {StatTile} from '@/components/ui/componentes/stat-tile';
 import {css, cx} from '@/styled-system/css';
+import {
+    emptySectionPy,
+    errorText,
+    flexCol,
+    icon10,
+    icon11,
+    icon18,
+    icon3,
+    icon4,
+    metaDot,
+    minW0,
+    skeletonH10Full,
+    skeletonH16Full,
+    skeletonH4W48,
+    skeletonH4W72,
+    skeletonH6W48,
+    skeletonH9W32,
+    skeletonH9W9,
+    textRight,
+} from './styles';
 
 export const Route = createFileRoute('/_stackedLayout/patients/$patientId')({
     component: PatientDetailPage,
@@ -507,7 +527,7 @@ function ActionTile({
 function AlertBadge({alert}: {alert: PatientAlert}) {
     return (
         <Badge severity={alert.severity as 'HIGH' | 'MEDIUM' | 'LOW'} className={alertBadge}>
-            <TriangleAlert className="size-[10px]" />
+            <TriangleAlert className={icon10} />
             {alert.title}
         </Badge>
     );
@@ -518,7 +538,7 @@ function MoreMenu() {
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
                 <Button variant="outline" size="icon" aria-label="Mais opções">
-                    <MoreHorizontal className="size-4" />
+                    <MoreHorizontal className={icon4} />
                 </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
@@ -541,7 +561,7 @@ function MoreMenu() {
 }
 
 function EmptySection({label}: {label: string}) {
-    return <EmptyState title={label} className="py-6" />;
+    return <EmptyState title={label} className={emptySectionPy} />;
 }
 
 // ── Skeleton ──────────────────────────────────────────────────────────────────
@@ -549,18 +569,18 @@ function EmptySection({label}: {label: string}) {
 function DetailSkeleton() {
     return (
         <div className={skeletonRoot}>
-            <Skeleton className="h-4 w-48" />
+            <Skeleton className={skeletonH4W48} />
             <div className={skeletonHeaderShell}>
                 <div className={skeletonHeaderLeft}>
                     <Skeleton className={skeletonHeaderAvatar} />
                     <div className={skeletonNameStack}>
-                        <Skeleton className="h-6 w-48" />
-                        <Skeleton className="h-4 w-72" />
+                        <Skeleton className={skeletonH6W48} />
+                        <Skeleton className={skeletonH4W72} />
                     </div>
                 </div>
                 <div className={skeletonHeaderRight}>
-                    <Skeleton className="h-9 w-32" />
-                    <Skeleton className="h-9 w-9" />
+                    <Skeleton className={skeletonH9W32} />
+                    <Skeleton className={skeletonH9W9} />
                 </div>
             </div>
             <div className={skeletonActionGrid}>
@@ -590,7 +610,7 @@ function RecordsContent({
         return (
             <div className={skeletonListStack}>
                 {[...Array(3)].map((_, i) => (
-                    <Skeleton key={i} className="h-16 w-full" />
+                    <Skeleton key={i} className={skeletonH16Full} />
                 ))}
             </div>
         );
@@ -599,7 +619,7 @@ function RecordsContent({
     if (records.length === 0) return <EmptySection label="Nenhuma evolução registrada" />;
 
     return (
-        <div className="flex flex-col">
+        <div className={flexCol}>
             {records.map((r) => {
                 const eventDate = asStr(r.eventDate) ?? r.createdAt;
                 const description = asDisplayStr(r.description);
@@ -618,7 +638,7 @@ function RecordsContent({
                             })
                         }
                     >
-                        <div className="text-right">
+                        <div className={textRight}>
                             <div className={recordDateText}>{formatDateShort(eventDate)}</div>
                             <div className={recordTime}>{formatTime(eventDate)}</div>
                         </div>
@@ -626,14 +646,14 @@ function RecordsContent({
                             className={recordDotBase}
                             style={{boxShadow: '0 0 0 3px var(--color-primary-surface)'}}
                         />
-                        <div className="min-w-0">
+                        <div className={minW0}>
                             <div className={recordTags}>
                                 <span className={recordTypeTag}>
                                     {r.attendanceType ? attendanceTypeLabel(r.attendanceType) : 'Consulta'}
                                 </span>
                                 {isAI && (
                                     <span className={recordAiTag}>
-                                        <Sparkles className="size-[11px]" />
+                                        <Sparkles className={icon11} />
                                         Origem IA
                                     </span>
                                 )}
@@ -673,7 +693,7 @@ function ProfileContent({
         return (
             <div className={skeletonListStack}>
                 {[...Array(3)].map((_, i) => (
-                    <Skeleton key={i} className="h-10 w-full" />
+                    <Skeleton key={i} className={skeletonH10Full} />
                 ))}
             </div>
         );
@@ -739,7 +759,7 @@ function FormsContent({isLoading, forms}: {isLoading: boolean; forms: PatientFor
     if (forms.length === 0) return <EmptySection label="Nenhum formulário disponível" />;
 
     return (
-        <div className="flex flex-col gap-2">
+        <div className={cx(flexCol, css({gap: '2'}))}>
             {forms.map((f) => {
                 const isDone = f.status === 'COMPLETED';
                 const dateField = isDone ? f.completedAt : f.appliedAt;
@@ -779,7 +799,7 @@ export function PatientDetailPage() {
     if (isError || !patient) {
         return (
             <div className={pageErrorState}>
-                <p className="text-sm">Paciente não encontrado ou erro ao carregar.</p>
+                <p className={errorText}>Paciente não encontrado ou erro ao carregar.</p>
                 <Button variant="outline" size="sm" onClick={() => navigate({to: '/patients'})}>
                     Voltar para pacientes
                 </Button>
@@ -899,23 +919,23 @@ function PatientProfile({patient}: {patient: Patient}) {
                 meta={
                     <>
                         {age !== null && <span>{age} anos</span>}
-                        {age !== null && <span className="text-(--color-text-tertiary)">·</span>}
+                        {age !== null && <span className={metaDot}>·</span>}
                         <span className={monoDate}>nasc. {dob}</span>
-                        <span className="text-(--color-text-tertiary)">·</span>
+                        <span className={metaDot}>·</span>
                         <span className={monoDate}>{patient.documentId}</span>
                         {patient.gender && (
                             <>
-                                <span className="text-(--color-text-tertiary)">·</span>
+                                <span className={metaDot}>·</span>
                                 <span>{gender}</span>
                             </>
                         )}
                         {patient.insurancePlan && (
                             <>
-                                <span className="text-(--color-text-tertiary)">·</span>
+                                <span className={metaDot}>·</span>
                                 <span>{patient.insurancePlan.name}</span>
                             </>
                         )}
-                        <span className="text-(--color-text-tertiary)">·</span>
+                        <span className={metaDot}>·</span>
                         <span className={monoTertiary}>ID {patient.id.slice(0, 8).toUpperCase()}</span>
                     </>
                 }
@@ -931,7 +951,7 @@ function PatientProfile({patient}: {patient: Patient}) {
                                 })
                             }
                         >
-                            <Pencil className="size-4" />
+                            <Pencil className={icon4} />
                             Editar cadastro
                         </Button>
                         <MoreMenu />
@@ -943,23 +963,23 @@ function PatientProfile({patient}: {patient: Patient}) {
             {/* Action grid */}
             <div className={actionGrid}>
                 <ActionTile
-                    icon={<FilePlus className="size-[18px]" />}
+                    icon={<FilePlus className={icon18} />}
                     label="Nova evolução"
                     sub="Registrar SOAP"
                     onClick={() => navigate({to: '/patients/$patientId/records/new', params: {patientId: patient.id}})}
                 />
                 <ActionTile
-                    icon={<FileUp className="size-[18px]" />}
+                    icon={<FileUp className={icon18} />}
                     label="Importar documento"
                     sub="Foto ou PDF · IA extrai dados"
                 />
                 <ActionTile
-                    icon={<CalendarPlus className="size-[18px]" />}
+                    icon={<CalendarPlus className={icon18} />}
                     label="Agendar consulta"
                     sub="Já com paciente preenchido"
                 />
                 <ActionTile
-                    icon={<MessagesSquare className="size-[18px]" />}
+                    icon={<MessagesSquare className={icon18} />}
                     label="Chat clínico com IA"
                     sub="Contexto do prontuário"
                     ai
@@ -968,25 +988,25 @@ function PatientProfile({patient}: {patient: Patient}) {
 
             {/* Resumo clínico */}
             <div className={statsGrid}>
-                <StatTile label="Próxima consulta" value="—" icon={<CalendarClock className="size-4" />} />
+                <StatTile label="Próxima consulta" value="—" icon={<CalendarClock className={icon4} />} />
                 <StatTile
                     label="Última consulta"
                     value={
                         records.length > 0 ? formatRelativeDate(records[0]?.eventDate ?? records[0]?.createdAt) : '—'
                     }
-                    icon={<History className="size-4" />}
+                    icon={<History className={icon4} />}
                 />
                 <StatTile
                     label="Total de evoluções"
                     value={totalRecords !== undefined ? String(totalRecords) : '—'}
                     loading={recordsTotalQuery.isLoading}
-                    icon={<FileText className="size-4" />}
+                    icon={<FileText className={icon4} />}
                 />
                 <StatTile
                     label="Formulários"
                     value={totalForms !== undefined ? String(totalForms) : '—'}
                     loading={formsQuery.isLoading}
-                    icon={<ClipboardList className="size-4" />}
+                    icon={<ClipboardList className={icon4} />}
                 />
             </div>
 
@@ -995,7 +1015,7 @@ function PatientProfile({patient}: {patient: Patient}) {
                 title="Vitais recentes"
                 action={
                     <SecLink>
-                        Ver evolução de origem <ArrowUpRight className="size-3" />
+                        Ver evolução de origem <ArrowUpRight className={icon3} />
                     </SecLink>
                 }
             >
@@ -1007,7 +1027,7 @@ function PatientProfile({patient}: {patient: Patient}) {
                 title="Últimas evoluções"
                 action={
                     <SecLink>
-                        Ver prontuário completo <ArrowUpRight className="size-3" />
+                        Ver prontuário completo <ArrowUpRight className={icon3} />
                     </SecLink>
                 }
             >
@@ -1028,7 +1048,7 @@ function PatientProfile({patient}: {patient: Patient}) {
                                 })
                             }
                         >
-                            Editar <Pencil className="size-3" />
+                            Editar <Pencil className={icon3} />
                         </SecLink>
                     }
                 >
@@ -1078,7 +1098,7 @@ function PatientProfile({patient}: {patient: Patient}) {
                                 })
                             }
                         >
-                            Editar <Pencil className="size-3" />
+                            Editar <Pencil className={icon3} />
                         </SecLink>
                     }
                 >
@@ -1106,7 +1126,7 @@ function PatientProfile({patient}: {patient: Patient}) {
                 title="Documentos importados"
                 action={
                     <Button variant="outline" size="sm">
-                        <FileUp className="size-4" />
+                        <FileUp className={icon4} />
                         Importar
                     </Button>
                 }

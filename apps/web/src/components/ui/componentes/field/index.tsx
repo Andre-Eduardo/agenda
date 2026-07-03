@@ -1,24 +1,34 @@
-import {clsx} from 'clsx';
 import {AlertCircle} from 'lucide-react';
 import {Label} from '@/components/ui/componentes/label';
 import {cn} from '@/lib/utils';
-import styles from './field.module.css';
+import {cx, css} from '@/styled-system/css';
+import {
+    error,
+    field,
+    formGrid,
+    formGridCols12,
+    formGridCols3,
+    formGridCols4,
+    formGridCols6,
+    hint,
+    labelRow,
+    optionalText,
+    requiredMark,
+} from './styles';
 
-// Tailwind purgea apenas classes usadas no código-fonte;
-// o mapa garante que col-span-1 ... col-span-12 estejam presentes.
 const colSpanMap: Record<number, string> = {
-    1: 'col-span-1',
-    2: 'col-span-2',
-    3: 'col-span-3',
-    4: 'col-span-4',
-    5: 'col-span-5',
-    6: 'col-span-6',
-    7: 'col-span-7',
-    8: 'col-span-8',
-    9: 'col-span-9',
-    10: 'col-span-10',
-    11: 'col-span-11',
-    12: 'col-span-12',
+    1: css({gridColumn: '[span 1 / span 1]'}),
+    2: css({gridColumn: '[span 2 / span 2]'}),
+    3: css({gridColumn: '[span 3 / span 3]'}),
+    4: css({gridColumn: '[span 4 / span 4]'}),
+    5: css({gridColumn: '[span 5 / span 5]'}),
+    6: css({gridColumn: '[span 6 / span 6]'}),
+    7: css({gridColumn: '[span 7 / span 7]'}),
+    8: css({gridColumn: '[span 8 / span 8]'}),
+    9: css({gridColumn: '[span 9 / span 9]'}),
+    10: css({gridColumn: '[span 10 / span 10]'}),
+    11: css({gridColumn: '[span 11 / span 11]'}),
+    12: css({gridColumn: '[span 12 / span 12]'}),
 };
 
 export interface FieldProps {
@@ -33,24 +43,24 @@ export interface FieldProps {
     children: React.ReactNode;
 }
 
-function Field({label, required, optional, hint, error, htmlFor, cols, className, children}: FieldProps) {
+function Field({label, required, optional, hint, error: errorMessage, htmlFor, cols, className, children}: FieldProps) {
     return (
-        <div className={cn(styles.field, cols && colSpanMap[cols], className)}>
+        <div className={cn(field, cols && colSpanMap[cols], className)}>
             {label && (
-                <div className={styles.labelRow}>
+                <div className={labelRow}>
                     <Label htmlFor={htmlFor}>{label}</Label>
-                    {required && <span className={styles.requiredMark}>*</span>}
-                    {optional && <span className={styles.optionalText}>(opcional)</span>}
+                    {required && <span className={requiredMark}>*</span>}
+                    {optional && <span className={optionalText}>(opcional)</span>}
                 </div>
             )}
             {children}
-            {error && (
-                <span className={styles.error}>
-                    <AlertCircle className="size-3 shrink-0" />
-                    {error}
+            {errorMessage && (
+                <span className={error}>
+                    <AlertCircle className={css({w: '3', h: '3', flexShrink: '0'})} />
+                    {errorMessage}
                 </span>
             )}
-            {!error && hint && <span className={styles.hint}>{hint}</span>}
+            {!errorMessage && hint && <span className={hint}>{hint}</span>}
         </div>
     );
 }
@@ -60,14 +70,14 @@ export interface FormGridProps extends React.ComponentProps<'div'> {
 }
 
 const formGridColsClass = {
-    12: styles.formGridCols12,
-    6: styles.formGridCols6,
-    4: styles.formGridCols4,
-    3: styles.formGridCols3,
+    12: formGridCols12,
+    6: formGridCols6,
+    4: formGridCols4,
+    3: formGridCols3,
 } as const;
 
 function FormGrid({cols = 12, className, ...props}: FormGridProps) {
-    return <div className={clsx(styles.formGrid, formGridColsClass[cols], className)} {...props} />;
+    return <div className={cx(formGrid, formGridColsClass[cols], className)} {...props} />;
 }
 
 export {Field, FormGrid};

@@ -1,11 +1,11 @@
 import type {ComponentProps, ElementType, ForwardedRef, ReactElement} from 'react';
 import {forwardRef} from 'react';
-import {clsx} from 'clsx';
+import {cx} from '@/styled-system/css';
 
 // ── Tipos polimórficos ────────────────────────────────────────────────────────
 
 export type BoxProps = {
-    /** Classe(s) CSS a aplicar no elemento raiz. Combina com `clsx`. */
+    /** Classe(s) CSS a aplicar no elemento raiz. Combina com `cx`. */
     className?: string;
 };
 
@@ -27,23 +27,23 @@ function BoxImpl<T extends ElementType = 'div'>(
     // O contrato público é garantido pela assinatura de `Box` abaixo.
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const Component = (Tag ?? 'div') as any;
-    return <Component ref={ref} className={clsx(className)} {...props} />;
+    return <Component ref={ref} className={cx(className)} {...props} />;
 }
 
 /**
  * Primitivo polimórfico de layout.
  *
  * Renderiza um `div` por padrão; use `as` para mudar o elemento.
- * Aplique estilos via CSS Modules (`@apply`) ou classes Tailwind no `className`.
+ * Aplique estilos via Panda CSS (`css()`) ou classes Tailwind no `className`.
  *
  * @example
- * // Componente base com CSS Module
- * import styles from './card.module.css';
- * <Box className={styles.root}>...</Box>
+ * // Componente base
+ * import {root} from './styles';
+ * <Box className={root}>...</Box>
  *
  * @example
  * // Troca de elemento
- * <Box as="section" className={styles.section}>...</Box>
+ * <Box as="section" className={section}>...</Box>
  * <Box as="button" type="button" onClick={handleClick}>...</Box>
  */
 export const Box = forwardRef(BoxImpl) as <T extends ElementType = 'div'>(

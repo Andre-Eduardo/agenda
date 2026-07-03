@@ -1,4 +1,5 @@
 import type {Meta, StoryObj} from '@storybook/react-vite';
+import {css} from '@/styled-system/css';
 import {Separator} from './index';
 
 const meta = {
@@ -13,20 +14,20 @@ type Story = StoryObj<typeof meta>;
 
 export const Horizontal: Story = {
     render: () => (
-        <div className="w-[280px]">
-            <p className="text-sm">Acima</p>
-            <Separator className="my-3" />
-            <p className="text-sm">Abaixo</p>
+        <div className={css({w: '[280px]'})}>
+            <p className={css({fontSize: 'sm'})}>Acima</p>
+            <Separator className={css({my: '3'})} />
+            <p className={css({fontSize: 'sm'})}>Abaixo</p>
         </div>
     ),
 };
 
 export const Vertical: Story = {
     render: () => (
-        <div className="flex h-10 items-center gap-3">
-            <span className="text-sm">Item A</span>
+        <div className={css({display: 'flex', h: '10', alignItems: 'center', gap: '3'})}>
+            <span className={css({fontSize: 'sm'})}>Item A</span>
             <Separator orientation="vertical" />
-            <span className="text-sm">Item B</span>
+            <span className={css({fontSize: 'sm'})}>Item B</span>
         </div>
     ),
 };

@@ -1,5 +1,26 @@
-import {clsx} from 'clsx';
-import styles from './stat-tile.module.css';
+import {cx} from '@/styled-system/css';
+import {
+    delta,
+    deltaNegative,
+    deltaNeutral,
+    deltaPositive,
+    header,
+    iconAi,
+    iconBase,
+    iconDanger,
+    iconInfo,
+    iconLg,
+    iconMd,
+    iconMuted,
+    iconPrimary,
+    iconSm,
+    iconSuccess,
+    iconWarning,
+    label,
+    root,
+    value as valueClass,
+    valueSkeleton,
+} from './styles';
 
 // ── Icon variant helper ───────────────────────────────────────────────────────
 //
@@ -10,31 +31,31 @@ type IconSize = 'sm' | 'md' | 'lg';
 type IconIntent = 'primary' | 'success' | 'warning' | 'danger' | 'info' | 'muted' | 'ai';
 
 const iconSizeClass: Record<IconSize, string> = {
-    sm: styles.iconSm,
-    md: styles.iconMd,
-    lg: styles.iconLg,
+    sm: iconSm,
+    md: iconMd,
+    lg: iconLg,
 };
 
 const iconIntentClass: Record<IconIntent, string> = {
-    primary: styles.iconPrimary,
-    success: styles.iconSuccess,
-    warning: styles.iconWarning,
-    danger: styles.iconDanger,
-    info: styles.iconInfo,
-    muted: styles.iconMuted,
-    ai: styles.iconAi,
+    primary: iconPrimary,
+    success: iconSuccess,
+    warning: iconWarning,
+    danger: iconDanger,
+    info: iconInfo,
+    muted: iconMuted,
+    ai: iconAi,
 };
 
 export function statTileIconVariants({size = 'md', intent = 'primary'}: {size?: IconSize; intent?: IconIntent} = {}) {
-    return clsx(styles.iconBase, iconSizeClass[size], iconIntentClass[intent]);
+    return cx(iconBase, iconSizeClass[size], iconIntentClass[intent]);
 }
 
 // ── Delta variants ────────────────────────────────────────────────────────────
 
 const deltaClass = {
-    positive: styles.deltaPositive,
-    negative: styles.deltaNegative,
-    neutral: styles.deltaNeutral,
+    positive: deltaPositive,
+    negative: deltaNegative,
+    neutral: deltaNeutral,
 } as const;
 
 // ── Component ─────────────────────────────────────────────────────────────────
@@ -52,7 +73,7 @@ export interface StatTileProps extends React.ComponentProps<'div'> {
 function StatTile({
     label,
     value,
-    delta,
+    delta: deltaValue,
     deltaIntent = 'neutral',
     icon,
     iconIntent = 'primary',
@@ -62,13 +83,13 @@ function StatTile({
     ...props
 }: StatTileProps) {
     return (
-        <div ref={ref} className={clsx(styles.root, className)} {...props}>
-            <div className={styles.header}>
-                <span className={styles.label}>{label}</span>
+        <div ref={ref} className={cx(root, className)} {...props}>
+            <div className={header}>
+                <span className={label}>{label}</span>
                 {icon && <span className={statTileIconVariants({intent: iconIntent})}>{icon}</span>}
             </div>
-            {loading ? <div className={styles.valueSkeleton} /> : <div className={styles.value}>{value}</div>}
-            {delta !== undefined && <div className={clsx(styles.delta, deltaClass[deltaIntent])}>{delta}</div>}
+            {loading ? <div className={valueSkeleton} /> : <div className={valueClass}>{value}</div>}
+            {deltaValue !== undefined && <div className={cx(delta, deltaClass[deltaIntent])}>{deltaValue}</div>}
         </div>
     );
 }

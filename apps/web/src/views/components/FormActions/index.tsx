@@ -1,6 +1,7 @@
 import {useTranslation} from 'react-i18next';
 import {Button} from '@/components/ui/componentes/button';
 import {useCan, type Permission} from '@/hooks/useCan';
+import * as styles from './styles';
 
 interface FormActionsProps {
     onCancel?: () => void;
@@ -28,7 +29,7 @@ export function FormActions({
     const submitDisabled = !isDirty || isSubmitting || !allowed;
 
     return (
-        <div className="flex justify-end gap-3">
+        <div className={styles.root}>
             {onCancel && (
                 <Button type="button" variant="outline" onClick={onCancel} disabled={isSubmitting}>
                     {cancelLabel ?? t('actions.cancel')}

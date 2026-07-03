@@ -1,4 +1,5 @@
 import type {Meta, StoryObj} from '@storybook/react-vite';
+import {css} from '@/styled-system/css';
 import {Input} from './index';
 
 const meta = {
@@ -9,7 +10,7 @@ const meta = {
     args: {placeholder: 'Digite aqui...'},
     decorators: [
         (Story) => (
-            <div className="w-[280px]">
+            <div className={css({w: '[280px]'})}>
                 <Story />
             </div>
         ),

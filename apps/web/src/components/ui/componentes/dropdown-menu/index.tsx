@@ -1,9 +1,19 @@
 'use client';
 
 import * as DropdownMenuPrimitive from '@radix-ui/react-dropdown-menu';
-import {clsx} from 'clsx';
 import {Check, ChevronRight, Circle} from 'lucide-react';
-import styles from './dropdown-menu.module.css';
+import {cx, css} from '@/styled-system/css';
+import {
+    menuCheckItem,
+    menuContent,
+    menuItem,
+    menuItemIndicator,
+    menuItemInset,
+    menuLabel,
+    menuLabelInset,
+    menuSeparator,
+    menuShortcut,
+} from './styles';
 
 const DropdownMenu = DropdownMenuPrimitive.Root;
 const DropdownMenuTrigger = DropdownMenuPrimitive.Trigger;
@@ -22,11 +32,11 @@ function DropdownMenuSubTrigger({
     return (
         <DropdownMenuPrimitive.SubTrigger
             ref={ref}
-            className={clsx(styles.menuItem, inset && styles.menuItemInset, className)}
+            className={cx(menuItem, inset && menuItemInset, className)}
             {...props}
         >
             {children}
-            <ChevronRight className="ml-auto size-4" />
+            <ChevronRight className={css({ml: 'auto', w: '4', h: '4'})} />
         </DropdownMenuPrimitive.SubTrigger>
     );
 }
@@ -36,7 +46,17 @@ function DropdownMenuSubContent({
     ref,
     ...props
 }: React.ComponentProps<typeof DropdownMenuPrimitive.SubContent>) {
-    return <DropdownMenuPrimitive.SubContent ref={ref} className={clsx(styles.menuContent, className)} {...props} />;
+    return (
+        <DropdownMenuPrimitive.SubContent
+            ref={ref}
+            className={cx(
+                menuContent,
+                'data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=open]:fade-in-0 data-[state=closed]:fade-out-0 data-[state=open]:zoom-in-95 data-[state=closed]:zoom-out-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2',
+                className
+            )}
+            {...props}
+        />
+    );
 }
 
 function DropdownMenuContent({
@@ -50,7 +70,11 @@ function DropdownMenuContent({
             <DropdownMenuPrimitive.Content
                 ref={ref}
                 sideOffset={sideOffset}
-                className={clsx(styles.menuContent, className)}
+                className={cx(
+                    menuContent,
+                    'data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=open]:fade-in-0 data-[state=closed]:fade-out-0 data-[state=open]:zoom-in-95 data-[state=closed]:zoom-out-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2',
+                    className
+                )}
                 {...props}
             />
         </DropdownMenuPrimitive.Portal>
@@ -64,11 +88,7 @@ function DropdownMenuItem({
     ...props
 }: React.ComponentProps<typeof DropdownMenuPrimitive.Item> & {inset?: boolean}) {
     return (
-        <DropdownMenuPrimitive.Item
-            ref={ref}
-            className={clsx(styles.menuItem, inset && styles.menuItemInset, className)}
-            {...props}
-        />
+        <DropdownMenuPrimitive.Item ref={ref} className={cx(menuItem, inset && menuItemInset, className)} {...props} />
     );
 }
 
@@ -82,13 +102,13 @@ function DropdownMenuCheckboxItem({
     return (
         <DropdownMenuPrimitive.CheckboxItem
             ref={ref}
-            className={clsx(styles.menuCheckItem, className)}
+            className={cx(menuCheckItem, className)}
             checked={checked}
             {...props}
         >
-            <span className={styles.menuItemIndicator}>
+            <span className={menuItemIndicator}>
                 <DropdownMenuPrimitive.ItemIndicator>
-                    <Check className="h-4 w-4" />
+                    <Check className={css({w: '4', h: '4'})} />
                 </DropdownMenuPrimitive.ItemIndicator>
             </span>
             {children}
@@ -103,10 +123,10 @@ function DropdownMenuRadioItem({
     ...props
 }: React.ComponentProps<typeof DropdownMenuPrimitive.RadioItem>) {
     return (
-        <DropdownMenuPrimitive.RadioItem ref={ref} className={clsx(styles.menuCheckItem, className)} {...props}>
-            <span className={styles.menuItemIndicator}>
+        <DropdownMenuPrimitive.RadioItem ref={ref} className={cx(menuCheckItem, className)} {...props}>
+            <span className={menuItemIndicator}>
                 <DropdownMenuPrimitive.ItemIndicator>
-                    <Circle className="h-2 w-2 fill-current" />
+                    <Circle className={css({w: '2', h: '2', fill: 'currentColor'})} />
                 </DropdownMenuPrimitive.ItemIndicator>
             </span>
             {children}
@@ -123,7 +143,7 @@ function DropdownMenuLabel({
     return (
         <DropdownMenuPrimitive.Label
             ref={ref}
-            className={clsx(styles.menuLabel, inset && styles.menuLabelInset, className)}
+            className={cx(menuLabel, inset && menuLabelInset, className)}
             {...props}
         />
     );
@@ -134,12 +154,13 @@ function DropdownMenuSeparator({
     ref,
     ...props
 }: React.ComponentProps<typeof DropdownMenuPrimitive.Separator>) {
-    return <DropdownMenuPrimitive.Separator ref={ref} className={clsx(styles.menuSeparator, className)} {...props} />;
+    return <DropdownMenuPrimitive.Separator ref={ref} className={cx(menuSeparator, className)} {...props} />;
 }
 
 function DropdownMenuShortcut({className, ...props}: React.HTMLAttributes<HTMLSpanElement>) {
-    return <span className={clsx(styles.menuShortcut, className)} {...props} />;
+    return <span className={cx(menuShortcut, className)} {...props} />;
 }
+
 DropdownMenuShortcut.displayName = 'DropdownMenuShortcut';
 
 export {

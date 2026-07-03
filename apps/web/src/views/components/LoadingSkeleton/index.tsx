@@ -1,4 +1,5 @@
 import {Skeleton} from '@/components/ui/componentes/skeleton';
+import * as styles from './styles';
 
 interface LoadingSkeletonProps {
     rows?: number;
@@ -8,12 +9,12 @@ interface LoadingSkeletonProps {
 export function LoadingSkeleton({rows = 5, height = 48}: LoadingSkeletonProps) {
     // Skeletons are placeholders with no identity — index-based keys are safe.
     return (
-        <div className="flex flex-col gap-2">
+        <div className={styles.root}>
             {Array.from({length: rows}).map((_, i) => (
                 <Skeleton
                     // eslint-disable-next-line react/no-array-index-key -- skeleton placeholders have no identity; index keys are stable here
                     key={`row-${i}`}
-                    className="rounded-(--radius-card-sm) w-full"
+                    className={styles.row}
                     style={{height}}
                 />
             ))}

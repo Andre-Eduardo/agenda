@@ -8,6 +8,7 @@ import {
     DialogHeader,
     DialogTitle,
 } from '@/components/ui/componentes/dialog';
+import {css} from '@/styled-system/css';
 
 interface ConfirmDialogProps {
     opened: boolean;
@@ -36,7 +37,7 @@ export function ConfirmDialog({
 
     return (
         <Dialog open={opened} onOpenChange={(open) => !open && onCancel()}>
-            <DialogContent className="sm:max-w-md">
+            <DialogContent className={css({sm: {maxW: 'md'}})}>
                 <DialogHeader>
                     <DialogTitle>{title ?? t('confirm.deleteTitle')}</DialogTitle>
                     <DialogDescription>{message ?? t('confirm.deleteMessage')}</DialogDescription>

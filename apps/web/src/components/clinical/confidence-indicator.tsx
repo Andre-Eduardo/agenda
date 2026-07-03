@@ -1,6 +1,6 @@
 import {CheckCircle2, AlertTriangle, XCircle} from 'lucide-react';
-import {cn} from '@/lib/utils';
-import styles from './confidence-indicator.module.css';
+import {cx, css} from '@/styled-system/css';
+import * as styles from './confidence-indicator.styles';
 
 export type ConfidenceLevel = 'high' | 'mid' | 'low';
 
@@ -25,11 +25,10 @@ export function ConfidenceIndicator({level, label, className}: ConfidenceIndicat
     }[level];
 
     const {Icon} = config;
-    const levelClass = {high: styles.high, mid: styles.mid, low: styles.low}[level];
 
     return (
-        <span className={cn(styles.root, levelClass, className)}>
-            <Icon aria-hidden className="size-3.5" />
+        <span className={cx(styles.root, styles.level({confidence: level}), className)}>
+            <Icon aria-hidden className={css({w: '3.5', h: '3.5'})} />
             {label ?? config.defaultLabel}
         </span>
     );

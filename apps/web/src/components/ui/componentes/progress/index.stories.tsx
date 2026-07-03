@@ -1,4 +1,5 @@
 import type {Meta, StoryObj} from '@storybook/react-vite';
+import {css} from '@/styled-system/css';
 import {Progress} from './index';
 
 const meta = {
@@ -8,7 +9,7 @@ const meta = {
     tags: ['autodocs'],
     decorators: [
         (Story) => (
-            <div className="w-[280px]">
+            <div className={css({w: '[280px]'})}>
                 <Story />
             </div>
         ),

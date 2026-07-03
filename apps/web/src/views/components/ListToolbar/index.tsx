@@ -1,7 +1,7 @@
 import type {ReactNode} from 'react';
 import {Search} from 'lucide-react';
 import {Input} from '@/components/ui/componentes/input';
-import styles from './list-toolbar.module.css';
+import * as styles from './styles';
 
 interface ListToolbarProps {
     searchValue?: string;
@@ -28,7 +28,7 @@ export function ListToolbar({
                             placeholder={searchPlaceholder}
                             value={searchValue}
                             onChange={(e) => onSearchChange(e.target.value)}
-                            className="pl-9"
+                            className={styles.searchInput}
                         />
                     </div>
                 )}

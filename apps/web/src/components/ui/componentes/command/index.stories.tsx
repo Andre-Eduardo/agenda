@@ -1,4 +1,5 @@
 import type {Meta, StoryObj} from '@storybook/react-vite';
+import {css} from '@/styled-system/css';
 import {
     Command,
     CommandEmpty,
@@ -22,7 +23,16 @@ type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
     render: () => (
-        <Command className="w-[360px] rounded-lg border shadow-md">
+        <Command
+            className={css({
+                w: '[360px]',
+                rounded: 'lg',
+                borderWidth: '1px',
+                borderStyle: 'solid',
+                borderColor: 'border',
+                boxShadow: 'md',
+            })}
+        >
             <CommandInput placeholder="Buscar..." />
             <CommandList>
                 <CommandEmpty>Nenhum resultado encontrado.</CommandEmpty>

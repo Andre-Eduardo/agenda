@@ -41,8 +41,8 @@ import {PageHeader} from '@/components/ui/componentes/page-header';
 import {Skeleton} from '@/components/ui/componentes/skeleton';
 import {Tabs, TabsList, TabsTrigger, TabsContent} from '@/components/ui/componentes/tabs';
 import {Textarea} from '@/components/ui/componentes/textarea';
-import {cn} from '@/lib/utils';
 import {css, cx} from '@/styled-system/css';
+import {errorText, flexCol, icon11, icon14, icon3, icon4, mb4, skeletonH4W48, skeletonH8W64} from './styles';
 
 export const Route = createFileRoute('/_stackedLayout/patients/$patientId/edit')({
     component: EditPatientPage,
@@ -321,8 +321,8 @@ export function EditPatientPage() {
     if (isLoading) {
         return (
             <div className={pageSkeletonStack}>
-                <Skeleton className="h-4 w-48" />
-                <Skeleton className="h-8 w-64" />
+                <Skeleton className={skeletonH4W48} />
+                <Skeleton className={skeletonH8W64} />
                 <Skeleton className={pageSkeletonCard400} />
             </div>
         );
@@ -331,7 +331,7 @@ export function EditPatientPage() {
     if (isError || !patient) {
         return (
             <div className={pageErrorState}>
-                <p className="text-sm">Paciente não encontrado.</p>
+                <p className={errorText}>Paciente não encontrado.</p>
                 <Button variant="outline" size="sm" onClick={() => navigate({to: '/patients'})}>
                     Voltar
                 </Button>
@@ -489,8 +489,9 @@ function EditPatientForm({patient}: {patient: Patient}) {
             {/* Form card */}
             <form id="edit-patient-form" onSubmit={handleSubmit(onSubmit)}>
                 <UISectionCard>
-                    <Tabs value={tab} onValueChange={(v) => setTab(v as TabKey)} className="flex flex-col">
-                        <TabsList>
+                <Tabs value={tab} onValueChange={(v) => setTab(v as TabKey)} className={flexCol}>
+                    <TabsList>
+
                             {TABS.map((t) => {
                                 const filled = tab !== t.key && tabHasValues(t.key, values);
                                 const TabIcon = t.icon;
@@ -498,7 +499,7 @@ function EditPatientForm({patient}: {patient: Patient}) {
                                 return (
                                     <TabsTrigger key={t.key} value={t.key}>
                                         <span className={cx(tabNum, tab === t.key && tabNumActive, filled && tabNumFilled)}>
-                                            {filled ? <Check className="size-[11px]" strokeWidth={2.5} /> : t.num}
+                                            {filled ? <Check className={icon11} strokeWidth={2.5} /> : t.num}
                                         </span>
                                         <TabIcon className={tabIcon} strokeWidth={1.5} />
                                         {t.label}
@@ -521,17 +522,18 @@ function EditPatientForm({patient}: {patient: Patient}) {
                                     label="Documento (CPF / RG / Prontuário)"
                                     cols={12}
                                     hint="O documento não pode ser alterado após o cadastro."
-                                    className="mb-4"
+                                className={mb4}
+                            >
+                                <div
+                                    className={cx(
+                                        inputVariants({appearance: 'mono'}),
+                                        css({cursor: 'not-allowed', bg: 'bg.surface', color: 'text.secondary'})
+                                    )}
                                 >
-                                    <div
-                                        className={cn(
-                                            inputVariants({appearance: 'mono'}),
-                                            css({cursor: 'not-allowed', bg: 'bg.surface', color: 'text.secondary'})
-                                        )}
-                                    >
-                                        {patient.documentId}
-                                    </div>
-                                </Field>
+                                    {patient.documentId}
+                                </div>
+                            </Field>
+
 
                                 <FormGrid>
                                     <Field label="Nome completo" required cols={8} error={errors.name?.message}>
@@ -547,7 +549,7 @@ function EditPatientForm({patient}: {patient: Patient}) {
                                             {...register('birthDate')}
                                             type="date"
                                             appearance="mono"
-                                            leadIcon={<Calendar className="size-[14px]" strokeWidth={1.5} />}
+                                            leadIcon={<Calendar className={icon14} strokeWidth={1.5} />}
                                         />
                                     </Field>
 
@@ -580,7 +582,7 @@ function EditPatientForm({patient}: {patient: Patient}) {
                                             {...register('phone')}
                                             placeholder="(00) 00000-0000"
                                             appearance="mono"
-                                            leadIcon={<Phone className="size-[14px]" strokeWidth={1.5} />}
+                                            leadIcon={<Phone className={icon14} strokeWidth={1.5} />}
                                         />
                                     </Field>
 
@@ -589,7 +591,7 @@ function EditPatientForm({patient}: {patient: Patient}) {
                                             {...register('email')}
                                             type="email"
                                             placeholder="paciente@email.com"
-                                            leadIcon={<Mail className="size-[14px]" strokeWidth={1.5} />}
+                                            leadIcon={<Mail className={icon14} strokeWidth={1.5} />}
                                             state={errors.email ? 'error' : 'default'}
                                         />
                                     </Field>
@@ -645,7 +647,7 @@ function EditPatientForm({patient}: {patient: Patient}) {
                                             trailIcon={
                                                 zipLoading ? (
                                                     <svg
-                                                        className="size-[14px] animate-spin"
+                                                        className={cx(icon14, 'animate-spin')}
                                                         viewBox="0 0 24 24"
                                                         fill="none"
                                                         stroke="currentColor"
@@ -743,9 +745,10 @@ function EditPatientForm({patient}: {patient: Patient}) {
 
                     {/* Sticky footer */}
                     <div className={footerRoot}>
-                        <div className={footerMeta}>
-                            <Lock className="size-3" strokeWidth={1.5} />
-                            <span>Dados criptografados em repouso · LGPD</span>
+                    <div className={footerMeta}>
+                        <Lock className={icon3} strokeWidth={1.5} />
+                        <span>Dados criptografados em repouso · LGPD</span>
+
                             <span className={footerStep}>
                                 Etapa {tabIdx + 1} de {TABS.length}
                             </span>
@@ -758,7 +761,7 @@ function EditPatientForm({patient}: {patient: Patient}) {
 
                             {!isFirst && (
                                 <Button type="button" variant="outline" size="sm" onClick={goPrev}>
-                                    <ChevronLeft className="size-4" strokeWidth={1.5} />
+                                    <ChevronLeft className={icon4} strokeWidth={1.5} />
                                     Voltar
                                 </Button>
                             )}
@@ -766,7 +769,7 @@ function EditPatientForm({patient}: {patient: Patient}) {
                             {!isLast ? (
                                 <Button type="button" size="sm" onClick={goNext}>
                                     Avançar
-                                    <ChevronRight className="size-4" strokeWidth={1.5} />
+                                    <ChevronRight className={icon4} strokeWidth={1.5} />
                                 </Button>
                             ) : (
                                 <Button
@@ -778,7 +781,7 @@ function EditPatientForm({patient}: {patient: Patient}) {
                                     {updatePatient.isPending ? (
                                         <>
                                             <svg
-                                                className="size-4 animate-spin"
+                                                className={cx(icon4, 'animate-spin')}
                                                 viewBox="0 0 24 24"
                                                 fill="none"
                                                 stroke="currentColor"
@@ -790,7 +793,7 @@ function EditPatientForm({patient}: {patient: Patient}) {
                                         </>
                                     ) : (
                                         <>
-                                            <Check className="size-4" strokeWidth={1.5} />
+                                            <Check className={icon4} strokeWidth={1.5} />
                                             Salvar alterações
                                         </>
                                     )}

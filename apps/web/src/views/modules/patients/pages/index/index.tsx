@@ -37,6 +37,20 @@ import {Skeleton} from '@/components/ui/componentes/skeleton';
 import {StatTile} from '@/components/ui/componentes/stat-tile';
 import {Page} from '@/views/components/Page';
 import {css} from '@/styled-system/css';
+import {
+    icon15,
+    icon35,
+    icon4,
+    icon6,
+    monoNums,
+    py6,
+    skeletonH3Full,
+    skeletonH3W24,
+    skeletonH3_5W32,
+    skeletonH4W28,
+    skeletonH4W8,
+    skeletonTextStack,
+} from './styles';
 
 export const Route = createFileRoute('/_stackedLayout/patients')({
     component: PatientsPage,
@@ -503,25 +517,25 @@ function PatientTableRow({patient, onClick}: {patient: Patient; onClick: () => v
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                         <button type="button" aria-label="Ações" className={tableRowActionBtn}>
-                            <MoreHorizontal className="size-4" strokeWidth={1.5} />
+                            <MoreHorizontal className={icon4} strokeWidth={1.5} />
                         </button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
                         <DropdownMenuItem onClick={onClick}>
-                            <UserRound className="size-3.5" />
+                            <UserRound className={icon35} />
                             Ver perfil
                         </DropdownMenuItem>
                         <DropdownMenuItem>
-                            <Pencil className="size-3.5" />
+                            <Pencil className={icon35} />
                             Editar cadastro
                         </DropdownMenuItem>
                         <DropdownMenuItem>
-                            <CalendarPlus className="size-3.5" />
+                            <CalendarPlus className={icon35} />
                             Agendar consulta
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem className={tableRowDangerItem}>
-                            <Archive className="size-3.5" />
+                            <Archive className={icon35} />
                             Arquivar paciente
                         </DropdownMenuItem>
                     </DropdownMenuContent>
@@ -536,13 +550,13 @@ function SkeletonTableRow() {
         <div className={tableRowSkeletonRoot} style={{gridTemplateColumns: TABLE_COLS}}>
             <div className={tableRowSkeletonNameCell}>
                 <Skeleton className={tableRowSkeletonAvatar} />
-                <div className="flex-1 space-y-1.5">
-                    <Skeleton className="h-3.5 w-32" />
-                    <Skeleton className="h-3 w-24" />
+                <div className={skeletonTextStack}>
+                    <Skeleton className={skeletonH3_5W32} />
+                    <Skeleton className={skeletonH3W24} />
                 </div>
             </div>
-            <Skeleton className="h-4 w-8" />
-            <Skeleton className="h-4 w-28" />
+            <Skeleton className={skeletonH4W8} />
+            <Skeleton className={skeletonH4W28} />
             <Skeleton className={tableRowSkeletonStatusBadge} />
             <Skeleton className={tableRowSkeletonBadgeSm} />
             <Skeleton className={tableRowSkeletonActionBtn} />
@@ -584,14 +598,15 @@ function SkeletonCard() {
             <div className={skeletonCardTop}>
                 <Skeleton className={skeletonCardAvatar} />
                 <div className={skeletonCardNameBlock}>
-                    <Skeleton className="h-4 w-36" />
-                    <Skeleton className="h-3 w-28" />
-                </div>
+                <Skeleton className={skeletonH4W28} />
+                <Skeleton className={skeletonH3W24} />
             </div>
-            <div className={skeletonCardDetails}>
-                <Skeleton className="h-3 w-full" />
-                <Skeleton className="h-3 w-full" />
-            </div>
+        </div>
+        <div className={skeletonCardDetails}>
+            <Skeleton className={skeletonH3Full} />
+            <Skeleton className={skeletonH3Full} />
+        </div>
+
         </div>
     );
 }
@@ -606,7 +621,7 @@ function Pagination({from, to, total}: {from: number; to: number; total: number}
             </p>
             <div className={paginationControls}>
                 <button type="button" disabled className={paginationBtnDisabled}>
-                    <ChevronLeft className="size-3.5" />
+                    <ChevronLeft className={icon35} />
                     Anterior
                 </button>
                 <button type="button" className={paginationBtnActive}>
@@ -614,7 +629,7 @@ function Pagination({from, to, total}: {from: number; to: number; total: number}
                 </button>
                 <button type="button" disabled className={paginationBtnDisabled}>
                     Próxima
-                    <ChevronRight className="size-3.5" />
+                    <ChevronRight className={icon35} />
                 </button>
             </div>
         </div>
@@ -643,14 +658,14 @@ function PatientsContent({
     if (!isLoading && patients.length === 0) {
         return (
             <EmptyStateCard
-                icon={<SearchX className="size-6" strokeWidth={1.5} />}
+                icon={<SearchX className={icon6} strokeWidth={1.5} />}
                 title="Nenhum paciente encontrado"
                 description={
                     search ? `Nenhum resultado para "${search}"` : 'Ajuste os filtros para ver mais resultados'
                 }
                 action={
                     <Button variant="outline" size="sm" onClick={() => setSearch('')}>
-                        <X className="size-4" />
+                        <X className={icon4} />
                         Limpar busca
                     </Button>
                 }
@@ -754,7 +769,7 @@ export function PatientsPage() {
 
     const subtitle = (
         <span>
-            <span className="font-mono tabular-nums">{statsQuery.isLoading ? '…' : totalAll}</span>
+            <span className={monoNums}>{statsQuery.isLoading ? '…' : totalAll}</span>
             {' pacientes ativos no consultório'}
         </span>
     );
@@ -765,7 +780,7 @@ export function PatientsPage() {
             subtitle={subtitle}
             actions={
                 <Button size="sm" onClick={() => navigate({to: '/patients/new'})}>
-                    <Plus className="size-4" />
+                    <Plus className={icon4} />
                     Novo paciente
                 </Button>
             }
@@ -781,14 +796,14 @@ export function PatientsPage() {
                         </span>
                     }
                     loading={statsQuery.isLoading}
-                    icon={<Users className="size-4" strokeWidth={1.5} />}
+                    icon={<Users className={icon4} strokeWidth={1.5} />}
                     iconIntent="primary"
                 />
                 <StatTile
                     label="Total de consultas"
                     value={totalAppointments ?? 0}
                     loading={appointmentsQuery.isLoading}
-                    icon={<CalendarDays className="size-4" strokeWidth={1.5} />}
+                    icon={<CalendarDays className={icon4} strokeWidth={1.5} />}
                     iconIntent="info"
                 />
                 <StatTile
@@ -796,7 +811,7 @@ export function PatientsPage() {
                     value="—"
                     delta="conectar módulo IA"
                     loading={false}
-                    icon={<Sparkles className="size-4" strokeWidth={1.5} />}
+                    icon={<Sparkles className={icon4} strokeWidth={1.5} />}
                     iconIntent="ai"
                 />
             </div>
@@ -823,10 +838,10 @@ export function PatientsPage() {
 
                 <SegmentedControl value={layout} onValueChange={(v) => setLayout(v as Layout)}>
                     <SegmentedControl.Item value="table" title="Tabela">
-                        <Rows3 className="size-[15px]" />
+                        <Rows3 className={icon15} />
                     </SegmentedControl.Item>
                     <SegmentedControl.Item value="cards" title="Cards">
-                        <LayoutGrid className="size-[15px]" />
+                        <LayoutGrid className={icon15} />
                     </SegmentedControl.Item>
                 </SegmentedControl>
 

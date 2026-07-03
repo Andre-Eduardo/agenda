@@ -1,4 +1,4 @@
-import styles from './vitals-display.module.css';
+import * as styles from './vitals-display.styles';
 
 interface VitalItem {
     label: string;

@@ -3,7 +3,6 @@
 import * as React from 'react';
 import * as LabelPrimitive from '@radix-ui/react-label';
 import {Slot} from '@radix-ui/react-slot';
-import {clsx} from 'clsx';
 import {
     Controller,
     FormProvider,
@@ -14,7 +13,8 @@ import {
 } from 'react-hook-form';
 import {Label} from '@/components/ui/componentes/label';
 import {cn} from '@/lib/utils';
-import styles from './form.module.css';
+import {cx} from '@/styled-system/css';
+import {formDescription, formItem, formMessage} from './styles';
 
 const Form = FormProvider;
 
@@ -68,7 +68,7 @@ function FormItem({className, ref, ...props}: React.ComponentProps<'div'>) {
     const id = React.useId();
     return (
         <FormItemContext.Provider value={{id}}>
-            <div ref={ref} className={clsx(styles.formItem, className)} {...props} />
+            <div ref={ref} className={cx(formItem, className)} {...props} />
         </FormItemContext.Provider>
     );
 }
@@ -93,7 +93,7 @@ function FormControl({ref, ...props}: React.ComponentProps<typeof Slot>) {
 
 function FormDescription({className, ref, ...props}: React.ComponentProps<'p'>) {
     const {formDescriptionId} = useFormField();
-    return <p ref={ref} id={formDescriptionId} className={clsx(styles.formDescription, className)} {...props} />;
+    return <p ref={ref} id={formDescriptionId} className={cx(formDescription, className)} {...props} />;
 }
 
 function FormMessage({className, children, ref, ...props}: React.ComponentProps<'p'>) {
@@ -103,7 +103,7 @@ function FormMessage({className, children, ref, ...props}: React.ComponentProps<
     if (!body) return null;
 
     return (
-        <p ref={ref} id={formMessageId} className={clsx(styles.formMessage, className)} {...props}>
+        <p ref={ref} id={formMessageId} className={cx(formMessage, className)} {...props}>
             {body}
         </p>
     );

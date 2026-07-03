@@ -1,59 +1,41 @@
-import {cva, type VariantProps} from 'class-variance-authority';
-import {cn} from '@/lib/utils';
-import styles from './input.module.css';
-
-// ── Variantes ─────────────────────────────────────────────────────────────────
-
-export const inputVariants = cva(styles.base, {
-    variants: {
-        appearance: {
-            default: '',
-            mono: styles.appearanceMono,
-        },
-        state: {
-            default: '',
-            error: styles.stateError,
-        },
-    },
-    defaultVariants: {
-        appearance: 'default',
-        state: 'default',
-    },
-});
+import {cx} from '@/styled-system/css';
+import type {RecipeVariantProps} from '@/styled-system/css';
+import {inputVariants, leadIcon, trailIcon, withLeadIcon, withTrailIcon, wrapper} from './styles';
 
 // ── Props ─────────────────────────────────────────────────────────────────────
 
-export interface InputProps extends React.ComponentProps<'input'>, VariantProps<typeof inputVariants> {
-    leadIcon?: React.ReactNode;
-    trailIcon?: React.ReactNode;
-}
+export type InputProps = React.ComponentProps<'input'> &
+    RecipeVariantProps<typeof inputVariants> & {
+        leadIcon?: React.ReactNode;
+        trailIcon?: React.ReactNode;
+    };
 
 // ── Componente ────────────────────────────────────────────────────────────────
 
-function Input({className, type, appearance, state, leadIcon, trailIcon, ref, ...props}: InputProps) {
+function Input({className, type, appearance, state, leadIcon: LeadIconNode, trailIcon: TrailIconNode, ref, ...props}: InputProps) {
     const inputEl = (
         <input
             type={type}
             ref={ref}
-            className={cn(
+            className={cx(
                 inputVariants({appearance, state}),
-                leadIcon && styles.withLeadIcon,
-                trailIcon && styles.withTrailIcon,
+                !!LeadIconNode && withLeadIcon,
+                !!TrailIconNode && withTrailIcon,
                 className
             )}
             {...props}
         />
     );
 
-    if (!leadIcon && !trailIcon) return inputEl;
+    if (!LeadIconNode && !TrailIconNode) return inputEl;
 
     return (
-        <div className={styles.wrapper}>
-            {leadIcon && <span className={styles.leadIcon}>{leadIcon}</span>}
+        <div className={wrapper}>
+            {LeadIconNode && <span className={leadIcon}>{LeadIconNode}</span>}
             {inputEl}
-            {trailIcon && <span className={styles.trailIcon}>{trailIcon}</span>}
+            {TrailIconNode && <span className={trailIcon}>{TrailIconNode}</span>}
         </div>
     );
 }
 
-export {Input};
+export {Input, inputVariants};
