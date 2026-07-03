@@ -1,5 +1,7 @@
 import {useState, useEffect} from 'react';
 import {
+    getGetPatientQueryKey,
+    getSearchPatientsQueryKey,
     useGetPatient,
     useUpdatePatient,
     type UpdatePatientInputDto,
@@ -7,6 +9,7 @@ import {
     UpdatePatientInputDtoGender,
 } from '@agenda-app/client';
 import {zodResolver} from '@hookform/resolvers/zod';
+import {useQueryClient} from '@tanstack/react-query';
 import {createFileRoute, useNavigate} from '@tanstack/react-router';
 import {
     User,
@@ -346,6 +349,7 @@ export function EditPatientPage() {
 
 function EditPatientForm({patient}: {patient: Patient}) {
     const navigate = useNavigate();
+    const queryClient = useQueryClient();
     const [tab, setTab] = useState<TabKey>('identity');
     const [zipLoading, setZipLoading] = useState(false);
 
@@ -355,6 +359,8 @@ function EditPatientForm({patient}: {patient: Patient}) {
         mutation: {
             onSuccess: async () => {
                 toast.success('Cadastro atualizado com sucesso');
+                await queryClient.invalidateQueries({queryKey: getGetPatientQueryKey(patient.id)});
+                await queryClient.invalidateQueries({queryKey: getSearchPatientsQueryKey()});
                 await navigate({
                     to: '/patients/$patientId',
                     params: {patientId: patient.id},

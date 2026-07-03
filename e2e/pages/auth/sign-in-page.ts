@@ -2,21 +2,25 @@ import {expect, type Locator, type Page} from '@playwright/test';
 import {BasePage} from '@pages/base-page';
 
 export class SignInPage extends BasePage {
-    readonly brandTitle: Locator;
-    readonly portalTitle: Locator;
+    readonly pageTitle: Locator;
     readonly usernameInput: Locator;
     readonly passwordInput: Locator;
     readonly submitButton: Locator;
-    readonly forgotPasswordLink: Locator;
+    readonly rememberMeCheckbox: Locator;
+    readonly forgotPasswordButton: Locator;
+    readonly usernameError: Locator;
+    readonly passwordError: Locator;
 
     constructor(page: Page) {
         super(page);
-        this.brandTitle = page.getByRole('heading', {name: /agenda saúde/i});
-        this.portalTitle = page.getByRole('heading', {name: /acesso ao portal clínico/i});
-        this.usernameInput = page.getByPlaceholder(/digite seu usuário/i);
-        this.passwordInput = page.getByPlaceholder(/sua senha/i);
-        this.submitButton = page.getByRole('button', {name: /entrar no sistema/i});
-        this.forgotPasswordLink = page.getByRole('link', {name: /esqueceu sua senha/i});
+        this.pageTitle = page.getByRole('heading', {name: /bem-vindo de volta/i});
+        this.usernameInput = page.locator('input[name="username"]');
+        this.passwordInput = page.locator('input[name="password"]');
+        this.submitButton = page.getByRole('button', {name: /^entrar$/i});
+        this.rememberMeCheckbox = page.getByRole('checkbox', {name: /manter conectado/i});
+        this.forgotPasswordButton = page.getByRole('button', {name: /esqueceu\?/i});
+        this.usernameError = page.getByText(/usuário é obrigatório|usuário ou senha incorretos/i);
+        this.passwordError = page.getByText(/senha é obrigatória/i);
     }
 
     async navigate() {
@@ -24,9 +28,8 @@ export class SignInPage extends BasePage {
     }
 
     async verifyPageLoaded() {
-        await expect(this.page).toHaveURL(/\/auth\/login$/);
-        await expect(this.brandTitle).toBeVisible();
-        await expect(this.portalTitle).toBeVisible();
+        await expect(this.page).toHaveURL(/\/auth\/login(\?|$)/);
+        await expect(this.pageTitle).toBeVisible();
         await expect(this.usernameInput).toBeVisible();
         await expect(this.passwordInput).toBeVisible();
         await expect(this.submitButton).toBeVisible();
@@ -36,5 +39,15 @@ export class SignInPage extends BasePage {
         await this.usernameInput.fill(username);
         await this.passwordInput.fill(password);
         await this.submitButton.click();
+    }
+
+    async verifyInvalidCredentialsError() {
+        await expect(this.usernameError).toBeVisible();
+        await expect(this.usernameError).toHaveText(/usuário ou senha incorretos/i);
+    }
+
+    async verifyRequiredFieldErrors() {
+        await expect(this.usernameError).toHaveText(/usuário é obrigatório/i);
+        await expect(this.passwordError).toBeVisible();
     }
 }

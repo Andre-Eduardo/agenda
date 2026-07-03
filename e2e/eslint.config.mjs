@@ -1,11 +1,14 @@
 import playwright from 'eslint-plugin-playwright';
 import {defineConfig} from 'eslint/config';
+import tseslint from 'typescript-eslint';
 
 export default defineConfig([
+    ...tseslint.configs.recommended,
     {
-        files: ['tests/**'],
-        extends: [playwright.configs['flat/recommended']],
+        files: ['tests/**/*.ts'],
+        plugins: {playwright},
         rules: {
+            ...playwright.configs['flat/recommended'].rules,
             'playwright/expect-expect': 'off',
         },
     },

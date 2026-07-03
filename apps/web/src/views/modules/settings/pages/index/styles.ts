@@ -497,7 +497,24 @@ export const formCardP16 = css({p: '16'});
 export const shrink0 = css({flexShrink: '0'});
 export const pr10 = css({pr: '10'});
 export const mt4 = css({mt: '4'});
-export const gridSpan = (span: number) => css({gridColumn: `span ${span} / span ${span}`});
+// Panda extrai classes estaticamente — não é possível gerar `gridColumn` a partir de um
+// template string com variável, por isso cada span precisa de sua própria chamada `css()`.
+const gridSpanMap: Record<number, string> = {
+    1: css({gridColumn: '[span 1 / span 1]'}),
+    2: css({gridColumn: '[span 2 / span 2]'}),
+    3: css({gridColumn: '[span 3 / span 3]'}),
+    4: css({gridColumn: '[span 4 / span 4]'}),
+    5: css({gridColumn: '[span 5 / span 5]'}),
+    6: css({gridColumn: '[span 6 / span 6]'}),
+    7: css({gridColumn: '[span 7 / span 7]'}),
+    8: css({gridColumn: '[span 8 / span 8]'}),
+    9: css({gridColumn: '[span 9 / span 9]'}),
+    10: css({gridColumn: '[span 10 / span 10]'}),
+    11: css({gridColumn: '[span 11 / span 11]'}),
+    12: css({gridColumn: '[span 12 / span 12]'}),
+};
+
+export const gridSpan = (span: number) => gridSpanMap[span];
 export const skeletonH4W48 = css({h: '4', w: '48'});
 export const skeletonH10 = css({h: '10'});
 

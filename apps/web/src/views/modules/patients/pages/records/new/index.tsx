@@ -5,10 +5,12 @@ import {
     CreateRecordDtoConductTagsItem,
     CreateRecordDtoTemplateType,
     useCreateRecord,
-    useGetCurrentUser,
     useGetPatient,
+    useSearchProfessionals,
     type Patient,
+    type Professional,
 } from '@agenda-app/client';
+import type {UseQueryResult} from '@tanstack/react-query';
 import {createFileRoute, useNavigate, Link} from '@tanstack/react-router';
 import {
     ClipboardList,
@@ -49,7 +51,6 @@ import {NativeSelect} from '@/components/ui/componentes/native-select';
 import {PageHeader} from '@/components/ui/componentes/page-header';
 import {Skeleton} from '@/components/ui/componentes/skeleton';
 import {Textarea} from '@/components/ui/componentes/textarea';
-import {useAppStore} from '@/store/appStore';
 import {cx} from '@/styled-system/css';
 import {
     ConductGrid,
@@ -549,8 +550,13 @@ function PageSkeleton() {
 
 function NewEvolutionForm({patient}: {patient: Patient}) {
     const navigate = useNavigate();
-    const {userId} = useAppStore();
-    const {data: currentUser} = useGetCurrentUser();
+    const professionalsQuery = useSearchProfessionals({
+        term: '',
+        limit: 1,
+        cursor: null,
+        sort: null,
+    }) as unknown as UseQueryResult<{data: Professional[]; totalCount: number}>;
+    const currentProfessional = professionalsQuery.data?.data?.[0];
 
     // ── Form state ─────────────────────────────────────────────────────────────
     const today = new Date();
@@ -678,7 +684,7 @@ function NewEvolutionForm({patient}: {patient: Patient}) {
         const vitalsText = composeVitalsText(vitals);
         const finalObjective = objective || vitalsText || undefined;
 
-        const responsibleProfessionalId = userId ?? currentUser?.id ?? '';
+        const responsibleProfessionalId = currentProfessional?.id ?? '';
 
         createRecord.mutate({
             data: {

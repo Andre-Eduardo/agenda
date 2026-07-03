@@ -5,6 +5,7 @@ import type {
     AppointmentType,
     CreateAppointmentDtoType,
     Patient,
+    Professional,
     UpdateAppointmentInputDtoType,
 } from '@agenda-app/client';
 import {
@@ -12,6 +13,7 @@ import {
     useCreateAppointment,
     useSearchAppointments,
     useSearchPatients,
+    useSearchProfessionals,
     useUpdateAppointment,
 } from '@agenda-app/client';
 import type {UseQueryResult} from '@tanstack/react-query';
@@ -1242,8 +1244,14 @@ export function AppointmentsPage() {
     >;
     const patients = patQ.data?.data ?? [];
 
-    // Derive memberId from existing appointments (current professional's member ID)
-    const defaultMemberId = rawAppts[0]?.attendedByMemberId ?? '';
+    // Current professional's clinic member ID (used as the appointment's attendee)
+    const profQ = useSearchProfessionals({
+        term: '',
+        limit: 1,
+        cursor: null,
+        sort: null,
+    }) as unknown as UseQueryResult<{data: Professional[]; totalCount: number}>;
+    const defaultMemberId = profQ.data?.data?.[0]?.clinicMemberId ?? '';
 
     const allAppts = useMemo(() => rawAppts.map(toApptView), [rawAppts]);
     const filteredAppts = useMemo(() => allAppts.filter((a) => statusFilters.has(a.status)), [allAppts, statusFilters]);

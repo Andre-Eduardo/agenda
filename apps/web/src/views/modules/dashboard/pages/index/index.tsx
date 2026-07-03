@@ -6,9 +6,7 @@ import {
     AppointmentType,
     type Appointment,
     type Record as ClinicalRecord,
-    type SearchRecordsAttendanceType,
-    type SearchRecordsClinicalStatus,
-    type SearchRecordsSource,
+    type SearchRecordsParams,
 } from '@agenda-app/client';
 import type {UseQueryResult} from '@tanstack/react-query';
 import {createFileRoute, useNavigate} from '@tanstack/react-router';
@@ -647,18 +645,14 @@ export function DashboardPage() {
         pending: todayAppts.filter((a) => ACTIVE_STATUSES.has(a.status)).length,
     };
 
+    // SearchRecordsParams marks these filters as required strings even though the server
+    // treats them as optional; omit rather than send '' (see patients/pages/detail).
     const recentQuery = useSearchRecords({
         term: '',
         limit: 5,
         cursor: null,
-        patientId: '',
-        attendanceType: undefined as unknown as SearchRecordsAttendanceType,
-        clinicalStatus: undefined as unknown as SearchRecordsClinicalStatus,
-        dateStart: '',
-        dateEnd: '',
-        source: undefined as unknown as SearchRecordsSource,
         sort: {eventDate: 'desc'},
-    }) as unknown as UseQueryResult<PaginatedPage<ClinicalRecord>>;
+    } as SearchRecordsParams) as unknown as UseQueryResult<PaginatedPage<ClinicalRecord>>;
 
     const recentRecords = recentQuery.data?.data ?? [];
     const isLoading = apptQuery.isLoading || userQuery.isLoading;

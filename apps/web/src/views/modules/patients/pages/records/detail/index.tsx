@@ -6,9 +6,7 @@ import type {
     RecordClinicalStatus,
     RecordConductTagsItem,
     SearchRecordsSortEventDate,
-    SearchRecordsAttendanceType,
-    SearchRecordsClinicalStatus,
-    SearchRecordsSource,
+    SearchRecordsParams,
 } from '@agenda-app/client';
 import type {UseQueryResult} from '@tanstack/react-query';
 import {createFileRoute, useNavigate, Link} from '@tanstack/react-router';
@@ -639,18 +637,15 @@ export function RecordDetailPage() {
     const {data: record, isLoading: loadingRecord, isError: errorRecord} = useGetRecord(recordId);
     const {data: patient, isLoading: loadingPatient, isError: errorPatient} = useGetPatient(patientId);
 
+    // See patients/pages/detail — SearchRecordsParams marks these filters as required
+    // strings even though the server treats them as optional; omit rather than send ''.
     const siblingsQuery = useSearchRecords({
         patientId,
         term: '',
         cursor: null,
         limit: 100,
         sort: {eventDate: 'desc' as SearchRecordsSortEventDate},
-        attendanceType: '' as SearchRecordsAttendanceType,
-        clinicalStatus: '' as SearchRecordsClinicalStatus,
-        dateStart: '',
-        dateEnd: '',
-        source: '' as SearchRecordsSource,
-    }) as unknown as UseQueryResult<PaginatedPage<MedicalRecord>>;
+    } as SearchRecordsParams) as unknown as UseQueryResult<PaginatedPage<MedicalRecord>>;
 
     if (loadingRecord || loadingPatient) return <DetailSkeleton />;
 

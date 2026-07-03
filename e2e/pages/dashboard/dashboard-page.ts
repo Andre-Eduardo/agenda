@@ -16,11 +16,11 @@ export class DashboardPage extends BasePage {
     }
 
     async navigate() {
-        await this.page.goto('/');
+        await this.page.goto('/dashboard');
     }
 
     async verifyPageLoaded() {
-        await expect(this.page).toHaveURL(/\/$/);
+        await expect(this.page).toHaveURL(/\/dashboard$/);
         await expect(this.greetingHeading).toBeVisible();
         await expect(this.todayAppointmentsCard).toBeVisible();
     }

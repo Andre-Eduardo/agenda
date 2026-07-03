@@ -1,8 +1,14 @@
+/* Panda CSS cascade layers — coexiste com Tailwind durante a migração.
+   Declarado ANTES dos @import do Tailwind para fixar a ordem de prioridade:
+   como "base" e "utilities" têm o mesmo nome nas duas ferramentas, a camada
+   que registra o nome primeiro decide a posição final. Sem isso, o preflight
+   do Tailwind (camada "base") ficava com prioridade maior que os utilitários
+   do Panda (camada "utilities"), zerando padding/border/background gerados
+   pelo Panda em qualquer componente ainda não migrado. */
+@layer reset, base, tokens, recipes, utilities;
+
 @import 'tailwindcss';
 @import 'tw-animate-css';
-
-/* Panda CSS cascade layers — coexiste com Tailwind durante a migração */
-@layer reset, base, tokens, recipes, utilities;
 
 @custom-variant dark (&:is(.dark *));
 

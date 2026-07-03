@@ -14,9 +14,7 @@ import type {
     RecordAttendanceType,
     PatientForm,
     PatientFormStatus,
-    SearchRecordsAttendanceType,
-    SearchRecordsClinicalStatus,
-    SearchRecordsSource,
+    SearchRecordsParams,
     SearchRecordsSortEventDate,
 } from '@agenda-app/client';
 import type {UseQueryResult} from '@tanstack/react-query';
@@ -825,28 +823,26 @@ function PatientProfile({patient}: {patient: Patient}) {
         sort: {severity: 'desc' as const},
     }) as unknown as UseQueryResult<PaginatedPage<PatientAlert>>;
 
+    // The generated SearchRecordsParams type marks attendanceType/clinicalStatus/source/
+    // dateStart/dateEnd as required strings, but the server schema treats them as optional
+    // filters — sending '' for "no filter" fails enum/datetime validation. Omit them instead.
     const baseRecordParams = {
         patientId: patient.id,
         term: '',
         cursor: null,
-        attendanceType: '' as SearchRecordsAttendanceType,
-        clinicalStatus: '' as SearchRecordsClinicalStatus,
-        dateStart: '',
-        dateEnd: '',
-        source: '' as SearchRecordsSource,
     };
 
     const recordsQuery = useSearchRecords({
         ...baseRecordParams,
         limit: 3,
         sort: {eventDate: 'desc' as SearchRecordsSortEventDate},
-    }) as unknown as UseQueryResult<PaginatedPage<MedicalRecord>>;
+    } as SearchRecordsParams) as unknown as UseQueryResult<PaginatedPage<MedicalRecord>>;
 
     const recordsTotalQuery = useSearchRecords({
         ...baseRecordParams,
         limit: 1,
         sort: null,
-    }) as unknown as UseQueryResult<PaginatedPage<MedicalRecord>>;
+    } as SearchRecordsParams) as unknown as UseQueryResult<PaginatedPage<MedicalRecord>>;
 
     const formsQuery = useSearchPatientForms(patient.id, {
         cursor: null,

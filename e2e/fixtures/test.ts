@@ -13,20 +13,15 @@ import {
 } from '@lib/factories';
 import {SignInPage} from '@pages/auth/sign-in-page';
 import {AppointmentListPage} from '@pages/appointment/appointment-list-page';
-import {AiAnalysisPage} from '@pages/clinical-chat/ai-analysis-page';
-import {ChatSessionPage} from '@pages/clinical-chat/chat-session-page';
 import {DashboardPage} from '@pages/dashboard/dashboard-page';
-import {FormTemplateListPage} from '@pages/form-template/form-template-list-page';
 import {PatientDetailPage} from '@pages/patient/patient-detail-page';
 import {PatientEditPage} from '@pages/patient/patient-edit-page';
 import {PatientListPage} from '@pages/patient/patient-list-page';
 import {PatientNewPage} from '@pages/patient/patient-new-page';
-import {PatientFormFillPage} from '@pages/patient-form/patient-form-fill-page';
-import {ProfessionalEditPage} from '@pages/professional/professional-edit-page';
-import {ProfessionalListPage} from '@pages/professional/professional-list-page';
-import {ProfessionalNewPage} from '@pages/professional/professional-new-page';
-import {RecordEditPage} from '@pages/record/record-edit-page';
+import {RecordDetailPage} from '@pages/record/record-detail-page';
 import {RecordNewPage} from '@pages/record/record-new-page';
+import {SettingsPage} from '@pages/settings/settings-page';
+import {SidebarComponent} from '@components/sidebar/sidebar-component';
 
 export {expect} from '@playwright/test';
 
@@ -58,15 +53,12 @@ type CustomFixtures = {
     patientNewPage: PatientNewPage;
     patientDetailPage: PatientDetailPage;
     patientEditPage: PatientEditPage;
-    professionalListPage: ProfessionalListPage;
-    professionalNewPage: ProfessionalNewPage;
-    professionalEditPage: ProfessionalEditPage;
-    formTemplateListPage: FormTemplateListPage;
     recordNewPage: RecordNewPage;
-    recordEditPage: RecordEditPage;
-    chatSessionPage: ChatSessionPage;
-    aiAnalysisPage: AiAnalysisPage;
-    patientFormFillPage: PatientFormFillPage;
+    recordDetailPage: RecordDetailPage;
+    settingsPage: SettingsPage;
+
+    // Components
+    sidebar: SidebarComponent;
 };
 
 export const test = base.extend<CustomFixtures>({
@@ -145,31 +137,17 @@ export const test = base.extend<CustomFixtures>({
     patientEditPage: async ({page}, use) => {
         await use(new PatientEditPage(page));
     },
-    professionalListPage: async ({page}, use) => {
-        await use(new ProfessionalListPage(page));
-    },
-    professionalNewPage: async ({page}, use) => {
-        await use(new ProfessionalNewPage(page));
-    },
-    professionalEditPage: async ({page}, use) => {
-        await use(new ProfessionalEditPage(page));
-    },
-    formTemplateListPage: async ({page}, use) => {
-        await use(new FormTemplateListPage(page));
-    },
     recordNewPage: async ({page}, use) => {
         await use(new RecordNewPage(page));
     },
-    recordEditPage: async ({page}, use) => {
-        await use(new RecordEditPage(page));
+    recordDetailPage: async ({page}, use) => {
+        await use(new RecordDetailPage(page));
     },
-    chatSessionPage: async ({page}, use) => {
-        await use(new ChatSessionPage(page));
+    settingsPage: async ({page}, use) => {
+        await use(new SettingsPage(page));
     },
-    aiAnalysisPage: async ({page}, use) => {
-        await use(new AiAnalysisPage(page));
-    },
-    patientFormFillPage: async ({page}, use) => {
-        await use(new PatientFormFillPage(page));
+
+    sidebar: async ({page}, use) => {
+        await use(new SidebarComponent(page));
     },
 });

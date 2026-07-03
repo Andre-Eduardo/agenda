@@ -3,8 +3,15 @@
 Suite de testes E2E baseada em Playwright + TypeScript, seguindo o padrão do
 [`docs/E2E_BLUEPRINT.md`](../docs/E2E_BLUEPRINT.md).
 
-Escopo atual: **apenas navegação e carregamento das páginas existentes**. Demais
-cenários (CRUD, permissões, snapshots visuais) serão adicionados depois.
+Escopo atual: navegação, autenticação (login/logout/guards), CRUD de pacientes,
+evoluções clínicas (SOAP), agenda/consultas e perfil profissional, além de um
+primeiro conjunto de snapshots visuais (`@visual`). Cobertura de permissões
+granulares (RBAC) ainda não foi adicionada — depende do `useCan` deixar de ser
+placeholder no frontend.
+
+Rotas ainda não implementadas no frontend (profissionais, templates de
+formulário, chat clínico com IA) não têm Page Objects/testes — o menu lateral já
+aponta para elas, mas devem ser recriados do zero quando as telas existirem.
 
 ## Pré-requisitos
 
@@ -48,9 +55,10 @@ pnpm -F @agenda-app/e2e test:debug
 
 ```
 e2e/
-├── tests/             Tests por feature (navigation/*.test.ts, auth/*.test.ts)
+├── tests/             Tests por feature (navigation/, auth/, patients/, records/, appointments/, settings/)
 ├── pages/             Page Objects (um por tela, estendendo BasePage)
-├── fixtures/test.ts   Fixtures customizadas (db, factories, page objects)
+├── components/        Component objects compartilhados (sidebar, etc.)
+├── fixtures/test.ts   Fixtures customizadas (db, factories, page objects, components)
 ├── lib/
 │   ├── auth.ts        Login via API + helpers de senha (scrypt compatível com o server)
 │   └── factories/     Factories Prisma (user/professional/patient)
