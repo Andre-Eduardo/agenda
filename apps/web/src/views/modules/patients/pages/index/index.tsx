@@ -402,22 +402,29 @@ const paginationBtnDisabled = css({
     opacity: '0.45',
 });
 
-const paginationBtnActive = css({
+const paginationBtnDefault = css({
     display: 'inline-flex',
     h: '8',
     minW: '8',
+    cursor: 'pointer',
     alignItems: 'center',
     justifyContent: 'center',
+    gap: '1',
     rounded: '[8px]',
     borderWidth: '1px',
     borderStyle: 'solid',
-    borderColor: 'primary',
-    bg: 'primary',
+    borderColor: 'border',
     px: '2.5',
     fontSize: 'sm',
     fontWeight: 'medium',
-    color: 'white',
+    color: 'text.secondary',
+    transitionProperty: 'all',
+    transitionDuration: 'fast',
+    transitionTimingFunction: 'ease-out',
+    _hover: {bg: 'bg.surface'},
 });
+
+const paginationPageInfo = css({fontSize: 'sm', color: 'text.secondary'});
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -611,7 +618,26 @@ function SkeletonCard() {
     );
 }
 
-function Pagination({from, to, total}: {from: number; to: number; total: number}) {
+function Pagination({
+    page,
+    totalPages,
+    from,
+    to,
+    total,
+    onPrev,
+    onNext,
+}: {
+    page: number;
+    totalPages: number;
+    from: number;
+    to: number;
+    total: number;
+    onPrev: () => void;
+    onNext: () => void;
+}) {
+    const hasPrev = page > 1;
+    const hasNext = page < totalPages;
+
     return (
         <div className={paginationRoot}>
             <p className={paginationInfo}>
@@ -620,14 +646,24 @@ function Pagination({from, to, total}: {from: number; to: number; total: number}
                 <strong className={paginationInfoStrong}>{total}</strong> pacientes
             </p>
             <div className={paginationControls}>
-                <button type="button" disabled className={paginationBtnDisabled}>
+                <button
+                    type="button"
+                    disabled={!hasPrev}
+                    onClick={onPrev}
+                    className={hasPrev ? paginationBtnDefault : paginationBtnDisabled}
+                >
                     <ChevronLeft className={icon35} />
                     Anterior
                 </button>
-                <button type="button" className={paginationBtnActive}>
-                    1
-                </button>
-                <button type="button" disabled className={paginationBtnDisabled}>
+                <span className={paginationPageInfo}>
+                    Página {page} de {totalPages}
+                </span>
+                <button
+                    type="button"
+                    disabled={!hasNext}
+                    onClick={onNext}
+                    className={hasNext ? paginationBtnDefault : paginationBtnDisabled}
+                >
                     Próxima
                     <ChevronRight className={icon35} />
                 </button>
@@ -645,6 +681,12 @@ function PatientsContent({
     search,
     setSearch,
     totalCount,
+    page,
+    totalPages,
+    from,
+    to,
+    onPrev,
+    onNext,
     onOpen,
 }: {
     isLoading: boolean;
@@ -653,6 +695,12 @@ function PatientsContent({
     search: string;
     setSearch: (v: string) => void;
     totalCount: number;
+    page: number;
+    totalPages: number;
+    from: number;
+    to: number;
+    onPrev: () => void;
+    onNext: () => void;
     onOpen: (p: Patient) => void;
 }) {
     if (!isLoading && patients.length === 0) {
@@ -689,7 +737,15 @@ function PatientsContent({
                     : patients.map((p) => <PatientTableRow key={p.id} patient={p} onClick={() => onOpen(p)} />)}
 
                 <div className={tableFooter}>
-                    <Pagination from={Math.min(1, patients.length)} to={patients.length} total={totalCount} />
+                    <Pagination
+                        page={page}
+                        totalPages={totalPages}
+                        from={from}
+                        to={to}
+                        total={totalCount}
+                        onPrev={onPrev}
+                        onNext={onNext}
+                    />
                 </div>
             </div>
         );
@@ -703,7 +759,15 @@ function PatientsContent({
                     : patients.map((p) => <PatientCard key={p.id} patient={p} onClick={() => onOpen(p)} />)}
             </div>
             <div className={cardsFooter}>
-                <Pagination from={Math.min(1, patients.length)} to={patients.length} total={totalCount} />
+                <Pagination
+                    page={page}
+                    totalPages={totalPages}
+                    from={from}
+                    to={to}
+                    total={totalCount}
+                    onPrev={onPrev}
+                    onNext={onNext}
+                />
             </div>
         </>
     );
@@ -711,12 +775,16 @@ function PatientsContent({
 
 // ── Page ─────────────────────────────────────────────────────────────────────
 
+const PAGE_SIZE = 15;
+const ALL_PATIENTS_LIMIT = 1000;
+
 export function PatientsPage() {
     const navigate = useNavigate();
     const [search, setSearch] = useState('');
     const [debouncedSearch, setDebouncedSearch] = useState('');
     const [layout, setLayout] = useState<Layout>('table');
     const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
+    const [page, setPage] = useState(1);
 
     useEffect(() => {
         const t = setTimeout(() => setDebouncedSearch(search), 300);
@@ -724,9 +792,13 @@ export function PatientsPage() {
         return () => clearTimeout(t);
     }, [search]);
 
+    useEffect(() => {
+        setPage(1);
+    }, [debouncedSearch, statusFilter]);
+
     const query = useSearchPatients({
         term: debouncedSearch,
-        limit: 50,
+        limit: ALL_PATIENTS_LIMIT,
         cursor: null,
         sort: null,
     }) as unknown as UseQueryResult<PatientPage>;
@@ -755,6 +827,11 @@ export function PatientsPage() {
     const totalAll = statsQuery.data?.totalCount ?? 0;
     const totalAppointments = appointmentsQuery.data?.totalCount;
     const {isLoading} = query;
+
+    const totalPages = Math.max(1, Math.ceil(patients.length / PAGE_SIZE));
+    const pagedPatients = patients.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+    const from = pagedPatients.length === 0 ? 0 : (page - 1) * PAGE_SIZE + 1;
+    const to = (page - 1) * PAGE_SIZE + pagedPatients.length;
 
     const hasFilters = !!search || statusFilter !== 'all';
 
@@ -859,11 +936,17 @@ export function PatientsPage() {
 
             <PatientsContent
                 isLoading={isLoading}
-                patients={patients}
+                patients={pagedPatients}
                 layout={layout}
                 search={search}
                 setSearch={setSearch}
                 totalCount={totalCount}
+                page={page}
+                totalPages={totalPages}
+                from={from}
+                to={to}
+                onPrev={() => setPage((p) => Math.max(1, p - 1))}
+                onNext={() => setPage((p) => Math.min(totalPages, p + 1))}
                 onOpen={openPatient}
             />
         </Page>

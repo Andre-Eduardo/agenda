@@ -50,6 +50,7 @@ export class ProfessionalPrismaRepository extends PrismaRepository implements Pr
         const where: PrismaClient.Prisma.ProfessionalWhereInput = {
             id: filter.ids ? {in: filter.ids.map((id) => id.toString())} : undefined,
             clinicMemberId: filter.clinicMemberId ? filter.clinicMemberId.toString() : undefined,
+            clinicMember: filter.clinicId ? {clinicId: filter.clinicId.toString()} : undefined,
             OR: filter.term ? [{specialty: {contains: filter.term, mode: 'insensitive'}}] : undefined,
         };
 

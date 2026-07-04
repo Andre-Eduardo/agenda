@@ -1,10 +1,12 @@
 import {PaginatedList, Pagination} from '@domain/@shared/repository';
 import type {ClinicMemberId} from '@domain/clinic-member/entities';
+import type {ClinicId} from '@domain/clinic/entities';
 import type {Professional, ProfessionalId} from '@domain/professional/entities';
 
 export type ProfessionalSearchFilter = {
     ids?: ProfessionalId[];
     clinicMemberId?: ClinicMemberId;
+    clinicId?: ClinicId;
     term?: string;
 };
 

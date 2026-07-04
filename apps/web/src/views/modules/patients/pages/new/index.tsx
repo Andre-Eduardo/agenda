@@ -357,17 +357,17 @@ const footerRoot = css({
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
-    gap: '4',
+    gap: '3',
     borderTopWidth: '1px',
     borderTopStyle: 'solid',
     borderTopColor: 'border',
     bg: 'bg.card',
-    px: '8',
+    px: {base: '4', lg: '8'},
     py: '[14px]',
 });
 
 const footerMeta = css({
-    display: 'flex',
+    display: {base: 'none', md: 'flex'},
     alignItems: 'center',
     gap: '[10px]',
     fontSize: 'xs',
@@ -390,7 +390,7 @@ const footerStep = css({
     color: 'text.secondary',
 });
 
-const footerActions = css({display: 'flex', alignItems: 'center', gap: '[10px]'});
+const footerActions = css({display: 'flex', alignItems: 'center', gap: '2', flexWrap: 'wrap', justifyContent: 'flex-end'});
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 

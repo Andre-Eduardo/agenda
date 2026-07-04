@@ -78,7 +78,7 @@ export const navSectionLabel = css({
     color: 'text.tertiary',
 });
 
-export const content = css({display: 'flex', flex: '1', flexDirection: 'column'});
+export const content = css({display: 'flex', flex: '1', flexDirection: 'column', minW: '0'});
 
 export const header = css({
     display: 'flex',

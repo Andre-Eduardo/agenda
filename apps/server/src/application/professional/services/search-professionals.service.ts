@@ -11,7 +11,7 @@ export class SearchProfessionalsService implements ApplicationService<
 > {
     constructor(private readonly professionalRepository: ProfessionalRepository) {}
 
-    async execute({payload}: Command<SearchProfessionalsDto>): Promise<PaginatedDto<ProfessionalDto>> {
+    async execute({actor, payload}: Command<SearchProfessionalsDto>): Promise<PaginatedDto<ProfessionalDto>> {
         const {term, sort, ...rest} = payload;
 
         const result = await this.professionalRepository.search(
@@ -19,7 +19,10 @@ export class SearchProfessionalsService implements ApplicationService<
                 ...rest,
                 sort: sort ?? undefined,
             },
-            {term: term ?? undefined}
+            {
+                term: term ?? undefined,
+                clinicId: actor.clinicId ?? undefined,
+            }
         );
 
         return {

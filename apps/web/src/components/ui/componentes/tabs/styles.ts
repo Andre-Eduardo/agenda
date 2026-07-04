@@ -5,8 +5,10 @@ import {css} from '@/styled-system/css';
 export const tabsList = css({
     display: 'flex',
     h: 'auto',
+    minW: '0',
     alignItems: 'stretch',
     justifyContent: 'flex-start',
+    overflowX: 'auto',
     borderBottomWidth: '1px',
     borderBottomStyle: 'solid',
     borderBottomColor: 'border',
@@ -20,6 +22,7 @@ export const tabsList = css({
 export const tabsTrigger = css({
     mb: '-1px',
     display: 'inline-flex',
+    flexShrink: '0',
     alignItems: 'center',
     justifyContent: 'center',
     gap: '[10px]',

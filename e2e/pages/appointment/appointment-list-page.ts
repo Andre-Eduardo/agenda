@@ -57,6 +57,8 @@ export class AppointmentListPage extends BasePage {
         await patientOption.click();
 
         await this.createSubmitButton.click();
+        // Dialog only closes on mutation success — waiting here avoids racing the calendar refetch.
+        await expect(this.page.getByRole('dialog', {name: /novo agendamento/i})).toBeHidden();
     }
 
     async openAppointment(patientName: string) {
@@ -66,5 +68,6 @@ export class AppointmentListPage extends BasePage {
     async cancelOpenAppointment() {
         await this.cancelAppointmentButton.click();
         await this.confirmCancelButton.click();
+        await expect(this.page.getByRole('dialog', {name: /cancelar consulta/i})).toBeHidden();
     }
 }
