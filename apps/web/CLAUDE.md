@@ -262,7 +262,7 @@ Para regenerar após mudança na API:
 
 ```bash
 pnpm -F @agenda-app/server openapi:generate   # atualiza openapi.json
-pnpm -F @agenda-app/client generate           # regenera hooks
+pnpm -F @agenda-app/client codegen            # regenera hooks
 ```
 
 ## State management

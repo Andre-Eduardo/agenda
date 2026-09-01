@@ -17,7 +17,7 @@ Regenerate o pacote `@agenda-app/client` após mudanças na API do servidor.
 
 2. Regenerar os hooks React Query / serviços Axios via Orval:
    ```bash
-   pnpm -F @agenda-app/client generate
+   pnpm -F @agenda-app/client codegen
    ```
 
 3. Se a geração tiver sucesso, rodar typecheck para garantir que não surgiram erros de tipo:

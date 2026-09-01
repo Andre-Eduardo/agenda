@@ -39,6 +39,10 @@
   "user": {
     "online": "En línea"
   },
+  "reportExportActions": {
+    "exportPdf": "Exportar PDF",
+    "exportExcel": "Exportar Excel"
+  },
   "theme": {
     "light": "Modo claro",
     "dark": "Modo oscuro"

@@ -41,7 +41,7 @@ pnpm -F @agenda-app/app build                 # build de produção
 pnpm -F @agenda-app/app typecheck             # checagem de tipos
 
 # Pacotes
-pnpm -F @agenda-app/client generate           # regenera cliente Orval (requer openapi.json)
+pnpm -F @agenda-app/client codegen            # regenera cliente Orval (requer openapi.json)
 pnpm -F @agenda-app/client build
 pnpm -F @agenda-app/value-objects build
 ```
@@ -50,7 +50,7 @@ pnpm -F @agenda-app/value-objects build
 
 Sempre que a API do servidor mudar:
 1. `pnpm -F @agenda-app/server openapi:generate` → atualiza `apps/server/openapi.json`
-2. `pnpm -F @agenda-app/client generate` → regenera hooks React Query em `packages/client`
+2. `pnpm -F @agenda-app/client codegen` → regenera hooks React Query em `packages/client`
 3. **Nunca escreva chamadas de API à mão no frontend** — use o client gerado.
 
 ## Tech stack resumido
