@@ -15,7 +15,10 @@ import {
     callAppointmentSchema,
     cancelAppointmentSchema,
     checkinAppointmentSchema,
+    completeAppointmentSchema,
+    confirmAppointmentSchema,
     getAppointmentSchema,
+    noShowAppointmentSchema,
     searchAppointmentsSchema,
     updateAppointmentSchema,
 } from '@application/appointment/dtos';
@@ -23,12 +26,17 @@ import {
     CallAppointmentService,
     CancelAppointmentService,
     CheckinAppointmentService,
+    CompleteAppointmentService,
+    ConfirmAppointmentService,
     CreateAppointmentService,
     DeleteAppointmentService,
     GetAppointmentService,
+    MarkNoShowAppointmentService,
     SearchAppointmentsService,
     UpdateAppointmentService,
 } from '@application/appointment/services';
+import {ClinicMemberDto} from '@application/clinic-member/dtos';
+import {ListManageableAgendasService} from '@application/professional-agenda-access/services';
 import {Actor} from '@domain/@shared/actor';
 import {AppointmentId} from '@domain/appointment/entities';
 import {AppointmentPermission} from '@domain/auth';
@@ -44,7 +52,11 @@ export class AppointmentController {
         private readonly cancelAppointmentService: CancelAppointmentService,
         private readonly deleteAppointmentService: DeleteAppointmentService,
         private readonly checkinAppointmentService: CheckinAppointmentService,
-        private readonly callAppointmentService: CallAppointmentService
+        private readonly callAppointmentService: CallAppointmentService,
+        private readonly confirmAppointmentService: ConfirmAppointmentService,
+        private readonly completeAppointmentService: CompleteAppointmentService,
+        private readonly markNoShowAppointmentService: MarkNoShowAppointmentService,
+        private readonly listManageableAgendasService: ListManageableAgendasService
     ) {}
 
     @ApiOperation({
@@ -68,6 +80,16 @@ export class AppointmentController {
         @Query(new ZodValidationPipe(searchAppointmentsSchema)) query: SearchAppointmentsDto
     ): Promise<PaginatedDto<AppointmentDto>> {
         return this.searchAppointmentsService.execute({actor, payload: query});
+    }
+
+    @ApiOperation({
+        summary: 'Lists the agendas (clinic members) the current actor can create appointments for',
+        responses: [{status: 200, description: 'Manageable agendas', type: ClinicMemberDto, isArray: true}],
+    })
+    @Authorize(AppointmentPermission.CREATE)
+    @Get('manageable-professionals')
+    listManageableProfessionals(@RequestActor() actor: Actor): Promise<ClinicMemberDto[]> {
+        return this.listManageableAgendasService.execute({actor, payload: undefined});
     }
 
     @ApiOperation({
@@ -140,6 +162,48 @@ export class AppointmentController {
         @ValidatedParam('id', callAppointmentSchema.shape.id) id: AppointmentId
     ): Promise<AppointmentDto> {
         return this.callAppointmentService.execute({actor, payload: {id}});
+    }
+
+    @ApiOperation({
+        summary: 'Confirms an appointment (SCHEDULED → CONFIRMED)',
+        parameters: [entityIdParam('Appointment ID')],
+        responses: [{status: 200, description: 'Appointment confirmed', type: AppointmentDto}],
+    })
+    @Authorize(AppointmentPermission.UPDATE)
+    @Patch(':id/confirm')
+    confirmAppointment(
+        @RequestActor() actor: Actor,
+        @ValidatedParam('id', confirmAppointmentSchema.shape.id) id: AppointmentId
+    ): Promise<AppointmentDto> {
+        return this.confirmAppointmentService.execute({actor, payload: {id}});
+    }
+
+    @ApiOperation({
+        summary: 'Completes an appointment (SCHEDULED/CONFIRMED/IN_PROGRESS → COMPLETED)',
+        parameters: [entityIdParam('Appointment ID')],
+        responses: [{status: 200, description: 'Appointment completed', type: AppointmentDto}],
+    })
+    @Authorize(AppointmentPermission.UPDATE)
+    @Patch(':id/complete')
+    completeAppointment(
+        @RequestActor() actor: Actor,
+        @ValidatedParam('id', completeAppointmentSchema.shape.id) id: AppointmentId
+    ): Promise<AppointmentDto> {
+        return this.completeAppointmentService.execute({actor, payload: {id}});
+    }
+
+    @ApiOperation({
+        summary: 'Marks an appointment as no-show (SCHEDULED/CONFIRMED/ARRIVED → NO_SHOW)',
+        parameters: [entityIdParam('Appointment ID')],
+        responses: [{status: 200, description: 'Appointment marked as no-show', type: AppointmentDto}],
+    })
+    @Authorize(AppointmentPermission.UPDATE)
+    @Patch(':id/no-show')
+    markNoShowAppointment(
+        @RequestActor() actor: Actor,
+        @ValidatedParam('id', noShowAppointmentSchema.shape.id) id: AppointmentId
+    ): Promise<AppointmentDto> {
+        return this.markNoShowAppointmentService.execute({actor, payload: {id}});
     }
 
     @ApiOperation({

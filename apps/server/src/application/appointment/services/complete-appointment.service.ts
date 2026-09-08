@@ -1,0 +1,30 @@
+import {Injectable} from '@nestjs/common';
+import {ApplicationService, Command} from '@application/@shared/application.service';
+import {AppointmentDto, CompleteAppointmentDto} from '@application/appointment/dtos';
+import {ResourceNotFoundException} from '@domain/@shared/exceptions';
+import {AppointmentRepository} from '@domain/appointment/appointment.repository';
+import {EventDispatcher} from '@domain/event';
+
+@Injectable()
+export class CompleteAppointmentService implements ApplicationService<CompleteAppointmentDto, AppointmentDto> {
+    constructor(
+        private readonly appointmentRepository: AppointmentRepository,
+        private readonly eventDispatcher: EventDispatcher
+    ) {}
+
+    async execute({actor, payload: {id}}: Command<CompleteAppointmentDto>): Promise<AppointmentDto> {
+        const appointment = await this.appointmentRepository.findById(id);
+
+        if (appointment === null) {
+            throw new ResourceNotFoundException('Appointment not found.', id.toString());
+        }
+
+        appointment.complete();
+
+        await this.appointmentRepository.save(appointment);
+
+        this.eventDispatcher.dispatch(actor, appointment);
+
+        return new AppointmentDto(appointment);
+    }
+}

@@ -8,6 +8,7 @@ import {
 } from '@domain/appointment/appointment.repository';
 import {Appointment, AppointmentId} from '@domain/appointment/entities';
 import {ClinicMemberId} from '@domain/clinic-member/entities';
+import {RoomId} from '@domain/room/entities';
 import {AppointmentMapper} from '@infrastructure/mappers/appointment.mapper';
 import {PrismaRepository} from '@infrastructure/repository/prisma.repository';
 import {PrismaProvider} from '@infrastructure/repository/prisma/prisma.provider';
@@ -85,7 +86,7 @@ export class AppointmentPrismaRepository extends PrismaRepository implements App
             where: {
                 attendedByMemberId: attendedByMemberId.toString(),
                 id: excludeId ? {not: excludeId.toString()} : undefined,
-                status: {in: ['SCHEDULED', 'CONFIRMED']},
+                status: {notIn: ['CANCELLED', 'COMPLETED', 'NO_SHOW']},
                 startAt: {lt: endAt},
                 endAt: {gt: startAt},
                 deletedAt: null,
@@ -93,5 +94,33 @@ export class AppointmentPrismaRepository extends PrismaRepository implements App
         });
 
         return records.map((r) => this.mapper.toDomain(r));
+    }
+
+    async findRoomConflicts(
+        roomId: RoomId,
+        startAt: Date,
+        endAt: Date,
+        excludeId?: AppointmentId
+    ): Promise<Appointment[]> {
+        const records = await this.prisma.appointment.findMany({
+            where: {
+                roomId: roomId.toString(),
+                id: excludeId ? {not: excludeId.toString()} : undefined,
+                status: {notIn: ['CANCELLED', 'COMPLETED', 'NO_SHOW']},
+                startAt: {lt: endAt},
+                endAt: {gt: startAt},
+                deletedAt: null,
+            },
+        });
+
+        return records.map((r) => this.mapper.toDomain(r));
+    }
+
+    async lockMemberSchedule(attendedByMemberId: ClinicMemberId): Promise<void> {
+        await this.prisma.$queryRaw`SELECT pg_advisory_xact_lock(hashtext(${`appointment-member:${attendedByMemberId.toString()}`}))`;
+    }
+
+    async lockRoomSchedule(roomId: RoomId): Promise<void> {
+        await this.prisma.$queryRaw`SELECT pg_advisory_xact_lock(hashtext(${`appointment-room:${roomId.toString()}`}))`;
     }
 }

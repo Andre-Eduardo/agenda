@@ -1,25 +1,62 @@
 import {useCallback, useEffect, useMemo, useState} from 'react';
 import type {
+    ApiProblem,
     Appointment,
     AppointmentStatus,
     AppointmentType,
     CreateAppointmentDtoType,
+    MemberBlock,
     Patient,
     Professional,
+    RegisterPaymentDto,
+    Room,
     UpdateAppointmentInputDtoType,
+    UpdatePaymentStatusDto,
+    WorkingHours,
 } from '@agenda-app/client';
 import {
+    AxiosError,
+    useCallAppointment,
     useCancelAppointment,
+    useCheckinAppointment,
+    useCompleteAppointment,
+    useConfirmAppointment,
     useCreateAppointment,
+    useGetClinic,
+    useGetCurrentClinicMember,
+    useGetPaymentByAppointment,
+    useListManageableProfessionals,
+    useListMemberBlocks,
+    useListRooms,
+    useListWorkingHours,
+    useMarkNoShowAppointment,
+    useRegisterPayment,
     useSearchAppointments,
     useSearchPatients,
     useSearchProfessionals,
     useUpdateAppointment,
+    useUpdatePaymentStatus,
 } from '@agenda-app/client';
 import type {UseQueryResult} from '@tanstack/react-query';
 import {createFileRoute, useNavigate} from '@tanstack/react-router';
-import {CalendarDays, CalendarX2, ChevronLeft, ChevronRight, Plus, X, ArrowUpRight, Pencil, Trash2} from 'lucide-react';
+import {
+    CalendarDays,
+    CalendarX2,
+    ChevronLeft,
+    ChevronRight,
+    Plus,
+    X,
+    ArrowUpRight,
+    Pencil,
+    Trash2,
+    CircleCheck,
+    CheckCheck,
+    DoorOpen,
+    PhoneCall,
+    UserX,
+} from 'lucide-react';
 import {toast} from 'sonner';
+import {Badge} from '@/components/ui/componentes/badge';
 import {Button} from '@/components/ui/componentes/button';
 import {Dialog, DialogContent, DialogHeader, DialogTitle} from '@/components/ui/componentes/dialog';
 import {Input} from '@/components/ui/componentes/input';
@@ -28,10 +65,13 @@ import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@/c
 import {Sheet, SheetContent, SheetHeader, SheetTitle} from '@/components/ui/componentes/sheet';
 import {Textarea} from '@/components/ui/componentes/textarea';
 import {cx} from '@/styled-system/css';
+import {ConfirmDialog} from '@/views/components/ConfirmDialog';
 import * as styles from './styles';
 import {
     apptBar,
     apptBlock,
+    blockOverlay,
+    blockOverlayLabel,
     gap1_5,
     gridDayCol,
     gridDayHead,
@@ -49,7 +89,16 @@ import {
     monthGridEvt,
     mt2,
     mt6,
+    noRoomColHead,
+    offHoursOverlay,
     relative,
+    roomColHead,
+    roomDotColorClass,
+    roomDotOnBlock,
+    roomLegend,
+    roomLegendDot,
+    roomLegendItem,
+    roomsHeaderMin,
     segmentBtn,
     sheetDotBase,
     sheetStatusBadge,
@@ -119,7 +168,30 @@ const TYPE_LABELS: Record<AppointmentType, string> = {
 const ALL_STATUSES = Object.keys(STATUS_LABELS) as AppointmentStatus[];
 const DURATIONS = [15, 30, 45, 60, 90, 120];
 
-type ViewMode = 'day' | 'week' | 'month';
+const AVAILABILITY_WARNING_MESSAGES: Record<string, string> = {
+    'appointment.outside_working_hours':
+        'Este horário está fora do expediente cadastrado do profissional. Deseja agendar mesmo assim?',
+    'appointment.member_block':
+        'O profissional tem um bloqueio de agenda cadastrado nesse período. Deseja agendar mesmo assim?',
+};
+
+/** Detecta o aviso confirmável de disponibilidade (409) vindo do backend, sem tratá-lo como erro fatal. */
+function getAvailabilityWarning(error: unknown): string | null {
+    if (!(error instanceof AxiosError)) return null;
+
+    const detail = (error.response?.data as ApiProblem | undefined)?.detail;
+
+    return detail ? (AVAILABILITY_WARNING_MESSAGES[detail] ?? null) : null;
+}
+
+type ViewMode = 'day' | 'week' | 'month' | 'rooms';
+
+const VIEW_MODE_LABELS: Record<ViewMode, string> = {
+    day: 'Dia',
+    week: 'Semana',
+    month: 'Mês',
+    rooms: 'Salas',
+};
 
 // ── Internal view model ───────────────────────────────────────────
 interface ApptView {
@@ -133,6 +205,7 @@ interface ApptView {
     type: AppointmentType;
     status: AppointmentStatus;
     note: string | null;
+    roomId: string | null;
     raw: Appointment;
 }
 
@@ -228,6 +301,7 @@ function toApptView(a: Appointment): ApptView {
         type: a.type,
         status: a.status,
         note: noteToString(a.note),
+        roomId: a.roomId,
         raw: a,
     };
 }
@@ -319,10 +393,12 @@ interface ApptBlockProps {
     style: React.CSSProperties;
     compact?: boolean;
     highlight?: boolean;
+    roomLabel?: string | null;
+    roomColorIndex?: number;
     onClick: () => void;
 }
 
-function ApptBlock({apt, patients, style, compact, highlight, onClick}: ApptBlockProps) {
+function ApptBlock({apt, patients, style, compact, highlight, roomLabel, roomColorIndex, onClick}: ApptBlockProps) {
     return (
         <button
             type="button"
@@ -331,6 +407,12 @@ function ApptBlock({apt, patients, style, compact, highlight, onClick}: ApptBloc
             onClick={onClick}
         >
             <span className={apptBar({status: apt.status})} />
+            {roomLabel && (
+                <span
+                    className={cx(roomDotOnBlock, roomDotColorClass(roomColorIndex ?? 0))}
+                    title={`Sala: ${roomLabel}`}
+                />
+            )}
             <div className={styles.apptContent}>
                 <div className={styles.apptTime}>
                     {apt.start} – {apt.end}
@@ -343,22 +425,141 @@ function ApptBlock({apt, patients, style, compact, highlight, onClick}: ApptBloc
 }
 
 // ─────────────────────────────────────────────────────────────────
+//   Availability overlay (expediente + bloqueios) — Fase 4
+// ─────────────────────────────────────────────────────────────────
+
+/** Minutos desde 00:00 até o início/fim visível da grade. */
+const GRID_START_MIN = GRID_START * 60;
+const GRID_END_MIN = GRID_END * 60;
+
+interface AvailabilityOverlayProps {
+    day: Date;
+    workingHoursByDay: Map<number, WorkingHours>;
+    blocks: MemberBlock[];
+    hourHeight: number;
+}
+
+function AvailabilityOverlay({day, workingHoursByDay, blocks, hourHeight}: AvailabilityOverlayProps) {
+    const toPx = (minutesFromGridStart: number) => (minutesFromGridStart / 60) * hourHeight;
+    const gridHeight = toPx(GRID_END_MIN - GRID_START_MIN);
+
+    const hours = workingHoursByDay.get(day.getDay());
+    const rects: Array<{top: number; height: number}> = [];
+
+    if (!hours || !hours.active) {
+        rects.push({top: 0, height: gridHeight});
+    } else {
+        const startMin = Math.max(timeToMin(hours.startTime), GRID_START_MIN);
+        const endMin = Math.min(timeToMin(hours.endTime), GRID_END_MIN);
+
+        if (startMin > GRID_START_MIN) {
+            rects.push({top: 0, height: toPx(startMin - GRID_START_MIN)});
+        }
+
+        if (endMin < GRID_END_MIN) {
+            rects.push({top: toPx(endMin - GRID_START_MIN), height: toPx(GRID_END_MIN - endMin)});
+        }
+    }
+
+    const dayStart = new Date(day);
+
+    dayStart.setHours(0, 0, 0, 0);
+
+    const dayEnd = addDays(dayStart, 1);
+
+    const dayBlocks = blocks
+        .map((block) => {
+            const blockStart = new Date(block.startAt);
+            const blockEnd = new Date(block.endAt);
+
+            if (blockEnd <= dayStart || blockStart >= dayEnd) return null;
+
+            const clippedStart = blockStart < dayStart ? dayStart : blockStart;
+            const clippedEnd = blockEnd > dayEnd ? dayEnd : blockEnd;
+            const startMin = Math.max(clippedStart.getHours() * 60 + clippedStart.getMinutes(), GRID_START_MIN);
+            const endMinRaw =
+                clippedEnd.getTime() === dayEnd.getTime()
+                    ? 24 * 60
+                    : clippedEnd.getHours() * 60 + clippedEnd.getMinutes();
+            const endMin = Math.min(endMinRaw, GRID_END_MIN);
+
+            if (endMin <= startMin) return null;
+
+            return {
+                id: block.id,
+                reason: block.reason,
+                top: toPx(startMin - GRID_START_MIN),
+                height: toPx(endMin - startMin),
+            };
+        })
+        .filter((b) => b !== null);
+
+    return (
+        <>
+            {rects.map((r, i) => (
+                <div key={`off-${i}`} className={offHoursOverlay} style={{top: r.top, height: r.height}} />
+            ))}
+            {dayBlocks.map((b) => (
+                <div
+                    key={b.id}
+                    className={blockOverlay}
+                    style={{top: b.top, height: b.height}}
+                    title={b.reason ?? 'Bloqueio de agenda'}
+                >
+                    {b.height >= 24 && <span className={blockOverlayLabel}>Bloqueado</span>}
+                </div>
+            ))}
+        </>
+    );
+}
+
+// ─────────────────────────────────────────────────────────────────
 //   Week View
 // ─────────────────────────────────────────────────────────────────
 interface CalViewProps {
     appts: ApptView[];
+    workingHoursByDay: Map<number, WorkingHours>;
+    blocks: MemberBlock[];
+    roomsById: Map<string, Room>;
+    roomIndexById: Map<string, number>;
     patients: Patient[];
     cursor: Date;
     today: Date;
     now: {h: number; m: number};
     highlightId: string | null;
-    onSlotClick: (d: Date, time: string) => void;
+    onSlotClick: (d: Date, time: string, roomId?: string | null) => void;
     onApptClick: (id: string) => void;
 }
 
-function WeekView({appts, patients, cursor, today, now, highlightId, onSlotClick, onApptClick}: CalViewProps) {
+/** Resolve o rótulo e a cor estável de uma sala pra desenhar o selo no bloco de consulta. */
+function makeRoomBadgeResolver(roomsById: Map<string, Room>, roomIndexById: Map<string, number>) {
+    return (apt: ApptView) => {
+        if (!apt.roomId) return {roomLabel: null, roomColorIndex: undefined};
+
+        return {
+            roomLabel: roomsById.get(apt.roomId)?.name ?? null,
+            roomColorIndex: roomIndexById.get(apt.roomId),
+        };
+    };
+}
+
+function WeekView({
+    appts,
+    patients,
+    cursor,
+    today,
+    now,
+    highlightId,
+    onSlotClick,
+    onApptClick,
+    workingHoursByDay,
+    blocks,
+    roomsById,
+    roomIndexById,
+}: CalViewProps) {
     const ws = startOfWeek(cursor);
     const days = Array.from({length: 7}, (_, i) => addDays(ws, i));
+    const resolveRoomBadge = makeRoomBadgeResolver(roomsById, roomIndexById);
 
     return (
         <div className={styles.weekHeaderMin}>
@@ -394,6 +595,12 @@ function WeekView({appts, patients, cursor, today, now, highlightId, onSlotClick
 
                     return (
                         <div key={di} className={gridDayCol({isToday})} style={{height: HOUR_H_WEEK * HOURS.length}}>
+                            <AvailabilityOverlay
+                                day={d}
+                                workingHoursByDay={workingHoursByDay}
+                                blocks={blocks}
+                                hourHeight={HOUR_H_WEEK}
+                            />
                             {HOURS.map((h, hi) => (
                                 <div
                                     key={h}
@@ -415,6 +622,8 @@ function WeekView({appts, patients, cursor, today, now, highlightId, onSlotClick
                                 const wPct = 100 / lanes;
                                 const lPct = lane * wPct;
 
+                                const {roomLabel, roomColorIndex} = resolveRoomBadge(apt);
+
                                 return (
                                     <ApptBlock
                                         key={apt.id}
@@ -428,6 +637,8 @@ function WeekView({appts, patients, cursor, today, now, highlightId, onSlotClick
                                         }}
                                         compact={lanes > 1}
                                         highlight={apt.id === highlightId}
+                                        roomLabel={roomLabel}
+                                        roomColorIndex={roomColorIndex}
                                         onClick={() => onApptClick(apt.id)}
                                     />
                                 );
@@ -443,11 +654,25 @@ function WeekView({appts, patients, cursor, today, now, highlightId, onSlotClick
 // ─────────────────────────────────────────────────────────────────
 //   Day View
 // ─────────────────────────────────────────────────────────────────
-function DayView({appts, patients, cursor, today, now, highlightId, onSlotClick, onApptClick}: CalViewProps) {
+function DayView({
+    appts,
+    patients,
+    cursor,
+    today,
+    now,
+    highlightId,
+    onSlotClick,
+    onApptClick,
+    workingHoursByDay,
+    blocks,
+    roomsById,
+    roomIndexById,
+}: CalViewProps) {
     const isToday = sameDay(cursor, today);
     const nowTop = isToday ? (now.h + now.m / 60 - GRID_START) * HOUR_H_DAY : null;
     const dayAppts = appts.filter((a) => a.date === fmtDate(cursor));
     const positioned = layoutOverlaps(dayAppts);
+    const resolveRoomBadge = makeRoomBadgeResolver(roomsById, roomIndexById);
 
     return (
         <div className={styles.dayHeaderMin}>
@@ -474,6 +699,12 @@ function DayView({appts, patients, cursor, today, now, highlightId, onSlotClick,
                     ))}
                 </div>
                 <div className={styles.dayBodyCol} style={{height: HOUR_H_DAY * HOURS.length}}>
+                    <AvailabilityOverlay
+                        day={cursor}
+                        workingHoursByDay={workingHoursByDay}
+                        blocks={blocks}
+                        hourHeight={HOUR_H_DAY}
+                    />
                     {HOURS.map((h, hi) => (
                         <div
                             key={h}
@@ -498,6 +729,7 @@ function DayView({appts, patients, cursor, today, now, highlightId, onSlotClick,
                         const wPct = 100 / lanes;
                         const lPct = lane * wPct;
                         const isShort = e - s < 40;
+                        const {roomLabel, roomColorIndex} = resolveRoomBadge(apt);
 
                         return (
                             <ApptBlock
@@ -505,6 +737,8 @@ function DayView({appts, patients, cursor, today, now, highlightId, onSlotClick,
                                 apt={apt}
                                 patients={patients}
                                 style={{top, height: h, left: `calc(${lPct}% + 4px)`, width: `calc(${wPct}% - 8px)`}}
+                                roomLabel={roomLabel}
+                                roomColorIndex={roomColorIndex}
                                 compact={isShort}
                                 highlight={apt.id === highlightId}
                                 onClick={() => onApptClick(apt.id)}
@@ -521,6 +755,120 @@ function DayView({appts, patients, cursor, today, now, highlightId, onSlotClick,
                         </div>
                     )}
                 </div>
+            </div>
+        </div>
+    );
+}
+
+// ─────────────────────────────────────────────────────────────────
+//   Rooms View — mostra ocupação de sala num único dia (Fase 5)
+// ─────────────────────────────────────────────────────────────────
+interface RoomsViewProps extends CalViewProps {
+    rooms: Room[];
+}
+
+interface RoomColumn {
+    id: string | null;
+    label: string;
+    appts: ApptView[];
+}
+
+function RoomsView({
+    appts,
+    patients,
+    cursor,
+    now,
+    highlightId,
+    onSlotClick,
+    onApptClick,
+    rooms,
+    roomsById,
+    roomIndexById,
+}: RoomsViewProps) {
+    const nowTop = (now.h + now.m / 60 - GRID_START) * HOUR_H_DAY;
+    const dayAppts = appts.filter((a) => a.date === fmtDate(cursor));
+    const noRoomAppts = dayAppts.filter((a) => !a.roomId || !roomsById.has(a.roomId));
+
+    const columns: RoomColumn[] = [
+        ...rooms.map((room) => ({
+            id: room.id,
+            label: room.name,
+            appts: dayAppts.filter((a) => a.roomId === room.id),
+        })),
+        ...(noRoomAppts.length > 0 ? [{id: null, label: 'Sem sala', appts: noRoomAppts}] : []),
+    ];
+
+    return (
+        <div className={roomsHeaderMin}>
+            <div className={styles.gridWeekHead}>
+                <div className={styles.gridTimeColHead} />
+                {columns.map((col, i) => (
+                    <div key={col.id ?? '__no_room__'} className={cx(roomColHead, col.id === null && noRoomColHead)}>
+                        {col.id !== null && (
+                            <span className={cx(roomLegendDot, roomDotColorClass(roomIndexById.get(col.id) ?? i))} />
+                        )}
+                        {col.label}
+                    </div>
+                ))}
+            </div>
+            <div className={styles.gridBody}>
+                <div className={styles.gridTimeCol}>
+                    {HOURS.map((h) => (
+                        <div key={h} className={styles.gridTimeRow} style={{height: HOUR_H_DAY}}>
+                            <span className={styles.gridTimeLabel}>{String(h).padStart(2, '0')}:00</span>
+                        </div>
+                    ))}
+                </div>
+                {columns.map((col) => {
+                    const positioned = layoutOverlaps(col.appts);
+
+                    return (
+                        <div
+                            key={col.id ?? '__no_room__'}
+                            className={gridDayCol({isToday: false})}
+                            style={{height: HOUR_H_DAY * HOURS.length}}
+                        >
+                            {HOURS.map((h, hi) => (
+                                <div
+                                    key={h}
+                                    className={styles.gridSlot}
+                                    style={{top: hi * HOUR_H_DAY, height: HOUR_H_DAY}}
+                                    onClick={() => onSlotClick(cursor, `${String(h).padStart(2, '0')}:00`, col.id)}
+                                />
+                            ))}
+                            {nowTop >= 0 && (
+                                <div className={styles.gridNowLine} style={{top: nowTop}}>
+                                    <span className={styles.gridNowDot} />
+                                </div>
+                            )}
+                            {positioned.map(({apt, lane, lanes}) => {
+                                const s = timeToMin(apt.start) - GRID_START * 60;
+                                const e = timeToMin(apt.end) - GRID_START * 60;
+                                const top = (s / 60) * HOUR_H_DAY;
+                                const h = Math.max(((e - s) / 60) * HOUR_H_DAY - 2, 22);
+                                const wPct = 100 / lanes;
+                                const lPct = lane * wPct;
+
+                                return (
+                                    <ApptBlock
+                                        key={apt.id}
+                                        apt={apt}
+                                        patients={patients}
+                                        style={{
+                                            top,
+                                            height: h,
+                                            left: `calc(${lPct}% + 2px)`,
+                                            width: `calc(${wPct}% - 4px)`,
+                                        }}
+                                        compact={lanes > 1}
+                                        highlight={apt.id === highlightId}
+                                        onClick={() => onApptClick(apt.id)}
+                                    />
+                                );
+                            })}
+                        </div>
+                    );
+                })}
             </div>
         </div>
     );
@@ -729,9 +1077,18 @@ interface DetailSheetProps {
     onEdit: () => void;
     onCancel: () => void;
     onOpenPatient: (id: string) => void;
+    onStatusChanged: () => void;
 }
 
-function AppointmentDetailSheet({apt, patients, onClose, onEdit, onCancel, onOpenPatient}: DetailSheetProps) {
+function AppointmentDetailSheet({
+    apt,
+    patients,
+    onClose,
+    onEdit,
+    onCancel,
+    onOpenPatient,
+    onStatusChanged,
+}: DetailSheetProps) {
     const patient = patients.find((p) => p.id === apt.patientId);
     const durMin = timeToMin(apt.end) - timeToMin(apt.start);
     const durLabel =
@@ -739,6 +1096,28 @@ function AppointmentDetailSheet({apt, patients, onClose, onEdit, onCancel, onOpe
     const [y, mo, da] = apt.date.split('-').map(Number);
     const date = new Date(y, mo - 1, da);
     const isDone = ['COMPLETED', 'CANCELLED', 'NO_SHOW'].includes(apt.status);
+
+    const confirm = useConfirmAppointment();
+    const checkin = useCheckinAppointment();
+    const call = useCallAppointment();
+    const complete = useCompleteAppointment();
+    const noShow = useMarkNoShowAppointment();
+
+    function runTransition(mutation: {mutate: (vars: {id: string}, opts: object) => void}, successMessage: string) {
+        mutation.mutate(
+            {id: apt.id},
+            {
+                onSuccess: () => {
+                    toast.success(successMessage);
+                    onStatusChanged();
+                },
+                onError: () => toast.error('Não foi possível atualizar o status da consulta.'),
+            }
+        );
+    }
+
+    const transitionPending =
+        confirm.isPending || checkin.isPending || call.isPending || complete.isPending || noShow.isPending;
 
     return (
         <Sheet open onOpenChange={(o) => !o && onClose()}>
@@ -810,20 +1189,299 @@ function AppointmentDetailSheet({apt, patients, onClose, onEdit, onCancel, onOpe
                         )}
                     </div>
 
+                    {/* Payment */}
+                    <AppointmentPaymentSection appointmentId={apt.id} />
+
                     {/* Actions */}
                     {!isDone && (
                         <div className={styles.sheetActions}>
-                            <Button size="sm" variant="outline" className={gap1_5} onClick={onEdit}>
-                                <Pencil className={icon35} /> Editar
-                            </Button>
-                            <Button size="sm" variant="outline" className={styles.cancelBtn} onClick={onCancel}>
-                                <Trash2 className={icon35} /> Cancelar consulta
-                            </Button>
+                            {apt.status === 'SCHEDULED' && (
+                                <Button
+                                    size="sm"
+                                    variant="outline"
+                                    className={gap1_5}
+                                    disabled={transitionPending}
+                                    onClick={() => runTransition(confirm, 'Consulta confirmada')}
+                                >
+                                    <CircleCheck className={icon35} /> Confirmar
+                                </Button>
+                            )}
+                            {(apt.status === 'SCHEDULED' || apt.status === 'CONFIRMED') && (
+                                <Button
+                                    size="sm"
+                                    variant="outline"
+                                    className={gap1_5}
+                                    disabled={transitionPending}
+                                    onClick={() => runTransition(checkin, 'Chegada registrada')}
+                                >
+                                    <DoorOpen className={icon35} /> Check-in
+                                </Button>
+                            )}
+                            {apt.status === 'ARRIVED' && (
+                                <Button
+                                    size="sm"
+                                    variant="outline"
+                                    className={gap1_5}
+                                    disabled={transitionPending}
+                                    onClick={() => runTransition(call, 'Paciente chamado')}
+                                >
+                                    <PhoneCall className={icon35} /> Chamar
+                                </Button>
+                            )}
+                            {apt.status === 'IN_PROGRESS' && (
+                                <Button
+                                    size="sm"
+                                    variant="outline"
+                                    className={gap1_5}
+                                    disabled={transitionPending}
+                                    onClick={() => runTransition(complete, 'Atendimento concluído')}
+                                >
+                                    <CheckCheck className={icon35} /> Concluir atendimento
+                                </Button>
+                            )}
+                            {(apt.status === 'SCHEDULED' || apt.status === 'CONFIRMED' || apt.status === 'ARRIVED') && (
+                                <Button
+                                    size="sm"
+                                    variant="outline"
+                                    className={gap1_5}
+                                    disabled={transitionPending}
+                                    onClick={() => runTransition(noShow, 'Falta registrada')}
+                                >
+                                    <UserX className={icon35} /> Não compareceu
+                                </Button>
+                            )}
+                            {apt.status !== 'IN_PROGRESS' && (
+                                <Button size="sm" variant="outline" className={gap1_5} onClick={onEdit}>
+                                    <Pencil className={icon35} /> Editar
+                                </Button>
+                            )}
+                            {(apt.status === 'SCHEDULED' || apt.status === 'CONFIRMED' || apt.status === 'ARRIVED') && (
+                                <Button size="sm" variant="outline" className={styles.cancelBtn} onClick={onCancel}>
+                                    <Trash2 className={icon35} /> Cancelar consulta
+                                </Button>
+                            )}
                         </div>
                     )}
                 </div>
             </SheetContent>
         </Sheet>
+    );
+}
+
+// ── Payment (register / view / update) ───────────────────────────────
+
+const PAYMENT_METHOD_LABELS: Record<string, string> = {
+    CASH: 'Dinheiro',
+    PIX: 'Pix',
+    CREDIT_CARD: 'Cartão de crédito',
+    DEBIT_CARD: 'Cartão de débito',
+    BANK_TRANSFER: 'Transferência',
+    INSURANCE: 'Convênio',
+    COURTESY: 'Cortesia',
+};
+
+const PAYMENT_STATUS_LABELS: Record<string, string> = {
+    PENDING: 'Pendente',
+    PAID: 'Pago',
+    EXEMPT: 'Isento',
+    REFUNDED: 'Reembolsado',
+};
+
+const PAYMENT_STATUS_BADGE_VARIANT: Record<string, 'warning' | 'success' | 'secondary' | 'destructive'> = {
+    PENDING: 'warning',
+    PAID: 'success',
+    EXEMPT: 'secondary',
+    REFUNDED: 'destructive',
+};
+
+function AppointmentPaymentSection({appointmentId}: {appointmentId: string}) {
+    const paymentQuery = useGetPaymentByAppointment(appointmentId);
+    const registerPayment = useRegisterPayment();
+    const updatePaymentStatus = useUpdatePaymentStatus();
+
+    const [showForm, setShowForm] = useState(false);
+    const [method, setMethod] = useState('PIX');
+    const [amount, setAmount] = useState('');
+    const [status, setStatus] = useState('PAID');
+    const [notes, setNotes] = useState('');
+    const [insurancePlanId, setInsurancePlanId] = useState('');
+    const [insuranceAuthCode, setInsuranceAuthCode] = useState('');
+
+    const payment = paymentQuery.data;
+
+    function handleRegister() {
+        const amountBrl = Number(amount.replace(',', '.'));
+
+        if (!amountBrl || amountBrl <= 0) {
+            toast.error('Informe um valor válido.');
+
+            return;
+        }
+
+        if (method === 'INSURANCE' && !insurancePlanId.trim()) {
+            toast.error('Informe o convênio para pagamentos por convênio.');
+
+            return;
+        }
+
+        registerPayment.mutate(
+            {
+                id: appointmentId,
+                data: {
+                    paymentMethod: method as RegisterPaymentDto['paymentMethod'],
+                    amountBrl,
+                    status: status as RegisterPaymentDto['status'],
+                    ...(method === 'INSURANCE' ? {insurancePlanId: insurancePlanId.trim()} : {}),
+                    ...(insuranceAuthCode.trim() ? {insuranceAuthCode: insuranceAuthCode.trim()} : {}),
+                    ...(notes.trim() ? {notes: notes.trim()} : {}),
+                },
+            },
+            {
+                onSuccess: () => {
+                    toast.success('Pagamento registrado');
+                    setShowForm(false);
+                    void paymentQuery.refetch();
+                },
+                onError: () => toast.error('Erro ao registrar pagamento.'),
+            }
+        );
+    }
+
+    function handleMarkAsPaid() {
+        updatePaymentStatus.mutate(
+            {id: appointmentId, data: {status: 'PAID' as UpdatePaymentStatusDto['status']}},
+            {
+                onSuccess: () => {
+                    toast.success('Pagamento atualizado');
+                    void paymentQuery.refetch();
+                },
+                onError: () => toast.error('Erro ao atualizar pagamento.'),
+            }
+        );
+    }
+
+    return (
+        <div className={styles.sheetSection}>
+            <div className={styles.sheetSectionTitle}>Pagamento</div>
+
+            {payment && (
+                <>
+                    <div className={styles.sheetKvGrid}>
+                        <div className={styles.sheetKv}>
+                            <span className={styles.sheetKvKey}>Método</span>
+                            <span className={styles.sheetKvText}>
+                                {PAYMENT_METHOD_LABELS[payment.paymentMethod] ?? payment.paymentMethod}
+                            </span>
+                        </div>
+                        <div className={styles.sheetKv}>
+                            <span className={styles.sheetKvKey}>Valor</span>
+                            <span className={styles.sheetKvVal}>R$ {payment.amountBrl.toFixed(2)}</span>
+                        </div>
+                        <div className={styles.sheetKv}>
+                            <span className={styles.sheetKvKey}>Status</span>
+                            <Badge variant={PAYMENT_STATUS_BADGE_VARIANT[payment.status] ?? 'outline'}>
+                                {PAYMENT_STATUS_LABELS[payment.status] ?? payment.status}
+                            </Badge>
+                        </div>
+                        {payment.paidAt && (
+                            <div className={styles.sheetKv}>
+                                <span className={styles.sheetKvKey}>Pago em</span>
+                                <span className={styles.sheetKvText}>
+                                    {new Date(payment.paidAt).toLocaleDateString('pt-BR')}
+                                </span>
+                            </div>
+                        )}
+                    </div>
+
+                    {payment.status !== 'PAID' && (
+                        <Button
+                            size="sm"
+                            variant="outline"
+                            className={mt2}
+                            disabled={updatePaymentStatus.isPending}
+                            onClick={handleMarkAsPaid}
+                        >
+                            Marcar como pago
+                        </Button>
+                    )}
+                </>
+            )}
+
+            {!payment && showForm && (
+                <div className={styles.sheetKvGrid}>
+                    <div className={styles.sheetKv}>
+                        <span className={styles.sheetKvKey}>Método</span>
+                        <Select value={method} onValueChange={setMethod}>
+                            <SelectTrigger>
+                                <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {Object.entries(PAYMENT_METHOD_LABELS).map(([code, label]) => (
+                                    <SelectItem key={code} value={code}>
+                                        {label}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    </div>
+                    <div className={styles.sheetKv}>
+                        <span className={styles.sheetKvKey}>Valor (R$)</span>
+                        <Input value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="0,00" />
+                    </div>
+                    <div className={styles.sheetKv}>
+                        <span className={styles.sheetKvKey}>Status</span>
+                        <Select value={status} onValueChange={setStatus}>
+                            <SelectTrigger>
+                                <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {Object.entries(PAYMENT_STATUS_LABELS).map(([code, label]) => (
+                                    <SelectItem key={code} value={code}>
+                                        {label}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    </div>
+                    {method === 'INSURANCE' && (
+                        <>
+                            <div className={styles.sheetKv}>
+                                <span className={styles.sheetKvKey}>Convênio (ID)</span>
+                                <Input value={insurancePlanId} onChange={(e) => setInsurancePlanId(e.target.value)} />
+                            </div>
+                            <div className={styles.sheetKv}>
+                                <span className={styles.sheetKvKey}>Código de autorização</span>
+                                <Input
+                                    value={insuranceAuthCode}
+                                    onChange={(e) => setInsuranceAuthCode(e.target.value)}
+                                />
+                            </div>
+                        </>
+                    )}
+                    <div className={styles.sheetKv}>
+                        <span className={styles.sheetKvKey}>Observações</span>
+                        <Input value={notes} onChange={(e) => setNotes(e.target.value)} />
+                    </div>
+                    <div className={gap1_5}>
+                        <Button size="sm" disabled={registerPayment.isPending} onClick={handleRegister}>
+                            Registrar pagamento
+                        </Button>
+                        <Button size="sm" variant="outline" onClick={() => setShowForm(false)}>
+                            Cancelar
+                        </Button>
+                    </div>
+                </div>
+            )}
+
+            {!payment && !showForm && (
+                <>
+                    <p className={styles.sheetNotesEmpty}>Nenhum pagamento registrado para esta consulta.</p>
+                    <Button size="sm" variant="outline" className={mt2} onClick={() => setShowForm(true)}>
+                        Registrar pagamento
+                    </Button>
+                </>
+            )}
+        </div>
     );
 }
 
@@ -842,9 +1500,16 @@ function EditAppointmentDialog({apt, onClose, onSaved}: EditDialogProps) {
     const [durMin, setDurMin] = useState(timeToMin(apt.end) - timeToMin(apt.start));
     const [type, setType] = useState<AppointmentType>(apt.type);
     const [note, setNote] = useState(apt.note ?? '');
+    const [roomId, setRoomId] = useState('');
+    const [availabilityWarning, setAvailabilityWarning] = useState<string | null>(null);
     const update = useUpdateAppointment();
 
-    const handleSave = () => {
+    const meQuery = useGetCurrentClinicMember();
+    const clinicQuery = useGetClinic(meQuery.data?.clinicId ?? '', {query: {enabled: !!meQuery.data?.clinicId}});
+    const roomManagementEnabled = clinicQuery.data?.roomManagementEnabled ?? false;
+    const roomsQuery = useListRooms({query: {enabled: roomManagementEnabled}});
+
+    const submit = (confirmOutsideAvailability: boolean) => {
         const endTime = minToTime(timeToMin(startTime) + durMin);
 
         update.mutate(
@@ -855,6 +1520,8 @@ function EditAppointmentDialog({apt, onClose, onSaved}: EditDialogProps) {
                     endAt: localDateTimeToISO(date, endTime),
                     type: type as unknown as UpdateAppointmentInputDtoType,
                     note: note || null,
+                    roomId: roomManagementEnabled && roomId ? roomId : null,
+                    confirmOutsideAvailability,
                 },
             },
             {
@@ -863,84 +1530,139 @@ function EditAppointmentDialog({apt, onClose, onSaved}: EditDialogProps) {
                     onSaved();
                     onClose();
                 },
-                onError: () => toast.error('Erro ao atualizar consulta'),
+                onError: (error) => {
+                    const warning = getAvailabilityWarning(error);
+
+                    if (warning && !confirmOutsideAvailability) {
+                        setAvailabilityWarning(warning);
+
+                        return;
+                    }
+
+                    toast.error('Erro ao atualizar consulta');
+                },
             }
         );
     };
 
+    const handleSave = () => submit(false);
+
     return (
-        <Dialog open onOpenChange={(o) => !o && onClose()}>
-            <DialogContent className={styles.editDialogWidth}>
-                <DialogHeader>
-                    <DialogTitle>Editar agendamento</DialogTitle>
-                </DialogHeader>
-                <div className={styles.formBody}>
-                    <div className={styles.formRow}>
-                        <div className={styles.formField}>
-                            <Label>Data</Label>
-                            <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
+        <>
+            <Dialog open onOpenChange={(o) => !o && onClose()}>
+                <DialogContent className={styles.editDialogWidth}>
+                    <DialogHeader>
+                        <DialogTitle>Editar agendamento</DialogTitle>
+                    </DialogHeader>
+                    <div className={styles.formBody}>
+                        <div className={styles.formRow}>
+                            <div className={styles.formField}>
+                                <Label>Data</Label>
+                                <Input
+                                    type="date"
+                                    aria-label="Data"
+                                    value={date}
+                                    onChange={(e) => setDate(e.target.value)}
+                                />
+                            </div>
+                            <div className={styles.formField}>
+                                <Label>Horário</Label>
+                                <Input
+                                    type="time"
+                                    aria-label="Horário"
+                                    value={startTime}
+                                    onChange={(e) => setStartTime(e.target.value)}
+                                />
+                            </div>
                         </div>
+                        <div className={styles.formRow}>
+                            <div className={styles.formField}>
+                                <Label>Duração</Label>
+                                <Select value={String(durMin)} onValueChange={(v) => setDurMin(Number(v))}>
+                                    <SelectTrigger aria-label="Duração">
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {DURATIONS.map((d) => (
+                                            <SelectItem key={d} value={String(d)}>
+                                                {d >= 60
+                                                    ? `${Math.floor(d / 60)}h${d % 60 ? ` ${d % 60}min` : ''}`
+                                                    : `${d} min`}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            <div className={styles.formField}>
+                                <Label>Tipo</Label>
+                                <Select value={type} onValueChange={(v) => setType(v as AppointmentType)}>
+                                    <SelectTrigger>
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {Object.entries(TYPE_LABELS).map(([k, v]) => (
+                                            <SelectItem key={k} value={k}>
+                                                {v}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                        </div>
+                        {roomManagementEnabled && (
+                            <div className={styles.formField}>
+                                <Label>
+                                    Sala <span className={styles.optionalLabel}>opcional</span>
+                                </Label>
+                                <Select value={roomId} onValueChange={setRoomId}>
+                                    <SelectTrigger aria-label="Sala">
+                                        <SelectValue placeholder="Sala padrão do profissional" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {(roomsQuery.data ?? []).map((room) => (
+                                            <SelectItem key={room.id} value={room.id}>
+                                                {room.name}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                        )}
                         <div className={styles.formField}>
-                            <Label>Horário</Label>
-                            <Input type="time" value={startTime} onChange={(e) => setStartTime(e.target.value)} />
+                            <Label>
+                                Observações <span className={styles.optionalLabel}>opcional</span>
+                            </Label>
+                            <Textarea
+                                rows={3}
+                                placeholder="Informações adicionais..."
+                                value={note}
+                                onChange={(e) => setNote(e.target.value)}
+                            />
                         </div>
                     </div>
-                    <div className={styles.formRow}>
-                        <div className={styles.formField}>
-                            <Label>Duração</Label>
-                            <Select value={String(durMin)} onValueChange={(v) => setDurMin(Number(v))}>
-                                <SelectTrigger>
-                                    <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {DURATIONS.map((d) => (
-                                        <SelectItem key={d} value={String(d)}>
-                                            {d >= 60
-                                                ? `${Math.floor(d / 60)}h${d % 60 ? ` ${d % 60}min` : ''}`
-                                                : `${d} min`}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                        </div>
-                        <div className={styles.formField}>
-                            <Label>Tipo</Label>
-                            <Select value={type} onValueChange={(v) => setType(v as AppointmentType)}>
-                                <SelectTrigger>
-                                    <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {Object.entries(TYPE_LABELS).map(([k, v]) => (
-                                        <SelectItem key={k} value={k}>
-                                            {v}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                        </div>
+                    <div className={styles.formFooter}>
+                        <Button variant="outline" onClick={onClose}>
+                            Cancelar
+                        </Button>
+                        <Button onClick={handleSave} disabled={update.isPending}>
+                            {update.isPending ? 'Salvando…' : 'Salvar alterações'}
+                        </Button>
                     </div>
-                    <div className={styles.formField}>
-                        <Label>
-                            Observações <span className={styles.optionalLabel}>opcional</span>
-                        </Label>
-                        <Textarea
-                            rows={3}
-                            placeholder="Informações adicionais..."
-                            value={note}
-                            onChange={(e) => setNote(e.target.value)}
-                        />
-                    </div>
-                </div>
-                <div className={styles.formFooter}>
-                    <Button variant="outline" onClick={onClose}>
-                        Cancelar
-                    </Button>
-                    <Button onClick={handleSave} disabled={update.isPending}>
-                        {update.isPending ? 'Salvando…' : 'Salvar alterações'}
-                    </Button>
-                </div>
-            </DialogContent>
-        </Dialog>
+                </DialogContent>
+            </Dialog>
+            <ConfirmDialog
+                opened={!!availabilityWarning}
+                title="Fora da disponibilidade do profissional"
+                message={availabilityWarning ?? undefined}
+                confirmLabel="Agendar mesmo assim"
+                isLoading={update.isPending}
+                onConfirm={() => {
+                    setAvailabilityWarning(null);
+                    submit(true);
+                }}
+                onCancel={() => setAvailabilityWarning(null)}
+            />
+        </>
     );
 }
 
@@ -948,7 +1670,7 @@ function EditAppointmentDialog({apt, onClose, onSaved}: EditDialogProps) {
 //   New Appointment Dialog
 // ─────────────────────────────────────────────────────────────────
 interface NewApptDialogProps {
-    prefill: {date: string; start: string} | null;
+    prefill: {date: string; start: string; roomId?: string | null} | null;
     defaultMemberId: string;
     onClose: () => void;
     onSaved: () => void;
@@ -973,9 +1695,34 @@ function NewAppointmentDialog({prefill, defaultMemberId, onClose, onSaved}: NewA
     }) as unknown as UseQueryResult<PaginatedPage<Patient>>;
     const patientsList = patientsQ.data?.data ?? [];
 
+    const [roomId, setRoomId] = useState(prefill?.roomId ?? '');
+    const [availabilityWarning, setAvailabilityWarning] = useState<string | null>(null);
+
     const create = useCreateAppointment();
 
-    const handleSave = () => {
+    const meQuery = useGetCurrentClinicMember();
+    const clinicQuery = useGetClinic(meQuery.data?.clinicId ?? '', {query: {enabled: !!meQuery.data?.clinicId}});
+    const roomManagementEnabled = clinicQuery.data?.roomManagementEnabled ?? false;
+    const roomsQuery = useListRooms({query: {enabled: roomManagementEnabled}});
+
+    // Which professional the appointment is for. Only surfaced as a field when the
+    // actor manages more than one agenda (owner/admin, or a grantee with multiple
+    // grants) — a plain professional only ever manages their own, so it's implicit.
+    const manageableData = useListManageableProfessionals().data;
+    const manageableProfessionals = manageableData ?? [];
+    const showProfessionalField = manageableProfessionals.length > 1;
+
+    const [attendedByMemberId, setAttendedByMemberId] = useState(defaultMemberId);
+
+    useEffect(() => {
+        if (!manageableData || manageableData.length === 0) return;
+
+        setAttendedByMemberId((prev) =>
+            manageableData.some((m) => m.id === prev) ? prev : (manageableData[0]?.id ?? prev)
+        );
+    }, [manageableData]);
+
+    const submit = (confirmOutsideAvailability: boolean) => {
         if (!selectedPatient) {
             toast.error('Selecione um paciente');
 
@@ -988,12 +1735,14 @@ function NewAppointmentDialog({prefill, defaultMemberId, onClose, onSaved}: NewA
             {
                 data: {
                     patientId: selectedPatient.id,
-                    attendedByMemberId: defaultMemberId,
+                    attendedByMemberId,
                     startAt: localDateTimeToISO(date, startTime),
                     endAt: localDateTimeToISO(date, endTime),
                     type,
                     note: note || null,
                     retroactive: true, // allow past dates too
+                    roomId: roomManagementEnabled && roomId ? roomId : undefined,
+                    confirmOutsideAvailability,
                 },
             },
             {
@@ -1002,138 +1751,213 @@ function NewAppointmentDialog({prefill, defaultMemberId, onClose, onSaved}: NewA
                     onSaved();
                     onClose();
                 },
-                onError: () => toast.error('Erro ao criar consulta'),
+                onError: (error) => {
+                    const warning = getAvailabilityWarning(error);
+
+                    if (warning && !confirmOutsideAvailability) {
+                        setAvailabilityWarning(warning);
+
+                        return;
+                    }
+
+                    toast.error('Erro ao criar consulta');
+                },
             }
         );
     };
 
+    const handleSave = () => submit(false);
+
     return (
-        <Dialog open onOpenChange={(o) => !o && onClose()}>
-            <DialogContent className={styles.newApptDialogWidth}>
-                <DialogHeader>
-                    <DialogTitle>Novo agendamento</DialogTitle>
-                </DialogHeader>
-                <div className={styles.formBody}>
-                    {/* Patient */}
-                    <div className={cx(styles.formField, relative)}>
-                        <Label>Paciente</Label>
-                        {selectedPatient ? (
-                            <div className={styles.patSearchPill}>
-                                <div className={styles.patAvatarSm}>{getInitials(selectedPatient.name)}</div>
-                                <span className={styles.patSearchName}>{selectedPatient.name}</span>
+        <>
+            <Dialog open onOpenChange={(o) => !o && onClose()}>
+                <DialogContent className={styles.newApptDialogWidth}>
+                    <DialogHeader>
+                        <DialogTitle>Novo agendamento</DialogTitle>
+                    </DialogHeader>
+                    <div className={styles.formBody}>
+                        {/* Patient */}
+                        <div className={cx(styles.formField, relative)}>
+                            <Label>Paciente</Label>
+                            {selectedPatient ? (
+                                <div className={styles.patSearchPill}>
+                                    <div className={styles.patAvatarSm}>{getInitials(selectedPatient.name)}</div>
+                                    <span className={styles.patSearchName}>{selectedPatient.name}</span>
                                     <button
-                                    type="button"
-                                    className={styles.patClearBtn}
-                                    onClick={() => setSelectedPatient(null)}
-                                >
-                                    <X className={icon35} />
-                                </button>
+                                        type="button"
+                                        className={styles.patClearBtn}
+                                        onClick={() => setSelectedPatient(null)}
+                                    >
+                                        <X className={icon35} />
+                                    </button>
+                                </div>
+                            ) : (
+                                <div className={styles.patSearchWrap}>
+                                    <Input
+                                        placeholder="Buscar paciente..."
+                                        value={patientSearch}
+                                        onChange={(e) => {
+                                            setPatientSearch(e.target.value);
+                                            setShowDrop(true);
+                                        }}
+                                        onFocus={() => setShowDrop(true)}
+                                        onBlur={() => setTimeout(() => setShowDrop(false), 200)}
+                                    />
+                                    {showDrop && patientsList.length > 0 && (
+                                        <div className={styles.patSearchDrop}>
+                                            {patientsList.map((p) => (
+                                                <button
+                                                    key={p.id}
+                                                    type="button"
+                                                    className={styles.patSearchRow}
+                                                    onMouseDown={() => {
+                                                        setSelectedPatient(p);
+                                                        setPatientSearch('');
+                                                        setShowDrop(false);
+                                                    }}
+                                                >
+                                                    <div className={styles.patAvatarSm}>{getInitials(p.name)}</div>
+                                                    <span className={truncate}>{p.name}</span>
+                                                </button>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+                        </div>
 
-                            </div>
-                        ) : (
-                            <div className={styles.patSearchWrap}>
-                                <Input
-                                    placeholder="Buscar paciente..."
-                                    value={patientSearch}
-                                    onChange={(e) => {
-                                        setPatientSearch(e.target.value);
-                                        setShowDrop(true);
-                                    }}
-                                    onFocus={() => setShowDrop(true)}
-                                    onBlur={() => setTimeout(() => setShowDrop(false), 200)}
-                                />
-                                {showDrop && patientsList.length > 0 && (
-                                    <div className={styles.patSearchDrop}>
-                                        {patientsList.map((p) => (
-                                            <button
-                                                key={p.id}
-                                                type="button"
-                                                className={styles.patSearchRow}
-                                                onMouseDown={() => {
-                                                    setSelectedPatient(p);
-                                                    setPatientSearch('');
-                                                    setShowDrop(false);
-                                                }}
-                                            >
-                                            <div className={styles.patAvatarSm}>{getInitials(p.name)}</div>
-                                            <span className={truncate}>{p.name}</span>
-                                        </button>
-
+                        {showProfessionalField && (
+                            <div className={styles.formField}>
+                                <Label>Profissional</Label>
+                                <Select value={attendedByMemberId} onValueChange={setAttendedByMemberId}>
+                                    <SelectTrigger aria-label="Profissional">
+                                        <SelectValue placeholder="Selecione o profissional" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {manageableProfessionals.map((member) => (
+                                            <SelectItem key={member.id} value={member.id}>
+                                                {member.displayName ?? 'Profissional'}
+                                            </SelectItem>
                                         ))}
-                                    </div>
-                                )}
+                                    </SelectContent>
+                                </Select>
                             </div>
                         )}
-                    </div>
 
-                    <div className={styles.formRow}>
-                        <div className={styles.formField}>
-                            <Label>Data</Label>
-                            <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
+                        <div className={styles.formRow}>
+                            <div className={styles.formField}>
+                                <Label>Data</Label>
+                                <Input
+                                    type="date"
+                                    aria-label="Data"
+                                    value={date}
+                                    onChange={(e) => setDate(e.target.value)}
+                                />
+                            </div>
+                            <div className={styles.formField}>
+                                <Label>Horário</Label>
+                                <Input
+                                    type="time"
+                                    aria-label="Horário"
+                                    value={startTime}
+                                    onChange={(e) => setStartTime(e.target.value)}
+                                />
+                            </div>
                         </div>
-                        <div className={styles.formField}>
-                            <Label>Horário</Label>
-                            <Input type="time" value={startTime} onChange={(e) => setStartTime(e.target.value)} />
-                        </div>
-                    </div>
 
-                    <div className={styles.formRow}>
-                        <div className={styles.formField}>
-                            <Label>Duração</Label>
-                            <Select value={String(durMin)} onValueChange={(v) => setDurMin(Number(v))}>
-                                <SelectTrigger>
-                                    <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {DURATIONS.map((d) => (
-                                        <SelectItem key={d} value={String(d)}>
-                                            {d >= 60
-                                                ? `${Math.floor(d / 60)}h${d % 60 ? ` ${d % 60}min` : ''}`
-                                                : `${d} min`}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
+                        <div className={styles.formRow}>
+                            <div className={styles.formField}>
+                                <Label>Duração</Label>
+                                <Select value={String(durMin)} onValueChange={(v) => setDurMin(Number(v))}>
+                                    <SelectTrigger aria-label="Duração">
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {DURATIONS.map((d) => (
+                                            <SelectItem key={d} value={String(d)}>
+                                                {d >= 60
+                                                    ? `${Math.floor(d / 60)}h${d % 60 ? ` ${d % 60}min` : ''}`
+                                                    : `${d} min`}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            <div className={styles.formField}>
+                                <Label>Tipo</Label>
+                                <Select value={type} onValueChange={(v) => setType(v as CreateAppointmentDtoType)}>
+                                    <SelectTrigger>
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {Object.entries(TYPE_LABELS).map(([k, v]) => (
+                                            <SelectItem key={k} value={k}>
+                                                {v}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
                         </div>
-                        <div className={styles.formField}>
-                            <Label>Tipo</Label>
-                            <Select value={type} onValueChange={(v) => setType(v as CreateAppointmentDtoType)}>
-                                <SelectTrigger>
-                                    <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {Object.entries(TYPE_LABELS).map(([k, v]) => (
-                                        <SelectItem key={k} value={k}>
-                                            {v}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                        </div>
-                    </div>
 
-                    <div className={styles.formField}>
-                        <Label>
-                            Observações <span className={styles.optionalLabel}>opcional</span>
-                        </Label>
-                        <Textarea
-                            rows={2}
-                            placeholder="Informações adicionais..."
-                            value={note}
-                            onChange={(e) => setNote(e.target.value)}
-                        />
+                        {roomManagementEnabled && (
+                            <div className={styles.formField}>
+                                <Label>
+                                    Sala <span className={styles.optionalLabel}>opcional</span>
+                                </Label>
+                                <Select value={roomId} onValueChange={setRoomId}>
+                                    <SelectTrigger aria-label="Sala">
+                                        <SelectValue placeholder="Sala padrão do profissional" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {(roomsQuery.data ?? []).map((room) => (
+                                            <SelectItem key={room.id} value={room.id}>
+                                                {room.name}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                        )}
+
+                        <div className={styles.formField}>
+                            <Label>
+                                Observações <span className={styles.optionalLabel}>opcional</span>
+                            </Label>
+                            <Textarea
+                                rows={2}
+                                placeholder="Informações adicionais..."
+                                value={note}
+                                onChange={(e) => setNote(e.target.value)}
+                            />
+                        </div>
                     </div>
-                </div>
-                <div className={styles.formFooter}>
-                    <Button variant="outline" onClick={onClose}>
-                        Cancelar
-                    </Button>
-                    <Button onClick={handleSave} disabled={create.isPending || !selectedPatient}>
-                        {create.isPending ? 'Salvando…' : 'Agendar consulta'}
-                    </Button>
-                </div>
-            </DialogContent>
-        </Dialog>
+                    <div className={styles.formFooter}>
+                        <Button variant="outline" onClick={onClose}>
+                            Cancelar
+                        </Button>
+                        <Button
+                            onClick={handleSave}
+                            disabled={create.isPending || !selectedPatient || !attendedByMemberId}
+                        >
+                            {create.isPending ? 'Salvando…' : 'Agendar consulta'}
+                        </Button>
+                    </div>
+                </DialogContent>
+            </Dialog>
+            <ConfirmDialog
+                opened={!!availabilityWarning}
+                title="Fora da disponibilidade do profissional"
+                message={availabilityWarning ?? undefined}
+                confirmLabel="Agendar mesmo assim"
+                isLoading={create.isPending}
+                onConfirm={() => {
+                    setAvailabilityWarning(null);
+                    submit(true);
+                }}
+                onCancel={() => setAvailabilityWarning(null)}
+            />
+        </>
     );
 }
 
@@ -1226,7 +2050,7 @@ export function AppointmentsPage() {
     const [detailId, setDetailId] = useState<string | null>(null);
     const [editId, setEditId] = useState<string | null>(null);
     const [cancelId, setCancelId] = useState<string | null>(null);
-    const [newAppt, setNewAppt] = useState<{date: string; start: string} | true | null>(null);
+    const [newAppt, setNewAppt] = useState<{date: string; start: string; roomId?: string | null} | true | null>(null);
     const [highlightId, setHighlightId] = useState<string | null>(null);
 
     // Load appointments
@@ -1253,6 +2077,35 @@ export function AppointmentsPage() {
     }) as unknown as UseQueryResult<{data: Professional[]; totalCount: number}>;
     const defaultMemberId = profQ.data?.data?.[0]?.clinicMemberId ?? '';
 
+    // Expediente e bloqueios do profissional, para sombrear o calendário (Fase 4).
+    const workingHoursQuery = useListWorkingHours(defaultMemberId, {query: {enabled: !!defaultMemberId}});
+    const workingHoursByDay = useMemo(() => {
+        const map = new Map<number, WorkingHours>();
+
+        for (const wh of workingHoursQuery.data ?? []) {
+            map.set(wh.dayOfWeek, wh);
+        }
+
+        return map;
+    }, [workingHoursQuery.data]);
+
+    const blocksQuery = useListMemberBlocks(
+        defaultMemberId,
+        {startAt: addDays(cursor, -31).toISOString(), endAt: addDays(cursor, 31).toISOString()},
+        {query: {enabled: !!defaultMemberId}}
+    );
+    const blocks = blocksQuery.data ?? [];
+
+    // Salas da clínica, para o selo de sala nas consultas e a visão "Salas" (Fase 5).
+    const meQuery = useGetCurrentClinicMember();
+    const clinicQuery = useGetClinic(meQuery.data?.clinicId ?? '', {query: {enabled: !!meQuery.data?.clinicId}});
+    const roomManagementEnabled = clinicQuery.data?.roomManagementEnabled ?? false;
+    const roomsQuery = useListRooms({query: {enabled: roomManagementEnabled}});
+    const rooms = useMemo(() => roomsQuery.data ?? [], [roomsQuery.data]);
+
+    const roomsById = useMemo(() => new Map(rooms.map((r) => [r.id, r])), [rooms]);
+    const roomIndexById = useMemo(() => new Map(rooms.map((r, i) => [r.id, i])), [rooms]);
+
     const allAppts = useMemo(() => rawAppts.map(toApptView), [rawAppts]);
     const filteredAppts = useMemo(() => allAppts.filter((a) => statusFilters.has(a.status)), [allAppts, statusFilters]);
 
@@ -1270,19 +2123,19 @@ export function AppointmentsPage() {
     const goToday = () => setCursor(today);
 
     const goPrev = () => {
-        if (view === 'day') setCursor(addDays(cursor, -1));
+        if (view === 'day' || view === 'rooms') setCursor(addDays(cursor, -1));
         else if (view === 'week') setCursor(addDays(cursor, -7));
         else setCursor(new Date(cursor.getFullYear(), cursor.getMonth() - 1, 1));
     };
 
     const goNext = () => {
-        if (view === 'day') setCursor(addDays(cursor, 1));
+        if (view === 'day' || view === 'rooms') setCursor(addDays(cursor, 1));
         else if (view === 'week') setCursor(addDays(cursor, 7));
         else setCursor(new Date(cursor.getFullYear(), cursor.getMonth() + 1, 1));
     };
 
     const periodLabel = useMemo(() => {
-        if (view === 'day')
+        if (view === 'day' || view === 'rooms')
             return `${cursor.getDate()} de ${MONTH_NAMES[cursor.getMonth()]} de ${cursor.getFullYear()}, ${WEEKDAYS_LONG[cursor.getDay()]}`;
 
         if (view === 'week') {
@@ -1316,7 +2169,12 @@ export function AppointmentsPage() {
         today,
         now,
         highlightId,
-        onSlotClick: (d: Date, time: string) => setNewAppt({date: fmtDate(d), start: time}),
+        workingHoursByDay,
+        blocks,
+        roomsById,
+        roomIndexById,
+        onSlotClick: (d: Date, time: string, roomId?: string | null) =>
+            setNewAppt({date: fmtDate(d), start: time, roomId}),
         onApptClick: setDetailId,
     };
 
@@ -1330,14 +2188,21 @@ export function AppointmentsPage() {
                 </div>
                 <div className={styles.headerRight}>
                     <div className={styles.segmented}>
-                        {(['day', 'week', 'month'] as ViewMode[]).map((v) => (
+                        {(
+                            [
+                                'day',
+                                'week',
+                                'month',
+                                ...(roomManagementEnabled && rooms.length > 0 ? (['rooms'] as const) : []),
+                            ] as ViewMode[]
+                        ).map((v) => (
                             <button
                                 key={v}
                                 type="button"
                                 className={segmentBtn({active: view === v})}
                                 onClick={() => setView(v)}
                             >
-                                {({day: 'Dia', week: 'Semana', month: 'Mês'} as const)[v]}
+                                {VIEW_MODE_LABELS[v]}
                             </button>
                         ))}
                     </div>
@@ -1394,8 +2259,19 @@ export function AppointmentsPage() {
                     />
                 </aside>
                 <div className={styles.calBody}>
+                    {roomManagementEnabled && rooms.length > 0 && (view === 'day' || view === 'week') && (
+                        <div className={roomLegend}>
+                            {rooms.map((room, i) => (
+                                <span key={room.id} className={roomLegendItem}>
+                                    <span className={cx(roomLegendDot, roomDotColorClass(i))} />
+                                    {room.name}
+                                </span>
+                            ))}
+                        </div>
+                    )}
                     {view === 'day' && <DayView {...sharedProps} />}
                     {view === 'week' && <WeekView {...sharedProps} />}
+                    {view === 'rooms' && <RoomsView {...sharedProps} rooms={rooms} />}
                     {view === 'month' && (
                         <MonthView
                             {...sharedProps}
@@ -1423,6 +2299,7 @@ export function AppointmentsPage() {
                         setDetailId(null);
                     }}
                     onOpenPatient={(id) => navigate({to: '/patients/$patientId', params: {patientId: id}})}
+                    onStatusChanged={() => void apptQ.refetch()}
                 />
             )}
 
