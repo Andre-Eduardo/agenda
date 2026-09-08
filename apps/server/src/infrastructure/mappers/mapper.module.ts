@@ -23,6 +23,7 @@ import {InsuranceClaimMapper} from '@infrastructure/mappers/insurance-claim.mapp
 import {InsurancePlanMapper} from '@infrastructure/mappers/insurance-plan.mapper';
 import {KnowledgeChunkMapper} from '@infrastructure/mappers/knowledge-chunk.mapper';
 import {MemberBlockMapper} from '@infrastructure/mappers/member-block.mapper';
+import {PackagePlanMapper} from '@infrastructure/mappers/package-plan.mapper';
 import {PatientAlertMapper} from '@infrastructure/mappers/patient-alert.mapper';
 import {PatientChatMessageMapper} from '@infrastructure/mappers/patient-chat-message.mapper';
 import {PatientChatSessionMapper} from '@infrastructure/mappers/patient-chat-session.mapper';
@@ -30,6 +31,8 @@ import {PatientContextChunkMapper} from '@infrastructure/mappers/patient-context
 import {PatientContextSnapshotMapper} from '@infrastructure/mappers/patient-context-snapshot.mapper';
 import {PatientFormMapper} from '@infrastructure/mappers/patient-form.mapper';
 import {PatientInsuranceEnrollmentMapper} from '@infrastructure/mappers/patient-insurance-enrollment.mapper';
+import {PatientPackageCreditMapper} from '@infrastructure/mappers/patient-package-credit.mapper';
+import {PatientPackageMapper} from '@infrastructure/mappers/patient-package.mapper';
 import {PatientMapper} from '@infrastructure/mappers/patient.mapper';
 import {PersonMapper} from '@infrastructure/mappers/person.mapper';
 import {ProfessionalAgendaAccessMapper} from '@infrastructure/mappers/professional-agenda-access.mapper';
@@ -53,6 +56,9 @@ const mappers = [
     InsurancePlanMapper,
     PatientInsuranceEnrollmentMapper,
     InsuranceClaimMapper,
+    PackagePlanMapper,
+    PatientPackageMapper,
+    PatientPackageCreditMapper,
     // Schedule
     AppointmentMapper,
     AppointmentPaymentMapper,

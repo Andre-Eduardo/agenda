@@ -26,9 +26,11 @@ import {ImportedDocumentModule} from '@application/imported-document/imported-do
 import {InsuranceClaimModule} from '@application/insurance-claim/insurance-claim.module';
 import {KnowledgeBaseModule} from '@application/knowledge-base/knowledge-base.module';
 import {MemberBlockModule} from '@application/member-block/member-block.module';
+import {PackagePlanModule} from '@application/package-plan/package-plan.module';
 import {PatientAlertModule} from '@application/patient-alert/patient-alert.module';
-import {PatientInsuranceEnrollmentModule} from '@application/patient-insurance-enrollment/patient-insurance-enrollment.module';
 import {PatientFormModule} from '@application/patient-form/patient-form.module';
+import {PatientInsuranceEnrollmentModule} from '@application/patient-insurance-enrollment/patient-insurance-enrollment.module';
+import {PatientPackageModule} from '@application/patient-package/patient-package.module';
 import {PatientModule} from '@application/patient/patient.module';
 import {PaymentModule} from '@application/payment/payment.module';
 import {ProfessionalAgendaAccessModule} from '@application/professional-agenda-access/professional-agenda-access.module';
@@ -131,6 +133,8 @@ const guards: Provider[] = [
         AppointmentPaymentModule,
         PatientInsuranceEnrollmentModule,
         InsuranceClaimModule,
+        PackagePlanModule,
+        PatientPackageModule,
         FinancialReportModule,
         WorkingHoursModule,
         MemberBlockModule,

@@ -27,9 +27,12 @@ import {FormTemplateRepository} from '@domain/form-template/form-template.reposi
 import {InsuranceClaimRepository} from '@domain/insurance-claim/insurance-claim.repository';
 import {InsurancePlanRepository} from '@domain/insurance-plan/insurance-plan.repository';
 import {KnowledgeChunkRepository} from '@domain/knowledge-base/knowledge-chunk.repository';
+import {PackagePlanRepository} from '@domain/package-plan/package-plan.repository';
 import {PatientAlertRepository} from '@domain/patient-alert/patient-alert.repository';
 import {PatientFormRepository} from '@domain/patient-form/patient-form.repository';
 import {PatientInsuranceEnrollmentRepository} from '@domain/patient-insurance-enrollment/patient-insurance-enrollment.repository';
+import {PatientPackageCreditRepository} from '@domain/patient-package/patient-package-credit.repository';
+import {PatientPackageRepository} from '@domain/patient-package/patient-package.repository';
 import {PatientRepository} from '@domain/patient/patient.repository';
 import {PersonRepository} from '@domain/person/person.repository';
 import {ProfessionalAgendaAccessRepository} from '@domain/professional-agenda-access/professional-agenda-access.repository';
@@ -66,6 +69,7 @@ import {InsuranceClaimPrismaRepository} from '@infrastructure/repository/insuran
 import {InsurancePlanPrismaRepository} from '@infrastructure/repository/insurance-plan.prisma.repository';
 import {KnowledgeChunkPrismaRepository} from '@infrastructure/repository/knowledge-chunk.prisma.repository';
 import {MemberBlockPrismaRepository} from '@infrastructure/repository/member-block.prisma.repository';
+import {PackagePlanPrismaRepository} from '@infrastructure/repository/package-plan.prisma.repository';
 import {PatientAlertPrismaRepository} from '@infrastructure/repository/patient-alert.prisma.repository';
 import {PatientChatMessagePrismaRepository} from '@infrastructure/repository/patient-chat-message.prisma.repository';
 import {PatientChatSessionPrismaRepository} from '@infrastructure/repository/patient-chat-session.prisma.repository';
@@ -73,6 +77,8 @@ import {PatientContextChunkPrismaRepository} from '@infrastructure/repository/pa
 import {PatientContextSnapshotPrismaRepository} from '@infrastructure/repository/patient-context-snapshot.prisma.repository';
 import {PatientFormPrismaRepository} from '@infrastructure/repository/patient-form.prisma.repository';
 import {PatientInsuranceEnrollmentPrismaRepository} from '@infrastructure/repository/patient-insurance-enrollment.prisma.repository';
+import {PatientPackageCreditPrismaRepository} from '@infrastructure/repository/patient-package-credit.prisma.repository';
+import {PatientPackagePrismaRepository} from '@infrastructure/repository/patient-package.prisma.repository';
 import {PatientPrismaRepository} from '@infrastructure/repository/patient.prisma.repository';
 import {PersonPrismaRepository} from '@infrastructure/repository/person.prisma.repository';
 import {PrismaProvider} from '@infrastructure/repository/prisma/prisma.provider';
@@ -103,6 +109,9 @@ const repositories: Provider[] = [
     {provide: InsurancePlanRepository, useClass: InsurancePlanPrismaRepository},
     {provide: PatientInsuranceEnrollmentRepository, useClass: PatientInsuranceEnrollmentPrismaRepository},
     {provide: InsuranceClaimRepository, useClass: InsuranceClaimPrismaRepository},
+    {provide: PackagePlanRepository, useClass: PackagePlanPrismaRepository},
+    {provide: PatientPackageRepository, useClass: PatientPackagePrismaRepository},
+    {provide: PatientPackageCreditRepository, useClass: PatientPackageCreditPrismaRepository},
     // Schedule
     {provide: AppointmentRepository, useClass: AppointmentPrismaRepository},
     {provide: AppointmentPaymentRepository, useClass: AppointmentPaymentPrismaRepository},

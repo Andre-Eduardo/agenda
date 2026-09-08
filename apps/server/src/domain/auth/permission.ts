@@ -155,6 +155,17 @@ export enum InsuranceClaimPermission {
     UPDATE = 'insurance-claim:update',
 }
 
+export enum PackagePlanPermission {
+    VIEW = 'package-plan:view',
+    CREATE = 'package-plan:create',
+    UPDATE = 'package-plan:update',
+}
+
+export enum PatientPackagePermission {
+    VIEW = 'patient-package:view',
+    SELL = 'patient-package:sell',
+}
+
 export enum FinancialReportPermission {
     VIEW = 'financial-report:view',
 }
@@ -208,6 +219,8 @@ const PERMISSIONS = [
     ...Object.values(AppointmentPaymentPermission),
     ...Object.values(PatientInsuranceEnrollmentPermission),
     ...Object.values(InsuranceClaimPermission),
+    ...Object.values(PackagePlanPermission),
+    ...Object.values(PatientPackagePermission),
     ...Object.values(FinancialReportPermission),
     ...Object.values(WorkingHoursPermission),
     ...Object.values(MemberBlockPermission),

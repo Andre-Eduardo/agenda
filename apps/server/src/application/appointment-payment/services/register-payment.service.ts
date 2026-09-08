@@ -11,6 +11,9 @@ import {EventDispatcher} from '@domain/event';
 import {InsuranceClaim} from '@domain/insurance-claim/entities';
 import {InsuranceClaimRepository} from '@domain/insurance-claim/insurance-claim.repository';
 import {PatientInsuranceEnrollmentRepository} from '@domain/patient-insurance-enrollment/patient-insurance-enrollment.repository';
+import {PatientPackageCredit, PatientPackageCreditEventType} from '@domain/patient-package/entities';
+import {PatientPackageCreditRepository} from '@domain/patient-package/patient-package-credit.repository';
+import {PatientPackageRepository} from '@domain/patient-package/patient-package.repository';
 import {PatientRepository} from '@domain/patient/patient.repository';
 
 export type RegisterPaymentCommand = RegisterPaymentDto & {appointmentId: AppointmentId};
@@ -23,12 +26,23 @@ export class RegisterPaymentService implements ApplicationService<RegisterPaymen
         private readonly patientRepository: PatientRepository,
         private readonly patientInsuranceEnrollmentRepository: PatientInsuranceEnrollmentRepository,
         private readonly insuranceClaimRepository: InsuranceClaimRepository,
+        private readonly patientPackageRepository: PatientPackageRepository,
+        private readonly patientPackageCreditRepository: PatientPackageCreditRepository,
         private readonly eventDispatcher: EventDispatcher
     ) {}
 
     @Transactional()
     async execute({actor, payload}: Command<RegisterPaymentCommand>): Promise<AppointmentPaymentDto> {
-        const {appointmentId, paymentMethod, amountBrl, status, insurancePlanId, insuranceAuthCode, notes} = payload;
+        const {
+            appointmentId,
+            paymentMethod,
+            amountBrl,
+            status,
+            insurancePlanId,
+            insuranceAuthCode,
+            patientPackageId,
+            notes,
+        } = payload;
 
         const appointment = await this.appointmentRepository.findById(appointmentId);
 
@@ -70,6 +84,30 @@ export class RegisterPaymentService implements ApplicationService<RegisterPaymen
             throw new PreconditionException('patient_insurance_enrollment.not_linked');
         }
 
+        // A package credit can only be spent on a session that actually happened — this also keeps
+        // the source of coverage always explicit (the staff picks it), never inferred automatically.
+        if (paymentMethod === PaymentMethod.PACKAGE) {
+            if (!patientPackageId) {
+                throw new InvalidInputException('patientPackageId is required when paymentMethod is PACKAGE', [
+                    {field: 'patientPackageId', reason: 'Required when paymentMethod is PACKAGE'},
+                ]);
+            }
+
+            if (appointment.status !== AppointmentStatus.COMPLETED) {
+                throw new PreconditionException('appointment_payment.package_requires_completed_appointment');
+            }
+
+            const patientPackage = await this.patientPackageRepository.findById(patientPackageId);
+
+            if (
+                patientPackage === null ||
+                !patientPackage.clinicId.equals(actor.clinicId) ||
+                !patientPackage.patientId.equals(appointment.patientId)
+            ) {
+                throw new ResourceNotFoundException('patient_package.not_found', patientPackageId.toString());
+            }
+        }
+
         const resolvedStatus = status ?? AppointmentPaymentStatus.PAID;
         const paidAt = resolvedStatus === AppointmentPaymentStatus.PAID ? new Date() : null;
 
@@ -84,7 +122,7 @@ export class RegisterPaymentService implements ApplicationService<RegisterPaymen
             paidAt,
             insurancePlanId: insurancePlanId ?? null,
             insuranceAuthCode: insuranceAuthCode ?? null,
-            patientPackageId: null,
+            patientPackageId: patientPackageId ?? null,
             patientSubscriptionId: null,
             notes: notes ?? null,
         });
@@ -102,6 +140,29 @@ export class RegisterPaymentService implements ApplicationService<RegisterPaymen
             });
 
             await this.insuranceClaimRepository.save(claim);
+        }
+
+        if (paymentMethod === PaymentMethod.PACKAGE && patientPackageId) {
+            // Atomic conditional decrement at the DB level (WHERE remainingCredits > 0 AND status =
+            // ACTIVE) — not "load, decrement in memory, save" — so two concurrent registrations for
+            // the same package can't both succeed once credits run out.
+            const consumed = await this.patientPackageRepository.consumeCredit(patientPackageId);
+
+            if (consumed === null) {
+                throw new PreconditionException('patient_package.no_credits_left');
+            }
+
+            const credit = PatientPackageCredit.create({
+                clinicId: actor.clinicId,
+                patientPackageId,
+                appointmentPaymentId: payment.id,
+                type: PatientPackageCreditEventType.CONSUMPTION,
+                delta: -1,
+                balanceAfter: consumed.remainingCredits,
+                registeredByMemberId: actor.clinicMemberId,
+            });
+
+            await this.patientPackageCreditRepository.save(credit);
         }
 
         this.eventDispatcher.dispatch(actor, payment);
