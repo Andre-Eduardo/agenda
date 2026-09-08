@@ -12,6 +12,8 @@ import {ClinicMemberId} from '@domain/clinic-member/entities';
 import {ClinicId} from '@domain/clinic/entities';
 import {InsurancePlanId} from '@domain/insurance-plan/entities';
 import {PatientId} from '@domain/patient/entities';
+import {PatientPackageId} from '@domain/patient-package/entities';
+import {PatientSubscriptionId} from '@domain/patient-subscription/entities';
 import {MapperWithoutDto} from '@infrastructure/mappers/mapper';
 
 export type AppointmentPaymentModel = PrismaClient.AppointmentPayment;
@@ -32,6 +34,10 @@ export class AppointmentPaymentMapper extends MapperWithoutDto<AppointmentPaymen
             paidAt: model.paidAt ?? null,
             insurancePlanId: model.insurancePlanId ? InsurancePlanId.from(model.insurancePlanId) : null,
             insuranceAuthCode: model.insuranceAuthCode ?? null,
+            patientPackageId: model.patientPackageId ? PatientPackageId.from(model.patientPackageId) : null,
+            patientSubscriptionId: model.patientSubscriptionId
+                ? PatientSubscriptionId.from(model.patientSubscriptionId)
+                : null,
             notes: model.notes ?? null,
             deletedAt: null,
         });
@@ -50,6 +56,8 @@ export class AppointmentPaymentMapper extends MapperWithoutDto<AppointmentPaymen
             paidAt: entity.paidAt,
             insurancePlanId: entity.insurancePlanId?.toString() ?? null,
             insuranceAuthCode: entity.insuranceAuthCode,
+            patientPackageId: entity.patientPackageId?.toString() ?? null,
+            patientSubscriptionId: entity.patientSubscriptionId?.toString() ?? null,
             notes: entity.notes,
             createdAt: entity.createdAt,
             updatedAt: entity.updatedAt,

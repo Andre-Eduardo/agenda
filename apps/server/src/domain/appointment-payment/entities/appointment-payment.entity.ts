@@ -12,6 +12,8 @@ import type {ClinicMemberId} from '@domain/clinic-member/entities';
 import type {ClinicId} from '@domain/clinic/entities';
 import type {InsurancePlanId} from '@domain/insurance-plan/entities';
 import type {PatientId} from '@domain/patient/entities';
+import type {PatientPackageId} from '@domain/patient-package/entities';
+import type {PatientSubscriptionId} from '@domain/patient-subscription/entities';
 
 export enum PaymentMethod {
     CASH = 'CASH',
@@ -21,6 +23,10 @@ export enum PaymentMethod {
     BANK_TRANSFER = 'BANK_TRANSFER',
     INSURANCE = 'INSURANCE',
     COURTESY = 'COURTESY',
+    /** Sessão debitada de um pacote de créditos pré-pago (PatientPackage). */
+    PACKAGE = 'PACKAGE',
+    /** Sessão coberta pela cota mensal de uma assinatura recorrente (PatientSubscription). */
+    SUBSCRIPTION = 'SUBSCRIPTION',
 }
 
 export enum AppointmentPaymentStatus {
@@ -44,6 +50,8 @@ export class AppointmentPayment extends AggregateRoot<AppointmentPaymentId> {
     paidAt: Date | null;
     insurancePlanId: InsurancePlanId | null;
     insuranceAuthCode: string | null;
+    patientPackageId: PatientPackageId | null;
+    patientSubscriptionId: PatientSubscriptionId | null;
     notes: string | null;
 
     constructor(props: AllEntityProps<AppointmentPayment>) {
@@ -58,6 +66,8 @@ export class AppointmentPayment extends AggregateRoot<AppointmentPaymentId> {
         this.paidAt = props.paidAt ?? null;
         this.insurancePlanId = props.insurancePlanId ?? null;
         this.insuranceAuthCode = props.insuranceAuthCode ?? null;
+        this.patientPackageId = props.patientPackageId ?? null;
+        this.patientSubscriptionId = props.patientSubscriptionId ?? null;
         this.notes = props.notes ?? null;
     }
 
@@ -71,6 +81,8 @@ export class AppointmentPayment extends AggregateRoot<AppointmentPaymentId> {
             paidAt: props.paidAt ?? null,
             insurancePlanId: props.insurancePlanId ?? null,
             insuranceAuthCode: props.insuranceAuthCode ?? null,
+            patientPackageId: props.patientPackageId ?? null,
+            patientSubscriptionId: props.patientSubscriptionId ?? null,
             notes: props.notes ?? null,
             createdAt: now,
             updatedAt: now,
@@ -101,6 +113,8 @@ export class AppointmentPayment extends AggregateRoot<AppointmentPaymentId> {
             paidAt: this.paidAt?.toJSON() ?? null,
             insurancePlanId: this.insurancePlanId?.toJSON() ?? null,
             insuranceAuthCode: this.insuranceAuthCode,
+            patientPackageId: this.patientPackageId?.toJSON() ?? null,
+            patientSubscriptionId: this.patientSubscriptionId?.toJSON() ?? null,
             notes: this.notes,
             createdAt: this.createdAt.toJSON(),
             updatedAt: this.updatedAt.toJSON(),
