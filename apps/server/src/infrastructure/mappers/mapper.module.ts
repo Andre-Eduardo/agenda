@@ -19,6 +19,7 @@ import {FormFieldIndexMapper} from '@infrastructure/mappers/form-field-index.map
 import {FormTemplateVersionMapper} from '@infrastructure/mappers/form-template-version.mapper';
 import {FormTemplateMapper} from '@infrastructure/mappers/form-template.mapper';
 import {ImportedDocumentMapper} from '@infrastructure/mappers/imported-document.mapper';
+import {InsuranceClaimMapper} from '@infrastructure/mappers/insurance-claim.mapper';
 import {InsurancePlanMapper} from '@infrastructure/mappers/insurance-plan.mapper';
 import {KnowledgeChunkMapper} from '@infrastructure/mappers/knowledge-chunk.mapper';
 import {MemberBlockMapper} from '@infrastructure/mappers/member-block.mapper';
@@ -28,11 +29,14 @@ import {PatientChatSessionMapper} from '@infrastructure/mappers/patient-chat-ses
 import {PatientContextChunkMapper} from '@infrastructure/mappers/patient-context-chunk.mapper';
 import {PatientContextSnapshotMapper} from '@infrastructure/mappers/patient-context-snapshot.mapper';
 import {PatientFormMapper} from '@infrastructure/mappers/patient-form.mapper';
+import {PatientInsuranceEnrollmentMapper} from '@infrastructure/mappers/patient-insurance-enrollment.mapper';
 import {PatientMapper} from '@infrastructure/mappers/patient.mapper';
 import {PersonMapper} from '@infrastructure/mappers/person.mapper';
+import {ProfessionalAgendaAccessMapper} from '@infrastructure/mappers/professional-agenda-access.mapper';
 import {ProfessionalMapper} from '@infrastructure/mappers/professional.mapper';
 import {RecordAmendmentMapper} from '@infrastructure/mappers/record-amendment.mapper';
 import {RecordMapper} from '@infrastructure/mappers/record.mapper';
+import {RoomMapper} from '@infrastructure/mappers/room.mapper';
 import {WorkingHoursMapper} from '@infrastructure/mappers/working-hours.mapper';
 
 const mappers = [
@@ -40,12 +44,15 @@ const mappers = [
     ClinicMapper,
     ClinicMemberMapper,
     ClinicPatientAccessMapper,
+    ProfessionalAgendaAccessMapper,
     DocumentPermissionMapper,
     // People
     PersonMapper,
     ProfessionalMapper,
     PatientMapper,
     InsurancePlanMapper,
+    PatientInsuranceEnrollmentMapper,
+    InsuranceClaimMapper,
     // Schedule
     AppointmentMapper,
     AppointmentPaymentMapper,
@@ -53,6 +60,7 @@ const mappers = [
     ClinicReminderConfigMapper,
     WorkingHoursMapper,
     MemberBlockMapper,
+    RoomMapper,
     // Clinical
     RecordMapper,
     RecordAmendmentMapper,

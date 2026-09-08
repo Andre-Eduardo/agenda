@@ -23,19 +23,24 @@ import {EventModule} from '@application/event/event.module';
 import {FinancialReportModule} from '@application/financial-report/financial-report.module';
 import {FormTemplateModule} from '@application/form-template/form-template.module';
 import {ImportedDocumentModule} from '@application/imported-document/imported-document.module';
+import {InsuranceClaimModule} from '@application/insurance-claim/insurance-claim.module';
 import {KnowledgeBaseModule} from '@application/knowledge-base/knowledge-base.module';
 import {MemberBlockModule} from '@application/member-block/member-block.module';
 import {PatientAlertModule} from '@application/patient-alert/patient-alert.module';
+import {PatientInsuranceEnrollmentModule} from '@application/patient-insurance-enrollment/patient-insurance-enrollment.module';
 import {PatientFormModule} from '@application/patient-form/patient-form.module';
 import {PatientModule} from '@application/patient/patient.module';
 import {PaymentModule} from '@application/payment/payment.module';
+import {ProfessionalAgendaAccessModule} from '@application/professional-agenda-access/professional-agenda-access.module';
 import {ProfessionalModule} from '@application/professional/professional.module';
 import {RecordModule} from '@application/record/record.module';
+import {RoomModule} from '@application/room/room.module';
 import {SubscriptionModule} from '@application/subscription/subscription.module';
 import {UploadModule} from '@application/upload/upload.module';
 import {UserModule} from '@application/user/user.module';
 import {WorkingHoursModule} from '@application/working-hours/working-hours.module';
-import {GlobalAuthorizer, MultiAuthorizer} from '@domain/auth/authorizer';
+import {ClinicMemberRoleAuthorizer, GlobalAuthorizer, MultiAuthorizer} from '@domain/auth/authorizer';
+import {ClinicMemberRepository} from '@domain/clinic-member/clinic-member.repository';
 import {TokenProvider} from '@domain/user/token';
 import {UserRepository} from '@domain/user/user.repository';
 import {EnvConfigService} from '@infrastructure/config';
@@ -73,15 +78,23 @@ const interceptors: Provider[] = [
 const guards: Provider[] = [
     {
         provide: APP_GUARD,
-        useFactory: (configService: EnvConfigService, tokenProvider: TokenProvider, userRepository: UserRepository) =>
+        useFactory: (
+            configService: EnvConfigService,
+            tokenProvider: TokenProvider,
+            userRepository: UserRepository,
+            clinicMemberRepository: ClinicMemberRepository
+        ) =>
             new AuthGuard(
                 configService.auth.cookieName,
                 configService.clinicMember.cookieName,
                 tokenProvider,
-                new MultiAuthorizer(new GlobalAuthorizer(userRepository)),
+                new MultiAuthorizer(
+                    new GlobalAuthorizer(userRepository),
+                    new ClinicMemberRoleAuthorizer(clinicMemberRepository)
+                ),
                 new Reflector()
             ),
-        inject: [EnvConfigService, TokenProvider, UserRepository],
+        inject: [EnvConfigService, TokenProvider, UserRepository, ClinicMemberRepository],
     },
 ];
 
@@ -93,6 +106,7 @@ const guards: Provider[] = [
         ClinicModule,
         ClinicMemberModule,
         ClinicPatientAccessModule,
+        ProfessionalAgendaAccessModule,
         DocumentPermissionModule,
         UserModule,
         ProfessionalModule,
@@ -115,9 +129,12 @@ const guards: Provider[] = [
         BillingModule,
         PaymentModule,
         AppointmentPaymentModule,
+        PatientInsuranceEnrollmentModule,
+        InsuranceClaimModule,
         FinancialReportModule,
         WorkingHoursModule,
         MemberBlockModule,
+        RoomModule,
     ],
     providers: [...exceptionFilters, ...pipes, ...interceptors, ...guards],
 })

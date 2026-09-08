@@ -97,6 +97,10 @@ export enum ClinicPermission {
     UPDATE = 'clinic:update',
 }
 
+export enum ClinicMemberPermission {
+    CREATE = 'clinic-member:create',
+}
+
 export enum InsurancePlanPermission {
     VIEW = 'insurance-plan:view',
     CREATE = 'insurance-plan:create',
@@ -140,6 +144,17 @@ export enum AppointmentPaymentPermission {
     VIEW = 'appointment-payment:view',
 }
 
+export enum PatientInsuranceEnrollmentPermission {
+    VIEW = 'patient-insurance-enrollment:view',
+    CREATE = 'patient-insurance-enrollment:create',
+    UPDATE = 'patient-insurance-enrollment:update',
+}
+
+export enum InsuranceClaimPermission {
+    VIEW = 'insurance-claim:view',
+    UPDATE = 'insurance-claim:update',
+}
+
 export enum FinancialReportPermission {
     VIEW = 'financial-report:view',
 }
@@ -152,6 +167,19 @@ export enum MemberBlockPermission {
     CREATE = 'member-block:create',
     LIST = 'member-block:list',
     DELETE = 'member-block:delete',
+}
+
+export enum ProfessionalAgendaAccessPermission {
+    GRANT = 'professional-agenda-access:grant',
+    REVOKE = 'professional-agenda-access:revoke',
+    LIST = 'professional-agenda-access:list',
+}
+
+export enum RoomPermission {
+    VIEW = 'room:view',
+    CREATE = 'room:create',
+    UPDATE = 'room:update',
+    DELETE = 'room:delete',
 }
 
 const PERMISSIONS = [
@@ -168,6 +196,7 @@ const PERMISSIONS = [
     ...Object.values(FormTemplatePermission),
     ...Object.values(PatientFormPermission),
     ...Object.values(ClinicPermission),
+    ...Object.values(ClinicMemberPermission),
     ...Object.values(InsurancePlanPermission),
     ...Object.values(ClinicalChatPermission),
     ...Object.values(ClinicalDocumentPermission),
@@ -177,9 +206,13 @@ const PERMISSIONS = [
     ...Object.values(BillingPermission),
     ...Object.values(PaymentPermission),
     ...Object.values(AppointmentPaymentPermission),
+    ...Object.values(PatientInsuranceEnrollmentPermission),
+    ...Object.values(InsuranceClaimPermission),
     ...Object.values(FinancialReportPermission),
     ...Object.values(WorkingHoursPermission),
     ...Object.values(MemberBlockPermission),
+    ...Object.values(ProfessionalAgendaAccessPermission),
+    ...Object.values(RoomPermission),
 ];
 
 export type Permission = (typeof PERMISSIONS)[number];
