@@ -866,7 +866,7 @@ export const getListInsurancePlansResponseMock = (): InsurancePlan[] =>
         updatedAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
         clinicId: faker.string.uuid(),
         name: faker.string.alpha({length: {min: 10, max: 20}}),
-        code: {},
+        code: faker.helpers.arrayElement([faker.string.alpha({length: {min: 10, max: 20}}), null]),
         isActive: faker.datatype.boolean(),
     }));
 
@@ -877,7 +877,7 @@ export const getListInsurancePlansResponseMock200 = (): InsurancePlan[] =>
         updatedAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
         clinicId: faker.string.uuid(),
         name: faker.string.alpha({length: {min: 10, max: 20}}),
-        code: {},
+        code: faker.helpers.arrayElement([faker.string.alpha({length: {min: 10, max: 20}}), null]),
         isActive: faker.datatype.boolean(),
     }));
 
@@ -899,7 +899,7 @@ export const getCreateInsurancePlanResponseMock = (overrideResponse: Partial<Ins
     updatedAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
     clinicId: faker.string.uuid(),
     name: faker.string.alpha({length: {min: 10, max: 20}}),
-    code: {},
+    code: faker.helpers.arrayElement([faker.string.alpha({length: {min: 10, max: 20}}), null]),
     isActive: faker.datatype.boolean(),
     ...overrideResponse,
 });
@@ -912,7 +912,7 @@ export const getCreateInsurancePlanResponseMock201 = (
     updatedAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
     clinicId: faker.string.uuid(),
     name: faker.string.alpha({length: {min: 10, max: 20}}),
-    code: {},
+    code: faker.helpers.arrayElement([faker.string.alpha({length: {min: 10, max: 20}}), null]),
     isActive: faker.datatype.boolean(),
     ...overrideResponse,
 });

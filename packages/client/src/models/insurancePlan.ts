@@ -4,7 +4,6 @@
  * Automo API
  * OpenAPI spec version: 0.0.0
  */
-import type {InsurancePlanCode} from './insurancePlanCode';
 
 export type InsurancePlan = {
     /** The unique identifier of the entity */
@@ -21,7 +20,7 @@ export type InsurancePlan = {
      * Internal or TISS code
      * @nullable
      */
-    code: InsurancePlanCode;
+    code: string | null;
     /** Whether the plan is active */
     isActive: boolean;
 };

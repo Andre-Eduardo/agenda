@@ -201,7 +201,6 @@ export * from './insuranceClaimClaimStatus';
 export type * from './insuranceClaimGlosaAmountBrl';
 export type * from './insuranceClaimGlosaReason';
 export type * from './insurancePlan';
-export type * from './insurancePlanCode';
 export * from './listClaimsClaimStatusAnyOfItem';
 export type * from './listClaimsParams';
 export type * from './listClinicMembersParams';

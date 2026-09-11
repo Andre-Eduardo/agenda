@@ -8787,7 +8787,7 @@
             "example": "Unimed"
           },
           "code": {
-            "type": "object",
+            "type": "string",
             "nullable": true,
             "description": "Internal or TISS code",
             "example": "UNI-001"

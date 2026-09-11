@@ -10,7 +10,7 @@ export class InsurancePlanDto extends EntityDto {
     @ApiProperty({description: 'Plan name', example: 'Unimed'})
     name: string;
 
-    @ApiProperty({nullable: true, description: 'Internal or TISS code', example: 'UNI-001'})
+    @ApiProperty({type: 'string', nullable: true, description: 'Internal or TISS code', example: 'UNI-001'})
     code: string | null;
 
     @ApiProperty({description: 'Whether the plan is active'})
