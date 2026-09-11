@@ -5,10 +5,10 @@
  * OpenAPI spec version: 0.0.0
  */
 
-export type CreateClinicMemberDtoRole = (typeof CreateClinicMemberDtoRole)[keyof typeof CreateClinicMemberDtoRole];
+export type ClinicMemberRolesItem = (typeof ClinicMemberRolesItem)[keyof typeof ClinicMemberRolesItem];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
-export const CreateClinicMemberDtoRole = {
+export const ClinicMemberRolesItem = {
     OWNER: 'OWNER',
     ADMIN: 'ADMIN',
     PROFESSIONAL: 'PROFESSIONAL',

@@ -26,7 +26,7 @@ import {HttpResponse, http} from 'msw';
 import type {RequestHandlerOptions} from 'msw';
 import {apiClient} from '../api-client';
 import type {ErrorType} from '../api-client';
-import type {CreateFormTemplateVersionInputDto, SearchFormTemplatesParams} from '../models';
+import type {CreateFormTemplateInputDto, CreateFormTemplateVersionInputDto, SearchFormTemplatesParams} from '../models';
 import type {ApiProblem, FormTemplate, FormTemplateVersion} from '../models';
 
 type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
@@ -233,6 +233,123 @@ export function useSearchFormTemplatesSuspense<
 
     return query;
 }
+
+/**
+ * @summary Create a new form template
+ */
+export const create = (
+    createFormTemplateInputDto: CreateFormTemplateInputDto,
+    options?: SecondParameter<typeof apiClient>,
+    signal?: AbortSignal
+) => {
+    return apiClient<FormTemplate>(
+        {
+            url: `/api/v1/form-templates`,
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            data: createFormTemplateInputDto,
+            signal,
+        },
+        options
+    );
+};
+
+export const getCreateMutationOptions = <TError = ErrorType<ApiProblem>, TContext = unknown>(options?: {
+    mutation?: UseMutationOptions<
+        Awaited<ReturnType<typeof create>>,
+        TError,
+        {data: CreateFormTemplateInputDto},
+        TContext
+    >;
+    request?: SecondParameter<typeof apiClient>;
+}): UseMutationOptions<Awaited<ReturnType<typeof create>>, TError, {data: CreateFormTemplateInputDto}, TContext> => {
+    const mutationKey = ['create'];
+    const {mutation: mutationOptions, request: requestOptions} = options
+        ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
+            ? options
+            : {...options, mutation: {...options.mutation, mutationKey}}
+        : {mutation: {mutationKey}, request: undefined};
+
+    const mutationFn: MutationFunction<Awaited<ReturnType<typeof create>>, {data: CreateFormTemplateInputDto}> = (
+        props
+    ) => {
+        const {data} = props ?? {};
+
+        return create(data, requestOptions);
+    };
+
+    return {mutationFn, ...mutationOptions};
+};
+
+export type CreateMutationResult = NonNullable<Awaited<ReturnType<typeof create>>>;
+export type CreateMutationBody = CreateFormTemplateInputDto;
+export type CreateMutationError = ErrorType<ApiProblem>;
+
+/**
+ * @summary Create a new form template
+ */
+export const useCreate = <TError = ErrorType<ApiProblem>, TContext = unknown>(
+    options?: {
+        mutation?: UseMutationOptions<
+            Awaited<ReturnType<typeof create>>,
+            TError,
+            {data: CreateFormTemplateInputDto},
+            TContext
+        >;
+        request?: SecondParameter<typeof apiClient>;
+    },
+    queryClient?: QueryClient
+): UseMutationResult<Awaited<ReturnType<typeof create>>, TError, {data: CreateFormTemplateInputDto}, TContext> => {
+    const mutationOptions = getCreateMutationOptions(options);
+
+    return useMutation(mutationOptions, queryClient);
+};
+
+/**
+ * @summary Soft-delete a form template
+ */
+export const _delete = (templateId: string, options?: SecondParameter<typeof apiClient>) => {
+    return apiClient<void>({url: `/api/v1/form-templates/${templateId}`, method: 'DELETE'}, options);
+};
+
+export const getDeleteMutationOptions = <TError = ErrorType<ApiProblem>, TContext = unknown>(options?: {
+    mutation?: UseMutationOptions<Awaited<ReturnType<typeof _delete>>, TError, {templateId: string}, TContext>;
+    request?: SecondParameter<typeof apiClient>;
+}): UseMutationOptions<Awaited<ReturnType<typeof _delete>>, TError, {templateId: string}, TContext> => {
+    const mutationKey = ['_delete'];
+    const {mutation: mutationOptions, request: requestOptions} = options
+        ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
+            ? options
+            : {...options, mutation: {...options.mutation, mutationKey}}
+        : {mutation: {mutationKey}, request: undefined};
+
+    const mutationFn: MutationFunction<Awaited<ReturnType<typeof _delete>>, {templateId: string}> = (props) => {
+        const {templateId} = props ?? {};
+
+        return _delete(templateId, requestOptions);
+    };
+
+    return {mutationFn, ...mutationOptions};
+};
+
+export type _DeleteMutationResult = NonNullable<Awaited<ReturnType<typeof _delete>>>;
+
+export type _DeleteMutationError = ErrorType<ApiProblem>;
+
+/**
+ * @summary Soft-delete a form template
+ */
+export const useDelete = <TError = ErrorType<ApiProblem>, TContext = unknown>(
+    options?: {
+        mutation?: UseMutationOptions<Awaited<ReturnType<typeof _delete>>, TError, {templateId: string}, TContext>;
+        request?: SecondParameter<typeof apiClient>;
+    },
+    queryClient?: QueryClient
+): UseMutationResult<Awaited<ReturnType<typeof _delete>>, TError, {templateId: string}, TContext> => {
+    const mutationOptions = getDeleteMutationOptions(options);
+
+    return useMutation(mutationOptions, queryClient);
+};
 
 /**
  * @summary Clone a public template for a professional
@@ -681,6 +798,58 @@ export const getSearchFormTemplatesResponseMockDefault = (overrideResponse: Part
     ...overrideResponse,
 });
 
+export const getCreateResponseMock = (overrideResponse: Partial<FormTemplate> = {}): FormTemplate => ({
+    id: faker.string.uuid(),
+    createdAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
+    updatedAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
+    code: faker.string.alpha({length: {min: 10, max: 20}}),
+    name: faker.string.alpha({length: {min: 10, max: 20}}),
+    description: {},
+    specialty: {},
+    isPublic: faker.datatype.boolean(),
+    clinicId: faker.helpers.arrayElement([faker.string.uuid(), null]),
+    createdByMemberId: faker.helpers.arrayElement([faker.string.uuid(), null]),
+    ...overrideResponse,
+});
+
+export const getCreateResponseMock201 = (overrideResponse: Partial<FormTemplate> = {}): FormTemplate => ({
+    id: faker.string.uuid(),
+    createdAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
+    updatedAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
+    code: faker.string.alpha({length: {min: 10, max: 20}}),
+    name: faker.string.alpha({length: {min: 10, max: 20}}),
+    description: {},
+    specialty: {},
+    isPublic: faker.datatype.boolean(),
+    clinicId: faker.helpers.arrayElement([faker.string.uuid(), null]),
+    createdByMemberId: faker.helpers.arrayElement([faker.string.uuid(), null]),
+    ...overrideResponse,
+});
+
+export const getCreateResponseMockDefault = (overrideResponse: Partial<ApiProblem> = {}): ApiProblem => ({
+    title: faker.string.alpha({length: {min: 10, max: 20}}),
+    type: faker.internet.url(),
+    detail: faker.string.alpha({length: {min: 10, max: 20}}),
+    status: faker.helpers.arrayElement([
+        400, 401, 402, 403, 404, 405, 406, 407, 408, 409, 410, 411, 412, 413, 414, 415, 416, 417, 418, 421, 422, 423,
+        424, 428, 429, 456, 500, 501, 502, 503, 504, 505, 507, 508,
+    ] as const),
+    instance: faker.string.alpha({length: {min: 10, max: 20}}),
+    ...overrideResponse,
+});
+
+export const getDeleteResponseMockDefault = (overrideResponse: Partial<ApiProblem> = {}): ApiProblem => ({
+    title: faker.string.alpha({length: {min: 10, max: 20}}),
+    type: faker.internet.url(),
+    detail: faker.string.alpha({length: {min: 10, max: 20}}),
+    status: faker.helpers.arrayElement([
+        400, 401, 402, 403, 404, 405, 406, 407, 408, 409, 410, 411, 412, 413, 414, 415, 416, 417, 418, 421, 422, 423,
+        424, 428, 429, 456, 500, 501, 502, 503, 504, 505, 507, 508,
+    ] as const),
+    instance: faker.string.alpha({length: {min: 10, max: 20}}),
+    ...overrideResponse,
+});
+
 export const getCloneResponseMock = (overrideResponse: Partial<FormTemplate> = {}): FormTemplate => ({
     id: faker.string.uuid(),
     createdAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
@@ -909,6 +1078,136 @@ export const getSearchFormTemplatesMockHandlerDefault = (
                             ? await overrideResponse(info)
                             : overrideResponse
                         : getSearchFormTemplatesResponseMockDefault()
+                ),
+                {status: 200, headers: {'Content-Type': 'application/json'}}
+            );
+        },
+        options
+    );
+};
+
+export const getCreateMockHandler = (
+    overrideResponse?:
+        | FormTemplate
+        | ((info: Parameters<Parameters<typeof http.post>[1]>[0]) => Promise<FormTemplate> | FormTemplate),
+    options?: RequestHandlerOptions
+) => {
+    return http.post(
+        '*/api/v1/form-templates',
+        async (info) => {
+            return new HttpResponse(
+                JSON.stringify(
+                    overrideResponse !== undefined
+                        ? typeof overrideResponse === 'function'
+                            ? await overrideResponse(info)
+                            : overrideResponse
+                        : getCreateResponseMock()
+                ),
+                {status: 201, headers: {'Content-Type': 'application/json'}}
+            );
+        },
+        options
+    );
+};
+
+export const getCreateMockHandler201 = (
+    overrideResponse?:
+        | FormTemplate
+        | ((info: Parameters<Parameters<typeof http.post>[1]>[0]) => Promise<FormTemplate> | FormTemplate),
+    options?: RequestHandlerOptions
+) => {
+    return http.post(
+        '*/api/v1/form-templates',
+        async (info) => {
+            return new HttpResponse(
+                JSON.stringify(
+                    overrideResponse !== undefined
+                        ? typeof overrideResponse === 'function'
+                            ? await overrideResponse(info)
+                            : overrideResponse
+                        : getCreateResponseMock201()
+                ),
+                {status: 201, headers: {'Content-Type': 'application/json'}}
+            );
+        },
+        options
+    );
+};
+
+export const getCreateMockHandlerDefault = (
+    overrideResponse?:
+        | ApiProblem
+        | ((info: Parameters<Parameters<typeof http.post>[1]>[0]) => Promise<ApiProblem> | ApiProblem),
+    options?: RequestHandlerOptions
+) => {
+    return http.post(
+        '*/api/v1/form-templates',
+        async (info) => {
+            return new HttpResponse(
+                JSON.stringify(
+                    overrideResponse !== undefined
+                        ? typeof overrideResponse === 'function'
+                            ? await overrideResponse(info)
+                            : overrideResponse
+                        : getCreateResponseMockDefault()
+                ),
+                {status: 200, headers: {'Content-Type': 'application/json'}}
+            );
+        },
+        options
+    );
+};
+
+export const getDeleteMockHandler = (
+    overrideResponse?: void | ((info: Parameters<Parameters<typeof http.delete>[1]>[0]) => Promise<void> | void),
+    options?: RequestHandlerOptions
+) => {
+    return http.delete(
+        '*/api/v1/form-templates/:templateId',
+        async (info) => {
+            if (typeof overrideResponse === 'function') {
+                await overrideResponse(info);
+            }
+
+            return new HttpResponse(null, {status: 204});
+        },
+        options
+    );
+};
+
+export const getDeleteMockHandler204 = (
+    overrideResponse?: void | ((info: Parameters<Parameters<typeof http.delete>[1]>[0]) => Promise<void> | void),
+    options?: RequestHandlerOptions
+) => {
+    return http.delete(
+        '*/api/v1/form-templates/:templateId',
+        async (info) => {
+            if (typeof overrideResponse === 'function') {
+                await overrideResponse(info);
+            }
+
+            return new HttpResponse(null, {status: 204});
+        },
+        options
+    );
+};
+
+export const getDeleteMockHandlerDefault = (
+    overrideResponse?:
+        | ApiProblem
+        | ((info: Parameters<Parameters<typeof http.delete>[1]>[0]) => Promise<ApiProblem> | ApiProblem),
+    options?: RequestHandlerOptions
+) => {
+    return http.delete(
+        '*/api/v1/form-templates/:templateId',
+        async (info) => {
+            return new HttpResponse(
+                JSON.stringify(
+                    overrideResponse !== undefined
+                        ? typeof overrideResponse === 'function'
+                            ? await overrideResponse(info)
+                            : overrideResponse
+                        : getDeleteResponseMockDefault()
                 ),
                 {status: 200, headers: {'Content-Type': 'application/json'}}
             );
@@ -1277,6 +1576,8 @@ export const getDeprecateVersionMockHandlerDefault = (
 
 export const getFormTemplateMock = () => [
     getSearchFormTemplatesMockHandler(),
+    getCreateMockHandler(),
+    getDeleteMockHandler(),
     getCloneMockHandler(),
     getListVersionsMockHandler(),
     getCreateVersionMockHandler(),

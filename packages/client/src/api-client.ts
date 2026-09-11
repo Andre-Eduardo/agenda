@@ -1,4 +1,4 @@
-import type {AxiosError, AxiosRequestConfig, AxiosRequestHeaders} from 'axios';
+import type {AxiosError, AxiosRequestConfig} from 'axios';
 import axios from 'axios';
 
 export {AxiosError} from 'axios';

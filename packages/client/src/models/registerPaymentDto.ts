@@ -22,6 +22,10 @@ export type RegisterPaymentDto = {
      * @nullable
      */
     insuranceAuthCode?: string | null;
+    /** @nullable */
+    patientPackageId?: string | null;
+    /** @nullable */
+    patientSubscriptionId?: string | null;
     /**
      * @maxLength 1000
      * @nullable

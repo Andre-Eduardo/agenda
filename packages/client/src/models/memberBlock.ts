@@ -4,7 +4,6 @@
  * Automo API
  * OpenAPI spec version: 0.0.0
  */
-import type {MemberBlockReason} from './memberBlockReason';
 
 export type MemberBlock = {
     /** The unique identifier of the entity */
@@ -23,5 +22,5 @@ export type MemberBlock = {
      * Optional reason for the block
      * @nullable
      */
-    reason: MemberBlockReason;
+    reason: string | null;
 };

@@ -17,4 +17,6 @@ export const RegisterPaymentDtoPaymentMethod = {
     BANK_TRANSFER: 'BANK_TRANSFER',
     INSURANCE: 'INSURANCE',
     COURTESY: 'COURTESY',
+    PACKAGE: 'PACKAGE',
+    SUBSCRIPTION: 'SUBSCRIPTION',
 } as const;

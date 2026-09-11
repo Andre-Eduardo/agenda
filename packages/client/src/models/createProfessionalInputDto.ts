@@ -4,13 +4,13 @@
  * Automo API
  * OpenAPI spec version: 0.0.0
  */
-import type {CreateProfessionalDtoSpecialtyNormalized} from './createProfessionalDtoSpecialtyNormalized';
+import type {CreateProfessionalInputDtoSpecialtyNormalized} from './createProfessionalInputDtoSpecialtyNormalized';
 
-export type CreateProfessionalDto = {
+export type CreateProfessionalInputDto = {
     /** @nullable */
     registrationNumber: string | null;
     /** @nullable */
     specialty: string | null;
     /** @nullable */
-    specialtyNormalized: CreateProfessionalDtoSpecialtyNormalized;
+    specialtyNormalized: CreateProfessionalInputDtoSpecialtyNormalized;
 };

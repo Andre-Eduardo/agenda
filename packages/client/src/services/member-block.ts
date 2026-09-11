@@ -26,7 +26,7 @@ import {HttpResponse, http} from 'msw';
 import type {RequestHandlerOptions} from 'msw';
 import {apiClient} from '../api-client';
 import type {ErrorType} from '../api-client';
-import type {CreateMemberBlockDto, ListParams} from '../models';
+import type {CreateMemberBlockDto, ListMemberBlocksParams} from '../models';
 import type {ApiProblem, MemberBlock} from '../models';
 
 type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
@@ -34,7 +34,7 @@ type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 /**
  * @summary Creates a schedule block for a member
  */
-export const create = (
+export const createMemberBlock = (
     memberId: string,
     createMemberBlockDto: CreateMemberBlockDto,
     options?: SecondParameter<typeof apiClient>,
@@ -52,21 +52,21 @@ export const create = (
     );
 };
 
-export const getCreateMutationOptions = <TError = ErrorType<ApiProblem>, TContext = unknown>(options?: {
+export const getCreateMemberBlockMutationOptions = <TError = ErrorType<ApiProblem>, TContext = unknown>(options?: {
     mutation?: UseMutationOptions<
-        Awaited<ReturnType<typeof create>>,
+        Awaited<ReturnType<typeof createMemberBlock>>,
         TError,
         {memberId: string; data: CreateMemberBlockDto},
         TContext
     >;
     request?: SecondParameter<typeof apiClient>;
 }): UseMutationOptions<
-    Awaited<ReturnType<typeof create>>,
+    Awaited<ReturnType<typeof createMemberBlock>>,
     TError,
     {memberId: string; data: CreateMemberBlockDto},
     TContext
 > => {
-    const mutationKey = ['create'];
+    const mutationKey = ['createMemberBlock'];
     const {mutation: mutationOptions, request: requestOptions} = options
         ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
             ? options
@@ -74,28 +74,28 @@ export const getCreateMutationOptions = <TError = ErrorType<ApiProblem>, TContex
         : {mutation: {mutationKey}, request: undefined};
 
     const mutationFn: MutationFunction<
-        Awaited<ReturnType<typeof create>>,
+        Awaited<ReturnType<typeof createMemberBlock>>,
         {memberId: string; data: CreateMemberBlockDto}
     > = (props) => {
         const {memberId, data} = props ?? {};
 
-        return create(memberId, data, requestOptions);
+        return createMemberBlock(memberId, data, requestOptions);
     };
 
     return {mutationFn, ...mutationOptions};
 };
 
-export type CreateMutationResult = NonNullable<Awaited<ReturnType<typeof create>>>;
-export type CreateMutationBody = CreateMemberBlockDto;
-export type CreateMutationError = ErrorType<ApiProblem>;
+export type CreateMemberBlockMutationResult = NonNullable<Awaited<ReturnType<typeof createMemberBlock>>>;
+export type CreateMemberBlockMutationBody = CreateMemberBlockDto;
+export type CreateMemberBlockMutationError = ErrorType<ApiProblem>;
 
 /**
  * @summary Creates a schedule block for a member
  */
-export const useCreate = <TError = ErrorType<ApiProblem>, TContext = unknown>(
+export const useCreateMemberBlock = <TError = ErrorType<ApiProblem>, TContext = unknown>(
     options?: {
         mutation?: UseMutationOptions<
-            Awaited<ReturnType<typeof create>>,
+            Awaited<ReturnType<typeof createMemberBlock>>,
             TError,
             {memberId: string; data: CreateMemberBlockDto},
             TContext
@@ -104,70 +104,12 @@ export const useCreate = <TError = ErrorType<ApiProblem>, TContext = unknown>(
     },
     queryClient?: QueryClient
 ): UseMutationResult<
-    Awaited<ReturnType<typeof create>>,
+    Awaited<ReturnType<typeof createMemberBlock>>,
     TError,
     {memberId: string; data: CreateMemberBlockDto},
     TContext
 > => {
-    const mutationOptions = getCreateMutationOptions(options);
-
-    return useMutation(mutationOptions, queryClient);
-};
-
-/**
- * @summary Deletes a schedule block
- */
-export const _delete = (memberId: string, blockId: string, options?: SecondParameter<typeof apiClient>) => {
-    return apiClient<void>({url: `/api/v1/members/${memberId}/blocks/${blockId}`, method: 'DELETE'}, options);
-};
-
-export const getDeleteMutationOptions = <TError = ErrorType<ApiProblem>, TContext = unknown>(options?: {
-    mutation?: UseMutationOptions<
-        Awaited<ReturnType<typeof _delete>>,
-        TError,
-        {memberId: string; blockId: string},
-        TContext
-    >;
-    request?: SecondParameter<typeof apiClient>;
-}): UseMutationOptions<Awaited<ReturnType<typeof _delete>>, TError, {memberId: string; blockId: string}, TContext> => {
-    const mutationKey = ['_delete'];
-    const {mutation: mutationOptions, request: requestOptions} = options
-        ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
-            ? options
-            : {...options, mutation: {...options.mutation, mutationKey}}
-        : {mutation: {mutationKey}, request: undefined};
-
-    const mutationFn: MutationFunction<Awaited<ReturnType<typeof _delete>>, {memberId: string; blockId: string}> = (
-        props
-    ) => {
-        const {memberId, blockId} = props ?? {};
-
-        return _delete(memberId, blockId, requestOptions);
-    };
-
-    return {mutationFn, ...mutationOptions};
-};
-
-export type _DeleteMutationResult = NonNullable<Awaited<ReturnType<typeof _delete>>>;
-
-export type _DeleteMutationError = ErrorType<ApiProblem>;
-
-/**
- * @summary Deletes a schedule block
- */
-export const useDelete = <TError = ErrorType<ApiProblem>, TContext = unknown>(
-    options?: {
-        mutation?: UseMutationOptions<
-            Awaited<ReturnType<typeof _delete>>,
-            TError,
-            {memberId: string; blockId: string},
-            TContext
-        >;
-        request?: SecondParameter<typeof apiClient>;
-    },
-    queryClient?: QueryClient
-): UseMutationResult<Awaited<ReturnType<typeof _delete>>, TError, {memberId: string; blockId: string}, TContext> => {
-    const mutationOptions = getDeleteMutationOptions(options);
+    const mutationOptions = getCreateMemberBlockMutationOptions(options);
 
     return useMutation(mutationOptions, queryClient);
 };
@@ -175,9 +117,9 @@ export const useDelete = <TError = ErrorType<ApiProblem>, TContext = unknown>(
 /**
  * @summary Lists schedule blocks for a member
  */
-export const list = (
+export const listMemberBlocks = (
     memberId: string,
-    params: ListParams,
+    params: ListMemberBlocksParams,
     options?: SecondParameter<typeof apiClient>,
     signal?: AbortSignal
 ) => {
@@ -187,66 +129,86 @@ export const list = (
     );
 };
 
-export const getListQueryKey = (memberId?: string, params?: ListParams) => {
+export const getListMemberBlocksQueryKey = (memberId?: string, params?: ListMemberBlocksParams) => {
     return [`/api/v1/members/${memberId}/blocks`, ...(params ? [params] : [])] as const;
 };
 
-export const getListQueryOptions = <TData = Awaited<ReturnType<typeof list>>, TError = ErrorType<ApiProblem>>(
+export const getListMemberBlocksQueryOptions = <
+    TData = Awaited<ReturnType<typeof listMemberBlocks>>,
+    TError = ErrorType<ApiProblem>,
+>(
     memberId: string,
-    params: ListParams,
+    params: ListMemberBlocksParams,
     options?: {
-        query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof list>>, TError, TData>>;
+        query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof listMemberBlocks>>, TError, TData>>;
         request?: SecondParameter<typeof apiClient>;
     }
 ) => {
     const {query: queryOptions, request: requestOptions} = options ?? {};
 
-    const queryKey = queryOptions?.queryKey ?? getListQueryKey(memberId, params);
+    const queryKey = queryOptions?.queryKey ?? getListMemberBlocksQueryKey(memberId, params);
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof list>>> = ({signal}) =>
-        list(memberId, params, requestOptions, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listMemberBlocks>>> = ({signal}) =>
+        listMemberBlocks(memberId, params, requestOptions, signal);
 
     return {queryKey, queryFn, enabled: !!memberId, ...queryOptions} as UseQueryOptions<
-        Awaited<ReturnType<typeof list>>,
+        Awaited<ReturnType<typeof listMemberBlocks>>,
         TError,
         TData
     > & {queryKey: DataTag<QueryKey, TData, TError>};
 };
 
-export type ListQueryResult = NonNullable<Awaited<ReturnType<typeof list>>>;
-export type ListQueryError = ErrorType<ApiProblem>;
+export type ListMemberBlocksQueryResult = NonNullable<Awaited<ReturnType<typeof listMemberBlocks>>>;
+export type ListMemberBlocksQueryError = ErrorType<ApiProblem>;
 
-export function useList<TData = Awaited<ReturnType<typeof list>>, TError = ErrorType<ApiProblem>>(
+export function useListMemberBlocks<
+    TData = Awaited<ReturnType<typeof listMemberBlocks>>,
+    TError = ErrorType<ApiProblem>,
+>(
     memberId: string,
-    params: ListParams,
+    params: ListMemberBlocksParams,
     options: {
-        query: Partial<UseQueryOptions<Awaited<ReturnType<typeof list>>, TError, TData>> &
+        query: Partial<UseQueryOptions<Awaited<ReturnType<typeof listMemberBlocks>>, TError, TData>> &
             Pick<
-                DefinedInitialDataOptions<Awaited<ReturnType<typeof list>>, TError, Awaited<ReturnType<typeof list>>>,
+                DefinedInitialDataOptions<
+                    Awaited<ReturnType<typeof listMemberBlocks>>,
+                    TError,
+                    Awaited<ReturnType<typeof listMemberBlocks>>
+                >,
                 'initialData'
             >;
         request?: SecondParameter<typeof apiClient>;
     },
     queryClient?: QueryClient
 ): DefinedUseQueryResult<TData, TError> & {queryKey: DataTag<QueryKey, TData, TError>};
-export function useList<TData = Awaited<ReturnType<typeof list>>, TError = ErrorType<ApiProblem>>(
+export function useListMemberBlocks<
+    TData = Awaited<ReturnType<typeof listMemberBlocks>>,
+    TError = ErrorType<ApiProblem>,
+>(
     memberId: string,
-    params: ListParams,
+    params: ListMemberBlocksParams,
     options?: {
-        query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof list>>, TError, TData>> &
+        query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof listMemberBlocks>>, TError, TData>> &
             Pick<
-                UndefinedInitialDataOptions<Awaited<ReturnType<typeof list>>, TError, Awaited<ReturnType<typeof list>>>,
+                UndefinedInitialDataOptions<
+                    Awaited<ReturnType<typeof listMemberBlocks>>,
+                    TError,
+                    Awaited<ReturnType<typeof listMemberBlocks>>
+                >,
                 'initialData'
             >;
         request?: SecondParameter<typeof apiClient>;
     },
     queryClient?: QueryClient
 ): UseQueryResult<TData, TError> & {queryKey: DataTag<QueryKey, TData, TError>};
-export function useList<TData = Awaited<ReturnType<typeof list>>, TError = ErrorType<ApiProblem>>(
+export function useListMemberBlocks<
+    TData = Awaited<ReturnType<typeof listMemberBlocks>>,
+    TError = ErrorType<ApiProblem>,
+>(
     memberId: string,
-    params: ListParams,
+    params: ListMemberBlocksParams,
     options?: {
-        query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof list>>, TError, TData>>;
+        query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof listMemberBlocks>>, TError, TData>>;
         request?: SecondParameter<typeof apiClient>;
     },
     queryClient?: QueryClient
@@ -255,16 +217,19 @@ export function useList<TData = Awaited<ReturnType<typeof list>>, TError = Error
  * @summary Lists schedule blocks for a member
  */
 
-export function useList<TData = Awaited<ReturnType<typeof list>>, TError = ErrorType<ApiProblem>>(
+export function useListMemberBlocks<
+    TData = Awaited<ReturnType<typeof listMemberBlocks>>,
+    TError = ErrorType<ApiProblem>,
+>(
     memberId: string,
-    params: ListParams,
+    params: ListMemberBlocksParams,
     options?: {
-        query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof list>>, TError, TData>>;
+        query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof listMemberBlocks>>, TError, TData>>;
         request?: SecondParameter<typeof apiClient>;
     },
     queryClient?: QueryClient
 ): UseQueryResult<TData, TError> & {queryKey: DataTag<QueryKey, TData, TError>} {
-    const queryOptions = getListQueryOptions(memberId, params, options);
+    const queryOptions = getListMemberBlocksQueryOptions(memberId, params, options);
 
     const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
         queryKey: DataTag<QueryKey, TData, TError>;
@@ -275,54 +240,66 @@ export function useList<TData = Awaited<ReturnType<typeof list>>, TError = Error
     return query;
 }
 
-export const getListSuspenseQueryOptions = <TData = Awaited<ReturnType<typeof list>>, TError = ErrorType<ApiProblem>>(
+export const getListMemberBlocksSuspenseQueryOptions = <
+    TData = Awaited<ReturnType<typeof listMemberBlocks>>,
+    TError = ErrorType<ApiProblem>,
+>(
     memberId: string,
-    params: ListParams,
+    params: ListMemberBlocksParams,
     options?: {
-        query?: Partial<UseSuspenseQueryOptions<Awaited<ReturnType<typeof list>>, TError, TData>>;
+        query?: Partial<UseSuspenseQueryOptions<Awaited<ReturnType<typeof listMemberBlocks>>, TError, TData>>;
         request?: SecondParameter<typeof apiClient>;
     }
 ) => {
     const {query: queryOptions, request: requestOptions} = options ?? {};
 
-    const queryKey = queryOptions?.queryKey ?? getListQueryKey(memberId, params);
+    const queryKey = queryOptions?.queryKey ?? getListMemberBlocksQueryKey(memberId, params);
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof list>>> = ({signal}) =>
-        list(memberId, params, requestOptions, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listMemberBlocks>>> = ({signal}) =>
+        listMemberBlocks(memberId, params, requestOptions, signal);
 
     return {queryKey, queryFn, ...queryOptions} as UseSuspenseQueryOptions<
-        Awaited<ReturnType<typeof list>>,
+        Awaited<ReturnType<typeof listMemberBlocks>>,
         TError,
         TData
     > & {queryKey: DataTag<QueryKey, TData, TError>};
 };
 
-export type ListSuspenseQueryResult = NonNullable<Awaited<ReturnType<typeof list>>>;
-export type ListSuspenseQueryError = ErrorType<ApiProblem>;
+export type ListMemberBlocksSuspenseQueryResult = NonNullable<Awaited<ReturnType<typeof listMemberBlocks>>>;
+export type ListMemberBlocksSuspenseQueryError = ErrorType<ApiProblem>;
 
-export function useListSuspense<TData = Awaited<ReturnType<typeof list>>, TError = ErrorType<ApiProblem>>(
+export function useListMemberBlocksSuspense<
+    TData = Awaited<ReturnType<typeof listMemberBlocks>>,
+    TError = ErrorType<ApiProblem>,
+>(
     memberId: string,
-    params: ListParams,
+    params: ListMemberBlocksParams,
     options: {
-        query: Partial<UseSuspenseQueryOptions<Awaited<ReturnType<typeof list>>, TError, TData>>;
+        query: Partial<UseSuspenseQueryOptions<Awaited<ReturnType<typeof listMemberBlocks>>, TError, TData>>;
         request?: SecondParameter<typeof apiClient>;
     },
     queryClient?: QueryClient
 ): UseSuspenseQueryResult<TData, TError> & {queryKey: DataTag<QueryKey, TData, TError>};
-export function useListSuspense<TData = Awaited<ReturnType<typeof list>>, TError = ErrorType<ApiProblem>>(
+export function useListMemberBlocksSuspense<
+    TData = Awaited<ReturnType<typeof listMemberBlocks>>,
+    TError = ErrorType<ApiProblem>,
+>(
     memberId: string,
-    params: ListParams,
+    params: ListMemberBlocksParams,
     options?: {
-        query?: Partial<UseSuspenseQueryOptions<Awaited<ReturnType<typeof list>>, TError, TData>>;
+        query?: Partial<UseSuspenseQueryOptions<Awaited<ReturnType<typeof listMemberBlocks>>, TError, TData>>;
         request?: SecondParameter<typeof apiClient>;
     },
     queryClient?: QueryClient
 ): UseSuspenseQueryResult<TData, TError> & {queryKey: DataTag<QueryKey, TData, TError>};
-export function useListSuspense<TData = Awaited<ReturnType<typeof list>>, TError = ErrorType<ApiProblem>>(
+export function useListMemberBlocksSuspense<
+    TData = Awaited<ReturnType<typeof listMemberBlocks>>,
+    TError = ErrorType<ApiProblem>,
+>(
     memberId: string,
-    params: ListParams,
+    params: ListMemberBlocksParams,
     options?: {
-        query?: Partial<UseSuspenseQueryOptions<Awaited<ReturnType<typeof list>>, TError, TData>>;
+        query?: Partial<UseSuspenseQueryOptions<Awaited<ReturnType<typeof listMemberBlocks>>, TError, TData>>;
         request?: SecondParameter<typeof apiClient>;
     },
     queryClient?: QueryClient
@@ -331,16 +308,19 @@ export function useListSuspense<TData = Awaited<ReturnType<typeof list>>, TError
  * @summary Lists schedule blocks for a member
  */
 
-export function useListSuspense<TData = Awaited<ReturnType<typeof list>>, TError = ErrorType<ApiProblem>>(
+export function useListMemberBlocksSuspense<
+    TData = Awaited<ReturnType<typeof listMemberBlocks>>,
+    TError = ErrorType<ApiProblem>,
+>(
     memberId: string,
-    params: ListParams,
+    params: ListMemberBlocksParams,
     options?: {
-        query?: Partial<UseSuspenseQueryOptions<Awaited<ReturnType<typeof list>>, TError, TData>>;
+        query?: Partial<UseSuspenseQueryOptions<Awaited<ReturnType<typeof listMemberBlocks>>, TError, TData>>;
         request?: SecondParameter<typeof apiClient>;
     },
     queryClient?: QueryClient
 ): UseSuspenseQueryResult<TData, TError> & {queryKey: DataTag<QueryKey, TData, TError>} {
-    const queryOptions = getListSuspenseQueryOptions(memberId, params, options);
+    const queryOptions = getListMemberBlocksSuspenseQueryOptions(memberId, params, options);
 
     const query = useSuspenseQuery(queryOptions, queryClient) as UseSuspenseQueryResult<TData, TError> & {
         queryKey: DataTag<QueryKey, TData, TError>;
@@ -351,29 +331,98 @@ export function useListSuspense<TData = Awaited<ReturnType<typeof list>>, TError
     return query;
 }
 
-export const getCreateResponseMock = (overrideResponse: Partial<MemberBlock> = {}): MemberBlock => ({
+/**
+ * @summary Deletes a schedule block
+ */
+export const deleteMemberBlock = (memberId: string, blockId: string, options?: SecondParameter<typeof apiClient>) => {
+    return apiClient<void>({url: `/api/v1/members/${memberId}/blocks/${blockId}`, method: 'DELETE'}, options);
+};
+
+export const getDeleteMemberBlockMutationOptions = <TError = ErrorType<ApiProblem>, TContext = unknown>(options?: {
+    mutation?: UseMutationOptions<
+        Awaited<ReturnType<typeof deleteMemberBlock>>,
+        TError,
+        {memberId: string; blockId: string},
+        TContext
+    >;
+    request?: SecondParameter<typeof apiClient>;
+}): UseMutationOptions<
+    Awaited<ReturnType<typeof deleteMemberBlock>>,
+    TError,
+    {memberId: string; blockId: string},
+    TContext
+> => {
+    const mutationKey = ['deleteMemberBlock'];
+    const {mutation: mutationOptions, request: requestOptions} = options
+        ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
+            ? options
+            : {...options, mutation: {...options.mutation, mutationKey}}
+        : {mutation: {mutationKey}, request: undefined};
+
+    const mutationFn: MutationFunction<
+        Awaited<ReturnType<typeof deleteMemberBlock>>,
+        {memberId: string; blockId: string}
+    > = (props) => {
+        const {memberId, blockId} = props ?? {};
+
+        return deleteMemberBlock(memberId, blockId, requestOptions);
+    };
+
+    return {mutationFn, ...mutationOptions};
+};
+
+export type DeleteMemberBlockMutationResult = NonNullable<Awaited<ReturnType<typeof deleteMemberBlock>>>;
+
+export type DeleteMemberBlockMutationError = ErrorType<ApiProblem>;
+
+/**
+ * @summary Deletes a schedule block
+ */
+export const useDeleteMemberBlock = <TError = ErrorType<ApiProblem>, TContext = unknown>(
+    options?: {
+        mutation?: UseMutationOptions<
+            Awaited<ReturnType<typeof deleteMemberBlock>>,
+            TError,
+            {memberId: string; blockId: string},
+            TContext
+        >;
+        request?: SecondParameter<typeof apiClient>;
+    },
+    queryClient?: QueryClient
+): UseMutationResult<
+    Awaited<ReturnType<typeof deleteMemberBlock>>,
+    TError,
+    {memberId: string; blockId: string},
+    TContext
+> => {
+    const mutationOptions = getDeleteMemberBlockMutationOptions(options);
+
+    return useMutation(mutationOptions, queryClient);
+};
+
+export const getCreateMemberBlockResponseMock = (overrideResponse: Partial<MemberBlock> = {}): MemberBlock => ({
     id: faker.string.uuid(),
     createdAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
     updatedAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
     clinicMemberId: faker.string.uuid(),
     startAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
     endAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
-    reason: {},
+    reason: faker.helpers.arrayElement([faker.string.alpha({length: {min: 10, max: 20}}), null]),
     ...overrideResponse,
 });
 
-export const getCreateResponseMock201 = (overrideResponse: Partial<MemberBlock> = {}): MemberBlock => ({
+export const getCreateMemberBlockResponseMock201 = (overrideResponse: Partial<MemberBlock> = {}): MemberBlock => ({
     id: faker.string.uuid(),
     createdAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
     updatedAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
     clinicMemberId: faker.string.uuid(),
     startAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
     endAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
-    reason: {},
+    reason: faker.helpers.arrayElement([faker.string.alpha({length: {min: 10, max: 20}}), null]),
     ...overrideResponse,
 });
 
-export const getCreateResponseMockDefault = (overrideResponse: Partial<ApiProblem> = {}): ApiProblem => ({
+export const getCreateMemberBlockResponseMockDefault = (overrideResponse: Partial<ApiProblem> = {}): ApiProblem => ({
     title: faker.string.alpha({length: {min: 10, max: 20}}),
     type: faker.internet.url(),
     detail: faker.string.alpha({length: {min: 10, max: 20}}),
@@ -385,19 +434,7 @@ export const getCreateResponseMockDefault = (overrideResponse: Partial<ApiProble
     ...overrideResponse,
 });
 
-export const getDeleteResponseMockDefault = (overrideResponse: Partial<ApiProblem> = {}): ApiProblem => ({
-    title: faker.string.alpha({length: {min: 10, max: 20}}),
-    type: faker.internet.url(),
-    detail: faker.string.alpha({length: {min: 10, max: 20}}),
-    status: faker.helpers.arrayElement([
-        400, 401, 402, 403, 404, 405, 406, 407, 408, 409, 410, 411, 412, 413, 414, 415, 416, 417, 418, 421, 422, 423,
-        424, 428, 429, 456, 500, 501, 502, 503, 504, 505, 507, 508,
-    ] as const),
-    instance: faker.string.alpha({length: {min: 10, max: 20}}),
-    ...overrideResponse,
-});
-
-export const getListResponseMock = (): MemberBlock[] =>
+export const getListMemberBlocksResponseMock = (): MemberBlock[] =>
     Array.from({length: faker.number.int({min: 1, max: 10})}, (_, i) => i + 1).map(() => ({
         id: faker.string.uuid(),
         createdAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
@@ -405,10 +442,10 @@ export const getListResponseMock = (): MemberBlock[] =>
         clinicMemberId: faker.string.uuid(),
         startAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
         endAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
-        reason: {},
+        reason: faker.helpers.arrayElement([faker.string.alpha({length: {min: 10, max: 20}}), null]),
     }));
 
-export const getListResponseMock200 = (): MemberBlock[] =>
+export const getListMemberBlocksResponseMock200 = (): MemberBlock[] =>
     Array.from({length: faker.number.int({min: 1, max: 10})}, (_, i) => i + 1).map(() => ({
         id: faker.string.uuid(),
         createdAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
@@ -416,10 +453,10 @@ export const getListResponseMock200 = (): MemberBlock[] =>
         clinicMemberId: faker.string.uuid(),
         startAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
         endAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
-        reason: {},
+        reason: faker.helpers.arrayElement([faker.string.alpha({length: {min: 10, max: 20}}), null]),
     }));
 
-export const getListResponseMockDefault = (overrideResponse: Partial<ApiProblem> = {}): ApiProblem => ({
+export const getListMemberBlocksResponseMockDefault = (overrideResponse: Partial<ApiProblem> = {}): ApiProblem => ({
     title: faker.string.alpha({length: {min: 10, max: 20}}),
     type: faker.internet.url(),
     detail: faker.string.alpha({length: {min: 10, max: 20}}),
@@ -431,7 +468,19 @@ export const getListResponseMockDefault = (overrideResponse: Partial<ApiProblem>
     ...overrideResponse,
 });
 
-export const getCreateMockHandler = (
+export const getDeleteMemberBlockResponseMockDefault = (overrideResponse: Partial<ApiProblem> = {}): ApiProblem => ({
+    title: faker.string.alpha({length: {min: 10, max: 20}}),
+    type: faker.internet.url(),
+    detail: faker.string.alpha({length: {min: 10, max: 20}}),
+    status: faker.helpers.arrayElement([
+        400, 401, 402, 403, 404, 405, 406, 407, 408, 409, 410, 411, 412, 413, 414, 415, 416, 417, 418, 421, 422, 423,
+        424, 428, 429, 456, 500, 501, 502, 503, 504, 505, 507, 508,
+    ] as const),
+    instance: faker.string.alpha({length: {min: 10, max: 20}}),
+    ...overrideResponse,
+});
+
+export const getCreateMemberBlockMockHandler = (
     overrideResponse?:
         | MemberBlock
         | ((info: Parameters<Parameters<typeof http.post>[1]>[0]) => Promise<MemberBlock> | MemberBlock),
@@ -446,7 +495,7 @@ export const getCreateMockHandler = (
                         ? typeof overrideResponse === 'function'
                             ? await overrideResponse(info)
                             : overrideResponse
-                        : getCreateResponseMock()
+                        : getCreateMemberBlockResponseMock()
                 ),
                 {status: 201, headers: {'Content-Type': 'application/json'}}
             );
@@ -455,7 +504,7 @@ export const getCreateMockHandler = (
     );
 };
 
-export const getCreateMockHandler201 = (
+export const getCreateMemberBlockMockHandler201 = (
     overrideResponse?:
         | MemberBlock
         | ((info: Parameters<Parameters<typeof http.post>[1]>[0]) => Promise<MemberBlock> | MemberBlock),
@@ -470,7 +519,7 @@ export const getCreateMockHandler201 = (
                         ? typeof overrideResponse === 'function'
                             ? await overrideResponse(info)
                             : overrideResponse
-                        : getCreateResponseMock201()
+                        : getCreateMemberBlockResponseMock201()
                 ),
                 {status: 201, headers: {'Content-Type': 'application/json'}}
             );
@@ -479,7 +528,7 @@ export const getCreateMockHandler201 = (
     );
 };
 
-export const getCreateMockHandlerDefault = (
+export const getCreateMemberBlockMockHandlerDefault = (
     overrideResponse?:
         | ApiProblem
         | ((info: Parameters<Parameters<typeof http.post>[1]>[0]) => Promise<ApiProblem> | ApiProblem),
@@ -494,7 +543,7 @@ export const getCreateMockHandlerDefault = (
                         ? typeof overrideResponse === 'function'
                             ? await overrideResponse(info)
                             : overrideResponse
-                        : getCreateResponseMockDefault()
+                        : getCreateMemberBlockResponseMockDefault()
                 ),
                 {status: 200, headers: {'Content-Type': 'application/json'}}
             );
@@ -503,65 +552,7 @@ export const getCreateMockHandlerDefault = (
     );
 };
 
-export const getDeleteMockHandler = (
-    overrideResponse?: void | ((info: Parameters<Parameters<typeof http.delete>[1]>[0]) => Promise<void> | void),
-    options?: RequestHandlerOptions
-) => {
-    return http.delete(
-        '*/api/v1/members/:memberId/blocks/:blockId',
-        async (info) => {
-            if (typeof overrideResponse === 'function') {
-                await overrideResponse(info);
-            }
-
-            return new HttpResponse(null, {status: 204});
-        },
-        options
-    );
-};
-
-export const getDeleteMockHandler204 = (
-    overrideResponse?: void | ((info: Parameters<Parameters<typeof http.delete>[1]>[0]) => Promise<void> | void),
-    options?: RequestHandlerOptions
-) => {
-    return http.delete(
-        '*/api/v1/members/:memberId/blocks/:blockId',
-        async (info) => {
-            if (typeof overrideResponse === 'function') {
-                await overrideResponse(info);
-            }
-
-            return new HttpResponse(null, {status: 204});
-        },
-        options
-    );
-};
-
-export const getDeleteMockHandlerDefault = (
-    overrideResponse?:
-        | ApiProblem
-        | ((info: Parameters<Parameters<typeof http.delete>[1]>[0]) => Promise<ApiProblem> | ApiProblem),
-    options?: RequestHandlerOptions
-) => {
-    return http.delete(
-        '*/api/v1/members/:memberId/blocks/:blockId',
-        async (info) => {
-            return new HttpResponse(
-                JSON.stringify(
-                    overrideResponse !== undefined
-                        ? typeof overrideResponse === 'function'
-                            ? await overrideResponse(info)
-                            : overrideResponse
-                        : getDeleteResponseMockDefault()
-                ),
-                {status: 200, headers: {'Content-Type': 'application/json'}}
-            );
-        },
-        options
-    );
-};
-
-export const getListMockHandler = (
+export const getListMemberBlocksMockHandler = (
     overrideResponse?:
         | MemberBlock[]
         | ((info: Parameters<Parameters<typeof http.get>[1]>[0]) => Promise<MemberBlock[]> | MemberBlock[]),
@@ -576,7 +567,7 @@ export const getListMockHandler = (
                         ? typeof overrideResponse === 'function'
                             ? await overrideResponse(info)
                             : overrideResponse
-                        : getListResponseMock()
+                        : getListMemberBlocksResponseMock()
                 ),
                 {status: 200, headers: {'Content-Type': 'application/json'}}
             );
@@ -585,7 +576,7 @@ export const getListMockHandler = (
     );
 };
 
-export const getListMockHandler200 = (
+export const getListMemberBlocksMockHandler200 = (
     overrideResponse?:
         | MemberBlock[]
         | ((info: Parameters<Parameters<typeof http.get>[1]>[0]) => Promise<MemberBlock[]> | MemberBlock[]),
@@ -600,7 +591,7 @@ export const getListMockHandler200 = (
                         ? typeof overrideResponse === 'function'
                             ? await overrideResponse(info)
                             : overrideResponse
-                        : getListResponseMock200()
+                        : getListMemberBlocksResponseMock200()
                 ),
                 {status: 200, headers: {'Content-Type': 'application/json'}}
             );
@@ -609,7 +600,7 @@ export const getListMockHandler200 = (
     );
 };
 
-export const getListMockHandlerDefault = (
+export const getListMemberBlocksMockHandlerDefault = (
     overrideResponse?:
         | ApiProblem
         | ((info: Parameters<Parameters<typeof http.get>[1]>[0]) => Promise<ApiProblem> | ApiProblem),
@@ -624,7 +615,7 @@ export const getListMockHandlerDefault = (
                         ? typeof overrideResponse === 'function'
                             ? await overrideResponse(info)
                             : overrideResponse
-                        : getListResponseMockDefault()
+                        : getListMemberBlocksResponseMockDefault()
                 ),
                 {status: 200, headers: {'Content-Type': 'application/json'}}
             );
@@ -633,4 +624,66 @@ export const getListMockHandlerDefault = (
     );
 };
 
-export const getMemberBlockMock = () => [getCreateMockHandler(), getDeleteMockHandler(), getListMockHandler()];
+export const getDeleteMemberBlockMockHandler = (
+    overrideResponse?: void | ((info: Parameters<Parameters<typeof http.delete>[1]>[0]) => Promise<void> | void),
+    options?: RequestHandlerOptions
+) => {
+    return http.delete(
+        '*/api/v1/members/:memberId/blocks/:blockId',
+        async (info) => {
+            if (typeof overrideResponse === 'function') {
+                await overrideResponse(info);
+            }
+
+            return new HttpResponse(null, {status: 204});
+        },
+        options
+    );
+};
+
+export const getDeleteMemberBlockMockHandler204 = (
+    overrideResponse?: void | ((info: Parameters<Parameters<typeof http.delete>[1]>[0]) => Promise<void> | void),
+    options?: RequestHandlerOptions
+) => {
+    return http.delete(
+        '*/api/v1/members/:memberId/blocks/:blockId',
+        async (info) => {
+            if (typeof overrideResponse === 'function') {
+                await overrideResponse(info);
+            }
+
+            return new HttpResponse(null, {status: 204});
+        },
+        options
+    );
+};
+
+export const getDeleteMemberBlockMockHandlerDefault = (
+    overrideResponse?:
+        | ApiProblem
+        | ((info: Parameters<Parameters<typeof http.delete>[1]>[0]) => Promise<ApiProblem> | ApiProblem),
+    options?: RequestHandlerOptions
+) => {
+    return http.delete(
+        '*/api/v1/members/:memberId/blocks/:blockId',
+        async (info) => {
+            return new HttpResponse(
+                JSON.stringify(
+                    overrideResponse !== undefined
+                        ? typeof overrideResponse === 'function'
+                            ? await overrideResponse(info)
+                            : overrideResponse
+                        : getDeleteMemberBlockResponseMockDefault()
+                ),
+                {status: 200, headers: {'Content-Type': 'application/json'}}
+            );
+        },
+        options
+    );
+};
+
+export const getMemberBlockMock = () => [
+    getCreateMemberBlockMockHandler(),
+    getListMemberBlocksMockHandler(),
+    getDeleteMemberBlockMockHandler(),
+];

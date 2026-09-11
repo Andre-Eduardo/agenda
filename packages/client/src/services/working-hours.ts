@@ -5,8 +5,23 @@ import {faker} from '@faker-js/faker';
  * Automo API
  * OpenAPI spec version: 0.0.0
  */
-import {useMutation} from '@tanstack/react-query';
-import type {MutationFunction, QueryClient, UseMutationOptions, UseMutationResult} from '@tanstack/react-query';
+import {useMutation, useQuery, useSuspenseQuery} from '@tanstack/react-query';
+import type {
+    DataTag,
+    DefinedInitialDataOptions,
+    DefinedUseQueryResult,
+    MutationFunction,
+    QueryClient,
+    QueryFunction,
+    QueryKey,
+    UndefinedInitialDataOptions,
+    UseMutationOptions,
+    UseMutationResult,
+    UseQueryOptions,
+    UseQueryResult,
+    UseSuspenseQueryOptions,
+    UseSuspenseQueryResult,
+} from '@tanstack/react-query';
 import {HttpResponse, http} from 'msw';
 import type {RequestHandlerOptions} from 'msw';
 import {apiClient} from '../api-client';
@@ -19,7 +34,7 @@ type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 /**
  * @summary Creates or updates the working hours for a day
  */
-export const upsert = (
+export const upsertWorkingHours = (
     memberId: string,
     upsertWorkingHoursDto: UpsertWorkingHoursDto,
     options?: SecondParameter<typeof apiClient>,
@@ -37,21 +52,21 @@ export const upsert = (
     );
 };
 
-export const getUpsertMutationOptions = <TError = ErrorType<ApiProblem>, TContext = unknown>(options?: {
+export const getUpsertWorkingHoursMutationOptions = <TError = ErrorType<ApiProblem>, TContext = unknown>(options?: {
     mutation?: UseMutationOptions<
-        Awaited<ReturnType<typeof upsert>>,
+        Awaited<ReturnType<typeof upsertWorkingHours>>,
         TError,
         {memberId: string; data: UpsertWorkingHoursDto},
         TContext
     >;
     request?: SecondParameter<typeof apiClient>;
 }): UseMutationOptions<
-    Awaited<ReturnType<typeof upsert>>,
+    Awaited<ReturnType<typeof upsertWorkingHours>>,
     TError,
     {memberId: string; data: UpsertWorkingHoursDto},
     TContext
 > => {
-    const mutationKey = ['upsert'];
+    const mutationKey = ['upsertWorkingHours'];
     const {mutation: mutationOptions, request: requestOptions} = options
         ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
             ? options
@@ -59,28 +74,28 @@ export const getUpsertMutationOptions = <TError = ErrorType<ApiProblem>, TContex
         : {mutation: {mutationKey}, request: undefined};
 
     const mutationFn: MutationFunction<
-        Awaited<ReturnType<typeof upsert>>,
+        Awaited<ReturnType<typeof upsertWorkingHours>>,
         {memberId: string; data: UpsertWorkingHoursDto}
     > = (props) => {
         const {memberId, data} = props ?? {};
 
-        return upsert(memberId, data, requestOptions);
+        return upsertWorkingHours(memberId, data, requestOptions);
     };
 
     return {mutationFn, ...mutationOptions};
 };
 
-export type UpsertMutationResult = NonNullable<Awaited<ReturnType<typeof upsert>>>;
-export type UpsertMutationBody = UpsertWorkingHoursDto;
-export type UpsertMutationError = ErrorType<ApiProblem>;
+export type UpsertWorkingHoursMutationResult = NonNullable<Awaited<ReturnType<typeof upsertWorkingHours>>>;
+export type UpsertWorkingHoursMutationBody = UpsertWorkingHoursDto;
+export type UpsertWorkingHoursMutationError = ErrorType<ApiProblem>;
 
 /**
  * @summary Creates or updates the working hours for a day
  */
-export const useUpsert = <TError = ErrorType<ApiProblem>, TContext = unknown>(
+export const useUpsertWorkingHours = <TError = ErrorType<ApiProblem>, TContext = unknown>(
     options?: {
         mutation?: UseMutationOptions<
-            Awaited<ReturnType<typeof upsert>>,
+            Awaited<ReturnType<typeof upsertWorkingHours>>,
             TError,
             {memberId: string; data: UpsertWorkingHoursDto},
             TContext
@@ -89,17 +104,292 @@ export const useUpsert = <TError = ErrorType<ApiProblem>, TContext = unknown>(
     },
     queryClient?: QueryClient
 ): UseMutationResult<
-    Awaited<ReturnType<typeof upsert>>,
+    Awaited<ReturnType<typeof upsertWorkingHours>>,
     TError,
     {memberId: string; data: UpsertWorkingHoursDto},
     TContext
 > => {
-    const mutationOptions = getUpsertMutationOptions(options);
+    const mutationOptions = getUpsertWorkingHoursMutationOptions(options);
 
     return useMutation(mutationOptions, queryClient);
 };
 
-export const getUpsertResponseMock = (overrideResponse: Partial<WorkingHours> = {}): WorkingHours => ({
+/**
+ * @summary Lists all working hours for a member
+ */
+export const listWorkingHours = (
+    memberId: string,
+    options?: SecondParameter<typeof apiClient>,
+    signal?: AbortSignal
+) => {
+    return apiClient<WorkingHours[]>(
+        {url: `/api/v1/members/${memberId}/working-hours`, method: 'GET', signal},
+        options
+    );
+};
+
+export const getListWorkingHoursQueryKey = (memberId?: string) => {
+    return [`/api/v1/members/${memberId}/working-hours`] as const;
+};
+
+export const getListWorkingHoursQueryOptions = <
+    TData = Awaited<ReturnType<typeof listWorkingHours>>,
+    TError = ErrorType<ApiProblem>,
+>(
+    memberId: string,
+    options?: {
+        query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof listWorkingHours>>, TError, TData>>;
+        request?: SecondParameter<typeof apiClient>;
+    }
+) => {
+    const {query: queryOptions, request: requestOptions} = options ?? {};
+
+    const queryKey = queryOptions?.queryKey ?? getListWorkingHoursQueryKey(memberId);
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listWorkingHours>>> = ({signal}) =>
+        listWorkingHours(memberId, requestOptions, signal);
+
+    return {queryKey, queryFn, enabled: !!memberId, ...queryOptions} as UseQueryOptions<
+        Awaited<ReturnType<typeof listWorkingHours>>,
+        TError,
+        TData
+    > & {queryKey: DataTag<QueryKey, TData, TError>};
+};
+
+export type ListWorkingHoursQueryResult = NonNullable<Awaited<ReturnType<typeof listWorkingHours>>>;
+export type ListWorkingHoursQueryError = ErrorType<ApiProblem>;
+
+export function useListWorkingHours<
+    TData = Awaited<ReturnType<typeof listWorkingHours>>,
+    TError = ErrorType<ApiProblem>,
+>(
+    memberId: string,
+    options: {
+        query: Partial<UseQueryOptions<Awaited<ReturnType<typeof listWorkingHours>>, TError, TData>> &
+            Pick<
+                DefinedInitialDataOptions<
+                    Awaited<ReturnType<typeof listWorkingHours>>,
+                    TError,
+                    Awaited<ReturnType<typeof listWorkingHours>>
+                >,
+                'initialData'
+            >;
+        request?: SecondParameter<typeof apiClient>;
+    },
+    queryClient?: QueryClient
+): DefinedUseQueryResult<TData, TError> & {queryKey: DataTag<QueryKey, TData, TError>};
+export function useListWorkingHours<
+    TData = Awaited<ReturnType<typeof listWorkingHours>>,
+    TError = ErrorType<ApiProblem>,
+>(
+    memberId: string,
+    options?: {
+        query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof listWorkingHours>>, TError, TData>> &
+            Pick<
+                UndefinedInitialDataOptions<
+                    Awaited<ReturnType<typeof listWorkingHours>>,
+                    TError,
+                    Awaited<ReturnType<typeof listWorkingHours>>
+                >,
+                'initialData'
+            >;
+        request?: SecondParameter<typeof apiClient>;
+    },
+    queryClient?: QueryClient
+): UseQueryResult<TData, TError> & {queryKey: DataTag<QueryKey, TData, TError>};
+export function useListWorkingHours<
+    TData = Awaited<ReturnType<typeof listWorkingHours>>,
+    TError = ErrorType<ApiProblem>,
+>(
+    memberId: string,
+    options?: {
+        query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof listWorkingHours>>, TError, TData>>;
+        request?: SecondParameter<typeof apiClient>;
+    },
+    queryClient?: QueryClient
+): UseQueryResult<TData, TError> & {queryKey: DataTag<QueryKey, TData, TError>};
+/**
+ * @summary Lists all working hours for a member
+ */
+
+export function useListWorkingHours<
+    TData = Awaited<ReturnType<typeof listWorkingHours>>,
+    TError = ErrorType<ApiProblem>,
+>(
+    memberId: string,
+    options?: {
+        query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof listWorkingHours>>, TError, TData>>;
+        request?: SecondParameter<typeof apiClient>;
+    },
+    queryClient?: QueryClient
+): UseQueryResult<TData, TError> & {queryKey: DataTag<QueryKey, TData, TError>} {
+    const queryOptions = getListWorkingHoursQueryOptions(memberId, options);
+
+    const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
+        queryKey: DataTag<QueryKey, TData, TError>;
+    };
+
+    query.queryKey = queryOptions.queryKey;
+
+    return query;
+}
+
+export const getListWorkingHoursSuspenseQueryOptions = <
+    TData = Awaited<ReturnType<typeof listWorkingHours>>,
+    TError = ErrorType<ApiProblem>,
+>(
+    memberId: string,
+    options?: {
+        query?: Partial<UseSuspenseQueryOptions<Awaited<ReturnType<typeof listWorkingHours>>, TError, TData>>;
+        request?: SecondParameter<typeof apiClient>;
+    }
+) => {
+    const {query: queryOptions, request: requestOptions} = options ?? {};
+
+    const queryKey = queryOptions?.queryKey ?? getListWorkingHoursQueryKey(memberId);
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listWorkingHours>>> = ({signal}) =>
+        listWorkingHours(memberId, requestOptions, signal);
+
+    return {queryKey, queryFn, ...queryOptions} as UseSuspenseQueryOptions<
+        Awaited<ReturnType<typeof listWorkingHours>>,
+        TError,
+        TData
+    > & {queryKey: DataTag<QueryKey, TData, TError>};
+};
+
+export type ListWorkingHoursSuspenseQueryResult = NonNullable<Awaited<ReturnType<typeof listWorkingHours>>>;
+export type ListWorkingHoursSuspenseQueryError = ErrorType<ApiProblem>;
+
+export function useListWorkingHoursSuspense<
+    TData = Awaited<ReturnType<typeof listWorkingHours>>,
+    TError = ErrorType<ApiProblem>,
+>(
+    memberId: string,
+    options: {
+        query: Partial<UseSuspenseQueryOptions<Awaited<ReturnType<typeof listWorkingHours>>, TError, TData>>;
+        request?: SecondParameter<typeof apiClient>;
+    },
+    queryClient?: QueryClient
+): UseSuspenseQueryResult<TData, TError> & {queryKey: DataTag<QueryKey, TData, TError>};
+export function useListWorkingHoursSuspense<
+    TData = Awaited<ReturnType<typeof listWorkingHours>>,
+    TError = ErrorType<ApiProblem>,
+>(
+    memberId: string,
+    options?: {
+        query?: Partial<UseSuspenseQueryOptions<Awaited<ReturnType<typeof listWorkingHours>>, TError, TData>>;
+        request?: SecondParameter<typeof apiClient>;
+    },
+    queryClient?: QueryClient
+): UseSuspenseQueryResult<TData, TError> & {queryKey: DataTag<QueryKey, TData, TError>};
+export function useListWorkingHoursSuspense<
+    TData = Awaited<ReturnType<typeof listWorkingHours>>,
+    TError = ErrorType<ApiProblem>,
+>(
+    memberId: string,
+    options?: {
+        query?: Partial<UseSuspenseQueryOptions<Awaited<ReturnType<typeof listWorkingHours>>, TError, TData>>;
+        request?: SecondParameter<typeof apiClient>;
+    },
+    queryClient?: QueryClient
+): UseSuspenseQueryResult<TData, TError> & {queryKey: DataTag<QueryKey, TData, TError>};
+/**
+ * @summary Lists all working hours for a member
+ */
+
+export function useListWorkingHoursSuspense<
+    TData = Awaited<ReturnType<typeof listWorkingHours>>,
+    TError = ErrorType<ApiProblem>,
+>(
+    memberId: string,
+    options?: {
+        query?: Partial<UseSuspenseQueryOptions<Awaited<ReturnType<typeof listWorkingHours>>, TError, TData>>;
+        request?: SecondParameter<typeof apiClient>;
+    },
+    queryClient?: QueryClient
+): UseSuspenseQueryResult<TData, TError> & {queryKey: DataTag<QueryKey, TData, TError>} {
+    const queryOptions = getListWorkingHoursSuspenseQueryOptions(memberId, options);
+
+    const query = useSuspenseQuery(queryOptions, queryClient) as UseSuspenseQueryResult<TData, TError> & {
+        queryKey: DataTag<QueryKey, TData, TError>;
+    };
+
+    query.queryKey = queryOptions.queryKey;
+
+    return query;
+}
+
+/**
+ * @summary Deletes a working hours entry
+ */
+export const deleteWorkingHours = (memberId: string, hoursId: string, options?: SecondParameter<typeof apiClient>) => {
+    return apiClient<void>({url: `/api/v1/members/${memberId}/working-hours/${hoursId}`, method: 'DELETE'}, options);
+};
+
+export const getDeleteWorkingHoursMutationOptions = <TError = ErrorType<ApiProblem>, TContext = unknown>(options?: {
+    mutation?: UseMutationOptions<
+        Awaited<ReturnType<typeof deleteWorkingHours>>,
+        TError,
+        {memberId: string; hoursId: string},
+        TContext
+    >;
+    request?: SecondParameter<typeof apiClient>;
+}): UseMutationOptions<
+    Awaited<ReturnType<typeof deleteWorkingHours>>,
+    TError,
+    {memberId: string; hoursId: string},
+    TContext
+> => {
+    const mutationKey = ['deleteWorkingHours'];
+    const {mutation: mutationOptions, request: requestOptions} = options
+        ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
+            ? options
+            : {...options, mutation: {...options.mutation, mutationKey}}
+        : {mutation: {mutationKey}, request: undefined};
+
+    const mutationFn: MutationFunction<
+        Awaited<ReturnType<typeof deleteWorkingHours>>,
+        {memberId: string; hoursId: string}
+    > = (props) => {
+        const {memberId, hoursId} = props ?? {};
+
+        return deleteWorkingHours(memberId, hoursId, requestOptions);
+    };
+
+    return {mutationFn, ...mutationOptions};
+};
+
+export type DeleteWorkingHoursMutationResult = NonNullable<Awaited<ReturnType<typeof deleteWorkingHours>>>;
+
+export type DeleteWorkingHoursMutationError = ErrorType<ApiProblem>;
+
+/**
+ * @summary Deletes a working hours entry
+ */
+export const useDeleteWorkingHours = <TError = ErrorType<ApiProblem>, TContext = unknown>(
+    options?: {
+        mutation?: UseMutationOptions<
+            Awaited<ReturnType<typeof deleteWorkingHours>>,
+            TError,
+            {memberId: string; hoursId: string},
+            TContext
+        >;
+        request?: SecondParameter<typeof apiClient>;
+    },
+    queryClient?: QueryClient
+): UseMutationResult<
+    Awaited<ReturnType<typeof deleteWorkingHours>>,
+    TError,
+    {memberId: string; hoursId: string},
+    TContext
+> => {
+    const mutationOptions = getDeleteWorkingHoursMutationOptions(options);
+
+    return useMutation(mutationOptions, queryClient);
+};
+
+export const getUpsertWorkingHoursResponseMock = (overrideResponse: Partial<WorkingHours> = {}): WorkingHours => ({
     id: faker.string.uuid(),
     createdAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
     updatedAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
@@ -112,7 +402,7 @@ export const getUpsertResponseMock = (overrideResponse: Partial<WorkingHours> = 
     ...overrideResponse,
 });
 
-export const getUpsertResponseMock200 = (overrideResponse: Partial<WorkingHours> = {}): WorkingHours => ({
+export const getUpsertWorkingHoursResponseMock200 = (overrideResponse: Partial<WorkingHours> = {}): WorkingHours => ({
     id: faker.string.uuid(),
     createdAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
     updatedAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
@@ -125,7 +415,7 @@ export const getUpsertResponseMock200 = (overrideResponse: Partial<WorkingHours>
     ...overrideResponse,
 });
 
-export const getUpsertResponseMockDefault = (overrideResponse: Partial<ApiProblem> = {}): ApiProblem => ({
+export const getUpsertWorkingHoursResponseMockDefault = (overrideResponse: Partial<ApiProblem> = {}): ApiProblem => ({
     title: faker.string.alpha({length: {min: 10, max: 20}}),
     type: faker.internet.url(),
     detail: faker.string.alpha({length: {min: 10, max: 20}}),
@@ -137,7 +427,57 @@ export const getUpsertResponseMockDefault = (overrideResponse: Partial<ApiProble
     ...overrideResponse,
 });
 
-export const getUpsertMockHandler = (
+export const getListWorkingHoursResponseMock = (): WorkingHours[] =>
+    Array.from({length: faker.number.int({min: 1, max: 10})}, (_, i) => i + 1).map(() => ({
+        id: faker.string.uuid(),
+        createdAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
+        updatedAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
+        clinicMemberId: faker.string.uuid(),
+        dayOfWeek: faker.number.float({min: undefined, max: undefined, fractionDigits: 2}),
+        startTime: faker.string.alpha({length: {min: 10, max: 20}}),
+        endTime: faker.string.alpha({length: {min: 10, max: 20}}),
+        slotDuration: faker.number.float({min: undefined, max: undefined, fractionDigits: 2}),
+        active: faker.datatype.boolean(),
+    }));
+
+export const getListWorkingHoursResponseMock200 = (): WorkingHours[] =>
+    Array.from({length: faker.number.int({min: 1, max: 10})}, (_, i) => i + 1).map(() => ({
+        id: faker.string.uuid(),
+        createdAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
+        updatedAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
+        clinicMemberId: faker.string.uuid(),
+        dayOfWeek: faker.number.float({min: undefined, max: undefined, fractionDigits: 2}),
+        startTime: faker.string.alpha({length: {min: 10, max: 20}}),
+        endTime: faker.string.alpha({length: {min: 10, max: 20}}),
+        slotDuration: faker.number.float({min: undefined, max: undefined, fractionDigits: 2}),
+        active: faker.datatype.boolean(),
+    }));
+
+export const getListWorkingHoursResponseMockDefault = (overrideResponse: Partial<ApiProblem> = {}): ApiProblem => ({
+    title: faker.string.alpha({length: {min: 10, max: 20}}),
+    type: faker.internet.url(),
+    detail: faker.string.alpha({length: {min: 10, max: 20}}),
+    status: faker.helpers.arrayElement([
+        400, 401, 402, 403, 404, 405, 406, 407, 408, 409, 410, 411, 412, 413, 414, 415, 416, 417, 418, 421, 422, 423,
+        424, 428, 429, 456, 500, 501, 502, 503, 504, 505, 507, 508,
+    ] as const),
+    instance: faker.string.alpha({length: {min: 10, max: 20}}),
+    ...overrideResponse,
+});
+
+export const getDeleteWorkingHoursResponseMockDefault = (overrideResponse: Partial<ApiProblem> = {}): ApiProblem => ({
+    title: faker.string.alpha({length: {min: 10, max: 20}}),
+    type: faker.internet.url(),
+    detail: faker.string.alpha({length: {min: 10, max: 20}}),
+    status: faker.helpers.arrayElement([
+        400, 401, 402, 403, 404, 405, 406, 407, 408, 409, 410, 411, 412, 413, 414, 415, 416, 417, 418, 421, 422, 423,
+        424, 428, 429, 456, 500, 501, 502, 503, 504, 505, 507, 508,
+    ] as const),
+    instance: faker.string.alpha({length: {min: 10, max: 20}}),
+    ...overrideResponse,
+});
+
+export const getUpsertWorkingHoursMockHandler = (
     overrideResponse?:
         | WorkingHours
         | ((info: Parameters<Parameters<typeof http.post>[1]>[0]) => Promise<WorkingHours> | WorkingHours),
@@ -152,7 +492,7 @@ export const getUpsertMockHandler = (
                         ? typeof overrideResponse === 'function'
                             ? await overrideResponse(info)
                             : overrideResponse
-                        : getUpsertResponseMock()
+                        : getUpsertWorkingHoursResponseMock()
                 ),
                 {status: 200, headers: {'Content-Type': 'application/json'}}
             );
@@ -161,7 +501,7 @@ export const getUpsertMockHandler = (
     );
 };
 
-export const getUpsertMockHandler200 = (
+export const getUpsertWorkingHoursMockHandler200 = (
     overrideResponse?:
         | WorkingHours
         | ((info: Parameters<Parameters<typeof http.post>[1]>[0]) => Promise<WorkingHours> | WorkingHours),
@@ -176,7 +516,7 @@ export const getUpsertMockHandler200 = (
                         ? typeof overrideResponse === 'function'
                             ? await overrideResponse(info)
                             : overrideResponse
-                        : getUpsertResponseMock200()
+                        : getUpsertWorkingHoursResponseMock200()
                 ),
                 {status: 200, headers: {'Content-Type': 'application/json'}}
             );
@@ -185,7 +525,7 @@ export const getUpsertMockHandler200 = (
     );
 };
 
-export const getUpsertMockHandlerDefault = (
+export const getUpsertWorkingHoursMockHandlerDefault = (
     overrideResponse?:
         | ApiProblem
         | ((info: Parameters<Parameters<typeof http.post>[1]>[0]) => Promise<ApiProblem> | ApiProblem),
@@ -200,7 +540,7 @@ export const getUpsertMockHandlerDefault = (
                         ? typeof overrideResponse === 'function'
                             ? await overrideResponse(info)
                             : overrideResponse
-                        : getUpsertResponseMockDefault()
+                        : getUpsertWorkingHoursResponseMockDefault()
                 ),
                 {status: 200, headers: {'Content-Type': 'application/json'}}
             );
@@ -209,4 +549,138 @@ export const getUpsertMockHandlerDefault = (
     );
 };
 
-export const getWorkingHoursMock = () => [getUpsertMockHandler()];
+export const getListWorkingHoursMockHandler = (
+    overrideResponse?:
+        | WorkingHours[]
+        | ((info: Parameters<Parameters<typeof http.get>[1]>[0]) => Promise<WorkingHours[]> | WorkingHours[]),
+    options?: RequestHandlerOptions
+) => {
+    return http.get(
+        '*/api/v1/members/:memberId/working-hours',
+        async (info) => {
+            return new HttpResponse(
+                JSON.stringify(
+                    overrideResponse !== undefined
+                        ? typeof overrideResponse === 'function'
+                            ? await overrideResponse(info)
+                            : overrideResponse
+                        : getListWorkingHoursResponseMock()
+                ),
+                {status: 200, headers: {'Content-Type': 'application/json'}}
+            );
+        },
+        options
+    );
+};
+
+export const getListWorkingHoursMockHandler200 = (
+    overrideResponse?:
+        | WorkingHours[]
+        | ((info: Parameters<Parameters<typeof http.get>[1]>[0]) => Promise<WorkingHours[]> | WorkingHours[]),
+    options?: RequestHandlerOptions
+) => {
+    return http.get(
+        '*/api/v1/members/:memberId/working-hours',
+        async (info) => {
+            return new HttpResponse(
+                JSON.stringify(
+                    overrideResponse !== undefined
+                        ? typeof overrideResponse === 'function'
+                            ? await overrideResponse(info)
+                            : overrideResponse
+                        : getListWorkingHoursResponseMock200()
+                ),
+                {status: 200, headers: {'Content-Type': 'application/json'}}
+            );
+        },
+        options
+    );
+};
+
+export const getListWorkingHoursMockHandlerDefault = (
+    overrideResponse?:
+        | ApiProblem
+        | ((info: Parameters<Parameters<typeof http.get>[1]>[0]) => Promise<ApiProblem> | ApiProblem),
+    options?: RequestHandlerOptions
+) => {
+    return http.get(
+        '*/api/v1/members/:memberId/working-hours',
+        async (info) => {
+            return new HttpResponse(
+                JSON.stringify(
+                    overrideResponse !== undefined
+                        ? typeof overrideResponse === 'function'
+                            ? await overrideResponse(info)
+                            : overrideResponse
+                        : getListWorkingHoursResponseMockDefault()
+                ),
+                {status: 200, headers: {'Content-Type': 'application/json'}}
+            );
+        },
+        options
+    );
+};
+
+export const getDeleteWorkingHoursMockHandler = (
+    overrideResponse?: void | ((info: Parameters<Parameters<typeof http.delete>[1]>[0]) => Promise<void> | void),
+    options?: RequestHandlerOptions
+) => {
+    return http.delete(
+        '*/api/v1/members/:memberId/working-hours/:hoursId',
+        async (info) => {
+            if (typeof overrideResponse === 'function') {
+                await overrideResponse(info);
+            }
+
+            return new HttpResponse(null, {status: 204});
+        },
+        options
+    );
+};
+
+export const getDeleteWorkingHoursMockHandler204 = (
+    overrideResponse?: void | ((info: Parameters<Parameters<typeof http.delete>[1]>[0]) => Promise<void> | void),
+    options?: RequestHandlerOptions
+) => {
+    return http.delete(
+        '*/api/v1/members/:memberId/working-hours/:hoursId',
+        async (info) => {
+            if (typeof overrideResponse === 'function') {
+                await overrideResponse(info);
+            }
+
+            return new HttpResponse(null, {status: 204});
+        },
+        options
+    );
+};
+
+export const getDeleteWorkingHoursMockHandlerDefault = (
+    overrideResponse?:
+        | ApiProblem
+        | ((info: Parameters<Parameters<typeof http.delete>[1]>[0]) => Promise<ApiProblem> | ApiProblem),
+    options?: RequestHandlerOptions
+) => {
+    return http.delete(
+        '*/api/v1/members/:memberId/working-hours/:hoursId',
+        async (info) => {
+            return new HttpResponse(
+                JSON.stringify(
+                    overrideResponse !== undefined
+                        ? typeof overrideResponse === 'function'
+                            ? await overrideResponse(info)
+                            : overrideResponse
+                        : getDeleteWorkingHoursResponseMockDefault()
+                ),
+                {status: 200, headers: {'Content-Type': 'application/json'}}
+            );
+        },
+        options
+    );
+};
+
+export const getWorkingHoursMock = () => [
+    getUpsertWorkingHoursMockHandler(),
+    getListWorkingHoursMockHandler(),
+    getDeleteWorkingHoursMockHandler(),
+];

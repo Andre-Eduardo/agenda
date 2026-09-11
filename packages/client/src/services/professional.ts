@@ -26,25 +26,26 @@ import {HttpResponse, http} from 'msw';
 import type {RequestHandlerOptions} from 'msw';
 import {apiClient} from '../api-client';
 import type {ErrorType} from '../api-client';
-import type {CreateProfessionalDto, SearchProfessionalsParams, UpdateProfessionalInputDto} from '../models';
+import type {CreateProfessionalInputDto, SearchProfessionalsParams, UpdateProfessionalInputDto} from '../models';
 import type {ApiProblem, Professional} from '../models';
 
 type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 
 /**
- * @summary Creates a new professional
+ * @summary Creates a new professional record for a clinic member
  */
 export const createProfessional = (
-    createProfessionalDto: CreateProfessionalDto,
+    memberId: string,
+    createProfessionalInputDto: CreateProfessionalInputDto,
     options?: SecondParameter<typeof apiClient>,
     signal?: AbortSignal
 ) => {
     return apiClient<Professional>(
         {
-            url: `/api/v1/professionals`,
+            url: `/api/v1/professionals/${memberId}`,
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
-            data: createProfessionalDto,
+            data: createProfessionalInputDto,
             signal,
         },
         options
@@ -55,14 +56,14 @@ export const getCreateProfessionalMutationOptions = <TError = ErrorType<ApiProbl
     mutation?: UseMutationOptions<
         Awaited<ReturnType<typeof createProfessional>>,
         TError,
-        {data: CreateProfessionalDto},
+        {memberId: string; data: CreateProfessionalInputDto},
         TContext
     >;
     request?: SecondParameter<typeof apiClient>;
 }): UseMutationOptions<
     Awaited<ReturnType<typeof createProfessional>>,
     TError,
-    {data: CreateProfessionalDto},
+    {memberId: string; data: CreateProfessionalInputDto},
     TContext
 > => {
     const mutationKey = ['createProfessional'];
@@ -74,29 +75,29 @@ export const getCreateProfessionalMutationOptions = <TError = ErrorType<ApiProbl
 
     const mutationFn: MutationFunction<
         Awaited<ReturnType<typeof createProfessional>>,
-        {data: CreateProfessionalDto}
+        {memberId: string; data: CreateProfessionalInputDto}
     > = (props) => {
-        const {data} = props ?? {};
+        const {memberId, data} = props ?? {};
 
-        return createProfessional(data, requestOptions);
+        return createProfessional(memberId, data, requestOptions);
     };
 
     return {mutationFn, ...mutationOptions};
 };
 
 export type CreateProfessionalMutationResult = NonNullable<Awaited<ReturnType<typeof createProfessional>>>;
-export type CreateProfessionalMutationBody = CreateProfessionalDto;
+export type CreateProfessionalMutationBody = CreateProfessionalInputDto;
 export type CreateProfessionalMutationError = ErrorType<ApiProblem>;
 
 /**
- * @summary Creates a new professional
+ * @summary Creates a new professional record for a clinic member
  */
 export const useCreateProfessional = <TError = ErrorType<ApiProblem>, TContext = unknown>(
     options?: {
         mutation?: UseMutationOptions<
             Awaited<ReturnType<typeof createProfessional>>,
             TError,
-            {data: CreateProfessionalDto},
+            {memberId: string; data: CreateProfessionalInputDto},
             TContext
         >;
         request?: SecondParameter<typeof apiClient>;
@@ -105,7 +106,7 @@ export const useCreateProfessional = <TError = ErrorType<ApiProblem>, TContext =
 ): UseMutationResult<
     Awaited<ReturnType<typeof createProfessional>>,
     TError,
-    {data: CreateProfessionalDto},
+    {memberId: string; data: CreateProfessionalInputDto},
     TContext
 > => {
     const mutationOptions = getCreateProfessionalMutationOptions(options);
@@ -635,8 +636,8 @@ export const getCreateProfessionalResponseMock = (overrideResponse: Partial<Prof
     createdAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
     updatedAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
     clinicMemberId: faker.string.uuid(),
-    registrationNumber: {},
-    specialty: {},
+    registrationNumber: faker.helpers.arrayElement([faker.string.alpha({length: {min: 10, max: 20}}), null]),
+    specialty: faker.helpers.arrayElement([faker.string.alpha({length: {min: 10, max: 20}}), null]),
     specialtyNormalized: faker.helpers.arrayElement([
         faker.helpers.arrayElement([
             'SAUDE_MENTAL',
@@ -649,6 +650,7 @@ export const getCreateProfessionalResponseMock = (overrideResponse: Partial<Prof
         ] as const),
         null,
     ]),
+    defaultRoomId: faker.helpers.arrayElement([faker.string.uuid(), null]),
     ...overrideResponse,
 });
 
@@ -657,8 +659,8 @@ export const getCreateProfessionalResponseMock201 = (overrideResponse: Partial<P
     createdAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
     updatedAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
     clinicMemberId: faker.string.uuid(),
-    registrationNumber: {},
-    specialty: {},
+    registrationNumber: faker.helpers.arrayElement([faker.string.alpha({length: {min: 10, max: 20}}), null]),
+    specialty: faker.helpers.arrayElement([faker.string.alpha({length: {min: 10, max: 20}}), null]),
     specialtyNormalized: faker.helpers.arrayElement([
         faker.helpers.arrayElement([
             'SAUDE_MENTAL',
@@ -671,6 +673,7 @@ export const getCreateProfessionalResponseMock201 = (overrideResponse: Partial<P
         ] as const),
         null,
     ]),
+    defaultRoomId: faker.helpers.arrayElement([faker.string.uuid(), null]),
     ...overrideResponse,
 });
 
@@ -703,8 +706,8 @@ export const getGetProfessionalResponseMock = (overrideResponse: Partial<Profess
     createdAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
     updatedAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
     clinicMemberId: faker.string.uuid(),
-    registrationNumber: {},
-    specialty: {},
+    registrationNumber: faker.helpers.arrayElement([faker.string.alpha({length: {min: 10, max: 20}}), null]),
+    specialty: faker.helpers.arrayElement([faker.string.alpha({length: {min: 10, max: 20}}), null]),
     specialtyNormalized: faker.helpers.arrayElement([
         faker.helpers.arrayElement([
             'SAUDE_MENTAL',
@@ -717,6 +720,7 @@ export const getGetProfessionalResponseMock = (overrideResponse: Partial<Profess
         ] as const),
         null,
     ]),
+    defaultRoomId: faker.helpers.arrayElement([faker.string.uuid(), null]),
     ...overrideResponse,
 });
 
@@ -725,8 +729,8 @@ export const getGetProfessionalResponseMock200 = (overrideResponse: Partial<Prof
     createdAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
     updatedAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
     clinicMemberId: faker.string.uuid(),
-    registrationNumber: {},
-    specialty: {},
+    registrationNumber: faker.helpers.arrayElement([faker.string.alpha({length: {min: 10, max: 20}}), null]),
+    specialty: faker.helpers.arrayElement([faker.string.alpha({length: {min: 10, max: 20}}), null]),
     specialtyNormalized: faker.helpers.arrayElement([
         faker.helpers.arrayElement([
             'SAUDE_MENTAL',
@@ -739,6 +743,7 @@ export const getGetProfessionalResponseMock200 = (overrideResponse: Partial<Prof
         ] as const),
         null,
     ]),
+    defaultRoomId: faker.helpers.arrayElement([faker.string.uuid(), null]),
     ...overrideResponse,
 });
 
@@ -759,8 +764,8 @@ export const getUpdateProfessionalResponseMock = (overrideResponse: Partial<Prof
     createdAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
     updatedAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
     clinicMemberId: faker.string.uuid(),
-    registrationNumber: {},
-    specialty: {},
+    registrationNumber: faker.helpers.arrayElement([faker.string.alpha({length: {min: 10, max: 20}}), null]),
+    specialty: faker.helpers.arrayElement([faker.string.alpha({length: {min: 10, max: 20}}), null]),
     specialtyNormalized: faker.helpers.arrayElement([
         faker.helpers.arrayElement([
             'SAUDE_MENTAL',
@@ -773,6 +778,7 @@ export const getUpdateProfessionalResponseMock = (overrideResponse: Partial<Prof
         ] as const),
         null,
     ]),
+    defaultRoomId: faker.helpers.arrayElement([faker.string.uuid(), null]),
     ...overrideResponse,
 });
 
@@ -781,8 +787,8 @@ export const getUpdateProfessionalResponseMock200 = (overrideResponse: Partial<P
     createdAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
     updatedAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
     clinicMemberId: faker.string.uuid(),
-    registrationNumber: {},
-    specialty: {},
+    registrationNumber: faker.helpers.arrayElement([faker.string.alpha({length: {min: 10, max: 20}}), null]),
+    specialty: faker.helpers.arrayElement([faker.string.alpha({length: {min: 10, max: 20}}), null]),
     specialtyNormalized: faker.helpers.arrayElement([
         faker.helpers.arrayElement([
             'SAUDE_MENTAL',
@@ -795,6 +801,7 @@ export const getUpdateProfessionalResponseMock200 = (overrideResponse: Partial<P
         ] as const),
         null,
     ]),
+    defaultRoomId: faker.helpers.arrayElement([faker.string.uuid(), null]),
     ...overrideResponse,
 });
 
@@ -829,7 +836,7 @@ export const getCreateProfessionalMockHandler = (
     options?: RequestHandlerOptions
 ) => {
     return http.post(
-        '*/api/v1/professionals',
+        '*/api/v1/professionals/:memberId',
         async (info) => {
             return new HttpResponse(
                 JSON.stringify(
@@ -853,7 +860,7 @@ export const getCreateProfessionalMockHandler201 = (
     options?: RequestHandlerOptions
 ) => {
     return http.post(
-        '*/api/v1/professionals',
+        '*/api/v1/professionals/:memberId',
         async (info) => {
             return new HttpResponse(
                 JSON.stringify(
@@ -877,7 +884,7 @@ export const getCreateProfessionalMockHandlerDefault = (
     options?: RequestHandlerOptions
 ) => {
     return http.post(
-        '*/api/v1/professionals',
+        '*/api/v1/professionals/:memberId',
         async (info) => {
             return new HttpResponse(
                 JSON.stringify(

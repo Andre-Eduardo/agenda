@@ -7,12 +7,12 @@ import {PatientPackageCreditEventType} from '@domain/patient-package/entities';
 export class PatientPackageCreditDto extends EntityDto {
     @ApiProperty({format: 'uuid'}) clinicId: string;
     @ApiProperty({format: 'uuid'}) patientPackageId: string;
-    @ApiProperty({format: 'uuid', nullable: true}) appointmentPaymentId: string | null;
+    @ApiProperty({type: 'string', format: 'uuid', nullable: true}) appointmentPaymentId: string | null;
     @ApiProperty({enum: PatientPackageCreditEventType}) type: PatientPackageCreditEventType;
     @ApiProperty() delta: number;
     @ApiProperty() balanceAfter: number;
-    @ApiProperty({format: 'uuid', nullable: true}) registeredByMemberId: string | null;
-    @ApiProperty({nullable: true}) notes: string | null;
+    @ApiProperty({type: 'string', format: 'uuid', nullable: true}) registeredByMemberId: string | null;
+    @ApiProperty({type: 'string', nullable: true}) notes: string | null;
 
     constructor(credit: PatientPackageCredit) {
         super(credit);

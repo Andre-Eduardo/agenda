@@ -4,11 +4,12 @@
  * Automo API
  * OpenAPI spec version: 0.0.0
  */
-import type {CreateClinicMemberDtoRole} from './createClinicMemberDtoRole';
+import type {CreateClinicMemberDtoRolesItem} from './createClinicMemberDtoRolesItem';
 
 export type CreateClinicMemberDto = {
     userId: string;
-    role: CreateClinicMemberDtoRole;
+    /** @minItems 1 */
+    roles: CreateClinicMemberDtoRolesItem[];
     /** @nullable */
     displayName?: string | null;
     /** @nullable */

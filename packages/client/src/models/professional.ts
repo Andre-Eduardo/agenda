@@ -4,8 +4,6 @@
  * Automo API
  * OpenAPI spec version: 0.0.0
  */
-import type {ProfessionalRegistrationNumber} from './professionalRegistrationNumber';
-import type {ProfessionalSpecialty} from './professionalSpecialty';
 import type {ProfessionalSpecialtyNormalized} from './professionalSpecialtyNormalized';
 
 export type Professional = {
@@ -21,15 +19,20 @@ export type Professional = {
      * Professional registration number (CRM, CRP, etc.)
      * @nullable
      */
-    registrationNumber: ProfessionalRegistrationNumber;
+    registrationNumber: string | null;
     /**
      * Free-form specialty
      * @nullable
      */
-    specialty: ProfessionalSpecialty;
+    specialty: string | null;
     /**
      * Normalized specialty group
      * @nullable
      */
     specialtyNormalized: ProfessionalSpecialtyNormalized;
+    /**
+     * Room used by default when scheduling with this professional
+     * @nullable
+     */
+    defaultRoomId: string | null;
 };

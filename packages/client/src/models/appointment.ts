@@ -65,4 +65,9 @@ export type Appointment = {
      * @nullable
      */
     paymentStatus: AppointmentPaymentStatusProperty;
+    /**
+     * Room where the appointment takes place, when room management is enabled
+     * @nullable
+     */
+    roomId: string | null;
 };

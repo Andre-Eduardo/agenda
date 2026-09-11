@@ -5,9 +5,11 @@
  * OpenAPI spec version: 0.0.0
  */
 import type {PurchaseAddonDtoAddonCode} from './purchaseAddonDtoAddonCode';
+import type {PurchaseAddonDtoPaymentMethod} from './purchaseAddonDtoPaymentMethod';
 
 export type PurchaseAddonDto = {
     addonCode: PurchaseAddonDtoAddonCode;
     /** @minimum 1 */
     quantity: number;
+    paymentMethod: PurchaseAddonDtoPaymentMethod;
 };

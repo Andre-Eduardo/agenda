@@ -5,7 +5,7 @@
  * OpenAPI spec version: 0.0.0
  */
 
-export type ListParams = {
+export type ListMemberBlocksParams = {
     /**
      * @nullable
      */

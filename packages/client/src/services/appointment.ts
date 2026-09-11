@@ -33,7 +33,7 @@ import type {
     UpdateAppointmentInputDto,
 } from '../models';
 import {AppointmentPaymentStatus} from '../models';
-import type {ApiProblem, Appointment} from '../models';
+import type {ApiProblem, Appointment, ClinicMember} from '../models';
 
 type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 
@@ -306,6 +306,204 @@ export function useSearchAppointmentsSuspense<
     queryClient?: QueryClient
 ): UseSuspenseQueryResult<TData, TError> & {queryKey: DataTag<QueryKey, TData, TError>} {
     const queryOptions = getSearchAppointmentsSuspenseQueryOptions(params, options);
+
+    const query = useSuspenseQuery(queryOptions, queryClient) as UseSuspenseQueryResult<TData, TError> & {
+        queryKey: DataTag<QueryKey, TData, TError>;
+    };
+
+    query.queryKey = queryOptions.queryKey;
+
+    return query;
+}
+
+/**
+ * @summary Lists the agendas (clinic members) the current actor can create appointments for
+ */
+export const listManageableProfessionals = (options?: SecondParameter<typeof apiClient>, signal?: AbortSignal) => {
+    return apiClient<ClinicMember[]>(
+        {url: `/api/v1/appointments/manageable-professionals`, method: 'GET', signal},
+        options
+    );
+};
+
+export const getListManageableProfessionalsQueryKey = () => {
+    return [`/api/v1/appointments/manageable-professionals`] as const;
+};
+
+export const getListManageableProfessionalsQueryOptions = <
+    TData = Awaited<ReturnType<typeof listManageableProfessionals>>,
+    TError = ErrorType<ApiProblem>,
+>(options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof listManageableProfessionals>>, TError, TData>>;
+    request?: SecondParameter<typeof apiClient>;
+}) => {
+    const {query: queryOptions, request: requestOptions} = options ?? {};
+
+    const queryKey = queryOptions?.queryKey ?? getListManageableProfessionalsQueryKey();
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listManageableProfessionals>>> = ({signal}) =>
+        listManageableProfessionals(requestOptions, signal);
+
+    return {queryKey, queryFn, ...queryOptions} as UseQueryOptions<
+        Awaited<ReturnType<typeof listManageableProfessionals>>,
+        TError,
+        TData
+    > & {queryKey: DataTag<QueryKey, TData, TError>};
+};
+
+export type ListManageableProfessionalsQueryResult = NonNullable<
+    Awaited<ReturnType<typeof listManageableProfessionals>>
+>;
+export type ListManageableProfessionalsQueryError = ErrorType<ApiProblem>;
+
+export function useListManageableProfessionals<
+    TData = Awaited<ReturnType<typeof listManageableProfessionals>>,
+    TError = ErrorType<ApiProblem>,
+>(
+    options: {
+        query: Partial<UseQueryOptions<Awaited<ReturnType<typeof listManageableProfessionals>>, TError, TData>> &
+            Pick<
+                DefinedInitialDataOptions<
+                    Awaited<ReturnType<typeof listManageableProfessionals>>,
+                    TError,
+                    Awaited<ReturnType<typeof listManageableProfessionals>>
+                >,
+                'initialData'
+            >;
+        request?: SecondParameter<typeof apiClient>;
+    },
+    queryClient?: QueryClient
+): DefinedUseQueryResult<TData, TError> & {queryKey: DataTag<QueryKey, TData, TError>};
+export function useListManageableProfessionals<
+    TData = Awaited<ReturnType<typeof listManageableProfessionals>>,
+    TError = ErrorType<ApiProblem>,
+>(
+    options?: {
+        query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof listManageableProfessionals>>, TError, TData>> &
+            Pick<
+                UndefinedInitialDataOptions<
+                    Awaited<ReturnType<typeof listManageableProfessionals>>,
+                    TError,
+                    Awaited<ReturnType<typeof listManageableProfessionals>>
+                >,
+                'initialData'
+            >;
+        request?: SecondParameter<typeof apiClient>;
+    },
+    queryClient?: QueryClient
+): UseQueryResult<TData, TError> & {queryKey: DataTag<QueryKey, TData, TError>};
+export function useListManageableProfessionals<
+    TData = Awaited<ReturnType<typeof listManageableProfessionals>>,
+    TError = ErrorType<ApiProblem>,
+>(
+    options?: {
+        query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof listManageableProfessionals>>, TError, TData>>;
+        request?: SecondParameter<typeof apiClient>;
+    },
+    queryClient?: QueryClient
+): UseQueryResult<TData, TError> & {queryKey: DataTag<QueryKey, TData, TError>};
+/**
+ * @summary Lists the agendas (clinic members) the current actor can create appointments for
+ */
+
+export function useListManageableProfessionals<
+    TData = Awaited<ReturnType<typeof listManageableProfessionals>>,
+    TError = ErrorType<ApiProblem>,
+>(
+    options?: {
+        query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof listManageableProfessionals>>, TError, TData>>;
+        request?: SecondParameter<typeof apiClient>;
+    },
+    queryClient?: QueryClient
+): UseQueryResult<TData, TError> & {queryKey: DataTag<QueryKey, TData, TError>} {
+    const queryOptions = getListManageableProfessionalsQueryOptions(options);
+
+    const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
+        queryKey: DataTag<QueryKey, TData, TError>;
+    };
+
+    query.queryKey = queryOptions.queryKey;
+
+    return query;
+}
+
+export const getListManageableProfessionalsSuspenseQueryOptions = <
+    TData = Awaited<ReturnType<typeof listManageableProfessionals>>,
+    TError = ErrorType<ApiProblem>,
+>(options?: {
+    query?: Partial<UseSuspenseQueryOptions<Awaited<ReturnType<typeof listManageableProfessionals>>, TError, TData>>;
+    request?: SecondParameter<typeof apiClient>;
+}) => {
+    const {query: queryOptions, request: requestOptions} = options ?? {};
+
+    const queryKey = queryOptions?.queryKey ?? getListManageableProfessionalsQueryKey();
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listManageableProfessionals>>> = ({signal}) =>
+        listManageableProfessionals(requestOptions, signal);
+
+    return {queryKey, queryFn, ...queryOptions} as UseSuspenseQueryOptions<
+        Awaited<ReturnType<typeof listManageableProfessionals>>,
+        TError,
+        TData
+    > & {queryKey: DataTag<QueryKey, TData, TError>};
+};
+
+export type ListManageableProfessionalsSuspenseQueryResult = NonNullable<
+    Awaited<ReturnType<typeof listManageableProfessionals>>
+>;
+export type ListManageableProfessionalsSuspenseQueryError = ErrorType<ApiProblem>;
+
+export function useListManageableProfessionalsSuspense<
+    TData = Awaited<ReturnType<typeof listManageableProfessionals>>,
+    TError = ErrorType<ApiProblem>,
+>(
+    options: {
+        query: Partial<UseSuspenseQueryOptions<Awaited<ReturnType<typeof listManageableProfessionals>>, TError, TData>>;
+        request?: SecondParameter<typeof apiClient>;
+    },
+    queryClient?: QueryClient
+): UseSuspenseQueryResult<TData, TError> & {queryKey: DataTag<QueryKey, TData, TError>};
+export function useListManageableProfessionalsSuspense<
+    TData = Awaited<ReturnType<typeof listManageableProfessionals>>,
+    TError = ErrorType<ApiProblem>,
+>(
+    options?: {
+        query?: Partial<
+            UseSuspenseQueryOptions<Awaited<ReturnType<typeof listManageableProfessionals>>, TError, TData>
+        >;
+        request?: SecondParameter<typeof apiClient>;
+    },
+    queryClient?: QueryClient
+): UseSuspenseQueryResult<TData, TError> & {queryKey: DataTag<QueryKey, TData, TError>};
+export function useListManageableProfessionalsSuspense<
+    TData = Awaited<ReturnType<typeof listManageableProfessionals>>,
+    TError = ErrorType<ApiProblem>,
+>(
+    options?: {
+        query?: Partial<
+            UseSuspenseQueryOptions<Awaited<ReturnType<typeof listManageableProfessionals>>, TError, TData>
+        >;
+        request?: SecondParameter<typeof apiClient>;
+    },
+    queryClient?: QueryClient
+): UseSuspenseQueryResult<TData, TError> & {queryKey: DataTag<QueryKey, TData, TError>};
+/**
+ * @summary Lists the agendas (clinic members) the current actor can create appointments for
+ */
+
+export function useListManageableProfessionalsSuspense<
+    TData = Awaited<ReturnType<typeof listManageableProfessionals>>,
+    TError = ErrorType<ApiProblem>,
+>(
+    options?: {
+        query?: Partial<
+            UseSuspenseQueryOptions<Awaited<ReturnType<typeof listManageableProfessionals>>, TError, TData>
+        >;
+        request?: SecondParameter<typeof apiClient>;
+    },
+    queryClient?: QueryClient
+): UseSuspenseQueryResult<TData, TError> & {queryKey: DataTag<QueryKey, TData, TError>} {
+    const queryOptions = getListManageableProfessionalsSuspenseQueryOptions(options);
 
     const query = useSuspenseQuery(queryOptions, queryClient) as UseSuspenseQueryResult<TData, TError> & {
         queryKey: DataTag<QueryKey, TData, TError>;
@@ -803,6 +1001,149 @@ export const useCallAppointment = <TError = ErrorType<ApiProblem>, TContext = un
     return useMutation(mutationOptions, queryClient);
 };
 
+/**
+ * @summary Confirms an appointment (SCHEDULED → CONFIRMED)
+ */
+export const confirmAppointment = (id: string, options?: SecondParameter<typeof apiClient>) => {
+    return apiClient<Appointment>({url: `/api/v1/appointments/${id}/confirm`, method: 'PATCH'}, options);
+};
+
+export const getConfirmAppointmentMutationOptions = <TError = ErrorType<ApiProblem>, TContext = unknown>(options?: {
+    mutation?: UseMutationOptions<Awaited<ReturnType<typeof confirmAppointment>>, TError, {id: string}, TContext>;
+    request?: SecondParameter<typeof apiClient>;
+}): UseMutationOptions<Awaited<ReturnType<typeof confirmAppointment>>, TError, {id: string}, TContext> => {
+    const mutationKey = ['confirmAppointment'];
+    const {mutation: mutationOptions, request: requestOptions} = options
+        ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
+            ? options
+            : {...options, mutation: {...options.mutation, mutationKey}}
+        : {mutation: {mutationKey}, request: undefined};
+
+    const mutationFn: MutationFunction<Awaited<ReturnType<typeof confirmAppointment>>, {id: string}> = (props) => {
+        const {id} = props ?? {};
+
+        return confirmAppointment(id, requestOptions);
+    };
+
+    return {mutationFn, ...mutationOptions};
+};
+
+export type ConfirmAppointmentMutationResult = NonNullable<Awaited<ReturnType<typeof confirmAppointment>>>;
+
+export type ConfirmAppointmentMutationError = ErrorType<ApiProblem>;
+
+/**
+ * @summary Confirms an appointment (SCHEDULED → CONFIRMED)
+ */
+export const useConfirmAppointment = <TError = ErrorType<ApiProblem>, TContext = unknown>(
+    options?: {
+        mutation?: UseMutationOptions<Awaited<ReturnType<typeof confirmAppointment>>, TError, {id: string}, TContext>;
+        request?: SecondParameter<typeof apiClient>;
+    },
+    queryClient?: QueryClient
+): UseMutationResult<Awaited<ReturnType<typeof confirmAppointment>>, TError, {id: string}, TContext> => {
+    const mutationOptions = getConfirmAppointmentMutationOptions(options);
+
+    return useMutation(mutationOptions, queryClient);
+};
+
+/**
+ * @summary Completes an appointment (SCHEDULED/CONFIRMED/IN_PROGRESS → COMPLETED)
+ */
+export const completeAppointment = (id: string, options?: SecondParameter<typeof apiClient>) => {
+    return apiClient<Appointment>({url: `/api/v1/appointments/${id}/complete`, method: 'PATCH'}, options);
+};
+
+export const getCompleteAppointmentMutationOptions = <TError = ErrorType<ApiProblem>, TContext = unknown>(options?: {
+    mutation?: UseMutationOptions<Awaited<ReturnType<typeof completeAppointment>>, TError, {id: string}, TContext>;
+    request?: SecondParameter<typeof apiClient>;
+}): UseMutationOptions<Awaited<ReturnType<typeof completeAppointment>>, TError, {id: string}, TContext> => {
+    const mutationKey = ['completeAppointment'];
+    const {mutation: mutationOptions, request: requestOptions} = options
+        ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
+            ? options
+            : {...options, mutation: {...options.mutation, mutationKey}}
+        : {mutation: {mutationKey}, request: undefined};
+
+    const mutationFn: MutationFunction<Awaited<ReturnType<typeof completeAppointment>>, {id: string}> = (props) => {
+        const {id} = props ?? {};
+
+        return completeAppointment(id, requestOptions);
+    };
+
+    return {mutationFn, ...mutationOptions};
+};
+
+export type CompleteAppointmentMutationResult = NonNullable<Awaited<ReturnType<typeof completeAppointment>>>;
+
+export type CompleteAppointmentMutationError = ErrorType<ApiProblem>;
+
+/**
+ * @summary Completes an appointment (SCHEDULED/CONFIRMED/IN_PROGRESS → COMPLETED)
+ */
+export const useCompleteAppointment = <TError = ErrorType<ApiProblem>, TContext = unknown>(
+    options?: {
+        mutation?: UseMutationOptions<Awaited<ReturnType<typeof completeAppointment>>, TError, {id: string}, TContext>;
+        request?: SecondParameter<typeof apiClient>;
+    },
+    queryClient?: QueryClient
+): UseMutationResult<Awaited<ReturnType<typeof completeAppointment>>, TError, {id: string}, TContext> => {
+    const mutationOptions = getCompleteAppointmentMutationOptions(options);
+
+    return useMutation(mutationOptions, queryClient);
+};
+
+/**
+ * @summary Marks an appointment as no-show (SCHEDULED/CONFIRMED/ARRIVED → NO_SHOW)
+ */
+export const markNoShowAppointment = (id: string, options?: SecondParameter<typeof apiClient>) => {
+    return apiClient<Appointment>({url: `/api/v1/appointments/${id}/no-show`, method: 'PATCH'}, options);
+};
+
+export const getMarkNoShowAppointmentMutationOptions = <TError = ErrorType<ApiProblem>, TContext = unknown>(options?: {
+    mutation?: UseMutationOptions<Awaited<ReturnType<typeof markNoShowAppointment>>, TError, {id: string}, TContext>;
+    request?: SecondParameter<typeof apiClient>;
+}): UseMutationOptions<Awaited<ReturnType<typeof markNoShowAppointment>>, TError, {id: string}, TContext> => {
+    const mutationKey = ['markNoShowAppointment'];
+    const {mutation: mutationOptions, request: requestOptions} = options
+        ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
+            ? options
+            : {...options, mutation: {...options.mutation, mutationKey}}
+        : {mutation: {mutationKey}, request: undefined};
+
+    const mutationFn: MutationFunction<Awaited<ReturnType<typeof markNoShowAppointment>>, {id: string}> = (props) => {
+        const {id} = props ?? {};
+
+        return markNoShowAppointment(id, requestOptions);
+    };
+
+    return {mutationFn, ...mutationOptions};
+};
+
+export type MarkNoShowAppointmentMutationResult = NonNullable<Awaited<ReturnType<typeof markNoShowAppointment>>>;
+
+export type MarkNoShowAppointmentMutationError = ErrorType<ApiProblem>;
+
+/**
+ * @summary Marks an appointment as no-show (SCHEDULED/CONFIRMED/ARRIVED → NO_SHOW)
+ */
+export const useMarkNoShowAppointment = <TError = ErrorType<ApiProblem>, TContext = unknown>(
+    options?: {
+        mutation?: UseMutationOptions<
+            Awaited<ReturnType<typeof markNoShowAppointment>>,
+            TError,
+            {id: string},
+            TContext
+        >;
+        request?: SecondParameter<typeof apiClient>;
+    },
+    queryClient?: QueryClient
+): UseMutationResult<Awaited<ReturnType<typeof markNoShowAppointment>>, TError, {id: string}, TContext> => {
+    const mutationOptions = getMarkNoShowAppointmentMutationOptions(options);
+
+    return useMutation(mutationOptions, queryClient);
+};
+
 export const getCreateAppointmentResponseMock = (overrideResponse: Partial<Appointment> = {}): Appointment => ({
     id: faker.string.uuid(),
     createdAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
@@ -830,6 +1171,7 @@ export const getCreateAppointmentResponseMock = (overrideResponse: Partial<Appoi
     arrivedAt: faker.helpers.arrayElement([`${faker.date.past().toISOString().split('.')[0]}Z`, null]),
     calledAt: faker.helpers.arrayElement([`${faker.date.past().toISOString().split('.')[0]}Z`, null]),
     paymentStatus: faker.helpers.arrayElement(Object.values(AppointmentPaymentStatus)),
+    roomId: faker.helpers.arrayElement([faker.string.uuid(), null]),
     ...overrideResponse,
 });
 
@@ -860,6 +1202,7 @@ export const getCreateAppointmentResponseMock201 = (overrideResponse: Partial<Ap
     arrivedAt: faker.helpers.arrayElement([`${faker.date.past().toISOString().split('.')[0]}Z`, null]),
     calledAt: faker.helpers.arrayElement([`${faker.date.past().toISOString().split('.')[0]}Z`, null]),
     paymentStatus: faker.helpers.arrayElement(Object.values(AppointmentPaymentStatus)),
+    roomId: faker.helpers.arrayElement([faker.string.uuid(), null]),
     ...overrideResponse,
 });
 
@@ -876,6 +1219,48 @@ export const getCreateAppointmentResponseMockDefault = (overrideResponse: Partia
 });
 
 export const getSearchAppointmentsResponseMockDefault = (overrideResponse: Partial<ApiProblem> = {}): ApiProblem => ({
+    title: faker.string.alpha({length: {min: 10, max: 20}}),
+    type: faker.internet.url(),
+    detail: faker.string.alpha({length: {min: 10, max: 20}}),
+    status: faker.helpers.arrayElement([
+        400, 401, 402, 403, 404, 405, 406, 407, 408, 409, 410, 411, 412, 413, 414, 415, 416, 417, 418, 421, 422, 423,
+        424, 428, 429, 456, 500, 501, 502, 503, 504, 505, 507, 508,
+    ] as const),
+    instance: faker.string.alpha({length: {min: 10, max: 20}}),
+    ...overrideResponse,
+});
+
+export const getListManageableProfessionalsResponseMock = (): ClinicMember[] =>
+    Array.from({length: faker.number.int({min: 1, max: 10})}, (_, i) => i + 1).map(() => ({
+        id: faker.string.uuid(),
+        createdAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
+        updatedAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
+        clinicId: faker.string.uuid(),
+        userId: faker.string.uuid(),
+        roles: faker.helpers.arrayElements(['OWNER', 'ADMIN', 'PROFESSIONAL', 'SECRETARY', 'VIEWER'] as const),
+        displayName: faker.helpers.arrayElement([faker.string.alpha({length: {min: 10, max: 20}}), null]),
+        color: faker.helpers.arrayElement([faker.string.alpha({length: {min: 10, max: 20}}), null]),
+        isActive: faker.datatype.boolean(),
+        invitedByMemberId: faker.helpers.arrayElement([faker.string.uuid(), null]),
+    }));
+
+export const getListManageableProfessionalsResponseMock200 = (): ClinicMember[] =>
+    Array.from({length: faker.number.int({min: 1, max: 10})}, (_, i) => i + 1).map(() => ({
+        id: faker.string.uuid(),
+        createdAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
+        updatedAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
+        clinicId: faker.string.uuid(),
+        userId: faker.string.uuid(),
+        roles: faker.helpers.arrayElements(['OWNER', 'ADMIN', 'PROFESSIONAL', 'SECRETARY', 'VIEWER'] as const),
+        displayName: faker.helpers.arrayElement([faker.string.alpha({length: {min: 10, max: 20}}), null]),
+        color: faker.helpers.arrayElement([faker.string.alpha({length: {min: 10, max: 20}}), null]),
+        isActive: faker.datatype.boolean(),
+        invitedByMemberId: faker.helpers.arrayElement([faker.string.uuid(), null]),
+    }));
+
+export const getListManageableProfessionalsResponseMockDefault = (
+    overrideResponse: Partial<ApiProblem> = {}
+): ApiProblem => ({
     title: faker.string.alpha({length: {min: 10, max: 20}}),
     type: faker.internet.url(),
     detail: faker.string.alpha({length: {min: 10, max: 20}}),
@@ -914,6 +1299,7 @@ export const getGetAppointmentResponseMock = (overrideResponse: Partial<Appointm
     arrivedAt: faker.helpers.arrayElement([`${faker.date.past().toISOString().split('.')[0]}Z`, null]),
     calledAt: faker.helpers.arrayElement([`${faker.date.past().toISOString().split('.')[0]}Z`, null]),
     paymentStatus: faker.helpers.arrayElement(Object.values(AppointmentPaymentStatus)),
+    roomId: faker.helpers.arrayElement([faker.string.uuid(), null]),
     ...overrideResponse,
 });
 
@@ -944,6 +1330,7 @@ export const getGetAppointmentResponseMock200 = (overrideResponse: Partial<Appoi
     arrivedAt: faker.helpers.arrayElement([`${faker.date.past().toISOString().split('.')[0]}Z`, null]),
     calledAt: faker.helpers.arrayElement([`${faker.date.past().toISOString().split('.')[0]}Z`, null]),
     paymentStatus: faker.helpers.arrayElement(Object.values(AppointmentPaymentStatus)),
+    roomId: faker.helpers.arrayElement([faker.string.uuid(), null]),
     ...overrideResponse,
 });
 
@@ -986,6 +1373,7 @@ export const getUpdateAppointmentResponseMock = (overrideResponse: Partial<Appoi
     arrivedAt: faker.helpers.arrayElement([`${faker.date.past().toISOString().split('.')[0]}Z`, null]),
     calledAt: faker.helpers.arrayElement([`${faker.date.past().toISOString().split('.')[0]}Z`, null]),
     paymentStatus: faker.helpers.arrayElement(Object.values(AppointmentPaymentStatus)),
+    roomId: faker.helpers.arrayElement([faker.string.uuid(), null]),
     ...overrideResponse,
 });
 
@@ -1016,6 +1404,7 @@ export const getUpdateAppointmentResponseMock200 = (overrideResponse: Partial<Ap
     arrivedAt: faker.helpers.arrayElement([`${faker.date.past().toISOString().split('.')[0]}Z`, null]),
     calledAt: faker.helpers.arrayElement([`${faker.date.past().toISOString().split('.')[0]}Z`, null]),
     paymentStatus: faker.helpers.arrayElement(Object.values(AppointmentPaymentStatus)),
+    roomId: faker.helpers.arrayElement([faker.string.uuid(), null]),
     ...overrideResponse,
 });
 
@@ -1070,6 +1459,7 @@ export const getCancelAppointmentResponseMock = (overrideResponse: Partial<Appoi
     arrivedAt: faker.helpers.arrayElement([`${faker.date.past().toISOString().split('.')[0]}Z`, null]),
     calledAt: faker.helpers.arrayElement([`${faker.date.past().toISOString().split('.')[0]}Z`, null]),
     paymentStatus: faker.helpers.arrayElement(Object.values(AppointmentPaymentStatus)),
+    roomId: faker.helpers.arrayElement([faker.string.uuid(), null]),
     ...overrideResponse,
 });
 
@@ -1100,6 +1490,7 @@ export const getCancelAppointmentResponseMock200 = (overrideResponse: Partial<Ap
     arrivedAt: faker.helpers.arrayElement([`${faker.date.past().toISOString().split('.')[0]}Z`, null]),
     calledAt: faker.helpers.arrayElement([`${faker.date.past().toISOString().split('.')[0]}Z`, null]),
     paymentStatus: faker.helpers.arrayElement(Object.values(AppointmentPaymentStatus)),
+    roomId: faker.helpers.arrayElement([faker.string.uuid(), null]),
     ...overrideResponse,
 });
 
@@ -1142,6 +1533,7 @@ export const getCheckinAppointmentResponseMock = (overrideResponse: Partial<Appo
     arrivedAt: faker.helpers.arrayElement([`${faker.date.past().toISOString().split('.')[0]}Z`, null]),
     calledAt: faker.helpers.arrayElement([`${faker.date.past().toISOString().split('.')[0]}Z`, null]),
     paymentStatus: faker.helpers.arrayElement(Object.values(AppointmentPaymentStatus)),
+    roomId: faker.helpers.arrayElement([faker.string.uuid(), null]),
     ...overrideResponse,
 });
 
@@ -1172,6 +1564,7 @@ export const getCheckinAppointmentResponseMock200 = (overrideResponse: Partial<A
     arrivedAt: faker.helpers.arrayElement([`${faker.date.past().toISOString().split('.')[0]}Z`, null]),
     calledAt: faker.helpers.arrayElement([`${faker.date.past().toISOString().split('.')[0]}Z`, null]),
     paymentStatus: faker.helpers.arrayElement(Object.values(AppointmentPaymentStatus)),
+    roomId: faker.helpers.arrayElement([faker.string.uuid(), null]),
     ...overrideResponse,
 });
 
@@ -1214,6 +1607,7 @@ export const getCallAppointmentResponseMock = (overrideResponse: Partial<Appoint
     arrivedAt: faker.helpers.arrayElement([`${faker.date.past().toISOString().split('.')[0]}Z`, null]),
     calledAt: faker.helpers.arrayElement([`${faker.date.past().toISOString().split('.')[0]}Z`, null]),
     paymentStatus: faker.helpers.arrayElement(Object.values(AppointmentPaymentStatus)),
+    roomId: faker.helpers.arrayElement([faker.string.uuid(), null]),
     ...overrideResponse,
 });
 
@@ -1244,10 +1638,235 @@ export const getCallAppointmentResponseMock200 = (overrideResponse: Partial<Appo
     arrivedAt: faker.helpers.arrayElement([`${faker.date.past().toISOString().split('.')[0]}Z`, null]),
     calledAt: faker.helpers.arrayElement([`${faker.date.past().toISOString().split('.')[0]}Z`, null]),
     paymentStatus: faker.helpers.arrayElement(Object.values(AppointmentPaymentStatus)),
+    roomId: faker.helpers.arrayElement([faker.string.uuid(), null]),
     ...overrideResponse,
 });
 
 export const getCallAppointmentResponseMockDefault = (overrideResponse: Partial<ApiProblem> = {}): ApiProblem => ({
+    title: faker.string.alpha({length: {min: 10, max: 20}}),
+    type: faker.internet.url(),
+    detail: faker.string.alpha({length: {min: 10, max: 20}}),
+    status: faker.helpers.arrayElement([
+        400, 401, 402, 403, 404, 405, 406, 407, 408, 409, 410, 411, 412, 413, 414, 415, 416, 417, 418, 421, 422, 423,
+        424, 428, 429, 456, 500, 501, 502, 503, 504, 505, 507, 508,
+    ] as const),
+    instance: faker.string.alpha({length: {min: 10, max: 20}}),
+    ...overrideResponse,
+});
+
+export const getConfirmAppointmentResponseMock = (overrideResponse: Partial<Appointment> = {}): Appointment => ({
+    id: faker.string.uuid(),
+    createdAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
+    updatedAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
+    clinicId: faker.string.uuid(),
+    patientId: faker.string.uuid(),
+    attendedByMemberId: faker.string.uuid(),
+    createdByMemberId: faker.string.uuid(),
+    startAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
+    endAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
+    durationMinutes: faker.number.float({min: undefined, max: undefined, fractionDigits: 2}),
+    type: faker.helpers.arrayElement(['FIRST_VISIT', 'RETURN', 'WALK_IN', 'TELEMEDICINE', 'PROCEDURE'] as const),
+    status: faker.helpers.arrayElement([
+        'SCHEDULED',
+        'CONFIRMED',
+        'CANCELLED',
+        'COMPLETED',
+        'NO_SHOW',
+        'ARRIVED',
+        'IN_PROGRESS',
+    ] as const),
+    canceledAt: faker.helpers.arrayElement([`${faker.date.past().toISOString().split('.')[0]}Z`, null]),
+    canceledReason: {},
+    note: {},
+    arrivedAt: faker.helpers.arrayElement([`${faker.date.past().toISOString().split('.')[0]}Z`, null]),
+    calledAt: faker.helpers.arrayElement([`${faker.date.past().toISOString().split('.')[0]}Z`, null]),
+    paymentStatus: faker.helpers.arrayElement(Object.values(AppointmentPaymentStatus)),
+    roomId: faker.helpers.arrayElement([faker.string.uuid(), null]),
+    ...overrideResponse,
+});
+
+export const getConfirmAppointmentResponseMock200 = (overrideResponse: Partial<Appointment> = {}): Appointment => ({
+    id: faker.string.uuid(),
+    createdAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
+    updatedAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
+    clinicId: faker.string.uuid(),
+    patientId: faker.string.uuid(),
+    attendedByMemberId: faker.string.uuid(),
+    createdByMemberId: faker.string.uuid(),
+    startAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
+    endAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
+    durationMinutes: faker.number.float({min: undefined, max: undefined, fractionDigits: 2}),
+    type: faker.helpers.arrayElement(['FIRST_VISIT', 'RETURN', 'WALK_IN', 'TELEMEDICINE', 'PROCEDURE'] as const),
+    status: faker.helpers.arrayElement([
+        'SCHEDULED',
+        'CONFIRMED',
+        'CANCELLED',
+        'COMPLETED',
+        'NO_SHOW',
+        'ARRIVED',
+        'IN_PROGRESS',
+    ] as const),
+    canceledAt: faker.helpers.arrayElement([`${faker.date.past().toISOString().split('.')[0]}Z`, null]),
+    canceledReason: {},
+    note: {},
+    arrivedAt: faker.helpers.arrayElement([`${faker.date.past().toISOString().split('.')[0]}Z`, null]),
+    calledAt: faker.helpers.arrayElement([`${faker.date.past().toISOString().split('.')[0]}Z`, null]),
+    paymentStatus: faker.helpers.arrayElement(Object.values(AppointmentPaymentStatus)),
+    roomId: faker.helpers.arrayElement([faker.string.uuid(), null]),
+    ...overrideResponse,
+});
+
+export const getConfirmAppointmentResponseMockDefault = (overrideResponse: Partial<ApiProblem> = {}): ApiProblem => ({
+    title: faker.string.alpha({length: {min: 10, max: 20}}),
+    type: faker.internet.url(),
+    detail: faker.string.alpha({length: {min: 10, max: 20}}),
+    status: faker.helpers.arrayElement([
+        400, 401, 402, 403, 404, 405, 406, 407, 408, 409, 410, 411, 412, 413, 414, 415, 416, 417, 418, 421, 422, 423,
+        424, 428, 429, 456, 500, 501, 502, 503, 504, 505, 507, 508,
+    ] as const),
+    instance: faker.string.alpha({length: {min: 10, max: 20}}),
+    ...overrideResponse,
+});
+
+export const getCompleteAppointmentResponseMock = (overrideResponse: Partial<Appointment> = {}): Appointment => ({
+    id: faker.string.uuid(),
+    createdAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
+    updatedAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
+    clinicId: faker.string.uuid(),
+    patientId: faker.string.uuid(),
+    attendedByMemberId: faker.string.uuid(),
+    createdByMemberId: faker.string.uuid(),
+    startAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
+    endAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
+    durationMinutes: faker.number.float({min: undefined, max: undefined, fractionDigits: 2}),
+    type: faker.helpers.arrayElement(['FIRST_VISIT', 'RETURN', 'WALK_IN', 'TELEMEDICINE', 'PROCEDURE'] as const),
+    status: faker.helpers.arrayElement([
+        'SCHEDULED',
+        'CONFIRMED',
+        'CANCELLED',
+        'COMPLETED',
+        'NO_SHOW',
+        'ARRIVED',
+        'IN_PROGRESS',
+    ] as const),
+    canceledAt: faker.helpers.arrayElement([`${faker.date.past().toISOString().split('.')[0]}Z`, null]),
+    canceledReason: {},
+    note: {},
+    arrivedAt: faker.helpers.arrayElement([`${faker.date.past().toISOString().split('.')[0]}Z`, null]),
+    calledAt: faker.helpers.arrayElement([`${faker.date.past().toISOString().split('.')[0]}Z`, null]),
+    paymentStatus: faker.helpers.arrayElement(Object.values(AppointmentPaymentStatus)),
+    roomId: faker.helpers.arrayElement([faker.string.uuid(), null]),
+    ...overrideResponse,
+});
+
+export const getCompleteAppointmentResponseMock200 = (overrideResponse: Partial<Appointment> = {}): Appointment => ({
+    id: faker.string.uuid(),
+    createdAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
+    updatedAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
+    clinicId: faker.string.uuid(),
+    patientId: faker.string.uuid(),
+    attendedByMemberId: faker.string.uuid(),
+    createdByMemberId: faker.string.uuid(),
+    startAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
+    endAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
+    durationMinutes: faker.number.float({min: undefined, max: undefined, fractionDigits: 2}),
+    type: faker.helpers.arrayElement(['FIRST_VISIT', 'RETURN', 'WALK_IN', 'TELEMEDICINE', 'PROCEDURE'] as const),
+    status: faker.helpers.arrayElement([
+        'SCHEDULED',
+        'CONFIRMED',
+        'CANCELLED',
+        'COMPLETED',
+        'NO_SHOW',
+        'ARRIVED',
+        'IN_PROGRESS',
+    ] as const),
+    canceledAt: faker.helpers.arrayElement([`${faker.date.past().toISOString().split('.')[0]}Z`, null]),
+    canceledReason: {},
+    note: {},
+    arrivedAt: faker.helpers.arrayElement([`${faker.date.past().toISOString().split('.')[0]}Z`, null]),
+    calledAt: faker.helpers.arrayElement([`${faker.date.past().toISOString().split('.')[0]}Z`, null]),
+    paymentStatus: faker.helpers.arrayElement(Object.values(AppointmentPaymentStatus)),
+    roomId: faker.helpers.arrayElement([faker.string.uuid(), null]),
+    ...overrideResponse,
+});
+
+export const getCompleteAppointmentResponseMockDefault = (overrideResponse: Partial<ApiProblem> = {}): ApiProblem => ({
+    title: faker.string.alpha({length: {min: 10, max: 20}}),
+    type: faker.internet.url(),
+    detail: faker.string.alpha({length: {min: 10, max: 20}}),
+    status: faker.helpers.arrayElement([
+        400, 401, 402, 403, 404, 405, 406, 407, 408, 409, 410, 411, 412, 413, 414, 415, 416, 417, 418, 421, 422, 423,
+        424, 428, 429, 456, 500, 501, 502, 503, 504, 505, 507, 508,
+    ] as const),
+    instance: faker.string.alpha({length: {min: 10, max: 20}}),
+    ...overrideResponse,
+});
+
+export const getMarkNoShowAppointmentResponseMock = (overrideResponse: Partial<Appointment> = {}): Appointment => ({
+    id: faker.string.uuid(),
+    createdAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
+    updatedAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
+    clinicId: faker.string.uuid(),
+    patientId: faker.string.uuid(),
+    attendedByMemberId: faker.string.uuid(),
+    createdByMemberId: faker.string.uuid(),
+    startAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
+    endAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
+    durationMinutes: faker.number.float({min: undefined, max: undefined, fractionDigits: 2}),
+    type: faker.helpers.arrayElement(['FIRST_VISIT', 'RETURN', 'WALK_IN', 'TELEMEDICINE', 'PROCEDURE'] as const),
+    status: faker.helpers.arrayElement([
+        'SCHEDULED',
+        'CONFIRMED',
+        'CANCELLED',
+        'COMPLETED',
+        'NO_SHOW',
+        'ARRIVED',
+        'IN_PROGRESS',
+    ] as const),
+    canceledAt: faker.helpers.arrayElement([`${faker.date.past().toISOString().split('.')[0]}Z`, null]),
+    canceledReason: {},
+    note: {},
+    arrivedAt: faker.helpers.arrayElement([`${faker.date.past().toISOString().split('.')[0]}Z`, null]),
+    calledAt: faker.helpers.arrayElement([`${faker.date.past().toISOString().split('.')[0]}Z`, null]),
+    paymentStatus: faker.helpers.arrayElement(Object.values(AppointmentPaymentStatus)),
+    roomId: faker.helpers.arrayElement([faker.string.uuid(), null]),
+    ...overrideResponse,
+});
+
+export const getMarkNoShowAppointmentResponseMock200 = (overrideResponse: Partial<Appointment> = {}): Appointment => ({
+    id: faker.string.uuid(),
+    createdAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
+    updatedAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
+    clinicId: faker.string.uuid(),
+    patientId: faker.string.uuid(),
+    attendedByMemberId: faker.string.uuid(),
+    createdByMemberId: faker.string.uuid(),
+    startAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
+    endAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
+    durationMinutes: faker.number.float({min: undefined, max: undefined, fractionDigits: 2}),
+    type: faker.helpers.arrayElement(['FIRST_VISIT', 'RETURN', 'WALK_IN', 'TELEMEDICINE', 'PROCEDURE'] as const),
+    status: faker.helpers.arrayElement([
+        'SCHEDULED',
+        'CONFIRMED',
+        'CANCELLED',
+        'COMPLETED',
+        'NO_SHOW',
+        'ARRIVED',
+        'IN_PROGRESS',
+    ] as const),
+    canceledAt: faker.helpers.arrayElement([`${faker.date.past().toISOString().split('.')[0]}Z`, null]),
+    canceledReason: {},
+    note: {},
+    arrivedAt: faker.helpers.arrayElement([`${faker.date.past().toISOString().split('.')[0]}Z`, null]),
+    calledAt: faker.helpers.arrayElement([`${faker.date.past().toISOString().split('.')[0]}Z`, null]),
+    paymentStatus: faker.helpers.arrayElement(Object.values(AppointmentPaymentStatus)),
+    roomId: faker.helpers.arrayElement([faker.string.uuid(), null]),
+    ...overrideResponse,
+});
+
+export const getMarkNoShowAppointmentResponseMockDefault = (
+    overrideResponse: Partial<ApiProblem> = {}
+): ApiProblem => ({
     title: faker.string.alpha({length: {min: 10, max: 20}}),
     type: faker.internet.url(),
     detail: faker.string.alpha({length: {min: 10, max: 20}}),
@@ -1381,6 +2000,78 @@ export const getSearchAppointmentsMockHandlerDefault = (
                             ? await overrideResponse(info)
                             : overrideResponse
                         : getSearchAppointmentsResponseMockDefault()
+                ),
+                {status: 200, headers: {'Content-Type': 'application/json'}}
+            );
+        },
+        options
+    );
+};
+
+export const getListManageableProfessionalsMockHandler = (
+    overrideResponse?:
+        | ClinicMember[]
+        | ((info: Parameters<Parameters<typeof http.get>[1]>[0]) => Promise<ClinicMember[]> | ClinicMember[]),
+    options?: RequestHandlerOptions
+) => {
+    return http.get(
+        '*/api/v1/appointments/manageable-professionals',
+        async (info) => {
+            return new HttpResponse(
+                JSON.stringify(
+                    overrideResponse !== undefined
+                        ? typeof overrideResponse === 'function'
+                            ? await overrideResponse(info)
+                            : overrideResponse
+                        : getListManageableProfessionalsResponseMock()
+                ),
+                {status: 200, headers: {'Content-Type': 'application/json'}}
+            );
+        },
+        options
+    );
+};
+
+export const getListManageableProfessionalsMockHandler200 = (
+    overrideResponse?:
+        | ClinicMember[]
+        | ((info: Parameters<Parameters<typeof http.get>[1]>[0]) => Promise<ClinicMember[]> | ClinicMember[]),
+    options?: RequestHandlerOptions
+) => {
+    return http.get(
+        '*/api/v1/appointments/manageable-professionals',
+        async (info) => {
+            return new HttpResponse(
+                JSON.stringify(
+                    overrideResponse !== undefined
+                        ? typeof overrideResponse === 'function'
+                            ? await overrideResponse(info)
+                            : overrideResponse
+                        : getListManageableProfessionalsResponseMock200()
+                ),
+                {status: 200, headers: {'Content-Type': 'application/json'}}
+            );
+        },
+        options
+    );
+};
+
+export const getListManageableProfessionalsMockHandlerDefault = (
+    overrideResponse?:
+        | ApiProblem
+        | ((info: Parameters<Parameters<typeof http.get>[1]>[0]) => Promise<ApiProblem> | ApiProblem),
+    options?: RequestHandlerOptions
+) => {
+    return http.get(
+        '*/api/v1/appointments/manageable-professionals',
+        async (info) => {
+            return new HttpResponse(
+                JSON.stringify(
+                    overrideResponse !== undefined
+                        ? typeof overrideResponse === 'function'
+                            ? await overrideResponse(info)
+                            : overrideResponse
+                        : getListManageableProfessionalsResponseMockDefault()
                 ),
                 {status: 200, headers: {'Content-Type': 'application/json'}}
             );
@@ -1807,13 +2498,233 @@ export const getCallAppointmentMockHandlerDefault = (
     );
 };
 
+export const getConfirmAppointmentMockHandler = (
+    overrideResponse?:
+        | Appointment
+        | ((info: Parameters<Parameters<typeof http.patch>[1]>[0]) => Promise<Appointment> | Appointment),
+    options?: RequestHandlerOptions
+) => {
+    return http.patch(
+        '*/api/v1/appointments/:id/confirm',
+        async (info) => {
+            return new HttpResponse(
+                JSON.stringify(
+                    overrideResponse !== undefined
+                        ? typeof overrideResponse === 'function'
+                            ? await overrideResponse(info)
+                            : overrideResponse
+                        : getConfirmAppointmentResponseMock()
+                ),
+                {status: 200, headers: {'Content-Type': 'application/json'}}
+            );
+        },
+        options
+    );
+};
+
+export const getConfirmAppointmentMockHandler200 = (
+    overrideResponse?:
+        | Appointment
+        | ((info: Parameters<Parameters<typeof http.patch>[1]>[0]) => Promise<Appointment> | Appointment),
+    options?: RequestHandlerOptions
+) => {
+    return http.patch(
+        '*/api/v1/appointments/:id/confirm',
+        async (info) => {
+            return new HttpResponse(
+                JSON.stringify(
+                    overrideResponse !== undefined
+                        ? typeof overrideResponse === 'function'
+                            ? await overrideResponse(info)
+                            : overrideResponse
+                        : getConfirmAppointmentResponseMock200()
+                ),
+                {status: 200, headers: {'Content-Type': 'application/json'}}
+            );
+        },
+        options
+    );
+};
+
+export const getConfirmAppointmentMockHandlerDefault = (
+    overrideResponse?:
+        | ApiProblem
+        | ((info: Parameters<Parameters<typeof http.patch>[1]>[0]) => Promise<ApiProblem> | ApiProblem),
+    options?: RequestHandlerOptions
+) => {
+    return http.patch(
+        '*/api/v1/appointments/:id/confirm',
+        async (info) => {
+            return new HttpResponse(
+                JSON.stringify(
+                    overrideResponse !== undefined
+                        ? typeof overrideResponse === 'function'
+                            ? await overrideResponse(info)
+                            : overrideResponse
+                        : getConfirmAppointmentResponseMockDefault()
+                ),
+                {status: 200, headers: {'Content-Type': 'application/json'}}
+            );
+        },
+        options
+    );
+};
+
+export const getCompleteAppointmentMockHandler = (
+    overrideResponse?:
+        | Appointment
+        | ((info: Parameters<Parameters<typeof http.patch>[1]>[0]) => Promise<Appointment> | Appointment),
+    options?: RequestHandlerOptions
+) => {
+    return http.patch(
+        '*/api/v1/appointments/:id/complete',
+        async (info) => {
+            return new HttpResponse(
+                JSON.stringify(
+                    overrideResponse !== undefined
+                        ? typeof overrideResponse === 'function'
+                            ? await overrideResponse(info)
+                            : overrideResponse
+                        : getCompleteAppointmentResponseMock()
+                ),
+                {status: 200, headers: {'Content-Type': 'application/json'}}
+            );
+        },
+        options
+    );
+};
+
+export const getCompleteAppointmentMockHandler200 = (
+    overrideResponse?:
+        | Appointment
+        | ((info: Parameters<Parameters<typeof http.patch>[1]>[0]) => Promise<Appointment> | Appointment),
+    options?: RequestHandlerOptions
+) => {
+    return http.patch(
+        '*/api/v1/appointments/:id/complete',
+        async (info) => {
+            return new HttpResponse(
+                JSON.stringify(
+                    overrideResponse !== undefined
+                        ? typeof overrideResponse === 'function'
+                            ? await overrideResponse(info)
+                            : overrideResponse
+                        : getCompleteAppointmentResponseMock200()
+                ),
+                {status: 200, headers: {'Content-Type': 'application/json'}}
+            );
+        },
+        options
+    );
+};
+
+export const getCompleteAppointmentMockHandlerDefault = (
+    overrideResponse?:
+        | ApiProblem
+        | ((info: Parameters<Parameters<typeof http.patch>[1]>[0]) => Promise<ApiProblem> | ApiProblem),
+    options?: RequestHandlerOptions
+) => {
+    return http.patch(
+        '*/api/v1/appointments/:id/complete',
+        async (info) => {
+            return new HttpResponse(
+                JSON.stringify(
+                    overrideResponse !== undefined
+                        ? typeof overrideResponse === 'function'
+                            ? await overrideResponse(info)
+                            : overrideResponse
+                        : getCompleteAppointmentResponseMockDefault()
+                ),
+                {status: 200, headers: {'Content-Type': 'application/json'}}
+            );
+        },
+        options
+    );
+};
+
+export const getMarkNoShowAppointmentMockHandler = (
+    overrideResponse?:
+        | Appointment
+        | ((info: Parameters<Parameters<typeof http.patch>[1]>[0]) => Promise<Appointment> | Appointment),
+    options?: RequestHandlerOptions
+) => {
+    return http.patch(
+        '*/api/v1/appointments/:id/no-show',
+        async (info) => {
+            return new HttpResponse(
+                JSON.stringify(
+                    overrideResponse !== undefined
+                        ? typeof overrideResponse === 'function'
+                            ? await overrideResponse(info)
+                            : overrideResponse
+                        : getMarkNoShowAppointmentResponseMock()
+                ),
+                {status: 200, headers: {'Content-Type': 'application/json'}}
+            );
+        },
+        options
+    );
+};
+
+export const getMarkNoShowAppointmentMockHandler200 = (
+    overrideResponse?:
+        | Appointment
+        | ((info: Parameters<Parameters<typeof http.patch>[1]>[0]) => Promise<Appointment> | Appointment),
+    options?: RequestHandlerOptions
+) => {
+    return http.patch(
+        '*/api/v1/appointments/:id/no-show',
+        async (info) => {
+            return new HttpResponse(
+                JSON.stringify(
+                    overrideResponse !== undefined
+                        ? typeof overrideResponse === 'function'
+                            ? await overrideResponse(info)
+                            : overrideResponse
+                        : getMarkNoShowAppointmentResponseMock200()
+                ),
+                {status: 200, headers: {'Content-Type': 'application/json'}}
+            );
+        },
+        options
+    );
+};
+
+export const getMarkNoShowAppointmentMockHandlerDefault = (
+    overrideResponse?:
+        | ApiProblem
+        | ((info: Parameters<Parameters<typeof http.patch>[1]>[0]) => Promise<ApiProblem> | ApiProblem),
+    options?: RequestHandlerOptions
+) => {
+    return http.patch(
+        '*/api/v1/appointments/:id/no-show',
+        async (info) => {
+            return new HttpResponse(
+                JSON.stringify(
+                    overrideResponse !== undefined
+                        ? typeof overrideResponse === 'function'
+                            ? await overrideResponse(info)
+                            : overrideResponse
+                        : getMarkNoShowAppointmentResponseMockDefault()
+                ),
+                {status: 200, headers: {'Content-Type': 'application/json'}}
+            );
+        },
+        options
+    );
+};
+
 export const getAppointmentMock = () => [
     getCreateAppointmentMockHandler(),
     getSearchAppointmentsMockHandler(),
+    getListManageableProfessionalsMockHandler(),
     getGetAppointmentMockHandler(),
     getUpdateAppointmentMockHandler(),
     getDeleteAppointmentMockHandler(),
     getCancelAppointmentMockHandler(),
     getCheckinAppointmentMockHandler(),
     getCallAppointmentMockHandler(),
+    getConfirmAppointmentMockHandler(),
+    getCompleteAppointmentMockHandler(),
+    getMarkNoShowAppointmentMockHandler(),
 ];

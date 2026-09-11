@@ -17,4 +17,7 @@ export type CreateAppointmentDto = {
     /** @nullable */
     note?: string | null;
     retroactive?: boolean;
+    /** @nullable */
+    roomId?: string | null;
+    confirmOutsideAvailability?: boolean;
 };

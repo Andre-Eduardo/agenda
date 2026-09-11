@@ -6,7 +6,6 @@
  */
 
 /**
- * Free-form specialty
  * @nullable
  */
-export type ProfessionalSpecialty = {[key: string]: unknown} | null;
+export type PatientSubscriptionPlanDescription = {[key: string]: unknown} | null;

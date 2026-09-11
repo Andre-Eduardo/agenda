@@ -664,6 +664,7 @@ export const getCreateClinicResponseMock = (overrideResponse: Partial<Clinic> = 
         'ENFERMAGEM',
         'OUTROS',
     ] as const),
+    roomManagementEnabled: faker.datatype.boolean(),
     ...overrideResponse,
 });
 
@@ -694,6 +695,7 @@ export const getCreateClinicResponseMock201 = (overrideResponse: Partial<Clinic>
         'ENFERMAGEM',
         'OUTROS',
     ] as const),
+    roomManagementEnabled: faker.datatype.boolean(),
     ...overrideResponse,
 });
 
@@ -736,6 +738,7 @@ export const getGetClinicResponseMock = (overrideResponse: Partial<Clinic> = {})
         'ENFERMAGEM',
         'OUTROS',
     ] as const),
+    roomManagementEnabled: faker.datatype.boolean(),
     ...overrideResponse,
 });
 
@@ -766,6 +769,7 @@ export const getGetClinicResponseMock200 = (overrideResponse: Partial<Clinic> = 
         'ENFERMAGEM',
         'OUTROS',
     ] as const),
+    roomManagementEnabled: faker.datatype.boolean(),
     ...overrideResponse,
 });
 
@@ -808,6 +812,7 @@ export const getUpdateClinicResponseMock = (overrideResponse: Partial<Clinic> = 
         'ENFERMAGEM',
         'OUTROS',
     ] as const),
+    roomManagementEnabled: faker.datatype.boolean(),
     ...overrideResponse,
 });
 
@@ -838,6 +843,7 @@ export const getUpdateClinicResponseMock200 = (overrideResponse: Partial<Clinic>
         'ENFERMAGEM',
         'OUTROS',
     ] as const),
+    roomManagementEnabled: faker.datatype.boolean(),
     ...overrideResponse,
 });
 

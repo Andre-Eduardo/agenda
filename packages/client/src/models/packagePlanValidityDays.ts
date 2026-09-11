@@ -6,7 +6,6 @@
  */
 
 /**
- * Display name (UI label)
  * @nullable
  */
-export type ClinicMemberDisplayName = {[key: string]: unknown} | null;
+export type PackagePlanValidityDays = {[key: string]: unknown} | null;

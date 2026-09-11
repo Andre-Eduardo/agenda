@@ -6,7 +6,6 @@
  */
 
 /**
- * Calendar color
  * @nullable
  */
-export type ClinicMemberColor = {[key: string]: unknown} | null;
+export type InsuranceClaimApprovedAmountBrl = {[key: string]: unknown} | null;

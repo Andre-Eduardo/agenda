@@ -14,4 +14,7 @@ export type UpdateAppointmentInputDto = {
     type: UpdateAppointmentInputDtoType;
     /** @nullable */
     note: string | null;
+    /** @nullable */
+    roomId: string | null;
+    confirmOutsideAvailability: boolean;
 };

@@ -35,4 +35,5 @@ export type UpdateClinicDto = {
     /** @nullable */
     logoUrl: string | null;
     clinicSpecialties: UpdateClinicDtoClinicSpecialtiesItem[];
+    roomManagementEnabled: boolean;
 };

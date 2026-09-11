@@ -91,4 +91,6 @@ export type Clinic = {
     logoUrl: ClinicLogoUrl;
     /** Specialties offered by the clinic */
     clinicSpecialties: ClinicClinicSpecialtiesItem[];
+    /** Enables physical room management and room conflict checks on scheduling */
+    roomManagementEnabled: boolean;
 };

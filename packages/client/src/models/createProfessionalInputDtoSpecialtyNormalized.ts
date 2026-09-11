@@ -8,12 +8,12 @@
 /**
  * @nullable
  */
-export type CreateProfessionalDtoSpecialtyNormalized =
-    | (typeof CreateProfessionalDtoSpecialtyNormalized)[keyof typeof CreateProfessionalDtoSpecialtyNormalized]
+export type CreateProfessionalInputDtoSpecialtyNormalized =
+    | (typeof CreateProfessionalInputDtoSpecialtyNormalized)[keyof typeof CreateProfessionalInputDtoSpecialtyNormalized]
     | null;
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
-export const CreateProfessionalDtoSpecialtyNormalized = {
+export const CreateProfessionalInputDtoSpecialtyNormalized = {
     SAUDE_MENTAL: 'SAUDE_MENTAL',
     REABILITACAO: 'REABILITACAO',
     MEDICINA_GERAL: 'MEDICINA_GERAL',

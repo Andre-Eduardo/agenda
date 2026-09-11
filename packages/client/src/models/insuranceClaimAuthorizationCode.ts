@@ -6,7 +6,6 @@
  */
 
 /**
- * Optional reason for the block
  * @nullable
  */
-export type MemberBlockReason = {[key: string]: unknown} | null;
+export type InsuranceClaimAuthorizationCode = {[key: string]: unknown} | null;

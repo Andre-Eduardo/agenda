@@ -13,4 +13,6 @@ export type UpdateProfessionalInputDto = {
     specialty: string | null;
     /** @nullable */
     specialtyNormalized: UpdateProfessionalInputDtoSpecialtyNormalized;
+    /** @nullable */
+    defaultRoomId: string | null;
 };
