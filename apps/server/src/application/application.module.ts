@@ -31,6 +31,8 @@ import {PatientAlertModule} from '@application/patient-alert/patient-alert.modul
 import {PatientFormModule} from '@application/patient-form/patient-form.module';
 import {PatientInsuranceEnrollmentModule} from '@application/patient-insurance-enrollment/patient-insurance-enrollment.module';
 import {PatientPackageModule} from '@application/patient-package/patient-package.module';
+import {PatientSubscriptionPlanModule} from '@application/patient-subscription-plan/patient-subscription-plan.module';
+import {PatientSubscriptionModule} from '@application/patient-subscription/patient-subscription.module';
 import {PatientModule} from '@application/patient/patient.module';
 import {PaymentModule} from '@application/payment/payment.module';
 import {ProfessionalAgendaAccessModule} from '@application/professional-agenda-access/professional-agenda-access.module';
@@ -135,6 +137,8 @@ const guards: Provider[] = [
         InsuranceClaimModule,
         PackagePlanModule,
         PatientPackageModule,
+        PatientSubscriptionPlanModule,
+        PatientSubscriptionModule,
         FinancialReportModule,
         WorkingHoursModule,
         MemberBlockModule,

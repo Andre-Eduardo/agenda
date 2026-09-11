@@ -16,6 +16,8 @@ import {PatientInsuranceEnrollmentId} from '@domain/patient-insurance-enrollment
 import {PatientPackageId} from '@domain/patient-package/entities';
 import {PatientPackageCreditRepository} from '@domain/patient-package/patient-package-credit.repository';
 import {PatientPackageRepository} from '@domain/patient-package/patient-package.repository';
+import {PatientSubscriptionId} from '@domain/patient-subscription/entities';
+import {PatientSubscriptionUsageRepository} from '@domain/patient-subscription/patient-subscription-usage.repository';
 import {PatientId} from '@domain/patient/entities';
 
 describe('UpdatePaymentStatusService', () => {
@@ -33,6 +35,7 @@ describe('UpdatePaymentStatusService', () => {
     let insuranceClaimRepository: ReturnType<typeof mock<InsuranceClaimRepository>>;
     let patientPackageRepository: ReturnType<typeof mock<PatientPackageRepository>>;
     let patientPackageCreditRepository: ReturnType<typeof mock<PatientPackageCreditRepository>>;
+    let patientSubscriptionUsageRepository: ReturnType<typeof mock<PatientSubscriptionUsageRepository>>;
     let eventDispatcher: ReturnType<typeof mock<EventDispatcher>>;
     let atomicExecutor: ReturnType<typeof mock<AtomicExecutor>>;
     let service: UpdatePaymentStatusService;
@@ -57,6 +60,7 @@ describe('UpdatePaymentStatusService', () => {
         insuranceClaimRepository = mock<InsuranceClaimRepository>();
         patientPackageRepository = mock<PatientPackageRepository>();
         patientPackageCreditRepository = mock<PatientPackageCreditRepository>();
+        patientSubscriptionUsageRepository = mock<PatientSubscriptionUsageRepository>();
         eventDispatcher = mock<EventDispatcher>();
         atomicExecutor = mock<AtomicExecutor>();
         atomicExecutor.runAtomically.mockImplementation((callback) => callback());
@@ -67,6 +71,7 @@ describe('UpdatePaymentStatusService', () => {
             insuranceClaimRepository,
             patientPackageRepository,
             patientPackageCreditRepository,
+            patientSubscriptionUsageRepository,
             eventDispatcher
         );
         (service as unknown as {atomicExecutor: AtomicExecutor}).atomicExecutor = atomicExecutor;
@@ -178,5 +183,43 @@ describe('UpdatePaymentStatusService', () => {
 
         expect(patientPackageRepository.refundCredit).not.toHaveBeenCalled();
         expect(insuranceClaimRepository.findByAppointmentPaymentId).not.toHaveBeenCalled();
+    });
+
+    it('should refund the subscription quota for the period the payment was created in when a SUBSCRIPTION payment is refunded', async () => {
+        const appointment = createAppointment();
+        const patientSubscriptionId = PatientSubscriptionId.generate();
+        const payment = AppointmentPayment.create({
+            clinicId,
+            appointmentId: appointment.id,
+            patientId,
+            registeredByMemberId: actor.clinicMemberId,
+            paymentMethod: PaymentMethod.SUBSCRIPTION,
+            status: AppointmentPaymentStatus.PAID,
+            amountBrl: 100,
+            patientSubscriptionId,
+        });
+        const usage = {id: 'usage-id'} as Awaited<ReturnType<PatientSubscriptionUsageRepository['findCurrentPeriod']>>;
+
+        appointmentRepository.findById.mockResolvedValue(appointment);
+        appointmentPaymentRepository.findByAppointmentId.mockResolvedValue(payment);
+        patientSubscriptionUsageRepository.findCurrentPeriod.mockResolvedValue(usage);
+
+        await service.execute({
+            actor,
+            payload: {
+                appointmentId: appointment.id,
+                status: AppointmentPaymentStatus.REFUNDED,
+                paidAt: null,
+                amountBrl: undefined,
+                notes: undefined,
+            },
+        });
+
+        expect(patientSubscriptionUsageRepository.findCurrentPeriod).toHaveBeenCalledWith(
+            patientSubscriptionId,
+            payment.createdAt.getFullYear(),
+            payment.createdAt.getMonth() + 1
+        );
+        expect(patientSubscriptionUsageRepository.refundAppointment).toHaveBeenCalledWith(usage?.id);
     });
 });

@@ -166,6 +166,18 @@ export enum PatientPackagePermission {
     SELL = 'patient-package:sell',
 }
 
+export enum PatientSubscriptionPlanPermission {
+    VIEW = 'patient-subscription-plan:view',
+    CREATE = 'patient-subscription-plan:create',
+    UPDATE = 'patient-subscription-plan:update',
+}
+
+export enum PatientSubscriptionPermission {
+    VIEW = 'patient-subscription:view',
+    SUBSCRIBE = 'patient-subscription:subscribe',
+    CANCEL = 'patient-subscription:cancel',
+}
+
 export enum FinancialReportPermission {
     VIEW = 'financial-report:view',
 }
@@ -221,6 +233,8 @@ const PERMISSIONS = [
     ...Object.values(InsuranceClaimPermission),
     ...Object.values(PackagePlanPermission),
     ...Object.values(PatientPackagePermission),
+    ...Object.values(PatientSubscriptionPlanPermission),
+    ...Object.values(PatientSubscriptionPermission),
     ...Object.values(FinancialReportPermission),
     ...Object.values(WorkingHoursPermission),
     ...Object.values(MemberBlockPermission),

@@ -13,6 +13,7 @@ import {InsuranceClaimRepository} from '@domain/insurance-claim/insurance-claim.
 import {PatientPackageCredit, PatientPackageCreditEventType} from '@domain/patient-package/entities';
 import {PatientPackageCreditRepository} from '@domain/patient-package/patient-package-credit.repository';
 import {PatientPackageRepository} from '@domain/patient-package/patient-package.repository';
+import {PatientSubscriptionUsageRepository} from '@domain/patient-subscription/patient-subscription-usage.repository';
 
 export type UpdatePaymentStatusCommand = UpdatePaymentStatusDto & {appointmentId: AppointmentId};
 
@@ -27,6 +28,7 @@ export class UpdatePaymentStatusService implements ApplicationService<
         private readonly insuranceClaimRepository: InsuranceClaimRepository,
         private readonly patientPackageRepository: PatientPackageRepository,
         private readonly patientPackageCreditRepository: PatientPackageCreditRepository,
+        private readonly patientSubscriptionUsageRepository: PatientSubscriptionUsageRepository,
         private readonly eventDispatcher: EventDispatcher
     ) {}
 
@@ -81,6 +83,23 @@ export class UpdatePaymentStatusService implements ApplicationService<
             });
 
             await this.patientPackageCreditRepository.save(credit);
+        }
+
+        if (movingToRefunded && payment.paymentMethod === PaymentMethod.SUBSCRIPTION && payment.patientSubscriptionId) {
+            // Consumption always happens at registration time (`now()`), so the payment's own
+            // createdAt deterministically identifies which monthly period was debited.
+            const periodYear = payment.createdAt.getFullYear();
+            const periodMonth = payment.createdAt.getMonth() + 1;
+
+            const usage = await this.patientSubscriptionUsageRepository.findCurrentPeriod(
+                payment.patientSubscriptionId,
+                periodYear,
+                periodMonth
+            );
+
+            if (usage !== null) {
+                await this.patientSubscriptionUsageRepository.refundAppointment(usage.id);
+            }
         }
 
         if (movingToRefunded && payment.paymentMethod === PaymentMethod.INSURANCE) {

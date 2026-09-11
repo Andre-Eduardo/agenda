@@ -33,6 +33,9 @@ import {PatientFormRepository} from '@domain/patient-form/patient-form.repositor
 import {PatientInsuranceEnrollmentRepository} from '@domain/patient-insurance-enrollment/patient-insurance-enrollment.repository';
 import {PatientPackageCreditRepository} from '@domain/patient-package/patient-package-credit.repository';
 import {PatientPackageRepository} from '@domain/patient-package/patient-package.repository';
+import {PatientSubscriptionPlanRepository} from '@domain/patient-subscription-plan/patient-subscription-plan.repository';
+import {PatientSubscriptionUsageRepository} from '@domain/patient-subscription/patient-subscription-usage.repository';
+import {PatientSubscriptionRepository} from '@domain/patient-subscription/patient-subscription.repository';
 import {PatientRepository} from '@domain/patient/patient.repository';
 import {PersonRepository} from '@domain/person/person.repository';
 import {ProfessionalAgendaAccessRepository} from '@domain/professional-agenda-access/professional-agenda-access.repository';
@@ -79,6 +82,9 @@ import {PatientFormPrismaRepository} from '@infrastructure/repository/patient-fo
 import {PatientInsuranceEnrollmentPrismaRepository} from '@infrastructure/repository/patient-insurance-enrollment.prisma.repository';
 import {PatientPackageCreditPrismaRepository} from '@infrastructure/repository/patient-package-credit.prisma.repository';
 import {PatientPackagePrismaRepository} from '@infrastructure/repository/patient-package.prisma.repository';
+import {PatientSubscriptionPlanPrismaRepository} from '@infrastructure/repository/patient-subscription-plan.prisma.repository';
+import {PatientSubscriptionUsagePrismaRepository} from '@infrastructure/repository/patient-subscription-usage.prisma.repository';
+import {PatientSubscriptionPrismaRepository} from '@infrastructure/repository/patient-subscription.prisma.repository';
 import {PatientPrismaRepository} from '@infrastructure/repository/patient.prisma.repository';
 import {PersonPrismaRepository} from '@infrastructure/repository/person.prisma.repository';
 import {PrismaProvider} from '@infrastructure/repository/prisma/prisma.provider';
@@ -112,6 +118,9 @@ const repositories: Provider[] = [
     {provide: PackagePlanRepository, useClass: PackagePlanPrismaRepository},
     {provide: PatientPackageRepository, useClass: PatientPackagePrismaRepository},
     {provide: PatientPackageCreditRepository, useClass: PatientPackageCreditPrismaRepository},
+    {provide: PatientSubscriptionPlanRepository, useClass: PatientSubscriptionPlanPrismaRepository},
+    {provide: PatientSubscriptionRepository, useClass: PatientSubscriptionPrismaRepository},
+    {provide: PatientSubscriptionUsageRepository, useClass: PatientSubscriptionUsagePrismaRepository},
     // Schedule
     {provide: AppointmentRepository, useClass: AppointmentPrismaRepository},
     {provide: AppointmentPaymentRepository, useClass: AppointmentPaymentPrismaRepository},

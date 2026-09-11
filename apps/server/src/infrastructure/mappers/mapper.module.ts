@@ -33,6 +33,9 @@ import {PatientFormMapper} from '@infrastructure/mappers/patient-form.mapper';
 import {PatientInsuranceEnrollmentMapper} from '@infrastructure/mappers/patient-insurance-enrollment.mapper';
 import {PatientPackageCreditMapper} from '@infrastructure/mappers/patient-package-credit.mapper';
 import {PatientPackageMapper} from '@infrastructure/mappers/patient-package.mapper';
+import {PatientSubscriptionPlanMapper} from '@infrastructure/mappers/patient-subscription-plan.mapper';
+import {PatientSubscriptionUsageMapper} from '@infrastructure/mappers/patient-subscription-usage.mapper';
+import {PatientSubscriptionMapper} from '@infrastructure/mappers/patient-subscription.mapper';
 import {PatientMapper} from '@infrastructure/mappers/patient.mapper';
 import {PersonMapper} from '@infrastructure/mappers/person.mapper';
 import {ProfessionalAgendaAccessMapper} from '@infrastructure/mappers/professional-agenda-access.mapper';
@@ -59,6 +62,9 @@ const mappers = [
     PackagePlanMapper,
     PatientPackageMapper,
     PatientPackageCreditMapper,
+    PatientSubscriptionPlanMapper,
+    PatientSubscriptionMapper,
+    PatientSubscriptionUsageMapper,
     // Schedule
     AppointmentMapper,
     AppointmentPaymentMapper,

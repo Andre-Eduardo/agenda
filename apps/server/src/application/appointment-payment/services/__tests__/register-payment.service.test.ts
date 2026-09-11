@@ -17,6 +17,10 @@ import {PatientInsuranceEnrollmentRepository} from '@domain/patient-insurance-en
 import {PatientPackage, PatientPackageId} from '@domain/patient-package/entities';
 import {PatientPackageCreditRepository} from '@domain/patient-package/patient-package-credit.repository';
 import {PatientPackageRepository} from '@domain/patient-package/patient-package.repository';
+import {PatientSubscriptionPlanId} from '@domain/patient-subscription-plan/entities';
+import {PatientSubscription, PatientSubscriptionId} from '@domain/patient-subscription/entities';
+import {PatientSubscriptionUsageRepository} from '@domain/patient-subscription/patient-subscription-usage.repository';
+import {PatientSubscriptionRepository} from '@domain/patient-subscription/patient-subscription.repository';
 import {PatientId} from '@domain/patient/entities';
 import {PatientRepository} from '@domain/patient/patient.repository';
 
@@ -37,6 +41,8 @@ describe('RegisterPaymentService', () => {
     let insuranceClaimRepository: ReturnType<typeof mock<InsuranceClaimRepository>>;
     let patientPackageRepository: ReturnType<typeof mock<PatientPackageRepository>>;
     let patientPackageCreditRepository: ReturnType<typeof mock<PatientPackageCreditRepository>>;
+    let patientSubscriptionRepository: ReturnType<typeof mock<PatientSubscriptionRepository>>;
+    let patientSubscriptionUsageRepository: ReturnType<typeof mock<PatientSubscriptionUsageRepository>>;
     let eventDispatcher: ReturnType<typeof mock<EventDispatcher>>;
     let atomicExecutor: ReturnType<typeof mock<AtomicExecutor>>;
     let service: RegisterPaymentService;
@@ -63,6 +69,8 @@ describe('RegisterPaymentService', () => {
         insuranceClaimRepository = mock<InsuranceClaimRepository>();
         patientPackageRepository = mock<PatientPackageRepository>();
         patientPackageCreditRepository = mock<PatientPackageCreditRepository>();
+        patientSubscriptionRepository = mock<PatientSubscriptionRepository>();
+        patientSubscriptionUsageRepository = mock<PatientSubscriptionUsageRepository>();
         eventDispatcher = mock<EventDispatcher>();
         atomicExecutor = mock<AtomicExecutor>();
         atomicExecutor.runAtomically.mockImplementation((callback) => callback());
@@ -77,6 +85,8 @@ describe('RegisterPaymentService', () => {
             insuranceClaimRepository,
             patientPackageRepository,
             patientPackageCreditRepository,
+            patientSubscriptionRepository,
+            patientSubscriptionUsageRepository,
             eventDispatcher
         );
         (service as unknown as {atomicExecutor: AtomicExecutor}).atomicExecutor = atomicExecutor;
@@ -298,5 +308,114 @@ describe('RegisterPaymentService', () => {
         ).rejects.toThrow();
 
         expect(patientPackageCreditRepository.save).not.toHaveBeenCalled();
+    });
+
+    it('should consume the subscription quota, lazily creating the period usage row, when paymentMethod is SUBSCRIPTION', async () => {
+        const appointment = createAppointment();
+        const subscription = PatientSubscription.create({
+            clinicId,
+            patientId,
+            subscriptionPlanId: PatientSubscriptionPlanId.generate(),
+            planNameSnapshot: 'Mensal 4 sessões',
+            monthlyQuotaSnapshot: 4,
+            priceBrlSnapshot: 400,
+            currentPeriodStart: new Date('2020-01-01T00:00:00.000Z'),
+            currentPeriodEnd: new Date('2020-02-01T00:00:00.000Z'),
+        });
+
+        appointmentRepository.findById.mockResolvedValue(appointment);
+        patientSubscriptionRepository.findById.mockResolvedValue(subscription);
+        patientSubscriptionUsageRepository.findCurrentPeriod.mockResolvedValue(null);
+        patientSubscriptionUsageRepository.consumeAppointment.mockResolvedValue({appointmentsUsed: 1});
+
+        const result = await service.execute({
+            actor,
+            payload: {
+                appointmentId: appointment.id,
+                paymentMethod: PaymentMethod.SUBSCRIPTION,
+                amountBrl: 100,
+                status: AppointmentPaymentStatus.PAID,
+                insurancePlanId: null,
+                insuranceAuthCode: null,
+                patientSubscriptionId: subscription.id,
+                notes: null,
+            },
+        });
+
+        expect(result.paymentMethod).toBe(PaymentMethod.SUBSCRIPTION);
+        expect(patientSubscriptionUsageRepository.save).toHaveBeenCalledTimes(1);
+        const savedUsage = patientSubscriptionUsageRepository.save.mock.calls[0]?.[0];
+
+        expect(savedUsage?.quotaSnapshot).toBe(4);
+        expect(patientSubscriptionUsageRepository.consumeAppointment).toHaveBeenCalledWith(savedUsage?.id);
+    });
+
+    it('should throw when the subscription quota is exhausted for the period', async () => {
+        const appointment = createAppointment();
+        const subscription = PatientSubscription.create({
+            clinicId,
+            patientId,
+            subscriptionPlanId: PatientSubscriptionPlanId.generate(),
+            planNameSnapshot: 'Mensal 4 sessões',
+            monthlyQuotaSnapshot: 4,
+            priceBrlSnapshot: 400,
+            currentPeriodStart: new Date('2020-01-01T00:00:00.000Z'),
+            currentPeriodEnd: new Date('2020-02-01T00:00:00.000Z'),
+        });
+
+        appointmentRepository.findById.mockResolvedValue(appointment);
+        patientSubscriptionRepository.findById.mockResolvedValue(subscription);
+        patientSubscriptionUsageRepository.findCurrentPeriod.mockResolvedValue(null);
+        patientSubscriptionUsageRepository.consumeAppointment.mockResolvedValue(null);
+
+        await expect(
+            service.execute({
+                actor,
+                payload: {
+                    appointmentId: appointment.id,
+                    paymentMethod: PaymentMethod.SUBSCRIPTION,
+                    amountBrl: 100,
+                    status: AppointmentPaymentStatus.PAID,
+                    insurancePlanId: null,
+                    insuranceAuthCode: null,
+                    patientSubscriptionId: subscription.id,
+                    notes: null,
+                },
+            })
+        ).rejects.toThrow();
+    });
+
+    it('should throw when paymentMethod is SUBSCRIPTION and the appointment is not COMPLETED', async () => {
+        const appointment = Appointment.create({
+            clinicId,
+            patientId,
+            attendedByMemberId: ClinicMemberId.generate(),
+            createdByMemberId: actor.clinicMemberId,
+            startAt: new Date('2020-01-01T09:00:00.000Z'),
+            endAt: new Date('2020-01-01T10:00:00.000Z'),
+            durationMinutes: 60,
+            type: AppointmentType.FIRST_VISIT,
+            status: AppointmentStatus.SCHEDULED,
+        });
+
+        appointmentRepository.findById.mockResolvedValue(appointment);
+
+        await expect(
+            service.execute({
+                actor,
+                payload: {
+                    appointmentId: appointment.id,
+                    paymentMethod: PaymentMethod.SUBSCRIPTION,
+                    amountBrl: 100,
+                    status: AppointmentPaymentStatus.PAID,
+                    insurancePlanId: null,
+                    insuranceAuthCode: null,
+                    patientSubscriptionId: PatientSubscriptionId.generate(),
+                    notes: null,
+                },
+            })
+        ).rejects.toThrow();
+
+        expect(patientSubscriptionUsageRepository.consumeAppointment).not.toHaveBeenCalled();
     });
 });

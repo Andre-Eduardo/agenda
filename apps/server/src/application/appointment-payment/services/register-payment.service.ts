@@ -14,6 +14,13 @@ import {PatientInsuranceEnrollmentRepository} from '@domain/patient-insurance-en
 import {PatientPackageCredit, PatientPackageCreditEventType} from '@domain/patient-package/entities';
 import {PatientPackageCreditRepository} from '@domain/patient-package/patient-package-credit.repository';
 import {PatientPackageRepository} from '@domain/patient-package/patient-package.repository';
+import {
+    PatientSubscription,
+    PatientSubscriptionStatus,
+    PatientSubscriptionUsage,
+} from '@domain/patient-subscription/entities';
+import {PatientSubscriptionUsageRepository} from '@domain/patient-subscription/patient-subscription-usage.repository';
+import {PatientSubscriptionRepository} from '@domain/patient-subscription/patient-subscription.repository';
 import {PatientRepository} from '@domain/patient/patient.repository';
 
 export type RegisterPaymentCommand = RegisterPaymentDto & {appointmentId: AppointmentId};
@@ -28,6 +35,8 @@ export class RegisterPaymentService implements ApplicationService<RegisterPaymen
         private readonly insuranceClaimRepository: InsuranceClaimRepository,
         private readonly patientPackageRepository: PatientPackageRepository,
         private readonly patientPackageCreditRepository: PatientPackageCreditRepository,
+        private readonly patientSubscriptionRepository: PatientSubscriptionRepository,
+        private readonly patientSubscriptionUsageRepository: PatientSubscriptionUsageRepository,
         private readonly eventDispatcher: EventDispatcher
     ) {}
 
@@ -41,6 +50,7 @@ export class RegisterPaymentService implements ApplicationService<RegisterPaymen
             insurancePlanId,
             insuranceAuthCode,
             patientPackageId,
+            patientSubscriptionId,
             notes,
         } = payload;
 
@@ -108,6 +118,37 @@ export class RegisterPaymentService implements ApplicationService<RegisterPaymen
             }
         }
 
+        // Same rationale as PACKAGE above: a subscription's monthly quota can only be spent on a
+        // session that actually happened, and the source is always explicit.
+        let subscription: PatientSubscription | null = null;
+
+        if (paymentMethod === PaymentMethod.SUBSCRIPTION) {
+            if (!patientSubscriptionId) {
+                throw new InvalidInputException(
+                    'patientSubscriptionId is required when paymentMethod is SUBSCRIPTION',
+                    [{field: 'patientSubscriptionId', reason: 'Required when paymentMethod is SUBSCRIPTION'}]
+                );
+            }
+
+            if (appointment.status !== AppointmentStatus.COMPLETED) {
+                throw new PreconditionException('appointment_payment.subscription_requires_completed_appointment');
+            }
+
+            subscription = await this.patientSubscriptionRepository.findById(patientSubscriptionId);
+
+            if (
+                subscription === null ||
+                !subscription.clinicId.equals(actor.clinicId) ||
+                !subscription.patientId.equals(appointment.patientId)
+            ) {
+                throw new ResourceNotFoundException('patient_subscription.not_found', patientSubscriptionId.toString());
+            }
+
+            if (subscription.status !== PatientSubscriptionStatus.ACTIVE) {
+                throw new PreconditionException('patient_subscription.not_active');
+            }
+        }
+
         const resolvedStatus = status ?? AppointmentPaymentStatus.PAID;
         const paidAt = resolvedStatus === AppointmentPaymentStatus.PAID ? new Date() : null;
 
@@ -123,7 +164,7 @@ export class RegisterPaymentService implements ApplicationService<RegisterPaymen
             insurancePlanId: insurancePlanId ?? null,
             insuranceAuthCode: insuranceAuthCode ?? null,
             patientPackageId: patientPackageId ?? null,
-            patientSubscriptionId: null,
+            patientSubscriptionId: patientSubscriptionId ?? null,
             notes: notes ?? null,
         });
 
@@ -163,6 +204,38 @@ export class RegisterPaymentService implements ApplicationService<RegisterPaymen
             });
 
             await this.patientPackageCreditRepository.save(credit);
+        }
+
+        if (paymentMethod === PaymentMethod.SUBSCRIPTION && patientSubscriptionId && subscription !== null) {
+            const now = new Date();
+            const periodYear = now.getFullYear();
+            const periodMonth = now.getMonth() + 1;
+
+            let usage = await this.patientSubscriptionUsageRepository.findCurrentPeriod(
+                patientSubscriptionId,
+                periodYear,
+                periodMonth
+            );
+
+            // Lazy-create the usage row on first consumption of the period — mirrors UsageRecord.
+            if (usage === null) {
+                usage = PatientSubscriptionUsage.create({
+                    clinicId: actor.clinicId,
+                    patientSubscriptionId,
+                    periodYear,
+                    periodMonth,
+                    quotaSnapshot: subscription.monthlyQuotaSnapshot,
+                });
+
+                await this.patientSubscriptionUsageRepository.save(usage);
+            }
+
+            // Same atomic conditional pattern as package credits (WHERE appointmentsUsed < quotaSnapshot).
+            const consumed = await this.patientSubscriptionUsageRepository.consumeAppointment(usage.id);
+
+            if (consumed === null) {
+                throw new PreconditionException('patient_subscription.quota_exhausted');
+            }
         }
 
         this.eventDispatcher.dispatch(actor, payment);
