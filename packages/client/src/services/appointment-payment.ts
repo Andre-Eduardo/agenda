@@ -429,8 +429,10 @@ export const getRegisterPaymentResponseMock = (
     amountBrl: faker.number.float({min: undefined, max: undefined, fractionDigits: 2}),
     paidAt: faker.helpers.arrayElement([`${faker.date.past().toISOString().split('.')[0]}Z`, null]),
     insurancePlanId: faker.helpers.arrayElement([faker.string.uuid(), null]),
-    insuranceAuthCode: {},
-    notes: {},
+    insuranceAuthCode: faker.helpers.arrayElement([faker.string.alpha({length: {min: 10, max: 20}}), null]),
+    patientPackageId: faker.helpers.arrayElement([faker.string.uuid(), null]),
+    patientSubscriptionId: faker.helpers.arrayElement([faker.string.uuid(), null]),
+    notes: faker.helpers.arrayElement([faker.string.alpha({length: {min: 10, max: 20}}), null]),
     ...overrideResponse,
 });
 
@@ -459,8 +461,10 @@ export const getRegisterPaymentResponseMock201 = (
     amountBrl: faker.number.float({min: undefined, max: undefined, fractionDigits: 2}),
     paidAt: faker.helpers.arrayElement([`${faker.date.past().toISOString().split('.')[0]}Z`, null]),
     insurancePlanId: faker.helpers.arrayElement([faker.string.uuid(), null]),
-    insuranceAuthCode: {},
-    notes: {},
+    insuranceAuthCode: faker.helpers.arrayElement([faker.string.alpha({length: {min: 10, max: 20}}), null]),
+    patientPackageId: faker.helpers.arrayElement([faker.string.uuid(), null]),
+    patientSubscriptionId: faker.helpers.arrayElement([faker.string.uuid(), null]),
+    notes: faker.helpers.arrayElement([faker.string.alpha({length: {min: 10, max: 20}}), null]),
     ...overrideResponse,
 });
 
@@ -501,8 +505,10 @@ export const getUpdatePaymentStatusResponseMock = (
     amountBrl: faker.number.float({min: undefined, max: undefined, fractionDigits: 2}),
     paidAt: faker.helpers.arrayElement([`${faker.date.past().toISOString().split('.')[0]}Z`, null]),
     insurancePlanId: faker.helpers.arrayElement([faker.string.uuid(), null]),
-    insuranceAuthCode: {},
-    notes: {},
+    insuranceAuthCode: faker.helpers.arrayElement([faker.string.alpha({length: {min: 10, max: 20}}), null]),
+    patientPackageId: faker.helpers.arrayElement([faker.string.uuid(), null]),
+    patientSubscriptionId: faker.helpers.arrayElement([faker.string.uuid(), null]),
+    notes: faker.helpers.arrayElement([faker.string.alpha({length: {min: 10, max: 20}}), null]),
     ...overrideResponse,
 });
 
@@ -531,8 +537,10 @@ export const getUpdatePaymentStatusResponseMock200 = (
     amountBrl: faker.number.float({min: undefined, max: undefined, fractionDigits: 2}),
     paidAt: faker.helpers.arrayElement([`${faker.date.past().toISOString().split('.')[0]}Z`, null]),
     insurancePlanId: faker.helpers.arrayElement([faker.string.uuid(), null]),
-    insuranceAuthCode: {},
-    notes: {},
+    insuranceAuthCode: faker.helpers.arrayElement([faker.string.alpha({length: {min: 10, max: 20}}), null]),
+    patientPackageId: faker.helpers.arrayElement([faker.string.uuid(), null]),
+    patientSubscriptionId: faker.helpers.arrayElement([faker.string.uuid(), null]),
+    notes: faker.helpers.arrayElement([faker.string.alpha({length: {min: 10, max: 20}}), null]),
     ...overrideResponse,
 });
 
@@ -573,8 +581,10 @@ export const getGetPaymentByAppointmentResponseMock = (
     amountBrl: faker.number.float({min: undefined, max: undefined, fractionDigits: 2}),
     paidAt: faker.helpers.arrayElement([`${faker.date.past().toISOString().split('.')[0]}Z`, null]),
     insurancePlanId: faker.helpers.arrayElement([faker.string.uuid(), null]),
-    insuranceAuthCode: {},
-    notes: {},
+    insuranceAuthCode: faker.helpers.arrayElement([faker.string.alpha({length: {min: 10, max: 20}}), null]),
+    patientPackageId: faker.helpers.arrayElement([faker.string.uuid(), null]),
+    patientSubscriptionId: faker.helpers.arrayElement([faker.string.uuid(), null]),
+    notes: faker.helpers.arrayElement([faker.string.alpha({length: {min: 10, max: 20}}), null]),
     ...overrideResponse,
 });
 
@@ -603,8 +613,10 @@ export const getGetPaymentByAppointmentResponseMock200 = (
     amountBrl: faker.number.float({min: undefined, max: undefined, fractionDigits: 2}),
     paidAt: faker.helpers.arrayElement([`${faker.date.past().toISOString().split('.')[0]}Z`, null]),
     insurancePlanId: faker.helpers.arrayElement([faker.string.uuid(), null]),
-    insuranceAuthCode: {},
-    notes: {},
+    insuranceAuthCode: faker.helpers.arrayElement([faker.string.alpha({length: {min: 10, max: 20}}), null]),
+    patientPackageId: faker.helpers.arrayElement([faker.string.uuid(), null]),
+    patientSubscriptionId: faker.helpers.arrayElement([faker.string.uuid(), null]),
+    notes: faker.helpers.arrayElement([faker.string.alpha({length: {min: 10, max: 20}}), null]),
     ...overrideResponse,
 });
 

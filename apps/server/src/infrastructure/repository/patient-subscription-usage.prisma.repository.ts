@@ -68,7 +68,7 @@ export class PatientSubscriptionUsagePrismaRepository
         const rows = await this.prisma.$queryRaw<UsedRow[]>`
             UPDATE "patient_subscription_usage"
             SET "appointments_used" = "appointments_used" + 1, "updated_at" = now()
-            WHERE "id" = ${id.toString()} AND "appointments_used" < "quota_snapshot"
+            WHERE "id" = ${id.toString()}::uuid AND "appointments_used" < "quota_snapshot"
             RETURNING "appointments_used"
         `;
 
@@ -79,7 +79,7 @@ export class PatientSubscriptionUsagePrismaRepository
         const rows = await this.prisma.$queryRaw<UsedRow[]>`
             UPDATE "patient_subscription_usage"
             SET "appointments_used" = GREATEST("appointments_used" - 1, 0), "updated_at" = now()
-            WHERE "id" = ${id.toString()}
+            WHERE "id" = ${id.toString()}::uuid
             RETURNING "appointments_used"
         `;
 

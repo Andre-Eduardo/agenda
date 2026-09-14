@@ -32,10 +32,16 @@ export class AppointmentPaymentDto extends EntityDto {
     @ApiProperty({type: 'string', format: 'uuid', nullable: true})
     insurancePlanId: string | null;
 
-    @ApiProperty({nullable: true})
+    @ApiProperty({type: 'string', nullable: true})
     insuranceAuthCode: string | null;
 
-    @ApiProperty({nullable: true})
+    @ApiProperty({type: 'string', format: 'uuid', nullable: true})
+    patientPackageId: string | null;
+
+    @ApiProperty({type: 'string', format: 'uuid', nullable: true})
+    patientSubscriptionId: string | null;
+
+    @ApiProperty({type: 'string', nullable: true})
     notes: string | null;
 
     constructor(payment: AppointmentPayment) {
@@ -50,6 +56,8 @@ export class AppointmentPaymentDto extends EntityDto {
         this.paidAt = payment.paidAt?.toISOString() ?? null;
         this.insurancePlanId = payment.insurancePlanId?.toString() ?? null;
         this.insuranceAuthCode = payment.insuranceAuthCode;
+        this.patientPackageId = payment.patientPackageId?.toString() ?? null;
+        this.patientSubscriptionId = payment.patientSubscriptionId?.toString() ?? null;
         this.notes = payment.notes;
     }
 }

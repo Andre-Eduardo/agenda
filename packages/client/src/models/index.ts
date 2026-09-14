@@ -31,8 +31,6 @@ export type * from './appointment';
 export type * from './appointmentCanceledReason';
 export type * from './appointmentNote';
 export type * from './appointmentPayment';
-export type * from './appointmentPaymentInsuranceAuthCode';
-export type * from './appointmentPaymentNotes';
 export * from './appointmentPaymentPaymentMethod';
 export * from './appointmentPaymentStatus';
 export type * from './appointmentPaymentStatusProperty';

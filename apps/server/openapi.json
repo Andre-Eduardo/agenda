@@ -14038,11 +14038,21 @@
             "nullable": true
           },
           "insuranceAuthCode": {
-            "type": "object",
+            "type": "string",
+            "nullable": true
+          },
+          "patientPackageId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "patientSubscriptionId": {
+            "type": "string",
+            "format": "uuid",
             "nullable": true
           },
           "notes": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           }
         },
@@ -14060,6 +14070,8 @@
           "paidAt",
           "insurancePlanId",
           "insuranceAuthCode",
+          "patientPackageId",
+          "patientSubscriptionId",
           "notes"
         ]
       },

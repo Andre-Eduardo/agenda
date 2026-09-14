@@ -27,7 +27,9 @@ import {
     useGetPaymentByAppointment,
     useListManageableProfessionals,
     useListMemberBlocks,
+    useListPackages,
     useListRooms,
+    useListSubscriptions,
     useListWorkingHours,
     useMarkNoShowAppointment,
     useRegisterPayment,
@@ -1190,7 +1192,11 @@ function AppointmentDetailSheet({
                     </div>
 
                     {/* Payment */}
-                    <AppointmentPaymentSection appointmentId={apt.id} />
+                    <AppointmentPaymentSection
+                        appointmentId={apt.id}
+                        patientId={apt.patientId}
+                        appointmentStatus={apt.status}
+                    />
 
                     {/* Actions */}
                     {!isDone && (
@@ -1277,6 +1283,8 @@ const PAYMENT_METHOD_LABELS: Record<string, string> = {
     DEBIT_CARD: 'Cartão de débito',
     BANK_TRANSFER: 'Transferência',
     INSURANCE: 'Convênio',
+    PACKAGE: 'Pacote de sessões',
+    SUBSCRIPTION: 'Assinatura recorrente',
     COURTESY: 'Cortesia',
 };
 
@@ -1294,7 +1302,15 @@ const PAYMENT_STATUS_BADGE_VARIANT: Record<string, 'warning' | 'success' | 'seco
     REFUNDED: 'destructive',
 };
 
-function AppointmentPaymentSection({appointmentId}: {appointmentId: string}) {
+function AppointmentPaymentSection({
+    appointmentId,
+    patientId,
+    appointmentStatus,
+}: {
+    appointmentId: string;
+    patientId: string;
+    appointmentStatus: AppointmentStatus;
+}) {
     const paymentQuery = useGetPaymentByAppointment(appointmentId);
     const registerPayment = useRegisterPayment();
     const updatePaymentStatus = useUpdatePaymentStatus();
@@ -1306,6 +1322,18 @@ function AppointmentPaymentSection({appointmentId}: {appointmentId: string}) {
     const [notes, setNotes] = useState('');
     const [insurancePlanId, setInsurancePlanId] = useState('');
     const [insuranceAuthCode, setInsuranceAuthCode] = useState('');
+    const [patientPackageId, setPatientPackageId] = useState('');
+    const [patientSubscriptionId, setPatientSubscriptionId] = useState('');
+
+    const isCompleted = appointmentStatus === 'COMPLETED';
+
+    const packagesQuery = useListPackages(patientId, {query: {enabled: showForm && method === 'PACKAGE'}});
+    const activePackages = (packagesQuery.data ?? []).filter((p) => p.status === 'ACTIVE' && p.remainingCredits > 0);
+
+    const subscriptionsQuery = useListSubscriptions(patientId, {
+        query: {enabled: showForm && method === 'SUBSCRIPTION'},
+    });
+    const activeSubscriptions = (subscriptionsQuery.data ?? []).filter((s) => s.status === 'ACTIVE');
 
     const payment = paymentQuery.data;
 
@@ -1324,6 +1352,18 @@ function AppointmentPaymentSection({appointmentId}: {appointmentId: string}) {
             return;
         }
 
+        if (method === 'PACKAGE' && !patientPackageId) {
+            toast.error('Selecione o pacote de sessões a debitar.');
+
+            return;
+        }
+
+        if (method === 'SUBSCRIPTION' && !patientSubscriptionId) {
+            toast.error('Selecione a assinatura a debitar.');
+
+            return;
+        }
+
         registerPayment.mutate(
             {
                 id: appointmentId,
@@ -1333,6 +1373,8 @@ function AppointmentPaymentSection({appointmentId}: {appointmentId: string}) {
                     status: status as RegisterPaymentDto['status'],
                     ...(method === 'INSURANCE' ? {insurancePlanId: insurancePlanId.trim()} : {}),
                     ...(insuranceAuthCode.trim() ? {insuranceAuthCode: insuranceAuthCode.trim()} : {}),
+                    ...(method === 'PACKAGE' ? {patientPackageId} : {}),
+                    ...(method === 'SUBSCRIPTION' ? {patientSubscriptionId} : {}),
                     ...(notes.trim() ? {notes: notes.trim()} : {}),
                 },
             },
@@ -1417,8 +1459,15 @@ function AppointmentPaymentSection({appointmentId}: {appointmentId: string}) {
                             </SelectTrigger>
                             <SelectContent>
                                 {Object.entries(PAYMENT_METHOD_LABELS).map(([code, label]) => (
-                                    <SelectItem key={code} value={code}>
+                                    <SelectItem
+                                        key={code}
+                                        value={code}
+                                        disabled={(code === 'PACKAGE' || code === 'SUBSCRIPTION') && !isCompleted}
+                                    >
                                         {label}
+                                        {(code === 'PACKAGE' || code === 'SUBSCRIPTION') && !isCompleted
+                                            ? ' (requer atendimento concluído)'
+                                            : ''}
                                     </SelectItem>
                                 ))}
                             </SelectContent>
@@ -1457,6 +1506,48 @@ function AppointmentPaymentSection({appointmentId}: {appointmentId: string}) {
                                 />
                             </div>
                         </>
+                    )}
+                    {method === 'PACKAGE' && (
+                        <div className={styles.sheetKv}>
+                            <span className={styles.sheetKvKey}>Pacote a debitar</span>
+                            <Select value={patientPackageId} onValueChange={setPatientPackageId}>
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Selecione um pacote" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {activePackages.map((pkg) => (
+                                        <SelectItem key={pkg.id} value={pkg.id}>
+                                            {pkg.planNameSnapshot} ({pkg.remainingCredits}/{pkg.totalCredits} créditos)
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                            {activePackages.length === 0 && (
+                                <p className={styles.sheetNotesEmpty}>
+                                    Este paciente não possui pacotes com saldo disponível.
+                                </p>
+                            )}
+                        </div>
+                    )}
+                    {method === 'SUBSCRIPTION' && (
+                        <div className={styles.sheetKv}>
+                            <span className={styles.sheetKvKey}>Assinatura a debitar</span>
+                            <Select value={patientSubscriptionId} onValueChange={setPatientSubscriptionId}>
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Selecione uma assinatura" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {activeSubscriptions.map((sub) => (
+                                        <SelectItem key={sub.id} value={sub.id}>
+                                            {sub.planNameSnapshot} ({sub.monthlyQuotaSnapshot} atend./mês)
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                            {activeSubscriptions.length === 0 && (
+                                <p className={styles.sheetNotesEmpty}>Este paciente não possui assinatura ativa.</p>
+                            )}
+                        </div>
                     )}
                     <div className={styles.sheetKv}>
                         <span className={styles.sheetKvKey}>Observações</span>
