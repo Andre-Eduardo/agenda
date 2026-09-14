@@ -14,7 +14,7 @@ export class PatientInsuranceEnrollmentDto extends EntityDto {
     @ApiProperty({format: 'uuid', description: 'The insurance plan ID'})
     insurancePlanId: string;
 
-    @ApiProperty({nullable: true, description: 'Insurance card number'})
+    @ApiProperty({type: 'string', nullable: true, description: 'Insurance card number'})
     cardNumber: string | null;
 
     @ApiProperty({type: 'string', format: 'date-time', nullable: true})

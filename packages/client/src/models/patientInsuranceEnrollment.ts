@@ -4,7 +4,6 @@
  * Automo API
  * OpenAPI spec version: 0.0.0
  */
-import type {PatientInsuranceEnrollmentCardNumber} from './patientInsuranceEnrollmentCardNumber';
 import type {PatientInsuranceEnrollmentStatus} from './patientInsuranceEnrollmentStatus';
 
 export type PatientInsuranceEnrollment = {
@@ -24,7 +23,7 @@ export type PatientInsuranceEnrollment = {
      * Insurance card number
      * @nullable
      */
-    cardNumber: PatientInsuranceEnrollmentCardNumber;
+    cardNumber: string | null;
     /** @nullable */
     validFrom: string | null;
     /** @nullable */

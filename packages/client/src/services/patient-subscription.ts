@@ -417,7 +417,7 @@ export const getListSubscriptionsResponseMock = (): PatientSubscription[] =>
         currentPeriodStart: `${faker.date.past().toISOString().split('.')[0]}Z`,
         currentPeriodEnd: `${faker.date.past().toISOString().split('.')[0]}Z`,
         cancelledAt: faker.helpers.arrayElement([`${faker.date.past().toISOString().split('.')[0]}Z`, null]),
-        cancelReason: {},
+        cancelReason: faker.helpers.arrayElement([faker.string.alpha({length: {min: 10, max: 20}}), null]),
     }));
 
 export const getListSubscriptionsResponseMock200 = (): PatientSubscription[] =>
@@ -435,7 +435,7 @@ export const getListSubscriptionsResponseMock200 = (): PatientSubscription[] =>
         currentPeriodStart: `${faker.date.past().toISOString().split('.')[0]}Z`,
         currentPeriodEnd: `${faker.date.past().toISOString().split('.')[0]}Z`,
         cancelledAt: faker.helpers.arrayElement([`${faker.date.past().toISOString().split('.')[0]}Z`, null]),
-        cancelReason: {},
+        cancelReason: faker.helpers.arrayElement([faker.string.alpha({length: {min: 10, max: 20}}), null]),
     }));
 
 export const getListSubscriptionsResponseMockDefault = (overrideResponse: Partial<ApiProblem> = {}): ApiProblem => ({
@@ -464,7 +464,7 @@ export const getSubscribeResponseMock = (overrideResponse: Partial<PatientSubscr
     currentPeriodStart: `${faker.date.past().toISOString().split('.')[0]}Z`,
     currentPeriodEnd: `${faker.date.past().toISOString().split('.')[0]}Z`,
     cancelledAt: faker.helpers.arrayElement([`${faker.date.past().toISOString().split('.')[0]}Z`, null]),
-    cancelReason: {},
+    cancelReason: faker.helpers.arrayElement([faker.string.alpha({length: {min: 10, max: 20}}), null]),
     ...overrideResponse,
 });
 
@@ -484,7 +484,7 @@ export const getSubscribeResponseMock201 = (
     currentPeriodStart: `${faker.date.past().toISOString().split('.')[0]}Z`,
     currentPeriodEnd: `${faker.date.past().toISOString().split('.')[0]}Z`,
     cancelledAt: faker.helpers.arrayElement([`${faker.date.past().toISOString().split('.')[0]}Z`, null]),
-    cancelReason: {},
+    cancelReason: faker.helpers.arrayElement([faker.string.alpha({length: {min: 10, max: 20}}), null]),
     ...overrideResponse,
 });
 
@@ -514,7 +514,7 @@ export const getCancelResponseMock = (overrideResponse: Partial<PatientSubscript
     currentPeriodStart: `${faker.date.past().toISOString().split('.')[0]}Z`,
     currentPeriodEnd: `${faker.date.past().toISOString().split('.')[0]}Z`,
     cancelledAt: faker.helpers.arrayElement([`${faker.date.past().toISOString().split('.')[0]}Z`, null]),
-    cancelReason: {},
+    cancelReason: faker.helpers.arrayElement([faker.string.alpha({length: {min: 10, max: 20}}), null]),
     ...overrideResponse,
 });
 
@@ -532,7 +532,7 @@ export const getCancelResponseMock200 = (overrideResponse: Partial<PatientSubscr
     currentPeriodStart: `${faker.date.past().toISOString().split('.')[0]}Z`,
     currentPeriodEnd: `${faker.date.past().toISOString().split('.')[0]}Z`,
     cancelledAt: faker.helpers.arrayElement([`${faker.date.past().toISOString().split('.')[0]}Z`, null]),
-    cancelReason: {},
+    cancelReason: faker.helpers.arrayElement([faker.string.alpha({length: {min: 10, max: 20}}), null]),
     ...overrideResponse,
 });
 

@@ -15,7 +15,7 @@ export class PatientSubscriptionDto extends EntityDto {
     @ApiProperty({type: 'string', format: 'date-time'}) currentPeriodStart: string;
     @ApiProperty({type: 'string', format: 'date-time'}) currentPeriodEnd: string;
     @ApiProperty({type: 'string', format: 'date-time', nullable: true}) cancelledAt: string | null;
-    @ApiProperty({nullable: true}) cancelReason: string | null;
+    @ApiProperty({type: 'string', nullable: true}) cancelReason: string | null;
 
     constructor(subscription: PatientSubscription) {
         super(subscription);

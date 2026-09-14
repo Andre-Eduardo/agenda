@@ -68,6 +68,7 @@ import {EntityHeader} from '@/components/ui/componentes/page-header';
 import {Skeleton} from '@/components/ui/componentes/skeleton';
 import {StatTile} from '@/components/ui/componentes/stat-tile';
 import {css, cx} from '@/styled-system/css';
+import {PatientPlansSection} from '@/views/modules/patients/components/PatientPlansSection';
 import {
     emptySectionPy,
     errorText,
@@ -1111,6 +1112,11 @@ function PatientProfile({patient}: {patient: Patient}) {
                     />
                 </SectionCard>
             </div>
+
+            {/* Planos do paciente */}
+            <SectionCard title="Planos do paciente">
+                <PatientPlansSection patientId={patient.id} />
+            </SectionCard>
 
             {/* Formulários clínicos */}
             <SectionCard title="Formulários clínicos">

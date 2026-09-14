@@ -14130,7 +14130,7 @@
             "description": "The insurance plan ID"
           },
           "cardNumber": {
-            "type": "object",
+            "type": "string",
             "nullable": true,
             "description": "Insurance card number"
           },
@@ -14932,7 +14932,7 @@
             "nullable": true
           },
           "cancelReason": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           }
         },
