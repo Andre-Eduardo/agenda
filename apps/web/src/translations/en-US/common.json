@@ -20,6 +20,24 @@
     "saving": "Saving...",
     "forbidden": "Access denied. You do not have permission to view this page."
   },
+  "errors": {
+    "patient_package": {
+      "no_credits_left": "This package has no credits left.",
+      "appointment_type_mismatch": "This package does not cover the appointment type."
+    },
+    "patient_subscription": {
+      "quota_exhausted": "The monthly allowance for this subscription has already been used.",
+      "not_active": "This subscription is not active."
+    },
+    "patient_insurance_enrollment": {
+      "not_linked": "The patient is not enrolled in this insurance plan.",
+      "not_valid_on_appointment_date": "The insurance plan is not valid on this appointment date."
+    },
+    "appointment_payment": {
+      "package_requires_completed_appointment": "A package can only be used after the appointment is completed.",
+      "subscription_requires_completed_appointment": "A subscription can only be used after the appointment is completed."
+    }
+  },
   "confirm": {
     "deleteTitle": "Confirm deletion",
     "deleteMessage": "This action cannot be undone. Continue?"
@@ -29,8 +47,10 @@
     "appointments": "Appointments",
     "patients": "Patients",
     "professionals": "Professionals",
+    "team": "Team",
     "forms": "Forms",
     "chat": "Clinical Chat",
+    "financial": "Financial",
     "settings": "Settings",
     "system": "System",
     "menu": "Main menu",

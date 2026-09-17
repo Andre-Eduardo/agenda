@@ -1,13 +1,20 @@
 import {test as base} from '@playwright/test';
 import {login} from '@lib/auth';
 import {
+    createTestClinicMember,
+    createTestMemberBlock,
     createTestPatient,
     createTestPatients,
     createTestProfessional,
     createTestProfessionals,
+    createTestRoom,
     createTestUser,
     createTestUsers,
+    createTestWorkingHours,
     getPrismaClient,
+    setClinicRoomManagementEnabled,
+    type CreateClinicMemberEntry,
+    type CreatedClinicMember,
     type CreatedProfessional,
     type CreateProfessionalEntry,
 } from '@lib/factories';
@@ -21,11 +28,15 @@ import {PatientNewPage} from '@pages/patient/patient-new-page';
 import {RecordDetailPage} from '@pages/record/record-detail-page';
 import {RecordNewPage} from '@pages/record/record-new-page';
 import {SettingsPage} from '@pages/settings/settings-page';
+import {TeamDetailPage} from '@pages/team/team-detail-page';
+import {TeamListPage} from '@pages/team/team-list-page';
+import {AgendaScheduleEditorComponent} from '@components/agenda-schedule-editor/agenda-schedule-editor-component';
 import {SidebarComponent} from '@components/sidebar/sidebar-component';
 
 export {expect} from '@playwright/test';
 
 type CreateAuthenticatedProfessionalOptions = CreateProfessionalEntry & {autoLogin?: boolean};
+type CreateAuthenticatedClinicMemberOptions = CreateClinicMemberEntry & {autoLogin?: boolean};
 
 type CustomFixtures = {
     // Infra
@@ -44,6 +55,14 @@ type CustomFixtures = {
     createAuthenticatedProfessional: (
         options?: CreateAuthenticatedProfessionalOptions
     ) => Promise<CreatedProfessional>;
+    createClinicMember: typeof createTestClinicMember;
+    createAuthenticatedClinicMember: (
+        options: CreateAuthenticatedClinicMemberOptions
+    ) => Promise<CreatedClinicMember>;
+    createWorkingHours: typeof createTestWorkingHours;
+    createMemberBlock: typeof createTestMemberBlock;
+    createRoom: typeof createTestRoom;
+    setClinicRoomManagementEnabled: typeof setClinicRoomManagementEnabled;
 
     // Page Objects
     signInPage: SignInPage;
@@ -56,9 +75,12 @@ type CustomFixtures = {
     recordNewPage: RecordNewPage;
     recordDetailPage: RecordDetailPage;
     settingsPage: SettingsPage;
+    teamListPage: TeamListPage;
+    teamDetailPage: TeamDetailPage;
 
     // Components
     sidebar: SidebarComponent;
+    agendaScheduleEditor: AgendaScheduleEditorComponent;
 };
 
 export const test = base.extend<CustomFixtures>({
@@ -116,6 +138,41 @@ export const test = base.extend<CustomFixtures>({
         await use(factory);
     },
 
+    createClinicMember: async ({}, use) => {
+        await use(createTestClinicMember);
+    },
+
+    createAuthenticatedClinicMember: async ({page}, use) => {
+        const factory = async (options: CreateAuthenticatedClinicMemberOptions) => {
+            const {autoLogin = true, ...entry} = options;
+            const member = await createTestClinicMember(entry);
+
+            if (autoLogin) {
+                await login(page, {
+                    username: member.user.username,
+                    password: member.user.password,
+                });
+            }
+
+            return member;
+        };
+
+        await use(factory);
+    },
+
+    createWorkingHours: async ({}, use) => {
+        await use(createTestWorkingHours);
+    },
+    createMemberBlock: async ({}, use) => {
+        await use(createTestMemberBlock);
+    },
+    createRoom: async ({}, use) => {
+        await use(createTestRoom);
+    },
+    setClinicRoomManagementEnabled: async ({}, use) => {
+        await use(setClinicRoomManagementEnabled);
+    },
+
     signInPage: async ({page}, use) => {
         await use(new SignInPage(page));
     },
@@ -146,8 +203,17 @@ export const test = base.extend<CustomFixtures>({
     settingsPage: async ({page}, use) => {
         await use(new SettingsPage(page));
     },
+    teamListPage: async ({page}, use) => {
+        await use(new TeamListPage(page));
+    },
+    teamDetailPage: async ({page}, use) => {
+        await use(new TeamDetailPage(page));
+    },
 
     sidebar: async ({page}, use) => {
         await use(new SidebarComponent(page));
+    },
+    agendaScheduleEditor: async ({page}, use) => {
+        await use(new AgendaScheduleEditorComponent(page));
     },
 });

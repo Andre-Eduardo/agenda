@@ -1,39 +1,75 @@
 import {useState, useId, type ReactNode} from 'react';
 import {
+    AxiosError,
     useGetCurrentUser,
     useUpdateUser,
     useSearchProfessionals,
     useUpdateProfessional,
     useChangeUserPassword,
+    useGetCurrentClinicMember,
+    useGetClinic,
+    useUpdateClinic,
+    useListRooms,
+    useCreateRoom,
+    useUpdateRoom,
+    useDeleteRoom,
+    useGetSubscription,
+    useGetMemberUsage,
+    useGetMemberAddons,
+    useGetAddonCatalog,
+    useListPayments,
+    useActivateSubscription,
+    useChangePlan,
+    useCancelSubscription,
+    usePurchaseAddon,
     type Professional,
+    type UpdateClinicDto,
     type UpdateProfessionalInputDto,
+    type UpdateRoomInputDto,
+    type ActivateSubscriptionDto,
+    type AddonCatalogItem,
+    type ApiProblem,
+    type ChangePaymentPlanDto,
+    type PurchaseAddonDto,
+    type UsageMetricDto,
 } from '@agenda-app/client';
 import type {UseQueryResult} from '@tanstack/react-query';
 import {createFileRoute} from '@tanstack/react-router';
 import {
     Briefcase,
+    Calendar,
     Camera,
     Check,
     ChevronLeft,
     ChevronRight,
+    CreditCard,
+    DoorOpen,
     Hospital,
+    Minus,
+    PackagePlus,
     KeyRound,
     Laptop,
     Lock,
     LogOut,
     MonitorSmartphone,
+    Plus,
     ShieldCheck,
     Sliders,
     Smartphone,
     Sparkles,
+    Trash2,
     UserRound,
 } from 'lucide-react';
 import {toast} from 'sonner';
 import {Button} from '@/components/ui/componentes/button';
 import {Input} from '@/components/ui/componentes/input';
 import {Label} from '@/components/ui/componentes/label';
+import {SegmentedControl, SegmentedControlItem} from '@/components/ui/componentes/segmented-control';
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@/components/ui/componentes/select';
+import {Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle} from '@/components/ui/componentes/dialog';
 import {Skeleton} from '@/components/ui/componentes/skeleton';
+import {AgendaScheduleEditor} from '@/views/components/AgendaScheduleEditor';
+import {ConfirmDialog} from '@/views/components/ConfirmDialog';
 import {
     FooterBar,
     FormCard,
@@ -71,6 +107,38 @@ import {
     skeletonH4W48,
     tabButton,
     tabNum,
+    roomAddRow,
+    roomList,
+    roomNameText,
+    roomRow,
+    planCard,
+    planInfo,
+    planNameText,
+    planPeriodText,
+    planActions,
+    statusBadge,
+    usageGrid,
+    usageRow,
+    usageRowHead,
+    usageBarTrack,
+    usageBarFill,
+    alertBanner,
+    addonGrid,
+    addonCard,
+    addonCardTitle,
+    addonCardMeta,
+    addonCardPrice,
+    dataTable,
+    inlineForm,
+    inlineFormField,
+    emptyRowText,
+    dialogBody,
+    summaryCard,
+    summaryRow,
+    summaryTotalRow,
+    noteText,
+    qtyStepper,
+    qtyValue,
 } from './styles';
 
 // ─── Route ───────────────────────────────────────────────────────────────────
@@ -152,7 +220,15 @@ const PROFILE_TABS = [
 ] as const;
 
 type TabKey = 'identity' | 'pro' | 'office' | 'security';
-type Section = 'perfil' | 'geral';
+type Section = 'perfil' | 'agenda' | 'assinatura' | 'salas' | 'geral';
+
+const SECTION_LABELS: Record<Section, string> = {
+    perfil: 'Perfil',
+    agenda: 'Agenda',
+    assinatura: 'Assinatura',
+    salas: 'Salas',
+    geral: 'Geral',
+};
 
 // ─── Page ────────────────────────────────────────────────────────────────────
 
@@ -165,7 +241,7 @@ export function SettingsPage() {
             <nav className="breadcrumb">
                 <span className="crumb-link">Configurações</span>
                 <span className="crumb-sep">›</span>
-                <span className="crumb-current">{section === 'perfil' ? 'Perfil' : 'Geral'}</span>
+                <span className="crumb-current">{SECTION_LABELS[section]}</span>
             </nav>
 
             <div className="layout">
@@ -182,6 +258,30 @@ export function SettingsPage() {
                     </button>
                     <button
                         type="button"
+                        className={sideNavItem({active: section === 'agenda'})}
+                        onClick={() => setSection('agenda')}
+                    >
+                        <Calendar size={15} />
+                        <span>Agenda</span>
+                    </button>
+                    <button
+                        type="button"
+                        className={sideNavItem({active: section === 'assinatura'})}
+                        onClick={() => setSection('assinatura')}
+                    >
+                        <CreditCard size={15} />
+                        <span>Assinatura</span>
+                    </button>
+                    <button
+                        type="button"
+                        className={sideNavItem({active: section === 'salas'})}
+                        onClick={() => setSection('salas')}
+                    >
+                        <DoorOpen size={15} />
+                        <span>Salas</span>
+                    </button>
+                    <button
+                        type="button"
                         className={sideNavItem({active: section === 'geral'})}
                         onClick={() => setSection('geral')}
                     >
@@ -193,6 +293,9 @@ export function SettingsPage() {
                 {/* Content */}
                 <div className="content">
                     {section === 'perfil' && <ProfileForm />}
+                    {section === 'agenda' && <AgendaSection />}
+                    {section === 'assinatura' && <SubscriptionSection />}
+                    {section === 'salas' && <RoomsSection />}
                     {section === 'geral' && <GeneralSection />}
                 </div>
             </div>
@@ -216,6 +319,826 @@ function GeneralSection() {
                     <div className="ph-sub">Configurações gerais serão exibidas aqui.</div>
                 </Placeholder>
             </FormCard>
+        </div>
+    );
+}
+
+// ─── Agenda (working hours + blocks) ───────────────────────────────────────────
+
+function AgendaSection() {
+    const memberQuery = useGetCurrentClinicMember();
+
+    return (
+        <div>
+            <PageHeading>
+                <h1 className="title">Agenda</h1>
+                <p className="sub">
+                    Configure seu expediente semanal e bloqueios de agenda (férias, ausências pontuais).
+                </p>
+            </PageHeading>
+
+            <FormCard>
+                {memberQuery.isLoading && (
+                    <SkeletonTabContent>
+                        <Skeleton className={skeletonH4W48} />
+                        <div className="sk-grid">
+                            <Skeleton className={skeletonH10} />
+                            <Skeleton className={skeletonH10} />
+                        </div>
+                    </SkeletonTabContent>
+                )}
+                {!memberQuery.isLoading && memberQuery.data && <AgendaScheduleEditor memberId={memberQuery.data.id} />}
+                {!memberQuery.isLoading && !memberQuery.data && (
+                    <Placeholder>
+                        <div className="ph-title">Não foi possível carregar seu perfil de membro.</div>
+                    </Placeholder>
+                )}
+            </FormCard>
+        </div>
+    );
+}
+
+// ─── Salas ──────────────────────────────────────────────────────────────────
+
+function RoomsSection() {
+    const memberQuery = useGetCurrentClinicMember();
+    const clinicId = memberQuery.data?.clinicId;
+
+    const clinicQuery = useGetClinic(clinicId ?? '', {query: {enabled: !!clinicId}});
+    const roomManagementEnabled = clinicQuery.data?.roomManagementEnabled ?? false;
+
+    const roomsQuery = useListRooms({query: {enabled: roomManagementEnabled}});
+
+    const updateClinic = useUpdateClinic();
+    const createRoom = useCreateRoom();
+    const updateRoom = useUpdateRoom();
+    const deleteRoom = useDeleteRoom();
+
+    const [newRoomName, setNewRoomName] = useState('');
+
+    const isLoading = memberQuery.isLoading || clinicQuery.isLoading;
+
+    function handleToggleRoomManagement(enabled: boolean) {
+        if (!clinicId) return;
+
+        updateClinic.mutate(
+            // Orval marks every field of UpdateClinicDto as required even though the API
+            // accepts a partial update (same known issue as UpdateProfessionalInputDto).
+            {clinicId, data: {roomManagementEnabled: enabled} as UpdateClinicDto},
+            {
+                onSuccess: () => {
+                    toast.success(enabled ? 'Gerenciamento de salas ativado' : 'Gerenciamento de salas desativado');
+                    void clinicQuery.refetch();
+                },
+                onError: () => toast.error('Erro ao atualizar configuração.'),
+            }
+        );
+    }
+
+    function handleCreateRoom() {
+        if (!newRoomName.trim()) return;
+
+        createRoom.mutate(
+            {data: {name: newRoomName.trim()}},
+            {
+                onSuccess: () => {
+                    toast.success('Sala criada');
+                    setNewRoomName('');
+                    void roomsQuery.refetch();
+                },
+                onError: () => toast.error('Erro ao criar sala.'),
+            }
+        );
+    }
+
+    function handleToggleRoomActive(roomId: string, active: boolean) {
+        updateRoom.mutate(
+            // See UpdateClinicDto cast above — same partial-update typing issue.
+            {roomId, data: {active} as UpdateRoomInputDto},
+            {
+                onSuccess: () => void roomsQuery.refetch(),
+                onError: () => toast.error('Erro ao atualizar sala.'),
+            }
+        );
+    }
+
+    function handleDeleteRoom(roomId: string) {
+        deleteRoom.mutate(
+            {roomId},
+            {
+                onSuccess: () => {
+                    toast.success('Sala removida');
+                    void roomsQuery.refetch();
+                },
+                onError: () => toast.error('Erro ao remover sala.'),
+            }
+        );
+    }
+
+    return (
+        <div>
+            <PageHeading>
+                <h1 className="title">Salas</h1>
+                <p className="sub">
+                    Ative o controle de salas físicas para evitar que duas consultas usem o mesmo consultório ao mesmo
+                    tempo.
+                </p>
+            </PageHeading>
+
+            <FormCard>
+                {isLoading ? (
+                    <SkeletonTabContent>
+                        <Skeleton className={skeletonH4W48} />
+                        <div className="sk-grid">
+                            <Skeleton className={skeletonH10} />
+                            <Skeleton className={skeletonH10} />
+                        </div>
+                    </SkeletonTabContent>
+                ) : (
+                    <FormSection>
+                        <div className="sec-head">
+                            <span className="sec-num">1</span>
+                            <div>
+                                <div className={sectionTitle}>Gerenciamento de salas</div>
+                                <div className={sectionSub}>
+                                    Quando ativo, cada consulta pode ser vinculada a uma sala e o sistema impede dois
+                                    agendamentos na mesma sala e horário.
+                                </div>
+                            </div>
+                        </div>
+
+                        <SegmentedControl
+                            value={roomManagementEnabled ? 'on' : 'off'}
+                            onValueChange={(v) => handleToggleRoomManagement(v === 'on')}
+                        >
+                            <SegmentedControlItem value="on">Ativado</SegmentedControlItem>
+                            <SegmentedControlItem value="off">Desativado</SegmentedControlItem>
+                        </SegmentedControl>
+
+                        {roomManagementEnabled && (
+                            <div className="sub-section">
+                                <div className="sub-head">
+                                    <DoorOpen size={14} className="sub-icon" />
+                                    Salas cadastradas
+                                    <span className="sub-tag">{roomsQuery.data?.length ?? 0} sala(s)</span>
+                                </div>
+
+                                <div className={roomList}>
+                                    {(roomsQuery.data ?? []).length === 0 && (
+                                        <p className={sectionSub}>Nenhuma sala cadastrada ainda.</p>
+                                    )}
+                                    {(roomsQuery.data ?? []).map((room) => (
+                                        <div key={room.id} className={roomRow} role="group" aria-label={room.name}>
+                                            <span className={roomNameText}>{room.name}</span>
+                                            <SegmentedControl
+                                                value={room.active ? 'on' : 'off'}
+                                                onValueChange={(v) => handleToggleRoomActive(room.id, v === 'on')}
+                                            >
+                                                <SegmentedControlItem value="on">Ativa</SegmentedControlItem>
+                                                <SegmentedControlItem value="off">Inativa</SegmentedControlItem>
+                                            </SegmentedControl>
+                                            <Button
+                                                variant="ghost"
+                                                size="sm"
+                                                aria-label="Remover sala"
+                                                disabled={deleteRoom.isPending}
+                                                onClick={() => handleDeleteRoom(room.id)}
+                                            >
+                                                <Trash2 size={13} />
+                                            </Button>
+                                        </div>
+                                    ))}
+                                </div>
+
+                                <div className={roomAddRow}>
+                                    <Input
+                                        placeholder="Nome da sala, ex.: Consultório 2"
+                                        value={newRoomName}
+                                        onChange={(e) => setNewRoomName(e.target.value)}
+                                    />
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        disabled={!newRoomName.trim() || createRoom.isPending}
+                                        onClick={handleCreateRoom}
+                                    >
+                                        <Plus size={13} />
+                                        Adicionar sala
+                                    </Button>
+                                </div>
+                            </div>
+                        )}
+                    </FormSection>
+                )}
+            </FormCard>
+        </div>
+    );
+}
+
+
+// ─── Assinatura (subscription self-service) ────────────────────────────────
+
+const PLAN_LABELS: Record<string, string> = {
+    STARTER: 'Starter',
+    CONSULTORIO: 'Consultório',
+    CLINICA: 'Clínica',
+    ESPECIALISTA: 'Especialista',
+};
+
+const SUBSCRIPTION_STATUS_LABELS: Record<string, string> = {
+    ACTIVE: 'Ativa',
+    TRIAL: 'Período de teste',
+    SUSPENDED: 'Suspensa',
+    CANCELLED: 'Cancelada',
+};
+
+const SUBSCRIPTION_STATUS_TONE: Record<string, 'ok' | 'warning' | 'danger' | 'neutral'> = {
+    ACTIVE: 'ok',
+    TRIAL: 'neutral',
+    SUSPENDED: 'warning',
+    CANCELLED: 'danger',
+};
+
+const USAGE_STATUS_TONE: Record<string, 'ok' | 'warning' | 'danger' | 'neutral'> = {
+    OK: 'ok',
+    WARNING: 'warning',
+    EXCEEDED: 'danger',
+    NOT_INCLUDED: 'neutral',
+};
+
+const USAGE_METRIC_LABELS = {
+    docs: 'Documentos',
+    chat: 'Mensagens de chat',
+    images: 'Imagens clínicas',
+    storageHotGb: 'Armazenamento (GB)',
+} as const;
+
+const PAYMENT_METHOD_LABELS: Record<string, string> = {
+    CREDIT_CARD: 'Cartão de crédito',
+    PIX: 'Pix',
+    BOLETO: 'Boleto',
+};
+
+function formatDate(value: string | null | undefined): string {
+    if (!value) return '—';
+
+    return new Date(value).toLocaleDateString('pt-BR');
+}
+
+function UsageMetricRow({label, metric}: {label: string; metric: UsageMetricDto}) {
+    const tone = USAGE_STATUS_TONE[metric.status] ?? 'neutral';
+    const limitText = metric.limit === null ? `${metric.used} (ilimitado)` : `${metric.used} / ${metric.limit}`;
+
+    return (
+        <div className={usageRow}>
+            <div className={usageRowHead}>
+                <span>{label}</span>
+                <span>{limitText}</span>
+            </div>
+            <div className={usageBarTrack}>
+                <div className={usageBarFill({tone})} style={{width: `${Math.min(metric.percent, 100)}%`}} />
+            </div>
+        </div>
+    );
+}
+
+function SubscriptionSection() {
+    const memberQuery = useGetCurrentClinicMember();
+    const member = memberQuery.data;
+    const memberId = member?.id;
+    const isProfessional = member?.roles.includes('PROFESSIONAL') ?? false;
+
+    const subscriptionQuery = useGetSubscription(memberId ?? '', {
+        query: {enabled: !!memberId && isProfessional},
+    });
+    const hasSubscription = subscriptionQuery.isSuccess;
+
+    const usageQuery = useGetMemberUsage(memberId ?? '', {query: {enabled: !!memberId && hasSubscription}});
+    const addonsQuery = useGetMemberAddons(memberId ?? '', {query: {enabled: !!memberId && hasSubscription}});
+    const catalogQuery = useGetAddonCatalog({query: {enabled: isProfessional}});
+    const paymentsQuery = useListPayments(memberId ?? '', {query: {enabled: !!memberId && hasSubscription}});
+
+    const activateSubscription = useActivateSubscription();
+    const changePlan = useChangePlan();
+    const cancelSubscription = useCancelSubscription();
+    const purchaseAddon = usePurchaseAddon();
+
+    const [activatePlan, setActivatePlan] = useState('CONSULTORIO');
+    const [activateMethod, setActivateMethod] = useState('PIX');
+    const [activateCpfCnpj, setActivateCpfCnpj] = useState('');
+
+    const [newPlan, setNewPlan] = useState('CONSULTORIO');
+    const [newMethod, setNewMethod] = useState('PIX');
+    const [showChangePlan, setShowChangePlan] = useState(false);
+    const [showCancelConfirm, setShowCancelConfirm] = useState(false);
+    const [pendingAddon, setPendingAddon] = useState<AddonCatalogItem | null>(null);
+    const [pendingQuantity, setPendingQuantity] = useState(1);
+    const [pendingMethod, setPendingMethod] = useState('PIX');
+
+    const isLoading = memberQuery.isLoading || (isProfessional && subscriptionQuery.isLoading);
+
+    function handleActivate() {
+        if (!memberId) return;
+
+        activateSubscription.mutate(
+            {
+                memberId,
+                data: {
+                    planCode: activatePlan as ActivateSubscriptionDto['planCode'],
+                    paymentMethod: activateMethod as ActivateSubscriptionDto['paymentMethod'],
+                    ...(activateCpfCnpj.trim() ? {cpfCnpj: activateCpfCnpj.trim()} : {}),
+                },
+            },
+            {
+                onSuccess: () => {
+                    toast.success('Assinatura ativada');
+                    void subscriptionQuery.refetch();
+                },
+                onError: () => toast.error('Erro ao ativar assinatura.'),
+            }
+        );
+    }
+
+    function handleChangePlan() {
+        if (!memberId) return;
+
+        changePlan.mutate(
+            {
+                memberId,
+                data: {
+                    planCode: newPlan as ChangePaymentPlanDto['planCode'],
+                    paymentMethod: newMethod as ChangePaymentPlanDto['paymentMethod'],
+                },
+            },
+            {
+                onSuccess: () => {
+                    toast.success('Plano alterado');
+                    setShowChangePlan(false);
+                    void subscriptionQuery.refetch();
+                    void usageQuery.refetch();
+                },
+                onError: () => toast.error('Erro ao alterar plano.'),
+            }
+        );
+    }
+
+    function handleCancel() {
+        if (!memberId) return;
+
+        cancelSubscription.mutate(
+            {memberId},
+            {
+                onSuccess: () => {
+                    toast.success('Assinatura cancelada');
+                    setShowCancelConfirm(false);
+                    void subscriptionQuery.refetch();
+                },
+                onError: () => toast.error('Erro ao cancelar assinatura.'),
+            }
+        );
+    }
+
+    function openAddonConfirm(addon: AddonCatalogItem) {
+        setPendingAddon(addon);
+        setPendingQuantity(1);
+        setPendingMethod('PIX');
+    }
+
+    function handleConfirmPurchase() {
+        if (!memberId || !pendingAddon) return;
+
+        purchaseAddon.mutate(
+            {
+                memberId,
+                data: {
+                    addonCode: pendingAddon.code as PurchaseAddonDto['addonCode'],
+                    quantity: pendingQuantity,
+                    paymentMethod: pendingMethod as PurchaseAddonDto['paymentMethod'],
+                },
+            },
+            {
+                onSuccess: () => {
+                    toast.success('Addon adquirido');
+                    setPendingAddon(null);
+                    void usageQuery.refetch();
+                    void addonsQuery.refetch();
+                    void paymentsQuery.refetch();
+                },
+                onError: (error) => {
+                    const detail =
+                        error instanceof AxiosError ? (error.response?.data as ApiProblem | undefined)?.detail : null;
+
+                    if (detail === 'subscription.no_payment_method') {
+                        toast.error('Ative um método de pagamento na sua assinatura antes de comprar addons.');
+
+                        return;
+                    }
+
+                    toast.error('Erro ao processar a cobrança do addon.');
+                },
+            }
+        );
+    }
+
+    if (!isLoading && !isProfessional) {
+        return (
+            <div>
+                <PageHeading>
+                    <h1 className="title">Assinatura</h1>
+                    <p className="sub">Plano, uso e cobrança da sua conta profissional.</p>
+                </PageHeading>
+                <FormCard className={formCardP16}>
+                    <Placeholder>
+                        <CreditCard size={28} className={placeholderIcon} />
+                        <div className="ph-title">Disponível para profissionais</div>
+                        <div className="ph-sub">Assinaturas são vinculadas a membros com papel de profissional.</div>
+                    </Placeholder>
+                </FormCard>
+            </div>
+        );
+    }
+
+    const subscription = subscriptionQuery.data;
+    const usage = usageQuery.data;
+
+    return (
+        <div>
+            <PageHeading>
+                <h1 className="title">Assinatura</h1>
+                <p className="sub">Plano, uso mensal, addons e histórico de cobrança.</p>
+            </PageHeading>
+
+            <FormCard>
+                {isLoading ? (
+                    <SkeletonTabContent>
+                        <Skeleton className={skeletonH4W48} />
+                        <div className="sk-grid">
+                            <Skeleton className={skeletonH10} />
+                            <Skeleton className={skeletonH10} />
+                        </div>
+                    </SkeletonTabContent>
+                ) : (
+                    <FormSection>
+                        <div className="sec-head">
+                            <span className="sec-num">1</span>
+                            <div>
+                                <div className={sectionTitle}>Plano atual</div>
+                                <div className={sectionSub}>Plano ativo da sua conta e opções de cobrança.</div>
+                            </div>
+                        </div>
+
+                        {!subscription ? (
+                            <div className={inlineForm}>
+                                <div className={inlineFormField}>
+                                    <Label>Plano</Label>
+                                    <Select value={activatePlan} onValueChange={setActivatePlan}>
+                                        <SelectTrigger>
+                                            <SelectValue />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {Object.entries(PLAN_LABELS).map(([code, label]) => (
+                                                <SelectItem key={code} value={code}>
+                                                    {label}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                                <div className={inlineFormField}>
+                                    <Label>Forma de pagamento</Label>
+                                    <Select value={activateMethod} onValueChange={setActivateMethod}>
+                                        <SelectTrigger>
+                                            <SelectValue />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {Object.entries(PAYMENT_METHOD_LABELS).map(([code, label]) => (
+                                                <SelectItem key={code} value={code}>
+                                                    {label}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                                <div className={inlineFormField}>
+                                    <Label>CPF/CNPJ (opcional)</Label>
+                                    <Input value={activateCpfCnpj} onChange={(e) => setActivateCpfCnpj(e.target.value)} />
+                                </div>
+                                <Button disabled={activateSubscription.isPending} onClick={handleActivate}>
+                                    Ativar assinatura
+                                </Button>
+                            </div>
+                        ) : (
+                            <div className={planCard}>
+                                <div className={planInfo}>
+                                    <span className={planNameText}>
+                                        {PLAN_LABELS[subscription.planCode] ?? subscription.planCode}
+                                    </span>
+                                    <span className={planPeriodText}>
+                                        {formatDate(subscription.currentPeriodStart)} –{' '}
+                                        {formatDate(subscription.currentPeriodEnd)}
+                                    </span>
+                                </div>
+                                <span
+                                    className={statusBadge({
+                                        tone: SUBSCRIPTION_STATUS_TONE[subscription.status] ?? 'neutral',
+                                    })}
+                                >
+                                    {SUBSCRIPTION_STATUS_LABELS[subscription.status] ?? subscription.status}
+                                </span>
+                                <div className={planActions}>
+                                    <Button variant="outline" size="sm" onClick={() => setShowChangePlan(true)}>
+                                        Trocar plano
+                                    </Button>
+                                    <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        disabled={subscription.status === 'CANCELLED'}
+                                        onClick={() => setShowCancelConfirm(true)}
+                                    >
+                                        Cancelar assinatura
+                                    </Button>
+                                </div>
+                            </div>
+                        )}
+                    </FormSection>
+                )}
+            </FormCard>
+
+            <Dialog open={showChangePlan} onOpenChange={setShowChangePlan}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Trocar plano</DialogTitle>
+                    </DialogHeader>
+                    <div className={dialogBody}>
+                        <div className={inlineFormField}>
+                            <Label>Novo plano</Label>
+                            <Select value={newPlan} onValueChange={setNewPlan}>
+                                <SelectTrigger>
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {Object.entries(PLAN_LABELS).map(([code, label]) => (
+                                        <SelectItem key={code} value={code}>
+                                            {label}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <div className={inlineFormField}>
+                            <Label>Forma de pagamento</Label>
+                            <Select value={newMethod} onValueChange={setNewMethod}>
+                                <SelectTrigger>
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {Object.entries(PAYMENT_METHOD_LABELS).map(([code, label]) => (
+                                        <SelectItem key={code} value={code}>
+                                            {label}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        {subscription && (
+                            <p className={noteText}>
+                                A cobrança atual no plano {PLAN_LABELS[subscription.planCode] ?? subscription.planCode}{' '}
+                                será cancelada e uma nova cobrança do plano {PLAN_LABELS[newPlan] ?? newPlan} será
+                                iniciada no método de pagamento escolhido.
+                            </p>
+                        )}
+                    </div>
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => setShowChangePlan(false)}>
+                            Cancelar
+                        </Button>
+                        <Button disabled={changePlan.isPending} onClick={handleChangePlan}>
+                            Confirmar troca
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            {hasSubscription && (
+                <FormCard className={mt4}>
+                    <FormSection>
+                        <div className="sec-head">
+                            <span className="sec-num">2</span>
+                            <div>
+                                <div className={sectionTitle}>Uso do mês</div>
+                                <div className={sectionSub}>Consumo em relação aos limites do seu plano.</div>
+                            </div>
+                        </div>
+
+                        {!usage ? (
+                            <SkeletonTabContent>
+                                <Skeleton className={skeletonH10} />
+                            </SkeletonTabContent>
+                        ) : (
+                            <>
+                                {usage.isAnyLimitReached && (
+                                    <div className={alertBanner}>
+                                        Você atingiu o limite de um ou mais recursos do seu plano.
+                                    </div>
+                                )}
+                                <div className={usageGrid}>
+                                    <UsageMetricRow label={USAGE_METRIC_LABELS.docs} metric={usage.usage.docs} />
+                                    <UsageMetricRow label={USAGE_METRIC_LABELS.chat} metric={usage.usage.chat} />
+                                    <UsageMetricRow label={USAGE_METRIC_LABELS.images} metric={usage.usage.images} />
+                                    <UsageMetricRow
+                                        label={USAGE_METRIC_LABELS.storageHotGb}
+                                        metric={usage.usage.storageHotGb}
+                                    />
+                                </div>
+                            </>
+                        )}
+                    </FormSection>
+                </FormCard>
+            )}
+
+            {hasSubscription && (
+                <FormCard className={mt4}>
+                    <FormSection>
+                        <div className="sec-head">
+                            <span className="sec-num">3</span>
+                            <div>
+                                <div className={sectionTitle}>Addons</div>
+                                <div className={sectionSub}>Aumente os limites do seu plano com recursos extras.</div>
+                            </div>
+                        </div>
+
+                        <div className="sub-section">
+                            <div className="sub-head">
+                                <PackagePlus size={14} className="sub-icon" />
+                                Catálogo
+                            </div>
+                            <div className={addonGrid}>
+                                {(catalogQuery.data ?? []).map((addon) => (
+                                    <div key={addon.code} className={addonCard}>
+                                        <span className={addonCardTitle}>{addon.name}</span>
+                                        <span className={addonCardPrice}>R$ {addon.priceMonthlyBrl.toFixed(2)}/mês</span>
+                                        <Button variant="outline" size="sm" onClick={() => openAddonConfirm(addon)}>
+                                            Comprar
+                                        </Button>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
+                        <div className="sub-section">
+                            <div className="sub-head">
+                                Addons ativos
+                                <span className="sub-tag">{(addonsQuery.data ?? []).length} ativo(s)</span>
+                            </div>
+                            {(addonsQuery.data ?? []).length === 0 ? (
+                                <p className={emptyRowText}>Nenhum addon ativo no momento.</p>
+                            ) : (
+                                <div className={addonGrid}>
+                                    {(addonsQuery.data ?? []).map((addon) => (
+                                        <div key={addon.code} className={addonCard}>
+                                            <span className={addonCardTitle}>{addon.name}</span>
+                                            <span className={addonCardMeta}>Quantidade: {addon.quantity}</span>
+                                            <span className={addonCardMeta}>Expira em: {formatDate(addon.expiresAt)}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    </FormSection>
+                </FormCard>
+            )}
+
+            {hasSubscription && (
+                <FormCard className={mt4}>
+                    <FormSection>
+                        <div className="sec-head">
+                            <span className="sec-num">4</span>
+                            <div>
+                                <div className={sectionTitle}>Histórico de pagamentos</div>
+                                <div className={sectionSub}>Eventos de cobrança recebidos do provedor de pagamento.</div>
+                            </div>
+                        </div>
+
+                        {(paymentsQuery.data ?? []).length === 0 ? (
+                            <p className={emptyRowText}>Nenhum pagamento registrado ainda.</p>
+                        ) : (
+                            <table className={dataTable}>
+                                <thead>
+                                    <tr>
+                                        <th>Evento</th>
+                                        <th>Valor</th>
+                                        <th>Status</th>
+                                        <th>Data</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {(paymentsQuery.data ?? []).map((event) => {
+                                        // Orval mistypes these nullable primitives as `{[key: string]: unknown} | null`
+                                        // (same known codegen issue as the Update*Dto partial-update casts above).
+                                        const amount = event.amount as number | null;
+                                        const processedAt = event.processedAt as string | null;
+
+                                        return (
+                                            <tr key={event.id}>
+                                                <td>{event.eventType}</td>
+                                                <td>{amount != null ? `R$ ${amount.toFixed(2)}` : '—'}</td>
+                                                <td>{event.status}</td>
+                                                <td>{formatDate(processedAt ?? event.createdAt)}</td>
+                                            </tr>
+                                        );
+                                    })}
+                                </tbody>
+                            </table>
+                        )}
+                    </FormSection>
+                </FormCard>
+            )}
+
+            <ConfirmDialog
+                opened={showCancelConfirm}
+                title="Cancelar assinatura"
+                message="Tem certeza que deseja cancelar sua assinatura? Essa ação encerra a cobrança recorrente."
+                confirmLabel="Cancelar assinatura"
+                cancelLabel="Voltar"
+                danger
+                isLoading={cancelSubscription.isPending}
+                onConfirm={handleCancel}
+                onCancel={() => setShowCancelConfirm(false)}
+            />
+
+            <Dialog open={!!pendingAddon} onOpenChange={(o) => !o && setPendingAddon(null)}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Confirmar compra de addon</DialogTitle>
+                    </DialogHeader>
+                    {pendingAddon && (
+                        <div className={dialogBody}>
+                            <div className={qtyStepper}>
+                                <Label>Quantidade</Label>
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    disabled={pendingQuantity <= 1}
+                                    onClick={() => setPendingQuantity((q) => Math.max(1, q - 1))}
+                                >
+                                    <Minus size={13} />
+                                </Button>
+                                <span className={qtyValue}>{pendingQuantity}</span>
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => setPendingQuantity((q) => q + 1)}
+                                >
+                                    <Plus size={13} />
+                                </Button>
+                            </div>
+
+                            <div className={summaryCard}>
+                                <div className={summaryRow}>
+                                    <span>{pendingAddon.name}</span>
+                                    <span>
+                                        R$ {pendingAddon.priceMonthlyBrl.toFixed(2)}/mês × {pendingQuantity}
+                                    </span>
+                                </div>
+                                <div className={summaryTotalRow}>
+                                    <span>Total mensal</span>
+                                    <span>R$ {(pendingAddon.priceMonthlyBrl * pendingQuantity).toFixed(2)}</span>
+                                </div>
+                            </div>
+
+                            <div className={inlineFormField}>
+                                <Label>Forma de pagamento</Label>
+                                <Select value={pendingMethod} onValueChange={setPendingMethod}>
+                                    <SelectTrigger>
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {Object.entries(PAYMENT_METHOD_LABELS).map(([code, label]) => (
+                                            <SelectItem key={code} value={code}>
+                                                {label}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+
+                            <p className={noteText}>
+                                Uma cobrança de R$ {(pendingAddon.priceMonthlyBrl * pendingQuantity).toFixed(2)} será
+                                gerada no método selecionado e o addon é liberado assim que a cobrança for aceita pelo
+                                provedor de pagamento.
+                            </p>
+                        </div>
+                    )}
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => setPendingAddon(null)}>
+                            Cancelar
+                        </Button>
+                        <Button disabled={purchaseAddon.isPending} onClick={handleConfirmPurchase}>
+                            Confirmar compra
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 }
@@ -334,6 +1257,7 @@ function ProfileForm() {
                 registrationNumber: registryNum || null,
                 specialty: specialty || null,
                 specialtyNormalized: null,
+                defaultRoomId: professional.defaultRoomId ?? null,
             };
 
             updateProfessional.mutate(

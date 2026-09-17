@@ -98,6 +98,7 @@ export class SubscriptionController {
             actor.clinicId.toString(),
             payload.addonCode as AddonCode,
             payload.quantity,
+            payload.paymentMethod,
             actor.clinicMemberId.toString()
         );
 

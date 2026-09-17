@@ -15,9 +15,10 @@ import {PatientInsuranceEnrollmentRepository} from '@domain/patient-insurance-en
 import {PatientRepository} from '@domain/patient/patient.repository';
 
 @Injectable()
-export class CreatePatientInsuranceEnrollmentService
-    implements ApplicationService<CreatePatientInsuranceEnrollmentDto, PatientInsuranceEnrollmentDto>
-{
+export class CreatePatientInsuranceEnrollmentService implements ApplicationService<
+    CreatePatientInsuranceEnrollmentDto,
+    PatientInsuranceEnrollmentDto
+> {
     constructor(
         private readonly enrollmentRepository: PatientInsuranceEnrollmentRepository,
         private readonly patientRepository: PatientRepository,
@@ -77,6 +78,15 @@ export class CreatePatientInsuranceEnrollmentService
         }
 
         await this.enrollmentRepository.save(enrollment);
+
+        if (shouldBePrimary) {
+            patient.change({
+                insurancePlanId: plan.id.toString(),
+                insuranceCardNumber: enrollment.cardNumber,
+                insuranceValidUntil: enrollment.validUntil,
+            });
+            await this.patientRepository.save(patient);
+        }
 
         this.eventDispatcher.dispatch(actor, enrollment);
 

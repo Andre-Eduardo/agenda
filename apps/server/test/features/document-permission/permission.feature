@@ -25,7 +25,7 @@ Feature: Document permission override (POST)
         When I send a "POST" request to "/api/v1/clinic-members" with:
             | clinicId    | ${ref:id:clinic:dr_house}   |
             | userId      | ${ref:id:user:dr_wilson}    |
-            | role        | PROFESSIONAL                |
+            | roles       | ["PROFESSIONAL"]            |
             | displayName | Dr. Wilson                  |
         Then the request should succeed with a 201 status code
         And I save the response field "id" as "clinicMember" id for "dr_wilson"

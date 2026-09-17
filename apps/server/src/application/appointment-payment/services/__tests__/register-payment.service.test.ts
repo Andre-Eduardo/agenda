@@ -11,7 +11,8 @@ import {ClinicId} from '@domain/clinic/entities';
 import {EventDispatcher} from '@domain/event';
 import {InsuranceClaimRepository} from '@domain/insurance-claim/insurance-claim.repository';
 import {InsurancePlanId} from '@domain/insurance-plan/entities';
-import {PackagePlanId} from '@domain/package-plan/entities';
+import {PackagePlan, PackagePlanId} from '@domain/package-plan/entities';
+import {PackagePlanRepository} from '@domain/package-plan/package-plan.repository';
 import {PatientInsuranceEnrollment} from '@domain/patient-insurance-enrollment/entities';
 import {PatientInsuranceEnrollmentRepository} from '@domain/patient-insurance-enrollment/patient-insurance-enrollment.repository';
 import {PatientPackage, PatientPackageId} from '@domain/patient-package/entities';
@@ -40,6 +41,7 @@ describe('RegisterPaymentService', () => {
     let patientInsuranceEnrollmentRepository: ReturnType<typeof mock<PatientInsuranceEnrollmentRepository>>;
     let insuranceClaimRepository: ReturnType<typeof mock<InsuranceClaimRepository>>;
     let patientPackageRepository: ReturnType<typeof mock<PatientPackageRepository>>;
+    let packagePlanRepository: ReturnType<typeof mock<PackagePlanRepository>>;
     let patientPackageCreditRepository: ReturnType<typeof mock<PatientPackageCreditRepository>>;
     let patientSubscriptionRepository: ReturnType<typeof mock<PatientSubscriptionRepository>>;
     let patientSubscriptionUsageRepository: ReturnType<typeof mock<PatientSubscriptionUsageRepository>>;
@@ -68,6 +70,7 @@ describe('RegisterPaymentService', () => {
         patientInsuranceEnrollmentRepository = mock<PatientInsuranceEnrollmentRepository>();
         insuranceClaimRepository = mock<InsuranceClaimRepository>();
         patientPackageRepository = mock<PatientPackageRepository>();
+        packagePlanRepository = mock<PackagePlanRepository>();
         patientPackageCreditRepository = mock<PatientPackageCreditRepository>();
         patientSubscriptionRepository = mock<PatientSubscriptionRepository>();
         patientSubscriptionUsageRepository = mock<PatientSubscriptionUsageRepository>();
@@ -84,6 +87,7 @@ describe('RegisterPaymentService', () => {
             patientInsuranceEnrollmentRepository,
             insuranceClaimRepository,
             patientPackageRepository,
+            packagePlanRepository,
             patientPackageCreditRepository,
             patientSubscriptionRepository,
             patientSubscriptionUsageRepository,
@@ -214,6 +218,16 @@ describe('RegisterPaymentService', () => {
 
         appointmentRepository.findById.mockResolvedValue(appointment);
         patientPackageRepository.findById.mockResolvedValue(patientPackage);
+        packagePlanRepository.findById.mockResolvedValue(
+            PackagePlan.create({
+                clinicId,
+                name: '10 sessões',
+                description: null,
+                totalCredits: 10,
+                priceBrl: 1000,
+                validityDays: null,
+            })
+        );
         patientPackageRepository.consumeCredit.mockResolvedValue({remainingCredits: 9});
 
         const result = await service.execute({
@@ -289,6 +303,16 @@ describe('RegisterPaymentService', () => {
 
         appointmentRepository.findById.mockResolvedValue(appointment);
         patientPackageRepository.findById.mockResolvedValue(patientPackage);
+        packagePlanRepository.findById.mockResolvedValue(
+            PackagePlan.create({
+                clinicId,
+                name: '10 sessões',
+                description: null,
+                totalCredits: 10,
+                priceBrl: 1000,
+                validityDays: null,
+            })
+        );
         patientPackageRepository.consumeCredit.mockResolvedValue(null);
 
         await expect(

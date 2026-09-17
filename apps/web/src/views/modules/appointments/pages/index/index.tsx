@@ -67,6 +67,7 @@ import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@/c
 import {Sheet, SheetContent, SheetHeader, SheetTitle} from '@/components/ui/componentes/sheet';
 import {Textarea} from '@/components/ui/componentes/textarea';
 import {cx} from '@/styled-system/css';
+import {translateApiError} from '@/utils/translate-api-error';
 import {ConfirmDialog} from '@/views/components/ConfirmDialog';
 import * as styles from './styles';
 import {
@@ -184,6 +185,14 @@ function getAvailabilityWarning(error: unknown): string | null {
     const detail = (error.response?.data as ApiProblem | undefined)?.detail;
 
     return detail ? (AVAILABILITY_WARNING_MESSAGES[detail] ?? null) : null;
+}
+
+function getApiErrorDetail(error: unknown): string | null {
+    if (!(error instanceof AxiosError)) return null;
+
+    const detail = (error.response?.data as ApiProblem | undefined)?.detail;
+
+    return detail ? translateApiError(detail, detail) : null;
 }
 
 type ViewMode = 'day' | 'week' | 'month' | 'rooms';
@@ -1384,7 +1393,7 @@ function AppointmentPaymentSection({
                     setShowForm(false);
                     void paymentQuery.refetch();
                 },
-                onError: () => toast.error('Erro ao registrar pagamento.'),
+                onError: (error) => toast.error(getApiErrorDetail(error) ?? 'Erro ao registrar pagamento.'),
             }
         );
     }

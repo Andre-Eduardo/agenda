@@ -18,7 +18,7 @@ export class CreateClinicMemberService implements ApplicationService<CreateClini
         const member = ClinicMember.create({
             clinicId: ClinicId.from(payload.clinicId),
             userId: UserId.from(payload.userId),
-            role: payload.role,
+            roles: payload.roles,
             displayName: payload.displayName ?? null,
             color: payload.color ?? null,
             isActive: true,

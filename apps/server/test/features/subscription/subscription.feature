@@ -31,11 +31,22 @@ Feature: Subscription management (GET / PATCH / POST)
         And the response should contain:
             | planCode | CONSULTORIO |
 
-    Scenario: Purchase an add-on
+    Scenario: Purchase an add-on charges via the payment provider before granting it
+        Given the clinic member "dr_house" also has the role "OWNER"
+        And the subscription for "dr_house" has a payment method on file
         When I send a "POST" request to "/api/v1/members/${ref:id:clinicMember:dr_house}/addons" with:
-            | addonCode | EXTRA_DOCS_300 |
-            | quantity  | 1              |
+            | addonCode     | EXTRA_DOCS_300 |
+            | quantity      | 1              |
+            | paymentMethod | PIX            |
         Then the request should succeed with a 201 status code
+
+    Scenario: Purchase an add-on without a payment method on file is rejected
+        Given the clinic member "dr_house" also has the role "OWNER"
+        When I send a "POST" request to "/api/v1/members/${ref:id:clinicMember:dr_house}/addons" with:
+            | addonCode     | EXTRA_DOCS_300 |
+            | quantity      | 1              |
+            | paymentMethod | PIX            |
+        Then the request should fail with a 400 status code
 
     Scenario: Change plan without authentication returns 401
         Given I sign out

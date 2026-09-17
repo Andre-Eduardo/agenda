@@ -17,6 +17,7 @@ import {
 import type {ClinicMemberId} from '@domain/clinic-member/entities';
 import type {ClinicId} from '@domain/clinic/entities';
 import type {PatientId} from '@domain/patient/entities';
+import type {RoomId} from '@domain/room/entities';
 
 export type AppointmentProps = EntityProps<Appointment>;
 export type CreateAppointment = Omit<CreateEntity<Appointment>, 'status' | 'arrivedAt' | 'calledAt'> & {
@@ -61,6 +62,8 @@ export class Appointment extends AggregateRoot<AppointmentId> {
     arrivedAt: Date | null;
     /** Momento em que o paciente foi chamado para a sala. */
     calledAt: Date | null;
+    /** Sala do atendimento. Só usado quando Clinic.roomManagementEnabled está ativo. */
+    roomId: RoomId | null;
 
     constructor(props: AllEntityProps<Appointment>) {
         super(props);
@@ -78,6 +81,7 @@ export class Appointment extends AggregateRoot<AppointmentId> {
         this.status = props.status ?? AppointmentStatus.SCHEDULED;
         this.arrivedAt = props.arrivedAt ?? null;
         this.calledAt = props.calledAt ?? null;
+        this.roomId = props.roomId ?? null;
         this.validate();
     }
 
@@ -92,6 +96,7 @@ export class Appointment extends AggregateRoot<AppointmentId> {
             canceledReason: props.canceledReason ?? null,
             note: props.note ?? null,
             canceledAt: props.canceledAt ?? null,
+            roomId: props.roomId ?? null,
             arrivedAt: null,
             calledAt: null,
             createdAt: now,
@@ -133,6 +138,10 @@ export class Appointment extends AggregateRoot<AppointmentId> {
 
         if (props.note !== undefined) {
             this.note = props.note;
+        }
+
+        if (props.roomId !== undefined) {
+            this.roomId = props.roomId;
         }
 
         this.validate();
@@ -260,6 +269,7 @@ export class Appointment extends AggregateRoot<AppointmentId> {
             status: this.status,
             arrivedAt: this.arrivedAt?.toJSON() ?? null,
             calledAt: this.calledAt?.toJSON() ?? null,
+            roomId: this.roomId?.toJSON() ?? null,
             createdAt: this.createdAt.toJSON(),
             updatedAt: this.updatedAt.toJSON(),
             deletedAt: this.deletedAt?.toJSON() ?? null,

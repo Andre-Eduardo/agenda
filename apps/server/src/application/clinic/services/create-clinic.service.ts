@@ -30,6 +30,7 @@ export class CreateClinicService implements ApplicationService<CreateClinicDto, 
             country: payload.country ?? null,
             logoUrl: payload.logoUrl ?? null,
             clinicSpecialties: payload.clinicSpecialties ?? [],
+            roomManagementEnabled: false,
         });
 
         await this.clinicRepository.save(clinic);

@@ -526,3 +526,178 @@ export const gridSpan = (span: number) => gridSpanMap[span];
 export const skeletonH4W48 = css({h: '4', w: '48'});
 export const skeletonH10 = css({h: '10'});
 
+// ── Salas ────────────────────────────────────────────────────────────────────
+
+export const roomList = css({display: 'flex', flexDirection: 'column', gap: '2', mt: '4'});
+
+export const roomRow = css({
+    display: 'flex',
+    alignItems: 'center',
+    gap: '3',
+    p: '3',
+    rounded: '[8px]',
+    borderWidth: '1px',
+    borderStyle: 'solid',
+    borderColor: 'border',
+    bg: 'bg.surface',
+});
+
+export const roomNameText = css({fontSize: 'sm', color: 'text.primary', flex: '1'});
+export const roomAddRow = css({display: 'flex', alignItems: 'center', gap: '2', mt: '4'});
+
+// ─── Subscription ────────────────────────────────────────────────────────────
+
+export const planCard = css({
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: '4',
+    p: '4',
+    rounded: 'card',
+    borderWidth: '1px',
+    borderStyle: 'solid',
+    borderColor: 'border',
+    bg: 'bg.surface',
+    flexWrap: 'wrap',
+});
+
+export const planInfo = css({display: 'flex', flexDirection: 'column', gap: '1'});
+export const planNameText = css({fontSize: 'md', fontWeight: 'medium', color: 'text.primary'});
+export const planPeriodText = css({fontSize: 'xs', color: 'text.tertiary'});
+export const planActions = css({display: 'flex', gap: '2', flexWrap: 'wrap'});
+
+export const statusBadge = cva({
+    base: {
+        display: 'inline-flex',
+        alignItems: 'center',
+        px: '2',
+        py: '0.5',
+        rounded: 'full',
+        fontSize: '2xs',
+        fontWeight: 'medium',
+        w: 'fit',
+    },
+    variants: {
+        tone: {
+            ok: {bg: 'success/10', color: 'success'},
+            warning: {bg: 'warning/10', color: 'warning'},
+            danger: {bg: 'danger/10', color: 'danger'},
+            neutral: {bg: 'bg.card', color: 'text.secondary'},
+        },
+    },
+});
+
+export const usageGrid = css({display: 'flex', flexDirection: 'column', gap: '4', mt: '2'});
+export const usageRow = css({display: 'flex', flexDirection: 'column', gap: '1.5'});
+export const usageRowHead = css({
+    display: 'flex',
+    justifyContent: 'space-between',
+    fontSize: 'xs',
+    color: 'text.secondary',
+});
+export const usageBarTrack = css({h: '2', rounded: 'full', bg: 'border', overflow: 'hidden'});
+
+export const usageBarFill = cva({
+    base: {h: 'full', rounded: 'full'},
+    variants: {
+        tone: {
+            ok: {bg: 'primary'},
+            warning: {bg: 'warning'},
+            danger: {bg: 'danger'},
+            neutral: {bg: 'text.tertiary'},
+        },
+    },
+});
+
+export const alertBanner = css({
+    display: 'flex',
+    alignItems: 'center',
+    gap: '2',
+    p: '3',
+    rounded: 'card',
+    borderWidth: '1px',
+    borderStyle: 'solid',
+    borderColor: 'warning/40',
+    bg: 'warning/10',
+    color: 'warning',
+    fontSize: 'xs',
+    mb: '4',
+});
+
+export const addonGrid = css({
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))',
+    gap: '3',
+    mt: '2',
+});
+
+export const addonCard = css({
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '2',
+    p: '3',
+    rounded: 'card',
+    borderWidth: '1px',
+    borderStyle: 'solid',
+    borderColor: 'border',
+    bg: 'bg.card',
+});
+
+export const addonCardTitle = css({fontSize: 'sm', fontWeight: 'medium', color: 'text.primary'});
+export const addonCardMeta = css({fontSize: '2xs', color: 'text.tertiary'});
+export const addonCardPrice = css({fontSize: 'xs', color: 'text.secondary', mt: 'auto'});
+
+export const dataTable = css({
+    width: '100%',
+    borderCollapse: 'collapse',
+    fontSize: 'xs',
+
+    '& th': {
+        textAlign: 'left',
+        color: 'text.tertiary',
+        fontWeight: 'medium',
+        py: '2',
+        borderBottomWidth: '1px',
+        borderBottomStyle: 'solid',
+        borderBottomColor: 'border',
+    },
+    '& td': {
+        py: '2',
+        borderBottomWidth: '1px',
+        borderBottomStyle: 'solid',
+        borderBottomColor: 'border',
+        color: 'text.primary',
+    },
+});
+
+export const inlineForm = css({display: 'flex', gap: '2', alignItems: 'flex-end', flexWrap: 'wrap', mt: '3'});
+export const inlineFormField = css({display: 'flex', flexDirection: 'column', gap: '1', minW: '[160px]'});
+export const emptyRowText = css({fontSize: 'xs', color: 'text.tertiary', py: '2'});
+
+export const dialogBody = css({display: 'flex', flexDirection: 'column', gap: '4', py: '2'});
+export const summaryCard = css({
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '2',
+    p: '3',
+    rounded: 'card',
+    borderWidth: '1px',
+    borderStyle: 'solid',
+    borderColor: 'border',
+    bg: 'bg.surface',
+});
+export const summaryRow = css({display: 'flex', justifyContent: 'space-between', fontSize: 'xs', color: 'text.secondary'});
+export const summaryTotalRow = css({
+    display: 'flex',
+    justifyContent: 'space-between',
+    fontSize: 'sm',
+    fontWeight: 'medium',
+    color: 'text.primary',
+    pt: '2',
+    borderTopWidth: '1px',
+    borderTopStyle: 'solid',
+    borderTopColor: 'border',
+});
+export const noteText = css({fontSize: '2xs', color: 'text.tertiary', lineHeight: 'relaxed'});
+export const qtyStepper = css({display: 'flex', alignItems: 'center', gap: '3'});
+export const qtyValue = css({fontSize: 'sm', fontWeight: 'medium', color: 'text.primary', minW: '4', textAlign: 'center'});

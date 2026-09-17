@@ -11,13 +11,13 @@ export class ClinicMemberDto extends EntityDto {
     @ApiProperty({format: 'uuid', description: 'User id'})
     userId: string;
 
-    @ApiProperty({enum: ClinicMemberRole, description: 'Role inside the clinic'})
-    role: ClinicMemberRole;
+    @ApiProperty({enum: ClinicMemberRole, isArray: true, description: 'Roles held inside the clinic'})
+    roles: ClinicMemberRole[];
 
-    @ApiProperty({nullable: true, description: 'Display name (UI label)'})
+    @ApiProperty({type: String, nullable: true, description: 'Display name (UI label)'})
     displayName: string | null;
 
-    @ApiProperty({nullable: true, description: 'Calendar color'})
+    @ApiProperty({type: String, nullable: true, description: 'Calendar color'})
     color: string | null;
 
     @ApiProperty({description: 'Is the membership active'})
@@ -30,7 +30,7 @@ export class ClinicMemberDto extends EntityDto {
         super(member);
         this.clinicId = member.clinicId.toString();
         this.userId = member.userId.toString();
-        this.role = member.role;
+        this.roles = member.roles;
         this.displayName = member.displayName;
         this.color = member.color;
         this.isActive = member.isActive;

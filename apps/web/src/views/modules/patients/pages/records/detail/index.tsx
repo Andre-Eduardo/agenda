@@ -364,12 +364,12 @@ function FilesSection({record}: {record: MedicalRecord}): ReactNode {
                             <div className="actions">
                                 <Button variant="ghost" size="icon" className={btnIconSize8} asChild>
                                     <a href={f.url} target="_blank" rel="noreferrer" aria-label="Visualizar">
-                                        <Eye className={icon14} />
+                                        <Eye className={icon13} />
                                     </a>
                                 </Button>
                                 <Button variant="ghost" size="icon" className={btnIconSize8} asChild>
                                     <a href={f.url} download={f.fileName} aria-label="Baixar">
-                                        <Download className={icon14} />
+                                        <Download className={icon13} />
                                     </a>
                                 </Button>
                             </div>

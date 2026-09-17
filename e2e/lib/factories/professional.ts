@@ -3,7 +3,7 @@ import {uuidv7} from 'uuidv7';
 import type {AiSpecialtyGroup} from '@prisma/client';
 import {prisma} from './prisma';
 import type {CreatedUser, CreateUserEntry} from './user';
-import {createTestUser} from './user';
+import {createTestUser, isCreatedUser} from './user';
 
 export type CreateProfessionalEntry = {
     user?: CreateUserEntry | CreatedUser;
@@ -20,10 +20,6 @@ export type CreatedProfessional = {
     userId: string;
     user: CreatedUser;
 };
-
-function isCreatedUser(value: CreateUserEntry | CreatedUser | undefined): value is CreatedUser {
-    return !!value && typeof (value as CreatedUser).id === 'string' && 'password' in value;
-}
 
 export async function createTestProfessional(
     entry: CreateProfessionalEntry = {}

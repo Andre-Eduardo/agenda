@@ -11,7 +11,9 @@ import {
     Settings,
     Stethoscope,
     Sun,
+    UserCog,
     Users,
+    Wallet,
     type LucideIcon,
 } from 'lucide-react';
 import {useTranslation} from 'react-i18next';
@@ -43,6 +45,7 @@ const NAV_GROUPS: NavGroup[] = [
             {icon: Calendar, labelKey: 'nav.appointments', path: '/appointments'},
             {icon: Users, labelKey: 'nav.patients', path: '/patients'},
             {icon: Stethoscope, labelKey: 'nav.professionals', path: '/professionals'},
+            {icon: UserCog, labelKey: 'nav.team', path: '/team'},
         ],
     },
     {
@@ -50,6 +53,7 @@ const NAV_GROUPS: NavGroup[] = [
         items: [
             {icon: ClipboardList, labelKey: 'nav.forms', path: '/form-templates'},
             {icon: FileText, labelKey: 'nav.chat', path: '/chat'},
+            {icon: Wallet, labelKey: 'nav.financial', path: '/financial', permission: 'financial-report:view'},
             {icon: Settings, labelKey: 'nav.settings', path: '/settings'},
         ],
     },

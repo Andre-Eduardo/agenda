@@ -1,5 +1,6 @@
 import {Injectable} from '@nestjs/common';
 import {ApplicationService, Command} from '@application/@shared/application.service';
+import {AgendaAccessChecker} from '@application/professional-agenda-access/services';
 import {UpsertWorkingHoursDto, WorkingHoursDto} from '@application/working-hours/dtos';
 import {PreconditionException, ResourceNotFoundException} from '@domain/@shared/exceptions';
 import {ClinicMemberRepository} from '@domain/clinic-member/clinic-member.repository';
@@ -13,7 +14,8 @@ type UpsertWorkingHoursPayload = UpsertWorkingHoursDto & {memberId: ClinicMember
 export class UpsertWorkingHoursService implements ApplicationService<UpsertWorkingHoursPayload, WorkingHoursDto> {
     constructor(
         private readonly workingHoursRepository: WorkingHoursRepository,
-        private readonly clinicMemberRepository: ClinicMemberRepository
+        private readonly clinicMemberRepository: ClinicMemberRepository,
+        private readonly agendaAccessChecker: AgendaAccessChecker
     ) {}
 
     async execute({actor, payload}: Command<UpsertWorkingHoursPayload>): Promise<WorkingHoursDto> {
@@ -28,6 +30,8 @@ export class UpsertWorkingHoursService implements ApplicationService<UpsertWorki
         if (!member.clinicId.equals(actor.clinicId)) {
             throw new PreconditionException('Member does not belong to the current clinic.');
         }
+
+        await this.agendaAccessChecker.assertCanManage(actor, memberId);
 
         const all = await this.workingHoursRepository.findByMember(memberId);
         const existing = all.filter((wh) => wh.dayOfWeek === dayOfWeek);

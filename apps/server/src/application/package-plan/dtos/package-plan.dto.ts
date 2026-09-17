@@ -7,10 +7,10 @@ import type {PackagePlan} from '@domain/package-plan/entities';
 export class PackagePlanDto extends EntityDto {
     @ApiProperty({format: 'uuid'}) clinicId: string;
     @ApiProperty() name: string;
-    @ApiProperty({nullable: true}) description: string | null;
-    @ApiProperty() totalCredits: number;
-    @ApiProperty() priceBrl: number;
-    @ApiProperty({nullable: true}) validityDays: number | null;
+    @ApiProperty({type: 'string', nullable: true}) description: string | null;
+    @ApiProperty({type: 'number'}) totalCredits: number;
+    @ApiProperty({type: 'number'}) priceBrl: number;
+    @ApiProperty({type: 'number', nullable: true}) validityDays: number | null;
     @ApiProperty({enum: AppointmentType, nullable: true}) appointmentType: AppointmentType | null;
     @ApiProperty() isActive: boolean;
 

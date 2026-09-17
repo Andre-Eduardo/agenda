@@ -54,6 +54,9 @@ export class ClinicDto extends EntityDto {
     })
     clinicSpecialties: AiSpecialtyGroup[];
 
+    @ApiProperty({description: 'Enables physical room management and room conflict checks on scheduling'})
+    roomManagementEnabled: boolean;
+
     constructor(clinic: Clinic) {
         super(clinic);
         this.name = clinic.name;
@@ -71,5 +74,6 @@ export class ClinicDto extends EntityDto {
         this.country = clinic.country;
         this.logoUrl = clinic.logoUrl;
         this.clinicSpecialties = clinic.clinicSpecialties;
+        this.roomManagementEnabled = clinic.roomManagementEnabled;
     }
 }

@@ -23,6 +23,10 @@ export type CreatedUser = {
     globalRole: GlobalRole;
 };
 
+export function isCreatedUser(value: CreateUserEntry | CreatedUser | undefined): value is CreatedUser {
+    return !!value && typeof (value as CreatedUser).id === 'string' && 'password' in value;
+}
+
 export async function createTestUsers(entries: CreateUserEntry[]): Promise<CreatedUser[]> {
     const users: CreatedUser[] = [];
     for (const entry of entries) {

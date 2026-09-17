@@ -11,10 +11,10 @@ export class ProfessionalDto extends EntityDto {
     })
     clinicMemberId: string;
 
-    @ApiProperty({nullable: true, description: 'Professional registration number (CRM, CRP, etc.)'})
+    @ApiProperty({type: String, nullable: true, description: 'Professional registration number (CRM, CRP, etc.)'})
     registrationNumber: string | null;
 
-    @ApiProperty({nullable: true, description: 'Free-form specialty', example: 'Cardiology'})
+    @ApiProperty({type: String, nullable: true, description: 'Free-form specialty', example: 'Cardiology'})
     specialty: string | null;
 
     @ApiProperty({
@@ -24,11 +24,20 @@ export class ProfessionalDto extends EntityDto {
     })
     specialtyNormalized: AiSpecialtyGroup | null;
 
+    @ApiProperty({
+        type: String,
+        format: 'uuid',
+        nullable: true,
+        description: 'Room used by default when scheduling with this professional',
+    })
+    defaultRoomId: string | null;
+
     constructor(professional: Professional) {
         super(professional);
         this.clinicMemberId = professional.clinicMemberId.toString();
         this.registrationNumber = professional.registrationNumber;
         this.specialty = professional.specialty;
         this.specialtyNormalized = professional.specialtyNormalized;
+        this.defaultRoomId = professional.defaultRoomId?.toString() ?? null;
     }
 }

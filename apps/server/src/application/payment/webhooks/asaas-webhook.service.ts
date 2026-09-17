@@ -63,7 +63,33 @@ export class AsaasWebhookService {
             : null;
 
         if (!subscription) {
-            this.logger.warn(`No subscription found for asaasSubscriptionId=${asaasSubscriptionId ?? 'none'}`);
+            // Not a recurring-subscription payment — likely a one-off charge (e.g. an addon
+            // purchase via createOneTimeCharge), which has no `subscription` field in the
+            // Asaas payload. Fall back to reconciling the PaymentEvent ledger row created at
+            // charge time (matched by asaasPaymentId) instead of silently dropping the event.
+            if (!asaasPaymentId) {
+                this.logger.warn(`No subscription found for asaasSubscriptionId=${asaasSubscriptionId ?? 'none'}`);
+
+                return;
+            }
+
+            const pendingEvent = await this.prisma.paymentEvent.findFirst({
+                where: {asaasPaymentId},
+                orderBy: {createdAt: 'desc'},
+            });
+
+            if (!pendingEvent) {
+                this.logger.warn(`No subscription or pending payment event found for asaasPaymentId=${asaasPaymentId}`);
+
+                return;
+            }
+
+            const rawStatus = EVENT_TO_STATUS[event] ?? 'PENDING';
+
+            await this.prisma.paymentEvent.update({
+                where: {id: pendingEvent.id},
+                data: {status: toEnum(PrismaClient.PaymentStatus, rawStatus), processedAt: new Date()},
+            });
 
             return;
         }

@@ -3,6 +3,7 @@ import {
     AxiosError,
     useCancel,
     useCreateEnrollment,
+    useGetCreditHistory,
     useGetCurrentClinicMember,
     useListEnrollments,
     useListInsurancePlans,
@@ -13,6 +14,7 @@ import {
     useSellPackage,
     useSetPrimary,
     useSubscribe,
+    useUpdateEnrollment,
     type ApiProblem,
     type PatientInsuranceEnrollment,
     type PatientPackage,
@@ -26,6 +28,8 @@ import {Dialog, DialogContent, DialogHeader, DialogTitle} from '@/components/ui/
 import {Input} from '@/components/ui/componentes/input';
 import {Label} from '@/components/ui/componentes/label';
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@/components/ui/componentes/select';
+import {translateApiError} from '@/utils/translate-api-error';
+import {Can} from '@/views/components/Can';
 import {
     block,
     blockHeader,
@@ -46,7 +50,9 @@ import {
 function extractErrorDetail(error: unknown): string | null {
     if (!(error instanceof AxiosError)) return null;
 
-    return (error.response?.data as ApiProblem | undefined)?.detail ?? null;
+    const detail = (error.response?.data as ApiProblem | undefined)?.detail;
+
+    return detail ? translateApiError(detail, detail) : null;
 }
 
 function formatBRL(value: number): string {
@@ -87,6 +93,7 @@ export function PatientPlansSection({patientId}: PatientPlansSectionProps) {
 
 function PackagesBlock({patientId}: {patientId: string}) {
     const [showForm, setShowForm] = useState(false);
+    const [selectedPackageId, setSelectedPackageId] = useState<string | null>(null);
     const packagesQuery = useListPackages(patientId, {query: {enabled: !!patientId}});
     const packages = packagesQuery.data ?? [];
 
@@ -94,9 +101,11 @@ function PackagesBlock({patientId}: {patientId: string}) {
         <div className={block}>
             <div className={blockHeader}>
                 <span className={blockTitle}>Pacotes de sessão</span>
-                <Button size="sm" variant="outline" onClick={() => setShowForm(true)}>
-                    <Plus className="size-3.5" /> Vender pacote
-                </Button>
+                <Can has="patient-package:sell">
+                    <Button size="sm" variant="outline" onClick={() => setShowForm(true)}>
+                        <Plus className="size-3.5" /> Vender pacote
+                    </Button>
+                </Can>
             </div>
 
             {packages.length === 0 ? (
@@ -111,11 +120,24 @@ function PackagesBlock({patientId}: {patientId: string}) {
                                 {pkg.expiresAt ? ` · válido até ${formatDate(pkg.expiresAt)}` : ''}
                             </span>
                         </div>
-                        <Badge variant={pkg.status === 'ACTIVE' ? 'success' : 'secondary'}>
-                            {PACKAGE_STATUS_LABELS[pkg.status] ?? pkg.status}
-                        </Badge>
+                        <div className={cardActions}>
+                            <Badge variant={pkg.status === 'ACTIVE' ? 'success' : 'secondary'}>
+                                {PACKAGE_STATUS_LABELS[pkg.status] ?? pkg.status}
+                            </Badge>
+                            <Button size="sm" variant="outline" onClick={() => setSelectedPackageId(pkg.id)}>
+                                Extrato
+                            </Button>
+                        </div>
                     </div>
                 ))
+            )}
+
+            {selectedPackageId !== null && (
+                <PackageCreditHistoryDialog
+                    patientId={patientId}
+                    patientPackageId={selectedPackageId}
+                    onClose={() => setSelectedPackageId(null)}
+                />
             )}
 
             {showForm && (
@@ -129,15 +151,62 @@ function PackagesBlock({patientId}: {patientId: string}) {
     );
 }
 
-function SellPackageDialog({
+const CREDIT_EVENT_LABELS: Record<string, string> = {
+    CONSUMPTION: 'Uso em atendimento',
+    REFUND: 'Estorno',
+    MANUAL_ADJUSTMENT: 'Ajuste manual',
+    EXPIRATION: 'Expiração',
+};
+
+function PackageCreditHistoryDialog({
     patientId,
+    patientPackageId,
     onClose,
-    onSold,
 }: {
     patientId: string;
+    patientPackageId: string;
     onClose: () => void;
-    onSold: () => void;
 }) {
+    const creditHistoryQuery = useGetCreditHistory(patientId, patientPackageId);
+    const credits = creditHistoryQuery.data ?? [];
+
+    return (
+        <Dialog open onOpenChange={(open) => !open && onClose()}>
+            <DialogContent>
+                <DialogHeader>
+                    <DialogTitle>Extrato de créditos</DialogTitle>
+                </DialogHeader>
+                <div className={formBody}>
+                    {creditHistoryQuery.isLoading && <span className={hint}>Carregando extrato…</span>}
+                    {!creditHistoryQuery.isLoading && credits.length === 0 && (
+                        <span className={hint}>Ainda não há movimentações neste pacote.</span>
+                    )}
+                    {!creditHistoryQuery.isLoading &&
+                        credits.length > 0 &&
+                        credits.map((credit) => (
+                            <div key={credit.id} className={card}>
+                                <div className={cardInfo}>
+                                    <span className={cardName}>{CREDIT_EVENT_LABELS[credit.type] ?? credit.type}</span>
+                                    <span className={cardMeta}>{formatDate(credit.createdAt)}</span>
+                                </div>
+                                <span className={cardMeta}>
+                                    {credit.delta > 0 ? '+' : ''}
+                                    {credit.delta} · saldo {credit.balanceAfter}
+                                </span>
+                            </div>
+                        ))}
+                </div>
+                <div className={formFooter}>
+                    <Button variant="outline" onClick={onClose}>
+                        Fechar
+                    </Button>
+                </div>
+            </DialogContent>
+        </Dialog>
+    );
+}
+
+function SellPackageDialog({patientId, onClose, onSold}: {patientId: string; onClose: () => void; onSold: () => void}) {
     const plansQuery = useListPackagePlans();
     const plans = (plansQuery.data ?? []).filter((p) => p.isActive);
     const [packagePlanId, setPackagePlanId] = useState('');
@@ -246,9 +315,11 @@ function SubscriptionBlock({patientId, clinicId}: {patientId: string; clinicId: 
             <div className={blockHeader}>
                 <span className={blockTitle}>Assinatura recorrente</span>
                 {!active && (
-                    <Button size="sm" variant="outline" onClick={() => setShowForm(true)}>
-                        <Plus className="size-3.5" /> Assinar
-                    </Button>
+                    <Can has="patient-subscription:subscribe">
+                        <Button size="sm" variant="outline" onClick={() => setShowForm(true)}>
+                            <Plus className="size-3.5" /> Assinar
+                        </Button>
+                    </Can>
                 )}
             </div>
 
@@ -265,14 +336,16 @@ function SubscriptionBlock({patientId, clinicId}: {patientId: string; clinicId: 
                     </div>
                     <div className={cardActions}>
                         <Badge variant="success">Ativa</Badge>
-                        <Button
-                            size="sm"
-                            variant="outline"
-                            disabled={cancel.isPending}
-                            onClick={() => handleCancel(active)}
-                        >
-                            Cancelar
-                        </Button>
+                        <Can has="patient-subscription:cancel">
+                            <Button
+                                size="sm"
+                                variant="outline"
+                                disabled={cancel.isPending}
+                                onClick={() => handleCancel(active)}
+                            >
+                                Cancelar
+                            </Button>
+                        </Can>
                     </div>
                 </div>
             )}
@@ -346,8 +419,7 @@ function SubscribeDialog({
                         </Select>
                         {plans.length === 0 && (
                             <span className={hint}>
-                                Nenhuma assinatura ativa no catálogo. Cadastre uma em Financeiro → Planos e
-                                Convênios.
+                                Nenhuma assinatura ativa no catálogo. Cadastre uma em Financeiro → Planos e Convênios.
                             </span>
                         )}
                     </div>
@@ -369,6 +441,7 @@ function SubscribeDialog({
 
 function InsuranceBlock({patientId, clinicId}: {patientId: string; clinicId: string}) {
     const [showForm, setShowForm] = useState(false);
+    const [editingEnrollment, setEditingEnrollment] = useState<PatientInsuranceEnrollment | null>(null);
     const enrollmentsQuery = useListEnrollments(patientId, {query: {enabled: !!patientId}});
     const insurancePlansQuery = useListInsurancePlans(clinicId, {query: {enabled: !!clinicId}});
     const setPrimary = useSetPrimary();
@@ -392,9 +465,11 @@ function InsuranceBlock({patientId, clinicId}: {patientId: string; clinicId: str
         <div className={block}>
             <div className={blockHeader}>
                 <span className={blockTitle}>Convênios vinculados</span>
-                <Button size="sm" variant="outline" onClick={() => setShowForm(true)}>
-                    <Plus className="size-3.5" /> Vincular convênio
-                </Button>
+                <Can has="patient-insurance-enrollment:create">
+                    <Button size="sm" variant="outline" onClick={() => setShowForm(true)}>
+                        <Plus className="size-3.5" /> Vincular convênio
+                    </Button>
+                </Can>
             </div>
 
             {enrollments.length === 0 ? (
@@ -413,16 +488,23 @@ function InsuranceBlock({patientId, clinicId}: {patientId: string; clinicId: str
                                 <Badge variant="success">Primário</Badge>
                             ) : (
                                 enrollment.status === 'ACTIVE' && (
-                                    <Button
-                                        size="sm"
-                                        variant="outline"
-                                        disabled={setPrimary.isPending}
-                                        onClick={() => handleSetPrimary(enrollment)}
-                                    >
-                                        Tornar primário
-                                    </Button>
+                                    <Can has="patient-insurance-enrollment:update">
+                                        <Button
+                                            size="sm"
+                                            variant="outline"
+                                            disabled={setPrimary.isPending}
+                                            onClick={() => handleSetPrimary(enrollment)}
+                                        >
+                                            Tornar primário
+                                        </Button>
+                                    </Can>
                                 )
                             )}
+                            <Can has="patient-insurance-enrollment:update">
+                                <Button size="sm" variant="outline" onClick={() => setEditingEnrollment(enrollment)}>
+                                    Editar
+                                </Button>
+                            </Can>
                         </div>
                     </div>
                 ))
@@ -436,7 +518,86 @@ function InsuranceBlock({patientId, clinicId}: {patientId: string; clinicId: str
                     onLinked={() => enrollmentsQuery.refetch()}
                 />
             )}
+            {editingEnrollment !== null && (
+                <EditInsuranceEnrollmentDialog
+                    enrollment={editingEnrollment}
+                    patientId={patientId}
+                    onClose={() => setEditingEnrollment(null)}
+                    onUpdated={() => void enrollmentsQuery.refetch()}
+                />
+            )}
         </div>
+    );
+}
+
+function EditInsuranceEnrollmentDialog({
+    enrollment,
+    patientId,
+    onClose,
+    onUpdated,
+}: {
+    enrollment: PatientInsuranceEnrollment;
+    patientId: string;
+    onClose: () => void;
+    onUpdated: () => void;
+}) {
+    const [cardNumber, setCardNumber] = useState(enrollment.cardNumber ?? '');
+    const [validFrom, setValidFrom] = useState(enrollment.validFrom?.slice(0, 10) ?? '');
+    const [validUntil, setValidUntil] = useState(enrollment.validUntil?.slice(0, 10) ?? '');
+    const updateEnrollment = useUpdateEnrollment();
+
+    function handleSubmit() {
+        updateEnrollment.mutate(
+            {
+                patientId,
+                id: enrollment.id,
+                data: {
+                    cardNumber: cardNumber.trim() || null,
+                    validFrom: validFrom ? new Date(`${validFrom}T00:00:00.000Z`).toISOString() : null,
+                    validUntil: validUntil ? new Date(`${validUntil}T23:59:59.999Z`).toISOString() : null,
+                },
+            },
+            {
+                onSuccess: () => {
+                    toast.success('Convênio atualizado');
+                    onUpdated();
+                    onClose();
+                },
+                onError: (error) => toast.error(extractErrorDetail(error) ?? 'Erro ao atualizar convênio'),
+            }
+        );
+    }
+
+    return (
+        <Dialog open onOpenChange={(open) => !open && onClose()}>
+            <DialogContent>
+                <DialogHeader>
+                    <DialogTitle>Editar convênio vinculado</DialogTitle>
+                </DialogHeader>
+                <div className={formBody}>
+                    <div className={formField}>
+                        <Label>Número da carteirinha</Label>
+                        <Input value={cardNumber} onChange={(event) => setCardNumber(event.target.value)} />
+                    </div>
+                    <div className={formField}>
+                        <Label>Válido a partir de</Label>
+                        <Input type="date" value={validFrom} onChange={(event) => setValidFrom(event.target.value)} />
+                    </div>
+                    <div className={formField}>
+                        <Label>Válido até</Label>
+                        <Input type="date" value={validUntil} onChange={(event) => setValidUntil(event.target.value)} />
+                    </div>
+                </div>
+                <div className={formFooter}>
+                    <Button variant="outline" onClick={onClose}>
+                        Cancelar
+                    </Button>
+                    <Button disabled={updateEnrollment.isPending} onClick={handleSubmit}>
+                        Salvar
+                    </Button>
+                </div>
+            </DialogContent>
+        </Dialog>
     );
 }
 

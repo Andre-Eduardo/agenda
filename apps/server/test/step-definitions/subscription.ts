@@ -54,3 +54,20 @@ Given(
         });
     }
 );
+
+/**
+ * Sets an Asaas customer id on the member's subscription, simulating a professional who
+ * already activated billing (POST /subscription/activate) — required by any flow that
+ * charges via IPaymentProvider before granting something (e.g. addon purchase).
+ *
+ * Example:
+ *   Given the subscription for "dr_house" has a payment method on file
+ */
+Given('the subscription for {string} has a payment method on file', async function (this: Context, memberKey: string) {
+    const memberId = this.getVariableId('clinicMember', memberKey);
+
+    await this.prisma.professionalSubscription.update({
+        where: {memberId},
+        data: {asaasCustomerId: `mock-cus-${memberKey}`},
+    });
+});

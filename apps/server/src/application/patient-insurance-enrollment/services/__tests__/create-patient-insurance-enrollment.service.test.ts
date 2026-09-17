@@ -1,16 +1,16 @@
 import {mock} from 'jest-mock-extended';
+import {CreatePatientInsuranceEnrollmentService} from '@application/patient-insurance-enrollment/services/create-patient-insurance-enrollment.service';
 import type {Actor} from '@domain/@shared/actor';
 import {PreconditionException} from '@domain/@shared/exceptions';
+import {ClinicMemberId} from '@domain/clinic-member/entities';
+import {ClinicId} from '@domain/clinic/entities';
 import {EventDispatcher} from '@domain/event';
 import {InsurancePlan, InsurancePlanId} from '@domain/insurance-plan/entities';
 import {InsurancePlanRepository} from '@domain/insurance-plan/insurance-plan.repository';
-import {ClinicMemberId} from '@domain/clinic-member/entities';
-import {ClinicId} from '@domain/clinic/entities';
 import {PatientInsuranceEnrollment} from '@domain/patient-insurance-enrollment/entities';
 import {PatientInsuranceEnrollmentRepository} from '@domain/patient-insurance-enrollment/patient-insurance-enrollment.repository';
 import {Patient, PatientId} from '@domain/patient/entities';
 import {PatientRepository} from '@domain/patient/patient.repository';
-import {CreatePatientInsuranceEnrollmentService} from '@application/patient-insurance-enrollment/services/create-patient-insurance-enrollment.service';
 
 describe('CreatePatientInsuranceEnrollmentService', () => {
     const clinicId = ClinicId.generate();
@@ -28,7 +28,7 @@ describe('CreatePatientInsuranceEnrollmentService', () => {
     let eventDispatcher: ReturnType<typeof mock<EventDispatcher>>;
     let service: CreatePatientInsuranceEnrollmentService;
 
-    const plan = {clinicId} as unknown as InsurancePlan;
+    const plan = {clinicId, id: InsurancePlanId.generate()} as unknown as InsurancePlan;
 
     beforeEach(() => {
         enrollmentRepository = mock<PatientInsuranceEnrollmentRepository>();
@@ -36,7 +36,7 @@ describe('CreatePatientInsuranceEnrollmentService', () => {
         insurancePlanRepository = mock<InsurancePlanRepository>();
         eventDispatcher = mock<EventDispatcher>();
 
-        patientRepository.findById.mockResolvedValue({} as Patient);
+        patientRepository.findById.mockResolvedValue({change: jest.fn()} as unknown as Patient);
         insurancePlanRepository.findById.mockResolvedValue(plan);
         enrollmentRepository.findByPatientAndPlan.mockResolvedValue(null);
         enrollmentRepository.findByPatientId.mockResolvedValue([]);

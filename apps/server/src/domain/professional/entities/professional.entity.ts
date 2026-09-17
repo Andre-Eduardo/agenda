@@ -13,6 +13,7 @@ import {
     ProfessionalChangedEvent,
     ProfessionalDeletedEvent,
 } from '@domain/professional/events';
+import type {RoomId} from '@domain/room/entities';
 
 export type ProfessionalProps = EntityProps<Professional>;
 export type CreateProfessional = CreateEntity<Professional>;
@@ -35,6 +36,8 @@ export class Professional extends AggregateRoot<ProfessionalId> {
     specialty: string | null;
     /** Grupo de IA derivado do campo `specialty`. Usado para roteamento do agente. */
     specialtyNormalized: AiSpecialtyGroup | null;
+    /** Sala usada por padrão ao agendar com este profissional (pode ser trocada por agendamento). */
+    defaultRoomId: RoomId | null;
 
     constructor(props: AllEntityProps<Professional>) {
         super(props);
@@ -42,6 +45,7 @@ export class Professional extends AggregateRoot<ProfessionalId> {
         this.registrationNumber = props.registrationNumber ?? null;
         this.specialty = props.specialty ?? null;
         this.specialtyNormalized = props.specialtyNormalized ?? null;
+        this.defaultRoomId = props.defaultRoomId ?? null;
     }
 
     static create(props: CreateProfessional): Professional {
@@ -54,6 +58,7 @@ export class Professional extends AggregateRoot<ProfessionalId> {
             registrationNumber: props.registrationNumber ?? null,
             specialty: props.specialty ?? null,
             specialtyNormalized: props.specialtyNormalized ?? null,
+            defaultRoomId: props.defaultRoomId ?? null,
             createdAt: now,
             updatedAt: now,
             deletedAt: null,
@@ -84,6 +89,10 @@ export class Professional extends AggregateRoot<ProfessionalId> {
             this.specialtyNormalized = props.specialtyNormalized;
         }
 
+        if (props.defaultRoomId !== undefined) {
+            this.defaultRoomId = props.defaultRoomId;
+        }
+
         this.addEvent(new ProfessionalChangedEvent({oldState, newState: this}));
     }
 
@@ -94,6 +103,7 @@ export class Professional extends AggregateRoot<ProfessionalId> {
             registrationNumber: this.registrationNumber,
             specialty: this.specialty,
             specialtyNormalized: this.specialtyNormalized,
+            defaultRoomId: this.defaultRoomId?.toJSON() ?? null,
             createdAt: this.createdAt.toJSON(),
             updatedAt: this.updatedAt.toJSON(),
             deletedAt: this.deletedAt?.toJSON() ?? null,

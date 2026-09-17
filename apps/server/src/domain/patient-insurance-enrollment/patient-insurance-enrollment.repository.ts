@@ -21,6 +21,8 @@ export interface PatientInsuranceEnrollmentRepository {
         excludeId: PatientInsuranceEnrollmentId
     ): Promise<PatientInsuranceEnrollment[]>;
 
+    findExpirable(on: Date): Promise<PatientInsuranceEnrollment[]>;
+
     save(enrollment: PatientInsuranceEnrollment): Promise<void>;
 }
 

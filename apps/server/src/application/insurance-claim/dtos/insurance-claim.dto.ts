@@ -9,13 +9,13 @@ export class InsuranceClaimDto extends EntityDto {
     @ApiProperty({format: 'uuid'}) appointmentPaymentId: string;
     @ApiProperty({format: 'uuid'}) patientInsuranceEnrollmentId: string;
     @ApiProperty({format: 'uuid'}) insurancePlanId: string;
-    @ApiProperty({nullable: true}) authorizationCode: string | null;
+    @ApiProperty({type: 'string', nullable: true}) authorizationCode: string | null;
     @ApiProperty({enum: InsuranceAuthorizationStatus}) authorizationStatus: InsuranceAuthorizationStatus;
     @ApiProperty({enum: InsuranceClaimStatus}) claimStatus: InsuranceClaimStatus;
-    @ApiProperty() submittedAmountBrl: number;
-    @ApiProperty({nullable: true}) approvedAmountBrl: number | null;
-    @ApiProperty({nullable: true}) glosaReason: string | null;
-    @ApiProperty({nullable: true}) glosaAmountBrl: number | null;
+    @ApiProperty({type: 'number'}) submittedAmountBrl: number;
+    @ApiProperty({type: 'number', nullable: true}) approvedAmountBrl: number | null;
+    @ApiProperty({type: 'string', nullable: true}) glosaReason: string | null;
+    @ApiProperty({type: 'number', nullable: true}) glosaAmountBrl: number | null;
     @ApiProperty({type: 'string', format: 'date-time', nullable: true}) submittedAt: string | null;
     @ApiProperty({type: 'string', format: 'date-time', nullable: true}) resolvedAt: string | null;
 

@@ -20,6 +20,24 @@
     "saving": "Salvando...",
     "forbidden": "Acesso negado. Você não tem permissão para visualizar esta página."
   },
+  "errors": {
+    "patient_package": {
+      "no_credits_left": "Este pacote não possui mais créditos disponíveis.",
+      "appointment_type_mismatch": "Este pacote não cobre o tipo de atendimento desta consulta."
+    },
+    "patient_subscription": {
+      "quota_exhausted": "A cota mensal desta assinatura já foi utilizada.",
+      "not_active": "Esta assinatura não está ativa."
+    },
+    "patient_insurance_enrollment": {
+      "not_linked": "O paciente não possui vínculo com este convênio.",
+      "not_valid_on_appointment_date": "O convênio não é válido na data desta consulta."
+    },
+    "appointment_payment": {
+      "package_requires_completed_appointment": "O pacote só pode ser utilizado após a conclusão do atendimento.",
+      "subscription_requires_completed_appointment": "A assinatura só pode ser utilizada após a conclusão do atendimento."
+    }
+  },
   "confirm": {
     "deleteTitle": "Confirmar exclusão",
     "deleteMessage": "Esta ação não pode ser desfeita. Deseja continuar?"
@@ -29,8 +47,10 @@
     "appointments": "Consultas",
     "patients": "Pacientes",
     "professionals": "Profissionais",
+    "team": "Equipe",
     "forms": "Formulários",
     "chat": "Chat Clínico",
+    "financial": "Financeiro",
     "settings": "Configurações",
     "system": "Sistema",
     "menu": "Menu principal",

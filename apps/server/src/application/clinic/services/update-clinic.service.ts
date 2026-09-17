@@ -54,6 +54,7 @@ export class UpdateClinicService implements ApplicationService<UpdateClinicDto, 
             country: payload.country,
             logoUrl: payload.logoUrl,
             clinicSpecialties: payload.clinicSpecialties,
+            roomManagementEnabled: payload.roomManagementEnabled,
         });
 
         await this.clinicRepository.save(clinic);

@@ -1,6 +1,5 @@
 import {randomUUID} from 'crypto';
 import {Inject, Injectable} from '@nestjs/common';
-import {AsaasPaymentAdapter} from '@application/payment/providers/asaas.adapter';
 import {IPaymentProvider} from '@application/payment/providers/payment-provider.interface';
 import {PLAN_LIMITS, PlanCode, PlanCodeRecord} from '@application/subscription/subscription-plans.config';
 import {ResourceNotFoundException, InvalidInputException} from '@domain/@shared/exceptions';
@@ -13,7 +12,7 @@ export type PaymentMethod = 'CREDIT_CARD' | 'PIX' | 'BOLETO';
 export class PaymentService {
     constructor(
         private readonly prismaProvider: PrismaProvider,
-        @Inject(IPaymentProvider) private readonly paymentProvider: AsaasPaymentAdapter
+        @Inject(IPaymentProvider) private readonly paymentProvider: IPaymentProvider
     ) {}
 
     private get prisma() {

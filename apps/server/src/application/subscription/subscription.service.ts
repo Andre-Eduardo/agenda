@@ -1,6 +1,8 @@
 import {randomUUID} from 'crypto';
-import {Injectable} from '@nestjs/common';
+import {Inject, Injectable} from '@nestjs/common';
 import {EventEmitter2} from '@nestjs/event-emitter';
+import type {Prisma} from '@prisma/client';
+import {BillingType, IPaymentProvider} from '@application/payment/providers/payment-provider.interface';
 import {
     ADDON_CATALOG,
     AddonCode,
@@ -102,11 +104,16 @@ export class SubscriptionService {
 
     constructor(
         private readonly prismaProvider: PrismaProvider,
-        private readonly eventEmitter: EventEmitter2
+        private readonly eventEmitter: EventEmitter2,
+        @Inject(IPaymentProvider) private readonly paymentProvider: IPaymentProvider
     ) {}
 
     private get prisma() {
         return this.prismaProvider.client;
+    }
+
+    private todayIso(): string {
+        return new Date().toISOString().slice(0, 10);
     }
 
     private currentPeriod(): {year: number; month: number} {
@@ -376,6 +383,7 @@ export class SubscriptionService {
         clinicId: string,
         addonCode: AddonCode,
         quantity: number,
+        paymentMethod: BillingType,
         grantedByMemberId: string
     ): Promise<CurrentUsageResult> {
         const catalog = ADDON_CATALOG[addonCode];
@@ -396,9 +404,42 @@ export class SubscriptionService {
             throw new ResourceNotFoundException('subscription.not_found', memberId);
         }
 
+        if (!subscription.asaasCustomerId) {
+            throw new InvalidInputException('subscription.no_payment_method');
+        }
+
         const {year, month} = this.currentPeriod();
         const now = new Date();
         const pricePaidBrl = catalog.priceMonthlyBrl * quantity;
+
+        // Charge first via Asaas — the addon below is only granted if this call succeeds.
+        // Mirrors the optimistic charge-then-grant pattern already used by
+        // PaymentService.activateSubscription/changePlanAndCharge: a successful Asaas call
+        // is enough to proceed, we don't block on webhook confirmation here either.
+        const charge = await this.paymentProvider.createOneTimeCharge({
+            customerId: subscription.asaasCustomerId,
+            billingType: paymentMethod,
+            value: pricePaidBrl,
+            dueDate: this.todayIso(),
+            description: `${catalog.name} — App de Saúde`,
+        });
+
+        await this.prisma.paymentEvent.create({
+            data: {
+                id: randomUUID(),
+                clinicId,
+                memberId,
+                subscriptionId: subscription.id,
+                asaasPaymentId: charge.id,
+                eventType: 'ADDON_CHARGE_CREATED',
+                amount: pricePaidBrl,
+                paymentMethod,
+                status: 'PENDING',
+                rawPayload: charge as Prisma.InputJsonValue,
+                processedAt: null,
+                createdAt: now,
+            },
+        });
 
         const existing = await this.prisma.subscriptionAddon.findUnique({
             where: {
@@ -554,9 +595,9 @@ export class SubscriptionService {
             throw new ResourceNotFoundException('clinic_member.not_found', memberId);
         }
 
-        if (member.role !== ClinicMemberRole.PROFESSIONAL) {
+        if (!member.roles.includes(ClinicMemberRole.PROFESSIONAL)) {
             throw new AccessDeniedException(
-                `Member ${memberId} has role ${member.role}, expected PROFESSIONAL.`,
+                `Member ${memberId} has roles [${member.roles.join(', ')}], expected PROFESSIONAL.`,
                 AccessDeniedReason.INSUFFICIENT_PERMISSIONS
             );
         }

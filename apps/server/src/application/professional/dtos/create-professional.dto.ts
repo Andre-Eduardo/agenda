@@ -4,9 +4,7 @@ import {entityId} from '@application/@shared/validation/schemas';
 import {ClinicMemberId} from '@domain/clinic-member/entities';
 import {AiSpecialtyGroup} from '@domain/form-template/entities';
 
-export const createProfessionalSchema = z.object({
-    /** ClinicMember that this Professional record extends 1:1 (must have role=PROFESSIONAL). */
-    clinicMemberId: entityId(ClinicMemberId),
+const createProfessionalInputSchema = z.object({
     /** Professional registration number (CRM, CRP, COREN, etc.) */
     registrationNumber: z.string().nullish().openapi({example: 'CRM-SP 12345'}),
     /** Free-form specialty as typed by the user */
@@ -15,4 +13,11 @@ export const createProfessionalSchema = z.object({
     specialtyNormalized: z.nativeEnum(AiSpecialtyGroup).nullish(),
 });
 
-export class CreateProfessionalDto extends createZodDto(createProfessionalSchema) {}
+export class CreateProfessionalInputDto extends createZodDto(createProfessionalInputSchema) {}
+
+export const createProfessionalSchema = createProfessionalInputSchema.extend({
+    /** ClinicMember that this Professional record extends 1:1 (must have role=PROFESSIONAL). */
+    clinicMemberId: entityId(ClinicMemberId),
+});
+
+export type CreateProfessionalDto = z.infer<typeof createProfessionalSchema>;

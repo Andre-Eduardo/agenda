@@ -13,8 +13,10 @@ import {patientAlertEvents} from '@domain/patient-alert/events';
 import {patientFormEvents} from '@domain/patient-form/events';
 import {patientEvents} from '@domain/patient/events';
 import {personEvents} from '@domain/person/events';
+import {professionalAgendaAccessEvents} from '@domain/professional-agenda-access/events';
 import {professionalEvents} from '@domain/professional/events';
 import {recordEvents} from '@domain/record/events';
+import {roomEvents} from '@domain/room/events';
 import {subscriptionEvents} from '@domain/subscription/events';
 import {userEvents} from '@domain/user/events';
 
@@ -34,9 +36,11 @@ export const eventTypes = [
     clinicEvents,
     clinicMemberEvents,
     clinicPatientAccessEvents,
+    professionalAgendaAccessEvents,
     documentPermissionEvents,
     draftEvolutionEvents,
     subscriptionEvents,
+    roomEvents,
 ];
 
 export type DomainEventType = TupleToUnion<TupleToUnion<typeof eventTypes>>;

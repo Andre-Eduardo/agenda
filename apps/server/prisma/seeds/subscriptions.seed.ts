@@ -28,7 +28,7 @@ export async function main() {
     const month = now.getMonth() + 1;
 
     const professionals = await prisma.clinicMember.findMany({
-        where: {role: 'PROFESSIONAL', deletedAt: null},
+        where: {roles: {has: 'PROFESSIONAL'}, deletedAt: null},
     });
 
     if (professionals.length === 0) {

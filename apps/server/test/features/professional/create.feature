@@ -13,23 +13,20 @@ Feature: Professional creation (POST)
         And a clinic member "dr_smith" with role "PROFESSIONAL" in clinic "${ref:id:clinic:dr_house}"
 
     Scenario: Create a professional with valid data
-        When I send a "POST" request to "/api/v1/professionals" with:
-            | clinicMemberId | ${ref:id:clinicMember:dr_smith} |
-            | specialty      | PSICOLOGIA                      |
+        When I send a "POST" request to "/api/v1/professionals/${ref:id:clinicMember:dr_smith}" with:
+            | specialty | PSICOLOGIA |
         Then the request should succeed with a 201 status code
         And the response should contain:
             | specialty | PSICOLOGIA |
         And I save the response field "id" as "professional" id for "dr_smith"
 
     Scenario: Create a professional with an invalid clinicMemberId returns 400
-        When I send a "POST" request to "/api/v1/professionals" with:
-            | clinicMemberId | not-a-valid-uuid |
-            | specialty      | FISIOTERAPIA     |
+        When I send a "POST" request to "/api/v1/professionals/not-a-valid-uuid" with:
+            | specialty | FISIOTERAPIA |
         Then the request should fail with a 400 status code
 
     Scenario: Create a professional without authentication
         Given I sign out
-        When I send a "POST" request to "/api/v1/professionals" with:
-            | clinicMemberId | ${ref:id:clinicMember:dr_smith} |
-            | specialty      | MEDICINA                        |
+        When I send a "POST" request to "/api/v1/professionals/${ref:id:clinicMember:dr_smith}" with:
+            | specialty | MEDICINA |
         Then the request should fail with a 401 status code

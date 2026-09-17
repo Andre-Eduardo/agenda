@@ -5,10 +5,11 @@ import {
     DeleteMemberBlockService,
     ListMemberBlocksService,
 } from '@application/member-block/services';
+import {ProfessionalAgendaAccessModule} from '@application/professional-agenda-access/professional-agenda-access.module';
 import {InfrastructureModule} from '@infrastructure/infrastructure.module';
 
 @Module({
-    imports: [InfrastructureModule],
+    imports: [InfrastructureModule, ProfessionalAgendaAccessModule],
     controllers: [MemberBlockController],
     providers: [CreateMemberBlockService, ListMemberBlocksService, DeleteMemberBlockService],
 })

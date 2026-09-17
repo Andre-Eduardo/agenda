@@ -14278,7 +14278,7 @@
             "format": "uuid"
           },
           "authorizationCode": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "authorizationStatus": {
@@ -14306,15 +14306,15 @@
             "type": "number"
           },
           "approvedAmountBrl": {
-            "type": "object",
+            "type": "number",
             "nullable": true
           },
           "glosaReason": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "glosaAmountBrl": {
-            "type": "object",
+            "type": "number",
             "nullable": true
           },
           "submittedAt": {
@@ -14424,7 +14424,7 @@
             "type": "string"
           },
           "description": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "totalCredits": {
@@ -14434,7 +14434,7 @@
             "type": "number"
           },
           "validityDays": {
-            "type": "object",
+            "type": "number",
             "nullable": true
           },
           "appointmentType": {
@@ -14797,7 +14797,7 @@
             "type": "string"
           },
           "description": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "monthlyAppointmentQuota": {

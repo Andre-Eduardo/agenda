@@ -24,13 +24,15 @@ export type UpdateClinicMember = Partial<ClinicMemberProps>;
  * Pivô central do sistema. Toda ação registra o ClinicMember responsável
  * via createdByMemberId para auditoria.
  *
- * Quando role = PROFESSIONAL, existe um Professional 1:1 com dados regulatórios.
- * Para SECRETARY, ADMIN, VIEWER, professional é null.
+ * Um membro pode acumular múltiplos papéis (ex: OWNER + PROFESSIONAL). Quando
+ * tem o papel PROFESSIONAL, existe um Professional 1:1 com dados regulatórios
+ * e agenda própria — os demais papéis (SECRETARY, ADMIN, VIEWER) concedem
+ * apenas permissões de gestão, sem agenda própria.
  */
 export class ClinicMember extends AggregateRoot<ClinicMemberId> {
     clinicId: ClinicId;
     userId: UserId;
-    role: ClinicMemberRole;
+    roles: ClinicMemberRole[];
     /** Como o membro aparece na UI da clínica (ex: "Dr. João Silva") */
     displayName: string | null;
     /** Cor na agenda (substitui ProfessionalConfig.color) */
@@ -43,7 +45,7 @@ export class ClinicMember extends AggregateRoot<ClinicMemberId> {
         super(props);
         this.clinicId = props.clinicId;
         this.userId = props.userId;
-        this.role = props.role;
+        this.roles = props.roles;
         this.displayName = props.displayName ?? null;
         this.color = props.color ?? null;
         this.isActive = props.isActive;
@@ -59,7 +61,7 @@ export class ClinicMember extends AggregateRoot<ClinicMemberId> {
             id: ClinicMemberId.generate(),
             clinicId: props.clinicId,
             userId: props.userId,
-            role: props.role,
+            roles: props.roles,
             displayName: props.displayName ?? null,
             color: props.color ?? null,
             isActive: props.isActive ?? true,
@@ -74,11 +76,16 @@ export class ClinicMember extends AggregateRoot<ClinicMemberId> {
         return member;
     }
 
+    /** Só quem tem o papel PROFESSIONAL tem agenda própria. */
+    hasRole(role: ClinicMemberRole): boolean {
+        return this.roles.includes(role);
+    }
+
     change(props: UpdateClinicMember): void {
         const oldState = new ClinicMember(this);
 
-        if (props.role !== undefined) {
-            this.role = props.role;
+        if (props.roles !== undefined) {
+            this.roles = props.roles;
         }
 
         if (props.displayName !== undefined) {
@@ -106,6 +113,10 @@ export class ClinicMember extends AggregateRoot<ClinicMemberId> {
         if (this.displayName !== null && this.displayName.length === 0) {
             throw new InvalidInputException('Display name must be at least 1 character long when provided.');
         }
+
+        if (this.roles.length === 0) {
+            throw new InvalidInputException('A clinic member must have at least one role.');
+        }
     }
 
     toJSON(): EntityJson<ClinicMember> {
@@ -113,7 +124,7 @@ export class ClinicMember extends AggregateRoot<ClinicMemberId> {
             id: this.id.toJSON(),
             clinicId: this.clinicId.toJSON(),
             userId: this.userId.toJSON(),
-            role: this.role,
+            roles: this.roles,
             displayName: this.displayName,
             color: this.color,
             isActive: this.isActive,

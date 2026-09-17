@@ -4,7 +4,6 @@
  * Automo API
  * OpenAPI spec version: 0.0.0
  */
-import type {PatientSubscriptionPlanDescription} from './patientSubscriptionPlanDescription';
 
 export type PatientSubscriptionPlan = {
     /** The unique identifier of the entity */
@@ -16,7 +15,7 @@ export type PatientSubscriptionPlan = {
     clinicId: string;
     name: string;
     /** @nullable */
-    description: PatientSubscriptionPlanDescription;
+    description: string | null;
     monthlyAppointmentQuota: number;
     priceBrl: number;
     isActive: boolean;

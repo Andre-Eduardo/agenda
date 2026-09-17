@@ -8,10 +8,11 @@ import {ApiOperation} from '@application/@shared/openapi/decorators';
 import {entityIdParam} from '@application/@shared/openapi/params';
 import {ValidatedParam, ZodValidationPipe} from '@application/@shared/validation';
 import {
-    CreateProfessionalDto,
+    CreateProfessionalInputDto,
     ProfessionalDto,
     SearchProfessionalsDto,
     UpdateProfessionalInputDto,
+    createProfessionalSchema,
     getProfessionalSchema,
     searchProfessionalsSchema,
     updateProfessionalSchema,
@@ -25,6 +26,7 @@ import {
 } from '@application/professional/services';
 import {Actor} from '@domain/@shared/actor';
 import {ProfessionalPermission} from '@domain/auth';
+import {ClinicMemberId} from '@domain/clinic-member/entities';
 import {ProfessionalId} from '@domain/professional/entities';
 
 @ApiTags('Professional')
@@ -39,14 +41,19 @@ export class ProfessionalController {
     ) {}
 
     @ApiOperation({
-        summary: 'Creates a new professional',
+        summary: 'Creates a new professional record for a clinic member',
+        parameters: [entityIdParam('Clinic member ID', 'memberId')],
         responses: [{status: 201, description: 'Professional created', type: ProfessionalDto}],
     })
     @BypassClinicMember()
     @Authorize(ProfessionalPermission.CREATE)
-    @Post()
-    createProfessional(@RequestActor() actor: Actor, @Body() payload: CreateProfessionalDto): Promise<ProfessionalDto> {
-        return this.createProfessionalService.execute({actor, payload});
+    @Post(':memberId')
+    createProfessional(
+        @RequestActor() actor: Actor,
+        @ValidatedParam('memberId', createProfessionalSchema.shape.clinicMemberId) clinicMemberId: ClinicMemberId,
+        @Body() payload: CreateProfessionalInputDto
+    ): Promise<ProfessionalDto> {
+        return this.createProfessionalService.execute({actor, payload: {...payload, clinicMemberId}});
     }
 
     @ApiOperation({

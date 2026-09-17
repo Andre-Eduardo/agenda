@@ -18,7 +18,10 @@ export enum PatientInsuranceEnrollmentStatus {
 }
 
 export type PatientInsuranceEnrollmentProps = EntityProps<PatientInsuranceEnrollment>;
-export type CreatePatientInsuranceEnrollment = Omit<CreateEntity<PatientInsuranceEnrollment>, 'status' | 'isPrimary'> & {
+export type CreatePatientInsuranceEnrollment = Omit<
+    CreateEntity<PatientInsuranceEnrollment>,
+    'status' | 'isPrimary'
+> & {
     isPrimary?: boolean;
 };
 export type UpdatePatientInsuranceEnrollment = {
@@ -100,6 +103,26 @@ export class PatientInsuranceEnrollment extends AggregateRoot<PatientInsuranceEn
         this.status = PatientInsuranceEnrollmentStatus.CANCELLED;
         this.isPrimary = false;
         this.update();
+    }
+
+    expire(): void {
+        if (this.status !== PatientInsuranceEnrollmentStatus.ACTIVE) {
+            return;
+        }
+
+        this.status = PatientInsuranceEnrollmentStatus.EXPIRED;
+        this.isPrimary = false;
+        this.update();
+    }
+
+    assertCanCoverAppointment(on: Date): void {
+        if (this.status !== PatientInsuranceEnrollmentStatus.ACTIVE) {
+            throw new PreconditionException('patient_insurance_enrollment.not_active');
+        }
+
+        if ((this.validFrom !== null && this.validFrom > on) || (this.validUntil !== null && this.validUntil < on)) {
+            throw new PreconditionException('patient_insurance_enrollment.not_valid_on_appointment_date');
+        }
     }
 
     toJSON(): EntityJson<PatientInsuranceEnrollment> {

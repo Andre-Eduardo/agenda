@@ -15,12 +15,12 @@ Feature: Clinic member CRUD (POST / GET)
         When I send a "POST" request to "/api/v1/clinic-members" with:
             | clinicId    | ${ref:id:clinic:dr_house}   |
             | userId      | ${ref:id:user:dr_wilson}    |
-            | role        | PROFESSIONAL                |
+            | roles       | ["PROFESSIONAL"]            |
             | displayName | Dr. Wilson                  |
         Then the request should succeed with a 201 status code
         And the response should contain:
             | clinicId          | ${ref:id:clinic:dr_house}       |
-            | role              | PROFESSIONAL                    |
+            | roles             | ["PROFESSIONAL"]                |
             | invitedByMemberId | ${ref:id:clinicMember:dr_house} |
 
     Scenario: List clinic members
@@ -31,7 +31,7 @@ Feature: Clinic member CRUD (POST / GET)
         When I send a "POST" request to "/api/v1/clinic-members" with:
             | clinicId | ${ref:id:clinic:dr_house} |
             | userId   | ${ref:id:user:dr_wilson}  |
-            | role     | INVALID_ROLE              |
+            | roles    | ["INVALID_ROLE"]          |
         Then the request should fail with a 400 status code
 
     Scenario: Create member without authentication returns 401
@@ -39,5 +39,5 @@ Feature: Clinic member CRUD (POST / GET)
         When I send a "POST" request to "/api/v1/clinic-members" with:
             | clinicId | ${ref:id:clinic:dr_house} |
             | userId   | ${ref:id:user:dr_wilson}  |
-            | role     | SECRETARY                 |
+            | roles    | ["SECRETARY"]             |
         Then the request should fail with a 401 status code

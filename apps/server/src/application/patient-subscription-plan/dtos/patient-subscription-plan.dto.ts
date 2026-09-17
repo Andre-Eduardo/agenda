@@ -6,9 +6,9 @@ import type {PatientSubscriptionPlan} from '@domain/patient-subscription-plan/en
 export class PatientSubscriptionPlanDto extends EntityDto {
     @ApiProperty({format: 'uuid'}) clinicId: string;
     @ApiProperty() name: string;
-    @ApiProperty({nullable: true}) description: string | null;
-    @ApiProperty() monthlyAppointmentQuota: number;
-    @ApiProperty() priceBrl: number;
+    @ApiProperty({type: 'string', nullable: true}) description: string | null;
+    @ApiProperty({type: 'number'}) monthlyAppointmentQuota: number;
+    @ApiProperty({type: 'number'}) priceBrl: number;
     @ApiProperty() isActive: boolean;
 
     constructor(plan: PatientSubscriptionPlan) {

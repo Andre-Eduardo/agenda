@@ -13,7 +13,7 @@ export class MemberBlockDto extends EntityDto {
     @ApiProperty({format: 'date-time', description: 'Block end date/time'})
     endAt: string;
 
-    @ApiProperty({nullable: true, description: 'Optional reason for the block'})
+    @ApiProperty({type: String, nullable: true, description: 'Optional reason for the block'})
     reason: string | null;
 
     constructor(block: MemberBlock) {

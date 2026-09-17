@@ -66,6 +66,16 @@ export class WorkingHours extends Entity<WorkingHoursId> {
     }
 
     coversInterval(startAt: Date, endAt: Date): boolean {
+        // A single day's working-hours window can never cover an interval that spans
+        // into a different UTC calendar day — comparing HH:mm strings across midnight
+        // would otherwise produce false positives (e.g. 23:00–00:00 "covered" by 08:00–09:00).
+        const sameDay =
+            startAt.getUTCFullYear() === endAt.getUTCFullYear() &&
+            startAt.getUTCMonth() === endAt.getUTCMonth() &&
+            startAt.getUTCDate() === endAt.getUTCDate();
+
+        if (!sameDay) return false;
+
         const start = toTimeString(startAt);
         const end = toTimeString(endAt);
 

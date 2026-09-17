@@ -41,7 +41,7 @@ export class MemberBlockController {
     })
     @Authorize(MemberBlockPermission.CREATE)
     @Post()
-    create(
+    createMemberBlock(
         @RequestActor() actor: Actor,
         @ValidatedParam('memberId', memberIdSchema) memberId: ClinicMemberId,
         @Body() payload: CreateMemberBlockDto
@@ -56,7 +56,7 @@ export class MemberBlockController {
     })
     @Authorize(MemberBlockPermission.LIST)
     @Get()
-    list(
+    listMemberBlocks(
         @RequestActor() actor: Actor,
         @ValidatedParam('memberId', memberIdSchema) memberId: ClinicMemberId,
         @Query(new ZodValidationPipe(listMemberBlocksSchema)) query: ListMemberBlocksDto
@@ -72,7 +72,7 @@ export class MemberBlockController {
     @Authorize(MemberBlockPermission.DELETE)
     @Delete(':blockId')
     @HttpCode(204)
-    async delete(
+    async deleteMemberBlock(
         @RequestActor() actor: Actor,
         @ValidatedParam('memberId', memberIdSchema) memberId: ClinicMemberId,
         @ValidatedParam('blockId', blockIdSchema) blockId: MemberBlockId

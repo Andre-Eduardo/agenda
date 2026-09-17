@@ -20,6 +20,24 @@
     "saving": "Guardando...",
     "forbidden": "Acceso denegado. No tienes permiso para ver esta página."
   },
+  "errors": {
+    "patient_package": {
+      "no_credits_left": "Este paquete ya no tiene créditos disponibles.",
+      "appointment_type_mismatch": "Este paquete no cubre el tipo de atención de la cita."
+    },
+    "patient_subscription": {
+      "quota_exhausted": "La cuota mensual de esta suscripción ya fue utilizada.",
+      "not_active": "Esta suscripción no está activa."
+    },
+    "patient_insurance_enrollment": {
+      "not_linked": "El paciente no está vinculado a este seguro.",
+      "not_valid_on_appointment_date": "El seguro no es válido en la fecha de esta cita."
+    },
+    "appointment_payment": {
+      "package_requires_completed_appointment": "El paquete solo puede usarse después de completar la atención.",
+      "subscription_requires_completed_appointment": "La suscripción solo puede usarse después de completar la atención."
+    }
+  },
   "confirm": {
     "deleteTitle": "Confirmar eliminación",
     "deleteMessage": "Esta acción no se puede deshacer. ¿Continuar?"
@@ -29,8 +47,10 @@
     "appointments": "Citas",
     "patients": "Pacientes",
     "professionals": "Profesionales",
+    "team": "Equipo",
     "forms": "Formularios",
     "chat": "Chat Clínico",
+    "financial": "Financiero",
     "settings": "Configuración",
     "system": "Sistema",
     "menu": "Menú principal",

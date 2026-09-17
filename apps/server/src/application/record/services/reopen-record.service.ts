@@ -27,7 +27,7 @@ export class ReopenRecordService implements ApplicationService<ReopenRecordDto, 
     async execute({actor, payload}: Command<ReopenRecordDto>): Promise<RecordDto> {
         const member = await this.clinicMemberRepository.findById(actor.clinicMemberId);
 
-        if (member === null || !ALLOWED_ROLES.includes(member.role)) {
+        if (member === null || !member.roles.some((role) => ALLOWED_ROLES.includes(role))) {
             throw new AccessDeniedException('RECORD_REOPEN_FORBIDDEN', AccessDeniedReason.INSUFFICIENT_PERMISSIONS);
         }
 

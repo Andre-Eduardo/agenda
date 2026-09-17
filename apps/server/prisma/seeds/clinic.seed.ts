@@ -91,7 +91,8 @@ export async function main() {
             id: IDS.clinicMember,
             clinicId: IDS.clinic,
             userId: IDS.user,
-            role: 'OWNER',
+            // Owner AND professional — a member can hold more than one role at once.
+            roles: ['OWNER', 'PROFESSIONAL'],
             displayName: 'Dr. Admin Silva',
             color: '#4F81BD',
             isActive: true,
@@ -100,7 +101,7 @@ export async function main() {
             updatedAt: now,
         },
         update: {
-            role: 'OWNER',
+            roles: ['OWNER', 'PROFESSIONAL'],
             displayName: 'Dr. Admin Silva',
             color: '#4F81BD',
             isActive: true,

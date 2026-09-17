@@ -4,6 +4,7 @@ import {Appointment, AppointmentId, AppointmentStatus, AppointmentType} from '@d
 import {ClinicMemberId} from '@domain/clinic-member/entities';
 import {ClinicId} from '@domain/clinic/entities';
 import {PatientId} from '@domain/patient/entities';
+import {RoomId} from '@domain/room/entities';
 import {MapperWithoutDto} from '@infrastructure/mappers/mapper';
 
 export type AppointmentModel = PrismaClient.Appointment;
@@ -28,6 +29,7 @@ export class AppointmentMapper extends MapperWithoutDto<Appointment, Appointment
             status: model.status as AppointmentStatus,
             arrivedAt: model.arrivedAt ?? null,
             calledAt: model.calledAt ?? null,
+            roomId: model.roomId === null ? null : RoomId.from(model.roomId),
         });
     }
 
@@ -48,6 +50,7 @@ export class AppointmentMapper extends MapperWithoutDto<Appointment, Appointment
             note: entity.note,
             arrivedAt: entity.arrivedAt,
             calledAt: entity.calledAt,
+            roomId: entity.roomId?.toString() ?? null,
             createdAt: entity.createdAt,
             updatedAt: entity.updatedAt,
             deletedAt: entity.deletedAt ?? null,

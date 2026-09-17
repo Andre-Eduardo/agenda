@@ -74,6 +74,14 @@ export class AppointmentDto extends EntityDto {
     })
     paymentStatus: AppointmentPaymentStatus | null;
 
+    @ApiProperty({
+        type: String,
+        format: 'uuid',
+        nullable: true,
+        description: 'Room where the appointment takes place, when room management is enabled',
+    })
+    roomId: string | null;
+
     constructor(appointment: Appointment, paymentStatus: AppointmentPaymentStatus | null = null) {
         super(appointment);
         this.clinicId = appointment.clinicId.toString();
@@ -91,5 +99,6 @@ export class AppointmentDto extends EntityDto {
         this.arrivedAt = appointment.arrivedAt?.toISOString() ?? null;
         this.calledAt = appointment.calledAt?.toISOString() ?? null;
         this.paymentStatus = paymentStatus;
+        this.roomId = appointment.roomId?.toString() ?? null;
     }
 }

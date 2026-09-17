@@ -1,9 +1,6 @@
 import {Injectable} from '@nestjs/common';
 import {InsurancePlanId} from '@domain/insurance-plan/entities';
-import {
-    PatientInsuranceEnrollment,
-    PatientInsuranceEnrollmentId,
-} from '@domain/patient-insurance-enrollment/entities';
+import {PatientInsuranceEnrollment, PatientInsuranceEnrollmentId} from '@domain/patient-insurance-enrollment/entities';
 import {PatientInsuranceEnrollmentRepository} from '@domain/patient-insurance-enrollment/patient-insurance-enrollment.repository';
 import {PatientId} from '@domain/patient/entities';
 import {PatientInsuranceEnrollmentMapper} from '@infrastructure/mappers/patient-insurance-enrollment.mapper';
@@ -68,6 +65,18 @@ export class PatientInsuranceEnrollmentPrismaRepository
         });
 
         return enrollments.map((e) => this.mapper.toDomain(e));
+    }
+
+    async findExpirable(on: Date): Promise<PatientInsuranceEnrollment[]> {
+        const enrollments = await this.prisma.patientInsuranceEnrollment.findMany({
+            where: {
+                status: 'ACTIVE',
+                validUntil: {lte: on},
+                deletedAt: null,
+            },
+        });
+
+        return enrollments.map((enrollment) => this.mapper.toDomain(enrollment));
     }
 
     async save(enrollment: PatientInsuranceEnrollment): Promise<void> {

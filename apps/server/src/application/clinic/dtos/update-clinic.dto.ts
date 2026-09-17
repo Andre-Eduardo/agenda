@@ -16,6 +16,7 @@ export const updateClinicSchema = z.object({
     country: z.string().nullish(),
     logoUrl: z.string().url().nullish(),
     clinicSpecialties: z.array(z.nativeEnum(AiSpecialtyGroup)).optional(),
+    roomManagementEnabled: z.boolean().optional(),
 });
 
 export class UpdateClinicDto extends createZodDto(updateClinicSchema) {}

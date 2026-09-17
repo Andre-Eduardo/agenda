@@ -74,7 +74,7 @@ When(
 
         const agentMethod = (this.agent as unknown as Record<string, (url: string) => SupertestTest>)[
             method.toLowerCase()
-        ];
+        ].bind(this.agent);
         const response = await agentMethod(resolvedUrl).set(requestContext.headers).send(body);
 
         requestContext.response = response;
@@ -99,7 +99,7 @@ When(
 
         const agentMethod = (this.agent as unknown as Record<string, (url: string) => SupertestTest>)[
             method.toLowerCase()
-        ];
+        ].bind(this.agent);
         const response = await agentMethod(resolvedUrl)
             .set(requestContext.headers)
             .query(qs.stringify(query, {encode: false}));
@@ -124,7 +124,9 @@ When(
 When('I send a {string} request to {string}', async function (this: Context, method: string, url: string) {
     const resolvedUrl = resolveReferences(this, url);
 
-    const agentMethod = (this.agent as unknown as Record<string, (url: string) => SupertestTest>)[method.toLowerCase()];
+    const agentMethod = (this.agent as unknown as Record<string, (url: string) => SupertestTest>)[
+        method.toLowerCase()
+    ].bind(this.agent);
     const response = await agentMethod(resolvedUrl).set(requestContext.headers);
 
     requestContext.response = response;
@@ -150,7 +152,7 @@ When(
 
         const agentMethod = (this.agent as unknown as Record<string, (url: string) => SupertestTest>)[
             method.toLowerCase()
-        ];
+        ].bind(this.agent);
         const response = await agentMethod(resolvedUrl).set(requestContext.headers).send(body);
 
         requestContext.response = response;

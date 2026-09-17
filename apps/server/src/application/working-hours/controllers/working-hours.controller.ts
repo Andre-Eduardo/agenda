@@ -37,7 +37,7 @@ export class WorkingHoursController {
     @Authorize(WorkingHoursPermission.MANAGE)
     @Post()
     @HttpCode(200)
-    upsert(
+    upsertWorkingHours(
         @RequestActor() actor: Actor,
         @ValidatedParam('memberId', memberIdSchema) memberId: ClinicMemberId,
         @Body() payload: UpsertWorkingHoursDto
@@ -52,7 +52,7 @@ export class WorkingHoursController {
     })
     @Authorize(WorkingHoursPermission.MANAGE)
     @Get()
-    list(
+    listWorkingHours(
         @RequestActor() actor: Actor,
         @ValidatedParam('memberId', memberIdSchema) memberId: ClinicMemberId
     ): Promise<WorkingHoursDto[]> {
@@ -67,7 +67,7 @@ export class WorkingHoursController {
     @Authorize(WorkingHoursPermission.MANAGE)
     @Delete(':hoursId')
     @HttpCode(204)
-    async delete(
+    async deleteWorkingHours(
         @RequestActor() actor: Actor,
         @ValidatedParam('memberId', memberIdSchema) memberId: ClinicMemberId,
         @ValidatedParam('hoursId', hoursIdSchema) hoursId: WorkingHoursId

@@ -10,6 +10,7 @@ import {AppointmentId, AppointmentStatus} from '@domain/appointment/entities';
 import {EventDispatcher} from '@domain/event';
 import {InsuranceClaim} from '@domain/insurance-claim/entities';
 import {InsuranceClaimRepository} from '@domain/insurance-claim/insurance-claim.repository';
+import {PackagePlanRepository} from '@domain/package-plan/package-plan.repository';
 import {PatientInsuranceEnrollmentRepository} from '@domain/patient-insurance-enrollment/patient-insurance-enrollment.repository';
 import {PatientPackageCredit, PatientPackageCreditEventType} from '@domain/patient-package/entities';
 import {PatientPackageCreditRepository} from '@domain/patient-package/patient-package-credit.repository';
@@ -34,6 +35,7 @@ export class RegisterPaymentService implements ApplicationService<RegisterPaymen
         private readonly patientInsuranceEnrollmentRepository: PatientInsuranceEnrollmentRepository,
         private readonly insuranceClaimRepository: InsuranceClaimRepository,
         private readonly patientPackageRepository: PatientPackageRepository,
+        private readonly packagePlanRepository: PackagePlanRepository,
         private readonly patientPackageCreditRepository: PatientPackageCreditRepository,
         private readonly patientSubscriptionRepository: PatientSubscriptionRepository,
         private readonly patientSubscriptionUsageRepository: PatientSubscriptionUsageRepository,
@@ -94,6 +96,10 @@ export class RegisterPaymentService implements ApplicationService<RegisterPaymen
             throw new PreconditionException('patient_insurance_enrollment.not_linked');
         }
 
+        if (enrollment !== null) {
+            enrollment.assertCanCoverAppointment(appointment.startAt);
+        }
+
         // A package credit can only be spent on a session that actually happened — this also keeps
         // the source of coverage always explicit (the staff picks it), never inferred automatically.
         if (paymentMethod === PaymentMethod.PACKAGE) {
@@ -115,6 +121,16 @@ export class RegisterPaymentService implements ApplicationService<RegisterPaymen
                 !patientPackage.patientId.equals(appointment.patientId)
             ) {
                 throw new ResourceNotFoundException('patient_package.not_found', patientPackageId.toString());
+            }
+
+            const packagePlan = await this.packagePlanRepository.findById(patientPackage.packagePlanId);
+
+            if (packagePlan === null || !packagePlan.clinicId.equals(actor.clinicId)) {
+                throw new ResourceNotFoundException('package_plan.not_found', patientPackage.packagePlanId.toString());
+            }
+
+            if (packagePlan.appointmentType !== null && packagePlan.appointmentType !== appointment.type) {
+                throw new PreconditionException('patient_package.appointment_type_mismatch');
             }
         }
 

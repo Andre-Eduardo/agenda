@@ -1,6 +1,7 @@
 import {Injectable} from '@nestjs/common';
 import {ApplicationService, Command} from '@application/@shared/application.service';
 import {CreateMemberBlockDto, MemberBlockDto} from '@application/member-block/dtos';
+import {AgendaAccessChecker} from '@application/professional-agenda-access/services';
 import {PreconditionException, ResourceNotFoundException} from '@domain/@shared/exceptions';
 import {ClinicMemberRepository} from '@domain/clinic-member/clinic-member.repository';
 import {ClinicMemberId} from '@domain/clinic-member/entities';
@@ -13,7 +14,8 @@ type CreateMemberBlockPayload = CreateMemberBlockDto & {memberId: ClinicMemberId
 export class CreateMemberBlockService implements ApplicationService<CreateMemberBlockPayload, MemberBlockDto> {
     constructor(
         private readonly memberBlockRepository: MemberBlockRepository,
-        private readonly clinicMemberRepository: ClinicMemberRepository
+        private readonly clinicMemberRepository: ClinicMemberRepository,
+        private readonly agendaAccessChecker: AgendaAccessChecker
     ) {}
 
     async execute({actor, payload}: Command<CreateMemberBlockPayload>): Promise<MemberBlockDto> {
@@ -28,6 +30,8 @@ export class CreateMemberBlockService implements ApplicationService<CreateMember
         if (!member.clinicId.equals(actor.clinicId)) {
             throw new PreconditionException('Member does not belong to the current clinic.');
         }
+
+        await this.agendaAccessChecker.assertCanManage(actor, memberId);
 
         const block = MemberBlock.create({
             clinicId: member.clinicId,

@@ -7,13 +7,16 @@ import {
 import {PreconditionException, ResourceNotFoundException} from '@domain/@shared/exceptions';
 import {EventDispatcher} from '@domain/event';
 import {PatientInsuranceEnrollmentRepository} from '@domain/patient-insurance-enrollment/patient-insurance-enrollment.repository';
+import {PatientRepository} from '@domain/patient/patient.repository';
 
 @Injectable()
-export class UpdatePatientInsuranceEnrollmentService
-    implements ApplicationService<UpdatePatientInsuranceEnrollmentDto, PatientInsuranceEnrollmentDto>
-{
+export class UpdatePatientInsuranceEnrollmentService implements ApplicationService<
+    UpdatePatientInsuranceEnrollmentDto,
+    PatientInsuranceEnrollmentDto
+> {
     constructor(
         private readonly enrollmentRepository: PatientInsuranceEnrollmentRepository,
+        private readonly patientRepository: PatientRepository,
         private readonly eventDispatcher: EventDispatcher
     ) {}
 
@@ -38,6 +41,20 @@ export class UpdatePatientInsuranceEnrollmentService
         });
 
         await this.enrollmentRepository.save(enrollment);
+
+        if (enrollment.isPrimary) {
+            const patient = await this.patientRepository.findById(enrollment.patientId, actor.clinicId);
+
+            if (patient === null) {
+                throw new ResourceNotFoundException('patient.not_found', enrollment.patientId.toString());
+            }
+
+            patient.change({
+                insuranceCardNumber: enrollment.cardNumber,
+                insuranceValidUntil: enrollment.validUntil,
+            });
+            await this.patientRepository.save(patient);
+        }
 
         this.eventDispatcher.dispatch(actor, enrollment);
 

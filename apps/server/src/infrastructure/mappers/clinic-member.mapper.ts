@@ -1,6 +1,6 @@
 import {Injectable} from '@nestjs/common';
 import * as PrismaClient from '@prisma/client';
-import {toEnum} from '@domain/@shared/utils';
+import {toEnumArray} from '@domain/@shared/utils';
 import {ClinicMember, ClinicMemberId, ClinicMemberRole} from '@domain/clinic-member/entities';
 import {ClinicId} from '@domain/clinic/entities';
 import {UserId} from '@domain/user/entities';
@@ -8,14 +8,13 @@ import {MapperWithoutDto} from '@infrastructure/mappers/mapper';
 
 export type ClinicMemberModel = PrismaClient.ClinicMember;
 
-@Injectable()
 export class ClinicMemberMapper extends MapperWithoutDto<ClinicMember, ClinicMemberModel> {
     toDomain(model: ClinicMemberModel): ClinicMember {
         return new ClinicMember({
             id: ClinicMemberId.from(model.id),
             clinicId: ClinicId.from(model.clinicId),
             userId: UserId.from(model.userId),
-            role: toEnum(ClinicMemberRole, model.role),
+            roles: toEnumArray(ClinicMemberRole, model.roles),
             displayName: model.displayName,
             color: model.color,
             isActive: model.isActive,
@@ -31,7 +30,7 @@ export class ClinicMemberMapper extends MapperWithoutDto<ClinicMember, ClinicMem
             id: entity.id.toString(),
             clinicId: entity.clinicId.toString(),
             userId: entity.userId.toString(),
-            role: toEnum(PrismaClient.ClinicMemberRole, entity.role),
+            roles: toEnumArray(PrismaClient.ClinicMemberRole, entity.roles),
             displayName: entity.displayName,
             color: entity.color,
             isActive: entity.isActive,

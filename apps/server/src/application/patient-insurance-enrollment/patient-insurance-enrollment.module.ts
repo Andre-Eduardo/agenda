@@ -1,5 +1,6 @@
 import {Module} from '@nestjs/common';
 import {PatientInsuranceEnrollmentController} from '@application/patient-insurance-enrollment/controllers/patient-insurance-enrollment.controller';
+import {ExpirePatientInsuranceEnrollmentsJob} from '@application/patient-insurance-enrollment/jobs/expire-patient-insurance-enrollments.job';
 import {
     CreatePatientInsuranceEnrollmentService,
     ListPatientInsuranceEnrollmentsService,
@@ -16,6 +17,7 @@ import {InfrastructureModule} from '@infrastructure/infrastructure.module';
         ListPatientInsuranceEnrollmentsService,
         UpdatePatientInsuranceEnrollmentService,
         SetPrimaryPatientInsuranceEnrollmentService,
+        ExpirePatientInsuranceEnrollmentsJob,
     ],
 })
 export class PatientInsuranceEnrollmentModule {}

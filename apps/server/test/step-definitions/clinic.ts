@@ -46,7 +46,7 @@ Given(
         const response = await this.agent.post('/api/v1/clinic-members').send({
             clinicId,
             userId,
-            role,
+            roles: [role],
             displayName: memberKey,
         });
 
@@ -56,6 +56,30 @@ Given(
         ).to.equal(201);
 
         this.setVariableId('clinicMember', memberKey, response.body.id as string);
+    }
+);
+
+/**
+ * Grants an additional role to an existing clinic member without replacing the roles
+ * they already have — useful for admin/owner-only endpoints tested against an actor
+ * otherwise set up as PROFESSIONAL only (e.g. by "a professional X exists with specialty Y").
+ *
+ * Example:
+ *   Given the clinic member "dr_house" also has the role "OWNER"
+ */
+Given(
+    'the clinic member {string} also has the role {string}',
+    async function (this: Context, memberKey: string, role: string) {
+        const memberId = this.getVariableId('clinicMember', memberKey);
+        const member = await this.prisma.clinicMember.findUniqueOrThrow({where: {id: memberId}});
+        const newRole = role as (typeof member.roles)[number];
+
+        if (!member.roles.includes(newRole)) {
+            await this.prisma.clinicMember.update({
+                where: {id: memberId},
+                data: {roles: {set: [...member.roles, newRole]}},
+            });
+        }
     }
 );
 
@@ -85,7 +109,7 @@ Given(
         const memberResp = await this.agent.post('/api/v1/clinic-members').send({
             clinicId,
             userId,
-            role: 'PROFESSIONAL',
+            roles: ['PROFESSIONAL'],
             displayName: key,
         });
 
@@ -95,8 +119,7 @@ Given(
         this.setVariableId('clinicMember', key, clinicMemberId);
 
         // 3. Professional record
-        const profResp = await this.agent.post('/api/v1/professionals').send({
-            clinicMemberId,
+        const profResp = await this.agent.post(`/api/v1/professionals/${clinicMemberId}`).send({
             specialty,
             registrationNumber: `CRM-${Math.floor(Math.random() * 100_000)}`,
         });

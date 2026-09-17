@@ -5,7 +5,7 @@ import type {UserId} from '@domain/user/entities';
 export type ClinicMemberSearchFilter = {
     clinicId?: ClinicId;
     userId?: UserId;
-    role?: ClinicMemberRole;
+    roles?: ClinicMemberRole[];
     isActive?: boolean;
 };
 

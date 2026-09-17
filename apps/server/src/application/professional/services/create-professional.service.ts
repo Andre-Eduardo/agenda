@@ -23,13 +23,13 @@ export class CreateProfessionalService implements ApplicationService<CreateProfe
             throw new ResourceNotFoundException('clinic_member.not_found', payload.clinicMemberId.toString());
         }
 
-        if (member.role !== ClinicMemberRole.PROFESSIONAL) {
-            // Professional records require the linked member to be a PROFESSIONAL.
-            // Owners/admins/secretaries can edit clinical data via permissions, but only
-            // professionals can be clinically responsible (responsibleProfessionalId).
+        if (!member.roles.includes(ClinicMemberRole.PROFESSIONAL)) {
+            // Professional records require the linked member to have the PROFESSIONAL
+            // role. Owners/admins/secretaries can edit clinical data via permissions, but
+            // only professionals can be clinically responsible (responsibleProfessionalId).
             throw new ResourceNotFoundException(
                 'clinic_member.role_mismatch',
-                `Member ${member.id.toString()} has role ${member.role}, expected PROFESSIONAL.`
+                `Member ${member.id.toString()} has roles [${member.roles.join(', ')}], expected PROFESSIONAL.`
             );
         }
 

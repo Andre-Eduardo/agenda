@@ -32,6 +32,8 @@ export class Clinic extends AggregateRoot<ClinicId> {
     country: string | null;
     logoUrl: string | null;
     clinicSpecialties: AiSpecialtyGroup[];
+    /** Ativa o conceito de salas físicas e a checagem de conflito de sala no agendamento. */
+    roomManagementEnabled: boolean;
 
     constructor(props: AllEntityProps<Clinic>) {
         super(props);
@@ -50,6 +52,7 @@ export class Clinic extends AggregateRoot<ClinicId> {
         this.country = props.country ?? null;
         this.logoUrl = props.logoUrl ?? null;
         this.clinicSpecialties = props.clinicSpecialties ?? [];
+        this.roomManagementEnabled = props.roomManagementEnabled ?? false;
         this.validate();
     }
 
@@ -74,6 +77,7 @@ export class Clinic extends AggregateRoot<ClinicId> {
             country: props.country ?? null,
             logoUrl: props.logoUrl ?? null,
             clinicSpecialties: props.clinicSpecialties ?? [],
+            roomManagementEnabled: props.roomManagementEnabled ?? false,
             createdAt: now,
             updatedAt: now,
             deletedAt: null,
@@ -115,6 +119,8 @@ export class Clinic extends AggregateRoot<ClinicId> {
 
         if (props.clinicSpecialties !== undefined) this.clinicSpecialties = props.clinicSpecialties;
 
+        if (props.roomManagementEnabled !== undefined) this.roomManagementEnabled = props.roomManagementEnabled;
+
         this.validate();
         this.addEvent(new ClinicChangedEvent({oldState, newState: this}));
     }
@@ -148,6 +154,7 @@ export class Clinic extends AggregateRoot<ClinicId> {
             country: this.country,
             logoUrl: this.logoUrl,
             clinicSpecialties: this.clinicSpecialties,
+            roomManagementEnabled: this.roomManagementEnabled,
             createdAt: this.createdAt.toJSON(),
             updatedAt: this.updatedAt.toJSON(),
             deletedAt: this.deletedAt?.toJSON() ?? null,

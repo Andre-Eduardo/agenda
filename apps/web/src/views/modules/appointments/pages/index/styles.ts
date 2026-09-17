@@ -756,3 +756,102 @@ export const miniCellTextPrimary = css({color: 'text.primary'});
 export const miniCellTextTertiary = css({color: 'text.tertiary'});
 export const sheetDotBase = css({w: '1.5', h: '1.5', rounded: 'full', flexShrink: '0'});
 
+// ── Availability overlay (expediente + bloqueios) ──────────────────────────────
+
+export const offHoursOverlay = css({
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bg: 'bg.page',
+    opacity: 0.6,
+    pointerEvents: 'none',
+    zIndex: 0,
+});
+
+export const blockOverlay = css({
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    pointerEvents: 'none',
+    zIndex: 0,
+    bg: 'warning/10',
+    borderTopWidth: '1px',
+    borderBottomWidth: '1px',
+    borderStyle: 'dashed',
+    borderColor: 'warning/40',
+});
+
+export const blockOverlayLabel = css({
+    position: 'absolute',
+    top: '1',
+    left: '2',
+    fontSize: '[10px]',
+    fontWeight: 'medium',
+    color: 'warning',
+    textTransform: 'uppercase',
+    letterSpacing: 'wider',
+});
+
+// ── Salas: cores por índice, selo no bloco, legenda e vista dedicada ───────────
+
+const ROOM_DOT_COLOR_CLASSES = [
+    css({bg: 'primary'}),
+    css({bg: 'info'}),
+    css({bg: 'success'}),
+    css({bg: 'warning'}),
+    css({bg: 'danger'}),
+    css({bg: 'ai.border'}),
+];
+
+/** Cor estável por índice (posição da sala na lista) — mesma sala, mesma cor sempre. */
+export function roomDotColorClass(index: number): string {
+    return ROOM_DOT_COLOR_CLASSES[index % ROOM_DOT_COLOR_CLASSES.length];
+}
+
+export const roomDotOnBlock = css({
+    position: 'absolute',
+    top: '1',
+    right: '1',
+    w: '1.5',
+    h: '1.5',
+    rounded: 'full',
+    flexShrink: '0',
+});
+
+export const roomLegend = css({
+    display: 'flex',
+    flexWrap: 'wrap',
+    alignItems: 'center',
+    gap: '3',
+    px: '4',
+    py: '2',
+    borderBottomWidth: '1px',
+    borderBottomStyle: 'solid',
+    borderBottomColor: 'border',
+    fontSize: 'xs',
+    color: 'text.secondary',
+});
+
+export const roomLegendItem = css({display: 'flex', alignItems: 'center', gap: '1.5'});
+export const roomLegendDot = css({w: '2', h: '2', rounded: 'full', flexShrink: '0'});
+
+export const roomsHeaderMin = css({minWidth: '[640px]'});
+
+export const roomColHead = css({
+    flex: '1',
+    textAlign: 'center',
+    py: '2',
+    px: '1',
+    fontSize: 'xs',
+    fontWeight: 'medium',
+    color: 'text.secondary',
+    borderLeftWidth: '1px',
+    borderLeftStyle: 'solid',
+    borderLeftColor: 'border',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '1.5',
+});
+
+export const noRoomColHead = css({color: 'text.tertiary'});

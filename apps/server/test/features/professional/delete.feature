@@ -13,9 +13,8 @@ Feature: Professional deletion (DELETE)
         And a clinic member "dr_smith" with role "PROFESSIONAL" in clinic "${ref:id:clinic:dr_house}"
 
     Scenario: Delete professional
-        When I send a "POST" request to "/api/v1/professionals" with:
-            | clinicMemberId | ${ref:id:clinicMember:dr_smith} |
-            | specialty      | MEDICINA                        |
+        When I send a "POST" request to "/api/v1/professionals/${ref:id:clinicMember:dr_smith}" with:
+            | specialty | MEDICINA |
         Then the request should succeed with a 201 status code
         And I save the response field "id" as "professional" id for "to_delete"
         When I send a "DELETE" request to "/api/v1/professionals/${ref:id:professional:to_delete}"

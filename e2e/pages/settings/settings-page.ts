@@ -15,6 +15,16 @@ export class SettingsPage extends BasePage {
 
     readonly saveButton: Locator;
 
+    // Side-nav sections
+    readonly agendaSectionButton: Locator;
+    readonly salasSectionButton: Locator;
+
+    // Salas section
+    readonly roomManagementToggleOn: Locator;
+    readonly roomManagementToggleOff: Locator;
+    readonly newRoomNameInput: Locator;
+    readonly addRoomButton: Locator;
+
     constructor(page: Page) {
         super(page);
         this.title = page.getByRole('heading', {name: /^perfil do profissional$/i});
@@ -29,6 +39,41 @@ export class SettingsPage extends BasePage {
         this.registryNumberInput = page.getByPlaceholder(/ex\.: 84321/i);
 
         this.saveButton = page.getByRole('button', {name: /salvar alterações/i});
+
+        this.agendaSectionButton = page.getByRole('button', {name: /^agenda$/i});
+        this.salasSectionButton = page.getByRole('button', {name: /^salas$/i});
+
+        this.roomManagementToggleOn = page.getByRole('radio', {name: /^ativado$/i});
+        this.roomManagementToggleOff = page.getByRole('radio', {name: /^desativado$/i});
+        this.newRoomNameInput = page.getByPlaceholder(/nome da sala/i);
+        this.addRoomButton = page.getByRole('button', {name: /adicionar sala/i});
+    }
+
+    async goToAgendaSection() {
+        await this.agendaSectionButton.click();
+    }
+
+    async goToSalasSection() {
+        await this.salasSectionButton.click();
+    }
+
+    async enableRoomManagement() {
+        await this.roomManagementToggleOn.click();
+    }
+
+    async addRoom(name: string) {
+        await this.newRoomNameInput.fill(name);
+        await this.addRoomButton.click();
+    }
+
+    roomRow(name: string): Locator {
+        return this.page.getByRole('group', {name});
+    }
+
+    async deleteRoom(name: string) {
+        await this.roomRow(name)
+            .getByRole('button', {name: /remover sala/i})
+            .click();
     }
 
     async navigate() {
