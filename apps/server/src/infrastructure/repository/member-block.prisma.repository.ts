@@ -17,7 +17,7 @@ export class MemberBlockPrismaRepository extends PrismaRepository implements Mem
 
     async findById(id: MemberBlockId): Promise<MemberBlock | null> {
         const record = await this.prisma.memberBlock.findUnique({
-            where: {id: id.toString()},
+            where: {id: id.toString(), deletedAt: null},
         });
 
         return record === null ? null : this.mapper.toDomain(record);
@@ -64,6 +64,9 @@ export class MemberBlockPrismaRepository extends PrismaRepository implements Mem
     }
 
     async delete(id: MemberBlockId): Promise<void> {
-        await this.prisma.memberBlock.delete({where: {id: id.toString()}});
+        await this.prisma.memberBlock.updateMany({
+            where: {id: id.toString(), deletedAt: null},
+            data: this.softDeleteData(),
+        });
     }
 }

@@ -21,7 +21,7 @@ export class ProfessionalAgendaAccessPrismaRepository
 
     async findById(id: ProfessionalAgendaAccessId): Promise<ProfessionalAgendaAccess | null> {
         const access = await this.prisma.professionalAgendaAccess.findFirst({
-            where: {id: id.toString()},
+            where: {id: id.toString(), deletedAt: null},
         });
 
         return access === null ? null : this.mapper.toDomain(access);

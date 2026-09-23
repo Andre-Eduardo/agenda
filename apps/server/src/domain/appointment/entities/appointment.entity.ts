@@ -110,6 +110,7 @@ export class Appointment extends AggregateRoot<AppointmentId> {
     }
 
     delete(): void {
+        super.delete();
         this.addEvent(new AppointmentDeletedEvent({appointment: this}));
     }
 

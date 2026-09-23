@@ -25,6 +25,17 @@ export abstract class PrismaRepository {
         return this.prismaProvider.client;
     }
 
+    /**
+     * Column values that mark a row as soft-deleted. Repositories of entities with a `deletedAt`
+     * column use this in `delete()` instead of removing the row, and must filter `deletedAt: null`
+     * in every read.
+     */
+    protected softDeleteData(): {deletedAt: Date; updatedAt: Date} {
+        const now = new Date();
+
+        return {deletedAt: now, updatedAt: now};
+    }
+
     protected normalizeSort<
         O extends string[],
         T extends {key: O[number]; direction: Prisma.SortOrder},

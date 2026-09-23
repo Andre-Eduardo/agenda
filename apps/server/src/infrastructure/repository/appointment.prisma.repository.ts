@@ -25,15 +25,18 @@ export class AppointmentPrismaRepository extends PrismaRepository implements App
     }
 
     async findById(id: AppointmentId): Promise<Appointment | null> {
-        const appointment = await this.prisma.appointment.findUnique({
-            where: {id: id.toString()},
+        const appointment = await this.prisma.appointment.findFirst({
+            where: {id: id.toString(), deletedAt: null, patient: {deletedAt: null}},
         });
 
         return appointment === null ? null : this.mapper.toDomain(appointment);
     }
 
     async delete(id: AppointmentId): Promise<void> {
-        await this.prisma.appointment.delete({where: {id: id.toString()}});
+        await this.prisma.appointment.updateMany({
+            where: {id: id.toString(), deletedAt: null},
+            data: this.softDeleteData(),
+        });
     }
 
     async search(
@@ -50,6 +53,7 @@ export class AppointmentPrismaRepository extends PrismaRepository implements App
             startAt: filter.dateFrom || filter.dateTo ? {gte: filter.dateFrom, lte: filter.dateTo} : undefined,
             note: filter.term ? {contains: filter.term, mode: 'insensitive'} : undefined,
             deletedAt: null,
+            patient: {deletedAt: null},
         };
 
         const [data, totalCount] = await Promise.all([
@@ -90,6 +94,7 @@ export class AppointmentPrismaRepository extends PrismaRepository implements App
                 startAt: {lt: endAt},
                 endAt: {gt: startAt},
                 deletedAt: null,
+                patient: {deletedAt: null},
             },
         });
 
@@ -110,6 +115,7 @@ export class AppointmentPrismaRepository extends PrismaRepository implements App
                 startAt: {lt: endAt},
                 endAt: {gt: startAt},
                 deletedAt: null,
+                patient: {deletedAt: null},
             },
         });
 

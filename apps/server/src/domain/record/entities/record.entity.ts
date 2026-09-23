@@ -194,6 +194,7 @@ export class Record extends AggregateRoot<RecordId> {
     }
 
     delete(): void {
+        super.delete();
         this.addEvent(new RecordDeletedEvent({record: this}));
     }
 

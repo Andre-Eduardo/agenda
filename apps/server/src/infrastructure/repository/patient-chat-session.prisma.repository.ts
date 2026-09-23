@@ -23,7 +23,7 @@ export class PatientChatSessionPrismaRepository extends PrismaRepository impleme
 
     async findById(id: PatientChatSessionId): Promise<PatientChatSession | null> {
         const record = await this.prisma.patientChatSession.findUnique({
-            where: {id: id.toString()},
+            where: {id: id.toString(), deletedAt: null},
         });
 
         return record ? this.mapper.toDomain(record) : null;

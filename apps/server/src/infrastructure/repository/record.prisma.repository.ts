@@ -23,9 +23,11 @@ export class RecordPrismaRepository extends PrismaRepository implements RecordRe
     }
 
     async findById(id: RecordId): Promise<Record | null> {
-        const record = await this.prisma.record.findUnique({
+        const record = await this.prisma.record.findFirst({
             where: {
                 id: id.toString(),
+                deletedAt: null,
+                patient: {deletedAt: null},
             },
             include: {
                 files: true,
@@ -35,11 +37,11 @@ export class RecordPrismaRepository extends PrismaRepository implements RecordRe
         return record === null ? null : this.mapper.toDomain(record);
     }
 
+    /** Soft delete: the clinical record is retained, only hidden from every read. */
     async delete(id: RecordId): Promise<void> {
-        await this.prisma.record.delete({
-            where: {
-                id: id.toString(),
-            },
+        await this.prisma.record.updateMany({
+            where: {id: id.toString(), deletedAt: null},
+            data: this.softDeleteData(),
         });
     }
 
@@ -68,6 +70,7 @@ export class RecordPrismaRepository extends PrismaRepository implements RecordRe
                       }
                     : undefined,
             deletedAt: null,
+            patient: {deletedAt: null},
         };
 
         const [data, totalCount] = await Promise.all([

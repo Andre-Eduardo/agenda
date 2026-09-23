@@ -19,7 +19,7 @@ export class ClinicPatientAccessPrismaRepository extends PrismaRepository implem
 
     async findById(id: ClinicPatientAccessId): Promise<ClinicPatientAccess | null> {
         const access = await this.prisma.clinicPatientAccess.findFirst({
-            where: {id: id.toString()},
+            where: {id: id.toString(), deletedAt: null},
         });
 
         return access === null ? null : this.mapper.toDomain(access);
