@@ -90,6 +90,9 @@ Feature: Working Hours CRUD (POST / GET / DELETE)
         And I save the response field "id" as "working_hours" id for "friday"
         When I send a "DELETE" request to "/api/v1/members/${ref:id:clinicMember:dr_house}/working-hours/${ref:id:working_hours:friday}"
         Then the request should succeed with a 204 status code
+        And the working_hours "friday" should be soft deleted
+        When I send a "DELETE" request to "/api/v1/members/${ref:id:clinicMember:dr_house}/working-hours/${ref:id:working_hours:friday}"
+        Then the request should fail with a 404 status code
 
     Scenario: Create appointment outside working hours returns error
         When I send a "POST" request to "/api/v1/members/${ref:id:clinicMember:dr_house}/working-hours" with:

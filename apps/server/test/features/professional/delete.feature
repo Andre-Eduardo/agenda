@@ -10,6 +10,7 @@ Feature: Professional deletion (DELETE)
         And I am signed in as "dr_house"
         And a professional "dr_house" exists with specialty "MEDICINA"
         And I am signed in as "dr_house" with professional "${ref:id:professional:dr_house}"
+        And the clinic member "dr_house" also has the role "OWNER"
         And a clinic member "dr_smith" with role "PROFESSIONAL" in clinic "${ref:id:clinic:dr_house}"
 
     Scenario: Delete professional
@@ -19,6 +20,19 @@ Feature: Professional deletion (DELETE)
         And I save the response field "id" as "professional" id for "to_delete"
         When I send a "DELETE" request to "/api/v1/professionals/${ref:id:professional:to_delete}"
         Then the request should succeed with a 200 status code
+
+    Scenario: A deleted professional is soft deleted and hidden from every read
+        When I send a "POST" request to "/api/v1/professionals/${ref:id:clinicMember:dr_smith}" with:
+            | specialty | MEDICINA |
+        Then the request should succeed with a 201 status code
+        And I save the response field "id" as "professional" id for "to_delete"
+        When I send a "DELETE" request to "/api/v1/professionals/${ref:id:professional:to_delete}"
+        Then the request should succeed with a 200 status code
+        And the professional "to_delete" should be soft deleted
+        When I send a "GET" request to "/api/v1/professionals/${ref:id:professional:to_delete}"
+        Then the request should fail with a 404 status code
+        When I send a "DELETE" request to "/api/v1/professionals/${ref:id:professional:to_delete}"
+        Then the request should fail with a 404 status code
 
     Scenario: Delete professional without authentication
         Given I sign out

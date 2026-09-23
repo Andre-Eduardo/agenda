@@ -9,6 +9,7 @@ Feature: Patient alert deletion (DELETE)
         And I am signed in as "dr_house"
         And a professional "dr_house" exists with specialty "MEDICINA"
         And I am signed in as "dr_house" with professional "${ref:id:professional:dr_house}"
+        And the clinic member "dr_house" also has the role "OWNER"
         When I send a "POST" request to "/api/v1/patients" with:
             | name           | Alert Patient                   |
             | documentId     | 400.500.600-70                  |
@@ -24,8 +25,18 @@ Feature: Patient alert deletion (DELETE)
         And I save the response field "id" as "alert" id for "to_delete"
         When I send a "DELETE" request to "/api/v1/patients/${ref:id:patient:alert_patient}/alerts/${ref:id:alert:to_delete}"
         Then the request should succeed with a 200 status code
-        # TODO: After soft-delete, verify that the alert is no longer returned
-        #       in the listing endpoint (i.e. isActive=false or deletedAt is set).
+        When I send a "GET" request to "/api/v1/patients/${ref:id:patient:alert_patient}/alerts" with the query:
+            | limit | 10 |
+        Then the request should succeed with a 200 status code
+        And the response should match:
+            """JSON
+            {
+              "data": [],
+              "totalCount": 0
+            }
+            """
+        When I send a "DELETE" request to "/api/v1/patients/${ref:id:patient:alert_patient}/alerts/${ref:id:alert:to_delete}"
+        Then the request should fail with a 404 status code
 
     Scenario: Delete alert without authentication
         Given I sign out

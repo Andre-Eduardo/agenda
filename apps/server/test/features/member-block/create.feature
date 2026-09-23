@@ -90,6 +90,9 @@ Feature: Member Block CRUD (POST / GET / DELETE)
         And I save the response field "id" as "member_block" id for "to_delete"
         When I send a "DELETE" request to "/api/v1/members/${ref:id:clinicMember:dr_house}/blocks/${ref:id:member_block:to_delete}"
         Then the request should succeed with a 204 status code
+        And the member_block "to_delete" should be soft deleted
+        When I send a "DELETE" request to "/api/v1/members/${ref:id:clinicMember:dr_house}/blocks/${ref:id:member_block:to_delete}"
+        Then the request should fail with a 404 status code
 
     Scenario: Create block with endAt before startAt returns 400
         When I send a "POST" request to "/api/v1/members/${ref:id:clinicMember:dr_house}/blocks" with:

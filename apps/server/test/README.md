@@ -58,6 +58,9 @@ pnpm -F @agenda-app/server exec cucumber-js --tags '@real-api'
 | `a professional {string} exists with specialty {string}`  | `professional.ts` | Create professional                    |
 | `I send a {string} request to {string} with:`             | `request.ts`      | HTTP request with body                 |
 | `I send a {string} request to {string} with the query:`   | `request.ts`      | HTTP request with query params         |
+| `the {word} {string} should be soft deleted`              | `soft-delete.ts`  | Row still exists with `deletedAt` set  |
+| `the {word} {string} should not be soft deleted`          | `soft-delete.ts`  | Row exists and `deletedAt` is null     |
+| `an appointment {string} exists for patient {string} attended by {string}` | `soft-delete.ts` | Seed an appointment in the database |
 | `um profissional logado com especialidade {string}`       | `rag-patient.ts`  | RAG: create user+professional, sign in |
 | `um paciente {string} com evolução {string}`              | `rag-patient.ts`  | RAG: create patient + record + index   |
 | `os chunks do paciente foram indexados`                   | `rag-patient.ts`  | RAG: re-index last patient             |
