@@ -68,11 +68,13 @@ Do this for every card. Always open the pull request. Merge only when the curren
 
 ### Pull request
 
-- `gh` is not installed on this machine (checked 2026-09-23) and there is no API token. Push over SSH, which works:
+- `gh` is not installed on this machine (checked 2026-09-23) and there is no API token. SSH access to `origin` works, so push the branch with a plain `git push`, alone in its own command:
 
 ```bash
 git push -u origin <branch>
 ```
+
+- If the push is denied, do not retry it or route around it (another tool, another remote, the browser). Stop and ask the user. The options are: the user pushes it, or the user chooses a local merge without a pull request. Use the local merge only when the user chooses it, and then apply the merge steps below with `git merge --no-ff` and no remote step. Leave the card in `Revisão e QA`, say that nothing was published, and skip the pull request body.
 
 - Open the pull request in the browser with the user's signed-in GitHub session: `https://github.com/Andre-Eduardo/agenda/compare/master...<branch>?expand=1`. Prefer the built-in browser; if GitHub is not signed in there, stop and ask the user to sign in. Never type credentials.
 - Base branch is `master`. Title is the commit subject. Body sections:
