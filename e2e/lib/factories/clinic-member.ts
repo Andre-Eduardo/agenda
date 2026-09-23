@@ -18,7 +18,7 @@ export type CreatedClinicMember = {
     id: string;
     clinicId: string;
     userId: string;
-    role: ClinicMemberRole;
+    roles: ClinicMemberRole[];
     displayName: string | null;
     user: CreatedUser;
 };
@@ -36,7 +36,7 @@ export async function createTestClinicMember(entry: CreateClinicMemberEntry): Pr
             id: uuidv7(),
             clinicId: entry.clinicId,
             userId: user.id,
-            role: entry.role ?? 'SECRETARY',
+            roles: [entry.role ?? 'SECRETARY'],
             displayName: entry.displayName ?? user.name,
             color: entry.color ?? null,
             isActive: entry.isActive ?? true,
@@ -49,7 +49,7 @@ export async function createTestClinicMember(entry: CreateClinicMemberEntry): Pr
         id: member.id,
         clinicId: member.clinicId,
         userId: member.userId,
-        role: member.role as ClinicMemberRole,
+        roles: member.roles,
         displayName: member.displayName,
         user,
     };

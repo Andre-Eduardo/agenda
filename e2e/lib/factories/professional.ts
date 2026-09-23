@@ -50,7 +50,7 @@ export async function createTestProfessional(
             id: uuidv7(),
             clinicId: clinic.id,
             userId: user.id,
-            role: 'PROFESSIONAL',
+            roles: ['PROFESSIONAL'],
             displayName: entry.displayName ?? user.name,
             color: entry.color ?? '#4F46E5',
             isActive: true,
