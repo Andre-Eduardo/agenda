@@ -103,8 +103,8 @@ For each resource in the OpenAPI spec, Orval generates a consistent set of expor
 Auth endpoints follow the same pattern but are not resource-specific:
 
 ```ts
-import {useSignIn, useSignOut, useGetUserPermissions} from '@app/client';
-import {getUserPermissionsQueryKey} from '@app/client';
+import {useSignIn, useSignOut, useGetCurrentClinicMemberPermissions} from '@agenda-app/client';
+import {getGetCurrentClinicMemberPermissionsQueryKey} from '@agenda-app/client';
 ```
 
 ---

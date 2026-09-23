@@ -253,4 +253,11 @@ Navigation items are defined as typed objects and filtered at render time based 
 <Can hasAny={['entity:create', 'entity:update']}>
   {(allowed) => allowed ? <EditActions /> : null}
 </Can>
+
+// Fallback while permissions load (denied is never flashed before the answer is known)
+<Can has="entity:delete" granted={<DeleteButton />} denied={<NoAccess />} loading={<Skeleton />} />
 ```
+
+Children are rendered only when the permission is granted; while permissions load, or if they
+fail to load, nothing gated is rendered. `denied` shows on a denial or a load failure, and
+`loading` (default: nothing) shows while permissions are loading. See [auth.md](./03-auth.md#usecan-hook).

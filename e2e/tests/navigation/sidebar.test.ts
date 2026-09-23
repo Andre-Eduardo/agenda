@@ -6,7 +6,6 @@ const destinations = [
     {name: 'Pacientes', path: '/patients'},
     {name: 'Profissionais', path: '/professionals'},
     {name: 'Equipe', path: '/team'},
-    {name: 'Financeiro', path: '/financial'},
     {name: 'Configurações', path: '/settings'},
 ] as const;
 
@@ -26,5 +25,22 @@ test.describe('Sidebar navigation', () => {
                 await expect(page.getByText('Página não encontrada', {exact: true})).toHaveCount(0);
             });
         }
+    });
+
+    test('should hide the financial destination from a professional, who lacks financial-report:view', async ({
+        page,
+        sidebar,
+    }) => {
+        const permissionsLoaded = page.waitForResponse(
+            (response) => response.url().includes('/api/v1/clinic-members/me/permissions') && response.ok()
+        );
+
+        await page.goto('/dashboard');
+        await permissionsLoaded;
+
+        await sidebar.open();
+
+        await expect(sidebar.link('Configurações')).toBeVisible();
+        await expect(sidebar.link('Financeiro')).toHaveCount(0);
     });
 });
