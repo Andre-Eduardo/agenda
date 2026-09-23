@@ -1,4 +1,3 @@
-import {randomUUID} from 'crypto';
 /**
  * Seed: Consultas de desenvolvimento.
  *
@@ -26,6 +25,17 @@ const PATIENT_IDS = {
     joao: '00000000-0000-0000-0001-000000000004',
 };
 
+const APPOINTMENT_IDS = {
+    anaFirstVisit: '00000000-0000-0000-0005-000000000001',
+    anaReturn: '00000000-0000-0000-0005-000000000002',
+    mariaReturn: '00000000-0000-0000-0005-000000000003',
+    carlosNoShow: '00000000-0000-0000-0005-000000000004',
+    joaoCancelled: '00000000-0000-0000-0005-000000000005',
+    anaConfirmed: '00000000-0000-0000-0005-000000000006',
+    carlosScheduled: '00000000-0000-0000-0005-000000000007',
+    mariaScheduled: '00000000-0000-0000-0005-000000000008',
+};
+
 /** Cria uma data relativa a hoje */
 function relativeDate(daysOffset: number, hour: number, minute = 0): Date {
     const d = new Date();
@@ -42,6 +52,7 @@ export async function main() {
     const appointments = [
         // --- Passadas ---
         {
+            id: APPOINTMENT_IDS.anaFirstVisit,
             patientId: PATIENT_IDS.ana,
             startAt: relativeDate(-30, 9, 0),
             endAt: relativeDate(-30, 9, 50),
@@ -50,6 +61,7 @@ export async function main() {
             note: 'Primeira consulta. Anamnese completa realizada.',
         },
         {
+            id: APPOINTMENT_IDS.anaReturn,
             patientId: PATIENT_IDS.ana,
             startAt: relativeDate(-14, 10, 0),
             endAt: relativeDate(-14, 10, 50),
@@ -58,6 +70,7 @@ export async function main() {
             note: 'Retorno. Exames dentro do esperado.',
         },
         {
+            id: APPOINTMENT_IDS.mariaReturn,
             patientId: PATIENT_IDS.maria,
             startAt: relativeDate(-7, 14, 0),
             endAt: relativeDate(-7, 14, 50),
@@ -66,6 +79,7 @@ export async function main() {
             note: 'Acompanhamento. Pressão controlada.',
         },
         {
+            id: APPOINTMENT_IDS.carlosNoShow,
             patientId: PATIENT_IDS.carlos,
             startAt: relativeDate(-3, 9, 0),
             endAt: relativeDate(-3, 9, 50),
@@ -74,6 +88,7 @@ export async function main() {
             note: null,
         },
         {
+            id: APPOINTMENT_IDS.joaoCancelled,
             patientId: PATIENT_IDS.joao,
             startAt: relativeDate(-5, 11, 0),
             endAt: relativeDate(-5, 11, 50),
@@ -84,6 +99,7 @@ export async function main() {
         },
         // --- Futuras ---
         {
+            id: APPOINTMENT_IDS.anaConfirmed,
             patientId: PATIENT_IDS.ana,
             startAt: relativeDate(7, 10, 0),
             endAt: relativeDate(7, 10, 50),
@@ -92,6 +108,7 @@ export async function main() {
             note: 'Retorno programado.',
         },
         {
+            id: APPOINTMENT_IDS.carlosScheduled,
             patientId: PATIENT_IDS.carlos,
             startAt: relativeDate(3, 9, 0),
             endAt: relativeDate(3, 9, 50),
@@ -100,6 +117,7 @@ export async function main() {
             note: null,
         },
         {
+            id: APPOINTMENT_IDS.mariaScheduled,
             patientId: PATIENT_IDS.maria,
             startAt: relativeDate(14, 14, 0),
             endAt: relativeDate(14, 14, 50),
@@ -110,25 +128,43 @@ export async function main() {
     ];
 
     for (const appt of appointments) {
-        await prisma.appointment.create({
-            data: {
-                id: randomUUID(),
+        const existing = await prisma.appointment.findFirst({
+            where: {
                 clinicId: CLINIC_ID,
                 attendedByMemberId: CLINIC_MEMBER_ID,
-                createdByMemberId: CLINIC_MEMBER_ID,
                 patientId: appt.patientId,
                 startAt: appt.startAt,
                 endAt: appt.endAt,
-                durationMinutes: 50,
-                type: appt.type,
-                status: appt.status,
-                canceledAt: 'canceledAt' in appt ? appt.canceledAt : null,
-                canceledReason: 'canceledReason' in appt ? appt.canceledReason : null,
-                note: appt.note ?? null,
-                createdAt: now,
-                updatedAt: now,
             },
         });
+
+        const data = {
+            clinicId: CLINIC_ID,
+            attendedByMemberId: CLINIC_MEMBER_ID,
+            createdByMemberId: CLINIC_MEMBER_ID,
+            patientId: appt.patientId,
+            startAt: appt.startAt,
+            endAt: appt.endAt,
+            durationMinutes: 50,
+            type: appt.type,
+            status: appt.status,
+            canceledAt: 'canceledAt' in appt ? appt.canceledAt : null,
+            canceledReason: 'canceledReason' in appt ? appt.canceledReason : null,
+            note: appt.note ?? null,
+            updatedAt: now,
+        };
+
+        if (existing) {
+            await prisma.appointment.update({where: {id: existing.id}, data});
+        } else {
+            await prisma.appointment.create({
+                data: {
+                    id: appt.id,
+                    ...data,
+                    createdAt: now,
+                },
+            });
+        }
 
         console.log(
             `✔ Appointment: ${appt.patientId.slice(-4)} | ${appt.status} | ${appt.startAt.toLocaleDateString('pt-BR')}`

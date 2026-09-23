@@ -79,7 +79,10 @@
       "Bash(cp \"/home/andre/.claude/projects/-home-andre-Documentos-agenda/0e171ef2-6383-4fd0-b575-9942049cba55/tool-results/webfetch-1777383742491-nshq1b.bin\" /tmp/design.gz)",
       "Bash(gunzip -f /tmp/design.gz)",
       "Bash(cp \"/home/andre/.claude/projects/-home-andre-Documentos-agenda/0e171ef2-6383-4fd0-b575-9942049cba55/tool-results/webfetch-1777385750574-5tab57.bin\" /tmp/pacientes.gz)",
-      "Bash(gunzip -f /tmp/pacientes.gz)"
+      "Bash(gunzip -f /tmp/pacientes.gz)",
+      "mcp__serena__read_memory",
+      "mcp__serena__get_symbols_overview",
+      "mcp__serena__find_symbol"
     ],
     "defaultMode": "bypassPermissions",
     "additionalDirectories": [
@@ -88,6 +91,11 @@
       "C:\\Users\\marya\\Documents\\agenda\\apps\\web\\src\\views\\modules\\auth"
     ]
   },
+  "enabledMcpjsonServers": [
+    "stitch",
+    "storybook",
+    "shadcn"
+  ],
   "hooks": {
     "PostToolUse": [
       {

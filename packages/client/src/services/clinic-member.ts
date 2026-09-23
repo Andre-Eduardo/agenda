@@ -27,7 +27,7 @@ import type {RequestHandlerOptions} from 'msw';
 import {apiClient} from '../api-client';
 import type {ErrorType} from '../api-client';
 import type {CreateClinicMemberDto, CreateClinicMemberInputDto, ListClinicMembersParams} from '../models';
-import type {ApiProblem, ClinicMember} from '../models';
+import type {ApiProblem, ClinicMember, ClinicMemberPermissions} from '../models';
 
 type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 
@@ -583,6 +583,211 @@ export function useGetCurrentClinicMemberSuspense<
     return query;
 }
 
+/**
+ * @summary Gets effective permissions for the current active clinic member
+ */
+export const getCurrentClinicMemberPermissions = (
+    options?: SecondParameter<typeof apiClient>,
+    signal?: AbortSignal
+) => {
+    return apiClient<ClinicMemberPermissions>(
+        {url: `/api/v1/clinic-members/me/permissions`, method: 'GET', signal},
+        options
+    );
+};
+
+export const getGetCurrentClinicMemberPermissionsQueryKey = () => {
+    return [`/api/v1/clinic-members/me/permissions`] as const;
+};
+
+export const getGetCurrentClinicMemberPermissionsQueryOptions = <
+    TData = Awaited<ReturnType<typeof getCurrentClinicMemberPermissions>>,
+    TError = ErrorType<ApiProblem>,
+>(options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getCurrentClinicMemberPermissions>>, TError, TData>>;
+    request?: SecondParameter<typeof apiClient>;
+}) => {
+    const {query: queryOptions, request: requestOptions} = options ?? {};
+
+    const queryKey = queryOptions?.queryKey ?? getGetCurrentClinicMemberPermissionsQueryKey();
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getCurrentClinicMemberPermissions>>> = ({signal}) =>
+        getCurrentClinicMemberPermissions(requestOptions, signal);
+
+    return {queryKey, queryFn, ...queryOptions} as UseQueryOptions<
+        Awaited<ReturnType<typeof getCurrentClinicMemberPermissions>>,
+        TError,
+        TData
+    > & {queryKey: DataTag<QueryKey, TData, TError>};
+};
+
+export type GetCurrentClinicMemberPermissionsQueryResult = NonNullable<
+    Awaited<ReturnType<typeof getCurrentClinicMemberPermissions>>
+>;
+export type GetCurrentClinicMemberPermissionsQueryError = ErrorType<ApiProblem>;
+
+export function useGetCurrentClinicMemberPermissions<
+    TData = Awaited<ReturnType<typeof getCurrentClinicMemberPermissions>>,
+    TError = ErrorType<ApiProblem>,
+>(
+    options: {
+        query: Partial<UseQueryOptions<Awaited<ReturnType<typeof getCurrentClinicMemberPermissions>>, TError, TData>> &
+            Pick<
+                DefinedInitialDataOptions<
+                    Awaited<ReturnType<typeof getCurrentClinicMemberPermissions>>,
+                    TError,
+                    Awaited<ReturnType<typeof getCurrentClinicMemberPermissions>>
+                >,
+                'initialData'
+            >;
+        request?: SecondParameter<typeof apiClient>;
+    },
+    queryClient?: QueryClient
+): DefinedUseQueryResult<TData, TError> & {queryKey: DataTag<QueryKey, TData, TError>};
+export function useGetCurrentClinicMemberPermissions<
+    TData = Awaited<ReturnType<typeof getCurrentClinicMemberPermissions>>,
+    TError = ErrorType<ApiProblem>,
+>(
+    options?: {
+        query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getCurrentClinicMemberPermissions>>, TError, TData>> &
+            Pick<
+                UndefinedInitialDataOptions<
+                    Awaited<ReturnType<typeof getCurrentClinicMemberPermissions>>,
+                    TError,
+                    Awaited<ReturnType<typeof getCurrentClinicMemberPermissions>>
+                >,
+                'initialData'
+            >;
+        request?: SecondParameter<typeof apiClient>;
+    },
+    queryClient?: QueryClient
+): UseQueryResult<TData, TError> & {queryKey: DataTag<QueryKey, TData, TError>};
+export function useGetCurrentClinicMemberPermissions<
+    TData = Awaited<ReturnType<typeof getCurrentClinicMemberPermissions>>,
+    TError = ErrorType<ApiProblem>,
+>(
+    options?: {
+        query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getCurrentClinicMemberPermissions>>, TError, TData>>;
+        request?: SecondParameter<typeof apiClient>;
+    },
+    queryClient?: QueryClient
+): UseQueryResult<TData, TError> & {queryKey: DataTag<QueryKey, TData, TError>};
+/**
+ * @summary Gets effective permissions for the current active clinic member
+ */
+
+export function useGetCurrentClinicMemberPermissions<
+    TData = Awaited<ReturnType<typeof getCurrentClinicMemberPermissions>>,
+    TError = ErrorType<ApiProblem>,
+>(
+    options?: {
+        query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getCurrentClinicMemberPermissions>>, TError, TData>>;
+        request?: SecondParameter<typeof apiClient>;
+    },
+    queryClient?: QueryClient
+): UseQueryResult<TData, TError> & {queryKey: DataTag<QueryKey, TData, TError>} {
+    const queryOptions = getGetCurrentClinicMemberPermissionsQueryOptions(options);
+
+    const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
+        queryKey: DataTag<QueryKey, TData, TError>;
+    };
+
+    query.queryKey = queryOptions.queryKey;
+
+    return query;
+}
+
+export const getGetCurrentClinicMemberPermissionsSuspenseQueryOptions = <
+    TData = Awaited<ReturnType<typeof getCurrentClinicMemberPermissions>>,
+    TError = ErrorType<ApiProblem>,
+>(options?: {
+    query?: Partial<
+        UseSuspenseQueryOptions<Awaited<ReturnType<typeof getCurrentClinicMemberPermissions>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof apiClient>;
+}) => {
+    const {query: queryOptions, request: requestOptions} = options ?? {};
+
+    const queryKey = queryOptions?.queryKey ?? getGetCurrentClinicMemberPermissionsQueryKey();
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getCurrentClinicMemberPermissions>>> = ({signal}) =>
+        getCurrentClinicMemberPermissions(requestOptions, signal);
+
+    return {queryKey, queryFn, ...queryOptions} as UseSuspenseQueryOptions<
+        Awaited<ReturnType<typeof getCurrentClinicMemberPermissions>>,
+        TError,
+        TData
+    > & {queryKey: DataTag<QueryKey, TData, TError>};
+};
+
+export type GetCurrentClinicMemberPermissionsSuspenseQueryResult = NonNullable<
+    Awaited<ReturnType<typeof getCurrentClinicMemberPermissions>>
+>;
+export type GetCurrentClinicMemberPermissionsSuspenseQueryError = ErrorType<ApiProblem>;
+
+export function useGetCurrentClinicMemberPermissionsSuspense<
+    TData = Awaited<ReturnType<typeof getCurrentClinicMemberPermissions>>,
+    TError = ErrorType<ApiProblem>,
+>(
+    options: {
+        query: Partial<
+            UseSuspenseQueryOptions<Awaited<ReturnType<typeof getCurrentClinicMemberPermissions>>, TError, TData>
+        >;
+        request?: SecondParameter<typeof apiClient>;
+    },
+    queryClient?: QueryClient
+): UseSuspenseQueryResult<TData, TError> & {queryKey: DataTag<QueryKey, TData, TError>};
+export function useGetCurrentClinicMemberPermissionsSuspense<
+    TData = Awaited<ReturnType<typeof getCurrentClinicMemberPermissions>>,
+    TError = ErrorType<ApiProblem>,
+>(
+    options?: {
+        query?: Partial<
+            UseSuspenseQueryOptions<Awaited<ReturnType<typeof getCurrentClinicMemberPermissions>>, TError, TData>
+        >;
+        request?: SecondParameter<typeof apiClient>;
+    },
+    queryClient?: QueryClient
+): UseSuspenseQueryResult<TData, TError> & {queryKey: DataTag<QueryKey, TData, TError>};
+export function useGetCurrentClinicMemberPermissionsSuspense<
+    TData = Awaited<ReturnType<typeof getCurrentClinicMemberPermissions>>,
+    TError = ErrorType<ApiProblem>,
+>(
+    options?: {
+        query?: Partial<
+            UseSuspenseQueryOptions<Awaited<ReturnType<typeof getCurrentClinicMemberPermissions>>, TError, TData>
+        >;
+        request?: SecondParameter<typeof apiClient>;
+    },
+    queryClient?: QueryClient
+): UseSuspenseQueryResult<TData, TError> & {queryKey: DataTag<QueryKey, TData, TError>};
+/**
+ * @summary Gets effective permissions for the current active clinic member
+ */
+
+export function useGetCurrentClinicMemberPermissionsSuspense<
+    TData = Awaited<ReturnType<typeof getCurrentClinicMemberPermissions>>,
+    TError = ErrorType<ApiProblem>,
+>(
+    options?: {
+        query?: Partial<
+            UseSuspenseQueryOptions<Awaited<ReturnType<typeof getCurrentClinicMemberPermissions>>, TError, TData>
+        >;
+        request?: SecondParameter<typeof apiClient>;
+    },
+    queryClient?: QueryClient
+): UseSuspenseQueryResult<TData, TError> & {queryKey: DataTag<QueryKey, TData, TError>} {
+    const queryOptions = getGetCurrentClinicMemberPermissionsSuspenseQueryOptions(options);
+
+    const query = useSuspenseQuery(queryOptions, queryClient) as UseSuspenseQueryResult<TData, TError> & {
+        queryKey: DataTag<QueryKey, TData, TError>;
+    };
+
+    query.queryKey = queryOptions.queryKey;
+
+    return query;
+}
+
 export const getCreateClinicMemberResponseMock = (overrideResponse: Partial<ClinicMember> = {}): ClinicMember => ({
     id: faker.string.uuid(),
     createdAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
@@ -734,6 +939,38 @@ export const getGetCurrentClinicMemberResponseMock200 = (
 });
 
 export const getGetCurrentClinicMemberResponseMockDefault = (
+    overrideResponse: Partial<ApiProblem> = {}
+): ApiProblem => ({
+    title: faker.string.alpha({length: {min: 10, max: 20}}),
+    type: faker.internet.url(),
+    detail: faker.string.alpha({length: {min: 10, max: 20}}),
+    status: faker.helpers.arrayElement([
+        400, 401, 402, 403, 404, 405, 406, 407, 408, 409, 410, 411, 412, 413, 414, 415, 416, 417, 418, 421, 422, 423,
+        424, 428, 429, 456, 500, 501, 502, 503, 504, 505, 507, 508,
+    ] as const),
+    instance: faker.string.alpha({length: {min: 10, max: 20}}),
+    ...overrideResponse,
+});
+
+export const getGetCurrentClinicMemberPermissionsResponseMock = (
+    overrideResponse: Partial<ClinicMemberPermissions> = {}
+): ClinicMemberPermissions => ({
+    permissions: Array.from({length: faker.number.int({min: 1, max: 10})}, (_, i) => i + 1).map(() =>
+        faker.string.alpha({length: {min: 10, max: 20}})
+    ),
+    ...overrideResponse,
+});
+
+export const getGetCurrentClinicMemberPermissionsResponseMock200 = (
+    overrideResponse: Partial<ClinicMemberPermissions> = {}
+): ClinicMemberPermissions => ({
+    permissions: Array.from({length: faker.number.int({min: 1, max: 10})}, (_, i) => i + 1).map(() =>
+        faker.string.alpha({length: {min: 10, max: 20}})
+    ),
+    ...overrideResponse,
+});
+
+export const getGetCurrentClinicMemberPermissionsResponseMockDefault = (
     overrideResponse: Partial<ApiProblem> = {}
 ): ApiProblem => ({
     title: faker.string.alpha({length: {min: 10, max: 20}}),
@@ -1035,9 +1272,86 @@ export const getGetCurrentClinicMemberMockHandlerDefault = (
     );
 };
 
+export const getGetCurrentClinicMemberPermissionsMockHandler = (
+    overrideResponse?:
+        | ClinicMemberPermissions
+        | ((
+              info: Parameters<Parameters<typeof http.get>[1]>[0]
+          ) => Promise<ClinicMemberPermissions> | ClinicMemberPermissions),
+    options?: RequestHandlerOptions
+) => {
+    return http.get(
+        '*/api/v1/clinic-members/me/permissions',
+        async (info) => {
+            return new HttpResponse(
+                JSON.stringify(
+                    overrideResponse !== undefined
+                        ? typeof overrideResponse === 'function'
+                            ? await overrideResponse(info)
+                            : overrideResponse
+                        : getGetCurrentClinicMemberPermissionsResponseMock()
+                ),
+                {status: 200, headers: {'Content-Type': 'application/json'}}
+            );
+        },
+        options
+    );
+};
+
+export const getGetCurrentClinicMemberPermissionsMockHandler200 = (
+    overrideResponse?:
+        | ClinicMemberPermissions
+        | ((
+              info: Parameters<Parameters<typeof http.get>[1]>[0]
+          ) => Promise<ClinicMemberPermissions> | ClinicMemberPermissions),
+    options?: RequestHandlerOptions
+) => {
+    return http.get(
+        '*/api/v1/clinic-members/me/permissions',
+        async (info) => {
+            return new HttpResponse(
+                JSON.stringify(
+                    overrideResponse !== undefined
+                        ? typeof overrideResponse === 'function'
+                            ? await overrideResponse(info)
+                            : overrideResponse
+                        : getGetCurrentClinicMemberPermissionsResponseMock200()
+                ),
+                {status: 200, headers: {'Content-Type': 'application/json'}}
+            );
+        },
+        options
+    );
+};
+
+export const getGetCurrentClinicMemberPermissionsMockHandlerDefault = (
+    overrideResponse?:
+        | ApiProblem
+        | ((info: Parameters<Parameters<typeof http.get>[1]>[0]) => Promise<ApiProblem> | ApiProblem),
+    options?: RequestHandlerOptions
+) => {
+    return http.get(
+        '*/api/v1/clinic-members/me/permissions',
+        async (info) => {
+            return new HttpResponse(
+                JSON.stringify(
+                    overrideResponse !== undefined
+                        ? typeof overrideResponse === 'function'
+                            ? await overrideResponse(info)
+                            : overrideResponse
+                        : getGetCurrentClinicMemberPermissionsResponseMockDefault()
+                ),
+                {status: 200, headers: {'Content-Type': 'application/json'}}
+            );
+        },
+        options
+    );
+};
+
 export const getClinicMemberMock = () => [
     getCreateClinicMemberMockHandler(),
     getListClinicMembersMockHandler(),
     getInviteClinicMemberMockHandler(),
     getGetCurrentClinicMemberMockHandler(),
+    getGetCurrentClinicMemberPermissionsMockHandler(),
 ];

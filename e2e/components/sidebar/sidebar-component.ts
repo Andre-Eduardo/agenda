@@ -11,6 +11,14 @@ export class SidebarComponent {
         this.logoutButton = page.getByRole('button', {name: /^sair$/i});
     }
 
+    async navigateTo(name: string | RegExp) {
+        if (await this.menuButton.isVisible()) {
+            await this.menuButton.click();
+        }
+
+        await this.page.getByRole('link', {name, exact: true}).click();
+    }
+
     /** On mobile/tablet the sidebar lives in a Sheet behind the hamburger menu. */
     async logout() {
         if (await this.menuButton.isVisible()) {

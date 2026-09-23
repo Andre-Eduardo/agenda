@@ -4,10 +4,10 @@ import type {
     Appointment,
     AppointmentStatus,
     AppointmentType,
+    ClinicMember,
     CreateAppointmentDtoType,
     MemberBlock,
     Patient,
-    Professional,
     RegisterPaymentDto,
     Room,
     UpdateAppointmentInputDtoType,
@@ -25,21 +25,20 @@ import {
     useGetClinic,
     useGetCurrentClinicMember,
     useGetPaymentByAppointment,
+    getListMemberBlocksQueryOptions,
+    getListWorkingHoursQueryOptions,
     useListManageableProfessionals,
-    useListMemberBlocks,
     useListPackages,
     useListRooms,
     useListSubscriptions,
-    useListWorkingHours,
     useMarkNoShowAppointment,
     useRegisterPayment,
     useSearchAppointments,
     useSearchPatients,
-    useSearchProfessionals,
     useUpdateAppointment,
     useUpdatePaymentStatus,
 } from '@agenda-app/client';
-import type {UseQueryResult} from '@tanstack/react-query';
+import {useQueries, type UseQueryResult} from '@tanstack/react-query';
 import {createFileRoute, useNavigate} from '@tanstack/react-router';
 import {
     CalendarDays,
@@ -147,6 +146,7 @@ const HOUR_H_WEEK = 56;
 const HOUR_H_DAY = 64;
 const GRID_START = 7;
 const GRID_END = 20;
+const SLOT_MINUTES = 15;
 const HOURS = Array.from({length: GRID_END - GRID_START}, (_, i) => i + GRID_START);
 
 // ── Labels ────────────────────────────────────────────────────────
@@ -195,12 +195,13 @@ function getApiErrorDetail(error: unknown): string | null {
     return detail ? translateApiError(detail, detail) : null;
 }
 
-type ViewMode = 'day' | 'week' | 'month' | 'rooms';
+type ViewMode = 'day' | 'week' | 'month' | 'professionals' | 'rooms';
 
 const VIEW_MODE_LABELS: Record<ViewMode, string> = {
     day: 'Dia',
     week: 'Semana',
     month: 'Mês',
+    professionals: 'Profissionais',
     rooms: 'Salas',
 };
 
@@ -226,6 +227,25 @@ interface PaginatedPage<T> {
     totalCount: number;
 }
 
+interface NewAppointmentPrefill {
+    date: string;
+    start: string;
+    roomId?: string | null;
+    attendedByMemberId?: string;
+}
+
+interface ProfessionalAvailability {
+    workingHoursByDay: Map<number, WorkingHours>;
+    blocks: MemberBlock[];
+}
+
+interface AppointmentPlacement {
+    apt: ApptView;
+    attendedByMemberId: string;
+    start: string;
+    end: string;
+}
+
 // ── Date helpers ──────────────────────────────────────────────────
 function startOfWeek(d: Date): Date {
     const day = d.getDay();
@@ -246,6 +266,14 @@ function addDays(d: Date, n: number): Date {
     return r;
 }
 
+function endOfDay(d: Date): Date {
+    const result = new Date(d);
+
+    result.setHours(23, 59, 59, 999);
+
+    return result;
+}
+
 function fmtDate(d: Date): string {
     return [d.getFullYear(), String(d.getMonth() + 1).padStart(2, '0'), String(d.getDate()).padStart(2, '0')].join('-');
 }
@@ -262,6 +290,10 @@ function timeToMin(t: string): number {
 
 function minToTime(min: number): string {
     return `${String(Math.floor(min / 60)).padStart(2, '0')}:${String(min % 60).padStart(2, '0')}`;
+}
+
+function snapToSlot(minutes: number): number {
+    return Math.round(minutes / SLOT_MINUTES) * SLOT_MINUTES;
 }
 
 /** Extract YYYY-MM-DD from an ISO datetime string, adjusting to local time */
@@ -407,15 +439,32 @@ interface ApptBlockProps {
     roomLabel?: string | null;
     roomColorIndex?: number;
     onClick: () => void;
+    draggable?: boolean;
+    onDragStart?: (event: React.DragEvent<HTMLButtonElement>) => void;
+    onResizeStart?: (event: React.PointerEvent<HTMLSpanElement>) => void;
 }
 
-function ApptBlock({apt, patients, style, compact, highlight, roomLabel, roomColorIndex, onClick}: ApptBlockProps) {
+function ApptBlock({
+    apt,
+    patients,
+    style,
+    compact,
+    highlight,
+    roomLabel,
+    roomColorIndex,
+    onClick,
+    draggable = false,
+    onDragStart,
+    onResizeStart,
+}: ApptBlockProps) {
     return (
         <button
             type="button"
             className={apptBlock({status: apt.status, highlight: highlight ?? false})}
             style={style}
             onClick={onClick}
+            draggable={draggable}
+            onDragStart={onDragStart}
         >
             <span className={apptBar({status: apt.status})} />
             {roomLabel && (
@@ -431,6 +480,13 @@ function ApptBlock({apt, patients, style, compact, highlight, roomLabel, roomCol
                 <div className={styles.apptName}>{getPatientName(patients, apt.patientId)}</div>
                 {!compact && <div className={styles.apptType}>{TYPE_LABELS[apt.type]}</div>}
             </div>
+            {onResizeStart && (
+                <span
+                    aria-label="Redimensionar duração"
+                    className={styles.apptResizeHandle}
+                    onPointerDown={onResizeStart}
+                />
+            )}
         </button>
     );
 }
@@ -772,6 +828,218 @@ function DayView({
 }
 
 // ─────────────────────────────────────────────────────────────────
+//   Professionals View — agenda diária por profissional
+// ─────────────────────────────────────────────────────────────────
+interface ProfessionalsViewProps {
+    appts: ApptView[];
+    patients: Patient[];
+    cursor: Date;
+    now: {h: number; m: number};
+    highlightId: string | null;
+    professionals: ClinicMember[];
+    availabilityByMember: Map<string, ProfessionalAvailability>;
+    roomsById: Map<string, Room>;
+    roomIndexById: Map<string, number>;
+    onSlotClick: (date: Date, time: string, memberId: string) => void;
+    onApptClick: (id: string) => void;
+    onApptMove: (apt: ApptView, memberId: string, start: string) => void;
+    onApptResize: (apt: ApptView, end: string) => void;
+}
+
+function ProfessionalsView({
+    appts,
+    patients,
+    cursor,
+    now,
+    highlightId,
+    professionals,
+    availabilityByMember,
+    roomsById,
+    roomIndexById,
+    onSlotClick,
+    onApptClick,
+    onApptMove,
+    onApptResize,
+}: ProfessionalsViewProps) {
+    const [resizePreview, setResizePreview] = useState<{id: string; endMin: number} | null>(null);
+    const dayAppts = appts.filter((apt) => apt.date === fmtDate(cursor));
+    const nowTop = (now.h + now.m / 60 - GRID_START) * HOUR_H_DAY;
+    const resolveRoomBadge = makeRoomBadgeResolver(roomsById, roomIndexById);
+
+    const canMove = (apt: ApptView) => !['COMPLETED', 'CANCELLED'].includes(apt.status);
+
+    const handleDrop = (event: React.DragEvent<HTMLDivElement>, memberId: string) => {
+        event.preventDefault();
+
+        const appointmentId = event.dataTransfer.getData('application/x-agenda-appointment');
+        const apt = dayAppts.find((item) => item.id === appointmentId);
+
+        if (!apt || !canMove(apt)) return;
+
+        const rect = event.currentTarget.getBoundingClientRect();
+        const duration = timeToMin(apt.end) - timeToMin(apt.start);
+        const minuteAtPointer = GRID_START_MIN + ((event.clientY - rect.top) / HOUR_H_DAY) * 60;
+        const startMin = Math.max(GRID_START_MIN, Math.min(snapToSlot(minuteAtPointer), GRID_END_MIN - duration));
+
+        onApptMove(apt, memberId, minToTime(startMin));
+    };
+
+    const handleResizeStart = (event: React.PointerEvent<HTMLSpanElement>, apt: ApptView) => {
+        event.preventDefault();
+        event.stopPropagation();
+
+        const column = event.currentTarget.closest<HTMLElement>('[data-professional-column]');
+
+        if (!column) return;
+
+        const startMin = timeToMin(apt.start);
+        const rect = column.getBoundingClientRect();
+        let currentEnd = timeToMin(apt.end);
+
+        const getEndAtPointer = (clientY: number) => {
+            const minuteAtPointer = GRID_START_MIN + ((clientY - rect.top) / HOUR_H_DAY) * 60;
+
+            return Math.max(startMin + SLOT_MINUTES, Math.min(snapToSlot(minuteAtPointer), GRID_END_MIN));
+        };
+
+        const handlePointerMove = (moveEvent: PointerEvent) => {
+            currentEnd = getEndAtPointer(moveEvent.clientY);
+            setResizePreview({id: apt.id, endMin: currentEnd});
+        };
+
+        const handlePointerUp = () => {
+            setResizePreview(null);
+            window.removeEventListener('pointermove', handlePointerMove);
+            window.removeEventListener('pointerup', handlePointerUp);
+
+            if (currentEnd !== timeToMin(apt.end)) {
+                onApptResize(apt, minToTime(currentEnd));
+            }
+        };
+
+        setResizePreview({id: apt.id, endMin: currentEnd});
+        window.addEventListener('pointermove', handlePointerMove);
+        window.addEventListener('pointerup', handlePointerUp, {once: true});
+    };
+
+    if (professionals.length === 0) {
+        return (
+            <div className={styles.professionalsEmpty}>Nenhum profissional com agenda disponível para este acesso.</div>
+        );
+    }
+
+    return (
+        <div className={styles.professionalsGridMin}>
+            <div className={styles.gridWeekHead}>
+                <div className={styles.gridTimeColHead} />
+                {professionals.map((professional) => {
+                    const count = dayAppts.filter((apt) => apt.attendedByMemberId === professional.id).length;
+
+                    return (
+                        <div key={professional.id} className={styles.professionalHead}>
+                            <span
+                                className={styles.professionalColorDot}
+                                style={{backgroundColor: professional.color ?? undefined}}
+                            />
+                            <span className={styles.professionalHeadName}>
+                                {professional.displayName ?? 'Profissional'}
+                            </span>
+                            <span className={styles.professionalHeadCount}>{count}</span>
+                        </div>
+                    );
+                })}
+            </div>
+            <div className={styles.gridBody}>
+                <div className={styles.gridTimeCol}>
+                    {HOURS.map((hour) => (
+                        <div key={hour} className={styles.gridTimeRow} style={{height: HOUR_H_DAY}}>
+                            <span className={styles.gridTimeLabel}>{String(hour).padStart(2, '0')}:00</span>
+                        </div>
+                    ))}
+                </div>
+                {professionals.map((professional) => {
+                    const professionalAppts = dayAppts.filter((apt) => apt.attendedByMemberId === professional.id);
+                    const positioned = layoutOverlaps(professionalAppts);
+                    const availability = availabilityByMember.get(professional.id);
+
+                    return (
+                        <div
+                            key={professional.id}
+                            data-professional-column
+                            className={styles.professionalColumn}
+                            style={{height: HOUR_H_DAY * HOURS.length}}
+                            onDragOver={(event) => event.preventDefault()}
+                            onDrop={(event) => handleDrop(event, professional.id)}
+                        >
+                            <AvailabilityOverlay
+                                day={cursor}
+                                workingHoursByDay={availability?.workingHoursByDay ?? new Map()}
+                                blocks={availability?.blocks ?? []}
+                                hourHeight={HOUR_H_DAY}
+                            />
+                            {HOURS.map((hour, index) => (
+                                <div
+                                    key={hour}
+                                    className={styles.gridSlot}
+                                    style={{top: index * HOUR_H_DAY, height: HOUR_H_DAY}}
+                                    onClick={() =>
+                                        onSlotClick(cursor, `${String(hour).padStart(2, '0')}:00`, professional.id)
+                                    }
+                                />
+                            ))}
+                            {nowTop >= 0 && (
+                                <div className={styles.gridNowLine} style={{top: nowTop}}>
+                                    <span className={styles.gridNowDot} />
+                                </div>
+                            )}
+                            {positioned.map(({apt, lane, lanes}) => {
+                                const start = timeToMin(apt.start) - GRID_START_MIN;
+                                const previewEnd =
+                                    resizePreview?.id === apt.id ? resizePreview.endMin : timeToMin(apt.end);
+                                const end = previewEnd - GRID_START_MIN;
+                                const top = (start / 60) * HOUR_H_DAY;
+                                const height = Math.max(((end - start) / 60) * HOUR_H_DAY - 2, 22);
+                                const width = 100 / lanes;
+                                const left = lane * width;
+                                const displayApt =
+                                    previewEnd === timeToMin(apt.end) ? apt : {...apt, end: minToTime(previewEnd)};
+                                const {roomLabel, roomColorIndex} = resolveRoomBadge(apt);
+
+                                return (
+                                    <ApptBlock
+                                        key={apt.id}
+                                        apt={displayApt}
+                                        patients={patients}
+                                        style={{
+                                            top,
+                                            height,
+                                            left: `calc(${left}% + 2px)`,
+                                            width: `calc(${width}% - 4px)`,
+                                        }}
+                                        compact={lanes > 1 || end - start < 40}
+                                        highlight={apt.id === highlightId}
+                                        roomLabel={roomLabel}
+                                        roomColorIndex={roomColorIndex}
+                                        draggable={canMove(apt)}
+                                        onDragStart={(event) => {
+                                            event.dataTransfer.setData('application/x-agenda-appointment', apt.id);
+                                        }}
+                                        onResizeStart={
+                                            canMove(apt) ? (event) => handleResizeStart(event, apt) : undefined
+                                        }
+                                        onClick={() => onApptClick(apt.id)}
+                                    />
+                                );
+                            })}
+                        </div>
+                    );
+                })}
+            </div>
+        </div>
+    );
+}
+
+// ─────────────────────────────────────────────────────────────────
 //   Rooms View — mostra ocupação de sala num único dia (Fase 5)
 // ─────────────────────────────────────────────────────────────────
 interface RoomsViewProps extends CalViewProps {
@@ -1032,7 +1300,8 @@ function MiniCalendar({cursor, view, appts, today, onPickDay}: MiniCalProps) {
                 {cells.map((d, i) => {
                     const inMonth = d.getMonth() === mc.getMonth();
                     const isToday = sameDay(d, today);
-                    const isSelected = view === 'day' && sameDay(d, cursor);
+                    const isSelected =
+                        (view === 'day' || view === 'professionals' || view === 'rooms') && sameDay(d, cursor);
                     const inWeek = view === 'week' && ws != null && we != null && d >= ws && d <= we;
                     const has = (apptDates.get(fmtDate(d)) ?? 0) > 0;
 
@@ -1600,7 +1869,7 @@ function EditAppointmentDialog({apt, onClose, onSaved}: EditDialogProps) {
     const [durMin, setDurMin] = useState(timeToMin(apt.end) - timeToMin(apt.start));
     const [type, setType] = useState<AppointmentType>(apt.type);
     const [note, setNote] = useState(apt.note ?? '');
-    const [roomId, setRoomId] = useState('');
+    const [roomId, setRoomId] = useState(apt.roomId ?? '');
     const [availabilityWarning, setAvailabilityWarning] = useState<string | null>(null);
     const update = useUpdateAppointment();
 
@@ -1620,6 +1889,7 @@ function EditAppointmentDialog({apt, onClose, onSaved}: EditDialogProps) {
                     endAt: localDateTimeToISO(date, endTime),
                     type: type as unknown as UpdateAppointmentInputDtoType,
                     note: note || null,
+                    attendedByMemberId: apt.attendedByMemberId,
                     roomId: roomManagementEnabled && roomId ? roomId : null,
                     confirmOutsideAvailability,
                 },
@@ -1770,7 +2040,7 @@ function EditAppointmentDialog({apt, onClose, onSaved}: EditDialogProps) {
 //   New Appointment Dialog
 // ─────────────────────────────────────────────────────────────────
 interface NewApptDialogProps {
-    prefill: {date: string; start: string; roomId?: string | null} | null;
+    prefill: NewAppointmentPrefill | null;
     defaultMemberId: string;
     onClose: () => void;
     onSaved: () => void;
@@ -1812,7 +2082,7 @@ function NewAppointmentDialog({prefill, defaultMemberId, onClose, onSaved}: NewA
     const manageableProfessionals = manageableData ?? [];
     const showProfessionalField = manageableProfessionals.length > 1;
 
-    const [attendedByMemberId, setAttendedByMemberId] = useState(defaultMemberId);
+    const [attendedByMemberId, setAttendedByMemberId] = useState(prefill?.attendedByMemberId ?? defaultMemberId);
 
     useEffect(() => {
         if (!manageableData || manageableData.length === 0) return;
@@ -2150,15 +2420,36 @@ export function AppointmentsPage() {
     const [detailId, setDetailId] = useState<string | null>(null);
     const [editId, setEditId] = useState<string | null>(null);
     const [cancelId, setCancelId] = useState<string | null>(null);
-    const [newAppt, setNewAppt] = useState<{date: string; start: string; roomId?: string | null} | true | null>(null);
+    const [newAppt, setNewAppt] = useState<NewAppointmentPrefill | true | null>(null);
     const [highlightId, setHighlightId] = useState<string | null>(null);
+    const [pendingPlacement, setPendingPlacement] = useState<AppointmentPlacement | null>(null);
+    const [placementWarning, setPlacementWarning] = useState<string | null>(null);
 
-    // Load appointments
+    const visibleRange = useMemo(() => {
+        if (view === 'month') {
+            const monthStart = new Date(cursor.getFullYear(), cursor.getMonth(), 1);
+            const rangeStart = startOfWeek(monthStart);
+
+            return {start: rangeStart, end: endOfDay(addDays(rangeStart, 41))};
+        }
+
+        if (view === 'week') {
+            const rangeStart = startOfWeek(cursor);
+
+            return {start: rangeStart, end: endOfDay(addDays(rangeStart, 6))};
+        }
+
+        return {start: cursor, end: endOfDay(cursor)};
+    }, [cursor, view]);
+
+    // Load only the visible interval. The grid is now usable with long-running clinic schedules.
     const apptQ = useSearchAppointments({
         term: '',
-        limit: 500,
+        limit: 300,
         cursor: null,
         sort: {startAt: 'asc'},
+        dateFrom: visibleRange.start.toISOString(),
+        dateTo: visibleRange.end.toISOString(),
     }) as unknown as UseQueryResult<PaginatedPage<Appointment>>;
     const rawAppts = useMemo(() => apptQ.data?.data ?? [], [apptQ.data]);
 
@@ -2168,33 +2459,52 @@ export function AppointmentsPage() {
     >;
     const patients = patQ.data?.data ?? [];
 
-    // Current professional's clinic member ID (used as the appointment's attendee)
-    const profQ = useSearchProfessionals({
-        term: '',
-        limit: 1,
-        cursor: null,
-        sort: null,
-    }) as unknown as UseQueryResult<{data: Professional[]; totalCount: number}>;
-    const defaultMemberId = profQ.data?.data?.[0]?.clinicMemberId ?? '';
-
-    // Expediente e bloqueios do profissional, para sombrear o calendário (Fase 4).
-    const workingHoursQuery = useListWorkingHours(defaultMemberId, {query: {enabled: !!defaultMemberId}});
-    const workingHoursByDay = useMemo(() => {
-        const map = new Map<number, WorkingHours>();
-
-        for (const wh of workingHoursQuery.data ?? []) {
-            map.set(wh.dayOfWeek, wh);
-        }
-
-        return map;
-    }, [workingHoursQuery.data]);
-
-    const blocksQuery = useListMemberBlocks(
-        defaultMemberId,
-        {startAt: addDays(cursor, -31).toISOString(), endAt: addDays(cursor, 31).toISOString()},
-        {query: {enabled: !!defaultMemberId}}
+    // Every visible professional gets their own availability overlay. These calls are
+    // advisory for the user; the server remains the source of truth on every change.
+    const manageableProfessionalsQuery = useListManageableProfessionals();
+    const manageableProfessionals = useMemo(
+        () => (manageableProfessionalsQuery.data ?? []).filter((member) => member.isActive),
+        [manageableProfessionalsQuery.data]
     );
-    const blocks = blocksQuery.data ?? [];
+    const professionalIds = useMemo(
+        () => manageableProfessionals.map((member) => member.id),
+        [manageableProfessionals]
+    );
+    const availabilityWindow = useMemo(
+        () => ({
+            startAt: addDays(visibleRange.start, -1).toISOString(),
+            endAt: addDays(visibleRange.end, 1).toISOString(),
+        }),
+        [visibleRange]
+    );
+    const workingHoursQueries = useQueries({
+        queries: professionalIds.map((memberId) => getListWorkingHoursQueryOptions(memberId)),
+    });
+    const memberBlockQueries = useQueries({
+        queries: professionalIds.map((memberId) => getListMemberBlocksQueryOptions(memberId, availabilityWindow)),
+    });
+    const availabilityByMember = useMemo(() => {
+        const availability = new Map<string, ProfessionalAvailability>();
+
+        professionalIds.forEach((memberId, index) => {
+            const workingHoursByDay = new Map<number, WorkingHours>();
+
+            for (const hours of workingHoursQueries[index]?.data ?? []) {
+                workingHoursByDay.set(hours.dayOfWeek, hours);
+            }
+
+            availability.set(memberId, {
+                workingHoursByDay,
+                blocks: memberBlockQueries[index]?.data ?? [],
+            });
+        });
+
+        return availability;
+    }, [memberBlockQueries, professionalIds, workingHoursQueries]);
+    const defaultMemberId = manageableProfessionals[0]?.id ?? '';
+    const defaultAvailability = availabilityByMember.get(defaultMemberId);
+    const workingHoursByDay = defaultAvailability?.workingHoursByDay ?? new Map<number, WorkingHours>();
+    const blocks = defaultAvailability?.blocks ?? [];
 
     // Salas da clínica, para o selo de sala nas consultas e a visão "Salas" (Fase 5).
     const meQuery = useGetCurrentClinicMember();
@@ -2223,19 +2533,19 @@ export function AppointmentsPage() {
     const goToday = () => setCursor(today);
 
     const goPrev = () => {
-        if (view === 'day' || view === 'rooms') setCursor(addDays(cursor, -1));
+        if (view === 'day' || view === 'professionals' || view === 'rooms') setCursor(addDays(cursor, -1));
         else if (view === 'week') setCursor(addDays(cursor, -7));
         else setCursor(new Date(cursor.getFullYear(), cursor.getMonth() - 1, 1));
     };
 
     const goNext = () => {
-        if (view === 'day' || view === 'rooms') setCursor(addDays(cursor, 1));
+        if (view === 'day' || view === 'professionals' || view === 'rooms') setCursor(addDays(cursor, 1));
         else if (view === 'week') setCursor(addDays(cursor, 7));
         else setCursor(new Date(cursor.getFullYear(), cursor.getMonth() + 1, 1));
     };
 
     const periodLabel = useMemo(() => {
-        if (view === 'day' || view === 'rooms')
+        if (view === 'day' || view === 'professionals' || view === 'rooms')
             return `${cursor.getDate()} de ${MONTH_NAMES[cursor.getMonth()]} de ${cursor.getFullYear()}, ${WEEKDAYS_LONG[cursor.getDay()]}`;
 
         if (view === 'week') {
@@ -2257,6 +2567,70 @@ export function AppointmentsPage() {
         setHighlightId(id);
         setTimeout(() => setHighlightId(null), 2400);
     };
+
+    const updateAppointment = useUpdateAppointment();
+    const submitPlacement = useCallback(
+        (placement: AppointmentPlacement, confirmOutsideAvailability: boolean) => {
+            updateAppointment.mutate(
+                {
+                    id: placement.apt.id,
+                    data: {
+                        startAt: localDateTimeToISO(placement.apt.date, placement.start),
+                        endAt: localDateTimeToISO(placement.apt.date, placement.end),
+                        type: placement.apt.type as unknown as UpdateAppointmentInputDtoType,
+                        note: placement.apt.note,
+                        attendedByMemberId: placement.attendedByMemberId,
+                        roomId: placement.apt.roomId,
+                        confirmOutsideAvailability,
+                    },
+                },
+                {
+                    onSuccess: () => {
+                        setPendingPlacement(null);
+                        setPlacementWarning(null);
+                        toast.success('Agendamento atualizado');
+                        void apptQ.refetch();
+                    },
+                    onError: (error) => {
+                        const warning = getAvailabilityWarning(error);
+
+                        if (warning && !confirmOutsideAvailability) {
+                            setPendingPlacement(placement);
+                            setPlacementWarning(warning);
+
+                            return;
+                        }
+
+                        setPendingPlacement(null);
+                        setPlacementWarning(null);
+                        toast.error(getApiErrorDetail(error) ?? 'Não foi possível atualizar o agendamento.');
+                    },
+                }
+            );
+        },
+        [apptQ, updateAppointment]
+    );
+
+    const moveAppointment = useCallback(
+        (apt: ApptView, attendedByMemberId: string, start: string) => {
+            const duration = timeToMin(apt.end) - timeToMin(apt.start);
+            const end = minToTime(timeToMin(start) + duration);
+
+            if (apt.attendedByMemberId === attendedByMemberId && apt.start === start) return;
+
+            submitPlacement({apt, attendedByMemberId, start, end}, false);
+        },
+        [submitPlacement]
+    );
+
+    const resizeAppointment = useCallback(
+        (apt: ApptView, end: string) => {
+            if (apt.end === end) return;
+
+            submitPlacement({apt, attendedByMemberId: apt.attendedByMemberId, start: apt.start, end}, false);
+        },
+        [submitPlacement]
+    );
 
     const detailApt = allAppts.find((a) => a.id === detailId) ?? null;
     const editApt = allAppts.find((a) => a.id === editId) ?? null;
@@ -2293,6 +2667,7 @@ export function AppointmentsPage() {
                                 'day',
                                 'week',
                                 'month',
+                                ...(manageableProfessionals.length > 1 ? (['professionals'] as const) : []),
                                 ...(roomManagementEnabled && rooms.length > 0 ? (['rooms'] as const) : []),
                             ] as ViewMode[]
                         ).map((v) => (
@@ -2359,18 +2734,39 @@ export function AppointmentsPage() {
                     />
                 </aside>
                 <div className={styles.calBody}>
-                    {roomManagementEnabled && rooms.length > 0 && (view === 'day' || view === 'week') && (
-                        <div className={roomLegend}>
-                            {rooms.map((room, i) => (
-                                <span key={room.id} className={roomLegendItem}>
-                                    <span className={cx(roomLegendDot, roomDotColorClass(i))} />
-                                    {room.name}
-                                </span>
-                            ))}
-                        </div>
-                    )}
+                    {roomManagementEnabled &&
+                        rooms.length > 0 &&
+                        (view === 'day' || view === 'week' || view === 'professionals') && (
+                            <div className={roomLegend}>
+                                {rooms.map((room, i) => (
+                                    <span key={room.id} className={roomLegendItem}>
+                                        <span className={cx(roomLegendDot, roomDotColorClass(i))} />
+                                        {room.name}
+                                    </span>
+                                ))}
+                            </div>
+                        )}
                     {view === 'day' && <DayView {...sharedProps} />}
                     {view === 'week' && <WeekView {...sharedProps} />}
+                    {view === 'professionals' && (
+                        <ProfessionalsView
+                            appts={filteredAppts}
+                            patients={patients}
+                            cursor={cursor}
+                            now={now}
+                            highlightId={highlightId}
+                            professionals={manageableProfessionals}
+                            availabilityByMember={availabilityByMember}
+                            roomsById={roomsById}
+                            roomIndexById={roomIndexById}
+                            onSlotClick={(date, time, attendedByMemberId) =>
+                                setNewAppt({date: fmtDate(date), start: time, attendedByMemberId})
+                            }
+                            onApptClick={setDetailId}
+                            onApptMove={moveAppointment}
+                            onApptResize={resizeAppointment}
+                        />
+                    )}
                     {view === 'rooms' && <RoomsView {...sharedProps} rooms={rooms} />}
                     {view === 'month' && (
                         <MonthView
@@ -2429,6 +2825,20 @@ export function AppointmentsPage() {
                     onSaved={() => apptQ.refetch()}
                 />
             )}
+            <ConfirmDialog
+                opened={!!pendingPlacement && !!placementWarning}
+                title="Fora da disponibilidade do profissional"
+                message={placementWarning ?? undefined}
+                confirmLabel="Atualizar mesmo assim"
+                isLoading={updateAppointment.isPending}
+                onConfirm={() => {
+                    if (pendingPlacement) submitPlacement(pendingPlacement, true);
+                }}
+                onCancel={() => {
+                    setPendingPlacement(null);
+                    setPlacementWarning(null);
+                }}
+            />
         </div>
     );
 }

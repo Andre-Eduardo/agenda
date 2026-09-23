@@ -142,6 +142,7 @@ export const gridDayCol = cva({
 export const apptBlock = cva({
     base: {
         position: 'absolute',
+        zIndex: '1',
         rounded: 'data',
         borderWidth: '1px',
         borderStyle: 'solid',
@@ -855,3 +856,68 @@ export const roomColHead = css({
 });
 
 export const noRoomColHead = css({color: 'text.tertiary'});
+
+// ── Profissionais: agenda diária por recurso ─────────────────────────────────
+
+export const professionalsGridMin = css({minWidth: '[640px]'});
+export const professionalsEmpty = css({p: '8', textAlign: 'center', fontSize: 'sm', color: 'text.secondary'});
+export const professionalHead = css({
+    flex: '1 0 [190px]',
+    minWidth: '[190px]',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '1.5',
+    px: '2',
+    py: '2',
+    borderLeftWidth: '1px',
+    borderLeftStyle: 'solid',
+    borderLeftColor: 'border',
+    color: 'text.secondary',
+});
+export const professionalColorDot = css({w: '2', h: '2', rounded: 'full', bg: 'primary', flexShrink: '0'});
+export const professionalHeadName = css({
+    minWidth: '0',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    whiteSpace: 'nowrap',
+    fontSize: 'xs',
+    fontWeight: 'medium',
+    color: 'text.primary',
+});
+export const professionalHeadCount = css({
+    minWidth: '5',
+    h: '5',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    rounded: 'full',
+    bg: 'bg.surface',
+    fontSize: '[10px]',
+    fontFamily: 'mono',
+    color: 'text.secondary',
+    flexShrink: '0',
+});
+export const professionalColumn = css({
+    flex: '1 0 [190px]',
+    minWidth: '[190px]',
+    position: 'relative',
+    borderLeftWidth: '1px',
+    borderLeftStyle: 'solid',
+    borderLeftColor: 'border',
+    borderBottomWidth: '1px',
+    borderBottomStyle: 'solid',
+    borderBottomColor: 'border',
+});
+export const apptResizeHandle = css({
+    position: 'absolute',
+    left: '2',
+    right: '2',
+    bottom: '0',
+    h: '2',
+    cursor: 'ns-resize',
+    borderTopWidth: '1px',
+    borderTopStyle: 'solid',
+    borderTopColor: 'transparent',
+    _hover: {borderTopColor: 'primary'},
+});

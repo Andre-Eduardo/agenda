@@ -71,6 +71,7 @@ export type * from './clinicEmail';
 export type * from './clinicLogoUrl';
 export type * from './clinicMember';
 export type * from './clinicMemberId';
+export type * from './clinicMemberPermissions';
 export * from './clinicMemberRolesItem';
 export type * from './clinicMembersUsageSummaryDto';
 export type * from './clinicMembersUsageSummaryDtoSummary';

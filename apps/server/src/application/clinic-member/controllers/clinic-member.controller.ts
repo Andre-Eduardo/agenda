@@ -4,9 +4,15 @@ import {Authorize} from '@application/@shared/auth';
 import {BypassClinicMember} from '@application/@shared/auth/bypass-clinic-member.decorator';
 import {RequestActor} from '@application/@shared/auth/request-actor.decorator';
 import {ApiOperation} from '@application/@shared/openapi/decorators';
-import {ClinicMemberDto, CreateClinicMemberDto, CreateClinicMemberInputDto} from '@application/clinic-member/dtos';
+import {
+    ClinicMemberDto,
+    ClinicMemberPermissionsDto,
+    CreateClinicMemberDto,
+    CreateClinicMemberInputDto,
+} from '@application/clinic-member/dtos';
 import {
     CreateClinicMemberService,
+    GetCurrentClinicMemberPermissionsService,
     GetCurrentClinicMemberService,
     ListClinicMembersService,
 } from '@application/clinic-member/services';
@@ -20,7 +26,8 @@ export class ClinicMemberController {
     constructor(
         private readonly createClinicMemberService: CreateClinicMemberService,
         private readonly listClinicMembersService: ListClinicMembersService,
-        private readonly getCurrentClinicMemberService: GetCurrentClinicMemberService
+        private readonly getCurrentClinicMemberService: GetCurrentClinicMemberService,
+        private readonly getCurrentClinicMemberPermissionsService: GetCurrentClinicMemberPermissionsService
     ) {}
 
     @ApiOperation({
@@ -56,6 +63,15 @@ export class ClinicMemberController {
     @Get('me')
     getCurrentClinicMember(@RequestActor() actor: Actor): Promise<ClinicMemberDto> {
         return this.getCurrentClinicMemberService.execute({actor, payload: undefined});
+    }
+
+    @ApiOperation({
+        summary: 'Gets effective permissions for the current active clinic member',
+        responses: [{status: 200, description: 'Effective permissions', type: ClinicMemberPermissionsDto}],
+    })
+    @Get('me/permissions')
+    getCurrentClinicMemberPermissions(@RequestActor() actor: Actor): Promise<ClinicMemberPermissionsDto> {
+        return this.getCurrentClinicMemberPermissionsService.execute({actor, payload: undefined});
     }
 
     @ApiOperation({

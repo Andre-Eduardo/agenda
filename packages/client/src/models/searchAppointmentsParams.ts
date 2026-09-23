@@ -33,4 +33,14 @@ export type SearchAppointmentsParams = {
      * Search term to filter appointments by note
      */
     term: string;
+    /**
+     * Earliest appointment start to include
+     * @nullable
+     */
+    dateFrom: string | null;
+    /**
+     * Latest appointment start to include
+     * @nullable
+     */
+    dateTo: string | null;
 };

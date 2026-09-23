@@ -820,6 +820,8 @@ export function PatientsPage() {
         limit: 1,
         cursor: null,
         sort: null,
+        dateFrom: null,
+        dateTo: null,
     }) as unknown as UseQueryResult<AppointmentPage>;
 
     const patients = query.data?.data ?? [];

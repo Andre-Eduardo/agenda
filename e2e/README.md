@@ -9,9 +9,9 @@ primeiro conjunto de snapshots visuais (`@visual`). Cobertura de permissões
 granulares (RBAC) ainda não foi adicionada — depende do `useCan` deixar de ser
 placeholder no frontend.
 
-Rotas ainda não implementadas no frontend (profissionais, templates de
-formulário, chat clínico com IA) não têm Page Objects/testes — o menu lateral já
-aponta para elas, mas devem ser recriados do zero quando as telas existirem.
+Rotas ainda não implementadas no frontend (templates de formulário e chat
+clínico com IA) não têm Page Objects/testes e não são exibidas no menu lateral.
+Os links devem ser adicionados novamente quando as telas e suas rotas existirem.
 
 ## Pré-requisitos
 

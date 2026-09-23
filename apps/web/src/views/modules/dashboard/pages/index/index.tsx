@@ -624,6 +624,8 @@ export function DashboardPage() {
         limit: 200,
         cursor: null,
         sort: {startAt: 'asc'},
+        dateFrom: null,
+        dateTo: null,
     }) as unknown as UseQueryResult<PaginatedPage<Appointment>>;
 
     const allAppts = apptQuery.data?.data ?? [];

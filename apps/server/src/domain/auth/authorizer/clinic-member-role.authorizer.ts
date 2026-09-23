@@ -146,6 +146,7 @@ const VIEWER_PERMISSIONS: readonly Permission[] = [
  * a restrição fina por recurso (ex: quais profissionais uma SECRETARY pode
  * gerenciar a agenda) é resolvida em cima disso por entidades de acesso
  * granular (ClinicPatientAccess, ProfessionalAgendaAccess, DocumentPermission).
+ * A matriz versionada e validada contra este mapa está em docs/rbac-matrix.md.
  */
 export const clinicMemberRolePermissionsMap: Record<ClinicMemberRole, Set<Permission>> = {
     [ClinicMemberRole.OWNER]: Permission.all(),

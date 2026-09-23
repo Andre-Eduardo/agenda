@@ -2,8 +2,6 @@ import {useState} from 'react';
 import {Outlet, Link, useRouterState, useNavigate, createFileRoute, redirect} from '@tanstack/react-router';
 import {
     Calendar,
-    ClipboardList,
-    FileText,
     Home,
     LogOut,
     Menu,
@@ -51,8 +49,6 @@ const NAV_GROUPS: NavGroup[] = [
     {
         labelKey: 'nav.system',
         items: [
-            {icon: ClipboardList, labelKey: 'nav.forms', path: '/form-templates'},
-            {icon: FileText, labelKey: 'nav.chat', path: '/chat'},
             {icon: Wallet, labelKey: 'nav.financial', path: '/financial', permission: 'financial-report:view'},
             {icon: Settings, labelKey: 'nav.settings', path: '/settings'},
         ],

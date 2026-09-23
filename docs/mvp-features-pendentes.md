@@ -60,12 +60,18 @@ Módulo inteiro sem tela correspondente em `apps/web`:
 - Formulários dinâmicos por especialidade (`FormTemplate`/`PatientForm`)
 - Geração de documentos clínicos em PDF (receita, atestado, encaminhamento, exame)
 
+Enquanto o módulo não tiver uma rota utilizável, o link de Formulários permanece
+fora da navegação lateral para não direcionar o usuário a uma página 404.
+
 ## IA Assistiva
 
 Módulo inteiro sem tela correspondente em `apps/web`:
 - Chat clínico por paciente com RAG (`PatientChatSession`)
 - Catálogo/resolução de agentes especializados (`AiAgentProfile`)
 - Billing interno de IA — custo por interação, visível ao usuário
+
+Enquanto o módulo não tiver uma rota utilizável, o link de Chat Clínico permanece
+fora da navegação lateral para não direcionar o usuário a uma página 404.
 
 ## Agente Autônomo
 

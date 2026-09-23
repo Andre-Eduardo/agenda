@@ -4,6 +4,8 @@ import {pagination} from '@application/@shared/validation/schemas';
 
 export const searchAppointmentsSchema = pagination(['createdAt', 'updatedAt', 'startAt'] as const).extend({
     term: z.string().optional().openapi({description: 'Search term to filter appointments by note'}),
+    dateFrom: z.coerce.date().optional().openapi({description: 'Earliest appointment start to include'}),
+    dateTo: z.coerce.date().optional().openapi({description: 'Latest appointment start to include'}),
 });
 
 export class SearchAppointmentsDto extends createZodDto(searchAppointmentsSchema) {}

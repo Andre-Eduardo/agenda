@@ -468,6 +468,38 @@
         ]
       }
     },
+    "/api/v1/clinic-members/me/permissions": {
+      "get": {
+        "operationId": "getCurrentClinicMemberPermissions",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Effective permissions",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClinicMemberPermissions"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Request failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Gets effective permissions for the current active clinic member",
+        "tags": [
+          "ClinicMember"
+        ]
+      }
+    },
     "/api/v1/clinic-patient-accesses": {
       "post": {
         "operationId": "grantAccess",
@@ -1607,6 +1639,26 @@
             "in": "query",
             "description": "Search term to filter appointments by note",
             "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "dateFrom",
+            "required": true,
+            "in": "query",
+            "description": "Earliest appointment start to include",
+            "schema": {
+              "nullable": true,
+              "type": "string"
+            }
+          },
+          {
+            "name": "dateTo",
+            "required": true,
+            "in": "query",
+            "description": "Latest appointment start to include",
+            "schema": {
+              "nullable": true,
               "type": "string"
             }
           }
@@ -8972,6 +9024,21 @@
           "roles"
         ]
       },
+      "ClinicMemberPermissions": {
+        "type": "object",
+        "properties": {
+          "permissions": {
+            "description": "Effective permission identifiers for the selected clinic member",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "permissions"
+        ]
+      },
       "GrantClinicPatientAccessDto": {
         "type": "object",
         "properties": {
@@ -10167,6 +10234,11 @@
             "nullable": true,
             "example": "Rescheduled appointment"
           },
+          "attendedByMemberId": {
+            "type": "string",
+            "format": "uuid",
+            "example": "dc5782d4-ce8e-4f95-bb0b-d1a4e130aee8"
+          },
           "roomId": {
             "type": "string",
             "nullable": true,
@@ -10183,6 +10255,7 @@
           "endAt",
           "type",
           "note",
+          "attendedByMemberId",
           "roomId",
           "confirmOutsideAvailability"
         ]

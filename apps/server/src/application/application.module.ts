@@ -43,7 +43,7 @@ import {SubscriptionModule} from '@application/subscription/subscription.module'
 import {UploadModule} from '@application/upload/upload.module';
 import {UserModule} from '@application/user/user.module';
 import {WorkingHoursModule} from '@application/working-hours/working-hours.module';
-import {ClinicMemberRoleAuthorizer, GlobalAuthorizer, MultiAuthorizer} from '@domain/auth/authorizer';
+import {createAuthorizer} from '@domain/auth/authorizer';
 import {ClinicMemberRepository} from '@domain/clinic-member/clinic-member.repository';
 import {TokenProvider} from '@domain/user/token';
 import {UserRepository} from '@domain/user/user.repository';
@@ -92,10 +92,7 @@ const guards: Provider[] = [
                 configService.auth.cookieName,
                 configService.clinicMember.cookieName,
                 tokenProvider,
-                new MultiAuthorizer(
-                    new GlobalAuthorizer(userRepository),
-                    new ClinicMemberRoleAuthorizer(clinicMemberRepository)
-                ),
+                createAuthorizer(userRepository, clinicMemberRepository),
                 new Reflector()
             ),
         inject: [EnvConfigService, TokenProvider, UserRepository, ClinicMemberRepository],

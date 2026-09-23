@@ -141,6 +141,10 @@ export class Appointment extends AggregateRoot<AppointmentId> {
             this.note = props.note;
         }
 
+        if (props.attendedByMemberId !== undefined) {
+            this.attendedByMemberId = props.attendedByMemberId;
+        }
+
         if (props.roomId !== undefined) {
             this.roomId = props.roomId;
         }

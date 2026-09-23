@@ -1,3 +1,4 @@
 export * from '@application/clinic-member/services/create-clinic-member.service';
+export * from '@application/clinic-member/services/get-current-clinic-member-permissions.service';
 export * from '@application/clinic-member/services/get-current-clinic-member.service';
 export * from '@application/clinic-member/services/list-clinic-members.service';

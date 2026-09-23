@@ -1,10 +1,13 @@
 import {Injectable} from '@nestjs/common';
 import {ApplicationService, Command} from '@application/@shared/application.service';
 import {AppointmentDto, UpdateAppointmentDto} from '@application/appointment/dtos';
+import {AgendaAccessChecker} from '@application/professional-agenda-access/services';
 import {InvalidInputException, PreconditionException, ResourceNotFoundException} from '@domain/@shared/exceptions';
 import {Transactional} from '@domain/@shared/repository';
 import {AppointmentRepository} from '@domain/appointment/appointment.repository';
 import {UpdateAppointment} from '@domain/appointment/entities';
+import {ClinicMemberRepository} from '@domain/clinic-member/clinic-member.repository';
+import {ClinicMemberId} from '@domain/clinic-member/entities';
 import {ClinicRepository} from '@domain/clinic/clinic.repository';
 import {ClinicId} from '@domain/clinic/entities';
 import {EventDispatcher} from '@domain/event';
@@ -17,10 +20,12 @@ import {RoomRepository} from '@domain/room/room.repository';
 export class UpdateAppointmentService implements ApplicationService<UpdateAppointmentDto, AppointmentDto> {
     constructor(
         private readonly appointmentRepository: AppointmentRepository,
+        private readonly clinicMemberRepository: ClinicMemberRepository,
         private readonly clinicRepository: ClinicRepository,
         private readonly roomRepository: RoomRepository,
         private readonly workingHoursRepository: WorkingHoursRepository,
         private readonly memberBlockRepository: MemberBlockRepository,
+        private readonly agendaAccessChecker: AgendaAccessChecker,
         private readonly eventDispatcher: EventDispatcher
     ) {}
 
@@ -33,14 +38,26 @@ export class UpdateAppointmentService implements ApplicationService<UpdateAppoin
         }
 
         const rescheduling = props.startAt !== undefined || props.endAt !== undefined;
+        const changingProfessional = props.attendedByMemberId !== undefined;
         const changingRoom = props.roomId !== undefined;
 
         const changeProps: UpdateAppointment = {
             type: props.type,
-            note: props.note ?? undefined,
+            note: props.note === undefined ? undefined : props.note,
         };
 
-        if (rescheduling) {
+        const attendedByMemberId = await this.resolveAttendedByMember(
+            actor.clinicId,
+            appointment.attendedByMemberId,
+            props.attendedByMemberId
+        );
+
+        if (changingProfessional) {
+            await this.agendaAccessChecker.assertCanManage(actor, attendedByMemberId);
+            changeProps.attendedByMemberId = attendedByMemberId;
+        }
+
+        if (rescheduling || changingProfessional) {
             const startAt = props.startAt ?? appointment.startAt;
             const endAt = props.endAt ?? appointment.endAt;
 
@@ -49,8 +66,6 @@ export class UpdateAppointmentService implements ApplicationService<UpdateAppoin
                     {field: 'endAt', reason: 'endAt must be after startAt'},
                 ]);
             }
-
-            const {attendedByMemberId} = appointment;
 
             // Working hours — advisory only, see CreateAppointmentService for the rationale.
             const dayOfWeek = startAt.getDay();
@@ -71,9 +86,20 @@ export class UpdateAppointmentService implements ApplicationService<UpdateAppoin
                 throw new PreconditionException('appointment.member_block');
             }
 
-            // Conflicts with other appointments (excluding the appointment itself). Hard block.
-            // Lock first — see CreateAppointmentService for the race condition this prevents.
-            await this.appointmentRepository.lockMemberSchedule(attendedByMemberId);
+            // Lock both schedules in a stable order when moving a consultation between
+            // professionals. This keeps swaps race-free without introducing a lock-order deadlock.
+            const memberIdsToLock = Array.from(
+                new Map(
+                    [appointment.attendedByMemberId, attendedByMemberId].map((memberId) => [
+                        memberId.toString(),
+                        memberId,
+                    ])
+                ).values()
+            ).toSorted((a, b) => a.toString().localeCompare(b.toString()));
+
+            for (const memberId of memberIdsToLock) {
+                await this.appointmentRepository.lockMemberSchedule(memberId);
+            }
 
             const conflicts = await this.appointmentRepository.findConflicts(attendedByMemberId, startAt, endAt, id);
 
@@ -113,6 +139,28 @@ export class UpdateAppointmentService implements ApplicationService<UpdateAppoin
         this.eventDispatcher.dispatch(actor, appointment);
 
         return new AppointmentDto(appointment);
+    }
+
+    private async resolveAttendedByMember(
+        clinicId: ClinicId,
+        currentMemberId: ClinicMemberId,
+        requestedMemberId: ClinicMemberId | undefined
+    ): Promise<ClinicMemberId> {
+        if (requestedMemberId === undefined) {
+            return currentMemberId;
+        }
+
+        const member = await this.clinicMemberRepository.findById(requestedMemberId);
+
+        if (member === null) {
+            throw new ResourceNotFoundException('clinic_member.not_found', requestedMemberId.toString());
+        }
+
+        if (!member.clinicId.equals(clinicId)) {
+            throw new PreconditionException('Member does not belong to the current clinic.');
+        }
+
+        return requestedMemberId;
     }
 
     private async resolveRoom(clinicId: ClinicId, requestedRoomId: RoomId | null): Promise<RoomId | null> {
