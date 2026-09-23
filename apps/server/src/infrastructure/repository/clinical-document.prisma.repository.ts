@@ -25,7 +25,7 @@ export class ClinicalDocumentPrismaRepository extends PrismaRepository implement
 
     async findById(id: ClinicalDocumentId): Promise<ClinicalDocument | null> {
         const model = await this.prisma.clinicalDocument.findUnique({
-            where: {id: id.toString()},
+            where: {id: id.toString(), deletedAt: null},
         });
 
         return model ? this.mapper.toDomain(model) : null;

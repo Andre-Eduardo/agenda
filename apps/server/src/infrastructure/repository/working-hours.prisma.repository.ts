@@ -17,7 +17,7 @@ export class WorkingHoursPrismaRepository extends PrismaRepository implements Wo
 
     async findById(id: WorkingHoursId): Promise<WorkingHours | null> {
         const record = await this.prisma.workingHours.findUnique({
-            where: {id: id.toString()},
+            where: {id: id.toString(), deletedAt: null},
         });
 
         return record === null ? null : this.mapper.toDomain(record);
@@ -56,6 +56,9 @@ export class WorkingHoursPrismaRepository extends PrismaRepository implements Wo
     }
 
     async delete(id: WorkingHoursId): Promise<void> {
-        await this.prisma.workingHours.delete({where: {id: id.toString()}});
+        await this.prisma.workingHours.updateMany({
+            where: {id: id.toString(), deletedAt: null},
+            data: this.softDeleteData(),
+        });
     }
 }

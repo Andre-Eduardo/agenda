@@ -22,7 +22,7 @@ export class PatientAlertPrismaRepository extends PrismaRepository implements Pa
 
     async findById(id: PatientAlertId): Promise<PatientAlert | null> {
         const record = await this.prisma.patientAlert.findUnique({
-            where: {id: id.toString()},
+            where: {id: id.toString(), deletedAt: null},
         });
 
         return record === null ? null : this.mapper.toDomain(record);

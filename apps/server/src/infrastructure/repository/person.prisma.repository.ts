@@ -22,6 +22,7 @@ export class PersonPrismaRepository extends PrismaRepository implements PersonRe
         const person = await this.prisma.person.findUnique({
             where: {
                 id: id.toString(),
+                deletedAt: null,
             },
         });
 
@@ -29,10 +30,9 @@ export class PersonPrismaRepository extends PrismaRepository implements PersonRe
     }
 
     async delete(id: PersonId): Promise<void> {
-        await this.prisma.person.delete({
-            where: {
-                id: id.toString(),
-            },
+        await this.prisma.person.updateMany({
+            where: {id: id.toString(), deletedAt: null},
+            data: this.softDeleteData(),
         });
     }
 
@@ -45,6 +45,7 @@ export class PersonPrismaRepository extends PrismaRepository implements PersonRe
             name: filter.name ? {contains: filter.name, mode: 'insensitive'} : undefined,
             phone: filter.phone ? {contains: filter.phone.toString()} : undefined,
             gender: filter.gender || undefined,
+            deletedAt: null,
         };
 
         const [data, totalCount] = await Promise.all([

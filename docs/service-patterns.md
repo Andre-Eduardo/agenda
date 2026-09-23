@@ -142,11 +142,26 @@ export class DeleteEntityService extends BaseApplicationService<DeleteEntityDto>
         const entity = await this.entityRepository.findById(payload.id);
         if (!entity) throw new ResourceNotFoundException(EntityExceptions.not_found, payload.id.toString());
 
-        entity.delete(actor.userId); // Soft delete: sets deletedAt + deletedBy
-        await this.entityRepository.save(entity);
+        entity.delete(); // Sets deletedAt on the entity and raises the *DeletedEvent
+        await this.entityRepository.delete(entity.id); // Soft delete: the row stays, with deletedAt set
     }
 }
 ```
+
+### Soft delete rules
+
+Entities with a `deletedAt` column are **never removed from the database** by a delete flow. Clinical, financial and agenda history must stay retrievable for retention and audit, and a hard delete either fails on foreign keys or silently cascades.
+
+- The entity's `delete()` calls `super.delete()` (which sets `deletedAt`) before it raises the event.
+- The repository's `delete(id)` marks the row (`softDeleteData()` in `PrismaRepository`) instead of removing it. It uses `updateMany` with `deletedAt: null` in the filter, so deleting twice keeps the first timestamp.
+- **Every read filters `deletedAt: null`**: `findById`, `findBy*`, `search`, `count` and any conflict or lookup query. `findById` returning a deleted row is a bug: it lets a second delete succeed and lets the entity be edited.
+- A child aggregate that is listed across patients (appointments, records) also filters `patient: {deletedAt: null}`, so deleting a patient hides its data without destroying it.
+- Deleting an aggregate that grants access (a `User`) revokes the access rows (`ClinicMember`) in the same transaction, since the token issued before the deletion is still valid.
+- Unique keys stay reserved by deleted rows (`User.username`, `User.email`, `Patient.documentId` per clinic, `Professional.clinicMemberId`). Creating a duplicate of a deleted row fails the same way as a duplicate of a live one.
+- Do not dispatch events from inside a `@Transactional()` method: the event recorder writes after the commit and fails with `Transaction already closed`. Do the writes in a transactional method and dispatch in the caller (see `DeleteUserService`).
+- Derived or technical data with no `deletedAt` column (`PatientContextChunk`, `KnowledgeChunk`, `FormFieldIndex`, `DocumentPermission`, temporary `UploadFile`) is still removed with `delete`/`deleteMany`.
+
+Integration tests assert the behavior with `the {entity} {string} should be soft deleted`, a follow-up `GET` that returns 404, and a second `DELETE` that returns 404. See `apps/server/test/features/patient/delete.feature`.
 
 ## Domain Services
 
@@ -348,7 +363,7 @@ export interface EntityRepository {
     findByClinicId(clinicId: ClinicId): Promise<Entity[]>;
     list(filter: ListEntityDto): Promise<{data: Entity[]; totalCount: number}>;
     save(entity: Entity): Promise<void>;
-    delete(entity: Entity): Promise<void>;
+    delete(id: EntityId): Promise<void>; // soft delete for entities with `deletedAt`
 }
 
 export const EntityRepository = Symbol('EntityRepository');
@@ -400,8 +415,11 @@ export class PrismaEntityRepository extends PrismaRepository implements EntityRe
         });
     }
 
-    async delete(entity: Entity): Promise<void> {
-        await this.safeDelete(entity, 'entity', {id: entity.id.toString()});
+    async delete(id: EntityId): Promise<void> {
+        await this.prisma.entity.updateMany({
+            where: {id: id.toString(), deletedAt: null},
+            data: this.softDeleteData(), // {deletedAt, updatedAt}
+        });
     }
 }
 ```

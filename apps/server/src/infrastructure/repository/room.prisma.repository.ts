@@ -16,7 +16,7 @@ export class RoomPrismaRepository extends PrismaRepository implements RoomReposi
     }
 
     async findById(id: RoomId): Promise<Room | null> {
-        const room = await this.prisma.room.findFirst({where: {id: id.toString()}});
+        const room = await this.prisma.room.findFirst({where: {id: id.toString(), deletedAt: null}});
 
         return room === null ? null : this.mapper.toDomain(room);
     }
@@ -41,6 +41,9 @@ export class RoomPrismaRepository extends PrismaRepository implements RoomReposi
     }
 
     async delete(id: RoomId): Promise<void> {
-        await this.prisma.room.delete({where: {id: id.toString()}});
+        await this.prisma.room.updateMany({
+            where: {id: id.toString(), deletedAt: null},
+            data: this.softDeleteData(),
+        });
     }
 }

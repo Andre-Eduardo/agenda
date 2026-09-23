@@ -144,6 +144,7 @@ export class User extends AggregateRoot<UserId> {
     }
 
     delete(): void {
+        super.delete();
         this.addEvent(new UserDeletedEvent({user: this}));
     }
 

@@ -87,6 +87,8 @@ export class Patient extends Person {
     }
 
     delete(): void {
+        // Not `super.delete()`: `Person.delete()` would also raise a `PersonDeletedEvent` for the same deletion.
+        this.deletedAt = new Date();
         this.addEvent(new PatientDeletedEvent({patient: this}));
     }
 

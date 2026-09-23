@@ -25,7 +25,7 @@ export class ProfessionalPrismaRepository extends PrismaRepository implements Pr
 
     async findById(id: ProfessionalId): Promise<Professional | null> {
         const professional = await this.prisma.professional.findUnique({
-            where: {id: id.toString()},
+            where: {id: id.toString(), deletedAt: null},
         });
 
         return professional === null ? null : this.mapper.toDomain(professional);
@@ -33,14 +33,17 @@ export class ProfessionalPrismaRepository extends PrismaRepository implements Pr
 
     async findByClinicMemberId(clinicMemberId: ClinicMemberId): Promise<Professional | null> {
         const professional = await this.prisma.professional.findUnique({
-            where: {clinicMemberId: clinicMemberId.toString()},
+            where: {clinicMemberId: clinicMemberId.toString(), deletedAt: null},
         });
 
         return professional === null ? null : this.mapper.toDomain(professional);
     }
 
     async delete(id: ProfessionalId): Promise<void> {
-        await this.prisma.professional.delete({where: {id: id.toString()}});
+        await this.prisma.professional.updateMany({
+            where: {id: id.toString(), deletedAt: null},
+            data: this.softDeleteData(),
+        });
     }
 
     async search(
@@ -52,6 +55,7 @@ export class ProfessionalPrismaRepository extends PrismaRepository implements Pr
             clinicMemberId: filter.clinicMemberId ? filter.clinicMemberId.toString() : undefined,
             clinicMember: filter.clinicId ? {clinicId: filter.clinicId.toString()} : undefined,
             OR: filter.term ? [{specialty: {contains: filter.term, mode: 'insensitive'}}] : undefined,
+            deletedAt: null,
         };
 
         const [data, totalCount] = await Promise.all([

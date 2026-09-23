@@ -16,7 +16,7 @@ export class ClinicPrismaRepository extends PrismaRepository implements ClinicRe
 
     async findById(id: ClinicId): Promise<Clinic | null> {
         const clinic = await this.prisma.clinic.findFirst({
-            where: {id: id.toString()},
+            where: {id: id.toString(), deletedAt: null},
         });
 
         return clinic === null ? null : this.mapper.toDomain(clinic);

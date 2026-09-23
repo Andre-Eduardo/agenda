@@ -1,7 +1,8 @@
-# Inventário de dados, LGPD e suboperadores — v0.1.0
+# Inventário de dados, LGPD e suboperadores — v0.1.1
 
 **Estado:** rascunho de engenharia, **pendente de validação** do Jurídico/DPO. **Referência:** L3-01, Sprint 0.
-**Base:** código em `master` no commit `f54a583`, levantado em 2026-09-23.
+**Base:** código em `master` no commit `f54a583`, levantado em 2026-09-23. A v0.1.1 atualiza as
+seções 6 e 7 para a exclusão lógica introduzida depois disso.
 
 Este documento registra, para cada integração que trata ou pode tratar dado pessoal, a
 **finalidade**, os **dados enviados** e a **retenção**. Descreve o que o código faz hoje; não é
@@ -40,7 +41,7 @@ código não define nada, o documento diz "não definida" e registra a lacuna na
 | Agenda                        | horários, sala, profissional, lembretes                                                                       | `Appointment`, `AppointmentReminder`, `ClinicReminderConfig`            | Indireto          |
 | Financeiro                    | pagamentos de consulta, pacotes, planos, assinaturas do profissional, eventos do gateway                       | `AppointmentPayment`, `PatientPackage*`, `PatientSubscription*`, `ProfessionalSubscription`, `PaymentEvent` | Indireto |
 | Conta e acesso                | usuário, e-mail, nome, telefone, hash de senha, papel global; vínculo e papel na clínica                       | `User`, `ClinicMember`, `ProfessionalAgendaAccess`, `ClinicPatientAccess`, `DocumentPermission` | Não |
-| Operacional                   | eventos de domínio, uso e custo de IA, logs de interação com IA                                                | `Event`, `UsageRecord`, `ClinicalChatInteractionLog`                    | Não               |
+| Operacional                   | eventos de domínio (o `payload` guarda um snapshot do agregado: identificação do paciente e, nos eventos de evolução, o conteúdo clínico), uso e custo de IA, logs de interação com IA | `Event`, `UsageRecord`, `ClinicalChatInteractionLog` | **Sim** (`Event`) |
 
 "Indireto" = pode revelar tratamento de saúde por contexto. A classificação final é do DPO.
 
@@ -213,15 +214,21 @@ Resposta ──▶ PatientChatMessage + ClinicalChatInteractionLog  (local)
 
 | Mecanismo                         | O que faz                                                                     |
 | --------------------------------- | ----------------------------------------------------------------------------- |
-| `deletedAt` (exclusão lógica)     | Coluna presente em muitos modelos, mas só `PatientChatSession` e `PatientAlert` a preenchem. |
-| Exclusão física (`prisma.*.delete`) | Paciente, evolução, agendamento, usuário, pessoa, sala, horários, permissões e chunks de contexto são apagados de fato; várias relações do schema usam `onDelete: Cascade`. |
+| Exclusão lógica (`deletedAt`)     | `DELETE` de paciente (e da `Person` correspondente), evolução, agendamento, usuário, profissional, sala, bloqueio de agenda e horário de trabalho marca `deletedAt`; o registro permanece no banco e some de todas as leituras. Alerta e sessão de chat já eram assim. |
+| Efeitos em cascata da exclusão lógica | Excluir um usuário também revoga (exclusão lógica) todos os seus vínculos com clínicas. Excluir um paciente esconde seus agendamentos e evoluções das leituras, mas os mantém no banco. |
+| Exclusão física (`prisma.*.delete`) | Só dado derivado ou técnico, sem coluna `deletedAt`: chunks de contexto e de conhecimento, índice de campos de formulário, permissões por documento e uploads temporários. |
 | `TempCleanupJob`                  | Apaga uploads temporários com mais de 24 h.                                   |
 | `ExpireOldProposalsJob`, `expire-patient-*` | Mudam o **status** de propostas, pacotes e convênios; não apagam dados. |
+| Tabela `Event`                    | `RecordEvent` grava todo evento de domínio (tipo, clínica, membro, IP, data) com um snapshot do agregado no `payload`. Nunca é alterada nem apagada pelo código. |
 
-Não existe job de expurgo, anonimização nem política de prazo por categoria de dado.
-`DELETE /patients/:id` e `DELETE /records/:id` apagam o registro fisicamente, sem trilha de
-auditoria (escopo do L3-02) e sem efeito sobre dados já enviados a terceiros. Não há exportação
-do prontuário completo do paciente nem fluxo para pedidos do titular (escopo do L3-05).
+Não existe job de expurgo, anonimização nem política de prazo por categoria de dado. A exclusão
+lógica esconde o dado, mas **não o elimina**: nome, documento, contato e prontuário continuam nas
+tabelas e no `Event.payload`. Chaves únicas seguem reservadas pelos registros excluídos
+(`username` e `email` de usuário, documento do paciente por clínica, vínculo profissional–membro).
+Os eventos `*_DELETED` registram quem excluiu e quando, mas a tabela não é um log de auditoria
+imutável nem cobre leitura (escopo do L3-02). A exclusão não alcança dados já enviados a
+terceiros. Não há exportação do prontuário completo do paciente nem fluxo para pedidos do titular
+(escopo do L3-05).
 
 ## 7. Achados e lacunas
 
@@ -238,7 +245,8 @@ Severidade é sugestão de engenharia para priorização; o DPO valida.
 | F-07 | Hospedagem, banco, região e transferência internacional não estão documentados.                                                                      | Alta          | L3-03                              |
 | F-08 | `COOKIE_SECRET` e `AUTH_TOKEN_SECRET` têm valor padrão `super-secret` em `env.config.service.ts` quando a variável não é definida.                   | Alta          | L3-07                              |
 | F-09 | Sem filtro de identificadores em texto livre enviado à IA; `blacklistedFields` vem vazio por padrão.                                                 | Média         | Produto/DPO decidem minimização    |
-| F-10 | Paciente e evolução são apagados fisicamente, sem trilha e com cascata; `deletedAt` existe em muitos modelos, mas quase nunca é usado.                | Alta          | DPO (dever de guarda) e L3-02      |
+| F-10 | Corrigido na v0.1.1: paciente, evolução, agendamento, usuário e demais entidades com `deletedAt` eram apagados fisicamente (e a exclusão de paciente com prontuário falhava por chave estrangeira). Passaram a exclusão lógica. Resta definir quando o dado excluído é anonimizado ou eliminado. | Média | DPO (dever de guarda e eliminação) |
+| F-11 | O `Event.payload` guarda um snapshot do agregado a cada evento (nome, documento, contato, endereço do paciente) e, nos eventos de usuário, o hash e o salt da senha. Não há expurgo. | Alta | L3-07 (segurança) e L3-02 |
 
 F-06 e F-08 pertencem à revisão de segurança; estão aqui porque afetam a proteção do dado inventariado.
 
@@ -252,8 +260,9 @@ F-06 e F-08 pertencem à revisão de segurança; estão aqui porque afetam a pro
 5. Decidir se o envio de prontuário a modelos de IA de terceiros exige consentimento ou aviso
    específico ao paciente, e se há restrição por especialidade (por exemplo, saúde mental).
 6. Definir o canal e o prazo para atender solicitações do titular (L3-05).
-7. Compatibilizar a exclusão física de paciente e evolução com os deveres de guarda do
-   prontuário (F-10), e decidir se a eliminação deve passar a ser lógica ou por anonimização.
+7. Definir por quanto tempo o paciente e o prontuário excluídos logicamente são guardados
+   (deveres de guarda do prontuário) e quando passam a ser anonimizados ou eliminados, inclusive
+   no `Event.payload` (F-10, F-11).
 
 ## 9. Manutenção
 

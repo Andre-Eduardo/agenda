@@ -13,7 +13,7 @@ import {PrismaProvider} from '@infrastructure/repository/prisma/prisma.provider'
 
 const userSelect = Prisma.validator<Prisma.UserDefaultArgs>()({
     include: {
-        members: true,
+        members: {where: {deletedAt: null}},
     },
 });
 
@@ -59,7 +59,7 @@ export class UserPrismaRepository extends PrismaRepository implements UserReposi
 
     async findById(id: UserId): Promise<User | null> {
         const user = await this.prisma.user.findUnique({
-            where: {id: id.toString()},
+            where: {id: id.toString(), deletedAt: null},
             ...userSelect,
         });
 
@@ -68,7 +68,7 @@ export class UserPrismaRepository extends PrismaRepository implements UserReposi
 
     async findByUsername(username: Username): Promise<User | null> {
         const user = await this.prisma.user.findUnique({
-            where: {username: username.toString()},
+            where: {username: username.toString(), deletedAt: null},
             ...userSelect,
         });
 
@@ -77,7 +77,7 @@ export class UserPrismaRepository extends PrismaRepository implements UserReposi
 
     async findByEmail(email: Email): Promise<User | null> {
         const user = await this.prisma.user.findUnique({
-            where: {email: email.toString()},
+            where: {email: email.toString(), deletedAt: null},
             ...userSelect,
         });
 
@@ -116,6 +116,7 @@ export class UserPrismaRepository extends PrismaRepository implements UserReposi
                       {email: {contains: filter.term, mode: 'insensitive'}},
                   ]
                 : undefined,
+            deletedAt: null,
         };
 
         const [data, totalCount] = await Promise.all([
@@ -133,7 +134,11 @@ export class UserPrismaRepository extends PrismaRepository implements UserReposi
         };
     }
 
+    /** Soft delete. The username and email stay reserved, so a deleted user's credentials cannot be re-registered. */
     async delete(id: UserId): Promise<void> {
-        await this.prisma.user.delete({where: {id: id.toString()}});
+        await this.prisma.user.updateMany({
+            where: {id: id.toString(), deletedAt: null},
+            data: this.softDeleteData(),
+        });
     }
 }

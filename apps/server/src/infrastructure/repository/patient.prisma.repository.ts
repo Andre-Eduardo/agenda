@@ -30,6 +30,7 @@ export class PatientPrismaRepository extends PrismaRepository implements Patient
             where: {
                 id: id.toString(),
                 ...(clinicId ? {clinicId: clinicId.toString()} : {}),
+                deletedAt: null,
             },
             include: patientIncludes,
         });
@@ -37,9 +38,16 @@ export class PatientPrismaRepository extends PrismaRepository implements Patient
         return patient === null ? null : this.mapper.toDomain(patient);
     }
 
+    /**
+     * Soft delete. The patient and its `Person` (same id) are marked together so the person does not
+     * stay visible on its own. Clinical, financial and agenda history is kept for retention.
+     */
     async delete(id: PatientId): Promise<void> {
-        await this.prisma.patient.delete({
-            where: {id: id.toString()},
+        const data = this.softDeleteData();
+
+        await this.prisma.$transaction(async (tx) => {
+            await tx.patient.updateMany({where: {id: id.toString(), deletedAt: null}, data});
+            await tx.person.updateMany({where: {id: id.toString(), deletedAt: null}, data});
         });
     }
 
@@ -56,6 +64,7 @@ export class PatientPrismaRepository extends PrismaRepository implements Patient
                       {documentId: {contains: filter.term}},
                   ]
                 : undefined,
+            deletedAt: null,
         };
 
         const [data, totalCount] = await Promise.all([
