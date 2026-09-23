@@ -40,6 +40,17 @@ describe('A value object representing an obfuscated password', () => {
         expect(() => ObfuscatedPassword.decode('foo')).toThrowWithMessage(Error, 'Invalid obfuscated password format.');
     });
 
+    it('should never expose the hash or the salt when serialized to JSON', async () => {
+        const obfuscated = await ObfuscatedPassword.obfuscate('4SecureP@ssword');
+        const [, salt, hash] = obfuscated.encode().split(':');
+
+        const json = JSON.stringify({password: obfuscated});
+
+        expect(json).toBe('{"password":"[REDACTED]"}');
+        expect(json).not.toInclude(salt);
+        expect(json).not.toInclude(hash);
+    });
+
     it('should fail to obfuscate when node crypto fails', async () => {
         jest.resetModules();
         jest.mock('crypto', () => ({
