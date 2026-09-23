@@ -11,6 +11,7 @@
     "code-check": "oxlint --type-check && oxfmt --check",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
+    "test": "vitest run --project unit",
     "panda:codegen": "panda codegen",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build"
