@@ -107,27 +107,37 @@ Any combination of resource and action can be defined. The format is always `"re
 ### `useCan` Hook
 
 ```ts
-// src/hooks/useCan.ts
+// src/hooks/useCan.tsx
 export type UseCanProps = {
   has?: Permission;          // must have exactly this permission
   hasAny?: Permission[];     // must have at least one
   hasAll?: Permission[];     // must have all of them
 };
 
-export function useCan({has, hasAny, hasAll}: UseCanProps): boolean {
-  const enabled = !!(has || hasAny || hasAll);
-  const {data} = useGetUserPermissions({query: {enabled}});
-
-  if (!enabled) return true;           // no restriction specified = allowed
-  if (!data) return false;             // permissions not loaded yet = deny
-
-  if (has) return data.permissions.includes(has);
-  if (hasAny) return hasAny.some(p => data.permissions.includes(p));
-  return hasAll!.every(p => data.permissions.includes(p));
-}
+export function useCan(props?: UseCanProps): boolean;          // just the answer
+export function useCanState(props?: UseCanProps): CanState;    // {allowed, isLoading, isError}
 ```
 
-Permissions are fetched lazily — only triggered when a `useCan` call has a non-empty prop.
+Permissions come from `GET /api/v1/clinic-members/me/permissions` (generated hook
+`useGetCurrentClinicMemberPermissions`), calculated by the server for the active clinic member; the
+response is `{permissions: string[]}`. See [rbac-permissions-endpoint.md](../rbac-permissions-endpoint.md)
+and the role matrix in [rbac-matrix.md](../rbac-matrix.md).
+
+Rules:
+
+- **Lazy.** The request is only made when a call passes `has`, `hasAny` or `hasAll`. With none of them
+  the answer is `true` and nothing is fetched.
+- **Fail closed.** While permissions load, or if the request fails and nothing is cached,
+  `allowed` is `false`, so a gated action is neither shown nor actionable. `useCanState` exposes
+  `isLoading` and `isError` when the UI must tell those cases apart.
+- **Last known permissions win.** If a background refetch fails after a successful fetch, the cached
+  list keeps being used.
+- **All conditions hold.** When more than one of `has`, `hasAny` and `hasAll` is given, every one of them
+  must be satisfied. An empty `hasAny` never matches.
+- **UI only.** This shapes the interface. The server is the authority and answers 403 to a forbidden
+  action, whatever the client shows.
+- **Session errors.** A 401 is rethrown by the global `QueryErrorHandler` like any other query; a 403 or
+  network error only denies.
 
 ### `Can` Component
 
@@ -216,10 +226,9 @@ const filtered = navItems.flatMap(item => {
 
 ### Permission Caching
 
-The shared layout sets stale time for permissions:
-```ts
-queryClient.setQueryDefaults(getUserPermissionsQueryKey(), {staleTime: 5 * 60 * 1000}); // 5m
-```
+`useCanState` sets a 5-minute `staleTime` on the permissions query, so the many `useCan`/`<Can>` calls on
+a page share one cached request. Sign-in clears the query cache (`queryClient.clear()`), so a new session
+never reuses the previous user's permissions.
 
 ---
 

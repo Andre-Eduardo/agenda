@@ -155,7 +155,7 @@ const handleDelete = (id: string) => {
 
 ```ts
 // Only fetch when a check is actually needed
-const {data} = useGetUserPermissions({query: {enabled: !!permissionToCheck}});
+const {data} = useGetCurrentClinicMemberPermissions({query: {enabled: !!permissionToCheck}});
 ```
 
 ### Cache Invalidation Patterns
