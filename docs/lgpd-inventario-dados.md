@@ -1,8 +1,9 @@
-# Inventário de dados, LGPD e suboperadores — v0.1.1
+# Inventário de dados, LGPD e suboperadores — v0.1.2
 
 **Estado:** rascunho de engenharia, **pendente de validação** do Jurídico/DPO. **Referência:** L3-01, Sprint 0.
 **Base:** código em `master` no commit `f54a583`, levantado em 2026-09-23. A v0.1.1 atualiza as
-seções 6 e 7 para a exclusão lógica introduzida depois disso.
+seções 6 e 7 para a exclusão lógica introduzida depois disso. A v0.1.2 atualiza as seções 2, 6, 7
+e 8 para o F-11 (senha e dados pessoais no `Event.payload`), tratado no card L3-07.
 
 Este documento registra, para cada integração que trata ou pode tratar dado pessoal, a
 **finalidade**, os **dados enviados** e a **retenção**. Descreve o que o código faz hoje; não é
@@ -41,7 +42,7 @@ código não define nada, o documento diz "não definida" e registra a lacuna na
 | Agenda                        | horários, sala, profissional, lembretes                                                                       | `Appointment`, `AppointmentReminder`, `ClinicReminderConfig`            | Indireto          |
 | Financeiro                    | pagamentos de consulta, pacotes, planos, assinaturas do profissional, eventos do gateway                       | `AppointmentPayment`, `PatientPackage*`, `PatientSubscription*`, `ProfessionalSubscription`, `PaymentEvent` | Indireto |
 | Conta e acesso                | usuário, e-mail, nome, telefone, hash de senha, papel global; vínculo e papel na clínica                       | `User`, `ClinicMember`, `ProfessionalAgendaAccess`, `ClinicPatientAccess`, `DocumentPermission` | Não |
-| Operacional                   | eventos de domínio (o `payload` guarda um snapshot do agregado: identificação do paciente e, nos eventos de evolução, o conteúdo clínico), uso e custo de IA, logs de interação com IA | `Event`, `UsageRecord`, `ClinicalChatInteractionLog` | **Sim** (`Event`) |
+| Operacional                   | eventos de domínio (o `payload` guarda um snapshot do agregado: identificação do paciente, nome e e-mail do usuário e, nos eventos de evolução, perfil clínico, alerta e documento clínico, o conteúdo clínico; ver 7.1), uso e custo de IA, logs de interação com IA | `Event`, `UsageRecord`, `ClinicalChatInteractionLog` | **Sim** (`Event`) |
 
 "Indireto" = pode revelar tratamento de saúde por contexto. A classificação final é do DPO.
 
@@ -219,7 +220,7 @@ Resposta ──▶ PatientChatMessage + ClinicalChatInteractionLog  (local)
 | Exclusão física (`prisma.*.delete`) | Só dado derivado ou técnico, sem coluna `deletedAt`: chunks de contexto e de conhecimento, índice de campos de formulário, permissões por documento e uploads temporários. |
 | `TempCleanupJob`                  | Apaga uploads temporários com mais de 24 h.                                   |
 | `ExpireOldProposalsJob`, `expire-patient-*` | Mudam o **status** de propostas, pacotes e convênios; não apagam dados. |
-| Tabela `Event`                    | `RecordEvent` grava todo evento de domínio (tipo, clínica, membro, IP, data) com um snapshot do agregado no `payload`. Nunca é alterada nem apagada pelo código. |
+| Tabela `Event`                    | `RecordEvent` grava todo evento de domínio (tipo, clínica, membro, IP, data) com um snapshot do agregado no `payload`. O código nunca a apaga; a única alteração é a migration `20260923170000_strip_password_from_event_payloads`, que remove a chave `password` de linhas antigas (F-11, 7.1). |
 
 Não existe job de expurgo, anonimização nem política de prazo por categoria de dado. A exclusão
 lógica esconde o dado, mas **não o elimina**: nome, documento, contato e prontuário continuam nas
@@ -246,9 +247,73 @@ Severidade é sugestão de engenharia para priorização; o DPO valida.
 | F-08 | `COOKIE_SECRET` e `AUTH_TOKEN_SECRET` têm valor padrão `super-secret` em `env.config.service.ts` quando a variável não é definida.                   | Alta          | L3-07                              |
 | F-09 | Sem filtro de identificadores em texto livre enviado à IA; `blacklistedFields` vem vazio por padrão.                                                 | Média         | Produto/DPO decidem minimização    |
 | F-10 | Corrigido na v0.1.1: paciente, evolução, agendamento, usuário e demais entidades com `deletedAt` eram apagados fisicamente (e a exclusão de paciente com prontuário falhava por chave estrangeira). Passaram a exclusão lógica. Resta definir quando o dado excluído é anonimizado ou eliminado. | Média | DPO (dever de guarda e eliminação) |
-| F-11 | O `Event.payload` guarda um snapshot do agregado a cada evento (nome, documento, contato, endereço do paciente) e, nos eventos de usuário, o hash e o salt da senha. Não há expurgo. | Alta | L3-07 (segurança) e L3-02 |
+| F-11 | Parcialmente corrigido na v0.1.2: os eventos de usuário gravavam no `Event.payload` o hash, o salt e o tamanho de chave da senha; isso foi corrigido no código e nas linhas já gravadas (7.1). Resta: cada evento grava um snapshot completo do agregado (documento, contato, endereço e nascimento do paciente; texto de evolução, perfil clínico e alertas), sem minimização e sem expurgo. | Alta (resto) | DPO e L3-02 decidem o conteúdo e o prazo; senha: L3-07 |
 
 F-06 e F-08 pertencem à revisão de segurança; estão aqui porque afetam a proteção do dado inventariado.
+
+### 7.1 F-11 — o que o `Event.payload` guarda
+
+**Senha (corrigido).** `EventMapper.toPersistence` copiava o evento com `structuredClone`, que copia
+todas as propriedades e nunca chama `toJSON()`. Os eventos que carregam um `User` gravavam
+`user.password` (`hash`, `salt`, `keySize`) no `payload`: `USER_SIGNED_UP`, `USER_CREATED` e
+`USER_DELETED` na chave `user`, e `USER_CHANGED` em `oldState` e `newState` (por isso o hash de
+uma senha anterior também ficava guardado). O mesmo `structuredClone` gravava os identificadores
+como `{"value": "..."}` em vez das strings que o tipo `EventPayload` declara.
+
+- **Reprodução (2026-09-23).** A suíte Cucumber completa no código antigo gerou 1520 eventos;
+  252 tinham hash e salt: `USER_SIGNED_UP` 247, `USER_DELETED` 4, `USER_CHANGED` 1.
+- **Correção.** O mapper serializa o payload por JSON, e cada agregado decide o que expõe;
+  `User.toJSON()` já omitia a senha. `ObfuscatedPassword.toJSON()` devolve `"[REDACTED]"`, para
+  que a senha não vaze nem se algum evento futuro a carregar fora de um `User`. A mesma suíte no
+  código novo gerou os mesmos 1520 eventos, com as mesmas contagens por tipo e 0 linhas com senha.
+- **Outros segredos.** Nenhum encontrado nos agregados que viajam em evento. A busca por campos
+  de segredo em `apps/server/src/domain` só achou `password` em `User`; o resto são `contentHash` e
+  contagens de tokens de IA, que não viajam em evento. Segredos de ambiente são o F-08.
+
+**Linhas já gravadas (decisão).** Os eventos **não são apagados**: a trilha de quem fez o quê e
+quando é o valor da tabela. A migration `20260923170000_strip_password_from_event_payloads`
+remove só a chave `password` de `user`, `oldState` e `newState`, em qualquer tipo de evento (inclui
+tipos que já não existem no código). Ela é idempotente e é aplicada por
+`pnpm -F @agenda-app/server prisma:migrate` (`prisma migrate deploy`), que o `prestart:dev` e o
+comando do `.replit` já executam; o repositório não define o deploy de produção (INT-09), então é
+preciso confirmar que ele roda as migrations. Foi testada sobre as 1520 linhas geradas pelo código
+antigo: 252 linhas limpas, nenhuma outra coluna ou chave alterada, segunda execução sem efeito.
+Depois de aplicar em cada ambiente, confira:
+
+```sql
+SELECT count(*) FROM event WHERE payload::text ~ '"(password|hash|salt|keySize)"';  -- esperado: 0
+```
+
+Para o DPO, a migration **não alcança**:
+
+- backups e cópias feitas antes dela (L3-03), que ainda contêm o hash, inclusive de senhas
+  anteriores (`oldState`) e de usuários já excluídos. O hash da senha atual também está em
+  `user.password`; o que o `Event` acrescentava eram as cópias antigas. Definir até quando esses
+  backups são guardados, e se a exposição exige avaliação de incidente ou troca de senhas, é
+  decisão do DPO; este documento não a faz;
+- os identificadores em `{"value": "..."}` das linhas antigas. Nenhum código de aplicação lê o
+  `payload` hoje (`EventRepository.search` não tem chamador; só o `RecordEvent` grava). Quem
+  passar a lê-lo (L3-02) precisa aceitar as duas formas ou normalizar as linhas antigas antes.
+
+**Dados pessoais e clínicos no payload (não alterado).** Cada evento grava o agregado inteiro, e
+os eventos `*_CHANGED` gravam o estado antigo e o novo. Chaves encontradas na execução acima:
+
+| Eventos                                              | Dado no `payload`                                                                   |
+| ---------------------------------------------------- | ----------------------------------------------------------------------------------- |
+| `PATIENT_CREATED`, `_CHANGED`, `_DELETED`            | `documentId`, telefone, e-mail, endereço, nascimento, contato de emergência, número da carteirinha |
+| `RECORD_CREATED`, `_CHANGED`, `_DELETED`             | texto integral de `subjective`, `objective`, `assessment`, `plan`, `freeNotes` e `description` (dois textos completos em `_CHANGED`) |
+| `CLINICAL_PROFILE_CREATED`, `_CHANGED`               | alergias, condições crônicas, medicações, histórico e notas gerais                  |
+| `PATIENT_ALERT_CREATED`, `_CHANGED`, `_DELETED`      | título e descrição                                                                  |
+| `CLINICAL_DOCUMENT_GENERATED`                        | `contentJson` do documento                                                          |
+| `APPOINTMENT_*`                                      | observação e motivo de cancelamento (vistos em `APPOINTMENT_DELETED`; os demais eventos de agendamento carregam o mesmo agregado) |
+| `USER_*`, `CLINIC_CREATED`, `PROFESSIONAL_*`         | nome, e-mail e usuário; documento, telefone e e-mail da clínica; número de registro profissional |
+
+Nada disso foi mudado. Reduzir o snapshot exige decidir o que a trilha de auditoria precisa
+guardar (escopo do L3-02); cortar campos sem essa decisão pode esvaziar a auditoria ou deixar
+lacunas que ninguém escolheu. Direção sugerida, para o DPO e o L3-02 validarem: eventos de mudança
+guardam identificadores e os **nomes** dos campos alterados, sem o texto; eventos `*_DELETED` de dado
+clínico guardam só identificadores. Enquanto isso, a exclusão lógica (F-10) esconde o dado das
+leituras, mas o texto clínico e a identificação do paciente continuam legíveis no `Event.payload`.
 
 ## 8. Perguntas em aberto para Jurídico/DPO
 
@@ -263,6 +328,9 @@ F-06 e F-08 pertencem à revisão de segurança; estão aqui porque afetam a pro
 7. Definir por quanto tempo o paciente e o prontuário excluídos logicamente são guardados
    (deveres de guarda do prontuário) e quando passam a ser anonimizados ou eliminados, inclusive
    no `Event.payload` (F-10, F-11).
+8. Definir o que o `Event.payload` pode conter (minimização) e por quanto tempo a tabela `Event`
+   é guardada, e decidir o destino dos backups anteriores à migration do F-11, que ainda contêm
+   hash de senha (7.1).
 
 ## 9. Manutenção
 
