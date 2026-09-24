@@ -84,6 +84,7 @@ model Person {
 model Clinic {
   id                    String             @id(map: "clinic_pk") @db.Uuid
   name                  String
+  createdByUserId       String?            @map("created_by_user_id") @db.Uuid
   documentId            String?            @map("document_id")
   phone                 String?
   email                 String?            @db.Citext()

@@ -1,6 +1,9 @@
 import {Injectable} from '@nestjs/common';
 import {ApplicationService, Command} from '@application/@shared/application.service';
+import {assertEntityBelongsToClinic} from '@application/@shared/validators/cross-tenant.validator';
 import {DocumentPermissionDto, GrantDocumentPermissionDto} from '@application/document-permission/dtos';
+import {ResourceNotFoundException} from '@domain/@shared/exceptions';
+import {ClinicMemberRepository} from '@domain/clinic-member/clinic-member.repository';
 import {ClinicMemberId} from '@domain/clinic-member/entities';
 import {ClinicId} from '@domain/clinic/entities';
 import {DocumentPermissionRepository} from '@domain/document-permission/document-permission.repository';
@@ -16,13 +19,30 @@ export class GrantDocumentPermissionService implements ApplicationService<
 > {
     constructor(
         private readonly permissionRepository: DocumentPermissionRepository,
+        private readonly memberRepository: ClinicMemberRepository,
         private readonly eventDispatcher: EventDispatcher
     ) {}
 
     async execute({actor, payload}: Command<GrantDocumentPermissionDto>): Promise<DocumentPermissionDto> {
+        const clinicId = ClinicId.from(payload.clinicId);
+        const memberId = ClinicMemberId.from(payload.memberId);
+
+        assertEntityBelongsToClinic(clinicId, actor.clinicId);
+        const [member, targetClinicId] = await Promise.all([
+            this.memberRepository.findById(memberId),
+            this.permissionRepository.findTargetClinic(payload.entityType, payload.entityId),
+        ]);
+
+        if (member === null || !member.isActive || targetClinicId === null) {
+            throw new ResourceNotFoundException('Member or document not found.');
+        }
+
+        assertEntityBelongsToClinic(member.clinicId, actor.clinicId);
+        assertEntityBelongsToClinic(targetClinicId, actor.clinicId);
+
         const permission = DocumentPermission.create({
-            clinicId: ClinicId.from(payload.clinicId),
-            memberId: ClinicMemberId.from(payload.memberId),
+            clinicId,
+            memberId,
             entityType: payload.entityType,
             entityId: payload.entityId,
             canView: payload.canView,

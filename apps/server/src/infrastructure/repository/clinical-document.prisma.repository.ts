@@ -35,9 +35,10 @@ export class ClinicalDocumentPrismaRepository extends PrismaRepository implement
         pagination: Pagination<ClinicalDocumentSortOptions>,
         filter: ClinicalDocumentSearchFilter = {}
     ): Promise<PaginatedList<ClinicalDocument>> {
+        const patientIds = filter.patientIds?.map((id) => id.toString());
         const where: PrismaClient.Prisma.ClinicalDocumentWhereInput = {
             clinicId: filter.clinicId ? filter.clinicId.toString() : undefined,
-            patientId: filter.patientId ? filter.patientId.toString() : undefined,
+            patientId: filter.patientId?.toString() ?? (patientIds ? {in: patientIds} : undefined),
             type: toEnumOrNull(PrismaClient.ClinicalDocumentType, filter.type) ?? undefined,
             status: toEnumOrNull(PrismaClient.ClinicalDocumentStatus, filter.status) ?? undefined,
             deletedAt: null,

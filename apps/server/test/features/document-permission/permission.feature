@@ -9,6 +9,7 @@ Feature: Document permission override (POST)
             | Dr. Wilson | dr_wilson | wilson@example.com  | W1ls0n!1   |
         And I am signed in as "dr_house"
         And a professional "dr_house" exists with specialty "MEDICINA"
+        And the clinic member "dr_house" also has the role "OWNER"
         And I am signed in as "dr_house" with professional "${ref:id:professional:dr_house}"
         When I send a "POST" request to "/api/v1/patients" with:
             | name           | Permission Patient              |

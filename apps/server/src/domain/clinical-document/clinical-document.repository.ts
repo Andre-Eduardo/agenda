@@ -12,6 +12,7 @@ import type {PatientId} from '@domain/patient/entities';
 export type ClinicalDocumentSearchFilter = {
     clinicId?: ClinicId;
     patientId?: PatientId;
+    patientIds?: PatientId[];
     type?: ClinicalDocumentType;
     status?: ClinicalDocumentStatus;
 };

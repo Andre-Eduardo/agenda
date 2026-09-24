@@ -9,6 +9,7 @@ Feature: Clinic member CRUD (POST / GET)
             | Dr. Wilson | dr_wilson | wilson@example.com  | W1ls0n!1   |
         And I am signed in as "dr_house"
         And a professional "dr_house" exists with specialty "MEDICINA"
+        And the clinic member "dr_house" also has the role "OWNER"
         And I am signed in as "dr_house" with clinic member "${ref:id:clinicMember:dr_house}"
 
     Scenario: Invite a member and verify invitedByMemberId is populated

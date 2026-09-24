@@ -1,7 +1,8 @@
 import {Injectable} from '@nestjs/common';
 import {ApplicationService, Command} from '@application/@shared/application.service';
+import {assertEntityBelongsToClinic} from '@application/@shared/validators/cross-tenant.validator';
 import {AppointmentPaymentDto, UpdatePaymentStatusDto} from '@application/appointment-payment/dtos';
-import {PreconditionException, ResourceNotFoundException} from '@domain/@shared/exceptions';
+import {ResourceNotFoundException} from '@domain/@shared/exceptions';
 import {Transactional} from '@domain/@shared/repository';
 import {AppointmentPaymentRepository} from '@domain/appointment-payment/appointment-payment.repository';
 import {AppointmentPaymentStatus, PaymentMethod} from '@domain/appointment-payment/entities';
@@ -42,9 +43,7 @@ export class UpdatePaymentStatusService implements ApplicationService<
             throw new ResourceNotFoundException('Appointment not found.', appointmentId.toString());
         }
 
-        if (!appointment.clinicId.equals(actor.clinicId)) {
-            throw new PreconditionException('Appointment does not belong to the current clinic.');
-        }
+        assertEntityBelongsToClinic(appointment.clinicId, actor.clinicId);
 
         const payment = await this.appointmentPaymentRepository.findByAppointmentId(appointmentId);
 

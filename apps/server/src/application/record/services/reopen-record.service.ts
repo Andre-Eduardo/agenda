@@ -1,10 +1,13 @@
 import {Injectable} from '@nestjs/common';
 import {ApplicationService, Command} from '@application/@shared/application.service';
+import {assertEntityBelongsToClinic} from '@application/@shared/validators/cross-tenant.validator';
+import {PatientAccessChecker} from '@application/clinic-patient-access/services/patient-access-checker.service';
 import {RecordDto, ReopenRecordDto} from '@application/record/dtos';
 import {AccessDeniedException, AccessDeniedReason, ResourceNotFoundException} from '@domain/@shared/exceptions';
 import {ClinicMemberRepository} from '@domain/clinic-member/clinic-member.repository';
 import {ClinicMemberRole} from '@domain/clinic-member/entities/clinic-member-role';
 import {EventDispatcher} from '@domain/event';
+import {PatientId} from '@domain/patient/entities';
 import {RecordAmendment} from '@domain/record/entities/record-amendment.entity';
 import {RecordAmendmentRepository} from '@domain/record/record-amendment.repository';
 import {RecordRepository} from '@domain/record/record.repository';
@@ -18,6 +21,7 @@ const ALLOWED_ROLES: ClinicMemberRole[] = [
 @Injectable()
 export class ReopenRecordService implements ApplicationService<ReopenRecordDto, RecordDto> {
     constructor(
+        private readonly patientAccessChecker: PatientAccessChecker,
         private readonly recordRepository: RecordRepository,
         private readonly recordAmendmentRepository: RecordAmendmentRepository,
         private readonly clinicMemberRepository: ClinicMemberRepository,
@@ -36,6 +40,9 @@ export class ReopenRecordService implements ApplicationService<ReopenRecordDto, 
         if (record === null) {
             throw new ResourceNotFoundException('Record not found.', payload.id.toString());
         }
+
+        assertEntityBelongsToClinic(record.clinicId, actor.clinicId);
+        await this.patientAccessChecker.assertCanAccess(actor, PatientId.from(record.patientId.toString()), 'write');
 
         record.unlock(actor.clinicMemberId);
 

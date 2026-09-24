@@ -1,5 +1,6 @@
 import {mock} from 'jest-mock-extended';
 import {UpdateAppointmentService} from '@application/appointment/services/update-appointment.service';
+import {PatientAccessChecker} from '@application/clinic-patient-access/services/patient-access-checker.service';
 import {AgendaAccessChecker} from '@application/professional-agenda-access/services';
 import type {Actor} from '@domain/@shared/actor';
 import {AtomicExecutor} from '@domain/@shared/repository';
@@ -71,6 +72,7 @@ describe('UpdateAppointmentService', () => {
         agendaAccessChecker.assertCanManage.mockResolvedValue(undefined);
 
         service = new UpdateAppointmentService(
+            mock<PatientAccessChecker>(),
             appointmentRepository,
             clinicMemberRepository,
             clinicRepository,

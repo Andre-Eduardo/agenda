@@ -1,9 +1,12 @@
 import {Injectable} from '@nestjs/common';
 import {ApplicationService, Command} from '@application/@shared/application.service';
+import {assertEntityBelongsToClinic} from '@application/@shared/validators/cross-tenant.validator';
+import {PatientAccessChecker} from '@application/clinic-patient-access/services/patient-access-checker.service';
 import type {UpdatePatientDto} from '@application/patient/dtos';
 import {PatientDto} from '@application/patient/dtos';
 import {ResourceNotFoundException} from '@domain/@shared/exceptions';
 import {EventDispatcher} from '@domain/event';
+import {PatientId} from '@domain/patient/entities';
 import {PatientRepository} from '@domain/patient/patient.repository';
 
 type AddressInput =
@@ -52,6 +55,7 @@ function resolveAddress(address: AddressInput):
 @Injectable()
 export class UpdatePatientService implements ApplicationService<UpdatePatientDto, PatientDto> {
     constructor(
+        private readonly patientAccessChecker: PatientAccessChecker,
         private readonly patientRepository: PatientRepository,
         private readonly eventDispatcher: EventDispatcher
     ) {}
@@ -62,6 +66,9 @@ export class UpdatePatientService implements ApplicationService<UpdatePatientDto
         if (patient === null) {
             throw new ResourceNotFoundException('Patient not found.', id.toString());
         }
+
+        assertEntityBelongsToClinic(patient.clinicId, actor.clinicId);
+        await this.patientAccessChecker.assertCanAccess(actor, PatientId.from(patient.id.toString()), 'register');
 
         patient.change({
             name: props.name,

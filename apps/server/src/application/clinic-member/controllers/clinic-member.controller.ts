@@ -78,6 +78,7 @@ export class ClinicMemberController {
         summary: 'List members of a clinic',
         responses: [{status: 200, description: 'Members list', type: ClinicMemberDto, isArray: true}],
     })
+    @Authorize(ClinicMemberPermission.CREATE)
     @Get()
     listClinicMembers(@RequestActor() actor: Actor, @Query('clinicId') clinicId: string): Promise<ClinicMemberDto[]> {
         return this.listClinicMembersService.execute({

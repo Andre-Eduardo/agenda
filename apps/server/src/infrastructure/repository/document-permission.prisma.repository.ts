@@ -1,5 +1,6 @@
 import {Injectable} from '@nestjs/common';
 import {ClinicMemberId} from '@domain/clinic-member/entities';
+import {ClinicId} from '@domain/clinic/entities';
 import {DocumentPermissionRepository} from '@domain/document-permission/document-permission.repository';
 import {DocumentEntityType, DocumentPermission, DocumentPermissionId} from '@domain/document-permission/entities';
 import {DocumentPermissionMapper} from '@infrastructure/mappers/document-permission.mapper';
@@ -23,6 +24,57 @@ export class DocumentPermissionPrismaRepository extends PrismaRepository impleme
         return permission === null ? null : this.mapper.toDomain(permission);
     }
 
+    async findTargetClinic(entityType: DocumentEntityType, entityId: string): Promise<ClinicId | null> {
+        let target: {clinicId: string} | null;
+
+        switch (entityType) {
+            case DocumentEntityType.RECORD:
+                target = await this.prisma.record.findFirst({
+                    where: {id: entityId, deletedAt: null},
+                    select: {clinicId: true},
+                });
+
+                break;
+            case DocumentEntityType.FILE:
+                target = await this.prisma.file.findFirst({
+                    where: {id: entityId, deletedAt: null},
+                    select: {clinicId: true},
+                });
+
+                break;
+            case DocumentEntityType.IMPORTED_DOCUMENT:
+                target = await this.prisma.importedDocument.findFirst({
+                    where: {id: entityId, deletedAt: null},
+                    select: {clinicId: true},
+                });
+
+                break;
+            case DocumentEntityType.PATIENT_FORM:
+                target = await this.prisma.patientForm.findFirst({
+                    where: {id: entityId, deletedAt: null},
+                    select: {clinicId: true},
+                });
+
+                break;
+            case DocumentEntityType.CLINICAL_PROFILE:
+                target = await this.prisma.clinicalProfile.findFirst({
+                    where: {id: entityId, deletedAt: null},
+                    select: {clinicId: true},
+                });
+
+                break;
+            case DocumentEntityType.PATIENT_ALERT:
+                target = await this.prisma.patientAlert.findFirst({
+                    where: {id: entityId, deletedAt: null},
+                    select: {clinicId: true},
+                });
+
+                break;
+        }
+
+        return target === null ? null : ClinicId.from(target.clinicId);
+    }
+
     async findByMemberAndEntity(
         memberId: ClinicMemberId,
         entityType: DocumentEntityType,
@@ -41,6 +93,18 @@ export class DocumentPermissionPrismaRepository extends PrismaRepository impleme
         });
 
         return permissions.map((p) => this.mapper.toDomain(p));
+    }
+
+    async findByMemberAndType(
+        clinicId: ClinicId,
+        memberId: ClinicMemberId,
+        entityType: DocumentEntityType
+    ): Promise<DocumentPermission[]> {
+        const permissions = await this.prisma.documentPermission.findMany({
+            where: {clinicId: clinicId.toString(), memberId: memberId.toString(), entityType},
+        });
+
+        return permissions.map((permission) => this.mapper.toDomain(permission));
     }
 
     async save(permission: DocumentPermission): Promise<void> {

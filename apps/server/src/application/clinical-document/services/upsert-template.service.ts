@@ -1,5 +1,6 @@
 import {Injectable} from '@nestjs/common';
 import {ApplicationService, Command} from '@application/@shared/application.service';
+import {assertEntityBelongsToClinic} from '@application/@shared/validators/cross-tenant.validator';
 import {ClinicalDocumentTemplateDto, UpsertTemplateDto} from '@application/clinical-document/dtos';
 import {ClinicId} from '@domain/clinic/entities';
 import {ClinicalDocumentTemplateRepository} from '@domain/clinical-document/clinical-document-template.repository';
@@ -11,7 +12,9 @@ type UpsertTemplateInput = UpsertTemplateDto & {clinicId: ClinicId; type: Clinic
 export class UpsertTemplateService implements ApplicationService<UpsertTemplateInput, ClinicalDocumentTemplateDto> {
     constructor(private readonly clinicalDocumentTemplateRepository: ClinicalDocumentTemplateRepository) {}
 
-    async execute({payload}: Command<UpsertTemplateInput>): Promise<ClinicalDocumentTemplateDto> {
+    async execute({actor, payload}: Command<UpsertTemplateInput>): Promise<ClinicalDocumentTemplateDto> {
+        assertEntityBelongsToClinic(payload.clinicId, actor.clinicId);
+
         let template = await this.clinicalDocumentTemplateRepository.findByClinicAndType(
             payload.clinicId,
             payload.type

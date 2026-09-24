@@ -2,6 +2,12 @@ import {Injectable} from '@nestjs/common';
 import {AccessDeniedException, AccessDeniedReason} from '@domain/@shared/exceptions';
 import type {ClinicId} from '@domain/clinic/entities';
 
+export function assertEntityBelongsToClinic(entityClinicId: ClinicId, actorClinicId: ClinicId): void {
+    if (!entityClinicId.equals(actorClinicId)) {
+        throw new AccessDeniedException('Cross-tenant access detected', AccessDeniedReason.NOT_ALLOWED);
+    }
+}
+
 /**
  * Validates that domain entities belong to the same clinic (tenant).
  * Throws AccessDeniedException on mismatch to prevent cross-tenant data leakage.
@@ -25,8 +31,6 @@ export class CrossTenantValidator {
      * Use this when loading an entity and before returning or mutating it.
      */
     assertEntityBelongsToClinic(entityClinicId: ClinicId, actorClinicId: ClinicId): void {
-        if (!entityClinicId.equals(actorClinicId)) {
-            throw new AccessDeniedException('Cross-tenant access detected', AccessDeniedReason.NOT_ALLOWED);
-        }
+        assertEntityBelongsToClinic(entityClinicId, actorClinicId);
     }
 }
