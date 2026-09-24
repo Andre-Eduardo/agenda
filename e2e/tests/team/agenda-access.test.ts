@@ -7,7 +7,11 @@ test.describe('Team — member agenda management', () => {
 
     test.beforeEach(async ({createAuthenticatedProfessional}) => {
         memberDisplayName = `Dr. Titular ${Date.now()}`;
-        const professional = await createAuthenticatedProfessional({displayName: memberDisplayName});
+        // Managing who can access a member's agenda is a clinic-management permission (OWNER/ADMIN only).
+        const professional = await createAuthenticatedProfessional({
+            displayName: memberDisplayName,
+            additionalRoles: ['OWNER'],
+        });
         clinicId = professional.clinicId;
         clinicMemberId = professional.clinicMemberId;
     });
@@ -56,7 +60,8 @@ test.describe('Team — member agenda management', () => {
         await teamDetailPage.verifyPageLoaded();
 
         await teamDetailPage.grantAccessTo(secretaryName);
-        await expect(teamDetailPage.page.getByText('Acesso concedido')).toBeVisible();
+        // exact: the empty state ("Nenhum acesso concedido além do padrão…") also contains this text.
+        await expect(teamDetailPage.page.getByText('Acesso concedido', {exact: true})).toBeVisible();
         await expect(teamDetailPage.granteeRow(secretaryName)).toBeVisible();
 
         await teamDetailPage.revokeAccessFrom(secretaryName);
