@@ -26,9 +26,8 @@ test.describe('Dados da clínica — endereço, logo e especialidades', () => {
 });
 
 test.describe('Convite de membros da clínica', () => {
-    // Feature not implemented: CreateClinicMemberService records invitedByMemberId, but
-    // there is no "Team" / "Membros" screen to send an invite, list pending invites, or
-    // accept one — apps/web has no clinic-member module at all.
+    // The Team screen creates and lists members, but there is no email invitation
+    // flow with later acceptance by the recipient.
     //
     // test('should let an OWNER invite a new clinic member by email and role', async ({
     //     createAuthenticatedProfessional,
@@ -45,10 +44,8 @@ test.describe('Convite de membros da clínica', () => {
 });
 
 test.describe('Perfis de acesso por papel (OWNER, ADMIN, PROFESSIONAL, SECRETARY, VIEWER)', () => {
-    // Feature not implemented in the frontend: role resolution exists on the backend
-    // (3-layer resolution), but there is no UI to change a member's role, and useCan()
-    // is a placeholder that always returns true (see apps/web CLAUDE.md), so role-based
-    // UI restrictions cannot be verified end-to-end yet.
+    // Effective permissions and role-gated actions are covered in auth/rbac-profiles.test.ts.
+    // Editing an existing member's roles in the UI is still pending.
     //
     // test('should hide destructive actions for a VIEWER role member', async ({
     //     createAuthenticatedProfessional,
