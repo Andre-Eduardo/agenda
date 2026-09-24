@@ -83,6 +83,8 @@ webhook do monitor escolhido. Monitorar espaço livre, integridade do destino,
 entrega do alerta e último ensaio de restore. Simular falha do job e do webhook
 antes de ativar o serviço. O arquivo `manifest.json` só aparece depois que os
 componentes foram gerados e verificados; cópias incompletas são removidas.
+Tratar falhas pelo [runbook de incidentes](incident-response-runbook.md),
+preservando as cópias existentes até concluir a investigação.
 Quando a retenção for aprovada, o script elimina apenas diretórios próprios
 com manifesto válido mais antigos que o prazo, preservando sempre os dois mais
 recentes. Imutabilidade e retenção externas devem ser configuradas no destino.
