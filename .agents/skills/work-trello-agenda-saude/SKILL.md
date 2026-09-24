@@ -1,12 +1,13 @@
 ---
 name: work-trello-agenda-saude
-description: Use when reading, selecting, implementing, or updating development tasks from the Agenda Saúde Trello board, especially Sprint 0 cards, their workflow status, and the branch, pull request and merge that version each card.
+description: Use when reading, selecting, implementing, or updating development tasks from the Agenda Saúde Trello board, especially Sprint 0 cards, their workflow status, and the branch, commits and merge into master that version each card.
 ---
 
 # Work Agenda Saúde Trello Tasks
 
 Coordinate Trello cards with implementation work in this repository. Each card ends as one
-branch, one pull request and one merge, so every card is versioned and traceable.
+branch merged into `master` with a merge commit and pushed to `origin`, so every card is
+versioned and traceable. This repository does not use pull requests.
 
 ## Access
 
@@ -34,11 +35,11 @@ The list that earlier versions of this skill called `Desenvolvimento` is `Em des
 
 - Immediately before implementation begins, move the selected card to `Em desenvolvimento`.
 - Do not move unrelated cards or change their title, description, labels, members, dates, or priority unless the user or card explicitly requires it.
-- Move the card to `Revisão e QA` when its pull request is open and validation evidence exists. Every card's "Conclusão" section requires this.
-- Move the card to `Concluído` only after the pull request is merged, its acceptance criteria are satisfied, and no human approval is still pending.
+- Move the card to `Revisão e QA` once its commits are on the branch and validation evidence exists, before merging. Every card's "Conclusão" section requires this.
+- Move the card to `Concluído` only after the merge is pushed to `origin/master`, its acceptance criteria are satisfied, and no human approval is still pending.
 - If the card or the roadmap (`docs/roadmap-lancamento-clinica.md`) requires approval from someone else, such as the DPO, legal, or product, leave the card in `Revisão e QA` after the merge and say who must approve. Never claim an approval that did not happen.
 - If the task becomes blocked or validation fails, leave it in `Em desenvolvimento` and report the blocker and evidence. Never mark partial work as complete.
-- The connected Trello tools cannot comment on a card. Put the pull request link in the handoff instead of editing the card description.
+- The connected Trello tools cannot comment on a card. Put the merge commit in the handoff instead of editing the card description.
 
 ## Implement and Validate
 
@@ -49,9 +50,9 @@ The list that earlier versions of this skill called `Desenvolvimento` is `Em des
 - For API contract changes, follow the repository's OpenAPI and generated-client workflow.
 - Before completing the card, review the diff for scope, accidental edits, secrets, debug code, and unresolved acceptance criteria.
 
-## Branch, Commit, Pull Request and Merge
+## Branch, Commit, Merge and Push
 
-Do this for every card. Always open the pull request. Merge only when the current request asks for it (for example "faça o PR e em seguida o merge"); otherwise stop with the card in `Revisão e QA` and ask before merging.
+Do this for every card. Do not open a pull request. Merge into `master` and push only when the current request asks for it (for example "faça o merge e o push"); otherwise stop with the card committed on its branch, in `Revisão e QA`, and ask before merging. Pushing `master` publishes the work, so the request must say so.
 
 ### Branch
 
@@ -60,45 +61,41 @@ Do this for every card. Always open the pull request. Merge only when the curren
 
 ### Commit
 
-- Stage explicit paths (`git add <file>...`). Never use `git add -A` or `git add .`: the working tree often holds the user's unrelated, uncommitted work, and it must not enter the card's pull request.
+- Stage explicit paths (`git add <file>...`). Never use `git add -A` or `git add .`: the working tree often holds the user's unrelated, uncommitted work, and it must not enter the card's commits.
 - Check `git diff --staged --stat` before committing.
 - Follow the `commit-message` skill: `<type>(<scope>): <imperative subject>`, a body that explains why, and a `Card: <id> (Sprint 0)` line.
 - End the message with the attribution line from the session's system reminder.
 - Keep one logical change per commit. A change to this skill or other tooling goes in its own commit.
 
-### Pull request
+### Merge and push
 
-- `gh` is not installed on this machine (checked 2026-09-23) and there is no API token. SSH access to `origin` works, so push the branch with a plain `git push`, alone in its own command:
+The branch itself is not published: it stays local and is deleted after the merge. There is no pull request, no `gh`, and no browser step. SSH access to `origin` works, so `git push` is plain.
 
-```bash
-git push -u origin <branch>
-```
+1. **Check the branch.** `git status` is clean and the card's validation has passed on the branch. Move the card to `Revisão e QA` (see the state contract).
+2. **Bring in what landed on `master`.** Run `git fetch origin master`. If `origin/master` has commits the branch lacks, run `git merge origin/master` on the branch and resolve conflicts keeping the intent of both sides. Never resolve by discarding the incoming side. Then re-run the checks the incoming changes could affect, because other cards keep merging into `master` while yours is in progress.
+3. **Merge into `master` with a merge commit.** Do not squash or rebase. The history uses `Merge branch '<branch>'` commits, and the message ends with the attribution line from the session's system reminder.
 
-- If the push is denied, do not retry it or route around it (another tool, another remote, the browser). Stop and ask the user. The options are: the user pushes it, or the user chooses a local merge without a pull request. Use the local merge only when the user chooses it, and then apply the merge steps below with `git merge --no-ff` and no remote step. Leave the card in `Revisão e QA`, say that nothing was published, and skip the pull request body.
+   If `master` is free to check out in this worktree:
 
-- Open the pull request in the browser with the user's signed-in GitHub session: `https://github.com/Andre-Eduardo/agenda/compare/master...<branch>?expand=1`. Prefer the built-in browser; if GitHub is not signed in there, stop and ask the user to sign in. Never type credentials.
-- Base branch is `master`. Title is the commit subject. Body sections:
-  1. **Summary**: what changed and why, in a few lines.
-  2. **Card**: the Trello card URL and id.
-  3. **Validation**: the commands or checks that ran and their results, including any that did not run.
-  4. **Scope**: pre-existing uncommitted changes deliberately left out, and any open item for a reviewer.
-  5. The line `🤖 Generated with [Claude Code](https://claude.com/claude-code)`.
-- Move the card to `Revisão e QA` once the pull request exists.
+   ```bash
+   git switch master
+   git merge --ff-only origin/master
+   git merge --no-ff <branch> -m "Merge branch '<branch>'"
+   ```
 
-### Merge
+   If git refuses because `master` is checked out in another worktree (the main checkout, or a worktree the app created), do not touch that worktree. Merge on a detached HEAD instead:
 
-- Use **Create a merge commit**. The history of this repository has `Merge pull request #N from Andre-Eduardo/...` commits, so keep that style. Do not squash or rebase.
-- Delete the remote branch after the merge.
-- Bring the local checkout up to date without touching the user's uncommitted files:
+   ```bash
+   git switch --detach origin/master
+   git merge --no-ff <branch> -m "Merge branch '<branch>'"
+   ```
 
-```bash
-git switch master
-git pull --ff-only
-```
-
-- If `git pull` refuses because uncommitted files overlap the merged changes, stop and tell the user. Do not stash, reset, or discard anything.
-- Apply the `Concluído` rule from the state contract, then delete the local branch with `git branch -d <branch>`.
+4. **Push**, alone in its own command: `git push origin master`, or `git push origin HEAD:master` from the detached HEAD.
+   - If the push is denied, do not retry it or route around it (another tool, another remote, the browser). Stop, say that the merge exists only locally and nothing was published, and ask the user to run the push or to allow it. Leave the card in `Revisão e QA`.
+   - If it is rejected because `origin/master` moved, fetch and redo steps 2 and 3. Never force-push `master`.
+5. **Bring the local checkouts up to date** without touching the user's uncommitted files. Where `master` is checked out, run `git pull --ff-only`. A checkout that has an old `master` (the detached case) is not updated for you: name it in the handoff so the user can pull there. If `git pull` refuses because uncommitted files overlap the merged changes, stop and tell the user. Do not stash, reset, or discard anything.
+6. **Clean up.** Delete the local branch with `git branch -d <branch>`. Git refuses while the branch is checked out, which is why the detached merge above also frees it. Then apply the `Concluído` rule from the state contract.
 
 ## Handoff
 
-Report the card, the behavior delivered, the validation performed, and any noteworthy limitations. Include the pull request URL, the merge commit, and the card's final list with the reason. If more Sprint 0 cards remain, identify the next unblocked card without starting it unless the user's request includes continued execution.
+Report the card, the behavior delivered, the validation performed, and any noteworthy limitations. Include the merge commit, the push result, and the card's final list with the reason. If more Sprint 0 cards remain, identify the next unblocked card without starting it unless the user's request includes continued execution.
