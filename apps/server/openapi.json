@@ -1,6 +1,58 @@
 {
   "openapi": "3.0.0",
   "paths": {
+    "/api/v1/audit-logs": {
+      "get": {
+        "operationId": "search",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "pageSize",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Clinic audit entries",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaginatedAuditLog"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Request failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Lists append-only audit entries for the authenticated clinic",
+        "tags": [
+          "Audit Log"
+        ]
+      }
+    },
     "/api/v1/auth/sign-in": {
       "post": {
         "operationId": "signIn",
@@ -8486,6 +8538,82 @@
           "detail",
           "status",
           "instance"
+        ]
+      },
+      "AuditLog": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "clinicId": {
+            "type": "string"
+          },
+          "actorUserId": {
+            "type": "string"
+          },
+          "actorMemberId": {
+            "type": "string"
+          },
+          "resource": {
+            "type": "string"
+          },
+          "resourceId": {
+            "type": "string",
+            "nullable": true
+          },
+          "action": {
+            "type": "string"
+          },
+          "result": {
+            "type": "string",
+            "enum": [
+              "SUCCESS",
+              "DENIED",
+              "ERROR"
+            ]
+          },
+          "statusCode": {
+            "type": "number"
+          },
+          "ip": {
+            "type": "string"
+          },
+          "occurredAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "clinicId",
+          "actorUserId",
+          "actorMemberId",
+          "resource",
+          "resourceId",
+          "action",
+          "result",
+          "statusCode",
+          "ip",
+          "occurredAt"
+        ]
+      },
+      "PaginatedAuditLog": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AuditLog"
+            }
+          },
+          "totalCount": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "data",
+          "totalCount"
         ]
       },
       "SignInDto": {

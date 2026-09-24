@@ -1146,6 +1146,25 @@ model Event {
   @@map("event")
 }
 
+/// Append-only HTTP access trail. No foreign keys: deleting a member or resource
+/// must not erase the actor and resource identifiers in historical evidence.
+model AuditLog {
+  id            String   @id @db.Uuid
+  clinicId      String   @map("clinic_id") @db.Uuid
+  actorUserId   String   @map("actor_user_id") @db.Uuid
+  actorMemberId String   @map("actor_member_id") @db.Uuid
+  resource      String
+  resourceId    String?  @map("resource_id")
+  action        String
+  result        String
+  statusCode    Int      @map("status_code")
+  ip            String   @db.Inet
+  occurredAt    DateTime @default(now()) @map("occurred_at")
+
+  @@index([clinicId, occurredAt(sort: Desc)], name: "audit_log_clinic_time_idx")
+  @@map("audit_log")
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // 11. FORMULÁRIOS
 // ─────────────────────────────────────────────────────────────────────────────

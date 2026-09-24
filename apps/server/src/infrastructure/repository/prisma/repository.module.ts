@@ -4,6 +4,7 @@ import {AgentProposalRepository} from '@domain/agent-proposal/agent-proposal.rep
 import {AppointmentPaymentRepository} from '@domain/appointment-payment/appointment-payment.repository';
 import {AppointmentReminderRepository} from '@domain/appointment-reminder/appointment-reminder.repository';
 import {AppointmentRepository} from '@domain/appointment/appointment.repository';
+import {AuditLogRepository} from '@domain/audit/audit-log.repository';
 import {ClinicMemberRepository} from '@domain/clinic-member/clinic-member.repository';
 import {ClinicPatientAccessRepository} from '@domain/clinic-patient-access/clinic-patient-access.repository';
 import {ClinicReminderConfigRepository} from '@domain/clinic-reminder-config/clinic-reminder-config.repository';
@@ -53,6 +54,7 @@ import {AiAgentProfilePrismaRepository} from '@infrastructure/repository/ai-agen
 import {AppointmentPaymentPrismaRepository} from '@infrastructure/repository/appointment-payment.prisma.repository';
 import {AppointmentReminderPrismaRepository} from '@infrastructure/repository/appointment-reminder.prisma.repository';
 import {AppointmentPrismaRepository} from '@infrastructure/repository/appointment.prisma.repository';
+import {AuditLogPrismaRepository} from '@infrastructure/repository/audit-log.prisma.repository';
 import {ClinicMemberPrismaRepository} from '@infrastructure/repository/clinic-member.prisma.repository';
 import {ClinicPatientAccessPrismaRepository} from '@infrastructure/repository/clinic-patient-access.prisma.repository';
 import {ClinicReminderConfigPrismaRepository} from '@infrastructure/repository/clinic-reminder-config.prisma.repository';
@@ -99,6 +101,7 @@ import {WorkingHoursPrismaRepository} from '@infrastructure/repository/working-h
 import {PrismaService} from '.';
 
 const repositories: Provider[] = [
+    {provide: AuditLogRepository, useClass: AuditLogPrismaRepository},
     // Tenancy
     {provide: ClinicRepository, useClass: ClinicPrismaRepository},
     {provide: ClinicMemberRepository, useClass: ClinicMemberPrismaRepository},
