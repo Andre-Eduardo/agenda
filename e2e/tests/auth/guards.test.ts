@@ -23,7 +23,6 @@ test.describe('Auth guards', () => {
     });
 
     test('should log out and redirect back to sign in', async ({
-        page,
         dashboardPage,
         sidebar,
         signInPage,
