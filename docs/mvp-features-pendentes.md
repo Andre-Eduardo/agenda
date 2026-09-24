@@ -11,12 +11,12 @@ hoje. Os stubs comentados correspondentes estão em `e2e/tests/pending/`.
 - **Endereço, logo e especialidades da clínica** — `UpdateClinicService` e `PATCH /clinics/:id`
   existem, mas não há tela de configurações da clínica; `settings/pages/index` só edita o
   perfil do profissional (identidade/dados profissionais/consultório/segurança).
-- **Sistema de convite de membros** — `invitedByMemberId` é gravado no backend, mas não há
-  tela "Membros"/"Equipe" para convidar, listar ou aceitar convites.
-- **Perfis de acesso por papel (OWNER, ADMIN, PROFESSIONAL, SECRETARY, VIEWER)** — não há UI
-  para atribuir papéis a membros; o hook `useCan()` no frontend é um placeholder que sempre
-  retorna `true` (ver `docs/frontend/03-auth.md`), então restrições de UI por papel ainda não
-  podem ser validadas ponta a ponta.
+- **Convite de membros por email** — a tela Equipe lista e adiciona membros, mas ainda não
+  envia um convite para aceite posterior pelo destinatário.
+- **Edição de papéis na UI** — a tela Equipe permite criar membros com papéis,
+  mas ainda não oferece edição dos papéis de um membro existente. O `useCan()` consulta
+  permissões efetivas do servidor; a suíte `e2e/tests/auth/rbac-profiles.test.ts`
+  valida os cinco papéis com membros criados pelas factories.
 
 ## Pacientes
 
