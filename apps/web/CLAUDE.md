@@ -312,7 +312,7 @@ const allowed = useCan({has: 'appointment:create'});
 <Can has="appointment:delete" granted={<DeleteButton />} />
 ```
 
-> **Nota:** o hook `useCan` está como placeholder retornando sempre `true` até o backend expor `useGetUserPermissions` via Orval. Veja [`docs/frontend/03-auth.md`](../../docs/frontend/03-auth.md) para a API alvo.
+> **Nota:** `useCan` consulta `GET /clinic-members/me/permissions` (`useGetCurrentClinicMemberPermissions`, calculado no servidor para o membro ativo da clínica). Enquanto carrega, ou se a consulta falhar sem cache, retorna `false` (nega por padrão). Isso só molda a UI; o servidor é quem autoriza. Use `useCanState` quando precisar distinguir loading/erro. Veja [`docs/frontend/03-auth.md`](../../docs/frontend/03-auth.md).
 
 ## Convenções importantes
 

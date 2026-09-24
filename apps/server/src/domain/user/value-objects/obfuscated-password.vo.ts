@@ -106,4 +106,12 @@ export class ObfuscatedPassword {
             );
         });
     }
+
+    /**
+     * Never exposes the hash or the salt to `JSON.stringify`, so a password that ends up in an event payload, a log
+     * line or a response by mistake is redacted instead of leaked. Use `encode()` to persist it.
+     */
+    toJSON(): string {
+        return '[REDACTED]';
+    }
 }

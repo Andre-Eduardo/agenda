@@ -27,7 +27,10 @@ export class EventMapper extends MapperWithoutDto<unknown, unknown> {
 
         return {
             type,
-            payload: structuredClone(payload) as EventModel['payload'],
+            // JSON round trip, not `structuredClone`: it makes every aggregate and value object choose what it
+            // exposes through its own `toJSON()` (`User.toJSON()` omits the password hash and salt), and it yields
+            // the shape `EventPayload` declares (`Jsonify`). `structuredClone` copies every own property instead.
+            payload: JSON.parse(JSON.stringify(payload)),
             userIp: actor.ip,
             clinicId: actor.clinicId?.toString() ?? null,
             memberId: actor.clinicMemberId?.toString() ?? null,

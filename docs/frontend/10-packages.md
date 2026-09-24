@@ -50,8 +50,8 @@ getListItemsSuspenseQueryOptions(params)
 ```ts
 useSignIn(options)
 useSignOut(options)
-useGetUserPermissions(options)
-getUserPermissionsQueryKey()
+useGetCurrentClinicMemberPermissions(options)
+getGetCurrentClinicMemberPermissionsQueryKey()
 ```
 
 #### Company / Tenant Hooks

@@ -59,6 +59,14 @@ export default defineConfig({
                     },
                 },
             },
+            {
+                plugins: [tsconfigPaths()],
+                test: {
+                    name: 'unit',
+                    environment: 'node',
+                    include: ['src/**/*.test.{ts,tsx}'],
+                },
+            },
         ],
     },
 });

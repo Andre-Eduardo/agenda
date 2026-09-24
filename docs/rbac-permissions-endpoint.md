@@ -19,3 +19,13 @@ Esses identificadores descrevem capacidades no contexto da clínica. Acesso a
 um paciente, documento ou agenda específica ainda depende das verificações
 granulares dos respectivos endpoints. O client gerado disponibiliza
 `getCurrentClinicMemberPermissions` e `useGetCurrentClinicMemberPermissions`.
+
+## Consumo no frontend (L0-04)
+
+`useCan` e `<Can>` (`apps/web/src/hooks/useCan.tsx`) leem essa lista com
+`useGetCurrentClinicMemberPermissions`, em cache por 5 minutos e só quando há uma
+restrição a avaliar. A UI nega por padrão: enquanto a lista carrega, ou se a
+consulta falha sem nada em cache, a ação não é exibida nem acionável. Esse
+controle apenas molda a interface; o servidor continua sendo a autoridade e
+responde 403 a uma ação proibida. Detalhes de uso em
+[frontend/03-auth.md](frontend/03-auth.md#usecan-hook).
