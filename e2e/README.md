@@ -5,9 +5,9 @@ Suite de testes E2E baseada em Playwright + TypeScript, seguindo o padrão do
 
 Escopo atual: navegação, autenticação (login/logout/guards), CRUD de pacientes,
 evoluções clínicas (SOAP), agenda/consultas e perfil profissional, além de um
-primeiro conjunto de snapshots visuais (`@visual`). Cobertura de permissões
-granulares (RBAC) ainda não foi adicionada — depende do `useCan` deixar de ser
-placeholder no frontend.
+primeiro conjunto de snapshots visuais (`@visual`). A suíte
+`tests/auth/rbac-profiles.test.ts` cobre as permissões efetivas dos cinco papéis,
+ações exibidas na UI e a recusa de convites não autorizados pela API.
 
 Rotas ainda não implementadas no frontend (templates de formulário e chat
 clínico com IA) não têm Page Objects/testes e não são exibidas no menu lateral.

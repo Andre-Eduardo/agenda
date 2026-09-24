@@ -3,10 +3,12 @@ import {BasePage} from '@pages/base-page';
 
 export class TeamListPage extends BasePage {
     readonly title: Locator;
+    readonly addMemberButton: Locator;
 
     constructor(page: Page) {
         super(page);
         this.title = page.getByRole('heading', {name: /^equipe$/i});
+        this.addMemberButton = page.getByRole('button', {name: /adicionar membro/i});
     }
 
     async navigate() {

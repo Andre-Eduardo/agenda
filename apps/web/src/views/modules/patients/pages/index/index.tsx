@@ -35,15 +35,15 @@ import {EmptyStateCard} from '@/components/ui/componentes/empty-state';
 import {SegmentedControl} from '@/components/ui/componentes/segmented-control';
 import {Skeleton} from '@/components/ui/componentes/skeleton';
 import {StatTile} from '@/components/ui/componentes/stat-tile';
-import {Page} from '@/views/components/Page';
 import {css} from '@/styled-system/css';
+import {Can} from '@/views/components/Can';
+import {Page} from '@/views/components/Page';
 import {
     icon15,
     icon35,
     icon4,
     icon6,
     monoNums,
-    py6,
     skeletonH3Full,
     skeletonH3W24,
     skeletonH3_5W32,
@@ -131,7 +131,12 @@ const toolbarClearIcon = css({mr: '1', display: 'inline', w: '3.5', h: '3.5'});
 
 const toolbarSearchIcon = css({w: '4', h: '4', flexShrink: '0', color: 'text.tertiary'});
 
-const toolbarCount = css({fontFamily: 'mono', fontSize: 'sm', fontVariantNumeric: 'tabular-nums', color: 'text.tertiary'});
+const toolbarCount = css({
+    fontFamily: 'mono',
+    fontSize: 'sm',
+    fontVariantNumeric: 'tabular-nums',
+    color: 'text.tertiary',
+});
 
 const tableRoot = css({
     overflow: 'hidden',
@@ -212,7 +217,12 @@ const tableRowAgeWrapper = css({
     '&:hover [data-age-tooltip]': {opacity: '1'},
 });
 
-const tableRowAge = css({fontFamily: 'mono', fontSize: 'sm-body', fontVariantNumeric: 'tabular-nums', color: 'text.primary'});
+const tableRowAge = css({
+    fontFamily: 'mono',
+    fontSize: 'sm-body',
+    fontVariantNumeric: 'tabular-nums',
+    color: 'text.primary',
+});
 
 const tableRowAgeUnit = css({ml: '0.5', color: 'text.tertiary'});
 
@@ -237,7 +247,12 @@ const tableRowAgeTooltip = css({
     transitionTimingFunction: 'ease-out',
 });
 
-const tableRowDocument = css({fontFamily: 'mono', fontSize: 'sm', fontVariantNumeric: 'tabular-nums', color: 'text.secondary'});
+const tableRowDocument = css({
+    fontFamily: 'mono',
+    fontSize: 'sm',
+    fontVariantNumeric: 'tabular-nums',
+    color: 'text.secondary',
+});
 
 const tableRowInsuranceBadge = css({
     display: 'inline-flex',
@@ -338,7 +353,12 @@ const patientCardDetailRow = css({display: 'flex', alignItems: 'center', justify
 
 const patientCardDetailLabel = css({fontSize: '2xs', color: 'text.tertiary'});
 
-const patientCardDetailValue = css({fontFamily: 'mono', fontSize: '2xs', fontVariantNumeric: 'tabular-nums', color: 'text.secondary'});
+const patientCardDetailValue = css({
+    fontFamily: 'mono',
+    fontSize: '2xs',
+    fontVariantNumeric: 'tabular-nums',
+    color: 'text.secondary',
+});
 
 const skeletonCardRoot = css({
     display: 'flex',
@@ -375,7 +395,13 @@ const cardsFooter = css({
     bg: 'bg.card',
 });
 
-const paginationRoot = css({display: 'flex', alignItems: 'center', justifyContent: 'space-between', px: '[18px]', py: '[14px]'});
+const paginationRoot = css({
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    px: '[18px]',
+    py: '[14px]',
+});
 
 const paginationInfo = css({fontSize: 'sm', color: 'text.secondary'});
 
@@ -605,15 +631,14 @@ function SkeletonCard() {
             <div className={skeletonCardTop}>
                 <Skeleton className={skeletonCardAvatar} />
                 <div className={skeletonCardNameBlock}>
-                <Skeleton className={skeletonH4W28} />
-                <Skeleton className={skeletonH3W24} />
+                    <Skeleton className={skeletonH4W28} />
+                    <Skeleton className={skeletonH3W24} />
+                </div>
             </div>
-        </div>
-        <div className={skeletonCardDetails}>
-            <Skeleton className={skeletonH3Full} />
-            <Skeleton className={skeletonH3Full} />
-        </div>
-
+            <div className={skeletonCardDetails}>
+                <Skeleton className={skeletonH3Full} />
+                <Skeleton className={skeletonH3Full} />
+            </div>
         </div>
     );
 }
@@ -858,10 +883,12 @@ export function PatientsPage() {
             title="Pacientes"
             subtitle={subtitle}
             actions={
-                <Button size="sm" onClick={() => navigate({to: '/patients/new'})}>
-                    <Plus className={icon4} />
-                    Novo paciente
-                </Button>
+                <Can has="patient:create">
+                    <Button size="sm" onClick={() => navigate({to: '/patients/new'})}>
+                        <Plus className={icon4} />
+                        Novo paciente
+                    </Button>
+                </Can>
             }
         >
             {/* Stats */}
