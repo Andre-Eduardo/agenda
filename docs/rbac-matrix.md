@@ -1,6 +1,7 @@
-# Matriz RBAC da clínica — v0.2.0
+# Matriz RBAC da clínica — v0.3.0
 
-**Estado:** aprovada pelo solicitante em 2026-09-23.  **Referência:** L0-02, Sprint 0.
+**Estado:** v0.2.0 aprovada pelo solicitante em 2026-09-23; extensão v0.3.0 aguarda revisão do PR L3-02.
+**Referência:** L0-02 e L3-02, Sprint 0.
 
 Esta tabela explicita o teto de capacidade de cada papel para as permissões de
 `apps/server/src/domain/auth/permission.ts`. A implementação atual está em
@@ -36,6 +37,7 @@ verificações de clínica e paciente às ações críticas.
 
 | Recurso | OWNER | ADMIN | PROFESSIONAL | SECRETARY | VIEWER |
 | --- | --- | --- | --- | --- | --- |
+| audit-log | view | view | — | — | — |
 | appointment-payment | register, update, view | register, update, view | view | register, update, view | — |
 | appointment-reminder | dispatch, view | dispatch, view | — | — | — |
 | appointment | call, cancel, checkin, create, delete, update, view | call, cancel, checkin, create, delete, update, view | call, cancel, checkin, create, update, view | call, cancel, checkin, create, update, view | view |
@@ -87,3 +89,10 @@ verificações de clínica e paciente às ações críticas.
 
 Qualquer mudança posterior nas decisões exige nova versão e revisão da tabela,
 do mapa do domínio e do teste de correspondência.
+
+## Revisão v0.3.0 (L3-02)
+
+O novo `audit-log:view` permite consulta da trilha somente a OWNER e ADMIN da
+clínica autenticada. A consulta sempre usa a clínica do ator, sem aceitar um ID
+de clínica enviado pelo cliente. A aprovação desta ampliação da matriz cabe à
+revisão do PR L3-02.

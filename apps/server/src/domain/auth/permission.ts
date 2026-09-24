@@ -213,7 +213,12 @@ export enum RoomPermission {
     DELETE = 'room:delete',
 }
 
+export enum AuditLogPermission {
+    VIEW = 'audit-log:view',
+}
+
 const PERMISSIONS = [
+    ...Object.values(AuditLogPermission),
     ...Object.values(UserPermission),
     ...Object.values(ProfessionalPermission),
     ...Object.values(PatientPermission),
