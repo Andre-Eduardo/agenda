@@ -8,6 +8,10 @@ import type {Record, RecordId, AttendanceType, ClinicalStatusTag, RecordSource} 
 
 export type RecordSearchFilter = {
     ids?: RecordId[];
+    patientIds?: PatientId[];
+    accessPatientIds?: PatientId[];
+    allowedRecordIds?: RecordId[];
+    deniedRecordIds?: RecordId[];
     term?: string;
     clinicId?: ClinicId;
     patientId?: PatientId;

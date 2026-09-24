@@ -93,7 +93,8 @@ const guards: Provider[] = [
                 configService.clinicMember.cookieName,
                 tokenProvider,
                 createAuthorizer(userRepository, clinicMemberRepository),
-                new Reflector()
+                new Reflector(),
+                clinicMemberRepository
             ),
         inject: [EnvConfigService, TokenProvider, UserRepository, ClinicMemberRepository],
     },

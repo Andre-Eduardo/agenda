@@ -1,6 +1,7 @@
 import {Injectable} from '@nestjs/common';
 import {ApplicationService, Command} from '@application/@shared/application.service';
 import {AppointmentDto, CreateAppointmentDto} from '@application/appointment/dtos';
+import {PatientAccessChecker} from '@application/clinic-patient-access/services/patient-access-checker.service';
 import {AgendaAccessChecker} from '@application/professional-agenda-access/services';
 import {InvalidInputException, PreconditionException, ResourceNotFoundException} from '@domain/@shared/exceptions';
 import {Transactional} from '@domain/@shared/repository';
@@ -22,6 +23,7 @@ import {RoomRepository} from '@domain/room/room.repository';
 export class CreateAppointmentService implements ApplicationService<CreateAppointmentDto, AppointmentDto> {
     constructor(
         private readonly appointmentRepository: AppointmentRepository,
+        private readonly patientAccessChecker: PatientAccessChecker,
         private readonly clinicMemberRepository: ClinicMemberRepository,
         private readonly clinicRepository: ClinicRepository,
         private readonly patientRepository: PatientRepository,
@@ -57,6 +59,8 @@ export class CreateAppointmentService implements ApplicationService<CreateAppoin
         if (patient === null) {
             throw new ResourceNotFoundException('patient.not_found', patientId.toString());
         }
+
+        await this.patientAccessChecker.assertCanAccess(actor, patientId, 'appointment');
 
         // 3. Time interval must be coherent.
         if (startAt >= endAt) {

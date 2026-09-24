@@ -1,5 +1,10 @@
 import {Injectable} from '@nestjs/common';
-import {InvalidInputException, PreconditionException, ResourceNotFoundException} from '@domain/@shared/exceptions';
+import {
+    AccessDeniedException,
+    AccessDeniedReason,
+    InvalidInputException,
+    ResourceNotFoundException,
+} from '@domain/@shared/exceptions';
 import {AppointmentPaymentStatus, PaymentMethod} from '@domain/appointment-payment/entities';
 import {PrismaProvider} from '@infrastructure/repository/prisma/prisma.provider';
 
@@ -111,7 +116,7 @@ export class FinancialReportService {
         const actor = await this.prisma.clinicMember.findUnique({where: {id: actorMemberId}});
 
         if (!actor || actor.clinicId !== clinicId) {
-            throw new PreconditionException('Member does not belong to this clinic.');
+            throw new AccessDeniedException('Member does not belong to this clinic.', AccessDeniedReason.NOT_ALLOWED);
         }
 
         const where = {
@@ -186,7 +191,7 @@ export class FinancialReportService {
         const actor = await this.prisma.clinicMember.findUnique({where: {id: actorMemberId}});
 
         if (!actor || actor.clinicId !== clinicId) {
-            throw new PreconditionException('Member does not belong to this clinic.');
+            throw new AccessDeniedException('Member does not belong to this clinic.', AccessDeniedReason.NOT_ALLOWED);
         }
 
         const where = {

@@ -12,6 +12,7 @@ export type AppointmentSearchFilter = {
     attendedByMemberId?: ClinicMemberId;
     createdByMemberId?: ClinicMemberId;
     patientId?: PatientId;
+    patientIds?: PatientId[];
     status?: AppointmentStatus[];
     dateFrom?: Date;
     dateTo?: Date;

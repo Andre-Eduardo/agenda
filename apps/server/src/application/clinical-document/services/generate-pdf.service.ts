@@ -1,6 +1,8 @@
 import {Inject, Injectable} from '@nestjs/common';
 import {uuidv7} from 'uuidv7';
 import {ApplicationService, Command} from '@application/@shared/application.service';
+import {assertEntityBelongsToClinic} from '@application/@shared/validators/cross-tenant.validator';
+import {PatientAccessChecker} from '@application/clinic-patient-access/services/patient-access-checker.service';
 import {ClinicalDocumentDto} from '@application/clinical-document/dtos';
 import {PdfBuilderService} from '@application/clinical-document/pdf-builder/pdf-builder.service';
 import type {PdfBuildContext} from '@application/clinical-document/pdf-builder/pdf-builder.service';
@@ -21,6 +23,7 @@ type GeneratePdfDto = {documentId: ClinicalDocumentId};
 export class GeneratePdfService implements ApplicationService<GeneratePdfDto, ClinicalDocumentDto> {
     constructor(
         private readonly clinicalDocumentRepository: ClinicalDocumentRepository,
+        private readonly patientAccessChecker: PatientAccessChecker,
         private readonly clinicalDocumentTemplateRepository: ClinicalDocumentTemplateRepository,
         private readonly clinicRepository: ClinicRepository,
         private readonly professionalRepository: ProfessionalRepository,
@@ -34,9 +37,12 @@ export class GeneratePdfService implements ApplicationService<GeneratePdfDto, Cl
     async execute({actor, payload}: Command<GeneratePdfDto>): Promise<ClinicalDocumentDto> {
         const document = await this.clinicalDocumentRepository.findById(payload.documentId);
 
-        if (!document || document.clinicId.toString() !== actor.clinicId.toString()) {
+        if (!document) {
             throw new ResourceNotFoundException('Clinical document not found.', payload.documentId.toString());
         }
+
+        assertEntityBelongsToClinic(document.clinicId, actor.clinicId);
+        await this.patientAccessChecker.assertCanAccess(actor, document.patientId, 'write');
 
         const [template, clinic, professional, patient] = await Promise.all([
             this.clinicalDocumentTemplateRepository

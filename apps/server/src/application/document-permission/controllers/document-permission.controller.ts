@@ -1,10 +1,12 @@
 import {Body, Controller, Post} from '@nestjs/common';
 import {ApiTags} from '@nestjs/swagger';
+import {Authorize} from '@application/@shared/auth';
 import {RequestActor} from '@application/@shared/auth/request-actor.decorator';
 import {ApiOperation} from '@application/@shared/openapi/decorators';
 import {DocumentPermissionDto, GrantDocumentPermissionDto} from '@application/document-permission/dtos';
 import {GrantDocumentPermissionService} from '@application/document-permission/services';
 import {Actor} from '@domain/@shared/actor';
+import {DocumentPermissionPermission} from '@domain/auth';
 
 @ApiTags('DocumentPermission')
 @Controller('document-permissions')
@@ -15,6 +17,7 @@ export class DocumentPermissionController {
         summary: 'Grant or revoke a per-document permission',
         responses: [{status: 201, description: 'Permission granted', type: DocumentPermissionDto}],
     })
+    @Authorize(DocumentPermissionPermission.MANAGE)
     @Post()
     grantPermission(
         @RequestActor() actor: Actor,

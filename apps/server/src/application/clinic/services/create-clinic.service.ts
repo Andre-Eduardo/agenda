@@ -16,6 +16,7 @@ export class CreateClinicService implements ApplicationService<CreateClinicDto, 
     async execute({actor, payload}: Command<CreateClinicDto>): Promise<ClinicDto> {
         const clinic = Clinic.create({
             name: payload.name,
+            createdByUserId: actor.userId,
             documentId: payload.documentId ? DocumentId.create(payload.documentId) : null,
             phone: payload.phone ? Phone.create(payload.phone) : null,
             email: payload.email ? Email.create(payload.email) : null,

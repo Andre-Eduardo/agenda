@@ -1,5 +1,6 @@
 import {Injectable} from '@nestjs/common';
 import {ApplicationService, Command} from '@application/@shared/application.service';
+import {assertEntityBelongsToClinic} from '@application/@shared/validators/cross-tenant.validator';
 import {ClinicDto} from '@application/clinic/dtos';
 import {ResourceNotFoundException} from '@domain/@shared/exceptions';
 import {ClinicRepository} from '@domain/clinic/clinic.repository';
@@ -11,12 +12,14 @@ export type GetClinicInput = {clinicId: ClinicId};
 export class GetClinicService implements ApplicationService<GetClinicInput, ClinicDto> {
     constructor(private readonly clinicRepository: ClinicRepository) {}
 
-    async execute({payload}: Command<GetClinicInput>): Promise<ClinicDto> {
+    async execute({actor, payload}: Command<GetClinicInput>): Promise<ClinicDto> {
         const clinic = await this.clinicRepository.findById(payload.clinicId);
 
         if (clinic === null) {
             throw new ResourceNotFoundException('clinic.not_found', payload.clinicId.toString());
         }
+
+        assertEntityBelongsToClinic(clinic.id, actor.clinicId);
 
         return new ClinicDto(clinic);
     }
