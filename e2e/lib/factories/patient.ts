@@ -9,6 +9,13 @@ export type CreatePatientEntry = {
     email?: string;
     phone?: string;
     birthDate?: Date;
+    /**
+     * Clinic member ids granted FULL access to the patient (ClinicPatientAccess). Defaults to every active
+     * PROFESSIONAL member of the clinic, as if one of them had registered the patient through the API, which
+     * is what CreatePatientService does. OWNER and ADMIN never need it. Pass [] to seed a patient that no
+     * non-manager member can open.
+     */
+    grantAccessTo?: string[];
 };
 
 export type CreatedPatient = {
@@ -54,6 +61,27 @@ export async function createTestPatient(entry: CreatePatientEntry): Promise<Crea
             createdAt: now,
             updatedAt: now,
         },
+    });
+
+    const memberIds =
+        entry.grantAccessTo ??
+        (
+            await prisma.clinicMember.findMany({
+                where: {clinicId: entry.clinicId, roles: {has: 'PROFESSIONAL'}, isActive: true, deletedAt: null},
+                select: {id: true},
+            })
+        ).map((member) => member.id);
+
+    await prisma.clinicPatientAccess.createMany({
+        data: memberIds.map((memberId) => ({
+            id: uuidv7(),
+            clinicId: entry.clinicId,
+            memberId,
+            patientId: person.id,
+            accessLevel: 'FULL',
+            createdAt: now,
+            updatedAt: now,
+        })),
     });
 
     return {
