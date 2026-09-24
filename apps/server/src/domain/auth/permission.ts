@@ -101,6 +101,14 @@ export enum ClinicMemberPermission {
     CREATE = 'clinic-member:create',
 }
 
+export enum ClinicPatientAccessPermission {
+    MANAGE = 'clinic-patient-access:manage',
+}
+
+export enum DocumentPermissionPermission {
+    MANAGE = 'document-permission:manage',
+}
+
 export enum InsurancePlanPermission {
     VIEW = 'insurance-plan:view',
     CREATE = 'insurance-plan:create',
@@ -220,6 +228,8 @@ const PERMISSIONS = [
     ...Object.values(PatientFormPermission),
     ...Object.values(ClinicPermission),
     ...Object.values(ClinicMemberPermission),
+    ...Object.values(ClinicPatientAccessPermission),
+    ...Object.values(DocumentPermissionPermission),
     ...Object.values(InsurancePlanPermission),
     ...Object.values(ClinicalChatPermission),
     ...Object.values(ClinicalDocumentPermission),

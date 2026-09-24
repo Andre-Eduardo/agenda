@@ -49,11 +49,24 @@ export class RecordPrismaRepository extends PrismaRepository implements RecordRe
         pagination: Pagination<RecordSortOptions>,
         filter: RecordSearchFilter = {}
     ): Promise<PaginatedList<Record>> {
+        const patientIds = filter.patientIds?.map((id) => id.toString());
+        const accessScope: PrismaClient.Prisma.RecordWhereInput | undefined = filter.accessPatientIds
+            ? {
+                  OR: [
+                      {patientId: {in: filter.accessPatientIds.map((id) => id.toString())}},
+                      {id: {in: (filter.allowedRecordIds ?? []).map((id) => id.toString())}},
+                  ],
+              }
+            : undefined;
+        const deniedScope: PrismaClient.Prisma.RecordWhereInput | undefined = filter.deniedRecordIds?.length
+            ? {id: {notIn: filter.deniedRecordIds.map((id) => id.toString())}}
+            : undefined;
         const where: PrismaClient.Prisma.RecordWhereInput = {
+            AND: [accessScope, deniedScope].filter((scope) => scope !== undefined),
             id: filter.ids ? {in: filter.ids.map((id) => id.toString())} : undefined,
             description: filter.term ? {contains: filter.term, mode: 'insensitive'} : undefined,
             clinicId: filter.clinicId ? filter.clinicId.toString() : undefined,
-            patientId: filter.patientId ? filter.patientId.toString() : undefined,
+            patientId: filter.patientId?.toString() ?? (patientIds ? {in: patientIds} : undefined),
             createdByMemberId: filter.createdByMemberId ? filter.createdByMemberId.toString() : undefined,
             responsibleProfessionalId: filter.responsibleProfessionalId
                 ? filter.responsibleProfessionalId.toString()

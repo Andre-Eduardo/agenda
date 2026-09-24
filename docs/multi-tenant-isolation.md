@@ -112,6 +112,27 @@ const appointment = Appointment.create({
 - `@BypassClinicMember()` — pula a validação de membro no AuthGuard. Use para endpoints que operam ao nível de User (ex: criação de Clinic, aceitar convite) ou que não precisam de contexto de membro.
 - `@Authorize(Permission)` — checa permissões via `Authorizer.validate(clinicMemberId, userId, permission)`.
 
+### 7. Verificações nas ações críticas
+
+- O `AuthGuard` confirma no banco que o membro selecionado continua ativo,
+  pertence ao usuário do token e à clínica indicada pelo token. Um token antigo
+  não mantém acesso depois da revogação do membro.
+- A primeira associação a uma clínica só pode ser feita pelo usuário registrado
+  em `Clinic.createdByUserId` quando a clínica foi criada. Convites posteriores
+  exigem `OWNER` ou `ADMIN` ativo na própria clínica.
+- Ao cadastrar um paciente, o profissional recebe `FULL` e a secretaria recebe
+  `REGISTER_ONLY`. `OWNER` e `ADMIN` dispensam linha de acesso individual.
+- Leituras e alterações por ID de paciente, prontuário, agenda, pagamento e
+  documento clínico rejeitam clínica diferente com HTTP 403. Listagens filtram
+  por clínica e pelo conjunto de pacientes acessíveis ao membro.
+- Dados básicos do paciente e agenda aceitam `REGISTER_ONLY`; dados clínicos
+  exigem `READ_ONLY` ou `FULL`. Criação e alteração clínica exigem `FULL`.
+  `DocumentPermission` pode sobrescrever a leitura de um prontuário específico.
+- Concessões de `ClinicPatientAccess` e `DocumentPermission` exigem permissão
+  de gestão e validam a clínica do membro, do paciente e do documento alvo.
+- O status financeiro embutido na resposta de agenda só é consultado e exibido
+  para quem tem `appointment-payment:view`.
+
 ---
 
 ## Permissionamento granular

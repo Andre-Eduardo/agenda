@@ -1,5 +1,6 @@
 import {Body, Controller, Delete, Param, Post} from '@nestjs/common';
 import {ApiTags} from '@nestjs/swagger';
+import {Authorize} from '@application/@shared/auth';
 import {RequestActor} from '@application/@shared/auth/request-actor.decorator';
 import {ApiOperation} from '@application/@shared/openapi/decorators';
 import {ClinicPatientAccessDto, GrantClinicPatientAccessDto} from '@application/clinic-patient-access/dtos';
@@ -8,6 +9,7 @@ import {
     RevokeClinicPatientAccessService,
 } from '@application/clinic-patient-access/services';
 import {Actor} from '@domain/@shared/actor';
+import {ClinicPatientAccessPermission} from '@domain/auth';
 import {ClinicMemberId} from '@domain/clinic-member/entities';
 import {PatientId} from '@domain/patient/entities';
 
@@ -23,6 +25,7 @@ export class ClinicPatientAccessController {
         summary: 'Grant clinic-patient access to a member',
         responses: [{status: 201, description: 'Access granted', type: ClinicPatientAccessDto}],
     })
+    @Authorize(ClinicPatientAccessPermission.MANAGE)
     @Post()
     grantAccess(
         @RequestActor() actor: Actor,
@@ -35,6 +38,7 @@ export class ClinicPatientAccessController {
         summary: "Revoke a member's access to a patient",
         responses: [{status: 204, description: 'Access revoked'}],
     })
+    @Authorize(ClinicPatientAccessPermission.MANAGE)
     @Delete(':memberId/:patientId')
     async revokeAccess(
         @RequestActor() actor: Actor,

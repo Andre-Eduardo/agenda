@@ -10,6 +10,7 @@ import {InvalidInputException} from '@domain/@shared/exceptions';
 import type {DocumentId, Email, Phone} from '@domain/@shared/value-objects';
 import {ClinicCreatedEvent, ClinicChangedEvent, ClinicDeletedEvent} from '@domain/clinic/events';
 import type {AiSpecialtyGroup} from '@domain/form-template/entities';
+import type {UserId} from '@domain/user/entities';
 
 export type ClinicProps = EntityProps<Clinic>;
 export type CreateClinic = CreateEntity<Clinic>;
@@ -17,6 +18,7 @@ export type UpdateClinic = Partial<ClinicProps>;
 
 export class Clinic extends AggregateRoot<ClinicId> {
     name: string;
+    createdByUserId: UserId | null;
     documentId: DocumentId | null;
     phone: Phone | null;
     email: Email | null;
@@ -38,6 +40,7 @@ export class Clinic extends AggregateRoot<ClinicId> {
     constructor(props: AllEntityProps<Clinic>) {
         super(props);
         this.name = props.name;
+        this.createdByUserId = props.createdByUserId ?? null;
         this.documentId = props.documentId ?? null;
         this.phone = props.phone ?? null;
         this.email = props.email ?? null;
@@ -63,6 +66,7 @@ export class Clinic extends AggregateRoot<ClinicId> {
             ...props,
             id: ClinicId.generate(),
             name: props.name,
+            createdByUserId: props.createdByUserId ?? null,
             documentId: props.documentId ?? null,
             phone: props.phone ?? null,
             email: props.email ?? null,
@@ -140,6 +144,7 @@ export class Clinic extends AggregateRoot<ClinicId> {
         return {
             id: this.id.toJSON(),
             name: this.name,
+            createdByUserId: this.createdByUserId?.toJSON() ?? null,
             documentId: this.documentId?.toJSON() ?? null,
             phone: this.phone?.toJSON() ?? null,
             email: this.email?.toJSON() ?? null,

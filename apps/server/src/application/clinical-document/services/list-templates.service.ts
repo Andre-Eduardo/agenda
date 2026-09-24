@@ -1,5 +1,6 @@
 import {Injectable} from '@nestjs/common';
 import {ApplicationService, Command} from '@application/@shared/application.service';
+import {assertEntityBelongsToClinic} from '@application/@shared/validators/cross-tenant.validator';
 import {ClinicalDocumentTemplateDto} from '@application/clinical-document/dtos';
 import {ClinicId} from '@domain/clinic/entities';
 import {ClinicalDocumentTemplateRepository} from '@domain/clinical-document/clinical-document-template.repository';
@@ -10,7 +11,9 @@ type ListTemplatesDto = {clinicId: ClinicId};
 export class ListTemplatesService implements ApplicationService<ListTemplatesDto, ClinicalDocumentTemplateDto[]> {
     constructor(private readonly clinicalDocumentTemplateRepository: ClinicalDocumentTemplateRepository) {}
 
-    async execute({payload}: Command<ListTemplatesDto>): Promise<ClinicalDocumentTemplateDto[]> {
+    async execute({actor, payload}: Command<ListTemplatesDto>): Promise<ClinicalDocumentTemplateDto[]> {
+        assertEntityBelongsToClinic(payload.clinicId, actor.clinicId);
+
         const templates = await this.clinicalDocumentTemplateRepository.findAllByClinic(payload.clinicId);
 
         return templates.map((t) => new ClinicalDocumentTemplateDto(t));

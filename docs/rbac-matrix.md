@@ -1,4 +1,4 @@
-# Matriz RBAC da clínica — v0.1.0
+# Matriz RBAC da clínica — v0.2.0
 
 **Estado:** aprovada pelo solicitante em 2026-09-23.  **Referência:** L0-02, Sprint 0.
 
@@ -6,8 +6,8 @@ Esta tabela explicita o teto de capacidade de cada papel para as permissões de
 `apps/server/src/domain/auth/permission.ts`. A implementação atual está em
 `apps/server/src/domain/auth/authorizer/clinic-member-role.authorizer.ts`.
 Cada célula lista as ações permitidas; `—` significa nenhuma. Ações não listadas
-na célula são negadas. Esta versão documenta as permissões efetivas existentes,
-sem alterar o comportamento de autorização nesta tarefa.
+na célula são negadas. A L0-05 acrescenta permissões de gestão de acesso e
+verificações de clínica e paciente às ações críticas.
 
 ## Regras de interpretação
 
@@ -17,15 +17,18 @@ sem alterar o comportamento de autorização nesta tarefa.
   permissões hoje registradas em `Permission.all()`; isso inclui permissões
   novas até que a política seja revista. Nenhum papel substitui as verificações
   de vínculo com clínica, paciente, documento ou agenda.
-- O papel define apenas o teto funcional. Para dados clínicos, a autorização
-  também deve considerar `ClinicPatientAccess` e, quando aplicável,
-  `DocumentPermission`. Para agenda de terceiros, deve considerar
-  `ProfessionalAgendaAccess`. A revisão da aplicação dessas restrições em
-  todos os endpoints é a L0-05.
+- O papel define apenas o teto funcional. Os endpoints de paciente,
+  prontuário, agenda e documento clínico também consultam
+  `ClinicPatientAccess`; a leitura individual de prontuário respeita
+  `DocumentPermission`. Para agenda de terceiros, aplica-se
+  `ProfessionalAgendaAccess`. As ações críticas verificam a clínica do recurso
+  antes de ler ou gravar.
 - `user:*` representa o catálogo de permissões no contexto da clínica. As
   permissões globais de perfil e inicialização são tratadas separadamente por
   `GlobalAuthorizer`; `SUPER_ADMIN` também está fora desta matriz.
-- `clinic-member:create` é a única ação de equipe neste catálogo. Alteração,
+- `clinic-member:create`, `clinic-patient-access:manage` e
+  `document-permission:manage` protegem convites e concessões de acesso.
+  Alteração,
   remoção e concessão granular de membros não têm permissão dedicada aqui;
   novos endpoints precisam definir essas ações antes de serem expostos.
 
@@ -38,11 +41,13 @@ sem alterar o comportamento de autorização nesta tarefa.
 | appointment | call, cancel, checkin, create, delete, update, view | call, cancel, checkin, create, delete, update, view | call, cancel, checkin, create, update, view | call, cancel, checkin, create, update, view | view |
 | billing | view-clinic, view-member | view-clinic, view-member | — | — | — |
 | clinic-member | create | create | — | — | — |
+| clinic-patient-access | manage | manage | — | — | — |
 | clinic-reminder-config | manage, view | manage, view | — | — | — |
 | clinic | update | update | — | — | — |
 | clinical-chat | create, delete, reindex, update, view | create, delete, reindex, update, view | create, update, view | — | — |
 | clinical-document | cancel, create, generate, manage-templates, view | cancel, create, generate, manage-templates, view | create, generate, view | — | — |
 | clinical-profile | update, view | update, view | update, view | view | view |
+| document-permission | manage | manage | — | — | — |
 | financial-report | view | view | — | — | — |
 | form-template | create, delete, publish, update, view | create, delete, publish, update, view | view | — | — |
 | imported-document | create, update, view | create, update, view | create, update, view | — | — |
@@ -72,8 +77,8 @@ sem alterar o comportamento de autorização nesta tarefa.
 
 1. `SECRETARY` e `VIEWER` têm `record:view`, `clinical-profile:view`,
    `patient-alert:view` e `patient-form:view` no teto do papel. O acesso a cada
-   paciente ou documento precisa de controle granular adicional. A L0-05
-   verificará se todos os endpoints aplicam esse controle.
+   paciente ou documento depende do controle granular adicional aplicado
+   pela L0-05.
 2. `PROFESSIONAL` vê dados de pagamento do atendimento, cobertura e planos do
    paciente, mas não registra recebimentos nem altera convênio.
 3. `OWNER` e `ADMIN` recebem automaticamente cada nova permissão adicionada ao

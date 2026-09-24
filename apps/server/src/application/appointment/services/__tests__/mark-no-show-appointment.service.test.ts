@@ -1,4 +1,6 @@
 import {mock} from 'jest-mock-extended';
+import {MarkNoShowAppointmentService} from '@application/appointment/services/mark-no-show-appointment.service';
+import {PatientAccessChecker} from '@application/clinic-patient-access/services/patient-access-checker.service';
 import type {Actor} from '@domain/@shared/actor';
 import {PreconditionException, ResourceNotFoundException} from '@domain/@shared/exceptions';
 import {AppointmentRepository} from '@domain/appointment/appointment.repository';
@@ -7,7 +9,6 @@ import {ClinicMemberId} from '@domain/clinic-member/entities';
 import {ClinicId} from '@domain/clinic/entities';
 import {EventDispatcher} from '@domain/event';
 import {PatientId} from '@domain/patient/entities';
-import {MarkNoShowAppointmentService} from '@application/appointment/services/mark-no-show-appointment.service';
 
 describe('MarkNoShowAppointmentService', () => {
     const actor = {
@@ -38,7 +39,11 @@ describe('MarkNoShowAppointmentService', () => {
     beforeEach(() => {
         appointmentRepository = mock<AppointmentRepository>();
         eventDispatcher = mock<EventDispatcher>();
-        service = new MarkNoShowAppointmentService(appointmentRepository, eventDispatcher);
+        service = new MarkNoShowAppointmentService(
+            mock<PatientAccessChecker>(),
+            appointmentRepository,
+            eventDispatcher
+        );
     });
 
     it('should mark a scheduled appointment as no-show', async () => {
@@ -66,8 +71,6 @@ describe('MarkNoShowAppointmentService', () => {
 
         appointmentRepository.findById.mockResolvedValue(appointment);
 
-        await expect(service.execute({actor, payload: {id: appointment.id}})).rejects.toThrow(
-            PreconditionException
-        );
+        await expect(service.execute({actor, payload: {id: appointment.id}})).rejects.toThrow(PreconditionException);
     });
 });

@@ -1,4 +1,6 @@
 import {mock} from 'jest-mock-extended';
+import {ConfirmAppointmentService} from '@application/appointment/services/confirm-appointment.service';
+import {PatientAccessChecker} from '@application/clinic-patient-access/services/patient-access-checker.service';
 import type {Actor} from '@domain/@shared/actor';
 import {PreconditionException, ResourceNotFoundException} from '@domain/@shared/exceptions';
 import {AppointmentRepository} from '@domain/appointment/appointment.repository';
@@ -7,7 +9,6 @@ import {ClinicMemberId} from '@domain/clinic-member/entities';
 import {ClinicId} from '@domain/clinic/entities';
 import {EventDispatcher} from '@domain/event';
 import {PatientId} from '@domain/patient/entities';
-import {ConfirmAppointmentService} from '@application/appointment/services/confirm-appointment.service';
 
 describe('ConfirmAppointmentService', () => {
     const actor = {
@@ -38,7 +39,7 @@ describe('ConfirmAppointmentService', () => {
     beforeEach(() => {
         appointmentRepository = mock<AppointmentRepository>();
         eventDispatcher = mock<EventDispatcher>();
-        service = new ConfirmAppointmentService(appointmentRepository, eventDispatcher);
+        service = new ConfirmAppointmentService(mock<PatientAccessChecker>(), appointmentRepository, eventDispatcher);
     });
 
     it('should confirm a scheduled appointment', async () => {
@@ -66,8 +67,6 @@ describe('ConfirmAppointmentService', () => {
 
         appointmentRepository.findById.mockResolvedValue(appointment);
 
-        await expect(service.execute({actor, payload: {id: appointment.id}})).rejects.toThrow(
-            PreconditionException
-        );
+        await expect(service.execute({actor, payload: {id: appointment.id}})).rejects.toThrow(PreconditionException);
     });
 });

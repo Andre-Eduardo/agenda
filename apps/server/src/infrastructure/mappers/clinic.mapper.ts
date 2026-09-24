@@ -4,6 +4,7 @@ import {toEnumArray} from '@domain/@shared/utils';
 import {DocumentId, Email, Phone} from '@domain/@shared/value-objects';
 import {Clinic, ClinicId} from '@domain/clinic/entities';
 import {AiSpecialtyGroup} from '@domain/form-template/entities';
+import {UserId} from '@domain/user/entities';
 import {MapperWithoutDto} from '@infrastructure/mappers/mapper';
 
 export type ClinicModel = PrismaClient.Clinic;
@@ -14,6 +15,7 @@ export class ClinicMapper extends MapperWithoutDto<Clinic, ClinicModel> {
         return new Clinic({
             id: ClinicId.from(model.id),
             name: model.name,
+            createdByUserId: model.createdByUserId === null ? null : UserId.from(model.createdByUserId),
             documentId: model.documentId === null ? null : DocumentId.create(model.documentId),
             phone: model.phone === null ? null : Phone.create(model.phone),
             email: model.email === null ? null : Email.create(model.email),
@@ -39,6 +41,7 @@ export class ClinicMapper extends MapperWithoutDto<Clinic, ClinicModel> {
         return {
             id: entity.id.toString(),
             name: entity.name,
+            createdByUserId: entity.createdByUserId?.toString() ?? null,
             documentId: entity.documentId?.toString() ?? null,
             phone: entity.phone?.toString() ?? null,
             email: entity.email?.toString() ?? null,

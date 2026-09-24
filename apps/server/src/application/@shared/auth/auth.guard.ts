@@ -7,6 +7,7 @@ import {IS_PUBLIC_KEY} from '@application/@shared/auth/public.decorator';
 import {AccessDeniedException, AccessDeniedReason, UnauthenticatedException} from '@domain/@shared/exceptions';
 import {Permission} from '@domain/auth';
 import {Authorizer} from '@domain/auth/authorizer';
+import {ClinicMemberRepository} from '@domain/clinic-member/clinic-member.repository';
 import {ClinicMemberId} from '@domain/clinic-member/entities';
 import {Token, TokenProvider, TokenScope} from '@domain/user/token';
 
@@ -17,7 +18,8 @@ export class AuthGuard implements CanActivate {
         private readonly clinicMemberCookie: string,
         private readonly tokenProvider: TokenProvider,
         private readonly authorizer: Authorizer,
-        private readonly reflector: Reflector
+        private readonly reflector: Reflector,
+        private readonly clinicMemberRepository: ClinicMemberRepository
     ) {}
 
     async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -61,6 +63,22 @@ export class AuthGuard implements CanActivate {
                 'Token does not have access to the requested clinic member.',
                 AccessDeniedReason.NOT_ALLOWED
             );
+        }
+
+        if (matchingMember !== null) {
+            const member = await this.clinicMemberRepository.findById(matchingMember.clinicMemberId);
+
+            if (
+                member === null ||
+                !member.isActive ||
+                !member.userId.equals(token.userId) ||
+                !member.clinicId.equals(matchingMember.clinicId)
+            ) {
+                throw new AccessDeniedException(
+                    'Clinic membership is no longer active.',
+                    AccessDeniedReason.NOT_ALLOWED
+                );
+            }
         }
 
         request.actor = {
@@ -111,6 +129,10 @@ export class AuthGuard implements CanActivate {
             return null;
         }
 
-        return ClinicMemberId.from(cookie);
+        try {
+            return ClinicMemberId.from(cookie);
+        } catch {
+            return null;
+        }
     }
 }

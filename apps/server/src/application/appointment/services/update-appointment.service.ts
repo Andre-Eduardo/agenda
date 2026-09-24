@@ -1,6 +1,8 @@
 import {Injectable} from '@nestjs/common';
 import {ApplicationService, Command} from '@application/@shared/application.service';
+import {assertEntityBelongsToClinic} from '@application/@shared/validators/cross-tenant.validator';
 import {AppointmentDto, UpdateAppointmentDto} from '@application/appointment/dtos';
+import {PatientAccessChecker} from '@application/clinic-patient-access/services/patient-access-checker.service';
 import {AgendaAccessChecker} from '@application/professional-agenda-access/services';
 import {InvalidInputException, PreconditionException, ResourceNotFoundException} from '@domain/@shared/exceptions';
 import {Transactional} from '@domain/@shared/repository';
@@ -11,6 +13,7 @@ import {ClinicMemberId} from '@domain/clinic-member/entities';
 import {ClinicRepository} from '@domain/clinic/clinic.repository';
 import {ClinicId} from '@domain/clinic/entities';
 import {EventDispatcher} from '@domain/event';
+import {PatientId} from '@domain/patient/entities';
 import {MemberBlockRepository} from '@domain/professional/member-block.repository';
 import {WorkingHoursRepository} from '@domain/professional/working-hours.repository';
 import {RoomId} from '@domain/room/entities';
@@ -19,6 +22,7 @@ import {RoomRepository} from '@domain/room/room.repository';
 @Injectable()
 export class UpdateAppointmentService implements ApplicationService<UpdateAppointmentDto, AppointmentDto> {
     constructor(
+        private readonly patientAccessChecker: PatientAccessChecker,
         private readonly appointmentRepository: AppointmentRepository,
         private readonly clinicMemberRepository: ClinicMemberRepository,
         private readonly clinicRepository: ClinicRepository,
@@ -36,6 +40,13 @@ export class UpdateAppointmentService implements ApplicationService<UpdateAppoin
         if (appointment === null) {
             throw new ResourceNotFoundException('Appointment not found.', id.toString());
         }
+
+        assertEntityBelongsToClinic(appointment.clinicId, actor.clinicId);
+        await this.patientAccessChecker.assertCanAccess(
+            actor,
+            PatientId.from(appointment.patientId.toString()),
+            'appointment'
+        );
 
         const rescheduling = props.startAt !== undefined || props.endAt !== undefined;
         const changingProfessional = props.attendedByMemberId !== undefined;

@@ -1,5 +1,6 @@
 import {Injectable} from '@nestjs/common';
 import {ApplicationService, Command} from '@application/@shared/application.service';
+import {assertEntityBelongsToClinic} from '@application/@shared/validators/cross-tenant.validator';
 import {AppointmentPaymentDto, RegisterPaymentDto} from '@application/appointment-payment/dtos';
 import {InvalidInputException, PreconditionException, ResourceNotFoundException} from '@domain/@shared/exceptions';
 import {Transactional} from '@domain/@shared/repository';
@@ -62,9 +63,7 @@ export class RegisterPaymentService implements ApplicationService<RegisterPaymen
             throw new ResourceNotFoundException('Appointment not found.', appointmentId.toString());
         }
 
-        if (!appointment.clinicId.equals(actor.clinicId)) {
-            throw new PreconditionException('Appointment does not belong to the current clinic.');
-        }
+        assertEntityBelongsToClinic(appointment.clinicId, actor.clinicId);
 
         if (appointment.status === AppointmentStatus.CANCELLED) {
             throw new PreconditionException('Cannot register payment for a cancelled appointment.');
