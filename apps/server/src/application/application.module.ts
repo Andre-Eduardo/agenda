@@ -9,6 +9,8 @@ import {AgentModule} from '@application/agent/agent.module';
 import {AppointmentPaymentModule} from '@application/appointment-payment/appointment-payment.module';
 import {AppointmentReminderModule} from '@application/appointment-reminder/appointment-reminder.module';
 import {AppointmentModule} from '@application/appointment/appointment.module';
+import {AuditHttpInterceptor} from '@application/audit/audit-http.interceptor';
+import {AuditModule} from '@application/audit/audit.module';
 import {AuthModule} from '@application/auth/auth.module';
 import {BillingModule} from '@application/billing/billing.module';
 import {ClinicMemberModule} from '@application/clinic-member/clinic-member.module';
@@ -43,6 +45,7 @@ import {SubscriptionModule} from '@application/subscription/subscription.module'
 import {UploadModule} from '@application/upload/upload.module';
 import {UserModule} from '@application/user/user.module';
 import {WorkingHoursModule} from '@application/working-hours/working-hours.module';
+import {AuditLogRepository} from '@domain/audit/audit-log.repository';
 import {createAuthorizer} from '@domain/auth/authorizer';
 import {ClinicMemberRepository} from '@domain/clinic-member/clinic-member.repository';
 import {TokenProvider} from '@domain/user/token';
@@ -75,6 +78,10 @@ const pipes: Provider[] = [
 const interceptors: Provider[] = [
     {
         provide: APP_INTERCEPTOR,
+        useClass: AuditHttpInterceptor,
+    },
+    {
+        provide: APP_INTERCEPTOR,
         useClass: ExceptionLoggerInterceptor,
     },
 ];
@@ -86,7 +93,8 @@ const guards: Provider[] = [
             configService: EnvConfigService,
             tokenProvider: TokenProvider,
             userRepository: UserRepository,
-            clinicMemberRepository: ClinicMemberRepository
+            clinicMemberRepository: ClinicMemberRepository,
+            auditLogRepository: AuditLogRepository
         ) =>
             new AuthGuard(
                 configService.auth.cookieName,
@@ -94,15 +102,17 @@ const guards: Provider[] = [
                 tokenProvider,
                 createAuthorizer(userRepository, clinicMemberRepository),
                 new Reflector(),
-                clinicMemberRepository
+                clinicMemberRepository,
+                auditLogRepository
             ),
-        inject: [EnvConfigService, TokenProvider, UserRepository, ClinicMemberRepository],
+        inject: [EnvConfigService, TokenProvider, UserRepository, ClinicMemberRepository, AuditLogRepository],
     },
 ];
 
 @Module({
     imports: [
         InfrastructureModule,
+        AuditModule,
         EventModule,
         AuthModule,
         ClinicModule,

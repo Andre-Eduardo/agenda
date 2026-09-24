@@ -4,7 +4,9 @@ import {Request} from 'express';
 import {AUTHORIZE_KEY} from '@application/@shared/auth/authorize.decorator';
 import {BYPASS_CLINIC_MEMBER} from '@application/@shared/auth/bypass-clinic-member.decorator';
 import {IS_PUBLIC_KEY} from '@application/@shared/auth/public.decorator';
+import {auditResourceId} from '@application/audit/audit-resource-id';
 import {AccessDeniedException, AccessDeniedReason, UnauthenticatedException} from '@domain/@shared/exceptions';
+import {AuditLogRepository} from '@domain/audit/audit-log.repository';
 import {Permission} from '@domain/auth';
 import {Authorizer} from '@domain/auth/authorizer';
 import {ClinicMemberRepository} from '@domain/clinic-member/clinic-member.repository';
@@ -19,7 +21,8 @@ export class AuthGuard implements CanActivate {
         private readonly tokenProvider: TokenProvider,
         private readonly authorizer: Authorizer,
         private readonly reflector: Reflector,
-        private readonly clinicMemberRepository: ClinicMemberRepository
+        private readonly clinicMemberRepository: ClinicMemberRepository,
+        private readonly auditLogRepository?: AuditLogRepository
     ) {}
 
     async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -98,6 +101,20 @@ export class AuthGuard implements CanActivate {
             if (await this.authorizer.validate(clinicMemberId, token.userId, permission)) {
                 return true;
             }
+        }
+
+        if (matchingMember !== null && this.auditLogRepository !== undefined) {
+            await this.auditLogRepository.append({
+                clinicId: matchingMember.clinicId.toString(),
+                actorUserId: token.userId.toString(),
+                actorMemberId: matchingMember.clinicMemberId.toString(),
+                resource: context.getClass().name,
+                resourceId: auditResourceId(request.params),
+                action: `${request.method}:${context.getHandler().name}`,
+                result: 'DENIED',
+                statusCode: 403,
+                ip: request.actor.ip,
+            });
         }
 
         throw new AccessDeniedException(
