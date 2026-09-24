@@ -2,11 +2,14 @@ import {randomBytes} from 'node:crypto';
 import {uuidv7} from 'uuidv7';
 import type {AiSpecialtyGroup} from '@prisma/client';
 import {prisma} from './prisma';
+import type {ClinicMemberRole} from './clinic-member';
 import type {CreatedUser, CreateUserEntry} from './user';
 import {createTestUser, isCreatedUser} from './user';
 
 export type CreateProfessionalEntry = {
     user?: CreateUserEntry | CreatedUser;
+    /** Roles held besides PROFESSIONAL (e.g. ['OWNER'] for a member who also manages the clinic). */
+    additionalRoles?: Exclude<ClinicMemberRole, 'PROFESSIONAL'>[];
     displayName?: string;
     specialty?: string;
     specialtyNormalized?: AiSpecialtyGroup;
@@ -50,7 +53,7 @@ export async function createTestProfessional(
             id: uuidv7(),
             clinicId: clinic.id,
             userId: user.id,
-            roles: ['PROFESSIONAL'],
+            roles: ['PROFESSIONAL', ...(entry.additionalRoles ?? [])],
             displayName: entry.displayName ?? user.name,
             color: entry.color ?? '#4F46E5',
             isActive: true,

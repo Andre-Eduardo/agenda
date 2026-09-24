@@ -36,14 +36,13 @@ test.describe('Profile settings visual', () => {
         'should match the profile identity tab visual snapshot',
         {tag: '@visual'},
         async ({createAuthenticatedProfessional, settingsPage}) => {
-            // Deterministic name/email (no random suffix) so the baseline stays stable across runs.
-            await createAuthenticatedProfessional({
-                user: {name: 'Visual QA User', email: 'visual-qa@example.com'},
-            });
+            // Deterministic name so the baseline stays stable. The e-mail must be unique (the DB is not
+            // reset between runs or projects), so it is left to the factory and masked in the capture.
+            await createAuthenticatedProfessional({user: {name: 'Visual QA User'}});
 
             await settingsPage.navigate();
             await settingsPage.verifyPageLoaded();
-            await settingsPage.compareScreenshot('settings-identity-tab');
+            await settingsPage.compareScreenshot('settings-identity-tab', {mask: [settingsPage.emailInput]});
         }
     );
 });

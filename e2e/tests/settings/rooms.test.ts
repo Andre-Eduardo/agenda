@@ -2,7 +2,8 @@ import {expect, test} from '@fixtures/test';
 
 test.describe('Room management settings', () => {
     test.beforeEach(async ({createAuthenticatedProfessional}) => {
-        await createAuthenticatedProfessional();
+        // Enabling room management updates the clinic, which only OWNER/ADMIN may do.
+        await createAuthenticatedProfessional({additionalRoles: ['OWNER']});
     });
 
     test('should enable room management, create a room and delete it', async ({settingsPage}) => {

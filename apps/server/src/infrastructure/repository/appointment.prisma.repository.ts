@@ -123,12 +123,15 @@ export class AppointmentPrismaRepository extends PrismaRepository implements App
         return records.map((r) => this.mapper.toDomain(r));
     }
 
+    // pg_advisory_xact_lock returns void, which $queryRaw cannot deserialize (P2010 on Prisma 6.19),
+    // so the lock is taken with $executeRaw, which does not read the result column.
     async lockMemberSchedule(attendedByMemberId: ClinicMemberId): Promise<void> {
         await this.prisma
-            .$queryRaw`SELECT pg_advisory_xact_lock(hashtext(${`appointment-member:${attendedByMemberId.toString()}`}))`;
+            .$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${`appointment-member:${attendedByMemberId.toString()}`}))`;
     }
 
     async lockRoomSchedule(roomId: RoomId): Promise<void> {
-        await this.prisma.$queryRaw`SELECT pg_advisory_xact_lock(hashtext(${`appointment-room:${roomId.toString()}`}))`;
+        await this.prisma
+            .$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${`appointment-room:${roomId.toString()}`}))`;
     }
 }
