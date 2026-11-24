@@ -1,5 +1,6 @@
 import {Injectable} from '@nestjs/common';
 import type {Command} from '@application/@shared/application.service';
+import {assertEntityBelongsToClinic} from '@application/@shared/validators/cross-tenant.validator';
 import {PreconditionException, ResourceNotFoundException} from '@domain/@shared/exceptions';
 import {toEnum} from '@domain/@shared/utils';
 import {AgentProposalRepository} from '@domain/agent-proposal/agent-proposal.repository';
@@ -88,8 +89,15 @@ export class ConfirmProposalService {
                 throw new ResourceNotFoundException('Appointment not found.', p.appointmentId as string);
             }
 
-            appointment.cancel((p.reason as string | undefined) ?? '');
-            await this.appointmentRepository.save(appointment);
+            assertEntityBelongsToClinic(appointment.clinicId, actor.clinicId);
+            const reason =
+                (p.reason as string | undefined)?.trim() ||
+                proposal.rationale?.trim() ||
+                'Approved cancellation proposal';
+            const fromStatus = appointment.status;
+
+            appointment.cancel(reason);
+            await this.appointmentRepository.saveStatusTransition(appointment, fromStatus, actor, reason);
             this.eventDispatcher.dispatch(actor, appointment);
             resultEntityId = appointment.id.toString();
         } else if (proposal.type === AgentProposalType.PATIENT_ALERT) {

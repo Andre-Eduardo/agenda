@@ -30,9 +30,11 @@ export class ConfirmAppointmentService implements ApplicationService<ConfirmAppo
             'appointment'
         );
 
+        const fromStatus = appointment.status;
+
         appointment.confirm();
 
-        await this.appointmentRepository.save(appointment);
+        await this.appointmentRepository.saveStatusTransition(appointment, fromStatus, actor, null);
 
         this.eventDispatcher.dispatch(actor, appointment);
 

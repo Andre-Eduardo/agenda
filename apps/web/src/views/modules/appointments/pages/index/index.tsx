@@ -65,8 +65,8 @@ import {Label} from '@/components/ui/componentes/label';
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@/components/ui/componentes/select';
 import {Sheet, SheetContent, SheetHeader, SheetTitle} from '@/components/ui/componentes/sheet';
 import {Textarea} from '@/components/ui/componentes/textarea';
-import {cx} from '@/styled-system/css';
 import {formatBRL} from '@/lib/utils';
+import {cx} from '@/styled-system/css';
 import {translateApiError} from '@/utils/translate-api-error';
 import {ConfirmDialog} from '@/views/components/ConfirmDialog';
 import * as styles from './styles';
@@ -1537,7 +1537,7 @@ function AppointmentDetailSheet({
                                     <CheckCheck className={icon35} /> Concluir atendimento
                                 </Button>
                             )}
-                            {(apt.status === 'SCHEDULED' || apt.status === 'CONFIRMED' || apt.status === 'ARRIVED') && (
+                            {(apt.status === 'SCHEDULED' || apt.status === 'CONFIRMED') && (
                                 <Button
                                     size="sm"
                                     variant="outline"

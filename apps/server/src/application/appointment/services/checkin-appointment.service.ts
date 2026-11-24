@@ -30,9 +30,11 @@ export class CheckinAppointmentService implements ApplicationService<CheckinAppo
             'appointment'
         );
 
+        const fromStatus = appointment.status;
+
         appointment.checkin();
 
-        await this.appointmentRepository.save(appointment);
+        await this.appointmentRepository.saveStatusTransition(appointment, fromStatus, actor, null);
 
         this.eventDispatcher.dispatch(actor, appointment);
 

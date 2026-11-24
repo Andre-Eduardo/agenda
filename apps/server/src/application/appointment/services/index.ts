@@ -6,6 +6,7 @@ export * from '@application/appointment/services/confirm-appointment.service';
 export * from '@application/appointment/services/create-appointment.service';
 export * from '@application/appointment/services/delete-appointment.service';
 export * from '@application/appointment/services/get-appointment.service';
+export * from '@application/appointment/services/list-appointment-status-transitions.service';
 export * from '@application/appointment/services/mark-no-show-appointment.service';
 export * from '@application/appointment/services/search-appointments.service';
 export * from '@application/appointment/services/update-appointment.service';
