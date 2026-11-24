@@ -13,6 +13,7 @@ import { Route as DotDotLayoutsStackedLayoutIndexRouteImport } from './views/lay
 import { Route as DotDotLayoutsAuthLayoutIndexRouteImport } from './views/layouts/AuthLayout/index'
 import { Route as teamPagesIndexIndexRouteImport } from './views/modules/team/pages/index/index'
 import { Route as settingsPagesIndexIndexRouteImport } from './views/modules/settings/pages/index/index'
+import { Route as receptionPagesIndexIndexRouteImport } from './views/modules/reception/pages/index/index'
 import { Route as professionalsPagesIndexIndexRouteImport } from './views/modules/professionals/pages/index/index'
 import { Route as patientsPagesIndexIndexRouteImport } from './views/modules/patients/pages/index/index'
 import { Route as financialPagesIndexIndexRouteImport } from './views/modules/financial/pages/index/index'
@@ -47,6 +48,12 @@ const settingsPagesIndexIndexRoute = settingsPagesIndexIndexRouteImport.update({
   path: '/settings',
   getParentRoute: () => DotDotLayoutsStackedLayoutIndexRoute,
 } as any)
+const receptionPagesIndexIndexRoute =
+  receptionPagesIndexIndexRouteImport.update({
+    id: '/reception',
+    path: '/reception',
+    getParentRoute: () => DotDotLayoutsStackedLayoutIndexRoute,
+  } as any)
 const professionalsPagesIndexIndexRoute =
   professionalsPagesIndexIndexRouteImport.update({
     id: '/professionals',
@@ -127,6 +134,7 @@ export interface FileRoutesByFullPath {
   '/financial': typeof financialPagesIndexIndexRoute
   '/patients': typeof patientsPagesIndexIndexRoute
   '/professionals': typeof professionalsPagesIndexIndexRoute
+  '/reception': typeof receptionPagesIndexIndexRoute
   '/settings': typeof settingsPagesIndexIndexRoute
   '/team': typeof teamPagesIndexIndexRoute
   '/auth/login': typeof authPagesLoginIndexRoute
@@ -144,6 +152,7 @@ export interface FileRoutesByTo {
   '/financial': typeof financialPagesIndexIndexRoute
   '/patients': typeof patientsPagesIndexIndexRoute
   '/professionals': typeof professionalsPagesIndexIndexRoute
+  '/reception': typeof receptionPagesIndexIndexRoute
   '/settings': typeof settingsPagesIndexIndexRoute
   '/team': typeof teamPagesIndexIndexRoute
   '/auth/login': typeof authPagesLoginIndexRoute
@@ -164,6 +173,7 @@ export interface FileRoutesById {
   '/_stackedLayout/financial': typeof financialPagesIndexIndexRoute
   '/_stackedLayout/patients': typeof patientsPagesIndexIndexRoute
   '/_stackedLayout/professionals': typeof professionalsPagesIndexIndexRoute
+  '/_stackedLayout/reception': typeof receptionPagesIndexIndexRoute
   '/_stackedLayout/settings': typeof settingsPagesIndexIndexRoute
   '/_stackedLayout/team': typeof teamPagesIndexIndexRoute
   '/_auth/auth/login': typeof authPagesLoginIndexRoute
@@ -183,6 +193,7 @@ export interface FileRouteTypes {
     | '/financial'
     | '/patients'
     | '/professionals'
+    | '/reception'
     | '/settings'
     | '/team'
     | '/auth/login'
@@ -200,6 +211,7 @@ export interface FileRouteTypes {
     | '/financial'
     | '/patients'
     | '/professionals'
+    | '/reception'
     | '/settings'
     | '/team'
     | '/auth/login'
@@ -219,6 +231,7 @@ export interface FileRouteTypes {
     | '/_stackedLayout/financial'
     | '/_stackedLayout/patients'
     | '/_stackedLayout/professionals'
+    | '/_stackedLayout/reception'
     | '/_stackedLayout/settings'
     | '/_stackedLayout/team'
     | '/_auth/auth/login'
@@ -263,6 +276,13 @@ declare module '@tanstack/react-router' {
       path: '/settings'
       fullPath: '/settings'
       preLoaderRoute: typeof settingsPagesIndexIndexRouteImport
+      parentRoute: typeof DotDotLayoutsStackedLayoutIndexRoute
+    }
+    '/_stackedLayout/reception': {
+      id: '/_stackedLayout/reception'
+      path: '/reception'
+      fullPath: '/reception'
+      preLoaderRoute: typeof receptionPagesIndexIndexRouteImport
       parentRoute: typeof DotDotLayoutsStackedLayoutIndexRoute
     }
     '/_stackedLayout/professionals': {
@@ -380,6 +400,7 @@ interface DotDotLayoutsStackedLayoutIndexRouteChildren {
   financialPagesIndexIndexRoute: typeof financialPagesIndexIndexRoute
   patientsPagesIndexIndexRoute: typeof patientsPagesIndexIndexRoute
   professionalsPagesIndexIndexRoute: typeof professionalsPagesIndexIndexRoute
+  receptionPagesIndexIndexRoute: typeof receptionPagesIndexIndexRoute
   settingsPagesIndexIndexRoute: typeof settingsPagesIndexIndexRoute
   teamPagesIndexIndexRoute: typeof teamPagesIndexIndexRoute
   patientsPagesDetailIndexRoute: typeof patientsPagesDetailIndexRoute
@@ -398,6 +419,7 @@ const DotDotLayoutsStackedLayoutIndexRouteChildren: DotDotLayoutsStackedLayoutIn
     financialPagesIndexIndexRoute: financialPagesIndexIndexRoute,
     patientsPagesIndexIndexRoute: patientsPagesIndexIndexRoute,
     professionalsPagesIndexIndexRoute: professionalsPagesIndexIndexRoute,
+    receptionPagesIndexIndexRoute: receptionPagesIndexIndexRoute,
     settingsPagesIndexIndexRoute: settingsPagesIndexIndexRoute,
     teamPagesIndexIndexRoute: teamPagesIndexIndexRoute,
     patientsPagesDetailIndexRoute: patientsPagesDetailIndexRoute,

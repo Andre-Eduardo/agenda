@@ -2,6 +2,7 @@ import {useState} from 'react';
 import {Outlet, Link, useRouterState, useNavigate, createFileRoute, redirect} from '@tanstack/react-router';
 import {
     Calendar,
+    ClipboardList,
     Home,
     LogOut,
     Menu,
@@ -40,6 +41,7 @@ const NAV_GROUPS: NavGroup[] = [
         labelKey: 'nav.menu',
         items: [
             {icon: Home, labelKey: 'nav.dashboard', path: '/dashboard'},
+            {icon: ClipboardList, labelKey: 'nav.reception', path: '/reception', permission: 'appointment:view'},
             {icon: Calendar, labelKey: 'nav.appointments', path: '/appointments'},
             {icon: Users, labelKey: 'nav.patients', path: '/patients'},
             {icon: Stethoscope, labelKey: 'nav.professionals', path: '/professionals'},

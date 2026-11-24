@@ -44,6 +44,7 @@
   },
   "nav": {
     "dashboard": "Panel",
+    "reception": "Recepción",
     "appointments": "Citas",
     "patients": "Pacientes",
     "professionals": "Profesionales",
@@ -55,6 +56,50 @@
     "system": "Sistema",
     "menu": "Menú principal",
     "logout": "Salir"
+  },
+  "reception": {
+    "title": "Recepción",
+    "refresh": "Actualizar",
+    "summary": "Resumen de citas de hoy",
+    "groups": {
+      "waiting": "Esperando llegada",
+      "arrived": "En recepción",
+      "inProgress": "En atención",
+      "finished": "Finalizadas"
+    },
+    "status": {
+      "SCHEDULED": "Programada",
+      "CONFIRMED": "Confirmada",
+      "ARRIVED": "Llegó",
+      "IN_PROGRESS": "En atención",
+      "COMPLETED": "Finalizada",
+      "NO_SHOW": "No asistió",
+      "CANCELLED": "Cancelada"
+    },
+    "accessDenied": "Acceso a la agenda no disponible",
+    "accessDeniedDescription": "No tiene permiso para ver las citas.",
+    "loadError": "No se pudieron cargar las citas",
+    "loadErrorDescription": "Compruebe la conexión e inténtelo de nuevo.",
+    "retry": "Intentar de nuevo",
+    "empty": "No hay citas hoy",
+    "emptyDescription": "Las citas de hoy aparecerán aquí.",
+    "noAppointmentsInGroup": "No hay citas en esta etapa.",
+    "limitNotice": "Se muestran las primeras {{limit}} citas de hoy. Abra la agenda para ver las demás.",
+    "patientUnavailable": "Paciente no disponible",
+    "appointmentFor": "Cita de {{name}}",
+    "openPatient": "Abrir paciente",
+    "openPatientFor": "Abrir perfil de {{name}}",
+    "checkin": "Registrar llegada",
+    "call": "Llamar paciente",
+    "markNoShow": "Marcar ausencia",
+    "confirmNoShowTitle": "Confirmar ausencia",
+    "confirmNoShowMessage": "¿Marcar la ausencia de {{name}}? Esto cierra la cita.",
+    "actionError": "No se pudo actualizar el estado. Actualizamos la lista; inténtelo de nuevo.",
+    "success": {
+      "checkin": "Llegada registrada",
+      "call": "Paciente llamado",
+      "noShow": "Ausencia registrada"
+    }
   },
   "dashboard": {
     "patient": "paciente",

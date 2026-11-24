@@ -44,6 +44,7 @@
   },
   "nav": {
     "dashboard": "Dashboard",
+    "reception": "Reception",
     "appointments": "Appointments",
     "patients": "Patients",
     "professionals": "Professionals",
@@ -55,6 +56,50 @@
     "system": "System",
     "menu": "Main menu",
     "logout": "Sign out"
+  },
+  "reception": {
+    "title": "Reception",
+    "refresh": "Refresh",
+    "summary": "Today's appointment summary",
+    "groups": {
+      "waiting": "Awaiting arrival",
+      "arrived": "At reception",
+      "inProgress": "In progress",
+      "finished": "Finished"
+    },
+    "status": {
+      "SCHEDULED": "Scheduled",
+      "CONFIRMED": "Confirmed",
+      "ARRIVED": "Arrived",
+      "IN_PROGRESS": "In progress",
+      "COMPLETED": "Completed",
+      "NO_SHOW": "No-show",
+      "CANCELLED": "Cancelled"
+    },
+    "accessDenied": "Schedule access unavailable",
+    "accessDeniedDescription": "You do not have permission to view appointments.",
+    "loadError": "Could not load appointments",
+    "loadErrorDescription": "Check your connection and try again.",
+    "retry": "Try again",
+    "empty": "No appointments today",
+    "emptyDescription": "Today's appointments will appear here.",
+    "noAppointmentsInGroup": "No appointments at this stage.",
+    "limitNotice": "Showing the first {{limit}} appointments today. Open the schedule to see the rest.",
+    "patientUnavailable": "Patient unavailable",
+    "appointmentFor": "Appointment for {{name}}",
+    "openPatient": "Open patient",
+    "openPatientFor": "Open {{name}}'s profile",
+    "checkin": "Record arrival",
+    "call": "Call patient",
+    "markNoShow": "Mark no-show",
+    "confirmNoShowTitle": "Confirm no-show",
+    "confirmNoShowMessage": "Mark {{name}} as a no-show? This closes the appointment.",
+    "actionError": "Could not update the status. We refreshed the list; please try again.",
+    "success": {
+      "checkin": "Arrival recorded",
+      "call": "Patient called",
+      "noShow": "No-show recorded"
+    }
   },
   "dashboard": {
     "patient": "patient",
