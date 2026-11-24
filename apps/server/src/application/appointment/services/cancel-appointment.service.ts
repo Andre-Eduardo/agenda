@@ -30,9 +30,16 @@ export class CancelAppointmentService implements ApplicationService<CancelAppoin
             'appointment'
         );
 
+        const fromStatus = appointment.status;
+
         appointment.cancel(reason);
 
-        await this.appointmentRepository.save(appointment);
+        await this.appointmentRepository.saveStatusTransition(
+            appointment,
+            fromStatus,
+            actor,
+            appointment.canceledReason
+        );
 
         this.eventDispatcher.dispatch(actor, appointment);
 

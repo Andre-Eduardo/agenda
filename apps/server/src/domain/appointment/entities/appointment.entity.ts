@@ -43,6 +43,21 @@ export enum AppointmentType {
     PROCEDURE = 'PROCEDURE',
 }
 
+const ALLOWED_STATUS_TRANSITIONS: Record<AppointmentStatus, readonly AppointmentStatus[]> = {
+    [AppointmentStatus.SCHEDULED]: [
+        AppointmentStatus.CONFIRMED,
+        AppointmentStatus.ARRIVED,
+        AppointmentStatus.CANCELLED,
+        AppointmentStatus.NO_SHOW,
+    ],
+    [AppointmentStatus.CONFIRMED]: [AppointmentStatus.ARRIVED, AppointmentStatus.CANCELLED, AppointmentStatus.NO_SHOW],
+    [AppointmentStatus.ARRIVED]: [AppointmentStatus.IN_PROGRESS, AppointmentStatus.CANCELLED],
+    [AppointmentStatus.IN_PROGRESS]: [AppointmentStatus.COMPLETED],
+    [AppointmentStatus.COMPLETED]: [],
+    [AppointmentStatus.CANCELLED]: [],
+    [AppointmentStatus.NO_SHOW]: [],
+};
+
 export class Appointment extends AggregateRoot<AppointmentId> {
     clinicId: ClinicId;
     patientId: PatientId;
@@ -115,7 +130,11 @@ export class Appointment extends AggregateRoot<AppointmentId> {
     }
 
     change(props: UpdateAppointment): void {
-        if (this.status === AppointmentStatus.COMPLETED || this.status === AppointmentStatus.CANCELLED) {
+        if (
+            this.status === AppointmentStatus.COMPLETED ||
+            this.status === AppointmentStatus.CANCELLED ||
+            this.status === AppointmentStatus.NO_SHOW
+        ) {
             throw new PreconditionException(`Cannot modify an appointment with status ${this.status}.`);
         }
 
@@ -155,29 +174,26 @@ export class Appointment extends AggregateRoot<AppointmentId> {
     }
 
     cancel(reason: string): void {
-        const cancellableStatuses = [
-            AppointmentStatus.SCHEDULED,
-            AppointmentStatus.CONFIRMED,
-            AppointmentStatus.ARRIVED,
-        ];
+        this.assertStatusTransition(AppointmentStatus.CANCELLED);
+        const normalizedReason = reason.trim();
 
-        if (!cancellableStatuses.includes(this.status)) {
-            throw new PreconditionException(`Cannot cancel an appointment with status ${this.status}.`);
+        if (normalizedReason.length === 0) {
+            throw new InvalidInputException('Cancellation reason is required', [
+                {field: 'reason', reason: 'Cancellation reason is required'},
+            ]);
         }
 
         const oldState = new Appointment(this);
 
         this.status = AppointmentStatus.CANCELLED;
         this.canceledAt = new Date();
-        this.canceledReason = reason;
+        this.canceledReason = normalizedReason;
 
         this.addEvent(new AppointmentChangedEvent({oldState, newState: this}));
     }
 
     confirm(): void {
-        if (this.status !== AppointmentStatus.SCHEDULED) {
-            throw new PreconditionException(`Cannot confirm an appointment with status ${this.status}.`);
-        }
+        this.assertStatusTransition(AppointmentStatus.CONFIRMED);
 
         const oldState = new Appointment(this);
 
@@ -186,13 +202,7 @@ export class Appointment extends AggregateRoot<AppointmentId> {
     }
 
     complete(): void {
-        if (
-            this.status !== AppointmentStatus.CONFIRMED &&
-            this.status !== AppointmentStatus.SCHEDULED &&
-            this.status !== AppointmentStatus.IN_PROGRESS
-        ) {
-            throw new PreconditionException(`Cannot complete an appointment with status ${this.status}.`);
-        }
+        this.assertStatusTransition(AppointmentStatus.COMPLETED);
 
         const oldState = new Appointment(this);
 
@@ -201,13 +211,7 @@ export class Appointment extends AggregateRoot<AppointmentId> {
     }
 
     noShow(): void {
-        if (
-            this.status !== AppointmentStatus.CONFIRMED &&
-            this.status !== AppointmentStatus.SCHEDULED &&
-            this.status !== AppointmentStatus.ARRIVED
-        ) {
-            throw new PreconditionException(`Cannot mark no-show for an appointment with status ${this.status}.`);
-        }
+        this.assertStatusTransition(AppointmentStatus.NO_SHOW);
 
         const oldState = new Appointment(this);
 
@@ -216,9 +220,7 @@ export class Appointment extends AggregateRoot<AppointmentId> {
     }
 
     checkin(): void {
-        if (this.status !== AppointmentStatus.SCHEDULED && this.status !== AppointmentStatus.CONFIRMED) {
-            throw new PreconditionException(`Cannot check in an appointment with status ${this.status}.`);
-        }
+        this.assertStatusTransition(AppointmentStatus.ARRIVED);
 
         const oldState = new Appointment(this);
 
@@ -230,9 +232,7 @@ export class Appointment extends AggregateRoot<AppointmentId> {
     }
 
     call(): void {
-        if (this.status !== AppointmentStatus.ARRIVED) {
-            throw new PreconditionException(`Cannot call an appointment with status ${this.status}.`);
-        }
+        this.assertStatusTransition(AppointmentStatus.IN_PROGRESS);
 
         const oldState = new Appointment(this);
 
@@ -241,6 +241,12 @@ export class Appointment extends AggregateRoot<AppointmentId> {
 
         this.addEvent(new AppointmentCalledEvent({appointment: this}));
         this.addEvent(new AppointmentChangedEvent({oldState, newState: this}));
+    }
+
+    private assertStatusTransition(nextStatus: AppointmentStatus): void {
+        if (!ALLOWED_STATUS_TRANSITIONS[this.status].includes(nextStatus)) {
+            throw new PreconditionException(`Cannot transition an appointment from ${this.status} to ${nextStatus}.`);
+        }
     }
 
     validate(): void {

@@ -30,9 +30,11 @@ export class CallAppointmentService implements ApplicationService<CallAppointmen
             'appointment'
         );
 
+        const fromStatus = appointment.status;
+
         appointment.call();
 
-        await this.appointmentRepository.save(appointment);
+        await this.appointmentRepository.saveStatusTransition(appointment, fromStatus, actor, null);
 
         this.eventDispatcher.dispatch(actor, appointment);
 

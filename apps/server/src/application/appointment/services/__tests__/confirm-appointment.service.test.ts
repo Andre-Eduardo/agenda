@@ -50,7 +50,12 @@ describe('ConfirmAppointmentService', () => {
         const result = await service.execute({actor, payload: {id: appointment.id}});
 
         expect(result.status).toBe(AppointmentStatus.CONFIRMED);
-        expect(appointmentRepository.save).toHaveBeenCalledWith(appointment);
+        expect(appointmentRepository.saveStatusTransition).toHaveBeenCalledWith(
+            appointment,
+            AppointmentStatus.SCHEDULED,
+            actor,
+            null
+        );
         expect(eventDispatcher.dispatch).toHaveBeenCalledWith(actor, appointment);
     });
 

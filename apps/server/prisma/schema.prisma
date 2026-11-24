@@ -746,6 +746,23 @@ model Appointment {
   @@map("appointment")
 }
 
+/// Operational history of status changes. IDs are snapshots so removing a
+/// member or patient cannot erase who made an earlier transition.
+model AppointmentStatusTransition {
+  id            String            @id @db.Uuid
+  clinicId      String            @map("clinic_id") @db.Uuid
+  appointmentId String            @map("appointment_id") @db.Uuid
+  actorUserId   String            @map("actor_user_id") @db.Uuid
+  actorMemberId String            @map("actor_member_id") @db.Uuid
+  fromStatus    AppointmentStatus @map("from_status")
+  toStatus      AppointmentStatus @map("to_status")
+  reason        String?
+  occurredAt    DateTime          @map("occurred_at")
+
+  @@index([clinicId, appointmentId, occurredAt], name: "appointment_status_transition_lookup_idx")
+  @@map("appointment_status_transition")
+}
+
 /// Registro de pagamento vinculado ao atendimento clínico.
 /// Pagamento registrado manualmente pela recepção ou profissional após atendimento concluído.
 model AppointmentPayment {

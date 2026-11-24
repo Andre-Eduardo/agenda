@@ -1899,6 +1899,52 @@
         ]
       }
     },
+    "/api/v1/appointments/{id}/status-transitions": {
+      "get": {
+        "operationId": "listStatusTransitions",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Appointment ID",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Status transitions",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AppointmentStatusTransition"
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Request failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Lists the status transition history of an appointment",
+        "tags": [
+          "Appointment"
+        ]
+      }
+    },
     "/api/v1/appointments/{id}/cancel": {
       "patch": {
         "operationId": "cancelAppointment",
@@ -2118,7 +2164,7 @@
             }
           }
         },
-        "summary": "Completes an appointment (SCHEDULED/CONFIRMED/IN_PROGRESS → COMPLETED)",
+        "summary": "Completes an appointment (IN_PROGRESS → COMPLETED)",
         "tags": [
           "Appointment"
         ]
@@ -2161,7 +2207,7 @@
             }
           }
         },
-        "summary": "Marks an appointment as no-show (SCHEDULED/CONFIRMED/ARRIVED → NO_SHOW)",
+        "summary": "Marks an appointment as no-show (SCHEDULED/CONFIRMED → NO_SHOW)",
         "tags": [
           "Appointment"
         ]
@@ -10332,6 +10378,69 @@
           "calledAt",
           "paymentStatus",
           "roomId"
+        ]
+      },
+      "AppointmentStatusTransition": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "appointmentId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "actorUserId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "actorMemberId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "fromStatus": {
+            "type": "string",
+            "enum": [
+              "SCHEDULED",
+              "CONFIRMED",
+              "CANCELLED",
+              "COMPLETED",
+              "NO_SHOW",
+              "ARRIVED",
+              "IN_PROGRESS"
+            ]
+          },
+          "toStatus": {
+            "type": "string",
+            "enum": [
+              "SCHEDULED",
+              "CONFIRMED",
+              "CANCELLED",
+              "COMPLETED",
+              "NO_SHOW",
+              "ARRIVED",
+              "IN_PROGRESS"
+            ]
+          },
+          "reason": {
+            "type": "string",
+            "nullable": true
+          },
+          "occurredAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "appointmentId",
+          "actorUserId",
+          "actorMemberId",
+          "fromStatus",
+          "toStatus",
+          "reason",
+          "occurredAt"
         ]
       },
       "UpdateAppointmentInputDto": {

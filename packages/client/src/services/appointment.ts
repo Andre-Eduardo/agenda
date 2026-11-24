@@ -33,7 +33,7 @@ import type {
     UpdateAppointmentInputDto,
 } from '../models';
 import {AppointmentPaymentStatus} from '../models';
-import type {ApiProblem, Appointment, ClinicMember} from '../models';
+import type {ApiProblem, Appointment, AppointmentStatusTransition, ClinicMember} from '../models';
 
 type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 
@@ -829,6 +829,212 @@ export const useDeleteAppointment = <TError = ErrorType<ApiProblem>, TContext = 
 };
 
 /**
+ * @summary Lists the status transition history of an appointment
+ */
+export const listStatusTransitions = (
+    id: string,
+    options?: SecondParameter<typeof apiClient>,
+    signal?: AbortSignal
+) => {
+    return apiClient<AppointmentStatusTransition[]>(
+        {url: `/api/v1/appointments/${id}/status-transitions`, method: 'GET', signal},
+        options
+    );
+};
+
+export const getListStatusTransitionsQueryKey = (id?: string) => {
+    return [`/api/v1/appointments/${id}/status-transitions`] as const;
+};
+
+export const getListStatusTransitionsQueryOptions = <
+    TData = Awaited<ReturnType<typeof listStatusTransitions>>,
+    TError = ErrorType<ApiProblem>,
+>(
+    id: string,
+    options?: {
+        query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof listStatusTransitions>>, TError, TData>>;
+        request?: SecondParameter<typeof apiClient>;
+    }
+) => {
+    const {query: queryOptions, request: requestOptions} = options ?? {};
+
+    const queryKey = queryOptions?.queryKey ?? getListStatusTransitionsQueryKey(id);
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listStatusTransitions>>> = ({signal}) =>
+        listStatusTransitions(id, requestOptions, signal);
+
+    return {queryKey, queryFn, enabled: !!id, ...queryOptions} as UseQueryOptions<
+        Awaited<ReturnType<typeof listStatusTransitions>>,
+        TError,
+        TData
+    > & {queryKey: DataTag<QueryKey, TData, TError>};
+};
+
+export type ListStatusTransitionsQueryResult = NonNullable<Awaited<ReturnType<typeof listStatusTransitions>>>;
+export type ListStatusTransitionsQueryError = ErrorType<ApiProblem>;
+
+export function useListStatusTransitions<
+    TData = Awaited<ReturnType<typeof listStatusTransitions>>,
+    TError = ErrorType<ApiProblem>,
+>(
+    id: string,
+    options: {
+        query: Partial<UseQueryOptions<Awaited<ReturnType<typeof listStatusTransitions>>, TError, TData>> &
+            Pick<
+                DefinedInitialDataOptions<
+                    Awaited<ReturnType<typeof listStatusTransitions>>,
+                    TError,
+                    Awaited<ReturnType<typeof listStatusTransitions>>
+                >,
+                'initialData'
+            >;
+        request?: SecondParameter<typeof apiClient>;
+    },
+    queryClient?: QueryClient
+): DefinedUseQueryResult<TData, TError> & {queryKey: DataTag<QueryKey, TData, TError>};
+export function useListStatusTransitions<
+    TData = Awaited<ReturnType<typeof listStatusTransitions>>,
+    TError = ErrorType<ApiProblem>,
+>(
+    id: string,
+    options?: {
+        query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof listStatusTransitions>>, TError, TData>> &
+            Pick<
+                UndefinedInitialDataOptions<
+                    Awaited<ReturnType<typeof listStatusTransitions>>,
+                    TError,
+                    Awaited<ReturnType<typeof listStatusTransitions>>
+                >,
+                'initialData'
+            >;
+        request?: SecondParameter<typeof apiClient>;
+    },
+    queryClient?: QueryClient
+): UseQueryResult<TData, TError> & {queryKey: DataTag<QueryKey, TData, TError>};
+export function useListStatusTransitions<
+    TData = Awaited<ReturnType<typeof listStatusTransitions>>,
+    TError = ErrorType<ApiProblem>,
+>(
+    id: string,
+    options?: {
+        query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof listStatusTransitions>>, TError, TData>>;
+        request?: SecondParameter<typeof apiClient>;
+    },
+    queryClient?: QueryClient
+): UseQueryResult<TData, TError> & {queryKey: DataTag<QueryKey, TData, TError>};
+/**
+ * @summary Lists the status transition history of an appointment
+ */
+
+export function useListStatusTransitions<
+    TData = Awaited<ReturnType<typeof listStatusTransitions>>,
+    TError = ErrorType<ApiProblem>,
+>(
+    id: string,
+    options?: {
+        query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof listStatusTransitions>>, TError, TData>>;
+        request?: SecondParameter<typeof apiClient>;
+    },
+    queryClient?: QueryClient
+): UseQueryResult<TData, TError> & {queryKey: DataTag<QueryKey, TData, TError>} {
+    const queryOptions = getListStatusTransitionsQueryOptions(id, options);
+
+    const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
+        queryKey: DataTag<QueryKey, TData, TError>;
+    };
+
+    query.queryKey = queryOptions.queryKey;
+
+    return query;
+}
+
+export const getListStatusTransitionsSuspenseQueryOptions = <
+    TData = Awaited<ReturnType<typeof listStatusTransitions>>,
+    TError = ErrorType<ApiProblem>,
+>(
+    id: string,
+    options?: {
+        query?: Partial<UseSuspenseQueryOptions<Awaited<ReturnType<typeof listStatusTransitions>>, TError, TData>>;
+        request?: SecondParameter<typeof apiClient>;
+    }
+) => {
+    const {query: queryOptions, request: requestOptions} = options ?? {};
+
+    const queryKey = queryOptions?.queryKey ?? getListStatusTransitionsQueryKey(id);
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listStatusTransitions>>> = ({signal}) =>
+        listStatusTransitions(id, requestOptions, signal);
+
+    return {queryKey, queryFn, ...queryOptions} as UseSuspenseQueryOptions<
+        Awaited<ReturnType<typeof listStatusTransitions>>,
+        TError,
+        TData
+    > & {queryKey: DataTag<QueryKey, TData, TError>};
+};
+
+export type ListStatusTransitionsSuspenseQueryResult = NonNullable<Awaited<ReturnType<typeof listStatusTransitions>>>;
+export type ListStatusTransitionsSuspenseQueryError = ErrorType<ApiProblem>;
+
+export function useListStatusTransitionsSuspense<
+    TData = Awaited<ReturnType<typeof listStatusTransitions>>,
+    TError = ErrorType<ApiProblem>,
+>(
+    id: string,
+    options: {
+        query: Partial<UseSuspenseQueryOptions<Awaited<ReturnType<typeof listStatusTransitions>>, TError, TData>>;
+        request?: SecondParameter<typeof apiClient>;
+    },
+    queryClient?: QueryClient
+): UseSuspenseQueryResult<TData, TError> & {queryKey: DataTag<QueryKey, TData, TError>};
+export function useListStatusTransitionsSuspense<
+    TData = Awaited<ReturnType<typeof listStatusTransitions>>,
+    TError = ErrorType<ApiProblem>,
+>(
+    id: string,
+    options?: {
+        query?: Partial<UseSuspenseQueryOptions<Awaited<ReturnType<typeof listStatusTransitions>>, TError, TData>>;
+        request?: SecondParameter<typeof apiClient>;
+    },
+    queryClient?: QueryClient
+): UseSuspenseQueryResult<TData, TError> & {queryKey: DataTag<QueryKey, TData, TError>};
+export function useListStatusTransitionsSuspense<
+    TData = Awaited<ReturnType<typeof listStatusTransitions>>,
+    TError = ErrorType<ApiProblem>,
+>(
+    id: string,
+    options?: {
+        query?: Partial<UseSuspenseQueryOptions<Awaited<ReturnType<typeof listStatusTransitions>>, TError, TData>>;
+        request?: SecondParameter<typeof apiClient>;
+    },
+    queryClient?: QueryClient
+): UseSuspenseQueryResult<TData, TError> & {queryKey: DataTag<QueryKey, TData, TError>};
+/**
+ * @summary Lists the status transition history of an appointment
+ */
+
+export function useListStatusTransitionsSuspense<
+    TData = Awaited<ReturnType<typeof listStatusTransitions>>,
+    TError = ErrorType<ApiProblem>,
+>(
+    id: string,
+    options?: {
+        query?: Partial<UseSuspenseQueryOptions<Awaited<ReturnType<typeof listStatusTransitions>>, TError, TData>>;
+        request?: SecondParameter<typeof apiClient>;
+    },
+    queryClient?: QueryClient
+): UseSuspenseQueryResult<TData, TError> & {queryKey: DataTag<QueryKey, TData, TError>} {
+    const queryOptions = getListStatusTransitionsSuspenseQueryOptions(id, options);
+
+    const query = useSuspenseQuery(queryOptions, queryClient) as UseSuspenseQueryResult<TData, TError> & {
+        queryKey: DataTag<QueryKey, TData, TError>;
+    };
+
+    query.queryKey = queryOptions.queryKey;
+
+    return query;
+}
+
+/**
  * @summary Cancels an appointment
  */
 export const cancelAppointment = (
@@ -1048,7 +1254,7 @@ export const useConfirmAppointment = <TError = ErrorType<ApiProblem>, TContext =
 };
 
 /**
- * @summary Completes an appointment (SCHEDULED/CONFIRMED/IN_PROGRESS → COMPLETED)
+ * @summary Completes an appointment (IN_PROGRESS → COMPLETED)
  */
 export const completeAppointment = (id: string, options?: SecondParameter<typeof apiClient>) => {
     return apiClient<Appointment>({url: `/api/v1/appointments/${id}/complete`, method: 'PATCH'}, options);
@@ -1079,7 +1285,7 @@ export type CompleteAppointmentMutationResult = NonNullable<Awaited<ReturnType<t
 export type CompleteAppointmentMutationError = ErrorType<ApiProblem>;
 
 /**
- * @summary Completes an appointment (SCHEDULED/CONFIRMED/IN_PROGRESS → COMPLETED)
+ * @summary Completes an appointment (IN_PROGRESS → COMPLETED)
  */
 export const useCompleteAppointment = <TError = ErrorType<ApiProblem>, TContext = unknown>(
     options?: {
@@ -1094,7 +1300,7 @@ export const useCompleteAppointment = <TError = ErrorType<ApiProblem>, TContext 
 };
 
 /**
- * @summary Marks an appointment as no-show (SCHEDULED/CONFIRMED/ARRIVED → NO_SHOW)
+ * @summary Marks an appointment as no-show (SCHEDULED/CONFIRMED → NO_SHOW)
  */
 export const markNoShowAppointment = (id: string, options?: SecondParameter<typeof apiClient>) => {
     return apiClient<Appointment>({url: `/api/v1/appointments/${id}/no-show`, method: 'PATCH'}, options);
@@ -1125,7 +1331,7 @@ export type MarkNoShowAppointmentMutationResult = NonNullable<Awaited<ReturnType
 export type MarkNoShowAppointmentMutationError = ErrorType<ApiProblem>;
 
 /**
- * @summary Marks an appointment as no-show (SCHEDULED/CONFIRMED/ARRIVED → NO_SHOW)
+ * @summary Marks an appointment as no-show (SCHEDULED/CONFIRMED → NO_SHOW)
  */
 export const useMarkNoShowAppointment = <TError = ErrorType<ApiProblem>, TContext = unknown>(
     options?: {
@@ -1421,6 +1627,76 @@ export const getUpdateAppointmentResponseMockDefault = (overrideResponse: Partia
 });
 
 export const getDeleteAppointmentResponseMockDefault = (overrideResponse: Partial<ApiProblem> = {}): ApiProblem => ({
+    title: faker.string.alpha({length: {min: 10, max: 20}}),
+    type: faker.internet.url(),
+    detail: faker.string.alpha({length: {min: 10, max: 20}}),
+    status: faker.helpers.arrayElement([
+        400, 401, 402, 403, 404, 405, 406, 407, 408, 409, 410, 411, 412, 413, 414, 415, 416, 417, 418, 421, 422, 423,
+        424, 428, 429, 456, 500, 501, 502, 503, 504, 505, 507, 508,
+    ] as const),
+    instance: faker.string.alpha({length: {min: 10, max: 20}}),
+    ...overrideResponse,
+});
+
+export const getListStatusTransitionsResponseMock = (): AppointmentStatusTransition[] =>
+    Array.from({length: faker.number.int({min: 1, max: 10})}, (_, i) => i + 1).map(() => ({
+        id: faker.string.uuid(),
+        appointmentId: faker.string.uuid(),
+        actorUserId: faker.string.uuid(),
+        actorMemberId: faker.string.uuid(),
+        fromStatus: faker.helpers.arrayElement([
+            'SCHEDULED',
+            'CONFIRMED',
+            'CANCELLED',
+            'COMPLETED',
+            'NO_SHOW',
+            'ARRIVED',
+            'IN_PROGRESS',
+        ] as const),
+        toStatus: faker.helpers.arrayElement([
+            'SCHEDULED',
+            'CONFIRMED',
+            'CANCELLED',
+            'COMPLETED',
+            'NO_SHOW',
+            'ARRIVED',
+            'IN_PROGRESS',
+        ] as const),
+        reason: faker.helpers.arrayElement([faker.string.alpha({length: {min: 10, max: 20}}), null]),
+        occurredAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
+    }));
+
+export const getListStatusTransitionsResponseMock200 = (): AppointmentStatusTransition[] =>
+    Array.from({length: faker.number.int({min: 1, max: 10})}, (_, i) => i + 1).map(() => ({
+        id: faker.string.uuid(),
+        appointmentId: faker.string.uuid(),
+        actorUserId: faker.string.uuid(),
+        actorMemberId: faker.string.uuid(),
+        fromStatus: faker.helpers.arrayElement([
+            'SCHEDULED',
+            'CONFIRMED',
+            'CANCELLED',
+            'COMPLETED',
+            'NO_SHOW',
+            'ARRIVED',
+            'IN_PROGRESS',
+        ] as const),
+        toStatus: faker.helpers.arrayElement([
+            'SCHEDULED',
+            'CONFIRMED',
+            'CANCELLED',
+            'COMPLETED',
+            'NO_SHOW',
+            'ARRIVED',
+            'IN_PROGRESS',
+        ] as const),
+        reason: faker.helpers.arrayElement([faker.string.alpha({length: {min: 10, max: 20}}), null]),
+        occurredAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
+    }));
+
+export const getListStatusTransitionsResponseMockDefault = (
+    overrideResponse: Partial<ApiProblem> = {}
+): ApiProblem => ({
     title: faker.string.alpha({length: {min: 10, max: 20}}),
     type: faker.internet.url(),
     detail: faker.string.alpha({length: {min: 10, max: 20}}),
@@ -2282,6 +2558,82 @@ export const getDeleteAppointmentMockHandlerDefault = (
     );
 };
 
+export const getListStatusTransitionsMockHandler = (
+    overrideResponse?:
+        | AppointmentStatusTransition[]
+        | ((
+              info: Parameters<Parameters<typeof http.get>[1]>[0]
+          ) => Promise<AppointmentStatusTransition[]> | AppointmentStatusTransition[]),
+    options?: RequestHandlerOptions
+) => {
+    return http.get(
+        '*/api/v1/appointments/:id/status-transitions',
+        async (info) => {
+            return new HttpResponse(
+                JSON.stringify(
+                    overrideResponse !== undefined
+                        ? typeof overrideResponse === 'function'
+                            ? await overrideResponse(info)
+                            : overrideResponse
+                        : getListStatusTransitionsResponseMock()
+                ),
+                {status: 200, headers: {'Content-Type': 'application/json'}}
+            );
+        },
+        options
+    );
+};
+
+export const getListStatusTransitionsMockHandler200 = (
+    overrideResponse?:
+        | AppointmentStatusTransition[]
+        | ((
+              info: Parameters<Parameters<typeof http.get>[1]>[0]
+          ) => Promise<AppointmentStatusTransition[]> | AppointmentStatusTransition[]),
+    options?: RequestHandlerOptions
+) => {
+    return http.get(
+        '*/api/v1/appointments/:id/status-transitions',
+        async (info) => {
+            return new HttpResponse(
+                JSON.stringify(
+                    overrideResponse !== undefined
+                        ? typeof overrideResponse === 'function'
+                            ? await overrideResponse(info)
+                            : overrideResponse
+                        : getListStatusTransitionsResponseMock200()
+                ),
+                {status: 200, headers: {'Content-Type': 'application/json'}}
+            );
+        },
+        options
+    );
+};
+
+export const getListStatusTransitionsMockHandlerDefault = (
+    overrideResponse?:
+        | ApiProblem
+        | ((info: Parameters<Parameters<typeof http.get>[1]>[0]) => Promise<ApiProblem> | ApiProblem),
+    options?: RequestHandlerOptions
+) => {
+    return http.get(
+        '*/api/v1/appointments/:id/status-transitions',
+        async (info) => {
+            return new HttpResponse(
+                JSON.stringify(
+                    overrideResponse !== undefined
+                        ? typeof overrideResponse === 'function'
+                            ? await overrideResponse(info)
+                            : overrideResponse
+                        : getListStatusTransitionsResponseMockDefault()
+                ),
+                {status: 200, headers: {'Content-Type': 'application/json'}}
+            );
+        },
+        options
+    );
+};
+
 export const getCancelAppointmentMockHandler = (
     overrideResponse?:
         | Appointment
@@ -2721,6 +3073,7 @@ export const getAppointmentMock = () => [
     getGetAppointmentMockHandler(),
     getUpdateAppointmentMockHandler(),
     getDeleteAppointmentMockHandler(),
+    getListStatusTransitionsMockHandler(),
     getCancelAppointmentMockHandler(),
     getCheckinAppointmentMockHandler(),
     getCallAppointmentMockHandler(),

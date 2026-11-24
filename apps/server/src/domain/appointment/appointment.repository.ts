@@ -1,9 +1,11 @@
+import type {Actor} from '@domain/@shared/actor';
 import {PaginatedList, Pagination} from '@domain/@shared/repository';
 import type {Appointment, AppointmentId, AppointmentStatus} from '@domain/appointment/entities';
 import type {ClinicMemberId} from '@domain/clinic-member/entities';
 import type {ClinicId} from '@domain/clinic/entities';
 import type {PatientId} from '@domain/patient/entities';
 import type {RoomId} from '@domain/room/entities';
+import type {UserId} from '@domain/user/entities';
 
 export type AppointmentSearchFilter = {
     ids?: AppointmentId[];
@@ -20,6 +22,18 @@ export type AppointmentSearchFilter = {
 
 export type AppointmentSortOptions = ['createdAt', 'updatedAt', 'startAt'];
 
+export type AppointmentStatusTransition = {
+    id: string;
+    clinicId: ClinicId;
+    appointmentId: AppointmentId;
+    actorUserId: UserId;
+    actorMemberId: ClinicMemberId;
+    fromStatus: AppointmentStatus;
+    toStatus: AppointmentStatus;
+    reason: string | null;
+    occurredAt: Date;
+};
+
 export interface AppointmentRepository {
     findById(id: AppointmentId): Promise<Appointment | null>;
 
@@ -31,6 +45,15 @@ export interface AppointmentRepository {
     ): Promise<PaginatedList<Appointment>>;
 
     save(appointment: Appointment): Promise<void>;
+
+    saveStatusTransition(
+        appointment: Appointment,
+        fromStatus: AppointmentStatus,
+        actor: Actor,
+        reason: string | null
+    ): Promise<void>;
+
+    listStatusTransitions(appointmentId: AppointmentId, clinicId: ClinicId): Promise<AppointmentStatusTransition[]>;
 
     findConflicts(
         attendedByMemberId: ClinicMemberId,

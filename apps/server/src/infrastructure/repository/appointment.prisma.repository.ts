@@ -1,14 +1,21 @@
+import {randomUUID} from 'node:crypto';
 import {Injectable} from '@nestjs/common';
 import * as PrismaClient from '@prisma/client';
+import type {Actor} from '@domain/@shared/actor';
+import {PreconditionException} from '@domain/@shared/exceptions';
 import {PaginatedList, Pagination} from '@domain/@shared/repository';
+import {toEnum} from '@domain/@shared/utils';
 import {
     AppointmentRepository,
     AppointmentSearchFilter,
     AppointmentSortOptions,
+    AppointmentStatusTransition,
 } from '@domain/appointment/appointment.repository';
-import {Appointment, AppointmentId} from '@domain/appointment/entities';
+import {Appointment, AppointmentId, AppointmentStatus} from '@domain/appointment/entities';
 import {ClinicMemberId} from '@domain/clinic-member/entities';
+import {ClinicId} from '@domain/clinic/entities';
 import {RoomId} from '@domain/room/entities';
+import {UserId} from '@domain/user/entities';
 import {AppointmentMapper} from '@infrastructure/mappers/appointment.mapper';
 import {PrismaRepository} from '@infrastructure/repository/prisma.repository';
 import {PrismaProvider} from '@infrastructure/repository/prisma/prisma.provider';
@@ -79,6 +86,78 @@ export class AppointmentPrismaRepository extends PrismaRepository implements App
             create: data,
             update: data,
         });
+    }
+
+    async saveStatusTransition(
+        appointment: Appointment,
+        fromStatus: AppointmentStatus,
+        actor: Actor,
+        reason: string | null
+    ): Promise<void> {
+        if (appointment.status === fromStatus) {
+            throw new PreconditionException('Appointment status did not change.');
+        }
+
+        const data = this.mapper.toPersistence(appointment);
+
+        await this.prismaProvider.runAtomically(async () => {
+            const {count} = await this.prisma.appointment.updateMany({
+                where: {
+                    id: data.id,
+                    clinicId: actor.clinicId.toString(),
+                    status: toEnum(PrismaClient.AppointmentStatus, fromStatus),
+                    deletedAt: null,
+                },
+                data: {
+                    status: data.status,
+                    canceledAt: data.canceledAt,
+                    canceledReason: data.canceledReason,
+                    arrivedAt: data.arrivedAt,
+                    calledAt: data.calledAt,
+                    updatedAt: data.updatedAt,
+                },
+            });
+
+            if (count !== 1) {
+                throw new PreconditionException('Appointment status changed. Reload and try again.');
+            }
+
+            await this.prisma.appointmentStatusTransition.create({
+                data: {
+                    id: randomUUID(),
+                    clinicId: actor.clinicId.toString(),
+                    appointmentId: appointment.id.toString(),
+                    actorUserId: actor.userId.toString(),
+                    actorMemberId: actor.clinicMemberId.toString(),
+                    fromStatus: toEnum(PrismaClient.AppointmentStatus, fromStatus),
+                    toStatus: data.status,
+                    reason,
+                    occurredAt: appointment.updatedAt,
+                },
+            });
+        });
+    }
+
+    async listStatusTransitions(
+        appointmentId: AppointmentId,
+        clinicId: ClinicId
+    ): Promise<AppointmentStatusTransition[]> {
+        const rows = await this.prisma.appointmentStatusTransition.findMany({
+            where: {appointmentId: appointmentId.toString(), clinicId: clinicId.toString()},
+            orderBy: [{occurredAt: 'asc'}, {id: 'asc'}],
+        });
+
+        return rows.map((row) => ({
+            id: row.id,
+            clinicId: ClinicId.from(row.clinicId),
+            appointmentId: AppointmentId.from(row.appointmentId),
+            actorUserId: UserId.from(row.actorUserId),
+            actorMemberId: ClinicMemberId.from(row.actorMemberId),
+            fromStatus: toEnum(AppointmentStatus, row.fromStatus),
+            toStatus: toEnum(AppointmentStatus, row.toStatus),
+            reason: row.reason,
+            occurredAt: row.occurredAt,
+        }));
     }
 
     async findConflicts(

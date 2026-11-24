@@ -8,6 +8,7 @@ import {entityIdParam} from '@application/@shared/openapi/params';
 import {ValidatedParam, ZodValidationPipe} from '@application/@shared/validation';
 import {
     AppointmentDto,
+    AppointmentStatusTransitionDto,
     CancelAppointmentInputDto,
     CreateAppointmentDto,
     SearchAppointmentsDto,
@@ -31,6 +32,7 @@ import {
     CreateAppointmentService,
     DeleteAppointmentService,
     GetAppointmentService,
+    ListAppointmentStatusTransitionsService,
     MarkNoShowAppointmentService,
     SearchAppointmentsService,
     UpdateAppointmentService,
@@ -47,6 +49,7 @@ export class AppointmentController {
     constructor(
         private readonly createAppointmentService: CreateAppointmentService,
         private readonly getAppointmentService: GetAppointmentService,
+        private readonly listAppointmentStatusTransitionsService: ListAppointmentStatusTransitionsService,
         private readonly searchAppointmentsService: SearchAppointmentsService,
         private readonly updateAppointmentService: UpdateAppointmentService,
         private readonly cancelAppointmentService: CancelAppointmentService,
@@ -104,6 +107,22 @@ export class AppointmentController {
         @ValidatedParam('id', getAppointmentSchema.shape.id) id: AppointmentId
     ): Promise<AppointmentDto> {
         return this.getAppointmentService.execute({actor, payload: {id}});
+    }
+
+    @ApiOperation({
+        summary: 'Lists the status transition history of an appointment',
+        parameters: [entityIdParam('Appointment ID')],
+        responses: [
+            {status: 200, description: 'Status transitions', type: AppointmentStatusTransitionDto, isArray: true},
+        ],
+    })
+    @Authorize(AppointmentPermission.VIEW)
+    @Get(':id/status-transitions')
+    listStatusTransitions(
+        @RequestActor() actor: Actor,
+        @ValidatedParam('id', getAppointmentSchema.shape.id) id: AppointmentId
+    ): Promise<AppointmentStatusTransitionDto[]> {
+        return this.listAppointmentStatusTransitionsService.execute({actor, payload: {id}});
     }
 
     @ApiOperation({
@@ -179,7 +198,7 @@ export class AppointmentController {
     }
 
     @ApiOperation({
-        summary: 'Completes an appointment (SCHEDULED/CONFIRMED/IN_PROGRESS → COMPLETED)',
+        summary: 'Completes an appointment (IN_PROGRESS → COMPLETED)',
         parameters: [entityIdParam('Appointment ID')],
         responses: [{status: 200, description: 'Appointment completed', type: AppointmentDto}],
     })
@@ -193,7 +212,7 @@ export class AppointmentController {
     }
 
     @ApiOperation({
-        summary: 'Marks an appointment as no-show (SCHEDULED/CONFIRMED/ARRIVED → NO_SHOW)',
+        summary: 'Marks an appointment as no-show (SCHEDULED/CONFIRMED → NO_SHOW)',
         parameters: [entityIdParam('Appointment ID')],
         responses: [{status: 200, description: 'Appointment marked as no-show', type: AppointmentDto}],
     })
