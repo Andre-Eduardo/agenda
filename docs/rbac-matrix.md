@@ -73,6 +73,7 @@ verificações de clínica e paciente às ações críticas.
 | patient | create, delete, update, view | create, delete, update, view | create, update, view | create, update, view | view |
 | payment | manage, view | manage, view | — | — | — |
 | person | create, delete, update, view | create, delete, update, view | — | create, update, view | — |
+| procedure | manage, override | manage, override | — | — | — |
 | professional-agenda-access | grant, list, revoke | grant, list, revoke | — | — | — |
 | professional | create, delete, update, view | create, delete, update, view | update, view | — | — |
 | record | create, delete, update, view | create, delete, update, view | create, update, view | view | view |

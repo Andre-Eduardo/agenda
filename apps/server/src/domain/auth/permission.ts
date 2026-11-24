@@ -31,6 +31,11 @@ export enum AppointmentPermission {
     CALL = 'appointment:call',
 }
 
+export enum ProcedurePermission {
+    MANAGE = 'procedure:manage',
+    OVERRIDE = 'procedure:override',
+}
+
 export enum AppointmentReminderPermission {
     VIEW = 'appointment-reminder:view',
     DISPATCH = 'appointment-reminder:dispatch',
@@ -259,6 +264,7 @@ const PERMISSIONS = [
     ...Object.values(ProfessionalPermission),
     ...Object.values(PatientPermission),
     ...Object.values(AppointmentPermission),
+    ...Object.values(ProcedurePermission),
     ...Object.values(RecordPermission),
     ...Object.values(ImportedDocumentPermission),
     ...Object.values(PersonPermission),

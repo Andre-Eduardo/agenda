@@ -1,0 +1,25 @@
+@reference "../../../../../app/globals.css";
+
+.list {
+    @apply mt-4 divide-y divide-border;
+}
+
+.item {
+    @apply flex items-start justify-between gap-3 py-3;
+}
+
+.name {
+    @apply flex items-center gap-2 font-medium;
+}
+
+.metadata {
+    @apply text-sm text-muted-foreground;
+}
+
+.form {
+    @apply flex flex-col gap-4;
+}
+
+.field {
+    @apply flex flex-col gap-1.5;
+}

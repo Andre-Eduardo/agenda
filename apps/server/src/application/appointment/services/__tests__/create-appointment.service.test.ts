@@ -1,5 +1,6 @@
 import {mock} from 'jest-mock-extended';
 import {CreateAppointmentService} from '@application/appointment/services/create-appointment.service';
+import {ResolveScheduledProcedureService} from '@application/appointment/services/resolve-scheduled-procedure.service';
 import {PatientAccessChecker} from '@application/clinic-patient-access/services/patient-access-checker.service';
 import {AgendaAccessChecker} from '@application/professional-agenda-access/services';
 import type {Actor} from '@domain/@shared/actor';
@@ -7,6 +8,7 @@ import {AccessDeniedException, AccessDeniedReason} from '@domain/@shared/excepti
 import {AtomicExecutor} from '@domain/@shared/repository';
 import {AppointmentRepository} from '@domain/appointment/appointment.repository';
 import type {Appointment, AppointmentType} from '@domain/appointment/entities';
+import {Authorizer} from '@domain/auth/authorizer';
 import {ClinicMemberRepository} from '@domain/clinic-member/clinic-member.repository';
 import type {ClinicMember} from '@domain/clinic-member/entities';
 import {ClinicMemberId} from '@domain/clinic-member/entities';
@@ -16,6 +18,7 @@ import {EventDispatcher} from '@domain/event';
 import type {Patient} from '@domain/patient/entities';
 import {PatientId} from '@domain/patient/entities';
 import {PatientRepository} from '@domain/patient/patient.repository';
+import {ProcedureRepository} from '@domain/procedure/procedure.repository';
 import {MemberBlockRepository} from '@domain/professional/member-block.repository';
 import {ProfessionalRepository} from '@domain/professional/professional.repository';
 import {WorkingHoursRepository} from '@domain/professional/working-hours.repository';
@@ -91,6 +94,7 @@ describe('CreateAppointmentService', () => {
             workingHoursRepository,
             memberBlockRepository,
             agendaAccessChecker,
+            new ResolveScheduledProcedureService(mock<ProcedureRepository>(), mock<Authorizer>()),
             eventDispatcher
         );
         (service as unknown as {atomicExecutor: AtomicExecutor}).atomicExecutor = atomicExecutor;

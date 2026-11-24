@@ -11,7 +11,7 @@ const schema = z.object({
     patientId: z.string().uuid().describe('UUID of the patient to schedule.'),
     startAt: z.string().datetime().describe('ISO8601 start datetime for the appointment.'),
     endAt: z.string().datetime().describe('ISO8601 end datetime for the appointment.'),
-    type: z.enum(['FIRST_VISIT', 'FOLLOW_UP', 'EVALUATION', 'PROCEDURE', 'TELEMEDICINE', 'INTERCURRENCE']).optional(),
+    type: z.enum(['FIRST_VISIT', 'FOLLOW_UP', 'EVALUATION', 'TELEMEDICINE', 'INTERCURRENCE']).optional(),
     reason: z.string().min(3).max(500).describe('Reason or purpose for the appointment.'),
     notes: z.string().max(1000).optional().describe('Additional notes.'),
 });

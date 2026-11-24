@@ -61,11 +61,13 @@ import {
     Plus,
     ShieldCheck,
     Sliders,
+    Stethoscope,
     Smartphone,
     Sparkles,
     Trash2,
     UserRound,
 } from 'lucide-react';
+import {useTranslation} from 'react-i18next';
 import {toast} from 'sonner';
 import {Button} from '@/components/ui/componentes/button';
 import {Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle} from '@/components/ui/componentes/dialog';
@@ -80,6 +82,7 @@ import {MODULE_ICONS, MODULE_LABELS} from '@/utils/ai-modules';
 import {translateApiError} from '@/utils/translate-api-error';
 import {AgendaScheduleEditor} from '@/views/components/AgendaScheduleEditor';
 import {ConfirmDialog} from '@/views/components/ConfirmDialog';
+import {ProcedureCatalog} from '../../components/ProcedureCatalog';
 import {
     FooterBar,
     FormCard,
@@ -230,9 +233,9 @@ const PROFILE_TABS = [
 ] as const;
 
 type TabKey = 'identity' | 'pro' | 'office' | 'security';
-type Section = 'perfil' | 'agenda' | 'assinatura' | 'salas' | 'ia' | 'geral';
+type Section = 'perfil' | 'agenda' | 'assinatura' | 'salas' | 'ia' | 'geral' | 'procedures';
 
-const SECTION_LABELS: Record<Section, string> = {
+const SECTION_LABELS: Record<Exclude<Section, 'procedures'>, string> = {
     perfil: 'Perfil',
     agenda: 'Agenda',
     assinatura: 'Assinatura',
@@ -244,7 +247,9 @@ const SECTION_LABELS: Record<Section, string> = {
 // ─── Page ────────────────────────────────────────────────────────────────────
 
 export function SettingsPage() {
+    const {t} = useTranslation();
     const [section, setSection] = useState<Section>('perfil');
+    const canManageProcedures = useCan({has: 'procedure:manage'});
     const canViewAiModules = useCan({has: 'clinic-module:view'});
 
     return (
@@ -253,7 +258,9 @@ export function SettingsPage() {
             <nav className="breadcrumb">
                 <span className="crumb-link">Configurações</span>
                 <span className="crumb-sep">›</span>
-                <span className="crumb-current">{SECTION_LABELS[section]}</span>
+                <span className="crumb-current">
+                    {section === 'procedures' ? t('procedure.title') : SECTION_LABELS[section]}
+                </span>
             </nav>
 
             <div className="layout">
@@ -292,6 +299,16 @@ export function SettingsPage() {
                         <DoorOpen size={15} />
                         <span>Salas</span>
                     </button>
+                    {canManageProcedures && (
+                        <button
+                            type="button"
+                            className={sideNavItem({active: section === 'procedures'})}
+                            onClick={() => setSection('procedures')}
+                        >
+                            <Stethoscope size={15} />
+                            <span>{t('procedure.title')}</span>
+                        </button>
+                    )}
                     {canViewAiModules && (
                         <button
                             type="button"
@@ -318,6 +335,7 @@ export function SettingsPage() {
                     {section === 'agenda' && <AgendaSection />}
                     {section === 'assinatura' && <SubscriptionSection />}
                     {section === 'salas' && <RoomsSection />}
+                    {section === 'procedures' && canManageProcedures && <ProcedureCatalog />}
                     {section === 'ia' && canViewAiModules && <AiModulesSection />}
                     {section === 'geral' && <GeneralSection />}
                 </div>

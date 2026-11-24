@@ -32,7 +32,7 @@ import type {
     SearchAppointmentsParams,
     UpdateAppointmentInputDto,
 } from '../models';
-import {AppointmentPaymentStatus} from '../models';
+import {AppointmentPaymentStatus, ProcedureColor, ProcedureModality} from '../models';
 import type {ApiProblem, Appointment, AppointmentStatusTransition, ClinicMember} from '../models';
 
 type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
@@ -1361,6 +1361,15 @@ export const getCreateAppointmentResponseMock = (overrideResponse: Partial<Appoi
     startAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
     endAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
     durationMinutes: faker.number.float({min: undefined, max: undefined, fractionDigits: 2}),
+    procedure: {
+        ...{
+            id: faker.string.uuid(),
+            name: faker.string.alpha({length: {min: 10, max: 20}}),
+            color: faker.helpers.arrayElement(Object.values(ProcedureColor)),
+            priceInCents: faker.number.float({min: undefined, max: undefined, fractionDigits: 2}),
+            modality: faker.helpers.arrayElement(Object.values(ProcedureModality)),
+        },
+    },
     type: faker.helpers.arrayElement(['FIRST_VISIT', 'RETURN', 'WALK_IN', 'TELEMEDICINE', 'PROCEDURE'] as const),
     status: faker.helpers.arrayElement([
         'SCHEDULED',
@@ -1392,6 +1401,15 @@ export const getCreateAppointmentResponseMock201 = (overrideResponse: Partial<Ap
     startAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
     endAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
     durationMinutes: faker.number.float({min: undefined, max: undefined, fractionDigits: 2}),
+    procedure: {
+        ...{
+            id: faker.string.uuid(),
+            name: faker.string.alpha({length: {min: 10, max: 20}}),
+            color: faker.helpers.arrayElement(Object.values(ProcedureColor)),
+            priceInCents: faker.number.float({min: undefined, max: undefined, fractionDigits: 2}),
+            modality: faker.helpers.arrayElement(Object.values(ProcedureModality)),
+        },
+    },
     type: faker.helpers.arrayElement(['FIRST_VISIT', 'RETURN', 'WALK_IN', 'TELEMEDICINE', 'PROCEDURE'] as const),
     status: faker.helpers.arrayElement([
         'SCHEDULED',
@@ -1489,6 +1507,15 @@ export const getGetAppointmentResponseMock = (overrideResponse: Partial<Appointm
     startAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
     endAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
     durationMinutes: faker.number.float({min: undefined, max: undefined, fractionDigits: 2}),
+    procedure: {
+        ...{
+            id: faker.string.uuid(),
+            name: faker.string.alpha({length: {min: 10, max: 20}}),
+            color: faker.helpers.arrayElement(Object.values(ProcedureColor)),
+            priceInCents: faker.number.float({min: undefined, max: undefined, fractionDigits: 2}),
+            modality: faker.helpers.arrayElement(Object.values(ProcedureModality)),
+        },
+    },
     type: faker.helpers.arrayElement(['FIRST_VISIT', 'RETURN', 'WALK_IN', 'TELEMEDICINE', 'PROCEDURE'] as const),
     status: faker.helpers.arrayElement([
         'SCHEDULED',
@@ -1520,6 +1547,15 @@ export const getGetAppointmentResponseMock200 = (overrideResponse: Partial<Appoi
     startAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
     endAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
     durationMinutes: faker.number.float({min: undefined, max: undefined, fractionDigits: 2}),
+    procedure: {
+        ...{
+            id: faker.string.uuid(),
+            name: faker.string.alpha({length: {min: 10, max: 20}}),
+            color: faker.helpers.arrayElement(Object.values(ProcedureColor)),
+            priceInCents: faker.number.float({min: undefined, max: undefined, fractionDigits: 2}),
+            modality: faker.helpers.arrayElement(Object.values(ProcedureModality)),
+        },
+    },
     type: faker.helpers.arrayElement(['FIRST_VISIT', 'RETURN', 'WALK_IN', 'TELEMEDICINE', 'PROCEDURE'] as const),
     status: faker.helpers.arrayElement([
         'SCHEDULED',
@@ -1563,6 +1599,15 @@ export const getUpdateAppointmentResponseMock = (overrideResponse: Partial<Appoi
     startAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
     endAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
     durationMinutes: faker.number.float({min: undefined, max: undefined, fractionDigits: 2}),
+    procedure: {
+        ...{
+            id: faker.string.uuid(),
+            name: faker.string.alpha({length: {min: 10, max: 20}}),
+            color: faker.helpers.arrayElement(Object.values(ProcedureColor)),
+            priceInCents: faker.number.float({min: undefined, max: undefined, fractionDigits: 2}),
+            modality: faker.helpers.arrayElement(Object.values(ProcedureModality)),
+        },
+    },
     type: faker.helpers.arrayElement(['FIRST_VISIT', 'RETURN', 'WALK_IN', 'TELEMEDICINE', 'PROCEDURE'] as const),
     status: faker.helpers.arrayElement([
         'SCHEDULED',
@@ -1594,6 +1639,15 @@ export const getUpdateAppointmentResponseMock200 = (overrideResponse: Partial<Ap
     startAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
     endAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
     durationMinutes: faker.number.float({min: undefined, max: undefined, fractionDigits: 2}),
+    procedure: {
+        ...{
+            id: faker.string.uuid(),
+            name: faker.string.alpha({length: {min: 10, max: 20}}),
+            color: faker.helpers.arrayElement(Object.values(ProcedureColor)),
+            priceInCents: faker.number.float({min: undefined, max: undefined, fractionDigits: 2}),
+            modality: faker.helpers.arrayElement(Object.values(ProcedureModality)),
+        },
+    },
     type: faker.helpers.arrayElement(['FIRST_VISIT', 'RETURN', 'WALK_IN', 'TELEMEDICINE', 'PROCEDURE'] as const),
     status: faker.helpers.arrayElement([
         'SCHEDULED',
@@ -1719,6 +1773,15 @@ export const getCancelAppointmentResponseMock = (overrideResponse: Partial<Appoi
     startAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
     endAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
     durationMinutes: faker.number.float({min: undefined, max: undefined, fractionDigits: 2}),
+    procedure: {
+        ...{
+            id: faker.string.uuid(),
+            name: faker.string.alpha({length: {min: 10, max: 20}}),
+            color: faker.helpers.arrayElement(Object.values(ProcedureColor)),
+            priceInCents: faker.number.float({min: undefined, max: undefined, fractionDigits: 2}),
+            modality: faker.helpers.arrayElement(Object.values(ProcedureModality)),
+        },
+    },
     type: faker.helpers.arrayElement(['FIRST_VISIT', 'RETURN', 'WALK_IN', 'TELEMEDICINE', 'PROCEDURE'] as const),
     status: faker.helpers.arrayElement([
         'SCHEDULED',
@@ -1750,6 +1813,15 @@ export const getCancelAppointmentResponseMock200 = (overrideResponse: Partial<Ap
     startAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
     endAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
     durationMinutes: faker.number.float({min: undefined, max: undefined, fractionDigits: 2}),
+    procedure: {
+        ...{
+            id: faker.string.uuid(),
+            name: faker.string.alpha({length: {min: 10, max: 20}}),
+            color: faker.helpers.arrayElement(Object.values(ProcedureColor)),
+            priceInCents: faker.number.float({min: undefined, max: undefined, fractionDigits: 2}),
+            modality: faker.helpers.arrayElement(Object.values(ProcedureModality)),
+        },
+    },
     type: faker.helpers.arrayElement(['FIRST_VISIT', 'RETURN', 'WALK_IN', 'TELEMEDICINE', 'PROCEDURE'] as const),
     status: faker.helpers.arrayElement([
         'SCHEDULED',
@@ -1793,6 +1865,15 @@ export const getCheckinAppointmentResponseMock = (overrideResponse: Partial<Appo
     startAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
     endAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
     durationMinutes: faker.number.float({min: undefined, max: undefined, fractionDigits: 2}),
+    procedure: {
+        ...{
+            id: faker.string.uuid(),
+            name: faker.string.alpha({length: {min: 10, max: 20}}),
+            color: faker.helpers.arrayElement(Object.values(ProcedureColor)),
+            priceInCents: faker.number.float({min: undefined, max: undefined, fractionDigits: 2}),
+            modality: faker.helpers.arrayElement(Object.values(ProcedureModality)),
+        },
+    },
     type: faker.helpers.arrayElement(['FIRST_VISIT', 'RETURN', 'WALK_IN', 'TELEMEDICINE', 'PROCEDURE'] as const),
     status: faker.helpers.arrayElement([
         'SCHEDULED',
@@ -1824,6 +1905,15 @@ export const getCheckinAppointmentResponseMock200 = (overrideResponse: Partial<A
     startAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
     endAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
     durationMinutes: faker.number.float({min: undefined, max: undefined, fractionDigits: 2}),
+    procedure: {
+        ...{
+            id: faker.string.uuid(),
+            name: faker.string.alpha({length: {min: 10, max: 20}}),
+            color: faker.helpers.arrayElement(Object.values(ProcedureColor)),
+            priceInCents: faker.number.float({min: undefined, max: undefined, fractionDigits: 2}),
+            modality: faker.helpers.arrayElement(Object.values(ProcedureModality)),
+        },
+    },
     type: faker.helpers.arrayElement(['FIRST_VISIT', 'RETURN', 'WALK_IN', 'TELEMEDICINE', 'PROCEDURE'] as const),
     status: faker.helpers.arrayElement([
         'SCHEDULED',
@@ -1867,6 +1957,15 @@ export const getCallAppointmentResponseMock = (overrideResponse: Partial<Appoint
     startAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
     endAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
     durationMinutes: faker.number.float({min: undefined, max: undefined, fractionDigits: 2}),
+    procedure: {
+        ...{
+            id: faker.string.uuid(),
+            name: faker.string.alpha({length: {min: 10, max: 20}}),
+            color: faker.helpers.arrayElement(Object.values(ProcedureColor)),
+            priceInCents: faker.number.float({min: undefined, max: undefined, fractionDigits: 2}),
+            modality: faker.helpers.arrayElement(Object.values(ProcedureModality)),
+        },
+    },
     type: faker.helpers.arrayElement(['FIRST_VISIT', 'RETURN', 'WALK_IN', 'TELEMEDICINE', 'PROCEDURE'] as const),
     status: faker.helpers.arrayElement([
         'SCHEDULED',
@@ -1898,6 +1997,15 @@ export const getCallAppointmentResponseMock200 = (overrideResponse: Partial<Appo
     startAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
     endAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
     durationMinutes: faker.number.float({min: undefined, max: undefined, fractionDigits: 2}),
+    procedure: {
+        ...{
+            id: faker.string.uuid(),
+            name: faker.string.alpha({length: {min: 10, max: 20}}),
+            color: faker.helpers.arrayElement(Object.values(ProcedureColor)),
+            priceInCents: faker.number.float({min: undefined, max: undefined, fractionDigits: 2}),
+            modality: faker.helpers.arrayElement(Object.values(ProcedureModality)),
+        },
+    },
     type: faker.helpers.arrayElement(['FIRST_VISIT', 'RETURN', 'WALK_IN', 'TELEMEDICINE', 'PROCEDURE'] as const),
     status: faker.helpers.arrayElement([
         'SCHEDULED',
@@ -1941,6 +2049,15 @@ export const getConfirmAppointmentResponseMock = (overrideResponse: Partial<Appo
     startAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
     endAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
     durationMinutes: faker.number.float({min: undefined, max: undefined, fractionDigits: 2}),
+    procedure: {
+        ...{
+            id: faker.string.uuid(),
+            name: faker.string.alpha({length: {min: 10, max: 20}}),
+            color: faker.helpers.arrayElement(Object.values(ProcedureColor)),
+            priceInCents: faker.number.float({min: undefined, max: undefined, fractionDigits: 2}),
+            modality: faker.helpers.arrayElement(Object.values(ProcedureModality)),
+        },
+    },
     type: faker.helpers.arrayElement(['FIRST_VISIT', 'RETURN', 'WALK_IN', 'TELEMEDICINE', 'PROCEDURE'] as const),
     status: faker.helpers.arrayElement([
         'SCHEDULED',
@@ -1972,6 +2089,15 @@ export const getConfirmAppointmentResponseMock200 = (overrideResponse: Partial<A
     startAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
     endAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
     durationMinutes: faker.number.float({min: undefined, max: undefined, fractionDigits: 2}),
+    procedure: {
+        ...{
+            id: faker.string.uuid(),
+            name: faker.string.alpha({length: {min: 10, max: 20}}),
+            color: faker.helpers.arrayElement(Object.values(ProcedureColor)),
+            priceInCents: faker.number.float({min: undefined, max: undefined, fractionDigits: 2}),
+            modality: faker.helpers.arrayElement(Object.values(ProcedureModality)),
+        },
+    },
     type: faker.helpers.arrayElement(['FIRST_VISIT', 'RETURN', 'WALK_IN', 'TELEMEDICINE', 'PROCEDURE'] as const),
     status: faker.helpers.arrayElement([
         'SCHEDULED',
@@ -2015,6 +2141,15 @@ export const getCompleteAppointmentResponseMock = (overrideResponse: Partial<App
     startAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
     endAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
     durationMinutes: faker.number.float({min: undefined, max: undefined, fractionDigits: 2}),
+    procedure: {
+        ...{
+            id: faker.string.uuid(),
+            name: faker.string.alpha({length: {min: 10, max: 20}}),
+            color: faker.helpers.arrayElement(Object.values(ProcedureColor)),
+            priceInCents: faker.number.float({min: undefined, max: undefined, fractionDigits: 2}),
+            modality: faker.helpers.arrayElement(Object.values(ProcedureModality)),
+        },
+    },
     type: faker.helpers.arrayElement(['FIRST_VISIT', 'RETURN', 'WALK_IN', 'TELEMEDICINE', 'PROCEDURE'] as const),
     status: faker.helpers.arrayElement([
         'SCHEDULED',
@@ -2046,6 +2181,15 @@ export const getCompleteAppointmentResponseMock200 = (overrideResponse: Partial<
     startAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
     endAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
     durationMinutes: faker.number.float({min: undefined, max: undefined, fractionDigits: 2}),
+    procedure: {
+        ...{
+            id: faker.string.uuid(),
+            name: faker.string.alpha({length: {min: 10, max: 20}}),
+            color: faker.helpers.arrayElement(Object.values(ProcedureColor)),
+            priceInCents: faker.number.float({min: undefined, max: undefined, fractionDigits: 2}),
+            modality: faker.helpers.arrayElement(Object.values(ProcedureModality)),
+        },
+    },
     type: faker.helpers.arrayElement(['FIRST_VISIT', 'RETURN', 'WALK_IN', 'TELEMEDICINE', 'PROCEDURE'] as const),
     status: faker.helpers.arrayElement([
         'SCHEDULED',
@@ -2089,6 +2233,15 @@ export const getMarkNoShowAppointmentResponseMock = (overrideResponse: Partial<A
     startAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
     endAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
     durationMinutes: faker.number.float({min: undefined, max: undefined, fractionDigits: 2}),
+    procedure: {
+        ...{
+            id: faker.string.uuid(),
+            name: faker.string.alpha({length: {min: 10, max: 20}}),
+            color: faker.helpers.arrayElement(Object.values(ProcedureColor)),
+            priceInCents: faker.number.float({min: undefined, max: undefined, fractionDigits: 2}),
+            modality: faker.helpers.arrayElement(Object.values(ProcedureModality)),
+        },
+    },
     type: faker.helpers.arrayElement(['FIRST_VISIT', 'RETURN', 'WALK_IN', 'TELEMEDICINE', 'PROCEDURE'] as const),
     status: faker.helpers.arrayElement([
         'SCHEDULED',
@@ -2120,6 +2273,15 @@ export const getMarkNoShowAppointmentResponseMock200 = (overrideResponse: Partia
     startAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
     endAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
     durationMinutes: faker.number.float({min: undefined, max: undefined, fractionDigits: 2}),
+    procedure: {
+        ...{
+            id: faker.string.uuid(),
+            name: faker.string.alpha({length: {min: 10, max: 20}}),
+            color: faker.helpers.arrayElement(Object.values(ProcedureColor)),
+            priceInCents: faker.number.float({min: undefined, max: undefined, fractionDigits: 2}),
+            modality: faker.helpers.arrayElement(Object.values(ProcedureModality)),
+        },
+    },
     type: faker.helpers.arrayElement(['FIRST_VISIT', 'RETURN', 'WALK_IN', 'TELEMEDICINE', 'PROCEDURE'] as const),
     status: faker.helpers.arrayElement([
         'SCHEDULED',

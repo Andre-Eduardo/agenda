@@ -1,0 +1,34 @@
+@reference "../../../../../app/globals.css";
+
+.grid {
+    @apply grid grid-cols-2 gap-3;
+}
+
+.field {
+    @apply flex min-w-0 flex-col gap-1.5;
+}
+
+.dot {
+    @apply inline-block size-2 shrink-0 rounded-full;
+    background: var(--procedure-color);
+}
+
+.blue {
+    composes: dot;
+    --procedure-color: var(--color-primary);
+}
+
+.green {
+    composes: dot;
+    --procedure-color: var(--color-success);
+}
+
+.amber {
+    composes: dot;
+    --procedure-color: var(--color-warning);
+}
+
+.red {
+    composes: dot;
+    --procedure-color: var(--color-danger);
+}

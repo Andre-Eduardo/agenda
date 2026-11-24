@@ -20,8 +20,50 @@
     "saving": "Guardando...",
     "forbidden": "Acceso denegado. No tienes permiso para ver esta página."
   },
+  "procedure": {
+    "title": "Procedimientos y servicios",
+    "description": "Configura las opciones que el equipo puede elegir al programar citas.",
+    "add": "Nuevo procedimiento",
+    "edit": "Editar procedimiento",
+    "editItem": "Editar {{name}}",
+    "name": "Nombre",
+    "duration": "Duración (min)",
+    "price": "Precio (BRL)",
+    "color": "Color",
+    "modality": "Modalidad",
+    "selection": "Procedimiento o servicio",
+    "none": "Sin procedimiento o servicio",
+    "loading": "Cargando catálogo…",
+    "loadError": "No se pudo cargar el catálogo.",
+    "empty": "Aún no hay procedimientos en el catálogo.",
+    "noActive": "Agrega o reactiva un procedimiento en Configuración.",
+    "active": "Disponible para agendar",
+    "inactive": "Inactivo",
+    "summary": "{{duration}} min · {{price}} · {{modality}}",
+    "saved": "Procedimiento guardado.",
+    "saveError": "No se pudo guardar el procedimiento.",
+    "invalid": "Indica un nombre, una duración de 1 a 720 minutos y un precio con hasta dos decimales.",
+    "invalidDefaults": "Indica una duración de 1 a 720 minutos y un precio con hasta dos decimales.",
+    "colors": {
+      "BLUE": "Azul",
+      "GREEN": "Verde",
+      "AMBER": "Ámbar",
+      "RED": "Rojo"
+    },
+    "modalities": {
+      "IN_PERSON": "Presencial",
+      "REMOTE": "Remoto"
+    }
+  },
   "errors": {
+    "procedure": {
+      "required": "Selecciona un procedimiento o servicio del catálogo.",
+      "not_found": "El procedimiento no está disponible en esta clínica.",
+      "override_denied": "No tienes permiso para cambiar los valores del procedimiento en esta cita.",
+      "invalid_duration": "Indica una duración de 1 a 720 minutos enteros."
+    },
     "appointment": {
+      "end_required": "Indica la hora de finalización de la cita.",
       "member_conflict": "El profesional ya tiene una cita en este horario. Elige otro horario o profesional.",
       "room_conflict": "La sala ya está reservada en este horario. Elige otra sala u horario."
     },

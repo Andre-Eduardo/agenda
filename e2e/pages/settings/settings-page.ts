@@ -76,6 +76,22 @@ export class SettingsPage extends BasePage {
             .click();
     }
 
+    async createProcedure(name: string, duration: string, price: string) {
+        await this.page.getByRole('button', {name: 'Procedimentos e serviços', exact: true}).click();
+        await this.page.getByRole('button', {name: 'Novo procedimento', exact: true}).click();
+
+        const dialog = this.page.getByRole('dialog', {name: 'Novo procedimento'});
+        await dialog.getByLabel('Nome', {exact: true}).fill(name);
+        await dialog.getByLabel('Duração (min)', {exact: true}).fill(duration);
+        await dialog.getByLabel('Valor (R$)', {exact: true}).fill(price);
+        await dialog.getByRole('combobox', {name: 'Cor', exact: true}).click();
+        await this.page.getByRole('option', {name: 'Verde', exact: true}).click();
+        await dialog.getByRole('combobox', {name: 'Modalidade', exact: true}).click();
+        await this.page.getByRole('option', {name: 'Remoto', exact: true}).click();
+        await dialog.getByRole('button', {name: 'Salvar', exact: true}).click();
+        await expect(dialog).toBeHidden();
+    }
+
     async navigate() {
         await this.page.goto('/settings');
     }
