@@ -43,6 +43,21 @@ test.describe('Appointment availability warnings', () => {
         await expect(appointmentListPage.apptBlock(patient.name)).toBeVisible();
     });
 
+    test('should explain and hard-block overlapping appointments', async ({createPatients, appointmentListPage}) => {
+        const [patientA, patientB] = await createPatients([{clinicId}, {clinicId}]);
+
+        await appointmentListPage.navigate();
+        await appointmentListPage.createAppointment(patientA.name, {startTime: '10:00', durationMin: 60});
+        await appointmentListPage.createAppointmentExpectConflict(
+            patientB.name,
+            /profissional já tem uma consulta nesse horário/i,
+            {startTime: '10:30', durationMin: 30}
+        );
+
+        await appointmentListPage.createCancelButton.click();
+        await expect(appointmentListPage.apptBlock(patientB.name)).toBeHidden();
+    });
+
     test('should warn and allow confirming an appointment over a member block', async ({
         createPatient,
         createMemberBlock,
@@ -62,6 +77,8 @@ test.describe('Appointment availability warnings', () => {
         });
 
         await appointmentListPage.navigate();
+        await expect(appointmentListPage.page.getByRole('note', {name: 'Bloqueado: Almoço'})).toBeVisible();
+        await expect(appointmentListPage.page.getByText('Bloqueado: Almoço')).toBeVisible();
         await appointmentListPage.createAppointment(patient.name, {
             startTime: '14:30',
             confirmOutsideAvailability: true,

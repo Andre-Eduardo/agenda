@@ -2,10 +2,12 @@ import {expect, test} from '@fixtures/test';
 
 test.describe('Room-aware appointments', () => {
     let clinicId: string;
+    let professionalName: string;
 
     test.beforeEach(async ({createAuthenticatedProfessional, setClinicRoomManagementEnabled}) => {
-        const professional = await createAuthenticatedProfessional();
+        const professional = await createAuthenticatedProfessional({additionalRoles: ['OWNER']});
         clinicId = professional.clinicId;
+        professionalName = professional.user.name;
         await setClinicRoomManagementEnabled(clinicId, true);
     });
 
@@ -28,12 +30,16 @@ test.describe('Room-aware appointments', () => {
         await expect(appointmentListPage.roomBadge(room.name)).toBeVisible();
     });
 
-    test('should hard-block double-booking the same room at an overlapping time', async ({
+    test('should hard-block double-booking the same room across professionals', async ({
         createPatients,
         createRoom,
+        createClinicMember,
         appointmentListPage,
     }) => {
         const room = await createRoom({clinicId, name: `Sala ${Date.now()}`});
+        const otherProfessionalName = `Profissional ${Date.now()}`;
+
+        await createClinicMember({clinicId, role: 'PROFESSIONAL', displayName: otherProfessionalName});
         const [patientA, patientB] = await createPatients([{clinicId}, {clinicId}]);
 
         await appointmentListPage.navigate();
@@ -41,12 +47,14 @@ test.describe('Room-aware appointments', () => {
             startTime: '10:00',
             durationMin: 60,
             room: room.name,
+            professional: professionalName,
         });
 
-        await appointmentListPage.createAppointmentExpectRoomConflict(patientB.name, {
+        await appointmentListPage.createAppointmentExpectConflict(patientB.name, /sala já está reservada/i, {
             startTime: '10:30',
             durationMin: 30,
             room: room.name,
+            professional: otherProfessionalName,
         });
 
         await appointmentListPage.createCancelButton.click();

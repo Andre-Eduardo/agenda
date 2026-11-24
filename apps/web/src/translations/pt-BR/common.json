@@ -21,6 +21,10 @@
     "forbidden": "Acesso negado. Você não tem permissão para visualizar esta página."
   },
   "errors": {
+    "appointment": {
+      "member_conflict": "O profissional já tem uma consulta nesse horário. Escolha outro horário ou profissional.",
+      "room_conflict": "A sala já está reservada nesse horário. Escolha outra sala ou horário."
+    },
     "patient_package": {
       "no_credits_left": "Este pacote não possui mais créditos disponíveis.",
       "appointment_type_mismatch": "Este pacote não cobre o tipo de atendimento desta consulta."

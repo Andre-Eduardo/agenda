@@ -527,9 +527,9 @@ function AvailabilityOverlay({day, workingHoursByDay, blocks, hourHeight}: Avail
     const hours = workingHoursByDay.get(day.getDay());
     const rects: Array<{top: number; height: number}> = [];
 
-    if (!hours || !hours.active) {
+    if (hours && !hours.active) {
         rects.push({top: 0, height: gridHeight});
-    } else {
+    } else if (hours) {
         const startMin = Math.max(timeToMin(hours.startTime), GRID_START_MIN);
         const endMin = Math.min(timeToMin(hours.endTime), GRID_END_MIN);
 
@@ -577,19 +577,32 @@ function AvailabilityOverlay({day, workingHoursByDay, blocks, hourHeight}: Avail
 
     return (
         <>
-            {rects.map((r, i) => (
-                <div key={`off-${i}`} className={offHoursOverlay} style={{top: r.top, height: r.height}} />
-            ))}
-            {dayBlocks.map((b) => (
+            {rects.map((rect, index) => (
                 <div
-                    key={b.id}
-                    className={blockOverlay}
-                    style={{top: b.top, height: b.height}}
-                    title={b.reason ?? 'Bloqueio de agenda'}
+                    key={`off-${index}`}
+                    role="note"
+                    aria-label="Fora do expediente cadastrado"
+                    className={offHoursOverlay}
+                    style={{top: rect.top, height: rect.height}}
                 >
-                    {b.height >= 24 && <span className={blockOverlayLabel}>Bloqueado</span>}
+                    {rect.height >= 24 && <span className={blockOverlayLabel}>Fora do expediente</span>}
                 </div>
             ))}
+            {dayBlocks.map((block) => {
+                const label = block.reason ? `Bloqueado: ${block.reason}` : 'Bloqueio de agenda';
+
+                return (
+                    <div
+                        key={block.id}
+                        role="note"
+                        aria-label={label}
+                        className={blockOverlay}
+                        style={{top: block.top, height: block.height}}
+                    >
+                        <span className={blockOverlayLabel}>{label}</span>
+                    </div>
+                );
+            })}
         </>
     );
 }
@@ -1923,7 +1936,7 @@ function EditAppointmentDialog({apt, onClose, onSaved}: EditDialogProps) {
                         return;
                     }
 
-                    toast.error('Erro ao atualizar consulta');
+                    toast.error(getApiErrorDetail(error) ?? 'Erro ao atualizar consulta');
                 },
             }
         );
@@ -2144,7 +2157,7 @@ function NewAppointmentDialog({prefill, defaultMemberId, onClose, onSaved}: NewA
                         return;
                     }
 
-                    toast.error('Erro ao criar consulta');
+                    toast.error(getApiErrorDetail(error) ?? 'Erro ao criar consulta');
                 },
             }
         );

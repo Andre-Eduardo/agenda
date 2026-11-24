@@ -85,6 +85,24 @@ describe('UpdateAppointmentService', () => {
         (service as unknown as {atomicExecutor: AtomicExecutor}).atomicExecutor = atomicExecutor;
     });
 
+    it('rejects a conflicting reschedule even when availability was explicitly confirmed', async () => {
+        appointmentRepository.findConflicts.mockResolvedValue([mock<Appointment>()]);
+
+        await expect(
+            service.execute({
+                actor,
+                payload: {
+                    id: appointment.id,
+                    startAt: new Date('2030-01-01T11:00:00.000Z'),
+                    endAt: new Date('2030-01-01T12:00:00.000Z'),
+                    confirmOutsideAvailability: true,
+                },
+            })
+        ).rejects.toThrow('appointment.member_conflict');
+
+        expect(appointmentRepository.save).not.toHaveBeenCalled();
+    });
+
     it('moves an appointment to a manageable professional after validating the target schedule', async () => {
         const result = await service.execute({
             actor,

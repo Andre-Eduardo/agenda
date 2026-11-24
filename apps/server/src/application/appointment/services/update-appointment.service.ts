@@ -115,7 +115,7 @@ export class UpdateAppointmentService implements ApplicationService<UpdateAppoin
             const conflicts = await this.appointmentRepository.findConflicts(attendedByMemberId, startAt, endAt, id);
 
             if (conflicts.length > 0) {
-                throw new PreconditionException('There is a scheduling conflict with an existing appointment.');
+                throw new PreconditionException('appointment.member_conflict');
             }
 
             changeProps.startAt = startAt;

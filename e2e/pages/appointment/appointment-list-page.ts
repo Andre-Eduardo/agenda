@@ -87,6 +87,7 @@ export class AppointmentListPage extends BasePage {
             startTime?: string;
             durationMin?: number;
             room?: string;
+            professional?: string;
             confirmOutsideAvailability?: boolean;
         } = {}
     ) {
@@ -112,6 +113,10 @@ export class AppointmentListPage extends BasePage {
             await this.selectRoom(options.room);
         }
 
+        if (options.professional) {
+            await this.selectProfessional(options.professional);
+        }
+
         await this.createSubmitButton.click();
 
         if (options.confirmOutsideAvailability) {
@@ -123,12 +128,11 @@ export class AppointmentListPage extends BasePage {
         await expect(this.page.getByRole('dialog', {name: /novo agendamento/i})).toBeHidden();
     }
 
-    /** Same as `createAppointment`, but expects a hard failure (e.g. room double-booking) —
-     * the create dialog stays open and no confirm dialog is offered, since room conflicts
-     * cannot happen physically and are never soft-confirmable. */
-    async createAppointmentExpectRoomConflict(
+    /** A hard scheduling conflict keeps the dialog open and never offers an override. */
+    async createAppointmentExpectConflict(
         patientName: string,
-        options: {date?: string; startTime?: string; durationMin?: number; room?: string} = {}
+        expectedMessage: RegExp,
+        options: {date?: string; startTime?: string; durationMin?: number; room?: string; professional?: string} = {}
     ) {
         await this.newAppointmentButton.click();
         await this.patientSearchInput.fill(patientName);
@@ -152,8 +156,13 @@ export class AppointmentListPage extends BasePage {
             await this.selectRoom(options.room);
         }
 
+        if (options.professional) {
+            await this.selectProfessional(options.professional);
+        }
+
         await this.createSubmitButton.click();
-        await expect(this.page.getByText(/erro ao criar consulta/i)).toBeVisible();
+        await expect(this.page.getByText(expectedMessage)).toBeVisible();
+        await expect(this.availabilityWarningDialog).toBeHidden();
         await expect(this.page.getByRole('dialog', {name: /novo agendamento/i})).toBeVisible();
     }
 
@@ -168,6 +177,11 @@ export class AppointmentListPage extends BasePage {
     async selectRoom(roomName: string) {
         await this.roomSelect.click();
         await this.page.getByRole('option', {name: roomName, exact: true}).click();
+    }
+
+    async selectProfessional(name: string) {
+        await this.page.getByRole('combobox', {name: /^profissional$/i}).click();
+        await this.page.getByRole('option', {name, exact: true}).click();
     }
 
     /** The colored dot rendered on a calendar block when the appointment has a room assigned. */

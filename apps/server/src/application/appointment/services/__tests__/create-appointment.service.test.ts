@@ -6,7 +6,7 @@ import type {Actor} from '@domain/@shared/actor';
 import {AccessDeniedException, AccessDeniedReason} from '@domain/@shared/exceptions';
 import {AtomicExecutor} from '@domain/@shared/repository';
 import {AppointmentRepository} from '@domain/appointment/appointment.repository';
-import type {AppointmentType} from '@domain/appointment/entities';
+import type {Appointment, AppointmentType} from '@domain/appointment/entities';
 import {ClinicMemberRepository} from '@domain/clinic-member/clinic-member.repository';
 import type {ClinicMember} from '@domain/clinic-member/entities';
 import {ClinicMemberId} from '@domain/clinic-member/entities';
@@ -101,6 +101,16 @@ describe('CreateAppointmentService', () => {
 
         expect(agendaAccessChecker.assertCanManage).toHaveBeenCalledWith(actor, attendedByMemberId);
         expect(appointmentRepository.save).toHaveBeenCalledTimes(1);
+    });
+
+    it('rejects an overlapping appointment even when availability was explicitly confirmed', async () => {
+        appointmentRepository.findConflicts.mockResolvedValue([mock<Appointment>()]);
+
+        await expect(service.execute({actor, payload: {...payload, confirmOutsideAvailability: true}})).rejects.toThrow(
+            'appointment.member_conflict'
+        );
+
+        expect(appointmentRepository.save).not.toHaveBeenCalled();
     });
 
     it('propagates AccessDeniedException and does not create the appointment', async () => {
