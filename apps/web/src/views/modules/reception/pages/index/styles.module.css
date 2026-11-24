@@ -1,0 +1,81 @@
+@reference '../../../../../app/globals.css';
+
+.root {
+    @apply flex flex-col gap-5 pb-6;
+}
+
+.metrics {
+    @apply grid grid-cols-2 gap-3 lg:grid-cols-4;
+}
+
+.metric {
+    @apply flex flex-col gap-1 rounded-(--radius-card) border border-(--color-border) bg-(--color-bg-card) p-4;
+}
+
+.metricNumber {
+    @apply font-mono text-2xl font-medium tabular-nums text-(--color-text-primary);
+}
+
+.metricLabel {
+    @apply text-sm text-(--color-text-secondary);
+}
+
+.notice {
+    @apply rounded-(--radius-card-sm) border border-(--color-warning) bg-(--color-bg-card) p-3 text-sm text-(--color-text-primary);
+}
+
+.section {
+    @apply overflow-hidden rounded-(--radius-card) border border-(--color-border) bg-(--color-bg-card);
+}
+
+.sectionHeader {
+    @apply flex items-center justify-between gap-3 border-b border-(--color-border) px-4 py-3;
+}
+
+.sectionTitle {
+    @apply text-base font-medium text-(--color-text-primary);
+}
+
+.sectionEmpty {
+    @apply px-4 py-5 text-sm text-(--color-text-secondary);
+}
+
+.rows {
+    @apply divide-y divide-(--color-border);
+}
+
+.row {
+    @apply flex flex-col gap-3 px-4 py-4 md:flex-row md:items-center;
+}
+
+.time {
+    @apply w-20 shrink-0 font-mono text-sm tabular-nums text-(--color-text-primary);
+}
+
+.identity {
+    @apply flex min-w-0 flex-1 flex-col gap-1;
+}
+
+.patientName {
+    @apply truncate text-sm font-medium text-(--color-text-primary);
+}
+
+.status {
+    @apply text-xs text-(--color-text-secondary);
+}
+
+.actions {
+    @apply flex flex-wrap items-center gap-2 md:justify-end;
+}
+
+.skeleton {
+    @apply flex flex-col gap-3;
+}
+
+.skeletonMetric {
+    @apply h-20 rounded-(--radius-card);
+}
+
+.skeletonRow {
+    @apply h-16 rounded-(--radius-card-sm);
+}

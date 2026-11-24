@@ -27,6 +27,7 @@ import {PatientListPage} from '@pages/patient/patient-list-page';
 import {PatientNewPage} from '@pages/patient/patient-new-page';
 import {RecordDetailPage} from '@pages/record/record-detail-page';
 import {RecordNewPage} from '@pages/record/record-new-page';
+import {ReceptionPage} from '@pages/reception/reception-page';
 import {SettingsPage} from '@pages/settings/settings-page';
 import {TeamDetailPage} from '@pages/team/team-detail-page';
 import {TeamListPage} from '@pages/team/team-list-page';
@@ -68,6 +69,7 @@ type CustomFixtures = {
     signInPage: SignInPage;
     dashboardPage: DashboardPage;
     appointmentListPage: AppointmentListPage;
+    receptionPage: ReceptionPage;
     patientListPage: PatientListPage;
     patientNewPage: PatientNewPage;
     patientDetailPage: PatientDetailPage;
@@ -181,6 +183,9 @@ export const test = base.extend<CustomFixtures>({
     },
     appointmentListPage: async ({page}, use) => {
         await use(new AppointmentListPage(page));
+    },
+    receptionPage: async ({page}, use) => {
+        await use(new ReceptionPage(page));
     },
     patientListPage: async ({page}, use) => {
         await use(new PatientListPage(page));

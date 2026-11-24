@@ -44,6 +44,7 @@
   },
   "nav": {
     "dashboard": "Dashboard",
+    "reception": "Recepção",
     "appointments": "Consultas",
     "patients": "Pacientes",
     "professionals": "Profissionais",
@@ -55,6 +56,50 @@
     "system": "Sistema",
     "menu": "Menu principal",
     "logout": "Sair"
+  },
+  "reception": {
+    "title": "Recepção",
+    "refresh": "Atualizar",
+    "summary": "Resumo das consultas de hoje",
+    "groups": {
+      "waiting": "Aguardando chegada",
+      "arrived": "Na recepção",
+      "inProgress": "Em atendimento",
+      "finished": "Finalizados"
+    },
+    "status": {
+      "SCHEDULED": "Agendado",
+      "CONFIRMED": "Confirmado",
+      "ARRIVED": "Chegou",
+      "IN_PROGRESS": "Em atendimento",
+      "COMPLETED": "Concluído",
+      "NO_SHOW": "Faltou",
+      "CANCELLED": "Cancelado"
+    },
+    "accessDenied": "Acesso à agenda indisponível",
+    "accessDeniedDescription": "Você não tem permissão para visualizar os agendamentos.",
+    "loadError": "Não foi possível carregar as consultas",
+    "loadErrorDescription": "Verifique a conexão e tente novamente.",
+    "retry": "Tentar novamente",
+    "empty": "Nenhuma consulta hoje",
+    "emptyDescription": "Os agendamentos de hoje aparecerão aqui.",
+    "noAppointmentsInGroup": "Nenhuma consulta nesta etapa.",
+    "limitNotice": "Exibindo as primeiras {{limit}} consultas do dia. Consulte a agenda para ver as demais.",
+    "patientUnavailable": "Paciente indisponível",
+    "appointmentFor": "Consulta de {{name}}",
+    "openPatient": "Abrir paciente",
+    "openPatientFor": "Abrir perfil de {{name}}",
+    "checkin": "Registrar chegada",
+    "call": "Chamar paciente",
+    "markNoShow": "Marcar falta",
+    "confirmNoShowTitle": "Confirmar falta",
+    "confirmNoShowMessage": "Registrar falta de {{name}}? Esta ação encerra o agendamento.",
+    "actionError": "Não foi possível atualizar o estado. Recarregamos a lista; tente novamente.",
+    "success": {
+      "checkin": "Chegada registrada",
+      "call": "Paciente chamado",
+      "noShow": "Falta registrada"
+    }
   },
   "dashboard": {
     "patient": "paciente",
