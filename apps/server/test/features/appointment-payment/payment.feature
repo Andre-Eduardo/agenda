@@ -8,6 +8,7 @@ Feature: Appointment payment (POST / PATCH / GET)
             | Dr. House | dr_house | house@example.com   | H0use.Dr! |
         And I am signed in as "dr_house"
         And a professional "dr_house" exists with specialty "MEDICINA"
+        And the clinic member "dr_house" also has the role "OWNER"
         And I am signed in as "dr_house" with professional "${ref:id:professional:dr_house}"
         When I send a "POST" request to "/api/v1/patients" with:
             | name           | Payment Patient                 |
@@ -18,8 +19,8 @@ Feature: Appointment payment (POST / PATCH / GET)
         When I send a "POST" request to "/api/v1/appointments" with:
             | patientId          | ${ref:id:patient:pay_patient}   |
             | attendedByMemberId | ${ref:id:clinicMember:dr_house} |
-            | startAt            | 2026-07-10T09:00:00.000Z        |
-            | endAt              | 2026-07-10T10:00:00.000Z        |
+            | startAt            | ${ref:date:nextYear:07-10T09:00:00.000Z}        |
+            | endAt              | ${ref:date:nextYear:07-10T10:00:00.000Z}        |
             | type               | FIRST_VISIT                     |
         Then the request should succeed with a 201 status code
         And I save the response field "id" as "appointment" id for "pay_appt"

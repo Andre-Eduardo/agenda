@@ -20,8 +20,8 @@ Feature: Appointment check-in and call (PATCH)
         When I send a "POST" request to "/api/v1/appointments" with:
             | patientId          | ${ref:id:patient:checkin_patient} |
             | attendedByMemberId | ${ref:id:clinicMember:dr_house}   |
-            | startAt            | 2026-07-01T09:00:00.000Z          |
-            | endAt              | 2026-07-01T10:00:00.000Z          |
+            | startAt            | ${ref:date:nextYear:07-01T09:00:00.000Z}          |
+            | endAt              | ${ref:date:nextYear:07-01T10:00:00.000Z}          |
             | type               | FIRST_VISIT                       |
         Then the request should succeed with a 201 status code
         And I save the response field "id" as "appointment" id for "appt_checkin"
@@ -34,8 +34,8 @@ Feature: Appointment check-in and call (PATCH)
         When I send a "POST" request to "/api/v1/appointments" with:
             | patientId          | ${ref:id:patient:checkin_patient} |
             | attendedByMemberId | ${ref:id:clinicMember:dr_house}   |
-            | startAt            | 2026-07-02T09:00:00.000Z          |
-            | endAt              | 2026-07-02T10:00:00.000Z          |
+            | startAt            | ${ref:date:nextYear:07-02T09:00:00.000Z}          |
+            | endAt              | ${ref:date:nextYear:07-02T10:00:00.000Z}          |
             | type               | RETURN                            |
         Then the request should succeed with a 201 status code
         And I save the response field "id" as "appointment" id for "appt_call"

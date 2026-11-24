@@ -8,6 +8,7 @@ Feature: Clinic update (PATCH)
             | Dr. House | dr_house | house@example.com   | H0use.Dr! |
         And I am signed in as "dr_house"
         And a professional "dr_house" exists with specialty "MEDICINA"
+        And the clinic member "dr_house" also has the role "OWNER"
         And I am signed in as "dr_house" with clinic member "${ref:id:clinicMember:dr_house}"
 
     Scenario: Update clinic name
