@@ -21,6 +21,10 @@
     "forbidden": "Acceso denegado. No tienes permiso para ver esta página."
   },
   "errors": {
+    "appointment": {
+      "member_conflict": "El profesional ya tiene una cita en este horario. Elige otro horario o profesional.",
+      "room_conflict": "La sala ya está reservada en este horario. Elige otra sala u horario."
+    },
     "patient_package": {
       "no_credits_left": "Este paquete ya no tiene créditos disponibles.",
       "appointment_type_mismatch": "Este paquete no cubre el tipo de atención de la cita."

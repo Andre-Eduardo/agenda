@@ -21,6 +21,10 @@
     "forbidden": "Access denied. You do not have permission to view this page."
   },
   "errors": {
+    "appointment": {
+      "member_conflict": "The professional already has an appointment at this time. Choose another time or professional.",
+      "room_conflict": "The room is already booked at this time. Choose another room or time."
+    },
     "patient_package": {
       "no_credits_left": "This package has no credits left.",
       "appointment_type_mismatch": "This package does not cover the appointment type."

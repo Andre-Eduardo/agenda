@@ -105,7 +105,7 @@ export class CreateAppointmentService implements ApplicationService<CreateAppoin
         const conflicts = await this.appointmentRepository.findConflicts(attendedByMemberId, startAt, endAt);
 
         if (conflicts.length > 0) {
-            throw new PreconditionException('There is a scheduling conflict with an existing appointment.');
+            throw new PreconditionException('appointment.member_conflict');
         }
 
         // 8. Resolve the room (only when the clinic uses room management) and hard-block

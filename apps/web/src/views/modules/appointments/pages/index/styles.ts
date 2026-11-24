@@ -812,6 +812,10 @@ export const blockOverlayLabel = css({
     color: 'warning',
     textTransform: 'uppercase',
     letterSpacing: 'wider',
+    right: '2',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    whiteSpace: 'nowrap',
 });
 
 // ── Salas: cores por índice, selo no bloco, legenda e vista dedicada ───────────
