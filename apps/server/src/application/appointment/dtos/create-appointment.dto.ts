@@ -1,6 +1,7 @@
 import {z} from 'zod';
 import {createZodDto} from '@application/@shared/validation/dto';
 import {datetime, entityId} from '@application/@shared/validation/schemas';
+import {procedureIdSchema, procedureOverridesSchema} from '@application/procedure/dtos';
 import {AppointmentType} from '@domain/appointment/entities';
 import {ClinicMemberId} from '@domain/clinic-member/entities';
 import {PatientId} from '@domain/patient/entities';
@@ -11,7 +12,9 @@ export const createAppointmentSchema = z.object({
     /** ClinicMember who will attend the appointment (typically a PROFESSIONAL). */
     attendedByMemberId: entityId(ClinicMemberId),
     startAt: datetime,
-    endAt: datetime,
+    endAt: datetime.optional(),
+    procedureId: procedureIdSchema.optional(),
+    procedureOverrides: procedureOverridesSchema.partial().optional(),
     type: z.nativeEnum(AppointmentType),
     note: z.string().nullish().openapi({example: 'Patient has allergy to penicillin'}),
     retroactive: z.boolean().optional(),

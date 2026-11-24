@@ -14,6 +14,7 @@ import {
     SearchAppointmentsService,
     UpdateAppointmentService,
 } from '@application/appointment/services';
+import {ResolveScheduledProcedureService} from '@application/appointment/services/resolve-scheduled-procedure.service';
 import {ClinicPatientAccessModule} from '@application/clinic-patient-access/clinic-patient-access.module';
 import {ProfessionalAgendaAccessModule} from '@application/professional-agenda-access/professional-agenda-access.module';
 import {Authorizer, createAuthorizer} from '@domain/auth/authorizer';
@@ -32,6 +33,7 @@ import {InfrastructureModule} from '@infrastructure/infrastructure.module';
         CompleteAppointmentService,
         ConfirmAppointmentService,
         CreateAppointmentService,
+        ResolveScheduledProcedureService,
         GetAppointmentService,
         ListAppointmentStatusTransitionsService,
         MarkNoShowAppointmentService,

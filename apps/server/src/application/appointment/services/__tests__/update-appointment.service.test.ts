@@ -1,4 +1,5 @@
 import {mock} from 'jest-mock-extended';
+import {ResolveScheduledProcedureService} from '@application/appointment/services/resolve-scheduled-procedure.service';
 import {UpdateAppointmentService} from '@application/appointment/services/update-appointment.service';
 import {PatientAccessChecker} from '@application/clinic-patient-access/services/patient-access-checker.service';
 import {AgendaAccessChecker} from '@application/professional-agenda-access/services';
@@ -6,12 +7,14 @@ import type {Actor} from '@domain/@shared/actor';
 import {AtomicExecutor} from '@domain/@shared/repository';
 import {AppointmentRepository} from '@domain/appointment/appointment.repository';
 import {Appointment, AppointmentType} from '@domain/appointment/entities';
+import {Authorizer} from '@domain/auth/authorizer';
 import {ClinicMemberRepository} from '@domain/clinic-member/clinic-member.repository';
 import {ClinicMemberId} from '@domain/clinic-member/entities';
 import {ClinicRepository} from '@domain/clinic/clinic.repository';
 import {ClinicId} from '@domain/clinic/entities';
 import {EventDispatcher} from '@domain/event';
 import {PatientId} from '@domain/patient/entities';
+import {ProcedureRepository} from '@domain/procedure/procedure.repository';
 import {MemberBlockRepository} from '@domain/professional/member-block.repository';
 import {WorkingHoursRepository} from '@domain/professional/working-hours.repository';
 import {RoomRepository} from '@domain/room/room.repository';
@@ -80,6 +83,7 @@ describe('UpdateAppointmentService', () => {
             workingHoursRepository,
             memberBlockRepository,
             agendaAccessChecker,
+            new ResolveScheduledProcedureService(mock<ProcedureRepository>(), mock<Authorizer>()),
             eventDispatcher
         );
         (service as unknown as {atomicExecutor: AtomicExecutor}).atomicExecutor = atomicExecutor;

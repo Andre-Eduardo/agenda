@@ -3,6 +3,33 @@ import {EntityDto} from '@application/@shared/dto';
 import {AppointmentPaymentStatus} from '@domain/appointment-payment/entities';
 import type {Appointment} from '@domain/appointment/entities';
 import {AppointmentStatus, AppointmentType} from '@domain/appointment/entities';
+import {ProcedureColor, ProcedureModality, ScheduledProcedure} from '@domain/procedure/procedure.entity';
+
+@ApiSchema({name: 'ScheduledProcedure'})
+export class ScheduledProcedureDto implements ScheduledProcedure {
+    @ApiProperty({format: 'uuid'})
+    id: string;
+
+    @ApiProperty()
+    name: string;
+
+    @ApiProperty({enum: ProcedureColor, enumName: 'ProcedureColor'})
+    color: ProcedureColor;
+
+    @ApiProperty({description: 'Price in BRL cents'})
+    priceInCents: number;
+
+    @ApiProperty({enum: ProcedureModality, enumName: 'ProcedureModality'})
+    modality: ProcedureModality;
+
+    constructor(procedure: ScheduledProcedure) {
+        this.id = procedure.id;
+        this.name = procedure.name;
+        this.color = procedure.color;
+        this.priceInCents = procedure.priceInCents;
+        this.modality = procedure.modality;
+    }
+}
 
 @ApiSchema({name: 'Appointment'})
 export class AppointmentDto extends EntityDto {
@@ -29,6 +56,9 @@ export class AppointmentDto extends EntityDto {
 
     @ApiProperty({description: 'Duration in minutes'})
     durationMinutes: number;
+
+    @ApiProperty({type: ScheduledProcedureDto, nullable: true})
+    procedure: ScheduledProcedureDto | null;
 
     @ApiProperty({enum: AppointmentType, description: 'The appointment type'})
     type: AppointmentType;
@@ -91,6 +121,7 @@ export class AppointmentDto extends EntityDto {
         this.startAt = appointment.startAt.toISOString();
         this.endAt = appointment.endAt.toISOString();
         this.durationMinutes = appointment.durationMinutes;
+        this.procedure = appointment.procedure === null ? null : new ScheduledProcedureDto(appointment.procedure);
         this.type = appointment.type;
         this.status = appointment.status;
         this.canceledAt = appointment.canceledAt?.toISOString() ?? null;

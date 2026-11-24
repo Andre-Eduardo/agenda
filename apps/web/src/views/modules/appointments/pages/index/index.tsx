@@ -56,6 +56,7 @@ import {
     PhoneCall,
     UserX,
 } from 'lucide-react';
+import {useTranslation} from 'react-i18next';
 import {toast} from 'sonner';
 import {Badge} from '@/components/ui/componentes/badge';
 import {Button} from '@/components/ui/componentes/button';
@@ -65,10 +66,13 @@ import {Label} from '@/components/ui/componentes/label';
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@/components/ui/componentes/select';
 import {Sheet, SheetContent, SheetHeader, SheetTitle} from '@/components/ui/componentes/sheet';
 import {Textarea} from '@/components/ui/componentes/textarea';
+import {useCan} from '@/hooks/useCan';
 import {formatBRL} from '@/lib/utils';
 import {cx} from '@/styled-system/css';
 import {translateApiError} from '@/utils/translate-api-error';
 import {ConfirmDialog} from '@/views/components/ConfirmDialog';
+import {ProcedureColorDot} from '../../components/ProcedureFields';
+import {useAppointmentProcedure} from '../../components/ProcedureFields/useAppointmentProcedure';
 import * as styles from './styles';
 import {
     apptBar,
@@ -491,8 +495,15 @@ function ApptBlock({
                 <div className={styles.apptTime}>
                     {apt.start} – {apt.end}
                 </div>
-                <div className={styles.apptName}>{getPatientName(patients, apt.patientId)}</div>
-                {!compact && <div className={styles.apptType}>{TYPE_LABELS[apt.type]}</div>}
+                <div className={styles.apptName}>
+                    {apt.raw.procedure && (
+                        <>
+                            <ProcedureColorDot color={apt.raw.procedure.color} />{' '}
+                        </>
+                    )}
+                    {getPatientName(patients, apt.patientId)}
+                </div>
+                {!compact && <div className={styles.apptType}>{apt.raw.procedure?.name ?? TYPE_LABELS[apt.type]}</div>}
             </div>
             {onResizeStart && (
                 <span
@@ -888,6 +899,7 @@ function ProfessionalsView({
     onApptMove,
     onApptResize,
 }: ProfessionalsViewProps) {
+    const canOverrideProcedure = useCan({has: 'procedure:override'});
     const [resizePreview, setResizePreview] = useState<{id: string; endMin: number} | null>(null);
     const dayAppts = appts.filter((apt) => apt.date === fmtDate(cursor));
     const nowTop = (now.h + now.m / 60 - GRID_START) * HOUR_H_DAY;
@@ -904,7 +916,7 @@ function ProfessionalsView({
         if (!apt || !canMove(apt)) return;
 
         const rect = event.currentTarget.getBoundingClientRect();
-        const duration = timeToMin(apt.end) - timeToMin(apt.start);
+        const duration = apt.raw.durationMinutes;
         const minuteAtPointer = GRID_START_MIN + ((event.clientY - rect.top) / HOUR_H_DAY) * 60;
         const startMin = Math.max(GRID_START_MIN, Math.min(snapToSlot(minuteAtPointer), GRID_END_MIN - duration));
 
@@ -1052,7 +1064,9 @@ function ProfessionalsView({
                                             event.dataTransfer.setData('application/x-agenda-appointment', apt.id);
                                         }}
                                         onResizeStart={
-                                            canMove(apt) ? (event) => handleResizeStart(event, apt) : undefined
+                                            canMove(apt) && (!apt.raw.procedure || canOverrideProcedure)
+                                                ? (event) => handleResizeStart(event, apt)
+                                                : undefined
                                         }
                                         onClick={() => onApptClick(apt.id)}
                                     />
@@ -1242,6 +1256,7 @@ function MonthView({appts, patients, cursor, today, highlightId, onSlotClick, on
                                         onApptClick(a.id);
                                     }}
                                 >
+                                    {a.raw.procedure && <ProcedureColorDot color={a.raw.procedure.color} />}
                                     <span className={styles.apptTimeMono}>{a.start}</span>
                                     {getPatientName(patients, a.patientId).split(' ').slice(0, 2).join(' ')}
                                 </button>
@@ -1396,8 +1411,10 @@ function AppointmentDetailSheet({
     onOpenPatient,
     onStatusChanged,
 }: DetailSheetProps) {
+    const {t} = useTranslation();
+    const {procedure} = apt.raw;
     const patient = patients.find((p) => p.id === apt.patientId);
-    const durMin = timeToMin(apt.end) - timeToMin(apt.start);
+    const durMin = apt.raw.durationMinutes;
     const durLabel =
         durMin >= 60 ? `${Math.floor(durMin / 60)}h${durMin % 60 ? ` ${durMin % 60}min` : ''}` : `${durMin} min`;
     const [y, mo, da] = apt.date.split('-').map(Number);
@@ -1485,6 +1502,30 @@ function AppointmentDetailSheet({
                             </div>
                         </div>
                     </div>
+
+                    {procedure && (
+                        <div className={styles.sheetSection}>
+                            <div className={styles.sheetSectionTitle}>{t('procedure.selection')}</div>
+                            <div className={styles.sheetKvGrid}>
+                                <div className={styles.sheetKv}>
+                                    <span className={styles.sheetKvKey}>{t('procedure.name')}</span>
+                                    <span className={styles.sheetKvText}>
+                                        <ProcedureColorDot color={procedure.color} /> {procedure.name}
+                                    </span>
+                                </div>
+                                <div className={styles.sheetKv}>
+                                    <span className={styles.sheetKvKey}>{t('procedure.modality')}</span>
+                                    <span className={styles.sheetKvText}>
+                                        {t(`procedure.modalities.${procedure.modality}`)}
+                                    </span>
+                                </div>
+                                <div className={styles.sheetKv}>
+                                    <span className={styles.sheetKvKey}>{t('procedure.price')}</span>
+                                    <span className={styles.sheetKvVal}>{formatBRL(procedure.priceInCents / 100)}</span>
+                                </div>
+                            </div>
+                        </div>
+                    )}
 
                     {/* Notes */}
                     <div className={styles.sheetSection}>
@@ -1893,8 +1934,12 @@ interface EditDialogProps {
 function EditAppointmentDialog({apt, onClose, onSaved}: EditDialogProps) {
     const [date, setDate] = useState(apt.date);
     const [startTime, setStartTime] = useState(apt.start);
-    const [durMin, setDurMin] = useState(timeToMin(apt.end) - timeToMin(apt.start));
+    const [durMin, setDurMin] = useState(apt.raw.durationMinutes);
     const [type, setType] = useState<AppointmentType>(apt.type);
+    const procedure = useAppointmentProcedure(
+        apt.raw.procedure ? {...apt.raw.procedure, durationMinutes: apt.raw.durationMinutes} : undefined
+    );
+    const requiresProcedure = type === 'PROCEDURE' && apt.type !== 'PROCEDURE';
     const [note, setNote] = useState(apt.note ?? '');
     const [roomId, setRoomId] = useState(apt.roomId ?? '');
     const [availabilityWarning, setAvailabilityWarning] = useState<string | null>(null);
@@ -1906,14 +1951,16 @@ function EditAppointmentDialog({apt, onClose, onSaved}: EditDialogProps) {
     const roomsQuery = useListRooms({query: {enabled: roomManagementEnabled}});
 
     const submit = (confirmOutsideAvailability: boolean) => {
-        const endTime = minToTime(timeToMin(startTime) + durMin);
+        if (!date || !startTime || !procedure.valid || (requiresProcedure && !procedure.hasProcedure)) return;
+
+        const startAt = localDateTimeToISO(date, startTime);
 
         update.mutate(
             {
                 id: apt.id,
                 data: {
-                    startAt: localDateTimeToISO(date, startTime),
-                    endAt: localDateTimeToISO(date, endTime),
+                    startAt,
+                    ...procedure.buildFields(startAt, durMin),
                     type: type as unknown as UpdateAppointmentInputDtoType,
                     note: note || null,
                     attendedByMemberId: apt.attendedByMemberId,
@@ -1972,24 +2019,29 @@ function EditAppointmentDialog({apt, onClose, onSaved}: EditDialogProps) {
                                 />
                             </div>
                         </div>
+                        {procedure.renderFields(requiresProcedure)}
                         <div className={styles.formRow}>
-                            <div className={styles.formField}>
-                                <Label>Duração</Label>
-                                <Select value={String(durMin)} onValueChange={(v) => setDurMin(Number(v))}>
-                                    <SelectTrigger aria-label="Duração">
-                                        <SelectValue />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {DURATIONS.map((d) => (
-                                            <SelectItem key={d} value={String(d)}>
-                                                {d >= 60
-                                                    ? `${Math.floor(d / 60)}h${d % 60 ? ` ${d % 60}min` : ''}`
-                                                    : `${d} min`}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                            </div>
+                            {!procedure.hasProcedure && (
+                                <div className={styles.formField}>
+                                    <Label>Duração</Label>
+                                    <Select value={String(durMin)} onValueChange={(v) => setDurMin(Number(v))}>
+                                        <SelectTrigger aria-label="Duração">
+                                            <SelectValue />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {[...new Set([...DURATIONS, durMin])]
+                                                .sort((a, b) => a - b)
+                                                .map((d) => (
+                                                    <SelectItem key={d} value={String(d)}>
+                                                        {d >= 60
+                                                            ? `${Math.floor(d / 60)}h${d % 60 ? ` ${d % 60}min` : ''}`
+                                                            : `${d} min`}
+                                                    </SelectItem>
+                                                ))}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                            )}
                             <div className={styles.formField}>
                                 <Label>Tipo</Label>
                                 <Select value={type} onValueChange={(v) => setType(v as AppointmentType)}>
@@ -2041,7 +2093,16 @@ function EditAppointmentDialog({apt, onClose, onSaved}: EditDialogProps) {
                         <Button variant="outline" onClick={onClose}>
                             Cancelar
                         </Button>
-                        <Button onClick={handleSave} disabled={update.isPending}>
+                        <Button
+                            onClick={handleSave}
+                            disabled={
+                                update.isPending ||
+                                !date ||
+                                !startTime ||
+                                !procedure.valid ||
+                                (requiresProcedure && !procedure.hasProcedure)
+                            }
+                        >
                             {update.isPending ? 'Salvando…' : 'Salvar alterações'}
                         </Button>
                     </div>
@@ -2081,6 +2142,8 @@ function NewAppointmentDialog({prefill, defaultMemberId, onClose, onSaved}: NewA
     const [startTime, setStartTime] = useState(prefill?.start ?? '09:00');
     const [durMin, setDurMin] = useState(60);
     const [type, setType] = useState<CreateAppointmentDtoType>('RETURN');
+    const procedure = useAppointmentProcedure();
+    const requiresProcedure = type === 'PROCEDURE';
     const [note, setNote] = useState('');
     const [showDrop, setShowDrop] = useState(false);
 
@@ -2126,15 +2189,17 @@ function NewAppointmentDialog({prefill, defaultMemberId, onClose, onSaved}: NewA
             return;
         }
 
-        const endTime = minToTime(timeToMin(startTime) + durMin);
+        if (!date || !startTime || !procedure.valid || (requiresProcedure && !procedure.hasProcedure)) return;
+
+        const startAt = localDateTimeToISO(date, startTime);
 
         create.mutate(
             {
                 data: {
                     patientId: selectedPatient.id,
                     attendedByMemberId,
-                    startAt: localDateTimeToISO(date, startTime),
-                    endAt: localDateTimeToISO(date, endTime),
+                    startAt,
+                    ...procedure.buildFields(startAt, durMin),
                     type,
                     note: note || null,
                     retroactive: true, // allow past dates too
@@ -2262,24 +2327,29 @@ function NewAppointmentDialog({prefill, defaultMemberId, onClose, onSaved}: NewA
                             </div>
                         </div>
 
+                        {procedure.renderFields(requiresProcedure)}
                         <div className={styles.formRow}>
-                            <div className={styles.formField}>
-                                <Label>Duração</Label>
-                                <Select value={String(durMin)} onValueChange={(v) => setDurMin(Number(v))}>
-                                    <SelectTrigger aria-label="Duração">
-                                        <SelectValue />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {DURATIONS.map((d) => (
-                                            <SelectItem key={d} value={String(d)}>
-                                                {d >= 60
-                                                    ? `${Math.floor(d / 60)}h${d % 60 ? ` ${d % 60}min` : ''}`
-                                                    : `${d} min`}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                            </div>
+                            {!procedure.hasProcedure && (
+                                <div className={styles.formField}>
+                                    <Label>Duração</Label>
+                                    <Select value={String(durMin)} onValueChange={(v) => setDurMin(Number(v))}>
+                                        <SelectTrigger aria-label="Duração">
+                                            <SelectValue />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {[...new Set([...DURATIONS, durMin])]
+                                                .sort((a, b) => a - b)
+                                                .map((d) => (
+                                                    <SelectItem key={d} value={String(d)}>
+                                                        {d >= 60
+                                                            ? `${Math.floor(d / 60)}h${d % 60 ? ` ${d % 60}min` : ''}`
+                                                            : `${d} min`}
+                                                    </SelectItem>
+                                                ))}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                            )}
                             <div className={styles.formField}>
                                 <Label>Tipo</Label>
                                 <Select value={type} onValueChange={(v) => setType(v as CreateAppointmentDtoType)}>
@@ -2335,7 +2405,15 @@ function NewAppointmentDialog({prefill, defaultMemberId, onClose, onSaved}: NewA
                         </Button>
                         <Button
                             onClick={handleSave}
-                            disabled={create.isPending || !selectedPatient || !attendedByMemberId}
+                            disabled={
+                                create.isPending ||
+                                !selectedPatient ||
+                                !attendedByMemberId ||
+                                !date ||
+                                !startTime ||
+                                !procedure.valid ||
+                                (requiresProcedure && !procedure.hasProcedure)
+                            }
                         >
                             {create.isPending ? 'Salvando…' : 'Agendar consulta'}
                         </Button>
@@ -2620,7 +2698,11 @@ export function AppointmentsPage() {
                     id: placement.apt.id,
                     data: {
                         startAt: localDateTimeToISO(placement.apt.date, placement.start),
-                        endAt: localDateTimeToISO(placement.apt.date, placement.end),
+                        endAt:
+                            !placement.apt.raw.procedure ||
+                            (placement.start === placement.apt.start && placement.end !== placement.apt.end)
+                                ? localDateTimeToISO(placement.apt.date, placement.end)
+                                : undefined,
                         type: placement.apt.type as unknown as UpdateAppointmentInputDtoType,
                         note: placement.apt.note,
                         attendedByMemberId: placement.attendedByMemberId,
@@ -2657,7 +2739,7 @@ export function AppointmentsPage() {
 
     const moveAppointment = useCallback(
         (apt: ApptView, attendedByMemberId: string, start: string) => {
-            const duration = timeToMin(apt.end) - timeToMin(apt.start);
+            const duration = apt.raw.durationMinutes;
             const end = minToTime(timeToMin(start) + duration);
 
             if (apt.attendedByMemberId === attendedByMemberId && apt.start === start) return;

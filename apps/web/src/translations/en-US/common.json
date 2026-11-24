@@ -20,8 +20,50 @@
     "saving": "Saving...",
     "forbidden": "Access denied. You do not have permission to view this page."
   },
+  "procedure": {
+    "title": "Procedures and services",
+    "description": "Set up the options your team can select when scheduling.",
+    "add": "New procedure",
+    "edit": "Edit procedure",
+    "editItem": "Edit {{name}}",
+    "name": "Name",
+    "duration": "Duration (min)",
+    "price": "Price (BRL)",
+    "color": "Color",
+    "modality": "Modality",
+    "selection": "Procedure or service",
+    "none": "No procedure or service",
+    "loading": "Loading catalog…",
+    "loadError": "Could not load the catalog.",
+    "empty": "No procedures in the catalog yet.",
+    "noActive": "Add or reactivate a procedure in Settings.",
+    "active": "Available for scheduling",
+    "inactive": "Inactive",
+    "summary": "{{duration}} min · {{price}} · {{modality}}",
+    "saved": "Procedure saved.",
+    "saveError": "Could not save the procedure.",
+    "invalid": "Enter a name, a duration from 1 to 720 minutes, and a price with up to two decimal places.",
+    "invalidDefaults": "Enter a duration from 1 to 720 minutes and a price with up to two decimal places.",
+    "colors": {
+      "BLUE": "Blue",
+      "GREEN": "Green",
+      "AMBER": "Amber",
+      "RED": "Red"
+    },
+    "modalities": {
+      "IN_PERSON": "In person",
+      "REMOTE": "Remote"
+    }
+  },
   "errors": {
+    "procedure": {
+      "required": "Select a procedure or service from the catalog.",
+      "not_found": "This procedure is unavailable in this clinic.",
+      "override_denied": "You do not have permission to override the procedure defaults on this appointment.",
+      "invalid_duration": "Enter a duration from 1 to 720 whole minutes."
+    },
     "appointment": {
+      "end_required": "Enter the appointment end time.",
       "member_conflict": "The professional already has an appointment at this time. Choose another time or professional.",
       "room_conflict": "The room is already booked at this time. Choose another room or time."
     },

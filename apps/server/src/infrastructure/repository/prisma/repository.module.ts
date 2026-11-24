@@ -40,6 +40,7 @@ import {PatientSubscriptionUsageRepository} from '@domain/patient-subscription/p
 import {PatientSubscriptionRepository} from '@domain/patient-subscription/patient-subscription.repository';
 import {PatientRepository} from '@domain/patient/patient.repository';
 import {PersonRepository} from '@domain/person/person.repository';
+import {ProcedureRepository} from '@domain/procedure/procedure.repository';
 import {ProfessionalAgendaAccessRepository} from '@domain/professional-agenda-access/professional-agenda-access.repository';
 import {MemberBlockRepository} from '@domain/professional/member-block.repository';
 import {ProfessionalRepository} from '@domain/professional/professional.repository';
@@ -92,6 +93,7 @@ import {PatientSubscriptionPrismaRepository} from '@infrastructure/repository/pa
 import {PatientPrismaRepository} from '@infrastructure/repository/patient.prisma.repository';
 import {PersonPrismaRepository} from '@infrastructure/repository/person.prisma.repository';
 import {PrismaProvider} from '@infrastructure/repository/prisma/prisma.provider';
+import {ProcedurePrismaRepository} from '@infrastructure/repository/procedure.prisma.repository';
 import {ProfessionalAgendaAccessPrismaRepository} from '@infrastructure/repository/professional-agenda-access.prisma.repository';
 import {ProfessionalPrismaRepository} from '@infrastructure/repository/professional.prisma.repository';
 import {RecordAmendmentPrismaRepository} from '@infrastructure/repository/record-amendment.prisma.repository';
@@ -128,6 +130,7 @@ const repositories: Provider[] = [
     {provide: PatientSubscriptionUsageRepository, useClass: PatientSubscriptionUsagePrismaRepository},
     // Schedule
     {provide: AppointmentRepository, useClass: AppointmentPrismaRepository},
+    {provide: ProcedureRepository, useClass: ProcedurePrismaRepository},
     {provide: AppointmentPaymentRepository, useClass: AppointmentPaymentPrismaRepository},
     {provide: AppointmentReminderRepository, useClass: AppointmentReminderPrismaRepository},
     {provide: ClinicReminderConfigRepository, useClass: ClinicReminderConfigPrismaRepository},

@@ -117,6 +117,7 @@ model Clinic {
   rooms                     Room[]
   documentPermissions       DocumentPermission[]
   appointments              Appointment[]
+  procedures                Procedure[]
   records                   Record[]
   files                     File[]
   importedDocuments         ImportedDocument[]
@@ -704,6 +705,39 @@ enum AppointmentType {
 // 8. AGENDA
 // ─────────────────────────────────────────────────────────────────────────────
 
+enum ProcedureColor {
+  BLUE
+  GREEN
+  AMBER
+  RED
+
+  @@map("procedure_color")
+}
+
+enum ProcedureModality {
+  IN_PERSON
+  REMOTE
+
+  @@map("procedure_modality")
+}
+
+model Procedure {
+  id              String            @id @db.Uuid
+  clinicId        String            @map("clinic_id") @db.Uuid
+  clinic          Clinic            @relation(fields: [clinicId], references: [id])
+  name            String            @db.VarChar(120)
+  durationMinutes Int               @map("duration_minutes")
+  color           ProcedureColor
+  priceInCents    Int               @map("price_in_cents")
+  modality        ProcedureModality
+  active          Boolean           @default(true)
+  appointments    Appointment[]
+
+  @@unique([clinicId, id])
+  @@index([clinicId, active, name])
+  @@map("procedure")
+}
+
 /// MUDANÇAS:
 /// - clinicId adicionado
 /// - professionalId substituído por attendedByMemberId (membro que atende)
@@ -726,6 +760,12 @@ model Appointment {
   startAt            DateTime              @map("start_at")
   endAt              DateTime              @map("end_at")
   durationMinutes    Int                   @map("duration_minutes")
+  procedureId        String?               @map("procedure_id") @db.Uuid
+  procedure          Procedure?            @relation(fields: [clinicId, procedureId], references: [clinicId, id], onDelete: Restrict)
+  procedureName      String?               @map("procedure_name") @db.VarChar(120)
+  procedureColor     ProcedureColor?       @map("procedure_color")
+  procedurePriceInCents Int?               @map("procedure_price_in_cents")
+  procedureModality  ProcedureModality?    @map("procedure_modality")
   type               AppointmentType       @map("type")
   status             AppointmentStatus     @map("status")
   canceledAt         DateTime?             @map("canceled_at")
@@ -746,6 +786,7 @@ model Appointment {
   @@index([clinicId], name: "appointment_clinic_idx")
   @@index([attendedByMemberId], name: "appointment_attended_by_idx")
   @@index([roomId], name: "appointment_room_idx")
+  @@index([clinicId, procedureId])
   @@map("appointment")
 }
 

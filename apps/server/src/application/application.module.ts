@@ -38,6 +38,7 @@ import {PatientSubscriptionPlanModule} from '@application/patient-subscription-p
 import {PatientSubscriptionModule} from '@application/patient-subscription/patient-subscription.module';
 import {PatientModule} from '@application/patient/patient.module';
 import {PaymentModule} from '@application/payment/payment.module';
+import {ProcedureModule} from '@application/procedure/procedure.module';
 import {ProfessionalAgendaAccessModule} from '@application/professional-agenda-access/professional-agenda-access.module';
 import {ProfessionalModule} from '@application/professional/professional.module';
 import {RecordModule} from '@application/record/record.module';
@@ -135,6 +136,7 @@ const guards: Provider[] = [
         ProfessionalModule,
         PatientModule,
         AppointmentModule,
+        ProcedureModule,
         AppointmentReminderModule,
         ClinicReminderConfigModule,
         RecordModule,

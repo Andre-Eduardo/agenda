@@ -2431,6 +2431,169 @@
         ]
       }
     },
+    "/api/v1/procedures": {
+      "get": {
+        "operationId": "listActiveProcedures",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Active procedures",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Procedure"
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Request failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          }
+        },
+        "summary": "List active procedures for scheduling",
+        "tags": [
+          "Procedure"
+        ]
+      },
+      "post": {
+        "operationId": "createProcedure",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateProcedureDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Procedure created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Procedure"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Request failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Create a catalog procedure",
+        "tags": [
+          "Procedure"
+        ]
+      }
+    },
+    "/api/v1/procedures/catalog": {
+      "get": {
+        "operationId": "listProcedureCatalog",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Procedure catalog",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Procedure"
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Request failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          }
+        },
+        "summary": "List the clinic procedure catalog, including inactive entries",
+        "tags": [
+          "Procedure"
+        ]
+      }
+    },
+    "/api/v1/procedures/{id}": {
+      "put": {
+        "operationId": "updateProcedure",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Procedure ID",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateProcedureDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Procedure updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Procedure"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Request failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Update or deactivate a catalog procedure",
+        "tags": [
+          "Procedure"
+        ]
+      }
+    },
     "/api/v1/clinics/{clinicId}/reminders/pending": {
       "get": {
         "operationId": "listPendingReminders",
@@ -10599,6 +10762,37 @@
             "format": "date-time",
             "description": "A datetime in ISO 8601 format."
           },
+          "procedureId": {
+            "type": "string",
+            "format": "uuid",
+            "example": "dc5782d4-ce8e-4f95-bb0b-d1a4e130aee8"
+          },
+          "procedureOverrides": {
+            "type": "object",
+            "properties": {
+              "color": {
+                "type": "string",
+                "enum": [
+                  "BLUE",
+                  "GREEN",
+                  "AMBER",
+                  "RED"
+                ]
+              },
+              "priceInCents": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 2147483647
+              },
+              "modality": {
+                "type": "string",
+                "enum": [
+                  "IN_PERSON",
+                  "REMOTE"
+                ]
+              }
+            }
+          },
           "type": {
             "type": "string",
             "enum": [
@@ -10632,8 +10826,60 @@
           "patientId",
           "attendedByMemberId",
           "startAt",
-          "endAt",
           "type"
+        ]
+      },
+      "ProcedureColor": {
+        "type": "string",
+        "enum": [
+          "BLUE",
+          "GREEN",
+          "AMBER",
+          "RED"
+        ]
+      },
+      "ProcedureModality": {
+        "type": "string",
+        "enum": [
+          "IN_PERSON",
+          "REMOTE"
+        ]
+      },
+      "ScheduledProcedure": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "color": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ProcedureColor"
+              }
+            ]
+          },
+          "priceInCents": {
+            "type": "number",
+            "description": "Price in BRL cents"
+          },
+          "modality": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ProcedureModality"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "color",
+          "priceInCents",
+          "modality"
         ]
       },
       "AppointmentPaymentStatus": {
@@ -10697,6 +10943,14 @@
           "durationMinutes": {
             "type": "number",
             "description": "Duration in minutes"
+          },
+          "procedure": {
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ScheduledProcedure"
+              }
+            ]
           },
           "type": {
             "type": "string",
@@ -10777,6 +11031,7 @@
           "startAt",
           "endAt",
           "durationMinutes",
+          "procedure",
           "type",
           "status",
           "canceledAt",
@@ -10864,6 +11119,37 @@
             "format": "date-time",
             "description": "A datetime in ISO 8601 format."
           },
+          "procedureId": {
+            "type": "string",
+            "format": "uuid",
+            "example": "dc5782d4-ce8e-4f95-bb0b-d1a4e130aee8"
+          },
+          "procedureOverrides": {
+            "type": "object",
+            "properties": {
+              "color": {
+                "type": "string",
+                "enum": [
+                  "BLUE",
+                  "GREEN",
+                  "AMBER",
+                  "RED"
+                ]
+              },
+              "priceInCents": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 2147483647
+              },
+              "modality": {
+                "type": "string",
+                "enum": [
+                  "IN_PERSON",
+                  "REMOTE"
+                ]
+              }
+            }
+          },
           "type": {
             "type": "string",
             "enum": [
@@ -10894,16 +11180,7 @@
             "type": "boolean",
             "default": false
           }
-        },
-        "required": [
-          "startAt",
-          "endAt",
-          "type",
-          "note",
-          "attendedByMemberId",
-          "roomId",
-          "confirmOutsideAvailability"
-        ]
+        }
       },
       "CancelAppointmentInputDto": {
         "type": "object",
@@ -10916,6 +11193,141 @@
         },
         "required": [
           "reason"
+        ]
+      },
+      "Procedure": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "durationMinutes": {
+            "type": "number"
+          },
+          "color": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ProcedureColor"
+              }
+            ]
+          },
+          "priceInCents": {
+            "type": "number",
+            "description": "Price in BRL cents"
+          },
+          "modality": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ProcedureModality"
+              }
+            ]
+          },
+          "active": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "durationMinutes",
+          "color",
+          "priceInCents",
+          "modality",
+          "active"
+        ]
+      },
+      "CreateProcedureDto": {
+        "type": "object",
+        "properties": {
+          "color": {
+            "type": "string",
+            "enum": [
+              "BLUE",
+              "GREEN",
+              "AMBER",
+              "RED"
+            ]
+          },
+          "priceInCents": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 2147483647
+          },
+          "modality": {
+            "type": "string",
+            "enum": [
+              "IN_PERSON",
+              "REMOTE"
+            ]
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120
+          },
+          "durationMinutes": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 720
+          }
+        },
+        "required": [
+          "color",
+          "priceInCents",
+          "modality",
+          "name",
+          "durationMinutes"
+        ]
+      },
+      "UpdateProcedureDto": {
+        "type": "object",
+        "properties": {
+          "color": {
+            "type": "string",
+            "enum": [
+              "BLUE",
+              "GREEN",
+              "AMBER",
+              "RED"
+            ]
+          },
+          "priceInCents": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 2147483647
+          },
+          "modality": {
+            "type": "string",
+            "enum": [
+              "IN_PERSON",
+              "REMOTE"
+            ]
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120
+          },
+          "durationMinutes": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 720
+          },
+          "active": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "color",
+          "priceInCents",
+          "modality",
+          "name",
+          "durationMinutes",
+          "active"
         ]
       },
       "AppointmentReminder": {

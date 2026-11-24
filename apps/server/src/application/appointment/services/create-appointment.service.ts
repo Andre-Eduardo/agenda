@@ -1,6 +1,7 @@
 import {Injectable} from '@nestjs/common';
 import {ApplicationService, Command} from '@application/@shared/application.service';
 import {AppointmentDto, CreateAppointmentDto} from '@application/appointment/dtos';
+import {ResolveScheduledProcedureService} from '@application/appointment/services/resolve-scheduled-procedure.service';
 import {PatientAccessChecker} from '@application/clinic-patient-access/services/patient-access-checker.service';
 import {AgendaAccessChecker} from '@application/professional-agenda-access/services';
 import {InvalidInputException, PreconditionException, ResourceNotFoundException} from '@domain/@shared/exceptions';
@@ -32,13 +33,13 @@ export class CreateAppointmentService implements ApplicationService<CreateAppoin
         private readonly workingHoursRepository: WorkingHoursRepository,
         private readonly memberBlockRepository: MemberBlockRepository,
         private readonly agendaAccessChecker: AgendaAccessChecker,
+        private readonly scheduledProcedure: ResolveScheduledProcedureService,
         private readonly eventDispatcher: EventDispatcher
     ) {}
 
     @Transactional()
     async execute({actor, payload}: Command<CreateAppointmentDto>): Promise<AppointmentDto> {
-        const {patientId, attendedByMemberId, startAt, endAt, type, note, retroactive, confirmOutsideAvailability} =
-            payload;
+        const {patientId, attendedByMemberId, startAt, type, note, retroactive, confirmOutsideAvailability} = payload;
 
         // 1. Member who will attend must exist and belong to the actor's clinic.
         const attendedBy = await this.clinicMemberRepository.findById(attendedByMemberId);
@@ -61,6 +62,8 @@ export class CreateAppointmentService implements ApplicationService<CreateAppoin
         }
 
         await this.patientAccessChecker.assertCanAccess(actor, patientId, 'appointment');
+
+        const {endAt, procedure} = await this.scheduledProcedure.resolve(actor, payload);
 
         // 3. Time interval must be coherent.
         if (startAt >= endAt) {
@@ -134,6 +137,7 @@ export class CreateAppointmentService implements ApplicationService<CreateAppoin
             startAt,
             endAt,
             durationMinutes,
+            procedure,
             type,
             note: note ?? null,
             roomId,

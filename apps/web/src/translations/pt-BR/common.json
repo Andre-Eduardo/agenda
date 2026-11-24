@@ -20,8 +20,50 @@
     "saving": "Salvando...",
     "forbidden": "Acesso negado. Você não tem permissão para visualizar esta página."
   },
+  "procedure": {
+    "title": "Procedimentos e serviços",
+    "description": "Cadastre as opções que a equipe pode selecionar na agenda.",
+    "add": "Novo procedimento",
+    "edit": "Editar procedimento",
+    "editItem": "Editar {{name}}",
+    "name": "Nome",
+    "duration": "Duração (min)",
+    "price": "Valor (R$)",
+    "color": "Cor",
+    "modality": "Modalidade",
+    "selection": "Procedimento ou serviço",
+    "none": "Sem procedimento ou serviço",
+    "loading": "Carregando catálogo…",
+    "loadError": "Não foi possível carregar o catálogo.",
+    "empty": "Nenhum procedimento cadastrado.",
+    "noActive": "Cadastre ou reative um procedimento em Configurações.",
+    "active": "Disponível para agendamento",
+    "inactive": "Inativo",
+    "summary": "{{duration}} min · {{price}} · {{modality}}",
+    "saved": "Procedimento salvo.",
+    "saveError": "Não foi possível salvar o procedimento.",
+    "invalid": "Preencha um nome e informe duração de 1 a 720 minutos e valor com até duas casas decimais.",
+    "invalidDefaults": "Informe duração de 1 a 720 minutos e valor com até duas casas decimais.",
+    "colors": {
+      "BLUE": "Azul",
+      "GREEN": "Verde",
+      "AMBER": "Âmbar",
+      "RED": "Vermelho"
+    },
+    "modalities": {
+      "IN_PERSON": "Presencial",
+      "REMOTE": "Remoto"
+    }
+  },
   "errors": {
+    "procedure": {
+      "required": "Selecione um procedimento ou serviço do catálogo.",
+      "not_found": "O procedimento não está disponível nesta clínica.",
+      "override_denied": "Você não tem permissão para alterar os valores do procedimento neste agendamento.",
+      "invalid_duration": "Informe duração de 1 a 720 minutos inteiros."
+    },
     "appointment": {
+      "end_required": "Informe o horário de término do agendamento.",
       "member_conflict": "O profissional já tem uma consulta nesse horário. Escolha outro horário ou profissional.",
       "room_conflict": "A sala já está reservada nesse horário. Escolha outra sala ou horário."
     },
