@@ -56,6 +56,14 @@
     "menu": "Main menu",
     "logout": "Sign out"
   },
+  "dashboard": {
+    "patient": "patient",
+    "patientUnavailable": "Patient unavailable",
+    "record": "Clinical record",
+    "noContent": "No content",
+    "openRecord": "Open {{patient}}'s clinical record from {{date}}",
+    "openAppointment": "Open {{patient}}'s appointment on {{date}} at {{time}}"
+  },
   "user": {
     "online": "Online"
   },
@@ -69,8 +77,8 @@
   },
   "auth": {
     "login": {
-      "title": "Welcome back",
-      "subtitle": "Sign in to your professional account to continue.",
+      "title": "Access Agenda Saúde",
+      "subtitle": "Sign in with your professional account",
       "form": {
         "username": "Username",
         "password": "Password",
@@ -90,12 +98,19 @@
         }
       },
       "panel": {
-        "title": "Smart health records.",
-        "highlight": "Your decision.",
-        "description": "OCR import, assisted analysis and mandatory human review at every step of clinical documentation."
+        "title": "Appointments and clinical records",
+        "highlight": "in one place",
+        "description": "Organize appointments and review each clinical note before adding it to the record."
+      },
+      "preview": {
+        "today": "Today",
+        "agenda": "Appointment schedule",
+        "appointment": "Appointment",
+        "record": "Clinical note",
+        "review": "Professional review"
       },
       "footer": {
-        "security": "Secure system · LGPD compliance"
+        "security": "Professional access"
       }
     }
   }

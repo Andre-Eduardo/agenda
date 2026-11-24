@@ -17,18 +17,18 @@ import {
 } from './styles';
 
 const colSpanMap: Record<number, string> = {
-    1: css({gridColumn: '[span 1 / span 1]'}),
-    2: css({gridColumn: '[span 2 / span 2]'}),
-    3: css({gridColumn: '[span 3 / span 3]'}),
-    4: css({gridColumn: '[span 4 / span 4]'}),
-    5: css({gridColumn: '[span 5 / span 5]'}),
-    6: css({gridColumn: '[span 6 / span 6]'}),
-    7: css({gridColumn: '[span 7 / span 7]'}),
-    8: css({gridColumn: '[span 8 / span 8]'}),
-    9: css({gridColumn: '[span 9 / span 9]'}),
-    10: css({gridColumn: '[span 10 / span 10]'}),
-    11: css({gridColumn: '[span 11 / span 11]'}),
-    12: css({gridColumn: '[span 12 / span 12]'}),
+    1: css({gridColumn: {base: '[1 / -1]', sm: '[span 1 / span 1]'}}),
+    2: css({gridColumn: {base: '[1 / -1]', sm: '[span 2 / span 2]'}}),
+    3: css({gridColumn: {base: '[1 / -1]', sm: '[span 3 / span 3]'}}),
+    4: css({gridColumn: {base: '[1 / -1]', sm: '[span 4 / span 4]'}}),
+    5: css({gridColumn: {base: '[1 / -1]', sm: '[span 5 / span 5]'}}),
+    6: css({gridColumn: {base: '[1 / -1]', sm: '[span 6 / span 6]'}}),
+    7: css({gridColumn: {base: '[1 / -1]', sm: '[span 7 / span 7]'}}),
+    8: css({gridColumn: {base: '[1 / -1]', sm: '[span 8 / span 8]'}}),
+    9: css({gridColumn: {base: '[1 / -1]', sm: '[span 9 / span 9]'}}),
+    10: css({gridColumn: {base: '[1 / -1]', sm: '[span 10 / span 10]'}}),
+    11: css({gridColumn: {base: '[1 / -1]', sm: '[span 11 / span 11]'}}),
+    12: css({gridColumn: {base: '[1 / -1]', sm: '[span 12 / span 12]'}}),
 };
 
 export interface FieldProps {

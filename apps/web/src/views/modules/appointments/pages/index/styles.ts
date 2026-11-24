@@ -278,9 +278,11 @@ export const page = css({display: 'flex', flexDirection: 'column', h: 'full'});
 
 export const header = css({
     display: 'flex',
-    alignItems: 'center',
+    flexDirection: {base: 'column', sm: 'row'},
+    alignItems: {base: 'stretch', sm: 'center'},
     justifyContent: 'space-between',
-    px: '6',
+    gap: '3',
+    px: {base: '4', sm: '6'},
     py: '4',
     borderBottomWidth: '1px',
     borderBottomStyle: 'solid',
@@ -288,7 +290,13 @@ export const header = css({
     flexShrink: '0',
 });
 export const headerLeft = css({display: 'flex', alignItems: 'center', gap: '3'});
-export const headerRight = css({display: 'flex', alignItems: 'center', gap: '2'});
+export const headerRight = css({
+    display: 'flex',
+    flexDirection: {base: 'column', sm: 'row'},
+    alignItems: {base: 'stretch', sm: 'center'},
+    gap: '2',
+    minW: '0',
+});
 export const pageTitle = css({fontSize: '2xl', lineHeight: '[1.2]', fontWeight: 'medium', color: 'text.primary'});
 export const headerCalIcon = css({w: '5', h: '5', color: 'text.secondary'});
 
@@ -305,13 +313,14 @@ export const periodBar = css({
     gap: '4',
     flexWrap: 'wrap',
 });
-export const periodLeft = css({display: 'flex', alignItems: 'center', gap: '2'});
+export const periodLeft = css({display: 'flex', alignItems: 'center', gap: '2', flexWrap: 'wrap', minW: '0'});
 export const periodLabel = css({
     fontSize: 'sm',
     fontWeight: 'medium',
     color: 'text.primary',
     fontVariantNumeric: 'tabular-nums',
     fontFamily: 'mono',
+    w: {base: 'full', sm: 'auto'},
 });
 export const arrowsGroup = css({display: 'flex', alignItems: 'center'});
 export const arrowBtn = css({
@@ -322,7 +331,15 @@ export const arrowBtn = css({
     _hover: {color: 'text.primary', bg: 'bg.surface'},
 });
 
-export const statusFilterRow = css({display: 'flex', alignItems: 'center', gap: '1.5', flexWrap: 'wrap'});
+export const statusFilterRow = css({
+    display: 'flex',
+    alignItems: 'center',
+    gap: '1.5',
+    flexWrap: {base: 'nowrap', sm: 'wrap'},
+    overflowX: {base: 'auto', sm: 'visible'},
+    maxW: 'full',
+    '& > button': {flexShrink: '0'},
+});
 
 export const mainLayout = css({display: 'flex', flex: '1', overflow: 'hidden'});
 export const sidebar = css({
@@ -340,6 +357,9 @@ export const calBody = css({flex: '1', overflow: 'auto'});
 export const segmented = css({
     display: 'flex',
     alignItems: 'center',
+    overflowX: {base: 'auto', sm: 'visible'},
+    maxW: 'full',
+    '& > button': {flexShrink: '0'},
     rounded: 'button',
     borderWidth: '1px',
     borderStyle: 'solid',
@@ -401,6 +421,7 @@ export const miniTodayBtn = css({
 });
 
 // Week/Day grid
+export const weekScrollHint = css({display: {base: 'block', sm: 'none'}, px: '4', py: '2', fontSize: 'xs', color: 'text.secondary'});
 export const weekHeaderMin = css({minWidth: '[560px]'});
 export const gridWeekHead = css({
     display: 'flex',

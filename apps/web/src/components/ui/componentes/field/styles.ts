@@ -48,17 +48,17 @@ export const formGrid = css({
 });
 
 export const formGridCols12 = css({
-    gridTemplateColumns: '[repeat(12,minmax(0,1fr))]',
+    gridTemplateColumns: {base: '[minmax(0,1fr)]', sm: '[repeat(12,minmax(0,1fr))]'},
 });
 
 export const formGridCols6 = css({
-    gridTemplateColumns: '[repeat(6,minmax(0,1fr))]',
+    gridTemplateColumns: {base: '[minmax(0,1fr)]', sm: '[repeat(6,minmax(0,1fr))]'},
 });
 
 export const formGridCols4 = css({
-    gridTemplateColumns: '[repeat(4,minmax(0,1fr))]',
+    gridTemplateColumns: {base: '[minmax(0,1fr)]', sm: '[repeat(4,minmax(0,1fr))]'},
 });
 
 export const formGridCols3 = css({
-    gridTemplateColumns: '[repeat(3,minmax(0,1fr))]',
+    gridTemplateColumns: {base: '[minmax(0,1fr)]', sm: '[repeat(3,minmax(0,1fr))]'},
 });

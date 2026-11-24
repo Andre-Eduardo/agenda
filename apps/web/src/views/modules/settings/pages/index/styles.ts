@@ -453,10 +453,11 @@ export const FooterBar = styled('div', {
         borderTopWidth: '1px',
         borderTopStyle: 'solid',
         borderTopColor: 'border',
-        px: '8',
+        px: {base: '4', sm: '8'},
         py: '4',
         display: 'flex',
-        alignItems: 'center',
+        flexDirection: {base: 'column', sm: 'row'},
+        alignItems: {base: 'stretch', sm: 'center'},
         justifyContent: 'space-between',
         gap: '4',
         bg: 'bg.surface',
@@ -470,7 +471,7 @@ export const FooterBar = styled('div', {
 
             '& .step': {ml: '4', fontSize: 'xs', color: 'text.tertiary'},
         },
-        '& > .actions': {display: 'flex', alignItems: 'center', gap: '2'},
+        '& > .actions': {display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '2', flexWrap: 'wrap'},
     },
 });
 

@@ -38,7 +38,7 @@ import {PageHeader} from '@/components/ui/componentes/page-header';
 import {Tabs, TabsList, TabsTrigger, TabsContent} from '@/components/ui/componentes/tabs';
 import {Textarea} from '@/components/ui/componentes/textarea';
 import {css, cx} from '@/styled-system/css';
-import {errorText, flexCol, icon11, icon14, icon22, icon3, icon35, icon4} from './styles';
+import {flexCol, icon11, icon14, icon22, icon3, icon35, icon4} from './styles';
 
 export const Route = createFileRoute('/_stackedLayout/patients/new')({
     component: NewPatientPage,
@@ -115,7 +115,7 @@ const pageRoot = css({
     display: 'flex',
     flexDirection: 'column',
     p: '6',
-    pb: '24',
+    pb: {base: '6', md: '24'},
     bg: 'bg.page',
 });
 
@@ -349,10 +349,10 @@ const infoNote = css({
 });
 
 const footerRoot = css({
-    position: 'fixed',
-    bottom: '0',
-    left: '0',
-    right: '0',
+    position: {base: 'static', md: 'fixed'},
+    bottom: {md: '0'},
+    left: {md: '0'},
+    right: {md: '0'},
     zIndex: '30',
     display: 'flex',
     alignItems: 'center',

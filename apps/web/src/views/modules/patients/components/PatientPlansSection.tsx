@@ -28,6 +28,7 @@ import {Dialog, DialogContent, DialogHeader, DialogTitle} from '@/components/ui/
 import {Input} from '@/components/ui/componentes/input';
 import {Label} from '@/components/ui/componentes/label';
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@/components/ui/componentes/select';
+import {formatBRL} from '@/lib/utils';
 import {translateApiError} from '@/utils/translate-api-error';
 import {Can} from '@/views/components/Can';
 import {
@@ -53,10 +54,6 @@ function extractErrorDetail(error: unknown): string | null {
     const detail = (error.response?.data as ApiProblem | undefined)?.detail;
 
     return detail ? translateApiError(detail, detail) : null;
-}
-
-function formatBRL(value: number): string {
-    return `R$ ${value.toFixed(2)}`;
 }
 
 function formatDate(value: string | null | undefined): string {

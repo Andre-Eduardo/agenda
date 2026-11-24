@@ -6,3 +6,5 @@ export * from './clinic-member';
 export * from './working-hours';
 export * from './member-block';
 export * from './room';
+export * from './appointment';
+export * from './record';

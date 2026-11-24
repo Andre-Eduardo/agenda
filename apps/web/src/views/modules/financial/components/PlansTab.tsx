@@ -26,6 +26,7 @@ import {Input} from '@/components/ui/componentes/input';
 import {Label} from '@/components/ui/componentes/label';
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@/components/ui/componentes/select';
 import {Textarea} from '@/components/ui/componentes/textarea';
+import {formatBRL} from '@/lib/utils';
 import {translateApiError} from '@/utils/translate-api-error';
 import {Can} from '@/views/components/Can';
 import {InsuranceClaimsSection} from './InsuranceClaimsSection';
@@ -53,10 +54,6 @@ function extractErrorDetail(error: unknown): string | null {
     const detail = (error.response?.data as ApiProblem | undefined)?.detail;
 
     return detail ? translateApiError(detail, detail) : null;
-}
-
-function formatBRL(value: number): string {
-    return `R$ ${value.toFixed(2)}`;
 }
 
 const APPOINTMENT_TYPE_LABELS: Record<NonNullable<CreatePackagePlanDtoAppointmentType>, string> = {

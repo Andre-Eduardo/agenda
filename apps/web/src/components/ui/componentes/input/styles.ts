@@ -15,6 +15,7 @@ export const inputVariants = cva({
         fontSize: 'sm',
         lineHeight: '[1.4]',
         color: 'text.primary',
+        colorScheme: {base: 'light', _dark: 'dark'},
         transition: 'colors',
 
         _placeholder: {

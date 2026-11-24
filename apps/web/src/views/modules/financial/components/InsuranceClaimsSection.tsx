@@ -15,6 +15,7 @@ import {Button} from '@/components/ui/componentes/button';
 import {Dialog, DialogContent, DialogHeader, DialogTitle} from '@/components/ui/componentes/dialog';
 import {Input} from '@/components/ui/componentes/input';
 import {Label} from '@/components/ui/componentes/label';
+import {formatBRL} from '@/lib/utils';
 import {translateApiError} from '@/utils/translate-api-error';
 import {Can} from '@/views/components/Can';
 import {actions, amount, formBody, formFooter, info, meta, name, row} from './InsuranceClaimsSection.styles';
@@ -30,10 +31,6 @@ const CLAIM_STATUS_LABELS: Record<string, string> = {
     APPEALED: 'Em recurso',
     CANCELLED: 'Cancelada',
 };
-
-function formatBRL(value: number): string {
-    return `R$ ${value.toFixed(2)}`;
-}
 
 function errorDetail(error: unknown, fallback: string): string {
     if (!(error instanceof AxiosError)) return fallback;

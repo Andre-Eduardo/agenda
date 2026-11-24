@@ -56,6 +56,14 @@
     "menu": "Menú principal",
     "logout": "Salir"
   },
+  "dashboard": {
+    "patient": "paciente",
+    "patientUnavailable": "Paciente no disponible",
+    "record": "Evolución",
+    "noContent": "Sin contenido",
+    "openRecord": "Abrir evolución de {{patient}} del {{date}}",
+    "openAppointment": "Abrir cita de {{patient}} el {{date}} a las {{time}}"
+  },
   "user": {
     "online": "En línea"
   },
@@ -69,8 +77,8 @@
   },
   "auth": {
     "login": {
-      "title": "Bienvenido de nuevo",
-      "subtitle": "Accede a tu cuenta profesional para continuar.",
+      "title": "Accede a Agenda Saúde",
+      "subtitle": "Entra con tu cuenta profesional",
       "form": {
         "username": "Usuario",
         "password": "Contraseña",
@@ -90,12 +98,19 @@
         }
       },
       "panel": {
-        "title": "Historia clínica inteligente.",
-        "highlight": "Tu decisión.",
-        "description": "Importación por OCR, análisis asistido y revisión humana obligatoria en cada etapa del registro clínico."
+        "title": "Consultas e historias clínicas",
+        "highlight": "en un solo lugar",
+        "description": "Organiza las consultas y revisa cada evolución antes de incorporarla a la historia clínica."
+      },
+      "preview": {
+        "today": "Hoy",
+        "agenda": "Agenda de consultas",
+        "appointment": "Consulta",
+        "record": "Evolución clínica",
+        "review": "Revisión profesional"
       },
       "footer": {
-        "security": "Sistema seguro · Conformidad LGPD"
+        "security": "Acceso profesional"
       }
     }
   }

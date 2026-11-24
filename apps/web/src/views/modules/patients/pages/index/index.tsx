@@ -9,9 +9,6 @@ import {
     MoreHorizontal,
     Rows3,
     LayoutGrid,
-    Users,
-    CalendarDays,
-    Sparkles,
     UserRound,
     Pencil,
     CalendarPlus,
@@ -21,7 +18,7 @@ import {
     SearchX,
     X,
 } from 'lucide-react';
-import {AvatarInitials, avatarColorVariants} from '@/components/ui/componentes/avatar';
+import {AvatarInitials} from '@/components/ui/componentes/avatar';
 import {Badge} from '@/components/ui/componentes/badge';
 import {Button} from '@/components/ui/componentes/button';
 import {
@@ -68,9 +65,7 @@ interface PatientPage {
 
 // ── Styles ────────────────────────────────────────────────────────────────────
 
-const statsGrid = css({mb: '6', display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: '3'});
-
-const statsDelta = css({fontWeight: 'medium', color: 'success'});
+const statsGrid = css({mb: '6', display: 'grid', gridTemplateColumns: {base: 'repeat(2, minmax(0, 1fr))', sm: '2fr 1fr'}, gap: '3'});
 
 const toolbarRoot = css({mb: '3.5', display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '2.5'});
 
@@ -454,15 +449,6 @@ const paginationPageInfo = css({fontSize: 'sm', color: 'text.secondary'});
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
-function getAvatarColorIndex(id: string): number {
-    let hash = 0;
-
-    // eslint-disable-next-line no-bitwise -- standard string-hash uint32 pattern
-    for (let i = 0; i < id.length; i++) hash = (hash * 31 + id.charCodeAt(i)) >>> 0;
-
-    return hash % avatarColorVariants.length;
-}
-
 function getAge(birthDate: unknown): number | null {
     if (!birthDate || typeof birthDate !== 'string') return null;
     const birth = new Date(birthDate);
@@ -487,8 +473,8 @@ function formatBirthDate(birthDate: unknown): string {
 
 // ── Sub-components ───────────────────────────────────────────────────────────
 
-function PatientAvatar({name, id, size = 'md'}: {name: string; id: string; size?: 'sm' | 'md' | 'lg'}) {
-    return <AvatarInitials name={name} colorIndex={getAvatarColorIndex(id)} size={size} />;
+function PatientAvatar({name, size = 'md'}: {name: string; size?: 'sm' | 'md' | 'lg'}) {
+    return <AvatarInitials name={name} colorIndex={6} size={size} />;
 }
 
 function GenderBadge({gender}: {gender: PatientGender}) {
@@ -497,7 +483,7 @@ function GenderBadge({gender}: {gender: PatientGender}) {
     const labels: Record<NonNullable<PatientGender>, string> = {FEMALE: 'F', MALE: 'M', OTHER: 'O'};
 
     return (
-        <Badge gender={gender} size="sm">
+        <Badge variant="secondary" size="sm">
             {labels[gender]}
         </Badge>
     );
@@ -511,7 +497,7 @@ function PatientTableRow({patient, onClick}: {patient: Patient; onClick: () => v
     return (
         <div className={tableRowRoot} style={{gridTemplateColumns: TABLE_COLS}} onClick={onClick}>
             <div className={tableRowNameCell}>
-                <PatientAvatar name={patient.name} id={patient.id} />
+                <PatientAvatar name={patient.name} />
                 <div className={tableRowNameBlock}>
                     <p className={tableRowName}>{patient.name}</p>
                     <p className={tableRowEmail}>{typeof patient.email === 'string' ? patient.email : '—'}</p>
@@ -603,7 +589,7 @@ function PatientCard({patient, onClick}: {patient: Patient; onClick: () => void}
     return (
         <div className={patientCardRoot} onClick={onClick}>
             <div className={patientCardTop}>
-                <PatientAvatar name={patient.name} id={patient.id} size="lg" />
+                <PatientAvatar name={patient.name} size="lg" />
                 <div className={patientCardNameBlock}>
                     <p className={patientCardName}>{patient.name}</p>
                     <p className={patientCardMeta}>
@@ -807,7 +793,9 @@ export function PatientsPage() {
     const navigate = useNavigate();
     const [search, setSearch] = useState('');
     const [debouncedSearch, setDebouncedSearch] = useState('');
-    const [layout, setLayout] = useState<Layout>('table');
+    const [layout, setLayout] = useState<Layout>(() =>
+        window.matchMedia('(max-width: 639px)').matches ? 'cards' : 'table'
+    );
     const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
     const [page, setPage] = useState(1);
 
@@ -874,7 +862,7 @@ export function PatientsPage() {
     const subtitle = (
         <span>
             <span className={monoNums}>{statsQuery.isLoading ? '…' : totalAll}</span>
-            {' pacientes ativos no consultório'}
+            {' pacientes no consultório'}
         </span>
     );
 
@@ -893,33 +881,8 @@ export function PatientsPage() {
         >
             {/* Stats */}
             <div className={statsGrid}>
-                <StatTile
-                    label="Total de pacientes"
-                    value={totalAll}
-                    delta={
-                        <span>
-                            <span className={statsDelta}>+4</span> nos últimos 30 dias
-                        </span>
-                    }
-                    loading={statsQuery.isLoading}
-                    icon={<Users className={icon4} strokeWidth={1.5} />}
-                    iconIntent="primary"
-                />
-                <StatTile
-                    label="Total de consultas"
-                    value={totalAppointments ?? 0}
-                    loading={appointmentsQuery.isLoading}
-                    icon={<CalendarDays className={icon4} strokeWidth={1.5} />}
-                    iconIntent="info"
-                />
-                <StatTile
-                    label="Pré-evoluções IA"
-                    value="—"
-                    delta="conectar módulo IA"
-                    loading={false}
-                    icon={<Sparkles className={icon4} strokeWidth={1.5} />}
-                    iconIntent="ai"
-                />
+                <StatTile label="Total de pacientes" value={totalAll} loading={statsQuery.isLoading} />
+                <StatTile label="Total de consultas" value={totalAppointments ?? 0} loading={appointmentsQuery.isLoading} />
             </div>
 
             {/* Toolbar */}

@@ -66,6 +66,7 @@ import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@/c
 import {Sheet, SheetContent, SheetHeader, SheetTitle} from '@/components/ui/componentes/sheet';
 import {Textarea} from '@/components/ui/componentes/textarea';
 import {cx} from '@/styled-system/css';
+import {formatBRL} from '@/lib/utils';
 import {translateApiError} from '@/utils/translate-api-error';
 import {ConfirmDialog} from '@/views/components/ConfirmDialog';
 import * as styles from './styles';
@@ -112,6 +113,10 @@ import {
 
 // ── Route ─────────────────────────────────────────────────────────
 export const Route = createFileRoute('/_stackedLayout/appointments')({
+    validateSearch: (search: Record<string, unknown>): {date?: string; appointmentId?: string} => ({
+        date: typeof search.date === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(search.date) ? search.date : undefined,
+        appointmentId: typeof search.appointmentId === 'string' ? search.appointmentId : undefined,
+    }),
     component: AppointmentsPage,
 });
 
@@ -276,6 +281,15 @@ function endOfDay(d: Date): Date {
 
 function fmtDate(d: Date): string {
     return [d.getFullYear(), String(d.getMonth() + 1).padStart(2, '0'), String(d.getDate()).padStart(2, '0')].join('-');
+}
+
+function parseCalendarDate(value: string | undefined): Date | null {
+    if (!value) return null;
+
+    const [year, month, day] = value.split('-').map(Number);
+    const date = new Date(year, month - 1, day);
+
+    return fmtDate(date) === value ? date : null;
 }
 
 function sameDay(a: Date, b: Date): boolean {
@@ -1695,7 +1709,7 @@ function AppointmentPaymentSection({
                         </div>
                         <div className={styles.sheetKv}>
                             <span className={styles.sheetKvKey}>Valor</span>
-                            <span className={styles.sheetKvVal}>R$ {payment.amountBrl.toFixed(2)}</span>
+                            <span className={styles.sheetKvVal}>{formatBRL(payment.amountBrl)}</span>
                         </div>
                         <div className={styles.sheetKv}>
                             <span className={styles.sheetKvKey}>Status</span>
@@ -2394,6 +2408,7 @@ function CancelDialog({apt, onClose, onCancelled}: CancelDialogProps) {
 // ─────────────────────────────────────────────────────────────────
 export function AppointmentsPage() {
     const navigate = useNavigate();
+    const search = Route.useSearch();
 
     const today = useMemo(() => {
         const d = new Date();
@@ -2415,15 +2430,31 @@ export function AppointmentsPage() {
     }, []);
 
     const [view, setView] = useState<ViewMode>('week');
-    const [cursor, setCursor] = useState(today);
+    const [cursor, setCursor] = useState(() => parseCalendarDate(search.date) ?? today);
     const [statusFilters, setStatusFilters] = useState<Set<AppointmentStatus>>(new Set(ALL_STATUSES));
-    const [detailId, setDetailId] = useState<string | null>(null);
+    const [detailId, setDetailId] = useState<string | null>(search.appointmentId ?? null);
     const [editId, setEditId] = useState<string | null>(null);
     const [cancelId, setCancelId] = useState<string | null>(null);
     const [newAppt, setNewAppt] = useState<NewAppointmentPrefill | true | null>(null);
     const [highlightId, setHighlightId] = useState<string | null>(null);
     const [pendingPlacement, setPendingPlacement] = useState<AppointmentPlacement | null>(null);
     const [placementWarning, setPlacementWarning] = useState<string | null>(null);
+
+    useEffect(() => {
+        setDetailId(search.appointmentId ?? null);
+
+        const targetDate = parseCalendarDate(search.date);
+
+        if (targetDate) setCursor(targetDate);
+    }, [search.appointmentId, search.date]);
+
+    const closeDetail = () => {
+        setDetailId(null);
+
+        if (search.appointmentId) {
+            void navigate({to: '/appointments', search: {date: search.date}, replace: true});
+        }
+    };
 
     const visibleRange = useMemo(() => {
         if (view === 'month') {
@@ -2747,7 +2778,12 @@ export function AppointmentsPage() {
                             </div>
                         )}
                     {view === 'day' && <DayView {...sharedProps} />}
-                    {view === 'week' && <WeekView {...sharedProps} />}
+                    {view === 'week' && (
+                        <>
+                            <div className={styles.weekScrollHint}>Deslize para ver os outros dias</div>
+                            <WeekView {...sharedProps} />
+                        </>
+                    )}
                     {view === 'professionals' && (
                         <ProfessionalsView
                             appts={filteredAppts}
@@ -2785,14 +2821,14 @@ export function AppointmentsPage() {
                 <AppointmentDetailSheet
                     apt={detailApt}
                     patients={patients}
-                    onClose={() => setDetailId(null)}
+                    onClose={closeDetail}
                     onEdit={() => {
                         setEditId(detailId);
-                        setDetailId(null);
+                        closeDetail();
                     }}
                     onCancel={() => {
                         setCancelId(detailId);
-                        setDetailId(null);
+                        closeDetail();
                     }}
                     onOpenPatient={(id) => navigate({to: '/patients/$patientId', params: {patientId: id}})}
                     onStatusChanged={() => void apptQ.refetch()}

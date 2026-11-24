@@ -1,91 +1,44 @@
 import {
-    useGetCurrentUser,
     useSearchAppointments,
     useSearchRecords,
+    getGetPatientQueryOptions,
     AppointmentStatus,
     AppointmentType,
     type Appointment,
+    type Patient,
     type Record as ClinicalRecord,
     type SearchRecordsParams,
 } from '@agenda-app/client';
-import type {UseQueryResult} from '@tanstack/react-query';
-import {createFileRoute, useNavigate} from '@tanstack/react-router';
+import {useQueries, type UseQueryResult} from '@tanstack/react-query';
+import {createFileRoute, Link, useNavigate} from '@tanstack/react-router';
 import {
     ArrowUpRight,
     CalendarX2,
     CalendarPlus,
-    CheckCircle2,
     ChevronRight,
-    CircleCheckBig,
-    Clock,
     FileText,
-    Sparkles,
     Stethoscope,
     UserPlus,
 } from 'lucide-react';
+import {useTranslation} from 'react-i18next';
 import {Button} from '@/components/ui/componentes/button';
 import {Skeleton} from '@/components/ui/componentes/skeleton';
-import {Page} from '@/views/components/Page';
 import {css, cva} from '@/styled-system/css';
+import {Page} from '@/views/components/Page';
 import {flex1, minW0, mt1, skeletonH3Full, skeletonH3W20, skeletonH9W12} from './styles';
 
 // ── Styles ────────────────────────────────────────────────────────────────────
 
 const page = css({
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '6',
-    p: '6',
-    maxW: '[1200px]',
+    maxW: '[1280px]',
     mx: 'auto',
     w: 'full',
 });
 
-const header = css({
+const content = css({
     display: 'flex',
-    alignItems: 'flex-start',
-    justifyContent: 'space-between',
-    gap: '4',
-    flexWrap: 'wrap',
-});
-
-const greetingText = css({
-    fontSize: '[22px]',
-    fontWeight: 'medium',
-    color: 'text.primary',
-    lineHeight: 'snug',
-});
-
-const dateLabel = css({
-    fontSize: 'sm',
-    color: 'text.secondary',
-    mt: '0.5',
-});
-
-const agentBadge = css({
-    display: 'flex',
-    alignItems: 'center',
-    gap: '2',
-    px: '3',
-    py: '1.5',
-    rounded: 'card',
-    borderWidth: '1px',
-    borderStyle: 'solid',
-    borderColor: 'ai.border',
-    bg: 'ai.bg',
-    fontSize: 'xs',
-    color: 'ai.text',
-});
-
-const agentDot = css({
-    w: '1.5',
-    h: '1.5',
-    rounded: 'full',
-    bg: 'ai.badgeBg',
-});
-
-const agentLabel = css({
-    color: 'text.secondary',
+    flexDirection: 'column',
+    gap: '6',
 });
 
 const statsGrid = css({
@@ -96,35 +49,16 @@ const statsGrid = css({
 
 const statCard = css({
     display: 'flex',
-    alignItems: 'center',
-    gap: '3',
+    flexDirection: 'column',
+    alignItems: 'flex-start',
+    gap: '2',
     p: '4',
     rounded: 'card',
     borderWidth: '1px',
     borderStyle: 'solid',
     borderColor: 'border',
     bg: 'bg.card',
-});
-
-const statIcon = cva({
-    base: {
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        w: '9',
-        h: '9',
-        rounded: '[8px]',
-        flexShrink: '0',
-    },
-    variants: {
-        tone: {
-            neutral: {bg: 'text.secondary/10', color: 'text.secondary'},
-            success: {bg: 'success/10', color: 'success'},
-            muted: {bg: 'text.tertiary/10', color: 'text.tertiary'},
-            primary: {bg: 'primary/10', color: 'primary'},
-        },
-    },
-    defaultVariants: {tone: 'neutral'},
+    minW: '0',
 });
 
 const statValue = css({
@@ -139,12 +73,12 @@ const statValue = css({
 const statLabel = css({
     fontSize: 'xs',
     color: 'text.secondary',
-    mt: '1',
+    mt: '0',
 });
 
 const cols = css({
     display: 'grid',
-    gridTemplateColumns: {base: 'repeat(1, minmax(0, 1fr))', lg: '1fr 340px'},
+    gridTemplateColumns: {base: 'repeat(1, minmax(0, 1fr))', lg: 'minmax(0, 1fr) 340px'},
     gap: '6',
     alignItems: 'flex-start',
 });
@@ -167,6 +101,7 @@ const sectionCard = css({
     borderStyle: 'solid',
     borderColor: 'border',
     bg: 'bg.card',
+    minW: '0',
 });
 
 const sectionHead = css({
@@ -186,8 +121,8 @@ const sectionTitle = css({
 });
 
 const sectionSub = css({
-    fontSize: '[11px]',
-    color: 'text.tertiary',
+    fontSize: 'xs',
+    color: 'text.secondary',
     mt: '0.5',
 });
 
@@ -201,10 +136,12 @@ const secLink = css({
     alignItems: 'center',
     gap: '1',
     fontSize: 'xs',
-    color: 'primary',
-    transitionProperty: 'color',
+    fontWeight: 'medium',
+    color: 'primary.text',
+    flexShrink: '0',
+    transitionProperty: 'opacity',
     transitionDuration: 'base',
-    _hover: {color: 'primary/80'},
+    _hover: {opacity: '0.8'},
 });
 
 const apptList = css({
@@ -257,10 +194,7 @@ const apptPatBtn = css({
     gap: '2.5',
     flex: '1',
     minW: '0',
-    transitionProperty: 'opacity',
-    transitionDuration: 'base',
     textAlign: 'left',
-    _hover: {opacity: '0.75'},
 });
 
 const apptPatName = css({
@@ -344,11 +278,45 @@ const emptySub = css({
     maxW: '[220px]',
 });
 
-const evolList = css({display: 'flex', flexDirection: 'column', gap: '4'});
+const evolList = css({
+    display: 'flex',
+    flexDirection: 'column',
+    '& > * + *': {
+        borderTopWidth: '1px',
+        borderTopStyle: 'solid',
+        borderTopColor: 'border',
+    },
+});
 
-const evolRow = css({display: 'flex', alignItems: 'flex-start', gap: '3'});
+const evolRow = css({
+    display: 'flex',
+    alignItems: 'flex-start',
+    gap: '3',
+    py: '3.5',
+    _first: {pt: '0'},
+    _last: {pb: '0'},
+    transitionProperty: 'background-color',
+    transitionDuration: 'base',
+    _hover: {bg: 'bg.surface'},
+    _focusVisible: {outlineWidth: '2px', outlineStyle: 'solid', outlineColor: 'primary'},
+});
 
 const evolBody = css({flex: '1', minW: '0'});
+
+const evolHeading = css({
+    display: 'flex',
+    alignItems: 'baseline',
+    gap: '3',
+});
+
+const evolName = css({
+    fontSize: 'sm',
+    fontWeight: 'medium',
+    color: 'text.primary',
+    overflow: 'hidden',
+    lineClamp: '2',
+    lineHeight: 'snug',
+});
 
 const evolMeta = css({
     display: 'flex',
@@ -356,7 +324,8 @@ const evolMeta = css({
     gap: '2',
     flexWrap: 'wrap',
     fontSize: '[11px]',
-    color: 'text.tertiary',
+    color: 'text.secondary',
+    mt: '0.5',
 });
 
 const evolExcerpt = css({
@@ -367,7 +336,8 @@ const evolExcerpt = css({
     lineHeight: 'relaxed',
 });
 
-const evolDate = css({fontFamily: 'mono', fontVariantNumeric: 'tabular-nums'});
+const evolDate = css({fontFamily: 'mono', fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap'});
+const evolChevron = css({color: 'text.secondary', flexShrink: '0', alignSelf: 'center'});
 
 const patientInitialsAvatar = css({
     display: 'flex',
@@ -391,9 +361,13 @@ const qaGrid = css({
 
 const qaBtn = css({
     display: 'flex',
-    alignItems: 'center',
-    gap: '3',
+    flexDirection: 'column',
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+    gap: '2',
     p: '3',
+    minH: '[104px]',
+    minW: '0',
     rounded: '[8px]',
     textAlign: 'left',
     borderWidth: '1px',
@@ -423,11 +397,12 @@ const qaLabel = css({
     fontWeight: 'medium',
     color: 'text.primary',
     lineHeight: 'snug',
+    overflowWrap: 'anywhere',
 });
 
 const qaSub = css({
-    fontSize: '[10px]',
-    color: 'text.tertiary',
+    fontSize: '[11px]',
+    color: 'text.secondary',
     mt: '0.5',
 });
 
@@ -446,12 +421,12 @@ const upRow = css({
     alignItems: 'center',
     gap: '3',
     py: '3',
-    cursor: 'pointer',
-    transitionProperty: 'opacity',
-    transitionDuration: 'base',
     _first: {pt: '0'},
     _last: {pb: '0'},
-    _hover: {opacity: '0.75'},
+    transitionProperty: 'background-color',
+    transitionDuration: 'base',
+    _hover: {bg: 'bg.surface'},
+    _focusVisible: {outlineWidth: '2px', outlineStyle: 'solid', outlineColor: 'primary'},
 });
 
 const upDate = css({display: 'flex', flexDirection: 'column', w: '14', flexShrink: '0'});
@@ -460,7 +435,7 @@ const upDay = css({fontSize: 'xs', fontWeight: 'medium', color: 'text.primary'})
 
 const upTime = css({
     fontSize: '[11px]',
-    color: 'text.tertiary',
+    color: 'text.secondary',
     fontFamily: 'mono',
     fontVariantNumeric: 'tabular-nums',
     mt: '0.5',
@@ -473,8 +448,8 @@ const upName = css({
     fontWeight: 'medium',
     color: 'text.primary',
     overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    whiteSpace: 'nowrap',
+    lineClamp: '2',
+    lineHeight: 'snug',
 });
 
 const upType = css({
@@ -486,9 +461,8 @@ const upType = css({
     whiteSpace: 'nowrap',
 });
 
-const upChevron = css({color: 'text.tertiary', flexShrink: '0'});
+const upChevron = css({color: 'text.secondary', flexShrink: '0'});
 
-const skeletonGreeting = css({h: '7', w: '48', mb: '1'});
 const skeletonStatValue = css({h: '6', w: '8', mb: '1'});
 const skeletonListCol = css({display: 'flex', flexDirection: 'column', gap: '4'});
 const skeletonListRow = css({display: 'flex', alignItems: 'flex-start', gap: '3'});
@@ -515,7 +489,9 @@ interface PaginatedPage<T> {
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
 function toDateStr(iso: string) {
-    return iso.slice(0, 10);
+    const date = new Date(iso);
+
+    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
 }
 
 function todayStr() {
@@ -528,16 +504,6 @@ function fmtTime(iso: string) {
     const d = new Date(iso);
 
     return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
-}
-
-function greeting() {
-    const h = new Date().getHours();
-
-    if (h < 12) return 'Bom dia';
-
-    if (h < 18) return 'Boa tarde';
-
-    return 'Boa noite';
 }
 
 function fmtFullDate() {
@@ -585,6 +551,35 @@ function fmtDayLabel(iso: string) {
     return `${String(d).padStart(2, '0')}/${String(m).padStart(2, '0')}`;
 }
 
+function fmtRecordDate(iso: string | null) {
+    if (!iso) return '';
+
+    const match = /^(\d{4})-(\d{2})-(\d{2})/.exec(iso);
+
+    if (!match) return '';
+
+    const month = Number(match[2]);
+    const day = Number(match[3]);
+    const months = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
+
+    if (month < 1 || month > 12 || day < 1 || day > 31) return '';
+
+    return `${String(day).padStart(2, '0')} ${months[month - 1]}`;
+}
+
+function recordPreview(record: ClinicalRecord, emptyLabel: string) {
+    const values: unknown[] = [record.subjective, record.description, record.freeNotes];
+    const source = values.find((value): value is string => typeof value === 'string' && value.trim().length > 0);
+    const text = source?.replace(/\s+/g, ' ').trim() ?? emptyLabel;
+
+    if (text.length <= 140) return text;
+
+    const beforeLimit = text.slice(0, 140);
+    const lastSpace = beforeLimit.lastIndexOf(' ');
+
+    return `${beforeLimit.slice(0, lastSpace > 100 ? lastSpace : 140).trimEnd()}…`;
+}
+
 const STATUS_LABELS: Record<string, string> = {
     [AppointmentStatus.SCHEDULED]: 'Agendado',
     [AppointmentStatus.CONFIRMED]: 'Confirmado',
@@ -603,6 +598,15 @@ const TYPE_LABELS: Record<string, string> = {
     [AppointmentType.PROCEDURE]: 'Procedimento',
 };
 
+const RECORD_TYPE_LABELS: Record<string, string> = {
+    FIRST_VISIT: 'Primeira consulta',
+    FOLLOW_UP: 'Retorno',
+    EVALUATION: 'Avaliação',
+    PROCEDURE: 'Procedimento',
+    TELEMEDICINE: 'Telemedicina',
+    INTERCURRENCE: 'Intercorrência',
+};
+
 const ACTIVE_STATUSES = new Set<AppointmentStatus>([
     AppointmentStatus.SCHEDULED,
     AppointmentStatus.CONFIRMED,
@@ -615,21 +619,21 @@ const ACTIVE_STATUSES = new Set<AppointmentStatus>([
 export function DashboardPage() {
     const navigate = useNavigate();
 
-    const userQuery = useGetCurrentUser();
-    const user = userQuery.data;
-    const firstName = user?.name?.split(' ')[0] ?? '…';
+    const today = todayStr();
+    const todayStart = new Date();
+
+    todayStart.setHours(0, 0, 0, 0);
 
     const apptQuery = useSearchAppointments({
         term: '',
         limit: 200,
         cursor: null,
         sort: {startAt: 'asc'},
-        dateFrom: null,
+        dateFrom: todayStart.toISOString(),
         dateTo: null,
     }) as unknown as UseQueryResult<PaginatedPage<Appointment>>;
 
     const allAppts = apptQuery.data?.data ?? [];
-    const today = todayStr();
 
     const todayAppts = allAppts
         .filter((a) => toDateStr(a.startAt) === today)
@@ -657,225 +661,211 @@ export function DashboardPage() {
     } as SearchRecordsParams) as unknown as UseQueryResult<PaginatedPage<ClinicalRecord>>;
 
     const recentRecords = recentQuery.data?.data ?? [];
-    const isLoading = apptQuery.isLoading || userQuery.isLoading;
+    const {isLoading} = apptQuery;
+    const patientIds = [
+        ...new Set([
+            ...todayAppts.map((apt) => apt.patientId),
+            ...upcomingAppts.map((apt) => apt.patientId),
+            ...recentRecords.map((record) => record.patientId),
+        ]),
+    ];
+    const patientQueries = useQueries({
+        queries: patientIds.map((id) => getGetPatientQueryOptions(id, {query: {staleTime: 5 * 60_000}})),
+    });
+    const patientsById = new Map<string, {patient?: Patient; loading: boolean}>(
+        patientIds.map((id, index) => [
+            id,
+            {patient: patientQueries[index]?.data, loading: patientQueries[index]?.isPending ?? true},
+        ])
+    );
 
     return (
-        <Page title="Dashboard" className={page}>
-            {/* ── Header ────────────────────────────────────────────────────── */}
-            <div className={header}>
-                <div>
-                    {isLoading ? (
-                        <Skeleton className={skeletonGreeting} />
-                    ) : (
-                        <h1 className={greetingText}>
-                            {greeting()}, {firstName}
-                        </h1>
-                    )}
-                    <p className={dateLabel}>{fmtFullDate()}</p>
+        <Page title="Hoje na clínica" subtitle={fmtFullDate()} className={page}>
+            <div className={content}>
+                {/* ── Stats ─────────────────────────────────────────────────────── */}
+                <div className={statsGrid}>
+                    <StatCard label="Consultas hoje" value={counts.total} loading={isLoading} />
+                    <StatCard label="Confirmadas" value={counts.confirmed} loading={isLoading} />
+                    <StatCard label="Realizadas" value={counts.done} loading={isLoading} />
+                    <StatCard label="Pendentes" value={counts.pending} loading={isLoading} />
                 </div>
-                <div className={agentBadge}>
-                    <span className={agentDot} />
-                    <span className={agentLabel}>Agente IA ativo</span>
-                    <Sparkles size={12} />
-                </div>
-            </div>
 
-            {/* ── Stats ─────────────────────────────────────────────────────── */}
-            <div className={statsGrid}>
-                <StatCard
-                    label="Consultas hoje"
-                    value={counts.total}
-                    icon={<Clock size={16} />}
-                    tone="neutral"
-                    loading={isLoading}
-                />
-                <StatCard
-                    label="Confirmadas"
-                    value={counts.confirmed}
-                    icon={<CheckCircle2 size={16} />}
-                    tone="success"
-                    loading={isLoading}
-                />
-                <StatCard
-                    label="Realizadas"
-                    value={counts.done}
-                    icon={<CircleCheckBig size={16} />}
-                    tone="muted"
-                    loading={isLoading}
-                />
-                <StatCard
-                    label="Pendentes"
-                    value={counts.pending}
-                    icon={<Clock size={16} />}
-                    tone="primary"
-                    loading={isLoading}
-                />
-            </div>
-
-            {/* ── Two-column body ───────────────────────────────────────────── */}
-            <div className={cols}>
-                {/* Left column */}
-                <div className={colMain}>
-                    {/* Today's appointments */}
-                    <section className={sectionCard}>
-                        <div className={sectionHead}>
-                            <div>
-                                <div className={sectionTitle}>Consultas de hoje</div>
-                                {counts.total > 0 && (
-                                    <div className={sectionSub}>
-                                        {counts.total}{' '}
-                                        {counts.total === 1 ? 'consulta agendada' : 'consultas agendadas'}
+                {/* ── Two-column body ───────────────────────────────────────────── */}
+                <div className={cols}>
+                    {/* Left column */}
+                    <div className={colMain}>
+                        {/* Today's appointments */}
+                        <section className={sectionCard}>
+                            <div className={sectionHead}>
+                                <div>
+                                    <div className={sectionTitle}>Consultas de hoje</div>
+                                    {counts.total > 0 && (
+                                        <div className={sectionSub}>
+                                            {counts.total}{' '}
+                                            {counts.total === 1 ? 'consulta agendada' : 'consultas agendadas'}
+                                        </div>
+                                    )}
+                                </div>
+                                <button
+                                    type="button"
+                                    className={secLink}
+                                    onClick={() => navigate({to: '/appointments'})}
+                                >
+                                    Ver agenda <ArrowUpRight size={12} />
+                                </button>
+                            </div>
+                            <div className={sectionBody}>
+                                {/* eslint-disable-next-line no-nested-ternary -- loading/empty/list pattern is a clear render branch */}
+                                {isLoading ? (
+                                    <AppointmentSkeleton rows={3} />
+                                ) : todayAppts.length === 0 ? (
+                                    <div className={empty}>
+                                        <CalendarX2 size={28} className={emptyIcon} />
+                                        <div className={emptyTitle}>Sem consultas hoje</div>
+                                        <p className={emptySub}>
+                                            Aproveite para revisar pendências ou criar novos agendamentos.
+                                        </p>
+                                    </div>
+                                ) : (
+                                    <div className={apptList}>
+                                        {todayAppts.map((apt) => (
+                                            <ApptRow
+                                                key={apt.id}
+                                                apt={apt}
+                                                patientName={patientsById.get(apt.patientId)?.patient?.name}
+                                                patientLoading={patientsById.get(apt.patientId)?.loading}
+                                            />
+                                        ))}
                                     </div>
                                 )}
                             </div>
-                            <button
-                                type="button"
-                                className={secLink}
-                                onClick={() => navigate({to: '/appointments'})}
-                            >
-                                Ver agenda <ArrowUpRight size={12} />
-                            </button>
-                        </div>
-                        <div className={sectionBody}>
-                            {/* eslint-disable-next-line no-nested-ternary -- loading/empty/list pattern is a clear render branch */}
-                            {isLoading ? (
-                                <AppointmentSkeleton rows={3} />
-                            ) : todayAppts.length === 0 ? (
-                                <div className={empty}>
-                                    <CalendarX2 size={28} className={emptyIcon} />
-                                    <div className={emptyTitle}>Sem consultas hoje</div>
-                                    <p className={emptySub}>
-                                        Aproveite para revisar pendências ou criar novos agendamentos.
-                                    </p>
-                                </div>
-                            ) : (
-                                <div className={apptList}>
-                                    {todayAppts.map((apt) => (
-                                        <ApptRow key={apt.id} apt={apt} />
-                                    ))}
-                                </div>
-                            )}
-                        </div>
-                    </section>
+                        </section>
 
-                    {/* Recent records */}
-                    <section className={sectionCard}>
-                        <div className={sectionHead}>
-                            <div>
-                                <div className={sectionTitle}>Atividade recente</div>
-                                <div className={sectionSub}>Últimas evoluções registradas</div>
+                        {/* Recent records */}
+                        <section className={sectionCard}>
+                            <div className={sectionHead}>
+                                <div>
+                                    <div className={sectionTitle}>Atividade recente</div>
+                                    <div className={sectionSub}>Últimas evoluções registradas</div>
+                                </div>
                             </div>
-                            <button type="button" className={secLink}>
-                                Ver todas <ArrowUpRight size={12} />
-                            </button>
-                        </div>
-                        <div className={sectionBody}>
-                            {/* eslint-disable-next-line no-nested-ternary -- loading/empty/list pattern is a clear render branch */}
-                            {recentQuery.isLoading ? (
-                                <div className={skeletonListCol}>
-                                    {Array.from({length: 3}).map((_, i) => (
-                                        <div key={i} className={skeletonListRow}>
-                                            <Skeleton className={skeletonAvatar} />
-                                            <div className={flex1}>
-                                                <Skeleton className={skeletonNameMd} />
-                                        <Skeleton className={skeletonH3Full} />
+                            <div className={sectionBody}>
+                                {/* eslint-disable-next-line no-nested-ternary -- loading/empty/list pattern is a clear render branch */}
+                                {recentQuery.isLoading ? (
+                                    <div className={skeletonListCol}>
+                                        {Array.from({length: 3}).map((_, i) => (
+                                            <div key={i} className={skeletonListRow}>
+                                                <Skeleton className={skeletonAvatar} />
+                                                <div className={flex1}>
+                                                    <Skeleton className={skeletonNameMd} />
+                                                    <Skeleton className={skeletonH3Full} />
+                                                </div>
+                                            </div>
+                                        ))}
                                     </div>
-                                </div>
-                            ))}
-                        </div>
-                    ) : recentRecords.length === 0 ? (
-
-                                <div className={empty}>
-                                    <FileText size={24} className={emptyIcon} />
-                                    <div className={emptyTitle}>Nenhuma evolução registrada</div>
-                                </div>
-                            ) : (
-                                <div className={evolList}>
-                                    {recentRecords.map((rec) => (
-                                        <RecentRecordRow key={rec.id} record={rec} />
-                                    ))}
-                                </div>
-                            )}
-                        </div>
-                    </section>
-                </div>
-
-                {/* Right column */}
-                <div className={colSide}>
-                    {/* Quick actions */}
-                    <section className={sectionCard}>
-                        <div className={sectionHead}>
-                            <div className={sectionTitle}>Ações rápidas</div>
-                        </div>
-                        <div className={sectionBody}>
-                            <div className={qaGrid}>
-                                <QuickAction
-                                    icon={<UserPlus size={16} />}
-                                    label="Novo paciente"
-                                    onClick={() => navigate({to: '/patients/new'})}
-                                />
-                                <QuickAction
-                                    icon={<FileText size={16} />}
-                                    label="Nova evolução"
-                                    sub="Buscar paciente"
-                                    onClick={() => navigate({to: '/patients'})}
-                                />
-                                <QuickAction
-                                    icon={<CalendarPlus size={16} />}
-                                    label="Novo agendamento"
-                                    onClick={() => navigate({to: '/appointments'})}
-                                />
-                                <QuickAction
-                                    icon={<Stethoscope size={16} />}
-                                    label="Ver pacientes"
-                                    onClick={() => navigate({to: '/patients'})}
-                                />
+                                ) : recentRecords.length === 0 ? (
+                                    <div className={empty}>
+                                        <FileText size={24} className={emptyIcon} />
+                                        <div className={emptyTitle}>Nenhuma evolução registrada</div>
+                                    </div>
+                                ) : (
+                                    <div className={evolList}>
+                                        {recentRecords.map((rec) => (
+                                            <RecentRecordRow
+                                                key={rec.id}
+                                                record={rec}
+                                                patientName={patientsById.get(rec.patientId)?.patient?.name}
+                                                patientLoading={patientsById.get(rec.patientId)?.loading}
+                                            />
+                                        ))}
+                                    </div>
+                                )}
                             </div>
-                        </div>
-                    </section>
+                        </section>
+                    </div>
 
-                    {/* Upcoming appointments */}
-                    <section className={sectionCard}>
-                        <div className={sectionHead}>
-                            <div>
-                                <div className={sectionTitle}>Próximas consultas</div>
-                                <div className={sectionSub}>A partir de amanhã</div>
+                    {/* Right column */}
+                    <div className={colSide}>
+                        {/* Quick actions */}
+                        <section className={sectionCard}>
+                            <div className={sectionHead}>
+                                <div className={sectionTitle}>Ações rápidas</div>
                             </div>
-                            <button
-                                type="button"
-                                className={secLink}
-                                onClick={() => navigate({to: '/appointments'})}
-                            >
-                                Ver agenda <ArrowUpRight size={12} />
-                            </button>
-                        </div>
-                        <div className={sectionBody}>
-                            {/* eslint-disable-next-line no-nested-ternary -- loading/empty/list pattern is a clear render branch */}
-                            {isLoading ? (
-                                <AppointmentSkeleton rows={3} compact />
-                            ) : upcomingAppts.length === 0 ? (
-                                <div className={empty}>
-                                    <CalendarX2 size={22} className={emptyIcon} />
-                                    <div className={emptyTitle}>Nenhuma consulta agendada</div>
-                                    <Button
-                                        variant="outline"
-                                        size="sm"
+                            <div className={sectionBody}>
+                                <div className={qaGrid}>
+                                    <QuickAction
+                                        icon={<UserPlus size={16} />}
+                                        label="Novo paciente"
+                                        onClick={() => navigate({to: '/patients/new'})}
+                                    />
+                                    <QuickAction
+                                        icon={<FileText size={16} />}
+                                        label="Nova evolução"
+                                        sub="Buscar paciente"
+                                        onClick={() => navigate({to: '/patients'})}
+                                    />
+                                    <QuickAction
+                                        icon={<CalendarPlus size={16} />}
+                                        label="Novo agendamento"
                                         onClick={() => navigate({to: '/appointments'})}
-                                        className={mt1}
-                                    >
-                                        <CalendarPlus size={13} />
-                                        Criar agendamento
-                                    </Button>
+                                    />
+                                    <QuickAction
+                                        icon={<Stethoscope size={16} />}
+                                        label="Ver pacientes"
+                                        onClick={() => navigate({to: '/patients'})}
+                                    />
                                 </div>
-                            ) : (
-                                <div className={upList}>
-                                    {upcomingAppts.map((apt) => (
-                                        <UpcomingRow key={apt.id} apt={apt} />
-                                    ))}
+                            </div>
+                        </section>
+
+                        {/* Upcoming appointments */}
+                        <section className={sectionCard}>
+                            <div className={sectionHead}>
+                                <div>
+                                    <div className={sectionTitle}>Próximas consultas</div>
+                                    <div className={sectionSub}>A partir de amanhã</div>
                                 </div>
-                            )}
-                        </div>
-                    </section>
+                                <button
+                                    type="button"
+                                    className={secLink}
+                                    onClick={() => navigate({to: '/appointments'})}
+                                >
+                                    Ver agenda <ArrowUpRight size={12} />
+                                </button>
+                            </div>
+                            <div className={sectionBody}>
+                                {/* eslint-disable-next-line no-nested-ternary -- loading/empty/list pattern is a clear render branch */}
+                                {isLoading ? (
+                                    <AppointmentSkeleton rows={3} compact />
+                                ) : upcomingAppts.length === 0 ? (
+                                    <div className={empty}>
+                                        <CalendarX2 size={22} className={emptyIcon} />
+                                        <div className={emptyTitle}>Nenhuma consulta agendada</div>
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={() => navigate({to: '/appointments'})}
+                                            className={mt1}
+                                        >
+                                            <CalendarPlus size={13} />
+                                            Criar agendamento
+                                        </Button>
+                                    </div>
+                                ) : (
+                                    <div className={upList}>
+                                        {upcomingAppts.map((apt) => (
+                                            <UpcomingRow
+                                                key={apt.id}
+                                                apt={apt}
+                                                patientName={patientsById.get(apt.patientId)?.patient?.name}
+                                                patientLoading={patientsById.get(apt.patientId)?.loading}
+                                            />
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                        </section>
+                    </div>
                 </div>
             </div>
         </Page>
@@ -884,35 +874,25 @@ export function DashboardPage() {
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
-function StatCard({
-    label,
-    value,
-    icon,
-    tone,
-    loading,
-}: {
-    label: string;
-    value: number;
-    icon: React.ReactNode;
-    tone: 'neutral' | 'success' | 'muted' | 'primary';
-    loading?: boolean;
-}) {
+function StatCard({label, value, loading}: {label: string; value: number; loading?: boolean}) {
     return (
         <div className={statCard}>
-            <div className={statIcon({tone})}>{icon}</div>
-            <div>
-                {loading ? (
-                    <Skeleton className={skeletonStatValue} />
-                ) : (
-                    <div className={statValue}>{value}</div>
-                )}
-                <div className={statLabel}>{label}</div>
-            </div>
+            <div className={statLabel}>{label}</div>
+            {loading ? <Skeleton className={skeletonStatValue} /> : <div className={statValue}>{value}</div>}
         </div>
     );
 }
 
-function ApptRow({apt}: {apt: Appointment}) {
+function ApptRow({
+    apt,
+    patientName,
+    patientLoading,
+}: {
+    apt: Appointment;
+    patientName?: string;
+    patientLoading?: boolean;
+}) {
+    const {t} = useTranslation();
     const start = fmtTime(apt.startAt);
     const end = fmtTime(apt.endAt);
     const {status} = apt;
@@ -926,9 +906,13 @@ function ApptRow({apt}: {apt: Appointment}) {
             </div>
 
             <div className={apptPatBtn}>
-                <div className={patientInitialsAvatar}>—</div>
+                <div className={patientInitialsAvatar}>{patientName?.charAt(0).toUpperCase() ?? 'P'}</div>
                 <div className={minW0}>
-                    <div className={apptPatName}>Paciente</div>
+                    {patientLoading ? (
+                        <Skeleton className={skeletonNameSm} />
+                    ) : (
+                        <div className={apptPatName}>{patientName ?? t('dashboard.patientUnavailable')}</div>
+                    )}
                     <div className={apptPatType}>{TYPE_LABELS[apt.type] ?? apt.type}</div>
                 </div>
             </div>
@@ -948,58 +932,89 @@ function ApptRow({apt}: {apt: Appointment}) {
     );
 }
 
-function RecentRecordRow({record}: {record: ClinicalRecord}) {
-    const dateLabel = record.eventDate
-        ? (() => {
-              const [_y, m, d] = record.eventDate.split('-').map(Number);
-              const months = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
-
-              return `${String(d).padStart(2, '0')} ${months[m - 1]}`;
-          })()
-        : '';
-
-    const excerpt =
-        (record.subjective as string | null) ??
-        (record.description as string | null) ??
-        (record.freeNotes as string | null) ??
-        'Sem conteúdo';
+function RecentRecordRow({
+    record,
+    patientName,
+    patientLoading,
+}: {
+    record: ClinicalRecord;
+    patientName?: string;
+    patientLoading?: boolean;
+}) {
+    const {t} = useTranslation();
+    const dateLabel = fmtRecordDate(record.eventDate ?? record.createdAt);
+    const titleValue: unknown = record.title;
+    const title = typeof titleValue === 'string' ? titleValue.trim() : '';
+    const typeLabel = record.attendanceType
+        ? (RECORD_TYPE_LABELS[record.attendanceType] ?? record.attendanceType)
+        : t('dashboard.record');
 
     return (
-        <div className={evolRow}>
-            <div className={patientInitialsAvatar}>P</div>
+        <Link
+            to="/patients/$patientId/records/$recordId"
+            params={{patientId: record.patientId, recordId: record.id}}
+            className={evolRow}
+            aria-label={t('dashboard.openRecord', {patient: patientName ?? t('dashboard.patient'), date: dateLabel})}
+        >
+            <div className={patientInitialsAvatar}>{patientName?.charAt(0).toUpperCase() ?? 'P'}</div>
             <div className={evolBody}>
-                <div className={evolMeta}>
-                    {dateLabel && <span className={evolDate}>{dateLabel}</span>}
-                    {record.attendanceType && (
-                        <>
-                            <span>·</span>
-                            <span>{record.attendanceType}</span>
-                        </>
+                <div className={evolHeading}>
+                    {patientLoading ? (
+                        <Skeleton className={skeletonNameMd} />
+                    ) : (
+                        <span className={evolName}>{patientName ?? t('dashboard.patientUnavailable')}</span>
                     )}
                 </div>
-                <div className={evolExcerpt}>{excerpt}</div>
+                <div className={evolMeta}>
+                    {dateLabel && <span className={evolDate}>{dateLabel}</span>}
+                    <span>{title || typeLabel}</span>
+                </div>
+                <div className={evolExcerpt}>{recordPreview(record, t('dashboard.noContent'))}</div>
             </div>
-        </div>
+            <ChevronRight size={14} aria-hidden className={evolChevron} />
+        </Link>
     );
 }
 
-function UpcomingRow({apt}: {apt: Appointment}) {
+function UpcomingRow({
+    apt,
+    patientName,
+    patientLoading,
+}: {
+    apt: Appointment;
+    patientName?: string;
+    patientLoading?: boolean;
+}) {
+    const {t} = useTranslation();
     const dateStr = toDateStr(apt.startAt);
     const dayLabel = fmtDayLabel(dateStr);
     const timeLabel = fmtTime(apt.startAt);
 
     return (
-        <div className={upRow}>
+        <Link
+            to="/appointments"
+            search={{date: dateStr, appointmentId: apt.id}}
+            className={upRow}
+            aria-label={t('dashboard.openAppointment', {
+                patient: patientName ?? t('dashboard.patient'),
+                date: dayLabel,
+                time: timeLabel,
+            })}
+        >
             <div className={upDate}>
                 <span className={upDay}>{dayLabel}</span>
                 <span className={upTime}>{timeLabel}</span>
             </div>
             <div className={upInfo}>
-                <div className={upName}>Paciente</div>
+                {patientLoading ? (
+                    <Skeleton className={skeletonNameSm} />
+                ) : (
+                    <div className={upName}>{patientName ?? t('dashboard.patientUnavailable')}</div>
+                )}
                 <div className={upType}>{TYPE_LABELS[apt.type] ?? apt.type}</div>
             </div>
-            <ChevronRight size={14} className={upChevron} />
-        </div>
+            <ChevronRight size={14} aria-hidden className={upChevron} />
+        </Link>
     );
 }
 

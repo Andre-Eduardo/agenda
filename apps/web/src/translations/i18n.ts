@@ -26,4 +26,8 @@ i18next
         console.error('Failed to initialize i18next', error);
     });
 
+i18next.on('languageChanged', (language) => {
+    document.documentElement.lang = language;
+});
+
 export default i18next;

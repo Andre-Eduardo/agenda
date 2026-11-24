@@ -1,4 +1,4 @@
-import {useState} from 'react';
+import {useEffect, useRef, useState} from 'react';
 import {
     useGetClinicBillingReport,
     useGetCurrentClinicMember,
@@ -8,7 +8,7 @@ import {
     type GetRevenueReportParams,
 } from '@agenda-app/client';
 import {createFileRoute} from '@tanstack/react-router';
-import {ChevronLeft, ChevronRight} from 'lucide-react';
+import {CalendarDays, ChevronLeft, ChevronRight} from 'lucide-react';
 import {Badge, type badgeVariants} from '@/components/ui/componentes/badge';
 import {Button} from '@/components/ui/componentes/button';
 import {Input} from '@/components/ui/componentes/input';
@@ -17,15 +17,20 @@ import {SegmentedControl, SegmentedControlItem} from '@/components/ui/componente
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@/components/ui/componentes/select';
 import {Skeleton} from '@/components/ui/componentes/skeleton';
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from '@/components/ui/componentes/table';
+import {formatBRL, formatUSD} from '@/lib/utils';
 import {Page} from '@/views/components/Page';
 import {PlansTab} from '@/views/modules/financial/components/PlansTab';
 import {
+    dateInputWrap,
+    datePickerTrigger,
+    dateTextInput,
     emptyText,
     filterBar,
     filterField,
     filterLabel,
     highlightCard,
     highlightRow,
+    nativeDateInput,
     paginationActions,
     paginationBar,
     paginationInfo,
@@ -81,10 +86,6 @@ const PLAN_LABELS: Record<string, string> = {
     ESPECIALISTA: 'Especialista',
 };
 
-function formatBRL(value: number): string {
-    return `R$ ${value.toFixed(2)}`;
-}
-
 function firstDayOfMonth(): string {
     const d = new Date();
 
@@ -92,7 +93,88 @@ function firstDayOfMonth(): string {
 }
 
 function today(): string {
-    return new Date().toISOString().slice(0, 10);
+    const date = new Date();
+
+    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+}
+
+function formatDateInput(value: string): string {
+    const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
+
+    return match ? `${match[3]}/${match[2]}/${match[1]}` : '';
+}
+
+function parseDateInput(value: string): string | null {
+    const match = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(value);
+
+    if (!match) return null;
+
+    const day = Number(match[1]);
+    const month = Number(match[2]);
+    const year = Number(match[3]);
+    const date = new Date(year, month - 1, day);
+
+    if (date.getFullYear() !== year || date.getMonth() !== month - 1 || date.getDate() !== day) return null;
+
+    return `${match[3]}-${match[2]}-${match[1]}`;
+}
+
+function LocalizedDateInput({value, onChange, label}: {value: string; onChange: (value: string) => void; label: string}) {
+    const pickerRef = useRef<HTMLInputElement>(null);
+    const [display, setDisplay] = useState(() => formatDateInput(value));
+
+    useEffect(() => setDisplay(formatDateInput(value)), [value]);
+
+    return (
+        <div className={dateInputWrap}>
+            <Input
+                type="text"
+                inputMode="numeric"
+                autoComplete="off"
+                value={display}
+                placeholder="dd/mm/aaaa"
+                aria-label={label}
+                className={dateTextInput}
+                onChange={(event) => {
+                    const digits = event.target.value.replace(/\D/g, '').slice(0, 8);
+                    const next = [digits.slice(0, 2), digits.slice(2, 4), digits.slice(4)].filter(Boolean).join('/');
+
+                    setDisplay(next);
+
+                    if (!next) {
+                        onChange('');
+                    } else {
+                        const iso = parseDateInput(next);
+
+                        if (iso) onChange(iso);
+                    }
+                }}
+                onBlur={() => {
+                    if (!parseDateInput(display)) setDisplay(formatDateInput(value));
+                }}
+            />
+            <button
+                type="button"
+                className={datePickerTrigger}
+                aria-label={`Selecionar ${label.toLowerCase()}`}
+                onClick={() => {
+                    if (pickerRef.current?.showPicker) pickerRef.current.showPicker();
+                    else pickerRef.current?.click();
+                }}
+            >
+                <CalendarDays size={16} strokeWidth={1.5} />
+            </button>
+            <input
+                ref={pickerRef}
+                type="date"
+                tabIndex={-1}
+                aria-hidden="true"
+                className={nativeDateInput}
+                value={value}
+                onChange={(event) => onChange(event.target.value)}
+            />
+        </div>
+    );
 }
 
 // ─── Page ────────────────────────────────────────────────────────────────────
@@ -161,11 +243,11 @@ function RevenueTab({clinicId}: {clinicId: string}) {
             <div className={filterBar}>
                 <div className={filterField}>
                     <Label className={filterLabel}>Início</Label>
-                    <Input type="date" value={startDate} onChange={(e) => updateFilter(setStartDate)(e.target.value)} />
+                    <LocalizedDateInput label="Início" value={startDate} onChange={updateFilter(setStartDate)} />
                 </div>
                 <div className={filterField}>
                     <Label className={filterLabel}>Fim</Label>
-                    <Input type="date" value={endDate} onChange={(e) => updateFilter(setEndDate)(e.target.value)} />
+                    <LocalizedDateInput label="Fim" value={endDate} onChange={updateFilter(setEndDate)} />
                 </div>
                 <div className={filterField}>
                     <Label className={filterLabel}>Profissional</Label>
@@ -448,7 +530,7 @@ function CostsTab({clinicId}: {clinicId: string}) {
                                         {report.summary.mostExpensiveMember.displayName}
                                     </span>
                                     <span className={statSub}>
-                                        US$ {report.summary.mostExpensiveMember.aiCostUsd.toFixed(2)}
+                                        {formatUSD(report.summary.mostExpensiveMember.aiCostUsd)}
                                     </span>
                                 </div>
                             )}

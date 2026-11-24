@@ -56,6 +56,14 @@
     "menu": "Menu principal",
     "logout": "Sair"
   },
+  "dashboard": {
+    "patient": "paciente",
+    "patientUnavailable": "Paciente indisponível",
+    "record": "Evolução",
+    "noContent": "Sem conteúdo",
+    "openRecord": "Abrir evolução de {{patient}} em {{date}}",
+    "openAppointment": "Abrir agendamento de {{patient}} em {{date}} às {{time}}"
+  },
   "user": {
     "online": "Online"
   },
@@ -69,8 +77,8 @@
   },
   "auth": {
     "login": {
-      "title": "Bem-vindo de volta",
-      "subtitle": "Acesse sua conta profissional para continuar.",
+      "title": "Acesse a Agenda Saúde",
+      "subtitle": "Entre com sua conta profissional",
       "form": {
         "username": "Usuário",
         "password": "Senha",
@@ -90,12 +98,19 @@
         }
       },
       "panel": {
-        "title": "Prontuário inteligente.",
-        "highlight": "Decisão sua.",
-        "description": "Importação por OCR, análise assistida e revisão humana obrigatória em cada etapa do registro clínico."
+        "title": "Consultas e registros clínicos",
+        "highlight": "em um só lugar",
+        "description": "Organize atendimentos e revise cada evolução antes de registrá-la no prontuário."
+      },
+      "preview": {
+        "today": "Hoje",
+        "agenda": "Agenda de atendimentos",
+        "appointment": "Consulta",
+        "record": "Evolução clínica",
+        "review": "Revisão profissional"
       },
       "footer": {
-        "security": "Sistema seguro · Conformidade LGPD"
+        "security": "Acesso à área profissional"
       }
     }
   }

@@ -68,6 +68,7 @@ import {SegmentedControl, SegmentedControlItem} from '@/components/ui/componente
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@/components/ui/componentes/select';
 import {Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle} from '@/components/ui/componentes/dialog';
 import {Skeleton} from '@/components/ui/componentes/skeleton';
+import {formatBRL} from '@/lib/utils';
 import {AgendaScheduleEditor} from '@/views/components/AgendaScheduleEditor';
 import {ConfirmDialog} from '@/views/components/ConfirmDialog';
 import {
@@ -976,7 +977,7 @@ function SubscriptionSection() {
                                 {(catalogQuery.data ?? []).map((addon) => (
                                     <div key={addon.code} className={addonCard}>
                                         <span className={addonCardTitle}>{addon.name}</span>
-                                        <span className={addonCardPrice}>R$ {addon.priceMonthlyBrl.toFixed(2)}/mês</span>
+                                        <span className={addonCardPrice}>{formatBRL(addon.priceMonthlyBrl)}/mês</span>
                                         <Button variant="outline" size="sm" onClick={() => openAddonConfirm(addon)}>
                                             Comprar
                                         </Button>
@@ -1041,7 +1042,7 @@ function SubscriptionSection() {
                                         return (
                                             <tr key={event.id}>
                                                 <td>{event.eventType}</td>
-                                                <td>{amount != null ? `R$ ${amount.toFixed(2)}` : '—'}</td>
+                                                <td>{amount != null ? formatBRL(amount) : '—'}</td>
                                                 <td>{event.status}</td>
                                                 <td>{formatDate(processedAt ?? event.createdAt)}</td>
                                             </tr>
@@ -1097,12 +1098,12 @@ function SubscriptionSection() {
                                 <div className={summaryRow}>
                                     <span>{pendingAddon.name}</span>
                                     <span>
-                                        R$ {pendingAddon.priceMonthlyBrl.toFixed(2)}/mês × {pendingQuantity}
+                                        {formatBRL(pendingAddon.priceMonthlyBrl)}/mês × {pendingQuantity}
                                     </span>
                                 </div>
                                 <div className={summaryTotalRow}>
                                     <span>Total mensal</span>
-                                    <span>R$ {(pendingAddon.priceMonthlyBrl * pendingQuantity).toFixed(2)}</span>
+                                    <span>{formatBRL(pendingAddon.priceMonthlyBrl * pendingQuantity)}</span>
                                 </div>
                             </div>
 
@@ -1123,7 +1124,7 @@ function SubscriptionSection() {
                             </div>
 
                             <p className={noteText}>
-                                Uma cobrança de R$ {(pendingAddon.priceMonthlyBrl * pendingQuantity).toFixed(2)} será
+                                Uma cobrança de {formatBRL(pendingAddon.priceMonthlyBrl * pendingQuantity)} será
                                 gerada no método selecionado e o addon é liberado assim que a cobrança for aceita pelo
                                 provedor de pagamento.
                             </p>
@@ -1184,10 +1185,10 @@ function ProfileForm() {
     const [proInitialized, setProInitialized] = useState(false);
 
     if (professional && !proInitialized) {
-        const rawSpecialty = (professional.specialty as string | null) ?? '';
+        const rawSpecialty = professional.specialty ?? '';
 
         setSpecialty(rawSpecialty);
-        setRegistryNum((professional.registrationNumber as string | null) ?? '');
+        setRegistryNum(professional.registrationNumber ?? '');
         setProInitialized(true);
     }
 

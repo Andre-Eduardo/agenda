@@ -85,8 +85,8 @@ export default defineConfig({
                     // ── Texto ────────────────────────────────────────────────
                     text: {
                         primary: {value: {base: '#0f172a', _dark: '#f8fafc'}},
-                        secondary: {value: {base: '#64748b', _dark: '#94a3b8'}},
-                        tertiary: {value: {base: '#94a3b8', _dark: '#475569'}},
+                        secondary: {value: {base: '#475569', _dark: '#a3b3c9'}},
+                        tertiary: {value: {base: '#5d6c80', _dark: '#8491a5'}},
                     },
 
                     // ── Primária — azul clínico ──────────────────────────────
