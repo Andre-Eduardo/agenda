@@ -8,6 +8,7 @@ Feature: Appointment reminder dispatch (POST)
             | Dr. House | dr_house | house@example.com   | H0use.Dr! |
         And I am signed in as "dr_house"
         And a professional "dr_house" exists with specialty "MEDICINA"
+        And the clinic member "dr_house" also has the role "OWNER"
         And I am signed in as "dr_house" with clinic member "${ref:id:clinicMember:dr_house}"
         When I send a "PUT" request to "/api/v1/clinics/${ref:id:clinic:dr_house}/reminder-config" with:
             | enabledChannels | ["WHATSAPP"] |
@@ -25,8 +26,8 @@ Feature: Appointment reminder dispatch (POST)
         When I send a "POST" request to "/api/v1/appointments" with:
             | patientId          | ${ref:id:patient:reminder_patient} |
             | attendedByMemberId | ${ref:id:clinicMember:dr_house}    |
-            | startAt            | 2026-07-01T00:00:00.000Z           |
-            | endAt              | 2026-07-01T01:00:00.000Z           |
+            | startAt            | ${ref:date:daysAhead:1:09:00:00.000Z}           |
+            | endAt              | ${ref:date:daysAhead:1:10:00:00.000Z}           |
             | type               | FIRST_VISIT                        |
         Then the request should succeed with a 201 status code
         When I send a "GET" request to "/api/v1/clinics/${ref:id:clinic:dr_house}/reminders/pending"
@@ -44,8 +45,8 @@ Feature: Appointment reminder dispatch (POST)
         When I send a "POST" request to "/api/v1/appointments" with:
             | patientId          | ${ref:id:patient:reminder_patient} |
             | attendedByMemberId | ${ref:id:clinicMember:dr_house}    |
-            | startAt            | 2026-07-02T00:00:00.000Z           |
-            | endAt              | 2026-07-02T01:00:00.000Z           |
+            | startAt            | ${ref:date:daysAhead:2:09:00:00.000Z}           |
+            | endAt              | ${ref:date:daysAhead:2:10:00:00.000Z}           |
             | type               | RETURN                             |
         Then the request should succeed with a 201 status code
         When I send a "POST" request to "/api/v1/clinics/${ref:id:clinic:dr_house}/reminders/dispatch"
@@ -63,8 +64,8 @@ Feature: Appointment reminder dispatch (POST)
         When I send a "POST" request to "/api/v1/appointments" with:
             | patientId          | ${ref:id:patient:reminder_patient} |
             | attendedByMemberId | ${ref:id:clinicMember:dr_house}    |
-            | startAt            | 2026-07-03T00:00:00.000Z           |
-            | endAt              | 2026-07-03T01:00:00.000Z           |
+            | startAt            | ${ref:date:daysAhead:3:09:00:00.000Z}           |
+            | endAt              | ${ref:date:daysAhead:3:10:00:00.000Z}           |
             | type               | RETURN                             |
         Then the request should succeed with a 201 status code
         And I save the response field "id" as "appointment" id for "to_cancel"

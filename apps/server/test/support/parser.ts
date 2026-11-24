@@ -51,6 +51,47 @@ function resolveReference(context: Context, reference: string): string | number 
             return context.getVariableId(idType, key);
         }
 
+        case 'date': {
+            // Keep scheduling fixtures in the future without changing their month/day
+            // relationships (including report filters that span the same period).
+            const nextYear = /^nextYear:(\d{2}-\d{2}(?:T\d{2}:\d{2}:\d{2}\.\d{3}Z)?)$/.exec(referencePath);
+
+            if (nextYear) {
+                return `${new Date().getUTCFullYear() + 1}-${nextYear[1]}`;
+            }
+
+            // Reminders need an appointment close enough to be due for dispatch.
+            const daysAhead = /^daysAhead:(\d+):(\d{2}:\d{2}:\d{2}\.\d{3}Z)$/.exec(referencePath);
+
+            if (daysAhead) {
+                const date = new Date();
+
+                date.setUTCHours(0, 0, 0, 0);
+                date.setUTCDate(date.getUTCDate() + Number(daysAhead[1]));
+
+                return `${date.toISOString().slice(0, 10)}T${daysAhead[2]}`;
+            }
+
+            throw new Error(`Malformed date reference: "${reference}"`);
+        }
+
+        case 'weekday': {
+            // Use noon UTC so the weekday is stable across local time zones.
+            const nextYear = /^nextYear:(\d{2}-\d{2})$/.exec(referencePath);
+
+            if (!nextYear) {
+                throw new Error(`Malformed weekday reference: "${reference}"`);
+            }
+
+            const date = new Date(`${new Date().getUTCFullYear() + 1}-${nextYear[1]}T12:00:00.000Z`);
+
+            if (Number.isNaN(date.getTime())) {
+                throw new TypeError(`Invalid weekday reference: "${reference}"`);
+            }
+
+            return date.getUTCDay();
+        }
+
         case 'var': {
             // Format: ref:var:<variableName>
             // e.g.  ref:var:contextId

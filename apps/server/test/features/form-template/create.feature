@@ -8,6 +8,7 @@ Feature: Form template creation (POST)
             | Dr. House | dr_house | house@example.com   | H0use.Dr! |
         And I am signed in as "dr_house"
         And a professional "dr_house" exists with specialty "MEDICINA"
+        And the clinic member "dr_house" also has the role "OWNER"
         And I am signed in as "dr_house" with professional "${ref:id:professional:dr_house}"
 
     Scenario: Create a private form template

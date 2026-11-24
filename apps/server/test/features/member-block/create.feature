@@ -12,8 +12,8 @@ Feature: Member Block CRUD (POST / GET / DELETE)
 
     Scenario: Create a schedule block
         When I send a "POST" request to "/api/v1/members/${ref:id:clinicMember:dr_house}/blocks" with:
-            | startAt | 2026-07-01T09:00:00.000Z |
-            | endAt   | 2026-07-01T12:00:00.000Z |
+            | startAt | ${ref:date:nextYear:07-01T09:00:00.000Z} |
+            | endAt   | ${ref:date:nextYear:07-01T12:00:00.000Z} |
             | reason  | Medical conference       |
         Then the request should succeed with a 201 status code
         And the response should contain:
@@ -23,23 +23,23 @@ Feature: Member Block CRUD (POST / GET / DELETE)
 
     Scenario: Create a block without reason
         When I send a "POST" request to "/api/v1/members/${ref:id:clinicMember:dr_house}/blocks" with:
-            | startAt | 2026-07-02T08:00:00.000Z |
-            | endAt   | 2026-07-02T09:00:00.000Z |
+            | startAt | ${ref:date:nextYear:07-02T08:00:00.000Z} |
+            | endAt   | ${ref:date:nextYear:07-02T09:00:00.000Z} |
         Then the request should succeed with a 201 status code
         And the response should contain:
             | clinicMemberId | ${ref:id:clinicMember:dr_house} |
 
     Scenario: Appointment during a block returns 412
         When I send a "POST" request to "/api/v1/members/${ref:id:clinicMember:dr_house}/blocks" with:
-            | startAt | 2026-08-01T09:00:00.000Z |
-            | endAt   | 2026-08-01T17:00:00.000Z |
+            | startAt | ${ref:date:nextYear:08-01T09:00:00.000Z} |
+            | endAt   | ${ref:date:nextYear:08-01T17:00:00.000Z} |
             | reason  | On leave                 |
         Then the request should succeed with a 201 status code
         And the following users exist:
             | Name       | Username | Email            | Password  |
             | João Silva | joao     | joao@example.com | J0ao.Sv!  |
         When I send a "POST" request to "/api/v1/members/${ref:id:clinicMember:dr_house}/working-hours" with:
-            | dayOfWeek    | 5     |
+            | dayOfWeek    | ${ref:weekday:nextYear:08-01}     |
             | startTime    | 08:00 |
             | endTime      | 18:00 |
             | slotDuration | 30    |
@@ -53,20 +53,20 @@ Feature: Member Block CRUD (POST / GET / DELETE)
         When I send a "POST" request to "/api/v1/appointments" with:
             | patientId          | ${ref:id:patient:joao}              |
             | attendedByMemberId | ${ref:id:clinicMember:dr_house}     |
-            | startAt            | 2026-08-01T10:00:00.000Z            |
-            | endAt              | 2026-08-01T11:00:00.000Z            |
+            | startAt            | ${ref:date:nextYear:08-01T10:00:00.000Z}            |
+            | endAt              | ${ref:date:nextYear:08-01T11:00:00.000Z}            |
             | type               | FIRST_VISIT                         |
         Then the request should fail with a 409 status code
 
     Scenario: List blocks for a member
         When I send a "POST" request to "/api/v1/members/${ref:id:clinicMember:dr_house}/blocks" with:
-            | startAt | 2026-09-01T08:00:00.000Z |
-            | endAt   | 2026-09-01T10:00:00.000Z |
+            | startAt | ${ref:date:nextYear:09-01T08:00:00.000Z} |
+            | endAt   | ${ref:date:nextYear:09-01T10:00:00.000Z} |
             | reason  | Training session         |
         Then the request should succeed with a 201 status code
         When I send a "POST" request to "/api/v1/members/${ref:id:clinicMember:dr_house}/blocks" with:
-            | startAt | 2026-09-02T14:00:00.000Z |
-            | endAt   | 2026-09-02T16:00:00.000Z |
+            | startAt | ${ref:date:nextYear:09-02T14:00:00.000Z} |
+            | endAt   | ${ref:date:nextYear:09-02T16:00:00.000Z} |
             | reason  | Personal appointment     |
         Then the request should succeed with a 201 status code
         When I send a "GET" request to "/api/v1/members/${ref:id:clinicMember:dr_house}/blocks"
@@ -74,17 +74,17 @@ Feature: Member Block CRUD (POST / GET / DELETE)
 
     Scenario: List blocks filtered by period
         When I send a "POST" request to "/api/v1/members/${ref:id:clinicMember:dr_house}/blocks" with:
-            | startAt | 2026-10-01T08:00:00.000Z |
-            | endAt   | 2026-10-01T10:00:00.000Z |
+            | startAt | ${ref:date:nextYear:10-01T08:00:00.000Z} |
+            | endAt   | ${ref:date:nextYear:10-01T10:00:00.000Z} |
             | reason  | October block            |
         Then the request should succeed with a 201 status code
-        When I send a "GET" request to "/api/v1/members/${ref:id:clinicMember:dr_house}/blocks?startAt=2026-10-01T00:00:00.000Z&endAt=2026-10-31T23:59:59.000Z"
+        When I send a "GET" request to "/api/v1/members/${ref:id:clinicMember:dr_house}/blocks?startAt=${ref:date:nextYear:10-01T00:00:00.000Z}&endAt=${ref:date:nextYear:10-31T23:59:59.000Z}"
         Then the request should succeed with a 200 status code
 
     Scenario: Delete a schedule block
         When I send a "POST" request to "/api/v1/members/${ref:id:clinicMember:dr_house}/blocks" with:
-            | startAt | 2026-11-01T09:00:00.000Z |
-            | endAt   | 2026-11-01T11:00:00.000Z |
+            | startAt | ${ref:date:nextYear:11-01T09:00:00.000Z} |
+            | endAt   | ${ref:date:nextYear:11-01T11:00:00.000Z} |
             | reason  | To be deleted            |
         Then the request should succeed with a 201 status code
         And I save the response field "id" as "member_block" id for "to_delete"
@@ -96,13 +96,13 @@ Feature: Member Block CRUD (POST / GET / DELETE)
 
     Scenario: Create block with endAt before startAt returns 400
         When I send a "POST" request to "/api/v1/members/${ref:id:clinicMember:dr_house}/blocks" with:
-            | startAt | 2026-12-01T12:00:00.000Z |
-            | endAt   | 2026-12-01T09:00:00.000Z |
+            | startAt | ${ref:date:nextYear:12-01T12:00:00.000Z} |
+            | endAt   | ${ref:date:nextYear:12-01T09:00:00.000Z} |
         Then the request should fail with a 400 status code
 
     Scenario: Create block requires authentication
         Given I sign out
         When I send a "POST" request to "/api/v1/members/${ref:id:clinicMember:dr_house}/blocks" with:
-            | startAt | 2026-12-15T09:00:00.000Z |
-            | endAt   | 2026-12-15T11:00:00.000Z |
+            | startAt | ${ref:date:nextYear:12-15T09:00:00.000Z} |
+            | endAt   | ${ref:date:nextYear:12-15T11:00:00.000Z} |
         Then the request should fail with a 401 status code

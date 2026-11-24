@@ -8,6 +8,7 @@ Feature: Clinic reminder config (PUT / GET)
             | Dr. House | dr_house | house@example.com   | H0use.Dr! |
         And I am signed in as "dr_house"
         And a professional "dr_house" exists with specialty "MEDICINA"
+        And the clinic member "dr_house" also has the role "OWNER"
         And I am signed in as "dr_house" with clinic member "${ref:id:clinicMember:dr_house}"
 
     Scenario: Create reminder config with WHATSAPP channel
@@ -59,8 +60,8 @@ Feature: Clinic reminder config (PUT / GET)
         When I send a "POST" request to "/api/v1/appointments" with:
             | patientId          | ${ref:id:patient:reminder_p}    |
             | attendedByMemberId | ${ref:id:clinicMember:dr_house} |
-            | startAt            | 2026-08-15T09:00:00.000Z        |
-            | endAt              | 2026-08-15T10:00:00.000Z        |
+            | startAt            | ${ref:date:daysAhead:1:09:00:00.000Z}        |
+            | endAt              | ${ref:date:daysAhead:1:10:00:00.000Z}        |
             | type               | FIRST_VISIT                     |
         Then the request should succeed with a 201 status code
         When I send a "GET" request to "/api/v1/clinics/${ref:id:clinic:dr_house}/reminders/pending"

@@ -96,7 +96,7 @@ Feature: Working Hours CRUD (POST / GET / DELETE)
 
     Scenario: Create appointment outside working hours returns error
         When I send a "POST" request to "/api/v1/members/${ref:id:clinicMember:dr_house}/working-hours" with:
-            | dayOfWeek    | 1     |
+            | dayOfWeek    | ${ref:weekday:nextYear:06-01}     |
             | startTime    | 09:00 |
             | endTime      | 17:00 |
             | slotDuration | 30    |
@@ -113,8 +113,8 @@ Feature: Working Hours CRUD (POST / GET / DELETE)
         When I send a "POST" request to "/api/v1/appointments" with:
             | patientId            | ${ref:id:patient:joao}              |
             | attendedByMemberId   | ${ref:id:clinicMember:dr_house}     |
-            | startAt              | 2026-06-01T06:00:00.000Z            |
-            | endAt                | 2026-06-01T07:00:00.000Z            |
+            | startAt              | ${ref:date:nextYear:06-01T06:00:00.000Z}            |
+            | endAt                | ${ref:date:nextYear:06-01T07:00:00.000Z}            |
             | type                 | FIRST_VISIT                         |
         Then the request should fail with a 409 status code
 

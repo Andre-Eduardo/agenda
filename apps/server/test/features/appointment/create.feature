@@ -20,8 +20,8 @@ Feature: Appointment creation (POST)
         When I send a "POST" request to "/api/v1/appointments" with:
             | patientId      | ${ref:id:patient:appt_patient}  |
             | attendedByMemberId | ${ref:id:clinicMember:dr_house} |
-            | startAt        | 2026-06-01T09:00:00.000Z        |
-            | endAt          | 2026-06-01T10:00:00.000Z        |
+            | startAt        | ${ref:date:nextYear:06-01T09:00:00.000Z}        |
+            | endAt          | ${ref:date:nextYear:06-01T10:00:00.000Z}        |
             | type           | FIRST_VISIT                     |
         Then the request should succeed with a 201 status code
         And the response should contain:
@@ -31,8 +31,8 @@ Feature: Appointment creation (POST)
         When I send a "POST" request to "/api/v1/appointments" with:
             | patientId      | ${ref:id:patient:appt_patient}  |
             | attendedByMemberId | ${ref:id:clinicMember:dr_house} |
-            | startAt        | 2026-07-01T14:00:00.000Z        |
-            | endAt          | 2026-07-01T15:00:00.000Z        |
+            | startAt        | ${ref:date:nextYear:07-01T14:00:00.000Z}        |
+            | endAt          | ${ref:date:nextYear:07-01T15:00:00.000Z}        |
             | type           | RETURN                          |
             | note           | Patient has allergy to penicillin |
         Then the request should succeed with a 201 status code
@@ -41,8 +41,8 @@ Feature: Appointment creation (POST)
 
     Scenario: Create an appointment without required fields
         When I send a "POST" request to "/api/v1/appointments" with:
-            | startAt | 2026-08-01T09:00:00.000Z |
-            | endAt   | 2026-08-01T10:00:00.000Z |
+            | startAt | ${ref:date:nextYear:08-01T09:00:00.000Z} |
+            | endAt   | ${ref:date:nextYear:08-01T10:00:00.000Z} |
             | type    | CONSULTATION             |
         Then the request should fail with a 400 status code
 
@@ -51,7 +51,7 @@ Feature: Appointment creation (POST)
         When I send a "POST" request to "/api/v1/appointments" with:
             | patientId      | ${ref:id:patient:appt_patient}  |
             | attendedByMemberId | ${ref:id:clinicMember:dr_house} |
-            | startAt        | 2026-09-01T09:00:00.000Z        |
-            | endAt          | 2026-09-01T10:00:00.000Z        |
+            | startAt        | ${ref:date:nextYear:09-01T09:00:00.000Z}        |
+            | endAt          | ${ref:date:nextYear:09-01T10:00:00.000Z}        |
             | type           | FIRST_VISIT                     |
         Then the request should fail with a 401 status code

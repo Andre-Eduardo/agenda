@@ -4,6 +4,7 @@ import type {Actor} from '../../../domain/@shared/actor';
 import type {EntityJson} from '../../../domain/@shared/entity';
 import {AggregateRoot} from '../../../domain/@shared/entity';
 import {EntityId} from '../../../domain/@shared/entity/id';
+import {AtomicExecutor} from '../../../domain/@shared/repository';
 import {DomainEvent} from '../../../domain/event';
 import {UserId} from '../../../domain/user/entities';
 import {EventEmitterDispatcher} from '../index';
@@ -46,9 +47,16 @@ describe('An event dispatcher backed by NestJS EventEmitter', () => {
         ip: '127.0.0.1',
     };
 
-    it('should dispatch domain events', () => {
+    it('emits domain events only after the atomic execution commits', () => {
         const eventEmitter = mockDeep<EventEmitter2>();
-        const dispatcher = new EventEmitterDispatcher(eventEmitter);
+        const atomicExecutor = mockDeep<AtomicExecutor>();
+        let afterCommit: (() => void) | undefined;
+
+        atomicExecutor.defer.mockImplementation((callback) => {
+            afterCommit = callback;
+        });
+
+        const dispatcher = new EventEmitterDispatcher(eventEmitter, atomicExecutor);
 
         const event1 = new EventMock('foo');
         const event2 = new EventMock('bar');
@@ -60,6 +68,14 @@ describe('An event dispatcher backed by NestJS EventEmitter', () => {
 
         dispatcher.dispatch(actor, entity);
 
+        expect(eventEmitter.emit).not.toHaveBeenCalled();
+        expect(atomicExecutor.defer).toHaveBeenCalledTimes(1);
+        expect(entity.events).toBeEmpty();
+
+        if (!afterCommit) throw new Error('After-commit callback was not registered');
+
+        afterCommit();
+
         expect(eventEmitter.emit).toHaveBeenCalledTimes(2);
         expect(eventEmitter.emit).toHaveBeenNthCalledWith(1, EventMock.type, {
             actor,
@@ -69,7 +85,5 @@ describe('An event dispatcher backed by NestJS EventEmitter', () => {
             actor,
             payload: event2,
         });
-
-        expect(entity.events).toBeEmpty();
     });
 });

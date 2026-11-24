@@ -182,6 +182,11 @@ O arquivo `test/support/parser.ts` implementa um motor de resolução de referê
 | `${ref:id:clinicMember:dr_house}` | UUID do membro com chave `dr_house` |
 | `${ref:id:professional:dr_house}` | UUID do profissional com chave `dr_house` (extensão 1:1 do membro) |
 | `${ref:var:contextId}` | Valor do `contextId` do cenário atual |
+| `${ref:date:nextYear:06-01T09:00:00.000Z}` | 1º de junho do próximo ano às 09:00 UTC; mantém períodos de teste no futuro |
+| `${ref:weekday:nextYear:06-01}` | Dia da semana (0–6) correspondente à data do próximo ano, para horários de trabalho |
+| `${ref:date:daysAhead:1:09:00:00.000Z}` | Amanhã às 09:00 UTC; útil para lembretes com vencimento próximo |
+
+Use a mesma referência de data para criação e filtros do mesmo período. Datas fixas de agendamento expiram e passam a retornar `400` antes de testar a regra pretendida.
 
 #### Exemplo de uso em feature
 

@@ -70,14 +70,7 @@ Feature: Patient deletion (DELETE)
         When I send a "GET" request to "/api/v1/records" with the query:
             | patientId | ${ref:id:patient:with_history} |
             | limit     | 10                             |
-        Then the request should succeed with a 200 status code
-        And the response should match:
-            """JSON
-            {
-              "data": [],
-              "totalCount": 0
-            }
-            """
+        Then the request should fail with a 404 status code
 
     Scenario: Appointments of a deleted patient leave the agenda
         When I send a "POST" request to "/api/v1/patients" with:
