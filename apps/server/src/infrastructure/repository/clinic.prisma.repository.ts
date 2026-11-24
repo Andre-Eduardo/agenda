@@ -1,5 +1,6 @@
 import {Injectable} from '@nestjs/common';
-import {ClinicRepository} from '@domain/clinic/clinic.repository';
+import type {PaginatedList, Pagination} from '@domain/@shared/repository';
+import {ClinicRepository, ClinicSearchFilter, ClinicSortOptions} from '@domain/clinic/clinic.repository';
 import {Clinic, ClinicId} from '@domain/clinic/entities';
 import {ClinicMapper} from '@infrastructure/mappers/clinic.mapper';
 import {PrismaRepository} from '@infrastructure/repository/prisma.repository';
@@ -28,6 +29,29 @@ export class ClinicPrismaRepository extends PrismaRepository implements ClinicRe
         });
 
         return clinics.map((clinic) => this.mapper.toDomain(clinic));
+    }
+
+    async search(
+        pagination: Pagination<ClinicSortOptions>,
+        filter: ClinicSearchFilter = {}
+    ): Promise<PaginatedList<Clinic>> {
+        const where = {
+            deletedAt: null,
+            name: filter.term ? {contains: filter.term, mode: 'insensitive' as const} : undefined,
+        };
+
+        const [data, totalCount] = await Promise.all([
+            this.prisma.clinic.findMany({
+                where,
+                ...this.normalizePagination(pagination, {name: 'asc'}),
+            }),
+            this.prisma.clinic.count({where}),
+        ]);
+
+        return {
+            data: data.map((clinic) => this.mapper.toDomain(clinic)),
+            totalCount,
+        };
     }
 
     async save(clinic: Clinic): Promise<void> {

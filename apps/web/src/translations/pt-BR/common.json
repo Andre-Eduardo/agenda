@@ -67,6 +67,8 @@
     "settings": "Configurações",
     "system": "Sistema",
     "menu": "Menu principal",
+    "admin": "Administração",
+    "clinics": "Empresas",
     "logout": "Sair"
   },
   "reception": {

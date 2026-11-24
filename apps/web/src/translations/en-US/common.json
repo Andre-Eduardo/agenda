@@ -67,6 +67,8 @@
     "settings": "Settings",
     "system": "System",
     "menu": "Main menu",
+    "admin": "Administration",
+    "clinics": "Clinics",
     "logout": "Sign out"
   },
   "reception": {

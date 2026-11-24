@@ -5,6 +5,7 @@ import {
     CreateInsurancePlanService,
     GetClinicService,
     ListInsurancePlansService,
+    SearchClinicsService,
     UpdateClinicService,
 } from '@application/clinic/services';
 import {InfrastructureModule} from '@infrastructure/infrastructure.module';
@@ -17,7 +18,9 @@ import {InfrastructureModule} from '@infrastructure/infrastructure.module';
         GetClinicService,
         CreateInsurancePlanService,
         ListInsurancePlansService,
+        SearchClinicsService,
         UpdateClinicService,
     ],
+    exports: [SearchClinicsService],
 })
 export class ClinicModule {}

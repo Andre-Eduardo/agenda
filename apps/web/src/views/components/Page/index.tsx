@@ -18,7 +18,8 @@ export function Page({title, subtitle, actions, responsiveActions = false, child
             <header className={header({responsive: responsiveActions})}>
                 <div className={styles.titleGroup}>
                     <h1 className={styles.title}>{title}</h1>
-                    {subtitle && <p className={styles.subtitle}>{subtitle}</p>}
+                    {/* div, not p — subtitle can hold block content (e.g. a back-link row), which a p cannot nest */}
+                    {subtitle && <div className={styles.subtitle}>{subtitle}</div>}
                 </div>
                 {actions && <div className={styles.actions}>{actions}</div>}
             </header>

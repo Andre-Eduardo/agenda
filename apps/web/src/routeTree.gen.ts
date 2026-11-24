@@ -23,8 +23,10 @@ import { Route as welcomePagesIndexIndexRouteImport } from './views/modules/welc
 import { Route as teamPagesDetailIndexRouteImport } from './views/modules/team/pages/detail/index'
 import { Route as patientsPagesNewIndexRouteImport } from './views/modules/patients/pages/new/index'
 import { Route as patientsPagesDetailIndexRouteImport } from './views/modules/patients/pages/detail/index'
+import { Route as adminPagesIndexIndexRouteImport } from './views/modules/admin/pages/index/index'
 import { Route as authPagesLoginIndexRouteImport } from './views/modules/auth/pages/login/index'
 import { Route as patientsPagesEditIndexRouteImport } from './views/modules/patients/pages/edit/index'
+import { Route as adminPagesDetailIndexRouteImport } from './views/modules/admin/pages/detail/index'
 import { Route as patientsPagesRecordsNewIndexRouteImport } from './views/modules/patients/pages/records/new/index'
 import { Route as patientsPagesRecordsDetailIndexRouteImport } from './views/modules/patients/pages/records/detail/index'
 
@@ -104,6 +106,11 @@ const patientsPagesDetailIndexRoute =
     path: '/patients/$patientId',
     getParentRoute: () => DotDotLayoutsStackedLayoutIndexRoute,
   } as any)
+const adminPagesIndexIndexRoute = adminPagesIndexIndexRouteImport.update({
+  id: '/admin/clinics',
+  path: '/admin/clinics',
+  getParentRoute: () => DotDotLayoutsStackedLayoutIndexRoute,
+} as any)
 const authPagesLoginIndexRoute = authPagesLoginIndexRouteImport.update({
   id: '/auth/login',
   path: '/auth/login',
@@ -112,6 +119,11 @@ const authPagesLoginIndexRoute = authPagesLoginIndexRouteImport.update({
 const patientsPagesEditIndexRoute = patientsPagesEditIndexRouteImport.update({
   id: '/patients/$patientId/edit',
   path: '/patients/$patientId/edit',
+  getParentRoute: () => DotDotLayoutsStackedLayoutIndexRoute,
+} as any)
+const adminPagesDetailIndexRoute = adminPagesDetailIndexRouteImport.update({
+  id: '/admin/clinics/$clinicId',
+  path: '/admin/clinics/$clinicId',
   getParentRoute: () => DotDotLayoutsStackedLayoutIndexRoute,
 } as any)
 const patientsPagesRecordsNewIndexRoute =
@@ -138,9 +150,11 @@ export interface FileRoutesByFullPath {
   '/settings': typeof settingsPagesIndexIndexRoute
   '/team': typeof teamPagesIndexIndexRoute
   '/auth/login': typeof authPagesLoginIndexRoute
+  '/admin/clinics': typeof adminPagesIndexIndexRoute
   '/patients/$patientId': typeof patientsPagesDetailIndexRoute
   '/patients/new': typeof patientsPagesNewIndexRoute
   '/team/$memberId': typeof teamPagesDetailIndexRoute
+  '/admin/clinics/$clinicId': typeof adminPagesDetailIndexRoute
   '/patients/$patientId/edit': typeof patientsPagesEditIndexRoute
   '/patients/$patientId/records/$recordId': typeof patientsPagesRecordsDetailIndexRoute
   '/patients/$patientId/records/new': typeof patientsPagesRecordsNewIndexRoute
@@ -156,9 +170,11 @@ export interface FileRoutesByTo {
   '/settings': typeof settingsPagesIndexIndexRoute
   '/team': typeof teamPagesIndexIndexRoute
   '/auth/login': typeof authPagesLoginIndexRoute
+  '/admin/clinics': typeof adminPagesIndexIndexRoute
   '/patients/$patientId': typeof patientsPagesDetailIndexRoute
   '/patients/new': typeof patientsPagesNewIndexRoute
   '/team/$memberId': typeof teamPagesDetailIndexRoute
+  '/admin/clinics/$clinicId': typeof adminPagesDetailIndexRoute
   '/patients/$patientId/edit': typeof patientsPagesEditIndexRoute
   '/patients/$patientId/records/$recordId': typeof patientsPagesRecordsDetailIndexRoute
   '/patients/$patientId/records/new': typeof patientsPagesRecordsNewIndexRoute
@@ -177,9 +193,11 @@ export interface FileRoutesById {
   '/_stackedLayout/settings': typeof settingsPagesIndexIndexRoute
   '/_stackedLayout/team': typeof teamPagesIndexIndexRoute
   '/_auth/auth/login': typeof authPagesLoginIndexRoute
+  '/_stackedLayout/admin/clinics': typeof adminPagesIndexIndexRoute
   '/_stackedLayout/patients/$patientId': typeof patientsPagesDetailIndexRoute
   '/_stackedLayout/patients/new': typeof patientsPagesNewIndexRoute
   '/_stackedLayout/team/$memberId': typeof teamPagesDetailIndexRoute
+  '/_stackedLayout/admin/clinics/$clinicId': typeof adminPagesDetailIndexRoute
   '/_stackedLayout/patients/$patientId/edit': typeof patientsPagesEditIndexRoute
   '/_stackedLayout/patients/$patientId/records/$recordId': typeof patientsPagesRecordsDetailIndexRoute
   '/_stackedLayout/patients/$patientId/records/new': typeof patientsPagesRecordsNewIndexRoute
@@ -197,9 +215,11 @@ export interface FileRouteTypes {
     | '/settings'
     | '/team'
     | '/auth/login'
+    | '/admin/clinics'
     | '/patients/$patientId'
     | '/patients/new'
     | '/team/$memberId'
+    | '/admin/clinics/$clinicId'
     | '/patients/$patientId/edit'
     | '/patients/$patientId/records/$recordId'
     | '/patients/$patientId/records/new'
@@ -215,9 +235,11 @@ export interface FileRouteTypes {
     | '/settings'
     | '/team'
     | '/auth/login'
+    | '/admin/clinics'
     | '/patients/$patientId'
     | '/patients/new'
     | '/team/$memberId'
+    | '/admin/clinics/$clinicId'
     | '/patients/$patientId/edit'
     | '/patients/$patientId/records/$recordId'
     | '/patients/$patientId/records/new'
@@ -235,9 +257,11 @@ export interface FileRouteTypes {
     | '/_stackedLayout/settings'
     | '/_stackedLayout/team'
     | '/_auth/auth/login'
+    | '/_stackedLayout/admin/clinics'
     | '/_stackedLayout/patients/$patientId'
     | '/_stackedLayout/patients/new'
     | '/_stackedLayout/team/$memberId'
+    | '/_stackedLayout/admin/clinics/$clinicId'
     | '/_stackedLayout/patients/$patientId/edit'
     | '/_stackedLayout/patients/$patientId/records/$recordId'
     | '/_stackedLayout/patients/$patientId/records/new'
@@ -348,6 +372,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof patientsPagesDetailIndexRouteImport
       parentRoute: typeof DotDotLayoutsStackedLayoutIndexRoute
     }
+    '/_stackedLayout/admin/clinics': {
+      id: '/_stackedLayout/admin/clinics'
+      path: '/admin/clinics'
+      fullPath: '/admin/clinics'
+      preLoaderRoute: typeof adminPagesIndexIndexRouteImport
+      parentRoute: typeof DotDotLayoutsStackedLayoutIndexRoute
+    }
     '/_auth/auth/login': {
       id: '/_auth/auth/login'
       path: '/auth/login'
@@ -360,6 +391,13 @@ declare module '@tanstack/react-router' {
       path: '/patients/$patientId/edit'
       fullPath: '/patients/$patientId/edit'
       preLoaderRoute: typeof patientsPagesEditIndexRouteImport
+      parentRoute: typeof DotDotLayoutsStackedLayoutIndexRoute
+    }
+    '/_stackedLayout/admin/clinics/$clinicId': {
+      id: '/_stackedLayout/admin/clinics/$clinicId'
+      path: '/admin/clinics/$clinicId'
+      fullPath: '/admin/clinics/$clinicId'
+      preLoaderRoute: typeof adminPagesDetailIndexRouteImport
       parentRoute: typeof DotDotLayoutsStackedLayoutIndexRoute
     }
     '/_stackedLayout/patients/$patientId/records/new': {
@@ -403,9 +441,11 @@ interface DotDotLayoutsStackedLayoutIndexRouteChildren {
   receptionPagesIndexIndexRoute: typeof receptionPagesIndexIndexRoute
   settingsPagesIndexIndexRoute: typeof settingsPagesIndexIndexRoute
   teamPagesIndexIndexRoute: typeof teamPagesIndexIndexRoute
+  adminPagesIndexIndexRoute: typeof adminPagesIndexIndexRoute
   patientsPagesDetailIndexRoute: typeof patientsPagesDetailIndexRoute
   patientsPagesNewIndexRoute: typeof patientsPagesNewIndexRoute
   teamPagesDetailIndexRoute: typeof teamPagesDetailIndexRoute
+  adminPagesDetailIndexRoute: typeof adminPagesDetailIndexRoute
   patientsPagesEditIndexRoute: typeof patientsPagesEditIndexRoute
   patientsPagesRecordsDetailIndexRoute: typeof patientsPagesRecordsDetailIndexRoute
   patientsPagesRecordsNewIndexRoute: typeof patientsPagesRecordsNewIndexRoute
@@ -422,9 +462,11 @@ const DotDotLayoutsStackedLayoutIndexRouteChildren: DotDotLayoutsStackedLayoutIn
     receptionPagesIndexIndexRoute: receptionPagesIndexIndexRoute,
     settingsPagesIndexIndexRoute: settingsPagesIndexIndexRoute,
     teamPagesIndexIndexRoute: teamPagesIndexIndexRoute,
+    adminPagesIndexIndexRoute: adminPagesIndexIndexRoute,
     patientsPagesDetailIndexRoute: patientsPagesDetailIndexRoute,
     patientsPagesNewIndexRoute: patientsPagesNewIndexRoute,
     teamPagesDetailIndexRoute: teamPagesDetailIndexRoute,
+    adminPagesDetailIndexRoute: adminPagesDetailIndexRoute,
     patientsPagesEditIndexRoute: patientsPagesEditIndexRoute,
     patientsPagesRecordsDetailIndexRoute: patientsPagesRecordsDetailIndexRoute,
     patientsPagesRecordsNewIndexRoute: patientsPagesRecordsNewIndexRoute,

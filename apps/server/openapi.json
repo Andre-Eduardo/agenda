@@ -552,6 +552,91 @@
         ]
       }
     },
+    "/api/v1/admin/clinics": {
+      "get": {
+        "description": "Feeds the AI module management panel: every clinic, independent of any active license.",
+        "operationId": "searchClinics",
+        "parameters": [
+          {
+            "name": "cursor",
+            "required": true,
+            "in": "query",
+            "description": "The cursor to start from",
+            "schema": {
+              "format": "uuid",
+              "nullable": true,
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "required": true,
+            "in": "query",
+            "description": "The number of items to return",
+            "schema": {
+              "minimum": 0,
+              "exclusiveMinimum": true,
+              "example": 10,
+              "type": "number"
+            }
+          },
+          {
+            "name": "sort",
+            "required": true,
+            "in": "query",
+            "description": "The fields to sort by",
+            "schema": {
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "enum": [
+                    "asc",
+                    "desc"
+                  ]
+                },
+                "createdAt": {
+                  "type": "string",
+                  "enum": [
+                    "asc",
+                    "desc"
+                  ]
+                }
+              },
+              "nullable": true,
+              "type": "object"
+            }
+          },
+          {
+            "name": "term",
+            "required": true,
+            "in": "query",
+            "description": "Search term to filter by clinic name",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Clinics list"
+          },
+          "default": {
+            "description": "Request failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Lists and searches clinics (platform admin)",
+        "tags": [
+          "ClinicLicense"
+        ]
+      }
+    },
     "/api/v1/clinics/me/license": {
       "get": {
         "description": "Professionals covered by the plan, contracted AI modules, their seats and assigned members.",

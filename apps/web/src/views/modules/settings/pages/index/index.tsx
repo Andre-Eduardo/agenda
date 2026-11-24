@@ -42,7 +42,6 @@ import {
 import type {UseQueryResult} from '@tanstack/react-query';
 import {createFileRoute} from '@tanstack/react-router';
 import {
-    Bot,
     Briefcase,
     Calendar,
     Camera,
@@ -51,10 +50,7 @@ import {
     ChevronRight,
     CreditCard,
     DoorOpen,
-    FileSearch,
-    FileText,
     Hospital,
-    MessageSquare,
     Minus,
     PackagePlus,
     KeyRound,
@@ -80,6 +76,7 @@ import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@/c
 import {Skeleton} from '@/components/ui/componentes/skeleton';
 import {useCan} from '@/hooks/useCan';
 import {formatBRL} from '@/lib/utils';
+import {MODULE_ICONS, MODULE_LABELS} from '@/utils/ai-modules';
 import {translateApiError} from '@/utils/translate-api-error';
 import {AgendaScheduleEditor} from '@/views/components/AgendaScheduleEditor';
 import {ConfirmDialog} from '@/views/components/ConfirmDialog';
@@ -562,20 +559,6 @@ function RoomsSection() {
 }
 
 // ─── Módulos de IA ──────────────────────────────────────────────────────────
-
-const MODULE_LABELS: Record<ModuleType, string> = {
-    AI_CHAT: 'Chat clínico com IA',
-    AI_AGENT: 'Agente autônomo',
-    AI_FORMS: 'Fichas com IA',
-    AI_DOCUMENT_IMPORT: 'Importação de documentos com IA',
-};
-
-const MODULE_ICONS = {
-    AI_CHAT: MessageSquare,
-    AI_AGENT: Bot,
-    AI_FORMS: FileText,
-    AI_DOCUMENT_IMPORT: FileSearch,
-} satisfies Record<ModuleType, typeof MessageSquare>;
 
 function AiModulesSection() {
     const memberQuery = useGetCurrentClinicMember();
