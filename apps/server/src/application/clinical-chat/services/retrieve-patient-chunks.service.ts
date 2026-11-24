@@ -1,5 +1,6 @@
 import {Injectable} from '@nestjs/common';
 import {ContextPolicyService} from '@application/clinical-chat/services/context-policy.service';
+import type {ClinicId} from '@domain/clinic/entities';
 import {ContextChunkSourceType} from '@domain/clinical-chat/entities';
 import {PatientContextChunkRepository, type RankedChunk} from '@domain/clinical-chat/patient-context-chunk.repository';
 import {PatientContextSnapshotRepository} from '@domain/clinical-chat/patient-context-snapshot.repository';
@@ -7,6 +8,8 @@ import {AiProviderRegistry} from '@domain/clinical-chat/ports/ai-provider-regist
 import {PatientId} from '@domain/patient/entities';
 
 export type RetrieveChunksInput = {
+    /** Clínica que paga a chamada de embedding. */
+    clinicId: ClinicId;
     patientId: PatientId;
     /** Pergunta do usuário — será usada para busca semântica quando embeddings estiverem ativos. */
     query: string;
@@ -70,7 +73,7 @@ export class RetrievePatientChunksService {
         this.contextPolicyService.assertPatientIdRequired(patientId);
 
         // Gerar embedding da query via EmbeddingProvider (nunca via ChatProvider)
-        const embeddingProvider = this.aiProviderRegistry.getEmbeddingProvider();
+        const embeddingProvider = this.aiProviderRegistry.getEmbeddingProvider(input.clinicId);
         const queryEmbedding = await embeddingProvider.generateEmbedding(query);
 
         const rankedChunks = await this.chunkRepository.searchSimilar({

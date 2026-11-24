@@ -40,6 +40,14 @@
     "appointment_payment": {
       "package_requires_completed_appointment": "O pacote só pode ser utilizado após a conclusão do atendimento.",
       "subscription_requires_completed_appointment": "A assinatura só pode ser utilizada após a conclusão do atendimento."
+    },
+    "clinic_module": {
+      "not_enabled": "Sua clínica não contratou este pacote de IA.",
+      "not_assigned": "Você ainda não foi liberado para usar este pacote de IA. Peça ao gestor da clínica."
+    },
+    "clinic_license": {
+      "seat_limit_reached": "O limite de vagas do plano foi atingido.",
+      "extra_seat_confirmation_required": "Essa vaga acrescenta uma cobrança extra mensal. Confirme para continuar."
     }
   },
   "confirm": {

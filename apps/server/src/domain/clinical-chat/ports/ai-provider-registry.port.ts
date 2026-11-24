@@ -1,3 +1,4 @@
+import type {ClinicId} from '@domain/clinic/entities';
 import type {ChatModelProvider} from '@domain/clinical-chat/ports/chat-model.provider';
 import type {EmbeddingProvider} from '@domain/clinical-chat/ports/embedding.provider';
 
@@ -14,10 +15,12 @@ import type {EmbeddingProvider} from '@domain/clinical-chat/ports/embedding.prov
  */
 export interface AiProviderRegistry {
     /** Retorna o provider de chat configurado para uso principal. */
-    getChatProvider(): ChatModelProvider;
+    /** Provider de chat que só responde para clínica com pacote de IA; `null` = uso da plataforma. */
+    getChatProvider(clinicId: ClinicId | null): ChatModelProvider;
 
     /** Retorna o provider de embeddings configurado. */
-    getEmbeddingProvider(): EmbeddingProvider;
+    /** Provider de embedding que só responde para clínica com pacote de IA; `null` = uso da plataforma. */
+    getEmbeddingProvider(clinicId: ClinicId | null): EmbeddingProvider;
 
     /** Lista IDs de todos os providers registrados (útil para diagnóstico). */
     listRegisteredProviders(): string[];

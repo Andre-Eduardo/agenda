@@ -11,6 +11,7 @@ Feature: Professional deletion (DELETE)
         And a professional "dr_house" exists with specialty "MEDICINA"
         And I am signed in as "dr_house" with professional "${ref:id:professional:dr_house}"
         And the clinic member "dr_house" also has the role "OWNER"
+        And the clinic "dr_house" has a plan for 5 professionals
         And a clinic member "dr_smith" with role "PROFESSIONAL" in clinic "${ref:id:clinic:dr_house}"
 
     Scenario: Delete professional

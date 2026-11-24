@@ -43,7 +43,7 @@ export class GlobalAuthorizer extends Authorizer {
         // OWNER only bootstraps permissions before the actor has any clinic
         // membership context; inside a clinic, ClinicMemberRoleAuthorizer rules.
         if (user.globalRole === GlobalRole.OWNER && clinicMemberId === null) {
-            return Permission.all();
+            return Permission.clinicScoped();
         }
 
         return BASE_PERMISSIONS[user.globalRole];

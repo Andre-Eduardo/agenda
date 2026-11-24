@@ -9,7 +9,7 @@ import {ValidatedParam, ZodValidationPipe} from '@application/@shared/validation
 import {entityId} from '@application/@shared/validation/schemas';
 import {FormAiContextService, AiContextPayload} from '@application/patient-form/services';
 import {Actor} from '@domain/@shared/actor';
-import {PatientFormPermission} from '@domain/auth';
+import {AiFormPermission} from '@domain/auth';
 import {AiSpecialtyGroup} from '@domain/form-template/entities';
 import {PatientId} from '@domain/patient/entities';
 
@@ -35,7 +35,7 @@ export class FormAiContextController {
         parameters: [entityIdParam('Patient ID', 'patientId')],
         responses: [{status: 200, description: 'AI context payload'}],
     })
-    @Authorize(PatientFormPermission.VIEW)
+    @Authorize(AiFormPermission.VIEW_CONTEXT)
     @Get()
     getAiContext(
         @RequestActor() _actor: Actor,

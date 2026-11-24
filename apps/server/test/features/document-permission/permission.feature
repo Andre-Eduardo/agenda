@@ -23,6 +23,7 @@ Feature: Document permission override (POST)
             | description    | Evolução restrita               |
         Then the request should succeed with a 201 status code
         And I save the response field "id" as "record" id for "restricted_record"
+        And the clinic "dr_house" has a plan for 5 professionals
         When I send a "POST" request to "/api/v1/clinic-members" with:
             | clinicId    | ${ref:id:clinic:dr_house}   |
             | userId      | ${ref:id:user:dr_wilson}    |

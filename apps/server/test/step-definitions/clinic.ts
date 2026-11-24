@@ -48,6 +48,9 @@ Given(
             userId,
             roles: [role],
             displayName: memberKey,
+            // Accepts any extra-seat charge so this generic helper keeps working once a
+            // clinic has more professionals than the base (license-less) system includes.
+            acceptExtraCharge: true,
         });
 
         chai.expect(

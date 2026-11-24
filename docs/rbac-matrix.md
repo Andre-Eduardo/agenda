@@ -1,6 +1,6 @@
-# Matriz RBAC da clínica — v0.3.0
+# Matriz RBAC da clínica — v0.4.0
 
-**Estado:** v0.2.0 aprovada pelo solicitante em 2026-09-23; extensão v0.3.0 aguarda revisão do PR L3-02.
+**Estado:** v0.2.0 aprovada pelo solicitante em 2026-09-23; extensão v0.3.0 aguarda revisão do PR L3-02; extensão v0.4.0 (pacotes de IA) aguarda revisão.
 **Referência:** L0-02 e L3-02, Sprint 0.
 
 Esta tabela explicita o teto de capacidade de cada papel para as permissões de
@@ -37,24 +37,31 @@ verificações de clínica e paciente às ações críticas.
 
 | Recurso | OWNER | ADMIN | PROFESSIONAL | SECRETARY | VIEWER |
 | --- | --- | --- | --- | --- | --- |
+| agent-proposal | confirm, reject, view | confirm, reject, view | confirm, reject, view | — | — |
+| agent | ask, view-metrics | ask, view-metrics | ask, view-metrics | — | — |
+| ai-form | view-context | view-context | view-context | — | — |
 | audit-log | view | view | — | — | — |
 | appointment-payment | register, update, view | register, update, view | view | register, update, view | — |
 | appointment-reminder | dispatch, view | dispatch, view | — | — | — |
 | appointment | call, cancel, checkin, create, delete, update, view | call, cancel, checkin, create, delete, update, view | call, cancel, checkin, create, update, view | call, cancel, checkin, create, update, view | view |
 | billing | view-clinic, view-member | view-clinic, view-member | — | — | — |
+| clinic-license | — | — | — | — | — |
 | clinic-member | create | create | — | — | — |
+| clinic-module | assign, view | assign, view | — | — | — |
 | clinic-patient-access | manage | manage | — | — | — |
 | clinic-reminder-config | manage, view | manage, view | — | — | — |
 | clinic | update | update | — | — | — |
 | clinical-chat | create, delete, reindex, update, view | create, delete, reindex, update, view | create, update, view | — | — |
 | clinical-document | cancel, create, generate, manage-templates, view | cancel, create, generate, manage-templates, view | create, generate, view | — | — |
 | clinical-profile | update, view | update, view | update, view | view | view |
+| draft-evolution | approve, update, view | approve, update, view | approve, update, view | — | — |
 | document-permission | manage | manage | — | — | — |
 | financial-report | view | view | — | — | — |
 | form-template | create, delete, publish, update, view | create, delete, publish, update, view | view | — | — |
 | imported-document | create, update, view | create, update, view | create, update, view | — | — |
 | insurance-claim | update, view | update, view | view | update, view | — |
 | insurance-plan | create, view | create, view | view | view | — |
+| knowledge-base | ingest, search | ingest, search | search | — | — |
 | member-block | create, delete, list | create, delete, list | create, delete, list | create, delete, list | — |
 | package-plan | create, update, view | create, update, view | view | view | — |
 | patient-alert | create, delete, update, view | create, delete, update, view | create, update, view | view | view |
@@ -96,3 +103,22 @@ O novo `audit-log:view` permite consulta da trilha somente a OWNER e ADMIN da
 clínica autenticada. A consulta sempre usa a clínica do ator, sem aceitar um ID
 de clínica enviado pelo cliente. A aprovação desta ampliação da matriz cabe à
 revisão do PR L3-02.
+
+## Revisão v0.4.0 (pacotes de IA)
+
+As funções de IA ganharam recursos próprios: `agent`, `agent-proposal`,
+`knowledge-base`, `ai-form` e `draft-evolution`. Antes, o agente, as propostas e
+a busca na base de conhecimento usavam `record:view`, o contexto de IA das fichas
+usava `patient-form:view` e a pré-evolução usava `imported-document:*`.
+
+1. Esta tabela é só o teto do papel. A permissão de IA só vale quando a clínica
+   contratou o pacote correspondente e liberou aquele membro (`ModuleAuthorizer`).
+2. `SECRETARY` e `VIEWER` deixam de alcançar o agente, as propostas, a base de
+   conhecimento e o contexto de IA das fichas, que antes vinham de `record:view`
+   e `patient-form:view`. Os pacotes de IA são licenciados por profissional.
+3. `clinic-module:view` e `clinic-module:assign` (ver e liberar pacotes para os
+   membros) ficam com `OWNER` e `ADMIN`.
+4. `clinic-license:manage` (contratar pacotes e limites de profissionais) é
+   reservada a `SUPER_ADMIN` e fica fora de todos os papéis da clínica,
+   inclusive `OWNER` e `ADMIN`, que passam a receber `Permission.clinicScoped()`
+   em vez de `Permission.all()`.

@@ -119,7 +119,7 @@ export class AuthGuard implements CanActivate {
 
         throw new AccessDeniedException(
             `The user "${token.userId}" does not have the required permissions: [${permissions.join(', ')}]`,
-            AccessDeniedReason.INSUFFICIENT_PERMISSIONS
+            await this.authorizer.denialReason(clinicMemberId, token.userId, permissions)
         );
     }
 

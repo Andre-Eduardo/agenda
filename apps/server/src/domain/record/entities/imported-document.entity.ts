@@ -26,7 +26,8 @@ export class ImportedDocument extends AggregateRoot<ImportedDocumentId> {
     createdByMemberId: ClinicMemberId;
     fileId: FileId;
 
-    // Campos de metadados da IA/OCR
+    // TODO(modulo-ia): pipeline OCR/IA não implementado; estes campos ficam sempre null até lá.
+    // Ao implementar, restringir ao módulo de IA de importação (ver plano de módulos).
     documentType: string | null;
     qualityLabel: string | null;
     qualityScore: number | null;

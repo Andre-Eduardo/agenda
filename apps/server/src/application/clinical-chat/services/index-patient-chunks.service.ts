@@ -67,7 +67,7 @@ export class IndexPatientChunksService {
 
         // Vetorizar chunks em batch via EmbeddingProvider antes de persistir
         if (newChunks.length > 0) {
-            await this.embedChunks(newChunks);
+            await this.embedChunks(clinicId, newChunks);
             await this.chunkRepository.saveBatch(newChunks);
         }
 
@@ -85,8 +85,8 @@ export class IndexPatientChunksService {
      * Gera embeddings em batch para todos os chunks e os associa via `setEmbedding`.
      * Usa o EmbeddingProvider — nunca o ChatProvider.
      */
-    private async embedChunks(chunks: PatientContextChunk[]): Promise<void> {
-        const embeddingProvider = this.aiProviderRegistry.getEmbeddingProvider();
+    private async embedChunks(clinicId: ClinicId, chunks: PatientContextChunk[]): Promise<void> {
+        const embeddingProvider = this.aiProviderRegistry.getEmbeddingProvider(clinicId);
         const texts = chunks.map((c) => c.content);
         const vectors = await embeddingProvider.generateEmbeddings(texts);
 

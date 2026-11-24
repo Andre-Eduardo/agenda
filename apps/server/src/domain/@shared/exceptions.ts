@@ -20,6 +20,8 @@ export enum AccessDeniedReason {
     BAD_CREDENTIALS = 'BAD_CREDENTIALS',
     NOT_ALLOWED = 'NOT_ALLOWED',
     INSUFFICIENT_PERMISSIONS = 'INSUFFICIENT_PERMISSIONS',
+    MODULE_NOT_ENABLED = 'MODULE_NOT_ENABLED',
+    MODULE_NOT_ASSIGNED = 'MODULE_NOT_ASSIGNED',
 }
 
 // eslint-disable-next-line unicorn/custom-error-definition -- base class name intentionally without Error suffix

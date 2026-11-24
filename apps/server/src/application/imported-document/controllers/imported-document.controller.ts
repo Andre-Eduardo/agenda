@@ -13,7 +13,7 @@ import {
 } from '@application/imported-document/services';
 import {UseUsageLimit} from '@application/subscription/decorators/use-usage-limit.decorator';
 import {Actor} from '@domain/@shared/actor';
-import {ImportedDocumentPermission} from '@domain/auth';
+import {DraftEvolutionPermission} from '@domain/auth';
 import {ImportedDocumentId} from '@domain/record/entities/imported-document.entity';
 
 @ApiTags('ImportedDocument')
@@ -30,7 +30,7 @@ export class ImportedDocumentController {
         parameters: [entityIdParam('ImportedDocument ID')],
         responses: [{status: 200, description: 'Draft evolution', type: DraftEvolutionDto}],
     })
-    @Authorize(ImportedDocumentPermission.VIEW)
+    @Authorize(DraftEvolutionPermission.VIEW)
     @Get(':id/draft')
     getDraft(
         @RequestActor() actor: Actor,
@@ -44,7 +44,7 @@ export class ImportedDocumentController {
         parameters: [entityIdParam('ImportedDocument ID')],
         responses: [{status: 200, description: 'Draft updated', type: DraftEvolutionDto}],
     })
-    @Authorize(ImportedDocumentPermission.UPDATE)
+    @Authorize(DraftEvolutionPermission.UPDATE)
     @Patch(':id/draft')
     updateDraft(
         @RequestActor() actor: Actor,
@@ -59,7 +59,7 @@ export class ImportedDocumentController {
         parameters: [entityIdParam('ImportedDocument ID')],
         responses: [{status: 200, description: 'Draft approved and Record created', type: DraftEvolutionDto}],
     })
-    @Authorize(ImportedDocumentPermission.UPDATE)
+    @Authorize(DraftEvolutionPermission.APPROVE)
     @UseUsageLimit('docs')
     @HttpCode(HttpStatus.OK)
     @Post(':id/approve')

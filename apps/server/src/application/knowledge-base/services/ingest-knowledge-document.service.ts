@@ -71,7 +71,7 @@ export class IngestKnowledgeDocumentService {
         }
 
         if (newChunks.length > 0) {
-            await this.embedChunks(newChunks);
+            await this.embedChunks(input.clinicId ?? null, newChunks);
             await this.knowledgeChunkRepository.saveBatch(newChunks);
         }
 
@@ -81,8 +81,8 @@ export class IngestKnowledgeDocumentService {
         };
     }
 
-    private async embedChunks(chunks: KnowledgeChunk[]): Promise<void> {
-        const embeddingProvider = this.aiProviderRegistry.getEmbeddingProvider();
+    private async embedChunks(clinicId: ClinicId | null, chunks: KnowledgeChunk[]): Promise<void> {
+        const embeddingProvider = this.aiProviderRegistry.getEmbeddingProvider(clinicId);
         const texts = chunks.map((c) => c.content);
         const vectors = await embeddingProvider.generateEmbeddings(texts);
 

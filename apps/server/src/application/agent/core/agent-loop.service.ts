@@ -28,7 +28,9 @@ export class AgentLoopService {
 
     async run(input: AgentLoopInput): Promise<AgentResponse> {
         const maxIterations = input.maxIterations ?? DEFAULT_MAX_ITERATIONS;
-        const provider = this.aiProviderRegistry.getChatProvider();
+        const provider = this.aiProviderRegistry.getChatProvider(
+            input.context.clinicId ?? input.context.actor.clinicId
+        );
         const toolDefs = this.registry.toLLMDefinitions();
 
         const messages: ChatMessage[] = [...input.messages];

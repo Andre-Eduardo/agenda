@@ -4,7 +4,7 @@ import {z} from 'zod';
 import {Authorize} from '@application/@shared/auth';
 import {ApiOperation} from '@application/@shared/openapi/decorators';
 import {GetAgentMetricsService, AgentMetricsDto} from '@application/agent/services/get-agent-metrics.service';
-import {RecordPermission} from '@domain/auth';
+import {AgentPermission} from '@domain/auth';
 
 const metricsQuerySchema = z.object({
     from: z.string().datetime().optional(),
@@ -20,7 +20,7 @@ export class AgentMetricsController {
         summary: 'Agent observability metrics aggregated over a time range',
         responses: [{status: 200, description: 'Aggregated metrics'}],
     })
-    @Authorize(RecordPermission.VIEW)
+    @Authorize(AgentPermission.VIEW_METRICS)
     @Get('metrics')
     getMetrics(@Query() query: Record<string, string>): Promise<AgentMetricsDto> {
         const parsed = metricsQuerySchema.parse(query);

@@ -9,7 +9,7 @@ import {ConfirmProposalService} from '@application/agent-proposal/services/confi
 import {ListPendingProposalsService} from '@application/agent-proposal/services/list-pending-proposals.service';
 import {RejectProposalService} from '@application/agent-proposal/services/reject-proposal.service';
 import type {Actor} from '@domain/@shared/actor';
-import {RecordPermission} from '@domain/auth';
+import {AgentProposalPermission} from '@domain/auth';
 
 const rejectSchema = z.object({
     reason: z.string().max(500).optional(),
@@ -30,7 +30,7 @@ export class AgentProposalController {
         summary: "List pending proposals for the actor's current clinic",
         responses: [{status: 200, description: 'List of pending proposals'}],
     })
-    @Authorize(RecordPermission.VIEW)
+    @Authorize(AgentProposalPermission.VIEW)
     @Get()
     listPending(@RequestActor() actor: Actor) {
         return this.listPendingProposals.execute({
@@ -48,7 +48,7 @@ export class AgentProposalController {
             {status: 409, description: 'Proposal is not confirmable'},
         ],
     })
-    @Authorize(RecordPermission.CREATE)
+    @Authorize(AgentProposalPermission.CONFIRM)
     @HttpCode(200)
     @Post(':id/confirm')
     confirm(@RequestActor() actor: Actor, @Param('id') id: string) {
@@ -63,7 +63,7 @@ export class AgentProposalController {
             {status: 404, description: 'Proposal not found'},
         ],
     })
-    @Authorize(RecordPermission.VIEW)
+    @Authorize(AgentProposalPermission.REJECT)
     @HttpCode(200)
     @Post(':id/reject')
     async reject(@RequestActor() actor: Actor, @Param('id') id: string, @Body() dto: RejectProposalDto) {

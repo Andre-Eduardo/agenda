@@ -37,7 +37,7 @@ export class RetrieveKnowledgeChunksService {
     ) {}
 
     async execute(input: RetrieveKnowledgeChunksInput): Promise<RetrieveKnowledgeChunksOutput> {
-        const embeddingProvider = this.aiProviderRegistry.getEmbeddingProvider();
+        const embeddingProvider = this.aiProviderRegistry.getEmbeddingProvider(input.clinicId ?? null);
         const queryEmbedding = await embeddingProvider.generateEmbedding(input.query);
 
         const ranked = await this.knowledgeChunkRepository.searchSimilar({

@@ -4,6 +4,7 @@ import {AiAgentProfileMapper} from '@infrastructure/mappers/ai-agent-profile.map
 import {AppointmentPaymentMapper} from '@infrastructure/mappers/appointment-payment.mapper';
 import {AppointmentReminderMapper} from '@infrastructure/mappers/appointment-reminder.mapper';
 import {AppointmentMapper} from '@infrastructure/mappers/appointment.mapper';
+import {ClinicLicenseMapper} from '@infrastructure/mappers/clinic-license.mapper';
 import {ClinicMemberMapper} from '@infrastructure/mappers/clinic-member.mapper';
 import {ClinicPatientAccessMapper} from '@infrastructure/mappers/clinic-patient-access.mapper';
 import {ClinicReminderConfigMapper} from '@infrastructure/mappers/clinic-reminder-config.mapper';
@@ -73,6 +74,7 @@ const mappers = [
     WorkingHoursMapper,
     MemberBlockMapper,
     RoomMapper,
+    ClinicLicenseMapper,
     // Clinical
     RecordMapper,
     RecordAmendmentMapper,

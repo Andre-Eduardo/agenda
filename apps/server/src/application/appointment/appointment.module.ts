@@ -17,6 +17,7 @@ import {
 import {ClinicPatientAccessModule} from '@application/clinic-patient-access/clinic-patient-access.module';
 import {ProfessionalAgendaAccessModule} from '@application/professional-agenda-access/professional-agenda-access.module';
 import {Authorizer, createAuthorizer} from '@domain/auth/authorizer';
+import {ClinicLicenseRepository} from '@domain/clinic-license/clinic-license.repository';
 import {ClinicMemberRepository} from '@domain/clinic-member/clinic-member.repository';
 import {UserRepository} from '@domain/user/user.repository';
 import {InfrastructureModule} from '@infrastructure/infrastructure.module';
@@ -37,7 +38,11 @@ import {InfrastructureModule} from '@infrastructure/infrastructure.module';
         SearchAppointmentsService,
         UpdateAppointmentService,
         DeleteAppointmentService,
-        {provide: Authorizer, useFactory: createAuthorizer, inject: [UserRepository, ClinicMemberRepository]},
+        {
+            provide: Authorizer,
+            useFactory: createAuthorizer,
+            inject: [UserRepository, ClinicMemberRepository, ClinicLicenseRepository],
+        },
     ],
 })
 export class AppointmentModule {}

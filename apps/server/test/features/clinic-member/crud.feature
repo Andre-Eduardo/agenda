@@ -13,6 +13,7 @@ Feature: Clinic member CRUD (POST / GET)
         And I am signed in as "dr_house" with clinic member "${ref:id:clinicMember:dr_house}"
 
     Scenario: Invite a member and verify invitedByMemberId is populated
+        Given the clinic "dr_house" has a plan for 5 professionals
         When I send a "POST" request to "/api/v1/clinic-members" with:
             | clinicId    | ${ref:id:clinic:dr_house}   |
             | userId      | ${ref:id:user:dr_wilson}    |

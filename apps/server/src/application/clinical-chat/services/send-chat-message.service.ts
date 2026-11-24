@@ -140,6 +140,7 @@ export class SendChatMessageService implements ApplicationService<SendChatMessag
         // topK=5 por política padrão; ordenação por relevância+recência aplicada
         // internamente no RetrievePatientChunksService.
         const retrievalResult = await this.retrieveChunksService.execute({
+            clinicId,
             patientId,
             query: payload.content,
             topK: payload.topK ?? 5,
@@ -240,7 +241,7 @@ export class SendChatMessageService implements ApplicationService<SendChatMessag
         const resolvedModel =
             agentProfile?.providerModelId ?? getDefaultModelForSpecialty(agentProfile?.specialtyGroup ?? null);
 
-        const provider = this.aiProviderRegistry.getChatProvider();
+        const provider = this.aiProviderRegistry.getChatProvider(clinicId);
         const useAgentTools = process.env.AGENT_ENABLE_TOOLS === 'true' && this.agentLoop != null;
 
         let replyContent: string;

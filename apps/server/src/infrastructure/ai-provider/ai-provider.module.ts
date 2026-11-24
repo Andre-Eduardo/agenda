@@ -1,4 +1,5 @@
 import {Module} from '@nestjs/common';
+import {ModuleAccess} from '@domain/clinic-license/services';
 import {AiProviderRegistry} from '@domain/clinical-chat/ports/ai-provider-registry.port';
 import {DefaultAiProviderRegistry} from '@infrastructure/ai-provider/ai-provider-registry';
 import {CHAT_MODEL_PROVIDER_TOKEN, EMBEDDING_PROVIDER_TOKEN} from '@infrastructure/ai-provider/ai-provider.tokens';
@@ -6,6 +7,7 @@ import {MockChatProvider} from '@infrastructure/ai-provider/mock-chat.provider';
 import {MockEmbeddingProvider} from '@infrastructure/ai-provider/mock-embedding.provider';
 import {OpenAiEmbeddingProvider} from '@infrastructure/ai-provider/openai-embedding.provider';
 import {OpenRouterChatProvider} from '@infrastructure/ai-provider/openrouter-chat.provider';
+import {RepositoryModule} from '@infrastructure/repository';
 import {AI_PROVIDER} from '../../ai/providers/ai-provider.token';
 import {OpenRouterProvider} from '../../ai/providers/openrouter.provider';
 
@@ -31,7 +33,9 @@ import {OpenRouterProvider} from '../../ai/providers/openrouter.provider';
  * ─────────────────────────────────────────────────────────────────────────────
  */
 @Module({
+    imports: [RepositoryModule],
     providers: [
+        ModuleAccess,
         MockChatProvider,
         MockEmbeddingProvider,
 

@@ -1,14 +1,18 @@
 import {Module} from '@nestjs/common';
+import {ClinicLicenseModule} from '@application/clinic-license/clinic-license.module';
+import {
+    PAYMENT_PROVIDER_FACTORY_PROVIDERS,
+    paymentProviderFactory,
+} from '@application/payment/providers/payment-provider.factory';
 import {IPaymentProvider} from '@application/payment/providers/payment-provider.interface';
-import {PAYMENT_PROVIDER_FACTORY_PROVIDERS, paymentProviderFactory} from '@application/payment/providers/payment-provider.factory';
 import {UsageLimitGuard} from '@application/subscription/guards/usage-limit.guard';
 import {SubscriptionController} from '@application/subscription/subscription.controller';
 import {SubscriptionService} from '@application/subscription/subscription.service';
-import {InfrastructureModule} from '@infrastructure/infrastructure.module';
 import {EnvConfigService} from '@infrastructure/config';
+import {InfrastructureModule} from '@infrastructure/infrastructure.module';
 
 @Module({
-    imports: [InfrastructureModule],
+    imports: [InfrastructureModule, ClinicLicenseModule],
     controllers: [SubscriptionController],
     providers: [
         ...PAYMENT_PROVIDER_FACTORY_PROVIDERS,

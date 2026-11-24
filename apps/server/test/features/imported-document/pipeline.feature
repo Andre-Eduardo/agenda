@@ -8,6 +8,8 @@ Feature: Imported document approval pipeline (GET / POST)
             | Dr. House | dr_house | house@example.com   | H0use.Dr! |
         And I am signed in as "dr_house"
         And a professional "dr_house" exists with specialty "MEDICINA"
+        And the clinic "dr_house" has contracted the AI module "AI_DOCUMENT_IMPORT"
+        And the clinic member "dr_house" is released for the AI module "AI_DOCUMENT_IMPORT"
         And I am signed in as "dr_house" with professional "${ref:id:professional:dr_house}"
         When I send a "POST" request to "/api/v1/patients" with:
             | name           | Pipeline Patient                |

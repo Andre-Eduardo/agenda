@@ -1,4 +1,5 @@
 import {useState} from 'react';
+import type {ModuleType} from '@agenda-app/client';
 import {Outlet, Link, useRouterState, useNavigate, createFileRoute, redirect} from '@tanstack/react-router';
 import {
     Calendar,
@@ -20,6 +21,7 @@ import {Avatar, AvatarFallback} from '@/components/ui/componentes/avatar';
 import {Button} from '@/components/ui/componentes/button';
 import {Sheet, SheetContent, SheetTitle, SheetTrigger} from '@/components/ui/componentes/sheet';
 import {useCan, type Permission} from '@/hooks/useCan';
+import {useHasModule} from '@/hooks/useHasModule';
 import {useAppStore} from '@/store/appStore';
 import * as styles from './styles';
 import {icon, navLink, srOnly} from './styles';
@@ -29,6 +31,8 @@ interface NavItem {
     labelKey: string;
     path: string;
     permission?: Permission;
+    /** Also requires the current member to be released by the clinic for this AI module. */
+    module?: ModuleType;
 }
 
 interface NavGroup {
@@ -87,10 +91,11 @@ interface NavLinkProps {
 function NavLink({item, currentPath, onClick}: NavLinkProps) {
     const {t} = useTranslation();
     const allowed = useCan(item.permission ? {has: item.permission} : undefined);
+    const hasModule = useHasModule(item.module);
     const isActive = item.path === '/' ? currentPath === '/' : currentPath.startsWith(item.path);
     const Icon = item.icon;
 
-    if (!allowed) return null;
+    if (!allowed || !hasModule) return null;
 
     return (
         <Link to={item.path} onClick={onClick} className={navLink({active: isActive})}>

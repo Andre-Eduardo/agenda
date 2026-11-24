@@ -158,6 +158,8 @@ model Clinic {
   patientSubscriptions        PatientSubscription[]
   patientSubscriptionUsages   PatientSubscriptionUsage[]
 
+  license ClinicLicense?
+
   @@map("clinic")
 }
 
@@ -259,6 +261,7 @@ model ClinicMember {
   confirmedProposals       AgentProposal[]          @relation("AgentProposalConfirmedBy")
   soldPatientPackages      PatientPackage[]
   registeredPackageCredits PatientPackageCredit[]
+  moduleAssignments        ClinicModuleAssignment[]
 
   @@unique([clinicId, userId], name: "clinic_member_clinic_user_unique")
   @@index([clinicId], name: "clinic_member_clinic_idx")
@@ -1031,6 +1034,8 @@ model ImportedDocument {
   fileId            String       @map("file_id") @db.Uuid
   file              File         @relation(fields: [fileId], references: [id])
 
+  // TODO(modulo-ia): pipeline OCR/IA não implementado; nada preenche estes campos ainda (sempre null).
+  // Quando existir, deve rodar só com o módulo de IA de importação habilitado para a clínica e o profissional.
   documentType      String? @map("document_type")
   qualityLabel      String? @map("quality_label")
   qualityScore      Float?  @map("quality_score")
@@ -1054,6 +1059,7 @@ model ImportedDocument {
 }
 
 /// Inalterado.
+// TODO(modulo-ia): extração de campos por OCR/IA não implementada; nenhuma linha é criada nesta tabela ainda.
 model ExtractedField {
   id                 String           @id(map: "extracted_field_pk") @db.Uuid
   importedDocumentId String           @map("imported_document_id") @db.Uuid
@@ -2237,4 +2243,62 @@ model PatientSubscriptionUsage {
   @@unique([patientSubscriptionId, periodYear, periodMonth], name: "patient_subscription_usage_period_unique")
   @@index([clinicId], name: "patient_subscription_usage_clinic_idx")
   @@map("patient_subscription_usage")
+}
+
+/// Pacote vendido à parte. Tudo que não pertence a um pacote é o sistema base.
+enum ClinicModuleType {
+  AI_CHAT
+  AI_AGENT
+  AI_FORMS
+  AI_DOCUMENT_IMPORT
+
+  @@map("clinic_module_type")
+}
+
+/// Licença da clínica: profissionais cobertos pelo plano e pacotes contratados.
+/// Sem linha = sistema base com 1 profissional e nenhum pacote.
+model ClinicLicense {
+  id                    String   @id(map: "clinic_license_pk") @db.Uuid
+  clinicId              String   @unique(map: "clinic_license_clinic_unique") @map("clinic_id") @db.Uuid
+  clinic                Clinic   @relation(fields: [clinicId], references: [id])
+  includedProfessionals Int      @default(1) @map("included_professionals")
+  extraProfessionals    Int      @default(0) @map("extra_professionals")
+  /// null = sem teto.
+  maxProfessionals      Int?     @default(1) @map("max_professionals")
+  createdAt             DateTime @map("created_at")
+  updatedAt             DateTime @map("updated_at")
+
+  modules     ClinicLicenseModule[]
+  assignments ClinicModuleAssignment[]
+
+  @@map("clinic_license")
+}
+
+model ClinicLicenseModule {
+  id            String           @id(map: "clinic_license_module_pk") @db.Uuid
+  licenseId     String           @map("license_id") @db.Uuid
+  license       ClinicLicense    @relation(fields: [licenseId], references: [id], onDelete: Cascade)
+  moduleType    ClinicModuleType @map("module_type")
+  includedSeats Int              @map("included_seats")
+  extraSeats    Int              @default(0) @map("extra_seats")
+  /// null = sem teto.
+  maxSeats      Int?             @map("max_seats")
+
+  @@unique([licenseId, moduleType], map: "clinic_license_module_unique")
+  @@map("clinic_license_module")
+}
+
+/// Membro liberado pela clínica para usar um pacote.
+model ClinicModuleAssignment {
+  id             String           @id(map: "clinic_module_assignment_pk") @db.Uuid
+  licenseId      String           @map("license_id") @db.Uuid
+  license        ClinicLicense    @relation(fields: [licenseId], references: [id], onDelete: Cascade)
+  clinicMemberId String           @map("clinic_member_id") @db.Uuid
+  clinicMember   ClinicMember     @relation(fields: [clinicMemberId], references: [id], onDelete: Cascade)
+  moduleType     ClinicModuleType @map("module_type")
+  assignedAt     DateTime         @map("assigned_at")
+
+  @@unique([clinicMemberId, moduleType], map: "clinic_module_assignment_unique")
+  @@index([licenseId], map: "clinic_module_assignment_license_idx")
+  @@map("clinic_module_assignment")
 }

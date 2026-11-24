@@ -1,14 +1,19 @@
 import {Authorizer} from '@domain/auth/authorizer/authorizer';
 import {
+    AgentPermission,
+    AgentProposalPermission,
+    AiFormPermission,
     AppointmentPermission,
     AppointmentPaymentPermission,
     ClinicalChatPermission,
     ClinicalDocumentPermission,
     ClinicalProfilePermission,
+    DraftEvolutionPermission,
     FormTemplatePermission,
     ImportedDocumentPermission,
     InsurancePlanPermission,
     InsuranceClaimPermission,
+    KnowledgeBasePermission,
     MemberBlockPermission,
     PatientAlertPermission,
     PatientFormPermission,
@@ -78,6 +83,16 @@ const PROFESSIONAL_PERMISSIONS: readonly Permission[] = [
     MemberBlockPermission.CREATE,
     MemberBlockPermission.LIST,
     MemberBlockPermission.DELETE,
+    AgentPermission.ASK,
+    AgentPermission.VIEW_METRICS,
+    AgentProposalPermission.VIEW,
+    AgentProposalPermission.CONFIRM,
+    AgentProposalPermission.REJECT,
+    KnowledgeBasePermission.SEARCH,
+    AiFormPermission.VIEW_CONTEXT,
+    DraftEvolutionPermission.VIEW,
+    DraftEvolutionPermission.UPDATE,
+    DraftEvolutionPermission.APPROVE,
 ];
 
 const SECRETARY_PERMISSIONS: readonly Permission[] = [
@@ -149,8 +164,8 @@ const VIEWER_PERMISSIONS: readonly Permission[] = [
  * A matriz versionada e validada contra este mapa está em docs/rbac-matrix.md.
  */
 export const clinicMemberRolePermissionsMap: Record<ClinicMemberRole, Set<Permission>> = {
-    [ClinicMemberRole.OWNER]: Permission.all(),
-    [ClinicMemberRole.ADMIN]: Permission.all(),
+    [ClinicMemberRole.OWNER]: Permission.clinicScoped(),
+    [ClinicMemberRole.ADMIN]: Permission.clinicScoped(),
     [ClinicMemberRole.PROFESSIONAL]: new Set(PROFESSIONAL_PERMISSIONS),
     [ClinicMemberRole.SECRETARY]: new Set(SECRETARY_PERMISSIONS),
     [ClinicMemberRole.VIEWER]: new Set(VIEWER_PERMISSIONS),

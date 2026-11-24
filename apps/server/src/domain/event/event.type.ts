@@ -1,6 +1,7 @@
 import type {TupleToUnion} from 'type-fest';
 import {appointmentPaymentEvents} from '@domain/appointment-payment/events';
 import {appointmentEvents} from '@domain/appointment/events';
+import {clinicLicenseEvents} from '@domain/clinic-license/events';
 import {clinicMemberEvents} from '@domain/clinic-member/events';
 import {clinicPatientAccessEvents} from '@domain/clinic-patient-access/events';
 import {clinicEvents} from '@domain/clinic/events';
@@ -41,6 +42,7 @@ export const eventTypes = [
     draftEvolutionEvents,
     subscriptionEvents,
     roomEvents,
+    clinicLicenseEvents,
 ];
 
 export type DomainEventType = TupleToUnion<TupleToUnion<typeof eventTypes>>;

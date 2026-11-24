@@ -70,6 +70,7 @@ Sempre que a API do servidor mudar:
 - `docs/architecture-overview.md` — Clean Architecture, DDD, camadas
 - `docs/backend-style-guide.md` — convenções de nomenclatura, DTOs, controllers
 - `docs/type-safety-patterns.md` — **regras obrigatórias sobre casts, enum converters, JSON Prisma**
+- `docs/ai-modules.md` — pacotes de IA e licença da clínica; checklist para qualquer funcionalidade nova com IA
 - `docs/service-patterns.md` — BaseApplicationService, Command, mappers
 - `docs/testing-patterns.md` — testes unitários (Jest + jest-mock-extended)
 - `docs/integration-test-patterns.md` — BDD (Cucumber.js), isolamento, referências

@@ -22,6 +22,10 @@ import {
     useChangePlan,
     useCancelSubscription,
     usePurchaseAddon,
+    useGetCurrentLicense,
+    useSetModuleMembers,
+    useListClinicMembers,
+    type ModuleType,
     type Professional,
     type UpdateClinicDto,
     type UpdateProfessionalInputDto,
@@ -30,12 +34,15 @@ import {
     type AddonCatalogItem,
     type ApiProblem,
     type ChangePaymentPlanDto,
+    type ClinicLicenseModule,
+    type ClinicMember,
     type PurchaseAddonDto,
     type UsageMetricDto,
 } from '@agenda-app/client';
 import type {UseQueryResult} from '@tanstack/react-query';
 import {createFileRoute} from '@tanstack/react-router';
 import {
+    Bot,
     Briefcase,
     Calendar,
     Camera,
@@ -44,7 +51,10 @@ import {
     ChevronRight,
     CreditCard,
     DoorOpen,
+    FileSearch,
+    FileText,
     Hospital,
+    MessageSquare,
     Minus,
     PackagePlus,
     KeyRound,
@@ -62,13 +72,15 @@ import {
 } from 'lucide-react';
 import {toast} from 'sonner';
 import {Button} from '@/components/ui/componentes/button';
+import {Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle} from '@/components/ui/componentes/dialog';
 import {Input} from '@/components/ui/componentes/input';
 import {Label} from '@/components/ui/componentes/label';
 import {SegmentedControl, SegmentedControlItem} from '@/components/ui/componentes/segmented-control';
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@/components/ui/componentes/select';
-import {Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle} from '@/components/ui/componentes/dialog';
 import {Skeleton} from '@/components/ui/componentes/skeleton';
+import {useCan} from '@/hooks/useCan';
 import {formatBRL} from '@/lib/utils';
+import {translateApiError} from '@/utils/translate-api-error';
 import {AgendaScheduleEditor} from '@/views/components/AgendaScheduleEditor';
 import {ConfirmDialog} from '@/views/components/ConfirmDialog';
 import {
@@ -221,13 +233,14 @@ const PROFILE_TABS = [
 ] as const;
 
 type TabKey = 'identity' | 'pro' | 'office' | 'security';
-type Section = 'perfil' | 'agenda' | 'assinatura' | 'salas' | 'geral';
+type Section = 'perfil' | 'agenda' | 'assinatura' | 'salas' | 'ia' | 'geral';
 
 const SECTION_LABELS: Record<Section, string> = {
     perfil: 'Perfil',
     agenda: 'Agenda',
     assinatura: 'Assinatura',
     salas: 'Salas',
+    ia: 'Módulos de IA',
     geral: 'Geral',
 };
 
@@ -235,6 +248,7 @@ const SECTION_LABELS: Record<Section, string> = {
 
 export function SettingsPage() {
     const [section, setSection] = useState<Section>('perfil');
+    const canViewAiModules = useCan({has: 'clinic-module:view'});
 
     return (
         <PageShell>
@@ -281,6 +295,16 @@ export function SettingsPage() {
                         <DoorOpen size={15} />
                         <span>Salas</span>
                     </button>
+                    {canViewAiModules && (
+                        <button
+                            type="button"
+                            className={sideNavItem({active: section === 'ia'})}
+                            onClick={() => setSection('ia')}
+                        >
+                            <Sparkles size={15} />
+                            <span>Módulos de IA</span>
+                        </button>
+                    )}
                     <button
                         type="button"
                         className={sideNavItem({active: section === 'geral'})}
@@ -297,6 +321,7 @@ export function SettingsPage() {
                     {section === 'agenda' && <AgendaSection />}
                     {section === 'assinatura' && <SubscriptionSection />}
                     {section === 'salas' && <RoomsSection />}
+                    {section === 'ia' && canViewAiModules && <AiModulesSection />}
                     {section === 'geral' && <GeneralSection />}
                 </div>
             </div>
@@ -536,6 +561,207 @@ function RoomsSection() {
     );
 }
 
+// ─── Módulos de IA ──────────────────────────────────────────────────────────
+
+const MODULE_LABELS: Record<ModuleType, string> = {
+    AI_CHAT: 'Chat clínico com IA',
+    AI_AGENT: 'Agente autônomo',
+    AI_FORMS: 'Fichas com IA',
+    AI_DOCUMENT_IMPORT: 'Importação de documentos com IA',
+};
+
+const MODULE_ICONS = {
+    AI_CHAT: MessageSquare,
+    AI_AGENT: Bot,
+    AI_FORMS: FileText,
+    AI_DOCUMENT_IMPORT: FileSearch,
+} satisfies Record<ModuleType, typeof MessageSquare>;
+
+function AiModulesSection() {
+    const memberQuery = useGetCurrentClinicMember();
+    const clinicId = memberQuery.data?.clinicId;
+    const canAssign = useCan({has: 'clinic-module:assign'});
+
+    const licenseQuery = useGetCurrentLicense({query: {enabled: !!clinicId}});
+    const membersQuery = useListClinicMembers({clinicId: clinicId ?? ''}, {query: {enabled: !!clinicId && canAssign}});
+
+    const setModuleMembers = useSetModuleMembers();
+
+    const [pendingExtraCharge, setPendingExtraCharge] = useState<{
+        moduleType: ModuleType;
+        clinicMemberIds: string[];
+    } | null>(null);
+
+    const professionals = (membersQuery.data ?? []).filter(
+        (member) => member.isActive && member.roles.includes('PROFESSIONAL')
+    );
+
+    function submitModuleMembers(moduleType: ModuleType, clinicMemberIds: string[], acceptExtraCharge: boolean) {
+        setModuleMembers.mutate(
+            {moduleType, data: {clinicMemberIds, acceptExtraCharge}},
+            {
+                onSuccess: () => {
+                    setPendingExtraCharge(null);
+                    void licenseQuery.refetch();
+                },
+                onError: (error) => {
+                    const detail =
+                        error instanceof AxiosError ? (error.response?.data as ApiProblem | undefined)?.detail : null;
+
+                    if (detail === 'clinic_license.extra_seat_confirmation_required') {
+                        setPendingExtraCharge({moduleType, clinicMemberIds});
+
+                        return;
+                    }
+
+                    toast.error(translateApiError(detail, 'Erro ao atualizar os profissionais liberados.'));
+                },
+            }
+        );
+    }
+
+    function handleToggleMember(module: ClinicLicenseModule, memberId: string, enabled: boolean) {
+        const nextIds = enabled ? [...module.memberIds, memberId] : module.memberIds.filter((id) => id !== memberId);
+
+        submitModuleMembers(module.type, nextIds, false);
+    }
+
+    const isLoading = memberQuery.isLoading || licenseQuery.isLoading;
+    const modules = licenseQuery.data?.modules ?? [];
+
+    return (
+        <div>
+            <PageHeading>
+                <h1 className="title">Módulos de IA</h1>
+                <p className="sub">Pacotes de IA contratados pela clínica e profissionais liberados para usá-los.</p>
+            </PageHeading>
+
+            <FormCard>
+                {isLoading && (
+                    <SkeletonTabContent>
+                        <Skeleton className={skeletonH4W48} />
+                        <div className="sk-grid">
+                            <Skeleton className={skeletonH10} />
+                            <Skeleton className={skeletonH10} />
+                        </div>
+                    </SkeletonTabContent>
+                )}
+
+                {!isLoading && modules.length === 0 && (
+                    <Placeholder>
+                        <Sparkles size={28} className={placeholderIcon} />
+                        <div className="ph-title">Nenhum pacote de IA contratado</div>
+                        <div className="ph-sub">
+                            Sua clínica ainda não contratou pacotes de IA. Fale com o time comercial para liberar chat
+                            clínico, agente autônomo, fichas ou importação de documentos com IA.
+                        </div>
+                    </Placeholder>
+                )}
+
+                {!isLoading &&
+                    modules.map((module, index) => (
+                        <AiModuleCard
+                            key={module.type}
+                            module={module}
+                            index={index}
+                            canAssign={canAssign}
+                            professionals={professionals}
+                            onToggleMember={handleToggleMember}
+                        />
+                    ))}
+            </FormCard>
+
+            <ConfirmDialog
+                opened={!!pendingExtraCharge}
+                title="Confirmar vaga extra"
+                message={translateApiError(
+                    'clinic_license.extra_seat_confirmation_required',
+                    'Essa vaga acrescenta uma cobrança extra mensal.'
+                )}
+                confirmLabel="Confirmar"
+                cancelLabel="Cancelar"
+                isLoading={setModuleMembers.isPending}
+                onConfirm={() => {
+                    if (!pendingExtraCharge) return;
+                    submitModuleMembers(pendingExtraCharge.moduleType, pendingExtraCharge.clinicMemberIds, true);
+                }}
+                onCancel={() => setPendingExtraCharge(null)}
+            />
+        </div>
+    );
+}
+
+function AiModuleCard({
+    module,
+    index,
+    canAssign,
+    professionals,
+    onToggleMember,
+}: {
+    module: ClinicLicenseModule;
+    index: number;
+    canAssign: boolean;
+    professionals: ClinicMember[];
+    onToggleMember: (module: ClinicLicenseModule, memberId: string, enabled: boolean) => void;
+}) {
+    const Icon = MODULE_ICONS[module.type];
+    const totalSeats = module.includedSeats + module.extraSeats;
+
+    return (
+        <FormSection>
+            <div className="sec-head">
+                <span className="sec-num">{index + 1}</span>
+                <div>
+                    <div className={sectionTitle}>{MODULE_LABELS[module.type]}</div>
+                    <div className={sectionSub}>
+                        {module.memberIds.length} / {totalSeats} vaga(s) usada(s)
+                        {module.maxSeats !== null ? ` · máximo ${module.maxSeats}` : ''}
+                    </div>
+                </div>
+                <Icon size={16} className={placeholderIcon} />
+            </div>
+
+            {canAssign && (
+                <div className="sub-section">
+                    <div className="sub-head">
+                        Profissionais liberados
+                        <span className="sub-tag">{module.memberIds.length} liberado(s)</span>
+                    </div>
+
+                    {professionals.length === 0 && (
+                        <p className={emptyRowText}>Nenhum profissional ativo na clínica.</p>
+                    )}
+
+                    {professionals.length > 0 && (
+                        <div className={roomList}>
+                            {professionals.map((professional) => {
+                                const released = module.memberIds.includes(professional.id);
+
+                                return (
+                                    <div
+                                        key={professional.id}
+                                        className={roomRow}
+                                        role="group"
+                                        aria-label={professional.displayName ?? professional.id}
+                                    >
+                                        <span className={roomNameText}>{professional.displayName ?? 'Sem nome'}</span>
+                                        <SegmentedControl
+                                            value={released ? 'on' : 'off'}
+                                            onValueChange={(v) => onToggleMember(module, professional.id, v === 'on')}
+                                        >
+                                            <SegmentedControlItem value="on">Liberado</SegmentedControlItem>
+                                            <SegmentedControlItem value="off">Bloqueado</SegmentedControlItem>
+                                        </SegmentedControl>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    )}
+                </div>
+            )}
+        </FormSection>
+    );
+}
 
 // ─── Assinatura (subscription self-service) ────────────────────────────────
 
@@ -822,7 +1048,10 @@ function SubscriptionSection() {
                                 </div>
                                 <div className={inlineFormField}>
                                     <Label>CPF/CNPJ (opcional)</Label>
-                                    <Input value={activateCpfCnpj} onChange={(e) => setActivateCpfCnpj(e.target.value)} />
+                                    <Input
+                                        value={activateCpfCnpj}
+                                        onChange={(e) => setActivateCpfCnpj(e.target.value)}
+                                    />
                                 </div>
                                 <Button disabled={activateSubscription.isPending} onClick={handleActivate}>
                                     Ativar assinatura
@@ -999,7 +1228,9 @@ function SubscriptionSection() {
                                         <div key={addon.code} className={addonCard}>
                                             <span className={addonCardTitle}>{addon.name}</span>
                                             <span className={addonCardMeta}>Quantidade: {addon.quantity}</span>
-                                            <span className={addonCardMeta}>Expira em: {formatDate(addon.expiresAt)}</span>
+                                            <span className={addonCardMeta}>
+                                                Expira em: {formatDate(addon.expiresAt)}
+                                            </span>
                                         </div>
                                     ))}
                                 </div>
@@ -1016,7 +1247,9 @@ function SubscriptionSection() {
                             <span className="sec-num">4</span>
                             <div>
                                 <div className={sectionTitle}>Histórico de pagamentos</div>
-                                <div className={sectionSub}>Eventos de cobrança recebidos do provedor de pagamento.</div>
+                                <div className={sectionSub}>
+                                    Eventos de cobrança recebidos do provedor de pagamento.
+                                </div>
                             </div>
                         </div>
 
@@ -1085,11 +1318,7 @@ function SubscriptionSection() {
                                     <Minus size={13} />
                                 </Button>
                                 <span className={qtyValue}>{pendingQuantity}</span>
-                                <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() => setPendingQuantity((q) => q + 1)}
-                                >
+                                <Button variant="outline" size="sm" onClick={() => setPendingQuantity((q) => q + 1)}>
                                     <Plus size={13} />
                                 </Button>
                             </div>
@@ -1124,9 +1353,9 @@ function SubscriptionSection() {
                             </div>
 
                             <p className={noteText}>
-                                Uma cobrança de {formatBRL(pendingAddon.priceMonthlyBrl * pendingQuantity)} será
-                                gerada no método selecionado e o addon é liberado assim que a cobrança for aceita pelo
-                                provedor de pagamento.
+                                Uma cobrança de {formatBRL(pendingAddon.priceMonthlyBrl * pendingQuantity)} será gerada
+                                no método selecionado e o addon é liberado assim que a cobrança for aceita pelo provedor
+                                de pagamento.
                             </p>
                         </div>
                     )}

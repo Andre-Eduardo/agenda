@@ -40,6 +40,14 @@
     "appointment_payment": {
       "package_requires_completed_appointment": "El paquete solo puede usarse después de completar la atención.",
       "subscription_requires_completed_appointment": "La suscripción solo puede usarse después de completar la atención."
+    },
+    "clinic_module": {
+      "not_enabled": "Su clínica no contrató este paquete de IA.",
+      "not_assigned": "Todavía no fue habilitado para usar este paquete de IA. Pídaselo al gestor de la clínica."
+    },
+    "clinic_license": {
+      "seat_limit_reached": "Se alcanzó el límite de cupos del plan.",
+      "extra_seat_confirmation_required": "Este cupo agrega un cargo mensual extra. Confirme para continuar."
     }
   },
   "confirm": {

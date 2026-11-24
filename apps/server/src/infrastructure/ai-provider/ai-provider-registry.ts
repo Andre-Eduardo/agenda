@@ -1,8 +1,14 @@
 import {Inject, Injectable} from '@nestjs/common';
+import {ModuleAccess} from '@domain/clinic-license/services';
+import type {ClinicId} from '@domain/clinic/entities';
 import {AiProviderRegistry} from '@domain/clinical-chat/ports/ai-provider-registry.port';
 import type {ChatModelProvider} from '@domain/clinical-chat/ports/chat-model.provider';
 import type {EmbeddingProvider} from '@domain/clinical-chat/ports/embedding.provider';
 import {CHAT_MODEL_PROVIDER_TOKEN, EMBEDDING_PROVIDER_TOKEN} from '@infrastructure/ai-provider/ai-provider.tokens';
+import {
+    ModuleGuardedChatProvider,
+    ModuleGuardedEmbeddingProvider,
+} from '@infrastructure/ai-provider/module-guarded-providers';
 
 /**
  * Implementação padrão do registry de providers de IA.
@@ -19,15 +25,16 @@ export class DefaultAiProviderRegistry implements AiProviderRegistry {
         @Inject(CHAT_MODEL_PROVIDER_TOKEN)
         private readonly chatProvider: ChatModelProvider,
         @Inject(EMBEDDING_PROVIDER_TOKEN)
-        private readonly embeddingProvider: EmbeddingProvider
+        private readonly embeddingProvider: EmbeddingProvider,
+        private readonly moduleAccess: ModuleAccess
     ) {}
 
-    getChatProvider(): ChatModelProvider {
-        return this.chatProvider;
+    getChatProvider(clinicId: ClinicId | null): ChatModelProvider {
+        return new ModuleGuardedChatProvider(this.chatProvider, this.moduleAccess, clinicId);
     }
 
-    getEmbeddingProvider(): EmbeddingProvider {
-        return this.embeddingProvider;
+    getEmbeddingProvider(clinicId: ClinicId | null): EmbeddingProvider {
+        return new ModuleGuardedEmbeddingProvider(this.embeddingProvider, this.moduleAccess, clinicId);
     }
 
     listRegisteredProviders(): string[] {

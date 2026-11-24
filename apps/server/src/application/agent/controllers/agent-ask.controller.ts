@@ -8,7 +8,7 @@ import {createZodDto} from '@application/@shared/validation/dto';
 import {AgentLoopService} from '@application/agent/core/agent-loop.service';
 import type {AgentResponse} from '@application/agent/interfaces';
 import type {Actor} from '@domain/@shared/actor';
-import {RecordPermission} from '@domain/auth';
+import {AgentPermission} from '@domain/auth';
 import type {ChatMessage} from '@domain/clinical-chat/ports/chat-model.provider';
 
 const agentAskSchema = z.object({
@@ -31,7 +31,7 @@ export class AgentAskController {
         summary: 'Ask the clinical agent (tool-enabled)',
         responses: [{status: 200, description: 'Agent response with answer and tool call audit trail'}],
     })
-    @Authorize(RecordPermission.VIEW)
+    @Authorize(AgentPermission.ASK)
     @HttpCode(200)
     @Post('ask')
     async ask(@RequestActor() actor: Actor, @Body() dto: AgentAskDto): Promise<AgentResponse> {

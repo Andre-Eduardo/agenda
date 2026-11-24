@@ -40,6 +40,14 @@
     "appointment_payment": {
       "package_requires_completed_appointment": "A package can only be used after the appointment is completed.",
       "subscription_requires_completed_appointment": "A subscription can only be used after the appointment is completed."
+    },
+    "clinic_module": {
+      "not_enabled": "Your clinic has not contracted this AI module.",
+      "not_assigned": "You have not been released to use this AI module yet. Ask the clinic manager."
+    },
+    "clinic_license": {
+      "seat_limit_reached": "The plan's seat limit has been reached.",
+      "extra_seat_confirmation_required": "This seat adds an extra monthly charge. Confirm to continue."
     }
   },
   "confirm": {

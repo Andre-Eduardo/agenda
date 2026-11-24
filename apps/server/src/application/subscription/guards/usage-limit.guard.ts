@@ -4,13 +4,22 @@ import {OnEvent} from '@nestjs/event-emitter';
 import {Request} from 'express';
 import {USAGE_METRIC_KEY} from '@application/subscription/decorators/use-usage-limit.decorator';
 import {SubscriptionService, UsageMetric} from '@application/subscription/subscription.service';
+import {ModuleType} from '@domain/clinic-license/models';
+import {ModuleAccess} from '@domain/clinic-license/services';
 import {AddonPurchasedEvent} from '@domain/subscription/events';
+
+const METRIC_MODULE: Record<UsageMetric, ModuleType> = {
+    chat: ModuleType.AI_CHAT,
+    images: ModuleType.AI_CHAT,
+    docs: ModuleType.AI_DOCUMENT_IMPORT,
+};
 
 @Injectable()
 export class UsageLimitGuard implements CanActivate {
     constructor(
         private readonly subscriptionService: SubscriptionService,
-        private readonly reflector: Reflector
+        private readonly reflector: Reflector,
+        private readonly moduleAccess: ModuleAccess
     ) {}
 
     // Invalidate the service-level addon cache immediately on purchase so the
@@ -35,6 +44,24 @@ export class UsageLimitGuard implements CanActivate {
             throw new ForbiddenException({
                 code: 'NO_SUBSCRIPTION',
                 message: 'Profissional sem plano ativo',
+            });
+        }
+
+        const module = METRIC_MODULE[metric];
+
+        if (!(await this.moduleAccess.isClinicModuleEnabled(actor.clinicId, module))) {
+            throw new ForbiddenException({
+                code: 'MODULE_NOT_ENABLED',
+                module,
+                message: 'clinic_module.not_enabled',
+            });
+        }
+
+        if (!(await this.moduleAccess.isMemberModuleEnabled(actor.clinicMemberId, module))) {
+            throw new ForbiddenException({
+                code: 'MODULE_NOT_ASSIGNED',
+                module,
+                message: 'clinic_module.not_assigned',
             });
         }
 

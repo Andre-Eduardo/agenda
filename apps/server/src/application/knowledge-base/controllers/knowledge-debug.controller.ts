@@ -7,7 +7,7 @@ import {ApiOperation} from '@application/@shared/openapi/decorators';
 import {createZodDto} from '@application/@shared/validation/dto';
 import {RetrieveKnowledgeChunksService} from '@application/knowledge-base/services/retrieve-knowledge-chunks.service';
 import type {Actor} from '@domain/@shared/actor';
-import {RecordPermission} from '@domain/auth';
+import {KnowledgeBasePermission} from '@domain/auth';
 import {AiSpecialtyGroup} from '@domain/form-template/entities';
 
 const searchKnowledgeSchema = z.object({
@@ -29,7 +29,7 @@ export class KnowledgeDebugController {
         summary: '[DEV ONLY] Search knowledge chunks for RAG debugging',
         responses: [{status: 200, description: 'Matching chunks with scores'}],
     })
-    @Authorize(RecordPermission.VIEW)
+    @Authorize(KnowledgeBasePermission.SEARCH)
     @Post('search')
     searchKnowledge(@RequestActor() actor: Actor, @Body() dto: SearchKnowledgeDto) {
         if (process.env.NODE_ENV !== 'development' || process.env.AGENT_ENABLE_KNOWLEDGE_DEBUG !== 'true') {

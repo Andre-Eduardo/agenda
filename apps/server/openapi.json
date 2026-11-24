@@ -552,6 +552,224 @@
         ]
       }
     },
+    "/api/v1/clinics/me/license": {
+      "get": {
+        "description": "Professionals covered by the plan, contracted AI modules, their seats and assigned members.",
+        "operationId": "getCurrentLicense",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Clinic license",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClinicLicense"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Request failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Gets the license of the current clinic",
+        "tags": [
+          "ClinicLicense"
+        ]
+      }
+    },
+    "/api/v1/clinics/me/modules/{moduleType}/members": {
+      "put": {
+        "description": "Replaces the members of the module. Above the contracted seats it answers 409 EXTRA_SEAT_CONFIRMATION_REQUIRED until acceptExtraCharge is true; above the plan ceiling, 409 SEAT_LIMIT_REACHED.",
+        "operationId": "setModuleMembers",
+        "parameters": [
+          {
+            "name": "moduleType",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "$ref": "#/components/schemas/ModuleType"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetModuleMembersInputDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Updated license",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClinicLicense"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Module not contracted by the clinic"
+          },
+          "409": {
+            "description": "Extra charge confirmation required or seat limit reached"
+          },
+          "default": {
+            "description": "Request failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Sets which members use an AI module",
+        "tags": [
+          "ClinicLicense"
+        ]
+      }
+    },
+    "/api/v1/clinic-members/me/modules": {
+      "get": {
+        "operationId": "getMyModules",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Modules of the current member",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MemberModules"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Request failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Lists the AI modules the current member can use",
+        "tags": [
+          "ClinicLicense"
+        ]
+      }
+    },
+    "/api/v1/admin/clinics/{clinicId}/license": {
+      "get": {
+        "operationId": "getClinicLicense",
+        "parameters": [
+          {
+            "name": "clinicId",
+            "required": true,
+            "in": "path",
+            "description": "Clinic ID",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Clinic license",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClinicLicense"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Request failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Gets the license of a clinic (platform admin)",
+        "tags": [
+          "ClinicLicense"
+        ]
+      },
+      "patch": {
+        "description": "Modules left out are disabled together with their member assignments.",
+        "operationId": "configureClinicLicense",
+        "parameters": [
+          {
+            "name": "clinicId",
+            "required": true,
+            "in": "path",
+            "description": "Clinic ID",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConfigureClinicLicenseInputDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Updated license",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClinicLicense"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Request failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Configures the plan limits and AI modules of a clinic (platform admin)",
+        "tags": [
+          "ClinicLicense"
+        ]
+      }
+    },
     "/api/v1/clinic-patient-accesses": {
       "post": {
         "operationId": "grantAccess",
@@ -9080,6 +9298,10 @@
           "color": {
             "type": "string",
             "nullable": true
+          },
+          "acceptExtraCharge": {
+            "type": "boolean",
+            "default": false
           }
         },
         "required": [
@@ -9191,6 +9413,10 @@
           "color": {
             "type": "string",
             "nullable": true
+          },
+          "acceptExtraCharge": {
+            "type": "boolean",
+            "default": false
           }
         },
         "required": [
@@ -9211,6 +9437,188 @@
         },
         "required": [
           "permissions"
+        ]
+      },
+      "ClinicLicenseProfessionals": {
+        "type": "object",
+        "properties": {
+          "included": {
+            "type": "number",
+            "description": "Professionals covered by the plan price"
+          },
+          "extra": {
+            "type": "number",
+            "description": "Professionals added above the plan, charged as extra"
+          },
+          "max": {
+            "type": "integer",
+            "nullable": true,
+            "description": "Plan ceiling; null means unlimited extras"
+          },
+          "active": {
+            "type": "number",
+            "description": "Active members with the PROFESSIONAL role"
+          }
+        },
+        "required": [
+          "included",
+          "extra",
+          "max",
+          "active"
+        ]
+      },
+      "ModuleType": {
+        "type": "string",
+        "enum": [
+          "AI_CHAT",
+          "AI_AGENT",
+          "AI_FORMS",
+          "AI_DOCUMENT_IMPORT"
+        ]
+      },
+      "ClinicLicenseModule": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ModuleType"
+              }
+            ]
+          },
+          "includedSeats": {
+            "type": "number"
+          },
+          "extraSeats": {
+            "type": "number"
+          },
+          "maxSeats": {
+            "type": "integer",
+            "nullable": true,
+            "description": "null means unlimited extras"
+          },
+          "memberIds": {
+            "description": "Clinic members assigned to this module",
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        },
+        "required": [
+          "type",
+          "includedSeats",
+          "extraSeats",
+          "maxSeats",
+          "memberIds"
+        ]
+      },
+      "ClinicLicense": {
+        "type": "object",
+        "properties": {
+          "clinicId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "professionals": {
+            "$ref": "#/components/schemas/ClinicLicenseProfessionals"
+          },
+          "modules": {
+            "description": "Contracted modules",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ClinicLicenseModule"
+            }
+          }
+        },
+        "required": [
+          "clinicId",
+          "professionals",
+          "modules"
+        ]
+      },
+      "SetModuleMembersInputDto": {
+        "type": "object",
+        "properties": {
+          "clinicMemberIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          "acceptExtraCharge": {
+            "type": "boolean",
+            "default": false
+          }
+        },
+        "required": [
+          "clinicMemberIds"
+        ]
+      },
+      "MemberModules": {
+        "type": "object",
+        "properties": {
+          "modules": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ModuleType"
+            }
+          }
+        },
+        "required": [
+          "modules"
+        ]
+      },
+      "ConfigureClinicLicenseInputDto": {
+        "type": "object",
+        "properties": {
+          "includedProfessionals": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "maxProfessionals": {
+            "type": "integer",
+            "nullable": true,
+            "minimum": 0
+          },
+          "modules": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "enum": [
+                    "AI_CHAT",
+                    "AI_AGENT",
+                    "AI_FORMS",
+                    "AI_DOCUMENT_IMPORT"
+                  ]
+                },
+                "includedSeats": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "maxSeats": {
+                  "type": "integer",
+                  "nullable": true,
+                  "minimum": 0
+                }
+              },
+              "required": [
+                "type",
+                "includedSeats",
+                "maxSeats"
+              ]
+            }
+          }
+        },
+        "required": [
+          "includedProfessionals",
+          "maxProfessionals",
+          "modules"
         ]
       },
       "GrantClinicPatientAccessDto": {

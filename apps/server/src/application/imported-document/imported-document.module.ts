@@ -5,11 +5,12 @@ import {
     GetOrCreateDraftService,
     UpdateDraftService,
 } from '@application/imported-document/services';
+import {ClinicLicenseModule} from '@application/clinic-license/clinic-license.module';
 import {SubscriptionModule} from '@application/subscription/subscription.module';
 import {InfrastructureModule} from '@infrastructure/infrastructure.module';
 
 @Module({
-    imports: [InfrastructureModule, SubscriptionModule],
+    imports: [InfrastructureModule, SubscriptionModule, ClinicLicenseModule],
     controllers: [ImportedDocumentController],
     providers: [GetOrCreateDraftService, UpdateDraftService, ApproveDraftService],
 })

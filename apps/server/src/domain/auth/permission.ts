@@ -213,6 +213,42 @@ export enum RoomPermission {
     DELETE = 'room:delete',
 }
 
+export enum AgentPermission {
+    ASK = 'agent:ask',
+    VIEW_METRICS = 'agent:view-metrics',
+}
+
+export enum AgentProposalPermission {
+    VIEW = 'agent-proposal:view',
+    CONFIRM = 'agent-proposal:confirm',
+    REJECT = 'agent-proposal:reject',
+}
+
+export enum KnowledgeBasePermission {
+    SEARCH = 'knowledge-base:search',
+    INGEST = 'knowledge-base:ingest',
+}
+
+export enum AiFormPermission {
+    VIEW_CONTEXT = 'ai-form:view-context',
+}
+
+export enum DraftEvolutionPermission {
+    VIEW = 'draft-evolution:view',
+    UPDATE = 'draft-evolution:update',
+    APPROVE = 'draft-evolution:approve',
+}
+
+export enum ClinicModulePermission {
+    VIEW = 'clinic-module:view',
+    ASSIGN = 'clinic-module:assign',
+}
+
+/** Contratação de licença e pacotes. Só SUPER_ADMIN: nunca entra no teto de um papel de clínica. */
+export enum ClinicLicensePermission {
+    MANAGE = 'clinic-license:manage',
+}
+
 export enum AuditLogPermission {
     VIEW = 'audit-log:view',
 }
@@ -255,7 +291,16 @@ const PERMISSIONS = [
     ...Object.values(MemberBlockPermission),
     ...Object.values(ProfessionalAgendaAccessPermission),
     ...Object.values(RoomPermission),
+    ...Object.values(AgentPermission),
+    ...Object.values(AgentProposalPermission),
+    ...Object.values(KnowledgeBasePermission),
+    ...Object.values(AiFormPermission),
+    ...Object.values(DraftEvolutionPermission),
+    ...Object.values(ClinicModulePermission),
+    ...Object.values(ClinicLicensePermission),
 ];
+
+const GLOBAL_ONLY_PERMISSIONS: readonly string[] = Object.values(ClinicLicensePermission);
 
 export type Permission = (typeof PERMISSIONS)[number];
 
@@ -271,5 +316,10 @@ export namespace Permission {
 
     export function all(): Set<Permission> {
         return new Set(PERMISSIONS);
+    }
+
+    /** Todas, menos as reservadas a SUPER_ADMIN. */
+    export function clinicScoped(): Set<Permission> {
+        return new Set(PERMISSIONS.filter((permission) => !GLOBAL_ONLY_PERMISSIONS.includes(permission)));
     }
 }

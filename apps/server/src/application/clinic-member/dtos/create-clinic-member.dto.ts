@@ -8,6 +8,11 @@ const createClinicMemberInputSchema = z.object({
     roles: z.array(z.nativeEnum(ClinicMemberRole)).min(1),
     displayName: z.string().nullish(),
     color: z.string().nullish(),
+    /**
+     * Confirma a cobrança extra quando o novo profissional passa do incluído no plano.
+     * Sem isso a API responde 409 EXTRA_SEAT_CONFIRMATION_REQUIRED.
+     */
+    acceptExtraCharge: z.boolean().default(false),
 });
 
 export class CreateClinicMemberInputDto extends createZodDto(createClinicMemberInputSchema) {}

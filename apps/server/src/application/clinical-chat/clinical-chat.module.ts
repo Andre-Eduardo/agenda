@@ -1,5 +1,6 @@
 import {Module} from '@nestjs/common';
 import {AgentModule} from '@application/agent/agent.module';
+import {ClinicLicenseModule} from '@application/clinic-license/clinic-license.module';
 import {AgentsController} from '@application/clinical-chat/controllers/agents.controller';
 import {ClinicalChatController} from '@application/clinical-chat/controllers/clinical-chat.controller';
 import {ReindexOnFormCompletedHandler} from '@application/clinical-chat/handlers/reindex-on-form-completed.handler';
@@ -33,7 +34,7 @@ import {InfrastructureModule} from '@infrastructure/infrastructure.module';
 import {AgentResolverService} from '../../ai/agents/agent-resolver.service';
 
 @Module({
-    imports: [InfrastructureModule, AgentModule, SubscriptionModule],
+    imports: [InfrastructureModule, AgentModule, SubscriptionModule, ClinicLicenseModule],
     controllers: [ClinicalChatController, AgentsController],
     providers: [
         // ─── Task 14: Context policy rules ───────────────────────────────────

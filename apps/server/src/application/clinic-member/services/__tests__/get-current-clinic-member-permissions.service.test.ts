@@ -5,6 +5,9 @@ import {createAuthorizer} from '@domain/auth/authorizer';
 import {clinicMemberRolePermissionsMap} from '@domain/auth/authorizer/clinic-member-role.authorizer';
 import {GlobalRole} from '@domain/auth/global-role';
 import {UserPermission} from '@domain/auth/permission';
+import type {ClinicLicenseRepository} from '@domain/clinic-license/clinic-license.repository';
+import {ClinicLicense} from '@domain/clinic-license/entities';
+import {ModuleType} from '@domain/clinic-license/models';
 import type {ClinicMemberRepository} from '@domain/clinic-member/clinic-member.repository';
 import {ClinicMember, ClinicMemberId, ClinicMemberRole} from '@domain/clinic-member/entities';
 import {ClinicId} from '@domain/clinic/entities';
@@ -13,7 +16,18 @@ import {fakeUser} from '@domain/user/entities/__tests__/fake-user';
 import type {UserRepository} from '@domain/user/user.repository';
 import {GetCurrentClinicMemberPermissionsService} from '../get-current-clinic-member-permissions.service';
 
-function setup(roles: ClinicMemberRole[], isActive = true) {
+function licenseWithEveryModule(clinicId: ClinicId, clinicMemberId: ClinicMemberId): ClinicLicense {
+    const license = ClinicLicense.create({clinicId, maxProfessionals: null});
+
+    for (const type of Object.values(ModuleType)) {
+        license.enableModule(type, {includedSeats: 1, maxSeats: 1});
+        license.assign(type, clinicMemberId, {acceptExtraCharge: false});
+    }
+
+    return license;
+}
+
+function setup(roles: ClinicMemberRole[], isActive = true, withModules = true) {
     const actor: Actor = {
         userId: UserId.generate(),
         clinicId: ClinicId.generate(),
@@ -35,12 +49,16 @@ function setup(roles: ClinicMemberRole[], isActive = true) {
     });
     const clinicMemberRepository = mock<ClinicMemberRepository>();
     const userRepository = mock<UserRepository>();
+    const clinicLicenseRepository = mock<ClinicLicenseRepository>();
 
     clinicMemberRepository.findById.mockResolvedValue(member);
     userRepository.findById.mockResolvedValue(
         fakeUser({id: actor.userId, globalRole: GlobalRole.NONE, clinicMembers: [actor.clinicMemberId]})
     );
-    const authorizer = createAuthorizer(userRepository, clinicMemberRepository);
+    clinicLicenseRepository.findByClinicId.mockResolvedValue(
+        withModules ? licenseWithEveryModule(actor.clinicId, actor.clinicMemberId) : null
+    );
+    const authorizer = createAuthorizer(userRepository, clinicMemberRepository, clinicLicenseRepository);
     const service = new GetCurrentClinicMemberPermissionsService(clinicMemberRepository, authorizer);
 
     return {actor, member, service, clinicMemberRepository, userRepository};
@@ -59,6 +77,16 @@ describe('current clinic member permissions', () => {
         expect(result.permissions).toEqual([...expected].toSorted((first, second) => first.localeCompare(second)));
         expect(clinicMemberRepository.findById).toHaveBeenCalledWith(actor.clinicMemberId);
         expect(userRepository.findById).toHaveBeenCalledWith(actor.userId);
+    });
+
+    it('drops AI permissions when the clinic has no module', async () => {
+        const {actor, service} = setup([ClinicMemberRole.PROFESSIONAL], true, false);
+        const result = await service.execute({actor, payload: undefined});
+
+        expect(result.permissions).toContain('record:create');
+        expect(result.permissions).not.toContain('clinical-chat:create');
+        expect(result.permissions).not.toContain('agent:ask');
+        expect(result.permissions).not.toContain('draft-evolution:approve');
     });
 
     it('unites multiple roles', async () => {

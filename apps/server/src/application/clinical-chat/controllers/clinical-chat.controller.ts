@@ -324,6 +324,7 @@ export class ClinicalChatController {
         totalChunks: number;
     }> {
         const result = await this.retrieveChunksService.execute({
+            clinicId: actor.clinicId,
             patientId: query.patientId,
             query: query.query,
             sourceTypes: query.sourceTypes,

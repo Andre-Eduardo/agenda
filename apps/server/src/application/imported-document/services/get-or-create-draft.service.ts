@@ -34,6 +34,7 @@ export class GetOrCreateDraftService implements ApplicationService<GetDraftDto, 
             importedDocumentId: ImportedDocumentId.from(payload.id.toString()),
             conductTags: [],
             reviewRequired: document.reviewRequired,
+            // TODO(modulo-ia): aiConfidence ainda não é preenchido (pipeline OCR/IA não implementado), então isto é sempre null.
             overallConfidence: document.aiConfidence ?? null,
             status: DraftEvolutionStatus.DRAFT,
             wasHumanEdited: false,

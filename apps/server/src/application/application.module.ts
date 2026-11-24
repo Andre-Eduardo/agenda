@@ -13,6 +13,7 @@ import {AuditHttpInterceptor} from '@application/audit/audit-http.interceptor';
 import {AuditModule} from '@application/audit/audit.module';
 import {AuthModule} from '@application/auth/auth.module';
 import {BillingModule} from '@application/billing/billing.module';
+import {ClinicLicenseModule} from '@application/clinic-license/clinic-license.module';
 import {ClinicMemberModule} from '@application/clinic-member/clinic-member.module';
 import {ClinicPatientAccessModule} from '@application/clinic-patient-access/clinic-patient-access.module';
 import {ClinicReminderConfigModule} from '@application/clinic-reminder-config/clinic-reminder-config.module';
@@ -47,6 +48,7 @@ import {UserModule} from '@application/user/user.module';
 import {WorkingHoursModule} from '@application/working-hours/working-hours.module';
 import {AuditLogRepository} from '@domain/audit/audit-log.repository';
 import {createAuthorizer} from '@domain/auth/authorizer';
+import {ClinicLicenseRepository} from '@domain/clinic-license/clinic-license.repository';
 import {ClinicMemberRepository} from '@domain/clinic-member/clinic-member.repository';
 import {TokenProvider} from '@domain/user/token';
 import {UserRepository} from '@domain/user/user.repository';
@@ -94,18 +96,26 @@ const guards: Provider[] = [
             tokenProvider: TokenProvider,
             userRepository: UserRepository,
             clinicMemberRepository: ClinicMemberRepository,
-            auditLogRepository: AuditLogRepository
+            auditLogRepository: AuditLogRepository,
+            clinicLicenseRepository: ClinicLicenseRepository
         ) =>
             new AuthGuard(
                 configService.auth.cookieName,
                 configService.clinicMember.cookieName,
                 tokenProvider,
-                createAuthorizer(userRepository, clinicMemberRepository),
+                createAuthorizer(userRepository, clinicMemberRepository, clinicLicenseRepository),
                 new Reflector(),
                 clinicMemberRepository,
                 auditLogRepository
             ),
-        inject: [EnvConfigService, TokenProvider, UserRepository, ClinicMemberRepository, AuditLogRepository],
+        inject: [
+            EnvConfigService,
+            TokenProvider,
+            UserRepository,
+            ClinicMemberRepository,
+            AuditLogRepository,
+            ClinicLicenseRepository,
+        ],
     },
 ];
 
@@ -117,6 +127,7 @@ const guards: Provider[] = [
         AuthModule,
         ClinicModule,
         ClinicMemberModule,
+        ClinicLicenseModule,
         ClinicPatientAccessModule,
         ProfessionalAgendaAccessModule,
         DocumentPermissionModule,

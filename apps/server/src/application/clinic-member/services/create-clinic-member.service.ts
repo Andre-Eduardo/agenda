@@ -3,6 +3,10 @@ import {ApplicationService, Command} from '@application/@shared/application.serv
 import {assertEntityBelongsToClinic} from '@application/@shared/validators/cross-tenant.validator';
 import {ClinicMemberDto, CreateClinicMemberDto} from '@application/clinic-member/dtos';
 import {AccessDeniedException, AccessDeniedReason, ResourceNotFoundException} from '@domain/@shared/exceptions';
+import {Transactional} from '@domain/@shared/repository';
+import {ClinicLicenseRepository} from '@domain/clinic-license/clinic-license.repository';
+import {ClinicLicense, SeatDecision} from '@domain/clinic-license/entities';
+import {countProfessionalSeats, occupiesProfessionalSeat} from '@domain/clinic-license/services';
 import {ClinicMemberRepository} from '@domain/clinic-member/clinic-member.repository';
 import {ClinicMember, ClinicMemberId, ClinicMemberRole} from '@domain/clinic-member/entities';
 import {ClinicRepository} from '@domain/clinic/clinic.repository';
@@ -15,9 +19,11 @@ export class CreateClinicMemberService implements ApplicationService<CreateClini
     constructor(
         private readonly clinicMemberRepository: ClinicMemberRepository,
         private readonly clinicRepository: ClinicRepository,
+        private readonly clinicLicenseRepository: ClinicLicenseRepository,
         private readonly eventDispatcher: EventDispatcher
     ) {}
 
+    @Transactional()
     async execute({actor, payload}: Command<CreateClinicMemberDto>): Promise<ClinicMemberDto> {
         const clinicId = ClinicId.from(payload.clinicId);
         const clinic = await this.clinicRepository.findById(clinicId);
@@ -66,9 +72,29 @@ export class CreateClinicMemberService implements ApplicationService<CreateClini
             invitedByMemberId: actor.clinicMemberId ? ClinicMemberId.from(actor.clinicMemberId.toString()) : null,
         });
 
+        await this.reserveProfessionalSeat(actor, member, members, payload.acceptExtraCharge);
         await this.clinicMemberRepository.save(member);
         this.eventDispatcher.dispatch(actor, member);
 
         return new ClinicMemberDto(member);
+    }
+
+    private async reserveProfessionalSeat(
+        actor: Command<CreateClinicMemberDto>['actor'],
+        member: ClinicMember,
+        members: ClinicMember[],
+        acceptExtraCharge: boolean
+    ): Promise<void> {
+        if (!occupiesProfessionalSeat(member)) return;
+
+        const license =
+            (await this.clinicLicenseRepository.findByClinicId(member.clinicId)) ??
+            ClinicLicense.create({clinicId: member.clinicId});
+        const decision = license.reserveProfessionalSeat(countProfessionalSeats(members), {acceptExtraCharge});
+
+        if (decision === SeatDecision.EXTRA_CHARGE) {
+            await this.clinicLicenseRepository.save(license);
+            this.eventDispatcher.dispatch({...actor, clinicId: member.clinicId}, license);
+        }
     }
 }

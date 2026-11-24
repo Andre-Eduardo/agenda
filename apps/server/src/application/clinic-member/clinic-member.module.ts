@@ -7,6 +7,7 @@ import {
     ListClinicMembersService,
 } from '@application/clinic-member/services';
 import {Authorizer, createAuthorizer} from '@domain/auth/authorizer';
+import {ClinicLicenseRepository} from '@domain/clinic-license/clinic-license.repository';
 import {ClinicMemberRepository} from '@domain/clinic-member/clinic-member.repository';
 import {UserRepository} from '@domain/user/user.repository';
 import {InfrastructureModule} from '@infrastructure/infrastructure.module';
@@ -22,7 +23,7 @@ import {InfrastructureModule} from '@infrastructure/infrastructure.module';
         {
             provide: Authorizer,
             useFactory: createAuthorizer,
-            inject: [UserRepository, ClinicMemberRepository],
+            inject: [UserRepository, ClinicMemberRepository, ClinicLicenseRepository],
         },
     ],
 })

@@ -14,4 +14,5 @@ export type CreateClinicMemberDto = {
     displayName?: string | null;
     /** @nullable */
     color?: string | null;
+    acceptExtraCharge?: boolean;
 };

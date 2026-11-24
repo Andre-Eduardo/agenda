@@ -5,6 +5,7 @@ import {AppointmentPaymentRepository} from '@domain/appointment-payment/appointm
 import {AppointmentReminderRepository} from '@domain/appointment-reminder/appointment-reminder.repository';
 import {AppointmentRepository} from '@domain/appointment/appointment.repository';
 import {AuditLogRepository} from '@domain/audit/audit-log.repository';
+import {ClinicLicenseRepository} from '@domain/clinic-license/clinic-license.repository';
 import {ClinicMemberRepository} from '@domain/clinic-member/clinic-member.repository';
 import {ClinicPatientAccessRepository} from '@domain/clinic-patient-access/clinic-patient-access.repository';
 import {ClinicReminderConfigRepository} from '@domain/clinic-reminder-config/clinic-reminder-config.repository';
@@ -55,6 +56,7 @@ import {AppointmentPaymentPrismaRepository} from '@infrastructure/repository/app
 import {AppointmentReminderPrismaRepository} from '@infrastructure/repository/appointment-reminder.prisma.repository';
 import {AppointmentPrismaRepository} from '@infrastructure/repository/appointment.prisma.repository';
 import {AuditLogPrismaRepository} from '@infrastructure/repository/audit-log.prisma.repository';
+import {ClinicLicensePrismaRepository} from '@infrastructure/repository/clinic-license.prisma.repository';
 import {ClinicMemberPrismaRepository} from '@infrastructure/repository/clinic-member.prisma.repository';
 import {ClinicPatientAccessPrismaRepository} from '@infrastructure/repository/clinic-patient-access.prisma.repository';
 import {ClinicReminderConfigPrismaRepository} from '@infrastructure/repository/clinic-reminder-config.prisma.repository';
@@ -132,6 +134,7 @@ const repositories: Provider[] = [
     {provide: WorkingHoursRepository, useClass: WorkingHoursPrismaRepository},
     {provide: MemberBlockRepository, useClass: MemberBlockPrismaRepository},
     {provide: RoomRepository, useClass: RoomPrismaRepository},
+    {provide: ClinicLicenseRepository, useClass: ClinicLicensePrismaRepository},
     // Clinical
     {provide: RecordRepository, useClass: RecordPrismaRepository},
     {provide: RecordAmendmentRepository, useClass: RecordAmendmentPrismaRepository},
