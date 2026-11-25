@@ -8713,6 +8713,161 @@
           "Room"
         ]
       }
+    },
+    "/api/v1/whatsapp-config": {
+      "get": {
+        "operationId": "getWhatsAppConfig",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "WhatsApp instances",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/WhatsAppConfig"
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Request failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Gets the WhatsApp instance of the current clinic (empty list when none or disabled)",
+        "tags": [
+          "WhatsApp"
+        ]
+      },
+      "post": {
+        "operationId": "createWhatsAppConfig",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateWhatsAppConfigDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "WhatsApp instance created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WhatsAppConfig"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Request failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Creates the WhatsApp instance of the current clinic and returns the pairing QR code",
+        "tags": [
+          "WhatsApp"
+        ]
+      },
+      "delete": {
+        "operationId": "deleteWhatsAppConfig",
+        "parameters": [],
+        "responses": {
+          "204": {
+            "description": "WhatsApp instance deleted"
+          },
+          "default": {
+            "description": "Request failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Deletes the WhatsApp instance of the current clinic",
+        "tags": [
+          "WhatsApp"
+        ]
+      }
+    },
+    "/api/v1/whatsapp-config/qrcode": {
+      "get": {
+        "operationId": "getWhatsAppQrcode",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "WhatsApp QR code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WhatsAppQrCode"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Request failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Gets a fresh QR code to pair the WhatsApp instance of the current clinic",
+        "tags": [
+          "WhatsApp"
+        ]
+      }
+    },
+    "/api/v1/whatsapp-config/logout": {
+      "post": {
+        "operationId": "logoutWhatsAppConfig",
+        "parameters": [],
+        "responses": {
+          "204": {
+            "description": "WhatsApp disconnected"
+          },
+          "default": {
+            "description": "Request failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Disconnects the phone paired with the WhatsApp instance of the current clinic",
+        "tags": [
+          "WhatsApp"
+        ]
+      }
     }
   },
   "info": {
@@ -16175,6 +16330,72 @@
         "required": [
           "name",
           "active"
+        ]
+      },
+      "WhatsAppConnectionStatus": {
+        "type": "string",
+        "enum": [
+          "open",
+          "connecting",
+          "close"
+        ],
+        "description": "Current connection status of the WhatsApp instance"
+      },
+      "WhatsAppQrCode": {
+        "type": "object",
+        "properties": {
+          "base64": {
+            "type": "string",
+            "description": "QR code image as a data URL (data:image/png;base64,...)"
+          },
+          "pairingCode": {
+            "type": "string",
+            "nullable": true,
+            "description": "Pairing code to type in WhatsApp instead of scanning"
+          }
+        }
+      },
+      "WhatsAppConfig": {
+        "type": "object",
+        "properties": {
+          "clinicId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Clinic that owns the WhatsApp instance"
+          },
+          "status": {
+            "description": "Current connection status of the WhatsApp instance",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/WhatsAppConnectionStatus"
+              }
+            ]
+          },
+          "phoneNumber": {
+            "type": "string",
+            "description": "Phone number paired with the instance",
+            "nullable": true
+          },
+          "qrcode": {
+            "$ref": "#/components/schemas/WhatsAppQrCode"
+          }
+        },
+        "required": [
+          "clinicId",
+          "status",
+          "phoneNumber"
+        ]
+      },
+      "CreateWhatsAppConfigDto": {
+        "type": "object",
+        "properties": {
+          "number": {
+            "type": "string",
+            "example": "(12) 94567-8912"
+          }
+        },
+        "required": [
+          "number"
         ]
       }
     }

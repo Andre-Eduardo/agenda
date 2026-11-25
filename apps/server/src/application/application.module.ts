@@ -42,6 +42,7 @@ import {ProfessionalAgendaAccessModule} from '@application/professional-agenda-a
 import {ProfessionalModule} from '@application/professional/professional.module';
 import {RecordModule} from '@application/record/record.module';
 import {RoomModule} from '@application/room/room.module';
+import {WhatsAppConfigModule} from '@application/whatsapp-config/whatsapp-config.module';
 import {SubscriptionModule} from '@application/subscription/subscription.module';
 import {UploadModule} from '@application/upload/upload.module';
 import {UserModule} from '@application/user/user.module';
@@ -162,6 +163,7 @@ const guards: Provider[] = [
         WorkingHoursModule,
         MemberBlockModule,
         RoomModule,
+        WhatsAppConfigModule,
     ],
     providers: [...exceptionFilters, ...pipes, ...interceptors, ...guards],
 })

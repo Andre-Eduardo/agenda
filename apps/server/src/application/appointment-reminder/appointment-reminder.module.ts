@@ -6,11 +6,13 @@ import {DispatchRemindersService} from '@application/appointment-reminder/servic
 import {ListPendingRemindersService} from '@application/appointment-reminder/services/list-pending-reminders.service';
 import {ScheduleRemindersService} from '@application/appointment-reminder/services/schedule-reminders.service';
 import {ReminderDispatchTask} from '@application/appointment-reminder/tasks/reminder-dispatch.task';
+import {EnvConfigService} from '@infrastructure/config';
 import {InfrastructureModule} from '@infrastructure/infrastructure.module';
 import {NOTIFICATION_PROVIDERS} from '@infrastructure/notification/notification-provider.token';
-import {StubEmailProvider} from '@infrastructure/notification/stub-email.provider';
-import {StubSmsProvider} from '@infrastructure/notification/stub-sms.provider';
-import {StubWhatsAppProvider} from '@infrastructure/notification/stub-whatsapp.provider';
+import {
+    NOTIFICATION_PROVIDER_FACTORY_PROVIDERS,
+    notificationProvidersFactory,
+} from '@infrastructure/notification/notification-providers.factory';
 
 @Module({
     imports: [InfrastructureModule],
@@ -22,13 +24,11 @@ import {StubWhatsAppProvider} from '@infrastructure/notification/stub-whatsapp.p
         DispatchRemindersService,
         AppointmentReminderListener,
         ReminderDispatchTask,
-        StubWhatsAppProvider,
-        StubSmsProvider,
-        StubEmailProvider,
+        ...NOTIFICATION_PROVIDER_FACTORY_PROVIDERS,
         {
             provide: NOTIFICATION_PROVIDERS,
-            useFactory: (wa: StubWhatsAppProvider, sms: StubSmsProvider, email: StubEmailProvider) => [wa, sms, email],
-            inject: [StubWhatsAppProvider, StubSmsProvider, StubEmailProvider],
+            useFactory: notificationProvidersFactory,
+            inject: [EnvConfigService, ...NOTIFICATION_PROVIDER_FACTORY_PROVIDERS],
         },
     ],
 })

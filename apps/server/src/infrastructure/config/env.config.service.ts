@@ -53,6 +53,22 @@ const envConfig = z.object({
         env: z.enum(['sandbox', 'production']).default('sandbox'),
         webhookToken: z.string().default(''),
     }),
+    mail: z
+        .object({
+            fromAddress: z.string().optional(),
+            replyTo: z.string().optional(),
+            region: z.string().default('sa-east-1'),
+            accessKeyId: z.string().optional(),
+            secretAccessKey: z.string().optional(),
+        })
+        .default({region: 'sa-east-1'}),
+    evolutionApi: z
+        .object({
+            url: z.string().optional(),
+            apiKey: z.string().optional(),
+            timeoutMs: z.coerce.number().int().positive().default(10_000),
+        })
+        .default({timeoutMs: 10_000}),
 });
 
 export type EnvConfig = z.infer<typeof envConfig>;
@@ -95,6 +111,14 @@ export class EnvConfigService {
 
     get asaas(): EnvConfig['asaas'] {
         return this.configService.getOrThrow('asaas', {infer: true});
+    }
+
+    get mail(): EnvConfig['mail'] {
+        return this.configService.getOrThrow('mail', {infer: true});
+    }
+
+    get evolutionApi(): EnvConfig['evolutionApi'] {
+        return this.configService.getOrThrow('evolutionApi', {infer: true});
     }
 
     get isProd(): boolean {
@@ -147,6 +171,18 @@ export class EnvConfigService {
                 apiKey: process.env.ASAAS_API_KEY,
                 env: process.env.ASAAS_ENV,
                 webhookToken: process.env.ASAAS_WEBHOOK_TOKEN,
+            },
+            mail: {
+                fromAddress: process.env.MAIL_FROM_ADDRESS,
+                replyTo: process.env.MAIL_REPLY_TO,
+                region: process.env.MAIL_SES_REGION,
+                accessKeyId: process.env.MAIL_SES_ACCESS_KEY_ID,
+                secretAccessKey: process.env.MAIL_SES_SECRET_ACCESS_KEY,
+            },
+            evolutionApi: {
+                url: process.env.EVOLUTION_SERVER_URL,
+                apiKey: process.env.EVOLUTION_AUTHENTICATION_API_KEY,
+                timeoutMs: process.env.EVOLUTION_TIMEOUT_MS,
             },
         } satisfies EnvParse);
     }
