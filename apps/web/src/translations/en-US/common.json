@@ -290,6 +290,7 @@
     "openPatientFor": "Open {{name}}'s profile",
     "checkin": "Record arrival",
     "call": "Call patient",
+    "complete": "Complete visit",
     "markNoShow": "Mark no-show",
     "confirmNoShowTitle": "Confirm no-show",
     "confirmNoShowMessage": "Mark {{name}} as a no-show? This closes the appointment.",
@@ -297,6 +298,7 @@
     "success": {
       "checkin": "Arrival recorded",
       "call": "Patient called",
+      "complete": "Visit completed",
       "noShow": "No-show recorded"
     }
   },

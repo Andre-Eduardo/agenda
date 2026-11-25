@@ -175,7 +175,7 @@ const HOURS = Array.from({length: GRID_END - GRID_START}, (_, i) => i + GRID_STA
 const STATUS_LABELS: Record<AppointmentStatus, string> = {
     SCHEDULED: 'Agendado',
     CONFIRMED: 'Confirmado',
-    COMPLETED: 'Realizado',
+    COMPLETED: 'Concluído',
     CANCELLED: 'Cancelado',
     NO_SHOW: 'Faltou',
     ARRIVED: 'Chegou',
@@ -1436,6 +1436,7 @@ function AppointmentDetailSheet({
     const isDone = ['COMPLETED', 'CANCELLED', 'NO_SHOW'].includes(apt.status);
     const mayViewClinical = useCan({hasAny: ['clinical-profile:view', 'patient-alert:view']});
     const mayCreateRecord = useCan({has: 'record:create'});
+    const canCompleteAppointment = useCan({has: 'appointment:update'});
     const canStartRecord = mayCreateRecord && (apt.status === 'IN_PROGRESS' || apt.status === 'COMPLETED');
     const patientAccess = useGetPatient(apt.patientId, {
         query: {enabled: (!isDone && mayViewClinical) || canStartRecord},
@@ -1628,15 +1629,15 @@ function AppointmentDetailSheet({
                                     <PhoneCall className={icon35} /> Chamar
                                 </Button>
                             )}
-                            {apt.status === 'IN_PROGRESS' && (
+                            {apt.status === 'IN_PROGRESS' && canCompleteAppointment && (
                                 <Button
                                     size="sm"
                                     variant="outline"
                                     className={gap1_5}
                                     disabled={transitionPending}
-                                    onClick={() => runTransition(complete, 'Atendimento concluído')}
+                                    onClick={() => runTransition(complete, t('reception.success.complete'))}
                                 >
-                                    <CheckCheck className={icon35} /> Concluir atendimento
+                                    <CheckCheck className={icon35} /> {t('reception.complete')}
                                 </Button>
                             )}
                             {(apt.status === 'SCHEDULED' || apt.status === 'CONFIRMED') && (
