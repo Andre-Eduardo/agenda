@@ -3,12 +3,14 @@ import {
     useGetClinicBillingReport,
     useGetCurrentClinicMember,
     useGetRevenueReport,
-    useGetRevenueSummary,
     useListClinicMembers,
+    RegisterPaymentDtoPaymentMethod,
+    RegisterPaymentDtoStatus,
     type GetRevenueReportParams,
 } from '@agenda-app/client';
 import {createFileRoute} from '@tanstack/react-router';
 import {CalendarDays, ChevronLeft, ChevronRight} from 'lucide-react';
+import {useTranslation} from 'react-i18next';
 import {Badge, type badgeVariants} from '@/components/ui/componentes/badge';
 import {Button} from '@/components/ui/componentes/button';
 import {Input} from '@/components/ui/componentes/input';
@@ -18,6 +20,7 @@ import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@/c
 import {Skeleton} from '@/components/ui/componentes/skeleton';
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from '@/components/ui/componentes/table';
 import {formatBRL, formatUSD} from '@/lib/utils';
+import {REVENUE_AMOUNT_FIELDS} from '@/utils/appointment-revenue';
 import {Page} from '@/views/components/Page';
 import {PlansTab} from '@/views/modules/financial/components/PlansTab';
 import {
@@ -54,23 +57,6 @@ export const Route = createFileRoute('/_stackedLayout/financial')({
 });
 
 // ─── Shared labels ───────────────────────────────────────────────────────────
-
-const PAYMENT_METHOD_LABELS: Record<string, string> = {
-    CASH: 'Dinheiro',
-    PIX: 'Pix',
-    CREDIT_CARD: 'Cartão de crédito',
-    DEBIT_CARD: 'Cartão de débito',
-    BANK_TRANSFER: 'Transferência',
-    INSURANCE: 'Convênio',
-    COURTESY: 'Cortesia',
-};
-
-const PAYMENT_STATUS_LABELS: Record<string, string> = {
-    PENDING: 'Pendente',
-    PAID: 'Pago',
-    EXEMPT: 'Isento',
-    REFUNDED: 'Reembolsado',
-};
 
 const PAYMENT_STATUS_BADGE: Record<string, BadgeVariant> = {
     PENDING: 'warning',
@@ -119,7 +105,15 @@ function parseDateInput(value: string): string | null {
     return `${match[3]}-${match[2]}-${match[1]}`;
 }
 
-function LocalizedDateInput({value, onChange, label}: {value: string; onChange: (value: string) => void; label: string}) {
+function LocalizedDateInput({
+    value,
+    onChange,
+    label,
+}: {
+    value: string;
+    onChange: (value: string) => void;
+    label: string;
+}) {
     const pickerRef = useRef<HTMLInputElement>(null);
     const [display, setDisplay] = useState(() => formatDateInput(value));
 
@@ -202,32 +196,30 @@ function FinancialPage() {
 // ─── Receita ─────────────────────────────────────────────────────────────────
 
 function RevenueTab({clinicId}: {clinicId: string}) {
+    const {t} = useTranslation();
     const [startDate, setStartDate] = useState(firstDayOfMonth);
     const [endDate, setEndDate] = useState(today);
     const [professionalMemberId, setProfessionalMemberId] = useState('ALL');
-    const [paymentMethod, setPaymentMethod] = useState('ALL');
-    const [status, setStatus] = useState('ALL');
+    const [paymentMethod, setPaymentMethod] = useState<RegisterPaymentDtoPaymentMethod | 'ALL'>('ALL');
+    const [status, setStatus] = useState<RegisterPaymentDtoStatus | 'ALL'>('ALL');
     const [page, setPage] = useState(1);
 
     const professionalsQuery = useListClinicMembers({clinicId}, {query: {enabled: !!clinicId}});
     const professionals = (professionalsQuery.data ?? []).filter((m) => m.roles.includes('PROFESSIONAL'));
 
     const filters: GetRevenueReportParams = {
-        startDate,
-        endDate,
+        startDate: startDate && new Date(`${startDate}T00:00:00`).toISOString(),
+        endDate: endDate && new Date(`${endDate}T23:59:59.999`).toISOString(),
         ...(professionalMemberId !== 'ALL' ? {professionalMemberId} : {}),
-        ...(paymentMethod !== 'ALL' ? {paymentMethod: paymentMethod as GetRevenueReportParams['paymentMethod']} : {}),
-        ...(status !== 'ALL' ? {status: status as GetRevenueReportParams['status']} : {}),
+        ...(paymentMethod !== 'ALL' ? {paymentMethod} : {}),
+        ...(status !== 'ALL' ? {status} : {}),
     };
 
     const enabled = !!clinicId && !!startDate && !!endDate;
-    const summaryQuery = useGetRevenueSummary(clinicId, filters, {query: {enabled}});
     const reportQuery = useGetRevenueReport(clinicId, {...filters, page, pageSize: 20}, {query: {enabled}});
 
-    const summary = summaryQuery.data?.summary;
-    // Orval mistypes this nested object as `{[key: string]: unknown}` (same known codegen issue
-    // documented for Update*Dto partial updates elsewhere in this app).
-    const pagination = reportQuery.data?.pagination as {page: number; pageSize: number; total: number} | undefined;
+    const summary = reportQuery.data?.summary;
+    const pagination = reportQuery.data?.pagination;
     const payments = reportQuery.data?.payments ?? [];
     const totalPages = pagination ? Math.max(1, Math.ceil(pagination.total / pagination.pageSize)) : 1;
 
@@ -267,15 +259,20 @@ function RevenueTab({clinicId}: {clinicId: string}) {
                 </div>
                 <div className={filterField}>
                     <Label className={filterLabel}>Forma de pagamento</Label>
-                    <Select value={paymentMethod} onValueChange={updateFilter(setPaymentMethod)}>
+                    <Select
+                        value={paymentMethod}
+                        onValueChange={(value: RegisterPaymentDtoPaymentMethod | 'ALL') =>
+                            updateFilter(setPaymentMethod)(value)
+                        }
+                    >
                         <SelectTrigger>
                             <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
                             <SelectItem value="ALL">Todas</SelectItem>
-                            {Object.entries(PAYMENT_METHOD_LABELS).map(([code, label]) => (
+                            {Object.values(RegisterPaymentDtoPaymentMethod).map((code) => (
                                 <SelectItem key={code} value={code}>
-                                    {label}
+                                    {t(`appointmentRevenue.methods.${code}`)}
                                 </SelectItem>
                             ))}
                         </SelectContent>
@@ -283,15 +280,18 @@ function RevenueTab({clinicId}: {clinicId: string}) {
                 </div>
                 <div className={filterField}>
                     <Label className={filterLabel}>Status</Label>
-                    <Select value={status} onValueChange={updateFilter(setStatus)}>
+                    <Select
+                        value={status}
+                        onValueChange={(value: RegisterPaymentDtoStatus | 'ALL') => updateFilter(setStatus)(value)}
+                    >
                         <SelectTrigger>
                             <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
                             <SelectItem value="ALL">Todos</SelectItem>
-                            {Object.entries(PAYMENT_STATUS_LABELS).map(([code, label]) => (
+                            {Object.values(RegisterPaymentDtoStatus).map((code) => (
                                 <SelectItem key={code} value={code}>
-                                    {label}
+                                    {t(`appointmentRevenue.statuses.${code}`)}
                                 </SelectItem>
                             ))}
                         </SelectContent>
@@ -299,21 +299,21 @@ function RevenueTab({clinicId}: {clinicId: string}) {
                 </div>
             </div>
 
-            {summaryQuery.isLoading ? (
+            {reportQuery.isLoading ? (
                 <Skeleton className={skeletonBlock} />
             ) : (
                 summary && (
                     <div className={statGrid}>
                         <div className={statCard}>
-                            <span className={statLabel}>Receita total</span>
+                            <span className={statLabel}>{t('appointmentRevenue.expectedBrl')}</span>
                             <span className={statValue}>{formatBRL(summary.totalBrl)}</span>
                         </div>
                         <div className={statCard}>
-                            <span className={statLabel}>Pago</span>
+                            <span className={statLabel}>{t('appointmentRevenue.receivedBrl')}</span>
                             <span className={statValue}>{formatBRL(summary.totalPaid)}</span>
                         </div>
                         <div className={statCard}>
-                            <span className={statLabel}>Pendente</span>
+                            <span className={statLabel}>{t('appointmentRevenue.pendingBrl')}</span>
                             <span className={statValue}>{formatBRL(summary.totalPending)}</span>
                         </div>
                         <div className={statCard}>
@@ -336,7 +336,7 @@ function RevenueTab({clinicId}: {clinicId: string}) {
                 )
             )}
 
-            {(summaryQuery.data?.byPaymentMethod.length ?? 0) > 0 && (
+            {(reportQuery.data?.byPaymentMethod.length ?? 0) > 0 && (
                 <div className={sectionBlock}>
                     <span className={sectionTitleText}>Por forma de pagamento</span>
                     <Table>
@@ -348,9 +348,9 @@ function RevenueTab({clinicId}: {clinicId: string}) {
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {(summaryQuery.data?.byPaymentMethod ?? []).map((row) => (
+                            {(reportQuery.data?.byPaymentMethod ?? []).map((row) => (
                                 <TableRow key={row.method}>
-                                    <TableCell>{PAYMENT_METHOD_LABELS[row.method] ?? row.method}</TableCell>
+                                    <TableCell>{t(`appointmentRevenue.methods.${row.method}`)}</TableCell>
                                     <TableCell>{row.count}</TableCell>
                                     <TableCell>{formatBRL(row.totalBrl)}</TableCell>
                                 </TableRow>
@@ -360,7 +360,7 @@ function RevenueTab({clinicId}: {clinicId: string}) {
                 </div>
             )}
 
-            {(summaryQuery.data?.byProfessional.length ?? 0) > 0 && (
+            {(reportQuery.data?.byProfessional.length ?? 0) > 0 && (
                 <div className={sectionBlock}>
                     <span className={sectionTitleText}>Por profissional</span>
                     <Table>
@@ -372,7 +372,7 @@ function RevenueTab({clinicId}: {clinicId: string}) {
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {(summaryQuery.data?.byProfessional ?? []).map((row) => (
+                            {(reportQuery.data?.byProfessional ?? []).map((row) => (
                                 <TableRow key={row.memberId}>
                                     <TableCell>{row.displayName}</TableCell>
                                     <TableCell>{row.count}</TableCell>
@@ -385,11 +385,16 @@ function RevenueTab({clinicId}: {clinicId: string}) {
             )}
 
             <div className={sectionBlock}>
-                <span className={sectionTitleText}>Pagamentos no período</span>
+                <span className={sectionTitleText}>{t('appointmentRevenue.reportTitle')}</span>
                 {reportQuery.isLoading && <Skeleton className={skeletonBlock} />}
 
-                {!reportQuery.isLoading && payments.length === 0 && (
-                    <p className={emptyText}>Nenhum pagamento encontrado para os filtros selecionados.</p>
+                {reportQuery.isError && (
+                    <p role="alert" className={emptyText}>
+                        {t('appointmentRevenue.reportError')}
+                    </p>
+                )}
+                {reportQuery.isSuccess && payments.length === 0 && (
+                    <p className={emptyText}>{t('appointmentRevenue.reportEmpty')}</p>
                 )}
 
                 {!reportQuery.isLoading && payments.length > 0 && (
@@ -399,29 +404,37 @@ function RevenueTab({clinicId}: {clinicId: string}) {
                                 <TableRow>
                                     <TableHead>Paciente</TableHead>
                                     <TableHead>Profissional</TableHead>
-                                    <TableHead>Data</TableHead>
-                                    <TableHead>Método</TableHead>
+                                    <TableHead>{t('appointmentRevenue.appointmentDate')}</TableHead>
+                                    <TableHead>{t('procedure.selection')}</TableHead>
+                                    <TableHead>{t('appointmentRevenue.method')}</TableHead>
                                     <TableHead>Status</TableHead>
-                                    <TableHead>Valor</TableHead>
+                                    {REVENUE_AMOUNT_FIELDS.map((field) => (
+                                        <TableHead key={field}>{t(`appointmentRevenue.${field}`)}</TableHead>
+                                    ))}
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
                                 {payments.map((payment) => (
-                                    <TableRow key={payment.paymentId}>
+                                    <TableRow key={payment.appointmentId}>
                                         <TableCell>{payment.patientName}</TableCell>
                                         <TableCell>{payment.professionalName}</TableCell>
                                         <TableCell>
                                             {new Date(payment.appointmentDate).toLocaleDateString('pt-BR')}
                                         </TableCell>
+                                        <TableCell>{payment.procedureName ?? '—'}</TableCell>
                                         <TableCell>
-                                            {PAYMENT_METHOD_LABELS[payment.paymentMethod] ?? payment.paymentMethod}
+                                            {payment.paymentMethod
+                                                ? t(`appointmentRevenue.methods.${payment.paymentMethod}`)
+                                                : t('appointmentRevenue.noMethod')}
                                         </TableCell>
                                         <TableCell>
                                             <Badge variant={PAYMENT_STATUS_BADGE[payment.status] ?? 'outline'}>
-                                                {PAYMENT_STATUS_LABELS[payment.status] ?? payment.status}
+                                                {t(`appointmentRevenue.statuses.${payment.status}`)}
                                             </Badge>
                                         </TableCell>
-                                        <TableCell>{formatBRL(payment.amountBrl)}</TableCell>
+                                        {REVENUE_AMOUNT_FIELDS.map((field) => (
+                                            <TableCell key={field}>{formatBRL(payment[field])}</TableCell>
+                                        ))}
                                     </TableRow>
                                 ))}
                             </TableBody>
@@ -429,7 +442,11 @@ function RevenueTab({clinicId}: {clinicId: string}) {
                         {pagination && (
                             <div className={paginationBar}>
                                 <span className={paginationInfo}>
-                                    Página {pagination.page} de {totalPages} · {pagination.total} pagamento(s)
+                                    {t('appointmentRevenue.pagination', {
+                                        page: pagination.page,
+                                        totalPages,
+                                        count: pagination.total,
+                                    })}
                                 </span>
                                 <div className={paginationActions}>
                                     <Button

@@ -6,7 +6,9 @@
  */
 
 export type RevenueSummaryDto = {
+    /** Expected revenue in BRL */
     totalBrl: number;
+    /** Received revenue in BRL */
     totalPaid: number;
     totalPending: number;
     totalExempt: number;

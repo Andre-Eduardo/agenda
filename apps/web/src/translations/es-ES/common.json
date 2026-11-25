@@ -55,6 +55,49 @@
       "REMOTE": "Remoto"
     }
   },
+  "appointmentRevenue": {
+    "title": "Pago",
+    "expectedBrl": "Previsto",
+    "receivedBrl": "Recibido",
+    "pendingBrl": "Pendiente",
+    "method": "Forma de pago",
+    "noMethod": "Por definir",
+    "amount": "Importe (BRL)",
+    "paidAt": "Pagado el",
+    "markPaid": "Marcar como pagado",
+    "register": "Registrar pago",
+    "registered": "Pago registrado.",
+    "updated": "Pago actualizado.",
+    "saveError": "No se pudo guardar el pago.",
+    "invalidAmount": "Ingresa un importe válido con hasta dos decimales.",
+    "selectCoverage": "Selecciona la cobertura de la cita.",
+    "noCoverage": "El paciente no tiene cobertura activa.",
+    "authorization": "Código de autorización",
+    "notes": "Observaciones",
+    "reportTitle": "Citas del período",
+    "reportError": "No se pudo cargar el informe de ingresos.",
+    "reportEmpty": "No hay citas con ingresos para los filtros seleccionados.",
+    "appointmentDate": "Fecha de la cita",
+    "pagination_one": "Página {{page}} de {{totalPages}} · {{count}} cita",
+    "pagination_other": "Página {{page}} de {{totalPages}} · {{count}} citas",
+    "methods": {
+      "CASH": "Efectivo",
+      "PIX": "Pix",
+      "CREDIT_CARD": "Tarjeta de crédito",
+      "DEBIT_CARD": "Tarjeta de débito",
+      "BANK_TRANSFER": "Transferencia",
+      "INSURANCE": "Seguro",
+      "COURTESY": "Cortesía",
+      "PACKAGE": "Paquete de sesiones",
+      "SUBSCRIPTION": "Suscripción recurrente"
+    },
+    "statuses": {
+      "PENDING": "Pendiente",
+      "PAID": "Pagado",
+      "EXEMPT": "Sin cargo",
+      "REFUNDED": "Reembolsado"
+    }
+  },
   "errors": {
     "procedure": {
       "required": "Selecciona un procedimiento o servicio del catálogo.",
@@ -80,6 +123,7 @@
       "not_valid_on_appointment_date": "El seguro no es válido en la fecha de esta cita."
     },
     "appointment_payment": {
+      "amount_required": "Ingresa un importe para una cita sin precio de procedimiento.",
       "package_requires_completed_appointment": "El paquete solo puede usarse después de completar la atención.",
       "subscription_requires_completed_appointment": "La suscripción solo puede usarse después de completar la atención."
     },

@@ -4,9 +4,12 @@ import {
     AppointmentPaymentRepository,
     AppointmentPaymentSearchFilter,
 } from '@domain/appointment-payment/appointment-payment.repository';
+import type {RevenuePayment} from '@domain/appointment-payment/appointment-revenue';
 import {AppointmentPayment, AppointmentPaymentId} from '@domain/appointment-payment/entities';
 import {AppointmentId} from '@domain/appointment/entities';
+import type {ClinicId} from '@domain/clinic/entities';
 import {AppointmentPaymentMapper} from '@infrastructure/mappers/appointment-payment.mapper';
+import {revenuePaymentSelect, toRevenuePayment} from '@infrastructure/mappers/appointment-revenue.mapper';
 import {PrismaRepository} from '@infrastructure/repository/prisma.repository';
 import {PrismaProvider} from '@infrastructure/repository/prisma/prisma.provider';
 
@@ -45,13 +48,22 @@ export class AppointmentPaymentPrismaRepository extends PrismaRepository impleme
         });
     }
 
-    async findByAppointmentIds(appointmentIds: AppointmentId[]): Promise<AppointmentPayment[]> {
-        if (appointmentIds.length === 0) return [];
+    async findRevenuePayments(
+        clinicId: ClinicId,
+        appointmentIds: AppointmentId[]
+    ): Promise<Map<string, RevenuePayment>> {
+        if (appointmentIds.length === 0) return new Map();
+
         const records = await this.prisma.appointmentPayment.findMany({
-            where: {appointmentId: {in: appointmentIds.map((id) => id.toString())}},
+            where: {
+                clinicId: clinicId.toString(),
+                appointmentId: {in: appointmentIds.map((id) => id.toString())},
+                deletedAt: null,
+            },
+            select: revenuePaymentSelect,
         });
 
-        return records.map((r) => this.mapper.toDomain(r));
+        return new Map(records.map((record) => [record.appointmentId, toRevenuePayment(record)]));
     }
 
     async search(

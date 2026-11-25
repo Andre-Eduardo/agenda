@@ -8,6 +8,7 @@ import type {AppointmentPaymentStatusProperty} from './appointmentPaymentStatusP
  * OpenAPI spec version: 0.0.0
  */
 import type {AppointmentProcedure} from './appointmentProcedure';
+import type {AppointmentRevenueProperty} from './appointmentRevenueProperty';
 import type {AppointmentStatus} from './appointmentStatus';
 import type {AppointmentType} from './appointmentType';
 
@@ -68,6 +69,8 @@ export type Appointment = {
      * @nullable
      */
     paymentStatus: AppointmentPaymentStatusProperty;
+    /** @nullable */
+    revenue: AppointmentRevenueProperty;
     /**
      * Room where the appointment takes place, when room management is enabled
      * @nullable

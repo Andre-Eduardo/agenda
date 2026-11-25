@@ -8,7 +8,7 @@ import {
     type Appointment,
     type AppointmentStatus,
 } from '@agenda-app/client';
-import {useQueries, type UseQueryResult} from '@tanstack/react-query';
+import {useQueries, useQueryClient, type UseQueryResult} from '@tanstack/react-query';
 import {createFileRoute, Link} from '@tanstack/react-router';
 import {ArrowRight, CalendarDays, PhoneCall, RefreshCw, UserCheck, UserX} from 'lucide-react';
 import {useTranslation} from 'react-i18next';
@@ -18,6 +18,7 @@ import {Button} from '@/components/ui/componentes/button';
 import {EmptyStateCard} from '@/components/ui/componentes/empty-state';
 import {Skeleton} from '@/components/ui/componentes/skeleton';
 import {useCan, useCanState} from '@/hooks/useCan';
+import {invalidateAppointmentRevenue} from '@/utils/appointment-revenue';
 import {ConfirmDialog} from '@/views/components/ConfirmDialog';
 import {Page} from '@/views/components/Page';
 import styles from './styles.module.css';
@@ -53,6 +54,7 @@ function localDayKey(date: Date): string {
 
 function ReceptionPage() {
     const {t, i18n} = useTranslation();
+    const queryClient = useQueryClient();
     const [day, setDay] = useState(() => localDayKey(new Date()));
     const [busyId, setBusyId] = useState<string | null>(null);
     const [noShowId, setNoShowId] = useState<string | null>(null);
@@ -105,7 +107,9 @@ function ReceptionPage() {
             } else if (kind === 'call') {
                 await call.mutateAsync({id});
             } else {
-                await noShow.mutateAsync({id});
+                const appointment = await noShow.mutateAsync({id});
+
+                invalidateAppointmentRevenue(queryClient, appointment.clinicId);
             }
 
             toast.success(t(`reception.success.${kind}`));

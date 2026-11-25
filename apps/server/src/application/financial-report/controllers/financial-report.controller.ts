@@ -7,6 +7,7 @@ import {entityIdParam} from '@application/@shared/openapi/params';
 import {RevenueReportDto, RevenueSummaryReportDto} from '@application/financial-report/dtos/financial-report.dto';
 import {FinancialReportService} from '@application/financial-report/financial-report.service';
 import {Actor} from '@domain/@shared/actor';
+import {toEnumOrNull} from '@domain/@shared/utils';
 import {AppointmentPaymentStatus, PaymentMethod} from '@domain/appointment-payment/entities';
 import {FinancialReportPermission} from '@domain/auth';
 
@@ -22,13 +23,13 @@ export class FinancialReportController {
             {
                 name: 'startDate',
                 required: true,
-                description: 'Start date ISO8601',
+                description: 'Start of the appointment period in ISO 8601',
                 schema: {type: 'string', format: 'date-time'},
             },
             {
                 name: 'endDate',
                 required: true,
-                description: 'End date ISO8601',
+                description: 'End of the appointment period in ISO 8601',
                 schema: {type: 'string', format: 'date-time'},
             },
             {
@@ -83,10 +84,10 @@ export class FinancialReportController {
     ): Promise<RevenueReportDto> {
         const report = await this.financialReportService.getRevenueReport(clinicId, actor.clinicMemberId.toString(), {
             startDate: new Date(startDate),
-            endDate: new Date(endDate),
+            endDate: parseReportEndDate(endDate),
             professionalMemberId: professionalMemberId ?? undefined,
-            paymentMethod: paymentMethod as PaymentMethod | undefined,
-            status: status as AppointmentPaymentStatus | undefined,
+            paymentMethod: toEnumOrNull(PaymentMethod, paymentMethod) ?? undefined,
+            status: toEnumOrNull(AppointmentPaymentStatus, status) ?? undefined,
             page: page ? parseInt(page, 10) : 1,
             pageSize: pageSize ? parseInt(pageSize, 10) : 50,
         });
@@ -101,13 +102,13 @@ export class FinancialReportController {
             {
                 name: 'startDate',
                 required: true,
-                description: 'Start date ISO8601',
+                description: 'Start of the appointment period in ISO 8601',
                 schema: {type: 'string', format: 'date-time'},
             },
             {
                 name: 'endDate',
                 required: true,
-                description: 'End date ISO8601',
+                description: 'End of the appointment period in ISO 8601',
                 schema: {type: 'string', format: 'date-time'},
             },
             {
@@ -148,12 +149,20 @@ export class FinancialReportController {
     ): Promise<RevenueSummaryReportDto> {
         const report = await this.financialReportService.getRevenueSummary(clinicId, actor.clinicMemberId.toString(), {
             startDate: new Date(startDate),
-            endDate: new Date(endDate),
+            endDate: parseReportEndDate(endDate),
             professionalMemberId: professionalMemberId ?? undefined,
-            paymentMethod: paymentMethod as PaymentMethod | undefined,
-            status: status as AppointmentPaymentStatus | undefined,
+            paymentMethod: toEnumOrNull(PaymentMethod, paymentMethod) ?? undefined,
+            status: toEnumOrNull(AppointmentPaymentStatus, status) ?? undefined,
         });
 
         return new RevenueSummaryReportDto(report);
     }
+}
+
+function parseReportEndDate(value: string): Date {
+    const date = new Date(value);
+
+    if (/^\d{4}-\d{2}-\d{2}$/.test(value)) date.setUTCHours(23, 59, 59, 999);
+
+    return date;
 }

@@ -38,5 +38,6 @@ test('schedules a procedure with defaults from the clinic catalog', async ({
     await expect(details.getByText(procedure, {exact: true})).toBeVisible();
     await expect(details.getByText('50 min', {exact: true})).toBeVisible();
     await expect(details.getByText('Remoto', {exact: true})).toBeVisible();
-    await expect(details.getByText(/R\$\s*125,50/)).toBeVisible();
+    const procedureDetails = details.getByRole('group', {name: 'Procedimento ou serviço'});
+    await expect(procedureDetails.getByText(/R\$\s*125,50/)).toBeVisible();
 });

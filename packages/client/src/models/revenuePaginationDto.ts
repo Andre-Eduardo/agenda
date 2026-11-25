@@ -5,7 +5,8 @@
  * OpenAPI spec version: 0.0.0
  */
 
-/**
- * @nullable
- */
-export type PaymentListItemDtoInsurancePlanName = {[key: string]: unknown} | null;
+export type RevenuePaginationDto = {
+    page: number;
+    pageSize: number;
+    total: number;
+};
