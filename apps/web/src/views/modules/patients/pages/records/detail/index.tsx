@@ -1,5 +1,5 @@
 import type {ReactNode} from 'react';
-import {useGetRecord, useGetPatient, useSearchRecords} from '@agenda-app/client';
+import {useGetRecord, useGetPatient, useListAppointmentFollowUps, useSearchRecords} from '@agenda-app/client';
 import type {
     Record as MedicalRecord,
     Patient,
@@ -10,8 +10,10 @@ import type {
 } from '@agenda-app/client';
 import type {UseQueryResult} from '@tanstack/react-query';
 import {createFileRoute, useNavigate, Link} from '@tanstack/react-router';
+import {format} from 'date-fns';
 import {
     ChevronRight,
+    CalendarPlus,
     ChevronLeft,
     Clock,
     Sparkles,
@@ -36,6 +38,7 @@ import {
 } from '@/components/ui/componentes/breadcrumb';
 import {Button} from '@/components/ui/componentes/button';
 import {Skeleton} from '@/components/ui/componentes/skeleton';
+import {useCan} from '@/hooks/useCan';
 import {RecordAmendmentsSection, RecordLifecycleActions} from './RecordLifecycle';
 import {
     FilesList,
@@ -316,6 +319,60 @@ function TagsSection({record}: {record: MedicalRecord}): ReactNode {
 
 // ── Notes section ──────────────────────────────────────────────────────────────
 
+function RecordFollowUps({recordId}: {recordId: string}) {
+    const {t, i18n} = useTranslation();
+    const canSchedule = useCan({hasAll: ['appointment:create', 'record:view', 'professional:view']});
+    const canView = useCan({has: 'appointment:view'});
+    const followUps = useListAppointmentFollowUps(recordId, {query: {enabled: canView}});
+
+    if (!canSchedule && !canView) return null;
+
+    const dateTime = new Intl.DateTimeFormat(i18n.language, {dateStyle: 'short', timeStyle: 'short'});
+
+    return (
+        <SectionCard>
+            <div className="head">
+                <h2 className="title">{t('followUp.title')}</h2>
+            </div>
+            {canView && followUps.isLoading && <p role="status">{t('states.loading')}</p>}
+            {canView && followUps.isError && <p role="status">{t('followUp.listError')}</p>}
+            {canView && followUps.isSuccess && followUps.data.length === 0 && (
+                <p className="mb-3">{t('followUp.empty')}</p>
+            )}
+            {canView && followUps.isSuccess && followUps.data.length > 0 && (
+                <ul className="mb-3 space-y-2">
+                    {followUps.data.map((appointment) => {
+                        const date = new Date(appointment.startAt);
+
+                        return (
+                            <li key={appointment.id}>
+                                <Button asChild variant="outline" size="sm">
+                                    <Link
+                                        to="/appointments"
+                                        search={{date: format(date, 'yyyy-MM-dd'), appointmentId: appointment.id}}
+                                    >
+                                        {t('followUp.open', {date: dateTime.format(date)})}
+                                        {' · '}
+                                        {t(`reception.status.${appointment.status}`)}
+                                    </Link>
+                                </Button>
+                            </li>
+                        );
+                    })}
+                </ul>
+            )}
+            {canSchedule && (
+                <Button asChild size="sm">
+                    <Link to="/appointments" search={{followUpFromRecordId: recordId}}>
+                        <CalendarPlus size={16} aria-hidden />
+                        {t('followUp.schedule')}
+                    </Link>
+                </Button>
+            )}
+        </SectionCard>
+    );
+}
+
 function NotesSection({record}: {record: MedicalRecord}): ReactNode {
     const {t} = useTranslation();
     const description = asStr(record.description);
@@ -594,6 +651,7 @@ function RecordDetailView({
                 {/* Body */}
                 <div className="body">
                     <SoapSection record={record} />
+                    <RecordFollowUps recordId={record.id} />
                     <TagsSection record={record} />
                     <NotesSection record={record} />
                     <FilesSection record={record} />

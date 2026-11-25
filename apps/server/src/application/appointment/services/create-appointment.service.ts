@@ -1,6 +1,7 @@
 import {Injectable} from '@nestjs/common';
 import {ApplicationService, Command} from '@application/@shared/application.service';
 import {AppointmentDto, CreateAppointmentDto} from '@application/appointment/dtos';
+import {AppointmentFollowUpService} from '@application/appointment/services/appointment-follow-up.service';
 import {ResolveScheduledProcedureService} from '@application/appointment/services/resolve-scheduled-procedure.service';
 import {PatientAccessChecker} from '@application/clinic-patient-access/services/patient-access-checker.service';
 import {AgendaAccessChecker} from '@application/professional-agenda-access/services';
@@ -34,7 +35,8 @@ export class CreateAppointmentService implements ApplicationService<CreateAppoin
         private readonly memberBlockRepository: MemberBlockRepository,
         private readonly agendaAccessChecker: AgendaAccessChecker,
         private readonly scheduledProcedure: ResolveScheduledProcedureService,
-        private readonly eventDispatcher: EventDispatcher
+        private readonly eventDispatcher: EventDispatcher,
+        private readonly followUps: AppointmentFollowUpService
     ) {}
 
     @Transactional()
@@ -63,6 +65,14 @@ export class CreateAppointmentService implements ApplicationService<CreateAppoin
 
         await this.patientAccessChecker.assertCanAccess(actor, patientId, 'appointment');
 
+        if (payload.followUpFromRecordId !== undefined) {
+            if (!attendedBy.isActive) {
+                throw new InvalidInputException('appointment.follow_up_professional_mismatch');
+            }
+
+            await this.followUps.assertSourceMatches(actor, payload.followUpFromRecordId, payload);
+        }
+
         const {endAt, procedure} = await this.scheduledProcedure.resolve(actor, payload);
 
         // 3. Time interval must be coherent.
@@ -73,7 +83,7 @@ export class CreateAppointmentService implements ApplicationService<CreateAppoin
         }
 
         // 4. Don't allow scheduling in the past unless explicitly marked retroactive.
-        if (!retroactive && startAt < new Date()) {
+        if ((!retroactive || payload.followUpFromRecordId !== undefined) && startAt < new Date()) {
             throw new InvalidInputException('startAt cannot be in the past', [
                 {field: 'startAt', reason: 'startAt cannot be in the past'},
             ]);
@@ -141,6 +151,7 @@ export class CreateAppointmentService implements ApplicationService<CreateAppoin
             type,
             note: note ?? null,
             roomId,
+            followUpFromRecordId: payload.followUpFromRecordId,
         });
 
         await this.appointmentRepository.save(appointment);

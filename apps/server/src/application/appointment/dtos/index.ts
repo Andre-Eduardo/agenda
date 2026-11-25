@@ -1,3 +1,4 @@
+export * from '@application/appointment/dtos/appointment-follow-up.dto';
 export * from '@application/appointment/dtos/appointment-status-transition.dto';
 export * from '@application/appointment/dtos/appointment.dto';
 export * from '@application/appointment/dtos/call-appointment.dto';

@@ -66,6 +66,20 @@
       "generalNotes": "Observações gerais"
     }
   },
+  "followUp": {
+    "title": "Retornos da evolução",
+    "schedule": "Agendar retorno",
+    "linkedToRecord": "O retorno ficará vinculado a esta evolução.",
+    "professional": "Profissional responsável",
+    "sourcePlan": "Ver plano e conduta da evolução",
+    "saved": "Retorno agendado",
+    "saveError": "Não foi possível agendar o retorno.",
+    "unavailable": "Não foi possível carregar o paciente ou a agenda do profissional desta evolução.",
+    "futureDate": "Escolha uma data e um horário futuros para o retorno.",
+    "empty": "Nenhum retorno vinculado a esta evolução.",
+    "listError": "Não foi possível carregar os retornos desta evolução.",
+    "open": "Ver retorno de {{date}}"
+  },
   "procedure": {
     "title": "Procedimentos e serviços",
     "description": "Cadastre as opções que a equipe pode selecionar na agenda.",
@@ -186,6 +200,9 @@
       "invalid_duration": "Informe duração de 1 a 720 minutos inteiros."
     },
     "appointment": {
+      "follow_up_patient_mismatch": "O retorno deve ser agendado para o paciente da evolução.",
+      "follow_up_professional_mismatch": "O retorno deve ser agendado com o profissional da evolução.",
+      "follow_up_type_required": "Um retorno vinculado à evolução deve manter o tipo Retorno.",
       "end_required": "Informe o horário de término do agendamento.",
       "member_conflict": "O profissional já tem uma consulta nesse horário. Escolha outro horário ou profissional.",
       "room_conflict": "A sala já está reservada nesse horário. Escolha outra sala ou horário."

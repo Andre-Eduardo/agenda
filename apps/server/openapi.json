@@ -2074,6 +2074,52 @@
         ]
       }
     },
+    "/api/v1/appointments/follow-ups/{recordId}": {
+      "get": {
+        "operationId": "listAppointmentFollowUps",
+        "parameters": [
+          {
+            "name": "recordId",
+            "required": true,
+            "in": "path",
+            "description": "Source record ID",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Follow-up appointments",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AppointmentFollowUp"
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Request failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Lists follow-up appointments originating from a clinical record",
+        "tags": [
+          "Appointment"
+        ]
+      }
+    },
     "/api/v1/appointments/{id}": {
       "get": {
         "operationId": "getAppointment",
@@ -10930,6 +10976,12 @@
               "PROCEDURE"
             ]
           },
+          "followUpFromRecordId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Clinical record that originated this follow-up",
+            "example": "dc5782d4-ce8e-4f95-bb0b-d1a4e130aee8"
+          },
           "note": {
             "type": "string",
             "nullable": true,
@@ -11240,6 +11292,36 @@
           "paymentStatus",
           "revenue",
           "roomId"
+        ]
+      },
+      "AppointmentFollowUp": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "startAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "SCHEDULED",
+              "CONFIRMED",
+              "CANCELLED",
+              "COMPLETED",
+              "NO_SHOW",
+              "ARRIVED",
+              "IN_PROGRESS"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "startAt",
+          "status"
         ]
       },
       "AppointmentStatusTransition": {

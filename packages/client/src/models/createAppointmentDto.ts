@@ -17,6 +17,8 @@ export type CreateAppointmentDto = {
     procedureId?: string;
     procedureOverrides?: CreateAppointmentDtoProcedureOverrides;
     type: CreateAppointmentDtoType;
+    /** Clinical record that originated this follow-up */
+    followUpFromRecordId?: string;
     /** @nullable */
     note?: string | null;
     retroactive?: boolean;

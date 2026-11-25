@@ -778,7 +778,9 @@ model Appointment {
   createdAt          DateTime              @map("created_at")
   updatedAt          DateTime              @map("updated_at")
   deletedAt          DateTime?             @map("deleted_at")
-  records            Record[]
+  records            Record[]              @relation("AppointmentRecords")
+  followUpFromRecordId String?              @map("follow_up_from_record_id") @db.Uuid
+  followUpFromRecord  Record?               @relation("AppointmentFollowUpSource", fields: [followUpFromRecordId], references: [id], onDelete: SetNull)
   reminders          AppointmentReminder[]
   clinicalDocuments  ClinicalDocument[]
   payment            AppointmentPayment?
@@ -787,6 +789,7 @@ model Appointment {
   @@index([attendedByMemberId], name: "appointment_attended_by_idx")
   @@index([roomId], name: "appointment_room_idx")
   @@index([clinicId, procedureId])
+  @@index([clinicId, followUpFromRecordId], map: "appointment_follow_up_source_idx")
   @@map("appointment")
 }
 
@@ -943,7 +946,8 @@ model Record {
   freeNotes                 String?                @map("free_notes")
   eventDate                 DateTime?              @map("event_date")
   appointmentId             String?                @map("appointment_id") @db.Uuid
-  appointment               Appointment?           @relation(fields: [appointmentId], references: [id])
+  appointment               Appointment?           @relation("AppointmentRecords", fields: [appointmentId], references: [id])
+  followUpAppointments      Appointment[]          @relation("AppointmentFollowUpSource")
   files                     File[]
 
   source             RecordSource      @default(MANUAL) @map("source")

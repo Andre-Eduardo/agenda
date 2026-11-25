@@ -1,4 +1,5 @@
 import {mock} from 'jest-mock-extended';
+import {AppointmentFollowUpService} from '@application/appointment/services/appointment-follow-up.service';
 import {CreateAppointmentService} from '@application/appointment/services/create-appointment.service';
 import {ResolveScheduledProcedureService} from '@application/appointment/services/resolve-scheduled-procedure.service';
 import {PatientAccessChecker} from '@application/clinic-patient-access/services/patient-access-checker.service';
@@ -7,7 +8,7 @@ import type {Actor} from '@domain/@shared/actor';
 import {AccessDeniedException, AccessDeniedReason} from '@domain/@shared/exceptions';
 import {AtomicExecutor} from '@domain/@shared/repository';
 import {AppointmentRepository} from '@domain/appointment/appointment.repository';
-import type {Appointment, AppointmentType} from '@domain/appointment/entities';
+import {type Appointment, AppointmentType} from '@domain/appointment/entities';
 import {Authorizer} from '@domain/auth/authorizer';
 import {ClinicMemberRepository} from '@domain/clinic-member/clinic-member.repository';
 import type {ClinicMember} from '@domain/clinic-member/entities';
@@ -22,6 +23,7 @@ import {ProcedureRepository} from '@domain/procedure/procedure.repository';
 import {MemberBlockRepository} from '@domain/professional/member-block.repository';
 import {ProfessionalRepository} from '@domain/professional/professional.repository';
 import {WorkingHoursRepository} from '@domain/professional/working-hours.repository';
+import {RecordId} from '@domain/record/entities';
 import {RoomRepository} from '@domain/room/room.repository';
 
 describe('CreateAppointmentService', () => {
@@ -34,7 +36,7 @@ describe('CreateAppointmentService', () => {
         ip: '127.0.0.1',
     } as unknown as Actor;
 
-    const attendedBy = {clinicId} as unknown as ClinicMember;
+    const attendedBy = {clinicId, isActive: true} as unknown as ClinicMember;
     const patient = {} as unknown as Patient;
 
     let appointmentRepository: ReturnType<typeof mock<AppointmentRepository>>;
@@ -49,6 +51,7 @@ describe('CreateAppointmentService', () => {
     let eventDispatcher: ReturnType<typeof mock<EventDispatcher>>;
     let atomicExecutor: ReturnType<typeof mock<AtomicExecutor>>;
     let service: CreateAppointmentService;
+    let followUps: ReturnType<typeof mock<AppointmentFollowUpService>>;
 
     const payload = {
         patientId: PatientId.generate(),
@@ -72,6 +75,7 @@ describe('CreateAppointmentService', () => {
         memberBlockRepository = mock<MemberBlockRepository>();
         agendaAccessChecker = mock<AgendaAccessChecker>();
         eventDispatcher = mock<EventDispatcher>();
+        followUps = mock<AppointmentFollowUpService>();
         atomicExecutor = mock<AtomicExecutor>();
         atomicExecutor.runAtomically.mockImplementation((callback) => callback());
 
@@ -95,7 +99,8 @@ describe('CreateAppointmentService', () => {
             memberBlockRepository,
             agendaAccessChecker,
             new ResolveScheduledProcedureService(mock<ProcedureRepository>(), mock<Authorizer>()),
-            eventDispatcher
+            eventDispatcher,
+            followUps
         );
         (service as unknown as {atomicExecutor: AtomicExecutor}).atomicExecutor = atomicExecutor;
     });
@@ -105,6 +110,25 @@ describe('CreateAppointmentService', () => {
 
         expect(agendaAccessChecker.assertCanManage).toHaveBeenCalledWith(actor, attendedByMemberId);
         expect(appointmentRepository.save).toHaveBeenCalledTimes(1);
+    });
+
+    it('checks the source evolution and persists its link when scheduling a return', async () => {
+        const recordId = RecordId.generate();
+        const now = Date.now();
+        const followUp = {
+            ...payload,
+            startAt: new Date(now + 60 * 60_000),
+            endAt: new Date(now + 120 * 60_000),
+            type: AppointmentType.RETURN,
+            followUpFromRecordId: recordId,
+        };
+
+        await service.execute({actor, payload: followUp});
+
+        expect(followUps.assertSourceMatches).toHaveBeenCalledWith(actor, recordId, followUp);
+        expect(appointmentRepository.save).toHaveBeenCalledWith(
+            expect.objectContaining({followUpFromRecordId: recordId, type: AppointmentType.RETURN})
+        );
     });
 
     it('rejects an overlapping appointment even when availability was explicitly confirmed', async () => {

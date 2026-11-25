@@ -14,6 +14,8 @@ import {
 import {Appointment, AppointmentId, AppointmentStatus} from '@domain/appointment/entities';
 import {ClinicMemberId} from '@domain/clinic-member/entities';
 import {ClinicId} from '@domain/clinic/entities';
+import type {PatientId} from '@domain/patient/entities';
+import type {RecordId} from '@domain/record/entities';
 import {RoomId} from '@domain/room/entities';
 import {UserId} from '@domain/user/entities';
 import {AppointmentMapper} from '@infrastructure/mappers/appointment.mapper';
@@ -37,6 +39,21 @@ export class AppointmentPrismaRepository extends PrismaRepository implements App
         });
 
         return appointment === null ? null : this.mapper.toDomain(appointment);
+    }
+
+    async findFollowUps(clinicId: ClinicId, patientId: PatientId, recordId: RecordId): Promise<Appointment[]> {
+        const rows = await this.prisma.appointment.findMany({
+            where: {
+                clinicId: clinicId.toString(),
+                patientId: patientId.toString(),
+                followUpFromRecordId: recordId.toString(),
+                deletedAt: null,
+                patient: {deletedAt: null},
+            },
+            orderBy: [{startAt: 'desc'}, {id: 'desc'}],
+        });
+
+        return rows.map((row) => this.mapper.toDomain(row));
     }
 
     async delete(id: AppointmentId): Promise<void> {
