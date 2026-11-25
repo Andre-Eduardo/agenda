@@ -16,6 +16,7 @@ import type {
 } from '@agenda-app/client';
 import {
     AxiosError,
+    getListAppointmentFollowUpsQueryKey,
     useCallAppointment,
     useCancelAppointment,
     useCheckinAppointment,
@@ -25,6 +26,9 @@ import {
     useGetClinic,
     useGetCurrentClinicMember,
     useGetPaymentByAppointment,
+    useGetPatient,
+    useGetProfessional,
+    useGetRecord,
     getListMemberBlocksQueryOptions,
     getListWorkingHoursQueryOptions,
     useListManageableProfessionals,
@@ -38,7 +42,7 @@ import {
     useUpdateAppointment,
     useUpdatePaymentStatus,
 } from '@agenda-app/client';
-import {useQueries, type UseQueryResult} from '@tanstack/react-query';
+import {useQueries, useQueryClient, type UseQueryResult} from '@tanstack/react-query';
 import {createFileRoute, useNavigate} from '@tanstack/react-router';
 import {
     CalendarDays,
@@ -60,15 +64,15 @@ import {useTranslation} from 'react-i18next';
 import {toast} from 'sonner';
 import {Badge} from '@/components/ui/componentes/badge';
 import {Button} from '@/components/ui/componentes/button';
-import {Dialog, DialogContent, DialogHeader, DialogTitle} from '@/components/ui/componentes/dialog';
+import {Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle} from '@/components/ui/componentes/dialog';
 import {Input} from '@/components/ui/componentes/input';
 import {Label} from '@/components/ui/componentes/label';
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@/components/ui/componentes/select';
 import {Sheet, SheetContent, SheetHeader, SheetTitle} from '@/components/ui/componentes/sheet';
 import {Textarea} from '@/components/ui/componentes/textarea';
-import {useCan} from '@/hooks/useCan';
+import {useCan, useCanState} from '@/hooks/useCan';
 import {formatBRL} from '@/lib/utils';
-import {cx} from '@/styled-system/css';
+import {css, cx} from '@/styled-system/css';
 import {translateApiError} from '@/utils/translate-api-error';
 import {ConfirmDialog} from '@/views/components/ConfirmDialog';
 import {ProcedureColorDot} from '../../components/ProcedureFields';
@@ -117,9 +121,12 @@ import {
 
 // ── Route ─────────────────────────────────────────────────────────
 export const Route = createFileRoute('/_stackedLayout/appointments')({
-    validateSearch: (search: Record<string, unknown>): {date?: string; appointmentId?: string} => ({
+    validateSearch: (
+        search: Record<string, unknown>
+    ): {date?: string; appointmentId?: string; followUpFromRecordId?: string} => ({
         date: typeof search.date === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(search.date) ? search.date : undefined,
         appointmentId: typeof search.appointmentId === 'string' ? search.appointmentId : undefined,
+        followUpFromRecordId: typeof search.followUpFromRecordId === 'string' ? search.followUpFromRecordId : undefined,
     }),
     component: AppointmentsPage,
 });
@@ -2127,17 +2134,28 @@ function EditAppointmentDialog({apt, onClose, onSaved}: EditDialogProps) {
 // ─────────────────────────────────────────────────────────────────
 //   New Appointment Dialog
 // ─────────────────────────────────────────────────────────────────
+const followUpPlan = css({whiteSpace: 'pre-wrap', overflowWrap: 'anywhere', fontSize: 'sm', mt: '1'});
+
+interface AppointmentFollowUpContext {
+    recordId: string;
+    patient: Patient;
+    professional: ClinicMember;
+    plan: string | null;
+}
+
 interface NewApptDialogProps {
     prefill: NewAppointmentPrefill | null;
     defaultMemberId: string;
+    followUp?: AppointmentFollowUpContext;
     onClose: () => void;
     onSaved: () => void;
 }
 
-function NewAppointmentDialog({prefill, defaultMemberId, onClose, onSaved}: NewApptDialogProps) {
+function NewAppointmentDialog({prefill, defaultMemberId, followUp, onClose, onSaved}: NewApptDialogProps) {
+    const {t} = useTranslation();
     const today = fmtDate(new Date());
     const [patientSearch, setPatientSearch] = useState('');
-    const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
+    const [selectedPatient, setSelectedPatient] = useState<Patient | null>(followUp?.patient ?? null);
     const [date, setDate] = useState(prefill?.date ?? today);
     const [startTime, setStartTime] = useState(prefill?.start ?? '09:00');
     const [durMin, setDurMin] = useState(60);
@@ -2147,12 +2165,15 @@ function NewAppointmentDialog({prefill, defaultMemberId, onClose, onSaved}: NewA
     const [note, setNote] = useState('');
     const [showDrop, setShowDrop] = useState(false);
 
-    const patientsQ = useSearchPatients({
-        term: patientSearch,
-        limit: 20,
-        cursor: null,
-        sort: null,
-    }) as unknown as UseQueryResult<PaginatedPage<Patient>>;
+    const patientsQ = useSearchPatients(
+        {
+            term: patientSearch,
+            limit: 20,
+            cursor: null,
+            sort: null,
+        },
+        {query: {enabled: !followUp}}
+    ) as unknown as UseQueryResult<PaginatedPage<Patient>>;
     const patientsList = patientsQ.data?.data ?? [];
 
     const [roomId, setRoomId] = useState(prefill?.roomId ?? '');
@@ -2168,19 +2189,21 @@ function NewAppointmentDialog({prefill, defaultMemberId, onClose, onSaved}: NewA
     // Which professional the appointment is for. Only surfaced as a field when the
     // actor manages more than one agenda (owner/admin, or a grantee with multiple
     // grants) — a plain professional only ever manages their own, so it's implicit.
-    const manageableData = useListManageableProfessionals().data;
+    const manageableData = useListManageableProfessionals({query: {enabled: !followUp}}).data;
     const manageableProfessionals = manageableData ?? [];
-    const showProfessionalField = manageableProfessionals.length > 1;
+    const showProfessionalField = !followUp && manageableProfessionals.length > 1;
 
-    const [attendedByMemberId, setAttendedByMemberId] = useState(prefill?.attendedByMemberId ?? defaultMemberId);
+    const [attendedByMemberId, setAttendedByMemberId] = useState(
+        followUp?.professional.id ?? prefill?.attendedByMemberId ?? defaultMemberId
+    );
 
     useEffect(() => {
-        if (!manageableData || manageableData.length === 0) return;
+        if (followUp || !manageableData || manageableData.length === 0) return;
 
         setAttendedByMemberId((prev) =>
             manageableData.some((m) => m.id === prev) ? prev : (manageableData[0]?.id ?? prev)
         );
-    }, [manageableData]);
+    }, [followUp, manageableData]);
 
     const submit = (confirmOutsideAvailability: boolean) => {
         if (!selectedPatient) {
@@ -2193,6 +2216,12 @@ function NewAppointmentDialog({prefill, defaultMemberId, onClose, onSaved}: NewA
 
         const startAt = localDateTimeToISO(date, startTime);
 
+        if (followUp && new Date(startAt).getTime() <= Date.now()) {
+            toast.error(t('followUp.futureDate'));
+
+            return;
+        }
+
         create.mutate(
             {
                 data: {
@@ -2202,16 +2231,16 @@ function NewAppointmentDialog({prefill, defaultMemberId, onClose, onSaved}: NewA
                     ...procedure.buildFields(startAt, durMin),
                     type,
                     note: note || null,
-                    retroactive: true, // allow past dates too
+                    retroactive: !followUp,
+                    followUpFromRecordId: followUp?.recordId,
                     roomId: roomManagementEnabled && roomId ? roomId : undefined,
                     confirmOutsideAvailability,
                 },
             },
             {
                 onSuccess: () => {
-                    toast.success('Consulta agendada');
+                    toast.success(followUp ? t('followUp.saved') : 'Consulta agendada');
                     onSaved();
-                    onClose();
                 },
                 onError: (error) => {
                     const warning = getAvailabilityWarning(error);
@@ -2222,20 +2251,24 @@ function NewAppointmentDialog({prefill, defaultMemberId, onClose, onSaved}: NewA
                         return;
                     }
 
-                    toast.error(getApiErrorDetail(error) ?? 'Erro ao criar consulta');
+                    toast.error(
+                        getApiErrorDetail(error) ?? (followUp ? t('followUp.saveError') : 'Erro ao criar consulta')
+                    );
                 },
             }
         );
     };
 
     const handleSave = () => submit(false);
+    const submitLabel = followUp ? t('followUp.schedule') : 'Agendar consulta';
 
     return (
         <>
-            <Dialog open onOpenChange={(o) => !o && onClose()}>
+            <Dialog open onOpenChange={(o) => !o && !create.isPending && onClose()}>
                 <DialogContent className={styles.newApptDialogWidth}>
                     <DialogHeader>
-                        <DialogTitle>Novo agendamento</DialogTitle>
+                        <DialogTitle>{followUp ? t('followUp.schedule') : 'Novo agendamento'}</DialogTitle>
+                        {followUp && <DialogDescription>{t('followUp.linkedToRecord')}</DialogDescription>}
                     </DialogHeader>
                     <div className={styles.formBody}>
                         {/* Patient */}
@@ -2245,13 +2278,15 @@ function NewAppointmentDialog({prefill, defaultMemberId, onClose, onSaved}: NewA
                                 <div className={styles.patSearchPill}>
                                     <div className={styles.patAvatarSm}>{getInitials(selectedPatient.name)}</div>
                                     <span className={styles.patSearchName}>{selectedPatient.name}</span>
-                                    <button
-                                        type="button"
-                                        className={styles.patClearBtn}
-                                        onClick={() => setSelectedPatient(null)}
-                                    >
-                                        <X className={icon35} />
-                                    </button>
+                                    {!followUp && (
+                                        <button
+                                            type="button"
+                                            className={styles.patClearBtn}
+                                            onClick={() => setSelectedPatient(null)}
+                                        >
+                                            <X className={icon35} />
+                                        </button>
+                                    )}
                                 </div>
                             ) : (
                                 <div className={styles.patSearchWrap}>
@@ -2288,6 +2323,19 @@ function NewAppointmentDialog({prefill, defaultMemberId, onClose, onSaved}: NewA
                             )}
                         </div>
 
+                        {followUp && (
+                            <div className={styles.formField}>
+                                <Label>{t('followUp.professional')}</Label>
+                                <span>{followUp.professional.displayName ?? t('followUp.professional')}</span>
+                                {followUp.plan && (
+                                    <details>
+                                        <summary>{t('followUp.sourcePlan')}</summary>
+                                        <p className={followUpPlan}>{followUp.plan}</p>
+                                    </details>
+                                )}
+                            </div>
+                        )}
+
                         {showProfessionalField && (
                             <div className={styles.formField}>
                                 <Label>Profissional</Label>
@@ -2312,6 +2360,7 @@ function NewAppointmentDialog({prefill, defaultMemberId, onClose, onSaved}: NewA
                                 <Input
                                     type="date"
                                     aria-label="Data"
+                                    min={followUp ? today : undefined}
                                     value={date}
                                     onChange={(e) => setDate(e.target.value)}
                                 />
@@ -2352,7 +2401,11 @@ function NewAppointmentDialog({prefill, defaultMemberId, onClose, onSaved}: NewA
                             )}
                             <div className={styles.formField}>
                                 <Label>Tipo</Label>
-                                <Select value={type} onValueChange={(v) => setType(v as CreateAppointmentDtoType)}>
+                                <Select
+                                    value={type}
+                                    disabled={!!followUp}
+                                    onValueChange={(v) => setType(v as CreateAppointmentDtoType)}
+                                >
                                     <SelectTrigger>
                                         <SelectValue />
                                     </SelectTrigger>
@@ -2400,7 +2453,7 @@ function NewAppointmentDialog({prefill, defaultMemberId, onClose, onSaved}: NewA
                         </div>
                     </div>
                     <div className={styles.formFooter}>
-                        <Button variant="outline" onClick={onClose}>
+                        <Button variant="outline" onClick={onClose} disabled={create.isPending}>
                             Cancelar
                         </Button>
                         <Button
@@ -2415,7 +2468,7 @@ function NewAppointmentDialog({prefill, defaultMemberId, onClose, onSaved}: NewA
                                 (requiresProcedure && !procedure.hasProcedure)
                             }
                         >
-                            {create.isPending ? 'Salvando…' : 'Agendar consulta'}
+                            {create.isPending ? t('states.saving') : submitLabel}
                         </Button>
                     </div>
                 </DialogContent>
@@ -2433,6 +2486,76 @@ function NewAppointmentDialog({prefill, defaultMemberId, onClose, onSaved}: NewA
                 onCancel={() => setAvailabilityWarning(null)}
             />
         </>
+    );
+}
+
+function RecordFollowUpDialog({recordId, onDismiss}: {recordId: string; onDismiss: () => void}) {
+    const {t} = useTranslation();
+    const navigate = useNavigate();
+    const queryClient = useQueryClient();
+    const access = useCanState({hasAll: ['appointment:create', 'record:view', 'professional:view']});
+    const recordQuery = useGetRecord(recordId, {query: {enabled: access.allowed}});
+    const record = recordQuery.data;
+    const patientQuery = useGetPatient(record?.patientId ?? '', {query: {enabled: !!record && access.allowed}});
+    const professionalQuery = useGetProfessional(record?.responsibleProfessionalId ?? '', {
+        query: {enabled: !!record && access.allowed},
+    });
+    const agendasQuery = useListManageableProfessionals({query: {enabled: access.allowed}});
+    const professional = agendasQuery.data?.find((member) => member.id === professionalQuery.data?.clinicMemberId);
+    const loading =
+        access.isLoading ||
+        recordQuery.isLoading ||
+        patientQuery.isLoading ||
+        professionalQuery.isLoading ||
+        agendasQuery.isLoading;
+    const error =
+        access.isError ||
+        recordQuery.isError ||
+        patientQuery.isError ||
+        professionalQuery.isError ||
+        agendasQuery.isError;
+
+    const returnToRecord = () => {
+        if (record && access.allowed && !recordQuery.isError) {
+            void navigate({
+                to: '/patients/$patientId/records/$recordId',
+                params: {patientId: record.patientId, recordId},
+                replace: true,
+            });
+        } else {
+            onDismiss();
+        }
+    };
+
+    if (!access.allowed || error || !record || !patientQuery.data || !professional) {
+        return (
+            <Dialog open onOpenChange={(open) => !open && returnToRecord()}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>{t('followUp.schedule')}</DialogTitle>
+                        <DialogDescription role="status">
+                            {loading ? t('states.loading') : t('followUp.unavailable')}
+                        </DialogDescription>
+                    </DialogHeader>
+                    <Button variant="outline" onClick={returnToRecord}>
+                        {t('actions.close')}
+                    </Button>
+                </DialogContent>
+            </Dialog>
+        );
+    }
+
+    return (
+        <NewAppointmentDialog
+            prefill={{date: fmtDate(addDays(new Date(), 1)), start: '09:00'}}
+            defaultMemberId={professional.id}
+            followUp={{recordId, patient: patientQuery.data, professional, plan: asStr(record.plan)}}
+            onClose={returnToRecord}
+            onSaved={() => {
+                void queryClient.invalidateQueries({queryKey: getListAppointmentFollowUpsQueryKey(recordId)});
+                returnToRecord();
+            }}
+        />
     );
 }
 
@@ -2948,12 +3071,22 @@ export function AppointmentsPage() {
             )}
 
             {/* New Appointment Dialog */}
-            {newAppt && (
+            {search.followUpFromRecordId && (
+                <RecordFollowUpDialog
+                    key={search.followUpFromRecordId}
+                    recordId={search.followUpFromRecordId}
+                    onDismiss={() => void navigate({to: '/appointments', search: {date: search.date}, replace: true})}
+                />
+            )}
+            {newAppt && !search.followUpFromRecordId && (
                 <NewAppointmentDialog
                     prefill={typeof newAppt === 'object' ? newAppt : null}
                     defaultMemberId={defaultMemberId}
                     onClose={() => setNewAppt(null)}
-                    onSaved={() => apptQ.refetch()}
+                    onSaved={() => {
+                        setNewAppt(null);
+                        void apptQ.refetch();
+                    }}
                 />
             )}
             <ConfirmDialog

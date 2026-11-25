@@ -175,3 +175,14 @@ Cada ticket deve conter:
 - [Resolução CFM nº 2.299/2021](https://sistemas.cfm.org.br/normas/arquivos/resolucoes/BR/2021/2299_2021.pdf).
 - [DATASUS — Modelo Padrão de Dados / RNDS e HL7 FHIR](https://datasus.saude.gov.br/modelo-padrao-de-dados-mad/).
 - [ANPD — Nota Técnica sobre tratamento de dados de saúde](https://www.gov.br/anpd/pt-br/acesso-a-informacao/participacao-social/outras-acoes/documentos/ts-05-2024-nota-tecnica-no-26-2024-cgn-anpd.pdf).
+
+### Agendar retorno pela evolução (L1-08)
+
+Em uma evolução salva, use **Agendar retorno** na seção **Retornos da evolução**.
+A agenda abre com o paciente e o profissional responsável da evolução e sugere
+o dia seguinte. A data, o horário e as demais opções do agendamento podem ser
+ajustados com as mesmas regras de disponibilidade da agenda.
+
+O retorno aparece na evolução com data, status e link para a agenda.
+O identificador da evolução de origem fica no agendamento. O plano clínico fica
+disponível para consulta durante o preenchimento e permanece no prontuário.

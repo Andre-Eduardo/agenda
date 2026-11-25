@@ -33,7 +33,7 @@ import type {
     UpdateAppointmentInputDto,
 } from '../models';
 import {AppointmentPaymentStatus, ProcedureColor, ProcedureModality} from '../models';
-import type {ApiProblem, Appointment, AppointmentStatusTransition, ClinicMember} from '../models';
+import type {ApiProblem, Appointment, AppointmentFollowUp, AppointmentStatusTransition, ClinicMember} from '../models';
 
 type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 
@@ -504,6 +504,214 @@ export function useListManageableProfessionalsSuspense<
     queryClient?: QueryClient
 ): UseSuspenseQueryResult<TData, TError> & {queryKey: DataTag<QueryKey, TData, TError>} {
     const queryOptions = getListManageableProfessionalsSuspenseQueryOptions(options);
+
+    const query = useSuspenseQuery(queryOptions, queryClient) as UseSuspenseQueryResult<TData, TError> & {
+        queryKey: DataTag<QueryKey, TData, TError>;
+    };
+
+    query.queryKey = queryOptions.queryKey;
+
+    return query;
+}
+
+/**
+ * @summary Lists follow-up appointments originating from a clinical record
+ */
+export const listAppointmentFollowUps = (
+    recordId: string,
+    options?: SecondParameter<typeof apiClient>,
+    signal?: AbortSignal
+) => {
+    return apiClient<AppointmentFollowUp[]>(
+        {url: `/api/v1/appointments/follow-ups/${recordId}`, method: 'GET', signal},
+        options
+    );
+};
+
+export const getListAppointmentFollowUpsQueryKey = (recordId?: string) => {
+    return [`/api/v1/appointments/follow-ups/${recordId}`] as const;
+};
+
+export const getListAppointmentFollowUpsQueryOptions = <
+    TData = Awaited<ReturnType<typeof listAppointmentFollowUps>>,
+    TError = ErrorType<ApiProblem>,
+>(
+    recordId: string,
+    options?: {
+        query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof listAppointmentFollowUps>>, TError, TData>>;
+        request?: SecondParameter<typeof apiClient>;
+    }
+) => {
+    const {query: queryOptions, request: requestOptions} = options ?? {};
+
+    const queryKey = queryOptions?.queryKey ?? getListAppointmentFollowUpsQueryKey(recordId);
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listAppointmentFollowUps>>> = ({signal}) =>
+        listAppointmentFollowUps(recordId, requestOptions, signal);
+
+    return {queryKey, queryFn, enabled: !!recordId, ...queryOptions} as UseQueryOptions<
+        Awaited<ReturnType<typeof listAppointmentFollowUps>>,
+        TError,
+        TData
+    > & {queryKey: DataTag<QueryKey, TData, TError>};
+};
+
+export type ListAppointmentFollowUpsQueryResult = NonNullable<Awaited<ReturnType<typeof listAppointmentFollowUps>>>;
+export type ListAppointmentFollowUpsQueryError = ErrorType<ApiProblem>;
+
+export function useListAppointmentFollowUps<
+    TData = Awaited<ReturnType<typeof listAppointmentFollowUps>>,
+    TError = ErrorType<ApiProblem>,
+>(
+    recordId: string,
+    options: {
+        query: Partial<UseQueryOptions<Awaited<ReturnType<typeof listAppointmentFollowUps>>, TError, TData>> &
+            Pick<
+                DefinedInitialDataOptions<
+                    Awaited<ReturnType<typeof listAppointmentFollowUps>>,
+                    TError,
+                    Awaited<ReturnType<typeof listAppointmentFollowUps>>
+                >,
+                'initialData'
+            >;
+        request?: SecondParameter<typeof apiClient>;
+    },
+    queryClient?: QueryClient
+): DefinedUseQueryResult<TData, TError> & {queryKey: DataTag<QueryKey, TData, TError>};
+export function useListAppointmentFollowUps<
+    TData = Awaited<ReturnType<typeof listAppointmentFollowUps>>,
+    TError = ErrorType<ApiProblem>,
+>(
+    recordId: string,
+    options?: {
+        query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof listAppointmentFollowUps>>, TError, TData>> &
+            Pick<
+                UndefinedInitialDataOptions<
+                    Awaited<ReturnType<typeof listAppointmentFollowUps>>,
+                    TError,
+                    Awaited<ReturnType<typeof listAppointmentFollowUps>>
+                >,
+                'initialData'
+            >;
+        request?: SecondParameter<typeof apiClient>;
+    },
+    queryClient?: QueryClient
+): UseQueryResult<TData, TError> & {queryKey: DataTag<QueryKey, TData, TError>};
+export function useListAppointmentFollowUps<
+    TData = Awaited<ReturnType<typeof listAppointmentFollowUps>>,
+    TError = ErrorType<ApiProblem>,
+>(
+    recordId: string,
+    options?: {
+        query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof listAppointmentFollowUps>>, TError, TData>>;
+        request?: SecondParameter<typeof apiClient>;
+    },
+    queryClient?: QueryClient
+): UseQueryResult<TData, TError> & {queryKey: DataTag<QueryKey, TData, TError>};
+/**
+ * @summary Lists follow-up appointments originating from a clinical record
+ */
+
+export function useListAppointmentFollowUps<
+    TData = Awaited<ReturnType<typeof listAppointmentFollowUps>>,
+    TError = ErrorType<ApiProblem>,
+>(
+    recordId: string,
+    options?: {
+        query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof listAppointmentFollowUps>>, TError, TData>>;
+        request?: SecondParameter<typeof apiClient>;
+    },
+    queryClient?: QueryClient
+): UseQueryResult<TData, TError> & {queryKey: DataTag<QueryKey, TData, TError>} {
+    const queryOptions = getListAppointmentFollowUpsQueryOptions(recordId, options);
+
+    const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
+        queryKey: DataTag<QueryKey, TData, TError>;
+    };
+
+    query.queryKey = queryOptions.queryKey;
+
+    return query;
+}
+
+export const getListAppointmentFollowUpsSuspenseQueryOptions = <
+    TData = Awaited<ReturnType<typeof listAppointmentFollowUps>>,
+    TError = ErrorType<ApiProblem>,
+>(
+    recordId: string,
+    options?: {
+        query?: Partial<UseSuspenseQueryOptions<Awaited<ReturnType<typeof listAppointmentFollowUps>>, TError, TData>>;
+        request?: SecondParameter<typeof apiClient>;
+    }
+) => {
+    const {query: queryOptions, request: requestOptions} = options ?? {};
+
+    const queryKey = queryOptions?.queryKey ?? getListAppointmentFollowUpsQueryKey(recordId);
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listAppointmentFollowUps>>> = ({signal}) =>
+        listAppointmentFollowUps(recordId, requestOptions, signal);
+
+    return {queryKey, queryFn, ...queryOptions} as UseSuspenseQueryOptions<
+        Awaited<ReturnType<typeof listAppointmentFollowUps>>,
+        TError,
+        TData
+    > & {queryKey: DataTag<QueryKey, TData, TError>};
+};
+
+export type ListAppointmentFollowUpsSuspenseQueryResult = NonNullable<
+    Awaited<ReturnType<typeof listAppointmentFollowUps>>
+>;
+export type ListAppointmentFollowUpsSuspenseQueryError = ErrorType<ApiProblem>;
+
+export function useListAppointmentFollowUpsSuspense<
+    TData = Awaited<ReturnType<typeof listAppointmentFollowUps>>,
+    TError = ErrorType<ApiProblem>,
+>(
+    recordId: string,
+    options: {
+        query: Partial<UseSuspenseQueryOptions<Awaited<ReturnType<typeof listAppointmentFollowUps>>, TError, TData>>;
+        request?: SecondParameter<typeof apiClient>;
+    },
+    queryClient?: QueryClient
+): UseSuspenseQueryResult<TData, TError> & {queryKey: DataTag<QueryKey, TData, TError>};
+export function useListAppointmentFollowUpsSuspense<
+    TData = Awaited<ReturnType<typeof listAppointmentFollowUps>>,
+    TError = ErrorType<ApiProblem>,
+>(
+    recordId: string,
+    options?: {
+        query?: Partial<UseSuspenseQueryOptions<Awaited<ReturnType<typeof listAppointmentFollowUps>>, TError, TData>>;
+        request?: SecondParameter<typeof apiClient>;
+    },
+    queryClient?: QueryClient
+): UseSuspenseQueryResult<TData, TError> & {queryKey: DataTag<QueryKey, TData, TError>};
+export function useListAppointmentFollowUpsSuspense<
+    TData = Awaited<ReturnType<typeof listAppointmentFollowUps>>,
+    TError = ErrorType<ApiProblem>,
+>(
+    recordId: string,
+    options?: {
+        query?: Partial<UseSuspenseQueryOptions<Awaited<ReturnType<typeof listAppointmentFollowUps>>, TError, TData>>;
+        request?: SecondParameter<typeof apiClient>;
+    },
+    queryClient?: QueryClient
+): UseSuspenseQueryResult<TData, TError> & {queryKey: DataTag<QueryKey, TData, TError>};
+/**
+ * @summary Lists follow-up appointments originating from a clinical record
+ */
+
+export function useListAppointmentFollowUpsSuspense<
+    TData = Awaited<ReturnType<typeof listAppointmentFollowUps>>,
+    TError = ErrorType<ApiProblem>,
+>(
+    recordId: string,
+    options?: {
+        query?: Partial<UseSuspenseQueryOptions<Awaited<ReturnType<typeof listAppointmentFollowUps>>, TError, TData>>;
+        request?: SecondParameter<typeof apiClient>;
+    },
+    queryClient?: QueryClient
+): UseSuspenseQueryResult<TData, TError> & {queryKey: DataTag<QueryKey, TData, TError>} {
+    const queryOptions = getListAppointmentFollowUpsSuspenseQueryOptions(recordId, options);
 
     const query = useSuspenseQuery(queryOptions, queryClient) as UseSuspenseQueryResult<TData, TError> & {
         queryKey: DataTag<QueryKey, TData, TError>;
@@ -1483,6 +1691,50 @@ export const getListManageableProfessionalsResponseMock200 = (): ClinicMember[] 
     }));
 
 export const getListManageableProfessionalsResponseMockDefault = (
+    overrideResponse: Partial<ApiProblem> = {}
+): ApiProblem => ({
+    title: faker.string.alpha({length: {min: 10, max: 20}}),
+    type: faker.internet.url(),
+    detail: faker.string.alpha({length: {min: 10, max: 20}}),
+    status: faker.helpers.arrayElement([
+        400, 401, 402, 403, 404, 405, 406, 407, 408, 409, 410, 411, 412, 413, 414, 415, 416, 417, 418, 421, 422, 423,
+        424, 428, 429, 456, 500, 501, 502, 503, 504, 505, 507, 508,
+    ] as const),
+    instance: faker.string.alpha({length: {min: 10, max: 20}}),
+    ...overrideResponse,
+});
+
+export const getListAppointmentFollowUpsResponseMock = (): AppointmentFollowUp[] =>
+    Array.from({length: faker.number.int({min: 1, max: 10})}, (_, i) => i + 1).map(() => ({
+        id: faker.string.uuid(),
+        startAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
+        status: faker.helpers.arrayElement([
+            'SCHEDULED',
+            'CONFIRMED',
+            'CANCELLED',
+            'COMPLETED',
+            'NO_SHOW',
+            'ARRIVED',
+            'IN_PROGRESS',
+        ] as const),
+    }));
+
+export const getListAppointmentFollowUpsResponseMock200 = (): AppointmentFollowUp[] =>
+    Array.from({length: faker.number.int({min: 1, max: 10})}, (_, i) => i + 1).map(() => ({
+        id: faker.string.uuid(),
+        startAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
+        status: faker.helpers.arrayElement([
+            'SCHEDULED',
+            'CONFIRMED',
+            'CANCELLED',
+            'COMPLETED',
+            'NO_SHOW',
+            'ARRIVED',
+            'IN_PROGRESS',
+        ] as const),
+    }));
+
+export const getListAppointmentFollowUpsResponseMockDefault = (
     overrideResponse: Partial<ApiProblem> = {}
 ): ApiProblem => ({
     title: faker.string.alpha({length: {min: 10, max: 20}}),
@@ -2518,6 +2770,82 @@ export const getListManageableProfessionalsMockHandlerDefault = (
     );
 };
 
+export const getListAppointmentFollowUpsMockHandler = (
+    overrideResponse?:
+        | AppointmentFollowUp[]
+        | ((
+              info: Parameters<Parameters<typeof http.get>[1]>[0]
+          ) => Promise<AppointmentFollowUp[]> | AppointmentFollowUp[]),
+    options?: RequestHandlerOptions
+) => {
+    return http.get(
+        '*/api/v1/appointments/follow-ups/:recordId',
+        async (info) => {
+            return new HttpResponse(
+                JSON.stringify(
+                    overrideResponse !== undefined
+                        ? typeof overrideResponse === 'function'
+                            ? await overrideResponse(info)
+                            : overrideResponse
+                        : getListAppointmentFollowUpsResponseMock()
+                ),
+                {status: 200, headers: {'Content-Type': 'application/json'}}
+            );
+        },
+        options
+    );
+};
+
+export const getListAppointmentFollowUpsMockHandler200 = (
+    overrideResponse?:
+        | AppointmentFollowUp[]
+        | ((
+              info: Parameters<Parameters<typeof http.get>[1]>[0]
+          ) => Promise<AppointmentFollowUp[]> | AppointmentFollowUp[]),
+    options?: RequestHandlerOptions
+) => {
+    return http.get(
+        '*/api/v1/appointments/follow-ups/:recordId',
+        async (info) => {
+            return new HttpResponse(
+                JSON.stringify(
+                    overrideResponse !== undefined
+                        ? typeof overrideResponse === 'function'
+                            ? await overrideResponse(info)
+                            : overrideResponse
+                        : getListAppointmentFollowUpsResponseMock200()
+                ),
+                {status: 200, headers: {'Content-Type': 'application/json'}}
+            );
+        },
+        options
+    );
+};
+
+export const getListAppointmentFollowUpsMockHandlerDefault = (
+    overrideResponse?:
+        | ApiProblem
+        | ((info: Parameters<Parameters<typeof http.get>[1]>[0]) => Promise<ApiProblem> | ApiProblem),
+    options?: RequestHandlerOptions
+) => {
+    return http.get(
+        '*/api/v1/appointments/follow-ups/:recordId',
+        async (info) => {
+            return new HttpResponse(
+                JSON.stringify(
+                    overrideResponse !== undefined
+                        ? typeof overrideResponse === 'function'
+                            ? await overrideResponse(info)
+                            : overrideResponse
+                        : getListAppointmentFollowUpsResponseMockDefault()
+                ),
+                {status: 200, headers: {'Content-Type': 'application/json'}}
+            );
+        },
+        options
+    );
+};
+
 export const getGetAppointmentMockHandler = (
     overrideResponse?:
         | Appointment
@@ -3232,6 +3560,7 @@ export const getAppointmentMock = () => [
     getCreateAppointmentMockHandler(),
     getSearchAppointmentsMockHandler(),
     getListManageableProfessionalsMockHandler(),
+    getListAppointmentFollowUpsMockHandler(),
     getGetAppointmentMockHandler(),
     getUpdateAppointmentMockHandler(),
     getDeleteAppointmentMockHandler(),

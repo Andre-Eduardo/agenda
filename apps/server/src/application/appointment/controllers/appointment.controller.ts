@@ -8,6 +8,8 @@ import {entityIdParam} from '@application/@shared/openapi/params';
 import {ValidatedParam, ZodValidationPipe} from '@application/@shared/validation';
 import {
     AppointmentDto,
+    AppointmentFollowUpDto,
+    followUpRecordIdSchema,
     AppointmentStatusTransitionDto,
     CancelAppointmentInputDto,
     CreateAppointmentDto,
@@ -24,6 +26,7 @@ import {
     updateAppointmentSchema,
 } from '@application/appointment/dtos';
 import {
+    AppointmentFollowUpService,
     CallAppointmentService,
     CancelAppointmentService,
     CheckinAppointmentService,
@@ -42,6 +45,7 @@ import {ListManageableAgendasService} from '@application/professional-agenda-acc
 import {Actor} from '@domain/@shared/actor';
 import {AppointmentId} from '@domain/appointment/entities';
 import {AppointmentPermission} from '@domain/auth';
+import {RecordId} from '@domain/record/entities';
 
 @ApiTags('Appointment')
 @Controller('appointments')
@@ -59,7 +63,8 @@ export class AppointmentController {
         private readonly confirmAppointmentService: ConfirmAppointmentService,
         private readonly completeAppointmentService: CompleteAppointmentService,
         private readonly markNoShowAppointmentService: MarkNoShowAppointmentService,
-        private readonly listManageableAgendasService: ListManageableAgendasService
+        private readonly listManageableAgendasService: ListManageableAgendasService,
+        private readonly appointmentFollowUps: AppointmentFollowUpService
     ) {}
 
     @ApiOperation({
@@ -93,6 +98,20 @@ export class AppointmentController {
     @Get('manageable-professionals')
     listManageableProfessionals(@RequestActor() actor: Actor): Promise<ClinicMemberDto[]> {
         return this.listManageableAgendasService.execute({actor, payload: undefined});
+    }
+
+    @ApiOperation({
+        summary: 'Lists follow-up appointments originating from a clinical record',
+        parameters: [entityIdParam('Source record ID', 'recordId')],
+        responses: [{status: 200, description: 'Follow-up appointments', type: [AppointmentFollowUpDto]}],
+    })
+    @Authorize(AppointmentPermission.VIEW)
+    @Get('follow-ups/:recordId')
+    listAppointmentFollowUps(
+        @RequestActor() actor: Actor,
+        @ValidatedParam('recordId', followUpRecordIdSchema) recordId: RecordId
+    ): Promise<AppointmentFollowUpDto[]> {
+        return this.appointmentFollowUps.list(actor, recordId);
     }
 
     @ApiOperation({

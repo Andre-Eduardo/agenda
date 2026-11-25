@@ -20,6 +20,20 @@
     "saving": "Saving...",
     "forbidden": "Access denied. You do not have permission to view this page."
   },
+  "followUp": {
+    "title": "Follow-up visits",
+    "schedule": "Schedule follow-up",
+    "linkedToRecord": "The follow-up will be linked to this clinical note.",
+    "professional": "Responsible professional",
+    "sourcePlan": "View the care plan from the note",
+    "saved": "Follow-up scheduled",
+    "saveError": "The follow-up could not be scheduled.",
+    "unavailable": "The patient or the professional’s schedule could not be loaded for this note.",
+    "futureDate": "Choose a future date and time for the follow-up.",
+    "empty": "There are no follow-ups linked to this note.",
+    "listError": "The follow-ups for this note could not be loaded.",
+    "open": "View follow-up on {{date}}"
+  },
   "procedure": {
     "title": "Procedures and services",
     "description": "Set up the options your team can select when scheduling.",
@@ -63,6 +77,9 @@
       "invalid_duration": "Enter a duration from 1 to 720 whole minutes."
     },
     "appointment": {
+      "follow_up_patient_mismatch": "Schedule the follow-up for the patient on the note.",
+      "follow_up_professional_mismatch": "Schedule the follow-up with the professional on the note.",
+      "follow_up_type_required": "A follow-up linked to a note must stay a follow-up visit.",
       "end_required": "Enter the appointment end time.",
       "member_conflict": "The professional already has an appointment at this time. Choose another time or professional.",
       "room_conflict": "The room is already booked at this time. Choose another room or time."

@@ -29,6 +29,8 @@ export type * from './apiProblem';
 export * from './apiProblemStatus';
 export type * from './appointment';
 export type * from './appointmentCanceledReason';
+export type * from './appointmentFollowUp';
+export * from './appointmentFollowUpStatus';
 export type * from './appointmentNote';
 export type * from './appointmentPayment';
 export * from './appointmentPaymentPaymentMethod';

@@ -6,6 +6,7 @@ import {ClinicMemberId} from '@domain/clinic-member/entities';
 import {ClinicId} from '@domain/clinic/entities';
 import {PatientId} from '@domain/patient/entities';
 import {ProcedureColor, ProcedureModality} from '@domain/procedure/procedure.entity';
+import {RecordId} from '@domain/record/entities';
 import {RoomId} from '@domain/room/entities';
 import {MapperWithoutDto} from '@infrastructure/mappers/mapper';
 
@@ -46,6 +47,8 @@ export class AppointmentMapper extends MapperWithoutDto<Appointment, Appointment
             arrivedAt: model.arrivedAt ?? null,
             calledAt: model.calledAt ?? null,
             roomId: model.roomId === null ? null : RoomId.from(model.roomId),
+            followUpFromRecordId:
+                model.followUpFromRecordId === null ? null : RecordId.from(model.followUpFromRecordId),
         });
     }
 
@@ -72,6 +75,7 @@ export class AppointmentMapper extends MapperWithoutDto<Appointment, Appointment
             arrivedAt: entity.arrivedAt,
             calledAt: entity.calledAt,
             roomId: entity.roomId?.toString() ?? null,
+            followUpFromRecordId: entity.followUpFromRecordId?.toString() ?? null,
             createdAt: entity.createdAt,
             updatedAt: entity.updatedAt,
             deletedAt: entity.deletedAt ?? null,

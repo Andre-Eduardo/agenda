@@ -18,6 +18,7 @@ import type {ClinicMemberId} from '@domain/clinic-member/entities';
 import type {ClinicId} from '@domain/clinic/entities';
 import type {PatientId} from '@domain/patient/entities';
 import type {ScheduledProcedure} from '@domain/procedure/procedure.entity';
+import type {RecordId} from '@domain/record/entities';
 import type {RoomId} from '@domain/room/entities';
 
 export type AppointmentProps = EntityProps<Appointment>;
@@ -81,8 +82,14 @@ export class Appointment extends AggregateRoot<AppointmentId> {
     calledAt: Date | null;
     /** Sala do atendimento. Só usado quando Clinic.roomManagementEnabled está ativo. */
     roomId: RoomId | null;
+    readonly followUpFromRecordId: RecordId | null;
 
-    constructor(props: Omit<AllEntityProps<Appointment>, 'procedure'> & {procedure?: ScheduledProcedure | null}) {
+    constructor(
+        props: Omit<AllEntityProps<Appointment>, 'procedure' | 'followUpFromRecordId'> & {
+            procedure?: ScheduledProcedure | null;
+            followUpFromRecordId?: RecordId | null;
+        }
+    ) {
         super(props);
         this.clinicId = props.clinicId;
         this.patientId = props.patientId;
@@ -100,6 +107,7 @@ export class Appointment extends AggregateRoot<AppointmentId> {
         this.arrivedAt = props.arrivedAt ?? null;
         this.calledAt = props.calledAt ?? null;
         this.roomId = props.roomId ?? null;
+        this.followUpFromRecordId = props.followUpFromRecordId ?? null;
         this.validate();
     }
 
@@ -269,6 +277,10 @@ export class Appointment extends AggregateRoot<AppointmentId> {
     }
 
     validate(): void {
+        if (this.followUpFromRecordId !== null && this.type !== AppointmentType.RETURN) {
+            throw new InvalidInputException('appointment.follow_up_type_required');
+        }
+
         if (this.startAt >= this.endAt) {
             throw new InvalidInputException('endAt must be after startAt', [
                 {field: 'endAt', reason: 'endAt must be after startAt'},
@@ -301,6 +313,7 @@ export class Appointment extends AggregateRoot<AppointmentId> {
             arrivedAt: this.arrivedAt?.toJSON() ?? null,
             calledAt: this.calledAt?.toJSON() ?? null,
             roomId: this.roomId?.toJSON() ?? null,
+            followUpFromRecordId: this.followUpFromRecordId?.toJSON() ?? null,
             createdAt: this.createdAt.toJSON(),
             updatedAt: this.updatedAt.toJSON(),
             deletedAt: this.deletedAt?.toJSON() ?? null,
