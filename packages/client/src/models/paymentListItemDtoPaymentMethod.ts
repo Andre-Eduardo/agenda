@@ -5,8 +5,12 @@
  * OpenAPI spec version: 0.0.0
  */
 
+/**
+ * @nullable
+ */
 export type PaymentListItemDtoPaymentMethod =
-    (typeof PaymentListItemDtoPaymentMethod)[keyof typeof PaymentListItemDtoPaymentMethod];
+    | (typeof PaymentListItemDtoPaymentMethod)[keyof typeof PaymentListItemDtoPaymentMethod]
+    | null;
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const PaymentListItemDtoPaymentMethod = {

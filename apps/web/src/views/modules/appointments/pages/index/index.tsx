@@ -1,4 +1,4 @@
-import {useCallback, useEffect, useMemo, useState} from 'react';
+import {useCallback, useEffect, useId, useMemo, useState} from 'react';
 import type {
     ApiProblem,
     Appointment,
@@ -8,10 +8,8 @@ import type {
     CreateAppointmentDtoType,
     MemberBlock,
     Patient,
-    RegisterPaymentDto,
     Room,
     UpdateAppointmentInputDtoType,
-    UpdatePaymentStatusDto,
     WorkingHours,
 } from '@agenda-app/client';
 import {
@@ -24,7 +22,10 @@ import {
     useCreateAppointment,
     useGetClinic,
     useGetCurrentClinicMember,
-    useGetPaymentByAppointment,
+    RegisterPaymentDtoPaymentMethod,
+    RegisterPaymentDtoStatus,
+    useListEnrollments,
+    useListInsurancePlans,
     getListMemberBlocksQueryOptions,
     getListWorkingHoursQueryOptions,
     useListManageableProfessionals,
@@ -38,7 +39,7 @@ import {
     useUpdateAppointment,
     useUpdatePaymentStatus,
 } from '@agenda-app/client';
-import {useQueries, type UseQueryResult} from '@tanstack/react-query';
+import {useQueries, useQueryClient, type UseQueryResult} from '@tanstack/react-query';
 import {createFileRoute, useNavigate} from '@tanstack/react-router';
 import {
     CalendarDays,
@@ -69,6 +70,7 @@ import {Textarea} from '@/components/ui/componentes/textarea';
 import {useCan} from '@/hooks/useCan';
 import {formatBRL} from '@/lib/utils';
 import {cx} from '@/styled-system/css';
+import {invalidateAppointmentRevenue, REVENUE_AMOUNT_FIELDS} from '@/utils/appointment-revenue';
 import {translateApiError} from '@/utils/translate-api-error';
 import {ConfirmDialog} from '@/views/components/ConfirmDialog';
 import {ProcedureColorDot} from '../../components/ProcedureFields';
@@ -1413,6 +1415,7 @@ function AppointmentDetailSheet({
 }: DetailSheetProps) {
     const {t} = useTranslation();
     const {procedure} = apt.raw;
+    const canViewPayment = useCan({has: 'appointment-payment:view'});
     const patient = patients.find((p) => p.id === apt.patientId);
     const durMin = apt.raw.durationMinutes;
     const durLabel =
@@ -1504,7 +1507,7 @@ function AppointmentDetailSheet({
                     </div>
 
                     {procedure && (
-                        <div className={styles.sheetSection}>
+                        <div className={styles.sheetSection} role="group" aria-label={t('procedure.selection')}>
                             <div className={styles.sheetSectionTitle}>{t('procedure.selection')}</div>
                             <div className={styles.sheetKvGrid}>
                                 <div className={styles.sheetKv}>
@@ -1538,11 +1541,7 @@ function AppointmentDetailSheet({
                     </div>
 
                     {/* Payment */}
-                    <AppointmentPaymentSection
-                        appointmentId={apt.id}
-                        patientId={apt.patientId}
-                        appointmentStatus={apt.status}
-                    />
+                    {canViewPayment && <AppointmentPaymentSection appointment={apt.raw} onChanged={onStatusChanged} />}
 
                     {/* Actions */}
                     {!isDone && (
@@ -1622,25 +1621,6 @@ function AppointmentDetailSheet({
 
 // ── Payment (register / view / update) ───────────────────────────────
 
-const PAYMENT_METHOD_LABELS: Record<string, string> = {
-    CASH: 'Dinheiro',
-    PIX: 'Pix',
-    CREDIT_CARD: 'Cartão de crédito',
-    DEBIT_CARD: 'Cartão de débito',
-    BANK_TRANSFER: 'Transferência',
-    INSURANCE: 'Convênio',
-    PACKAGE: 'Pacote de sessões',
-    SUBSCRIPTION: 'Assinatura recorrente',
-    COURTESY: 'Cortesia',
-};
-
-const PAYMENT_STATUS_LABELS: Record<string, string> = {
-    PENDING: 'Pendente',
-    PAID: 'Pago',
-    EXEMPT: 'Isento',
-    REFUNDED: 'Reembolsado',
-};
-
 const PAYMENT_STATUS_BADGE_VARIANT: Record<string, 'warning' | 'success' | 'secondary' | 'destructive'> = {
     PENDING: 'warning',
     PAID: 'success',
@@ -1648,275 +1628,313 @@ const PAYMENT_STATUS_BADGE_VARIANT: Record<string, 'warning' | 'success' | 'seco
     REFUNDED: 'destructive',
 };
 
-function AppointmentPaymentSection({
-    appointmentId,
-    patientId,
-    appointmentStatus,
+function PaymentCoverageSelect({
+    label,
+    value,
+    onChange,
+    options,
+    loading,
 }: {
-    appointmentId: string;
-    patientId: string;
-    appointmentStatus: AppointmentStatus;
+    label: string;
+    value: string;
+    onChange: (value: string) => void;
+    options: Array<{id: string; name: string}>;
+    loading: boolean;
 }) {
-    const paymentQuery = useGetPaymentByAppointment(appointmentId);
+    const id = useId();
+    const {t} = useTranslation();
+
+    return (
+        <div className={styles.sheetKv}>
+            <Label htmlFor={id}>{label}</Label>
+            <Select value={value} onValueChange={onChange} disabled={loading || options.length === 0}>
+                <SelectTrigger id={id}>
+                    <SelectValue placeholder={t('appointmentRevenue.selectCoverage')} />
+                </SelectTrigger>
+                <SelectContent>
+                    {options.map((option) => (
+                        <SelectItem key={option.id} value={option.id}>
+                            {option.name}
+                        </SelectItem>
+                    ))}
+                </SelectContent>
+            </Select>
+            {loading && <p role="status">{t('states.loading')}</p>}
+            {!loading && options.length === 0 && (
+                <p className={styles.sheetNotesEmpty}>{t('appointmentRevenue.noCoverage')}</p>
+            )}
+        </div>
+    );
+}
+
+function AppointmentPaymentSection({appointment, onChanged}: {appointment: Appointment; onChanged: () => void}) {
+    const {t} = useTranslation();
     const registerPayment = useRegisterPayment();
     const updatePaymentStatus = useUpdatePaymentStatus();
+    const canRegister = useCan({has: 'appointment-payment:register'});
+    const canUpdate = useCan({has: 'appointment-payment:update'});
 
     const [showForm, setShowForm] = useState(false);
-    const [method, setMethod] = useState('PIX');
+    const [method, setMethod] = useState<RegisterPaymentDtoPaymentMethod>('PIX');
     const [amount, setAmount] = useState('');
-    const [status, setStatus] = useState('PAID');
-    const [notes, setNotes] = useState('');
+    const [status, setStatus] = useState<RegisterPaymentDtoStatus>('PAID');
     const [insurancePlanId, setInsurancePlanId] = useState('');
     const [insuranceAuthCode, setInsuranceAuthCode] = useState('');
     const [patientPackageId, setPatientPackageId] = useState('');
     const [patientSubscriptionId, setPatientSubscriptionId] = useState('');
+    const [notes, setNotes] = useState('');
 
-    const isCompleted = appointmentStatus === 'COMPLETED';
-
-    const packagesQuery = useListPackages(patientId, {query: {enabled: showForm && method === 'PACKAGE'}});
-    const activePackages = (packagesQuery.data ?? []).filter((p) => p.status === 'ACTIVE' && p.remainingCredits > 0);
-
-    const subscriptionsQuery = useListSubscriptions(patientId, {
-        query: {enabled: showForm && method === 'SUBSCRIPTION'},
-    });
-    const activeSubscriptions = (subscriptionsQuery.data ?? []).filter((s) => s.status === 'ACTIVE');
-
-    const payment = paymentQuery.data;
+    const {revenue, patientId, clinicId, id} = appointment;
+    const hasPayment = revenue?.paymentMethod != null;
+    const mayRegister = canRegister && !hasPayment && appointment.status !== 'CANCELLED';
+    const isCompleted = appointment.status === 'COMPLETED';
+    const isInsurance = method === 'INSURANCE';
+    const registeredStatusByMethod: Partial<Record<RegisterPaymentDtoPaymentMethod, RegisterPaymentDtoStatus>> = {
+        INSURANCE: 'PENDING',
+        COURTESY: 'EXEMPT',
+        PACKAGE: 'PAID',
+        SUBSCRIPTION: 'PAID',
+    };
+    const isCovered = method === 'PACKAGE' || method === 'SUBSCRIPTION' || method === 'COURTESY';
+    const packages = useListPackages(patientId, {query: {enabled: showForm && method === 'PACKAGE'}});
+    const subscriptions = useListSubscriptions(patientId, {query: {enabled: showForm && method === 'SUBSCRIPTION'}});
+    const enrollments = useListEnrollments(patientId, {query: {enabled: showForm && isInsurance}});
+    const plans = useListInsurancePlans(clinicId, {query: {enabled: showForm && isInsurance}});
+    const activePackages = (packages.data ?? []).filter((pkg) => pkg.status === 'ACTIVE' && pkg.remainingCredits > 0);
+    const activeSubscriptions = (subscriptions.data ?? []).filter((subscription) => subscription.status === 'ACTIVE');
+    const activePlans = (plans.data ?? []).filter((plan) =>
+        enrollments.data?.some((enrollment) => enrollment.status === 'ACTIVE' && enrollment.insurancePlanId === plan.id)
+    );
 
     function handleRegister() {
-        const amountBrl = Number(amount.replace(',', '.'));
+        const amountBrl = isCovered || amount.trim() === '' ? undefined : Number(amount.replace(',', '.'));
+        const invalidAmount =
+            !isCovered &&
+            ((amountBrl === undefined && !appointment.procedure) ||
+                (amountBrl !== undefined && !/^\d+(?:[.,]\d{1,2})?$/.test(amount.trim())));
+        const missingCoverage =
+            (isInsurance && !insurancePlanId) ||
+            (method === 'PACKAGE' && !patientPackageId) ||
+            (method === 'SUBSCRIPTION' && !patientSubscriptionId);
 
-        if (!amountBrl || amountBrl <= 0) {
-            toast.error('Informe um valor válido.');
-
-            return;
-        }
-
-        if (method === 'INSURANCE' && !insurancePlanId.trim()) {
-            toast.error('Informe o convênio para pagamentos por convênio.');
-
-            return;
-        }
-
-        if (method === 'PACKAGE' && !patientPackageId) {
-            toast.error('Selecione o pacote de sessões a debitar.');
-
-            return;
-        }
-
-        if (method === 'SUBSCRIPTION' && !patientSubscriptionId) {
-            toast.error('Selecione a assinatura a debitar.');
+        if (invalidAmount || missingCoverage) {
+            toast.error(t(invalidAmount ? 'appointmentRevenue.invalidAmount' : 'appointmentRevenue.selectCoverage'));
 
             return;
         }
 
         registerPayment.mutate(
             {
-                id: appointmentId,
+                id,
                 data: {
-                    paymentMethod: method as RegisterPaymentDto['paymentMethod'],
+                    paymentMethod: method,
                     amountBrl,
-                    status: status as RegisterPaymentDto['status'],
-                    ...(method === 'INSURANCE' ? {insurancePlanId: insurancePlanId.trim()} : {}),
-                    ...(insuranceAuthCode.trim() ? {insuranceAuthCode: insuranceAuthCode.trim()} : {}),
-                    ...(method === 'PACKAGE' ? {patientPackageId} : {}),
-                    ...(method === 'SUBSCRIPTION' ? {patientSubscriptionId} : {}),
-                    ...(notes.trim() ? {notes: notes.trim()} : {}),
+                    status: registeredStatusByMethod[method] ?? status,
+                    insurancePlanId: isInsurance ? insurancePlanId : undefined,
+                    insuranceAuthCode: isInsurance ? insuranceAuthCode.trim() || undefined : undefined,
+                    patientPackageId: method === 'PACKAGE' ? patientPackageId : undefined,
+                    patientSubscriptionId: method === 'SUBSCRIPTION' ? patientSubscriptionId : undefined,
+                    notes: notes.trim() || undefined,
                 },
             },
             {
                 onSuccess: () => {
-                    toast.success('Pagamento registrado');
+                    toast.success(t('appointmentRevenue.registered'));
                     setShowForm(false);
-                    void paymentQuery.refetch();
+                    onChanged();
                 },
-                onError: (error) => toast.error(getApiErrorDetail(error) ?? 'Erro ao registrar pagamento.'),
+                onError: (error) => toast.error(getApiErrorDetail(error) ?? t('appointmentRevenue.saveError')),
             }
         );
     }
 
-    function handleMarkAsPaid() {
+    function markAsPaid() {
         updatePaymentStatus.mutate(
-            {id: appointmentId, data: {status: 'PAID' as UpdatePaymentStatusDto['status']}},
+            {id, data: {status: 'PAID'}},
             {
                 onSuccess: () => {
-                    toast.success('Pagamento atualizado');
-                    void paymentQuery.refetch();
+                    toast.success(t('appointmentRevenue.updated'));
+                    onChanged();
                 },
-                onError: () => toast.error('Erro ao atualizar pagamento.'),
+                onError: (error) => toast.error(getApiErrorDetail(error) ?? t('appointmentRevenue.saveError')),
             }
         );
     }
 
     return (
-        <div className={styles.sheetSection}>
-            <div className={styles.sheetSectionTitle}>Pagamento</div>
-
-            {payment && (
-                <>
-                    <div className={styles.sheetKvGrid}>
-                        <div className={styles.sheetKv}>
-                            <span className={styles.sheetKvKey}>Método</span>
-                            <span className={styles.sheetKvText}>
-                                {PAYMENT_METHOD_LABELS[payment.paymentMethod] ?? payment.paymentMethod}
-                            </span>
-                        </div>
-                        <div className={styles.sheetKv}>
-                            <span className={styles.sheetKvKey}>Valor</span>
-                            <span className={styles.sheetKvVal}>{formatBRL(payment.amountBrl)}</span>
-                        </div>
-                        <div className={styles.sheetKv}>
-                            <span className={styles.sheetKvKey}>Status</span>
-                            <Badge variant={PAYMENT_STATUS_BADGE_VARIANT[payment.status] ?? 'outline'}>
-                                {PAYMENT_STATUS_LABELS[payment.status] ?? payment.status}
-                            </Badge>
-                        </div>
-                        {payment.paidAt && (
-                            <div className={styles.sheetKv}>
-                                <span className={styles.sheetKvKey}>Pago em</span>
-                                <span className={styles.sheetKvText}>
-                                    {new Date(payment.paidAt).toLocaleDateString('pt-BR')}
-                                </span>
-                            </div>
-                        )}
-                    </div>
-
-                    {payment.status !== 'PAID' && (
-                        <Button
-                            size="sm"
-                            variant="outline"
-                            className={mt2}
-                            disabled={updatePaymentStatus.isPending}
-                            onClick={handleMarkAsPaid}
-                        >
-                            Marcar como pago
-                        </Button>
-                    )}
-                </>
-            )}
-
-            {!payment && showForm && (
+        <div className={styles.sheetSection} role="group" aria-label={t('appointmentRevenue.title')}>
+            <div className={styles.sheetSectionTitle}>{t('appointmentRevenue.title')}</div>
+            {revenue && (
                 <div className={styles.sheetKvGrid}>
+                    {REVENUE_AMOUNT_FIELDS.map((field) => (
+                        <div key={field} className={styles.sheetKv}>
+                            <span className={styles.sheetKvKey}>{t(`appointmentRevenue.${field}`)}</span>
+                            <span className={styles.sheetKvVal}>{formatBRL(revenue[field])}</span>
+                        </div>
+                    ))}
                     <div className={styles.sheetKv}>
-                        <span className={styles.sheetKvKey}>Método</span>
-                        <Select value={method} onValueChange={setMethod}>
-                            <SelectTrigger>
-                                <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {Object.entries(PAYMENT_METHOD_LABELS).map(([code, label]) => (
-                                    <SelectItem
-                                        key={code}
-                                        value={code}
-                                        disabled={(code === 'PACKAGE' || code === 'SUBSCRIPTION') && !isCompleted}
-                                    >
-                                        {label}
-                                        {(code === 'PACKAGE' || code === 'SUBSCRIPTION') && !isCompleted
-                                            ? ' (requer atendimento concluído)'
-                                            : ''}
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                    </div>
-                    <div className={styles.sheetKv}>
-                        <span className={styles.sheetKvKey}>Valor (R$)</span>
-                        <Input value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="0,00" />
+                        <span className={styles.sheetKvKey}>{t('appointmentRevenue.method')}</span>
+                        <span className={styles.sheetKvText}>
+                            {revenue.paymentMethod
+                                ? t(`appointmentRevenue.methods.${revenue.paymentMethod}`)
+                                : t('appointmentRevenue.noMethod')}
+                        </span>
                     </div>
                     <div className={styles.sheetKv}>
                         <span className={styles.sheetKvKey}>Status</span>
-                        <Select value={status} onValueChange={setStatus}>
-                            <SelectTrigger>
+                        <Badge variant={PAYMENT_STATUS_BADGE_VARIANT[revenue.status]}>
+                            {t(`appointmentRevenue.statuses.${revenue.status}`)}
+                        </Badge>
+                    </div>
+                    {revenue.paidAt && (
+                        <div className={styles.sheetKv}>
+                            <span className={styles.sheetKvKey}>{t('appointmentRevenue.paidAt')}</span>
+                            <span className={styles.sheetKvText}>{new Date(revenue.paidAt).toLocaleDateString()}</span>
+                        </div>
+                    )}
+                </div>
+            )}
+
+            {canUpdate && revenue?.status === 'PENDING' && hasPayment && revenue.insuranceClaimStatus === null && (
+                <Button
+                    size="sm"
+                    variant="outline"
+                    className={mt2}
+                    disabled={updatePaymentStatus.isPending}
+                    onClick={markAsPaid}
+                >
+                    {t('appointmentRevenue.markPaid')}
+                </Button>
+            )}
+
+            {mayRegister && showForm && (
+                <div className={styles.sheetKvGrid}>
+                    <div className={styles.sheetKv}>
+                        <Label htmlFor="appointment-payment-method">{t('appointmentRevenue.method')}</Label>
+                        <Select
+                            value={method}
+                            onValueChange={(value: RegisterPaymentDtoPaymentMethod) => setMethod(value)}
+                        >
+                            <SelectTrigger id="appointment-payment-method">
                                 <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
-                                {Object.entries(PAYMENT_STATUS_LABELS).map(([code, label]) => (
-                                    <SelectItem key={code} value={code}>
-                                        {label}
+                                {Object.values(RegisterPaymentDtoPaymentMethod).map((code) => (
+                                    <SelectItem
+                                        key={code}
+                                        value={code}
+                                        disabled={!isCompleted && (code === 'PACKAGE' || code === 'SUBSCRIPTION')}
+                                    >
+                                        {t(`appointmentRevenue.methods.${code}`)}
                                     </SelectItem>
                                 ))}
                             </SelectContent>
                         </Select>
                     </div>
-                    {method === 'INSURANCE' && (
+                    {!isCovered && (
+                        <div className={styles.sheetKv}>
+                            <Label htmlFor="appointment-payment-amount">{t('appointmentRevenue.amount')}</Label>
+                            <Input
+                                id="appointment-payment-amount"
+                                inputMode="decimal"
+                                value={amount}
+                                onChange={(event) => setAmount(event.target.value)}
+                            />
+                        </div>
+                    )}
+                    {!isCovered && !isInsurance && (
+                        <div className={styles.sheetKv}>
+                            <Label htmlFor="appointment-payment-status">Status</Label>
+                            <Select
+                                value={status}
+                                onValueChange={(value: RegisterPaymentDtoStatus) => setStatus(value)}
+                            >
+                                <SelectTrigger id="appointment-payment-status">
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {Object.values(RegisterPaymentDtoStatus).map((code) => (
+                                        <SelectItem key={code} value={code}>
+                                            {t(`appointmentRevenue.statuses.${code}`)}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                    )}
+                    {isInsurance && (
                         <>
+                            <PaymentCoverageSelect
+                                label={t('appointmentRevenue.methods.INSURANCE')}
+                                value={insurancePlanId}
+                                onChange={setInsurancePlanId}
+                                options={activePlans.map((plan) => ({id: plan.id, name: plan.name}))}
+                                loading={plans.isPending || enrollments.isPending}
+                            />
                             <div className={styles.sheetKv}>
-                                <span className={styles.sheetKvKey}>Convênio (ID)</span>
-                                <Input value={insurancePlanId} onChange={(e) => setInsurancePlanId(e.target.value)} />
-                            </div>
-                            <div className={styles.sheetKv}>
-                                <span className={styles.sheetKvKey}>Código de autorização</span>
+                                <Label htmlFor="appointment-payment-auth">
+                                    {t('appointmentRevenue.authorization')}
+                                </Label>
                                 <Input
+                                    id="appointment-payment-auth"
                                     value={insuranceAuthCode}
-                                    onChange={(e) => setInsuranceAuthCode(e.target.value)}
+                                    onChange={(event) => setInsuranceAuthCode(event.target.value)}
                                 />
                             </div>
                         </>
                     )}
                     {method === 'PACKAGE' && (
-                        <div className={styles.sheetKv}>
-                            <span className={styles.sheetKvKey}>Pacote a debitar</span>
-                            <Select value={patientPackageId} onValueChange={setPatientPackageId}>
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Selecione um pacote" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {activePackages.map((pkg) => (
-                                        <SelectItem key={pkg.id} value={pkg.id}>
-                                            {pkg.planNameSnapshot} ({pkg.remainingCredits}/{pkg.totalCredits} créditos)
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                            {activePackages.length === 0 && (
-                                <p className={styles.sheetNotesEmpty}>
-                                    Este paciente não possui pacotes com saldo disponível.
-                                </p>
-                            )}
-                        </div>
+                        <PaymentCoverageSelect
+                            label={t('appointmentRevenue.methods.PACKAGE')}
+                            value={patientPackageId}
+                            onChange={setPatientPackageId}
+                            loading={packages.isPending}
+                            options={activePackages.map((pkg) => ({id: pkg.id, name: pkg.planNameSnapshot}))}
+                        />
                     )}
                     {method === 'SUBSCRIPTION' && (
-                        <div className={styles.sheetKv}>
-                            <span className={styles.sheetKvKey}>Assinatura a debitar</span>
-                            <Select value={patientSubscriptionId} onValueChange={setPatientSubscriptionId}>
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Selecione uma assinatura" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {activeSubscriptions.map((sub) => (
-                                        <SelectItem key={sub.id} value={sub.id}>
-                                            {sub.planNameSnapshot} ({sub.monthlyQuotaSnapshot} atend./mês)
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                            {activeSubscriptions.length === 0 && (
-                                <p className={styles.sheetNotesEmpty}>Este paciente não possui assinatura ativa.</p>
-                            )}
-                        </div>
+                        <PaymentCoverageSelect
+                            label={t('appointmentRevenue.methods.SUBSCRIPTION')}
+                            value={patientSubscriptionId}
+                            onChange={setPatientSubscriptionId}
+                            loading={subscriptions.isPending}
+                            options={activeSubscriptions.map((subscription) => ({
+                                id: subscription.id,
+                                name: subscription.planNameSnapshot,
+                            }))}
+                        />
                     )}
                     <div className={styles.sheetKv}>
-                        <span className={styles.sheetKvKey}>Observações</span>
-                        <Input value={notes} onChange={(e) => setNotes(e.target.value)} />
+                        <Label htmlFor="appointment-payment-notes">{t('appointmentRevenue.notes')}</Label>
+                        <Input
+                            id="appointment-payment-notes"
+                            value={notes}
+                            onChange={(event) => setNotes(event.target.value)}
+                        />
                     </div>
                     <div className={gap1_5}>
                         <Button size="sm" disabled={registerPayment.isPending} onClick={handleRegister}>
-                            Registrar pagamento
+                            {t('appointmentRevenue.register')}
                         </Button>
                         <Button size="sm" variant="outline" onClick={() => setShowForm(false)}>
-                            Cancelar
+                            {t('actions.cancel')}
                         </Button>
                     </div>
                 </div>
             )}
 
-            {!payment && !showForm && (
-                <>
-                    <p className={styles.sheetNotesEmpty}>Nenhum pagamento registrado para esta consulta.</p>
-                    <Button size="sm" variant="outline" className={mt2} onClick={() => setShowForm(true)}>
-                        Registrar pagamento
-                    </Button>
-                </>
+            {mayRegister && !showForm && (
+                <Button
+                    size="sm"
+                    variant="outline"
+                    className={mt2}
+                    onClick={() => {
+                        setAmount(appointment.procedure ? (appointment.procedure.priceInCents / 100).toFixed(2) : '');
+                        setShowForm(true);
+                    }}
+                >
+                    {t('appointmentRevenue.register')}
+                </Button>
             )}
         </div>
     );
@@ -2499,6 +2517,7 @@ function CancelDialog({apt, onClose, onCancelled}: CancelDialogProps) {
 // ─────────────────────────────────────────────────────────────────
 export function AppointmentsPage() {
     const navigate = useNavigate();
+    const queryClient = useQueryClient();
     const search = Route.useSearch();
 
     const today = useMemo(() => {
@@ -2638,6 +2657,12 @@ export function AppointmentsPage() {
     const roomsById = useMemo(() => new Map(rooms.map((r) => [r.id, r])), [rooms]);
     const roomIndexById = useMemo(() => new Map(rooms.map((r, i) => [r.id, i])), [rooms]);
 
+    const clinicId = meQuery.data?.clinicId;
+    const refreshAppointments = useCallback(
+        () => invalidateAppointmentRevenue(queryClient, clinicId),
+        [queryClient, clinicId]
+    );
+
     const allAppts = useMemo(() => rawAppts.map(toApptView), [rawAppts]);
     const filteredAppts = useMemo(() => allAppts.filter((a) => statusFilters.has(a.status)), [allAppts, statusFilters]);
 
@@ -2715,7 +2740,7 @@ export function AppointmentsPage() {
                         setPendingPlacement(null);
                         setPlacementWarning(null);
                         toast.success('Agendamento atualizado');
-                        void apptQ.refetch();
+                        refreshAppointments();
                     },
                     onError: (error) => {
                         const warning = getAvailabilityWarning(error);
@@ -2734,7 +2759,7 @@ export function AppointmentsPage() {
                 }
             );
         },
-        [apptQ, updateAppointment]
+        [refreshAppointments, updateAppointment]
     );
 
     const moveAppointment = useCallback(
@@ -2926,7 +2951,7 @@ export function AppointmentsPage() {
                         closeDetail();
                     }}
                     onOpenPatient={(id) => navigate({to: '/patients/$patientId', params: {patientId: id}})}
-                    onStatusChanged={() => void apptQ.refetch()}
+                    onStatusChanged={refreshAppointments}
                 />
             )}
 
@@ -2937,14 +2962,14 @@ export function AppointmentsPage() {
                     onClose={() => setEditId(null)}
                     onSaved={() => {
                         highlightFor(editApt.id);
-                        void apptQ.refetch();
+                        refreshAppointments();
                     }}
                 />
             )}
 
             {/* Cancel Dialog */}
             {cancelApt && (
-                <CancelDialog apt={cancelApt} onClose={() => setCancelId(null)} onCancelled={() => apptQ.refetch()} />
+                <CancelDialog apt={cancelApt} onClose={() => setCancelId(null)} onCancelled={refreshAppointments} />
             )}
 
             {/* New Appointment Dialog */}
@@ -2953,7 +2978,7 @@ export function AppointmentsPage() {
                     prefill={typeof newAppt === 'object' ? newAppt : null}
                     defaultMemberId={defaultMemberId}
                     onClose={() => setNewAppt(null)}
-                    onSaved={() => apptQ.refetch()}
+                    onSaved={refreshAppointments}
                 />
             )}
             <ConfirmDialog

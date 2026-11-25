@@ -55,6 +55,49 @@
       "REMOTE": "Remoto"
     }
   },
+  "appointmentRevenue": {
+    "title": "Pagamento",
+    "expectedBrl": "Previsto",
+    "receivedBrl": "Recebido",
+    "pendingBrl": "Pendente",
+    "method": "Forma de pagamento",
+    "noMethod": "A definir",
+    "amount": "Valor (R$)",
+    "paidAt": "Pago em",
+    "markPaid": "Marcar como pago",
+    "register": "Registrar pagamento",
+    "registered": "Pagamento registrado.",
+    "updated": "Pagamento atualizado.",
+    "saveError": "Não foi possível salvar o pagamento.",
+    "invalidAmount": "Informe um valor válido com até duas casas decimais.",
+    "selectCoverage": "Selecione a cobertura do atendimento.",
+    "noCoverage": "Nenhuma cobertura ativa vinculada ao paciente.",
+    "authorization": "Código de autorização",
+    "notes": "Observações",
+    "reportTitle": "Atendimentos no período",
+    "reportError": "Não foi possível carregar o relatório de receita.",
+    "reportEmpty": "Nenhum atendimento com receita para os filtros selecionados.",
+    "appointmentDate": "Data do atendimento",
+    "pagination_one": "Página {{page}} de {{totalPages}} · {{count}} atendimento",
+    "pagination_other": "Página {{page}} de {{totalPages}} · {{count}} atendimentos",
+    "methods": {
+      "CASH": "Dinheiro",
+      "PIX": "Pix",
+      "CREDIT_CARD": "Cartão de crédito",
+      "DEBIT_CARD": "Cartão de débito",
+      "BANK_TRANSFER": "Transferência",
+      "INSURANCE": "Convênio",
+      "COURTESY": "Cortesia",
+      "PACKAGE": "Pacote de sessões",
+      "SUBSCRIPTION": "Assinatura recorrente"
+    },
+    "statuses": {
+      "PENDING": "Pendente",
+      "PAID": "Pago",
+      "EXEMPT": "Sem cobrança",
+      "REFUNDED": "Reembolsado"
+    }
+  },
   "errors": {
     "procedure": {
       "required": "Selecione um procedimento ou serviço do catálogo.",
@@ -80,6 +123,7 @@
       "not_valid_on_appointment_date": "O convênio não é válido na data desta consulta."
     },
     "appointment_payment": {
+      "amount_required": "Informe o valor para um agendamento sem preço de procedimento.",
       "package_requires_completed_appointment": "O pacote só pode ser utilizado após a conclusão do atendimento.",
       "subscription_requires_completed_appointment": "A assinatura só pode ser utilizada após a conclusão do atendimento."
     },

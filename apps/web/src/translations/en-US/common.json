@@ -55,6 +55,49 @@
       "REMOTE": "Remote"
     }
   },
+  "appointmentRevenue": {
+    "title": "Payment",
+    "expectedBrl": "Expected",
+    "receivedBrl": "Received",
+    "pendingBrl": "Pending",
+    "method": "Payment method",
+    "noMethod": "To be assigned",
+    "amount": "Amount (BRL)",
+    "paidAt": "Paid on",
+    "markPaid": "Mark as paid",
+    "register": "Record payment",
+    "registered": "Payment recorded.",
+    "updated": "Payment updated.",
+    "saveError": "Could not save the payment.",
+    "invalidAmount": "Enter a valid amount with up to two decimal places.",
+    "selectCoverage": "Select coverage for this appointment.",
+    "noCoverage": "The patient has no active coverage.",
+    "authorization": "Authorization code",
+    "notes": "Notes",
+    "reportTitle": "Appointments in the period",
+    "reportError": "Could not load the revenue report.",
+    "reportEmpty": "No appointments with revenue match these filters.",
+    "appointmentDate": "Appointment date",
+    "pagination_one": "Page {{page}} of {{totalPages}} · {{count}} appointment",
+    "pagination_other": "Page {{page}} of {{totalPages}} · {{count}} appointments",
+    "methods": {
+      "CASH": "Cash",
+      "PIX": "Pix",
+      "CREDIT_CARD": "Credit card",
+      "DEBIT_CARD": "Debit card",
+      "BANK_TRANSFER": "Bank transfer",
+      "INSURANCE": "Insurance",
+      "COURTESY": "Courtesy",
+      "PACKAGE": "Session package",
+      "SUBSCRIPTION": "Recurring subscription"
+    },
+    "statuses": {
+      "PENDING": "Pending",
+      "PAID": "Paid",
+      "EXEMPT": "No charge",
+      "REFUNDED": "Refunded"
+    }
+  },
   "errors": {
     "procedure": {
       "required": "Select a procedure or service from the catalog.",
@@ -80,6 +123,7 @@
       "not_valid_on_appointment_date": "The insurance plan is not valid on this appointment date."
     },
     "appointment_payment": {
+      "amount_required": "Enter an amount for an appointment without a procedure price.",
       "package_requires_completed_appointment": "A package can only be used after the appointment is completed.",
       "subscription_requires_completed_appointment": "A subscription can only be used after the appointment is completed."
     },

@@ -5,6 +5,8 @@ import {AppointmentPaymentDto, RegisterPaymentDto} from '@application/appointmen
 import {InvalidInputException, PreconditionException, ResourceNotFoundException} from '@domain/@shared/exceptions';
 import {Transactional} from '@domain/@shared/repository';
 import {AppointmentPaymentRepository} from '@domain/appointment-payment/appointment-payment.repository';
+import {isPrepaidAppointmentMethod} from '@domain/appointment-payment/appointment-revenue';
+import {brlFromCents} from '@domain/appointment-payment/brl';
 import {AppointmentPayment, AppointmentPaymentStatus, PaymentMethod} from '@domain/appointment-payment/entities';
 import {AppointmentRepository} from '@domain/appointment/appointment.repository';
 import {AppointmentId, AppointmentStatus} from '@domain/appointment/entities';
@@ -164,7 +166,21 @@ export class RegisterPaymentService implements ApplicationService<RegisterPaymen
             }
         }
 
-        const resolvedStatus = status ?? AppointmentPaymentStatus.PAID;
+        const covered = isPrepaidAppointmentMethod(paymentMethod) || paymentMethod === PaymentMethod.COURTESY;
+        const defaultAmount = appointment.procedure ? brlFromCents(appointment.procedure.priceInCents) : undefined;
+        const resolvedAmount = amountBrl ?? (covered ? 0 : defaultAmount);
+
+        if (resolvedAmount === undefined) {
+            throw new InvalidInputException('appointment_payment.amount_required', [
+                {field: 'amountBrl', reason: 'An amount is required for appointments without a procedure price.'},
+            ]);
+        }
+
+        const defaultStatus =
+            paymentMethod === PaymentMethod.INSURANCE
+                ? AppointmentPaymentStatus.PENDING
+                : AppointmentPaymentStatus.PAID;
+        const resolvedStatus = status ?? defaultStatus;
         const paidAt = resolvedStatus === AppointmentPaymentStatus.PAID ? new Date() : null;
 
         const payment = AppointmentPayment.create({
@@ -174,7 +190,7 @@ export class RegisterPaymentService implements ApplicationService<RegisterPaymen
             registeredByMemberId: actor.clinicMemberId,
             paymentMethod,
             status: resolvedStatus,
-            amountBrl,
+            amountBrl: resolvedAmount,
             paidAt,
             insurancePlanId: insurancePlanId ?? null,
             insuranceAuthCode: insuranceAuthCode ?? null,
@@ -192,7 +208,7 @@ export class RegisterPaymentService implements ApplicationService<RegisterPaymen
                 patientInsuranceEnrollmentId: enrollment.id,
                 insurancePlanId,
                 authorizationCode: insuranceAuthCode ?? null,
-                submittedAmountBrl: amountBrl,
+                submittedAmountBrl: resolvedAmount,
             });
 
             await this.insuranceClaimRepository.save(claim);

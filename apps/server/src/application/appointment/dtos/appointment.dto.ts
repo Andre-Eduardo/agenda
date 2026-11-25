@@ -1,5 +1,7 @@
 import {ApiProperty, ApiSchema} from '@nestjs/swagger';
 import {EntityDto} from '@application/@shared/dto';
+import {AppointmentRevenueDto} from '@application/appointment-payment/dtos';
+import type {AppointmentRevenue} from '@domain/appointment-payment/appointment-revenue';
 import {AppointmentPaymentStatus} from '@domain/appointment-payment/entities';
 import type {Appointment} from '@domain/appointment/entities';
 import {AppointmentStatus, AppointmentType} from '@domain/appointment/entities';
@@ -104,6 +106,9 @@ export class AppointmentDto extends EntityDto {
     })
     paymentStatus: AppointmentPaymentStatus | null;
 
+    @ApiProperty({type: AppointmentRevenueDto, nullable: true})
+    revenue: AppointmentRevenueDto | null;
+
     @ApiProperty({
         type: String,
         format: 'uuid',
@@ -112,7 +117,7 @@ export class AppointmentDto extends EntityDto {
     })
     roomId: string | null;
 
-    constructor(appointment: Appointment, paymentStatus: AppointmentPaymentStatus | null = null) {
+    constructor(appointment: Appointment, revenue: AppointmentRevenue | null = null) {
         super(appointment);
         this.clinicId = appointment.clinicId.toString();
         this.patientId = appointment.patientId.toString();
@@ -129,7 +134,8 @@ export class AppointmentDto extends EntityDto {
         this.note = appointment.note;
         this.arrivedAt = appointment.arrivedAt?.toISOString() ?? null;
         this.calledAt = appointment.calledAt?.toISOString() ?? null;
-        this.paymentStatus = paymentStatus;
+        this.paymentStatus = revenue?.status ?? null;
+        this.revenue = revenue === null ? null : new AppointmentRevenueDto(revenue);
         this.roomId = appointment.roomId?.toString() ?? null;
     }
 }

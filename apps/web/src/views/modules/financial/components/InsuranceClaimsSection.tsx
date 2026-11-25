@@ -9,6 +9,7 @@ import {
     type ApiProblem,
     type InsuranceClaim,
 } from '@agenda-app/client';
+import {useQueryClient} from '@tanstack/react-query';
 import {toast} from 'sonner';
 import {Badge} from '@/components/ui/componentes/badge';
 import {Button} from '@/components/ui/componentes/button';
@@ -16,6 +17,7 @@ import {Dialog, DialogContent, DialogHeader, DialogTitle} from '@/components/ui/
 import {Input} from '@/components/ui/componentes/input';
 import {Label} from '@/components/ui/componentes/label';
 import {formatBRL} from '@/lib/utils';
+import {invalidateAppointmentRevenue} from '@/utils/appointment-revenue';
 import {translateApiError} from '@/utils/translate-api-error';
 import {Can} from '@/views/components/Can';
 import {actions, amount, formBody, formFooter, info, meta, name, row} from './InsuranceClaimsSection.styles';
@@ -41,6 +43,7 @@ function errorDetail(error: unknown, fallback: string): string {
 }
 
 export function InsuranceClaimsSection() {
+    const queryClient = useQueryClient();
     const claimsQuery = useListClaims({claimStatus: []});
     const submit = useSubmit();
     const [action, setAction] = useState<{claim: InsuranceClaim; type: ClaimAction} | null>(null);
@@ -137,7 +140,10 @@ export function InsuranceClaimsSection() {
                 <ClaimActionDialog
                     action={action}
                     onClose={() => setAction(null)}
-                    onUpdated={() => void claimsQuery.refetch()}
+                    onUpdated={() => {
+                        void claimsQuery.refetch();
+                        invalidateAppointmentRevenue(queryClient, action.claim.clinicId);
+                    }}
                 />
             )}
         </section>

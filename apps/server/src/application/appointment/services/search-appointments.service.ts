@@ -4,6 +4,7 @@ import {PaginatedDto} from '@application/@shared/dto';
 import {AppointmentDto, SearchAppointmentsDto} from '@application/appointment/dtos';
 import {PatientAccessChecker} from '@application/clinic-patient-access/services/patient-access-checker.service';
 import {AppointmentPaymentRepository} from '@domain/appointment-payment/appointment-payment.repository';
+import {projectAppointmentRevenue, type RevenuePayment} from '@domain/appointment-payment/appointment-revenue';
 import {AppointmentRepository} from '@domain/appointment/appointment.repository';
 import {AppointmentPaymentPermission} from '@domain/auth';
 import {Authorizer} from '@domain/auth/authorizer';
@@ -44,15 +45,24 @@ export class SearchAppointmentsService implements ApplicationService<
             AppointmentPaymentPermission.VIEW
         );
         const payments = canViewPayment
-            ? await this.appointmentPaymentRepository.findByAppointmentIds(result.data.map((a) => a.id))
-            : [];
-        const paymentByAppointmentId = new Map(payments.map((p) => [p.appointmentId.toString(), p.status]));
+            ? await this.appointmentPaymentRepository.findRevenuePayments(
+                  actor.clinicId,
+                  result.data.map((a) => a.id)
+              )
+            : new Map<string, RevenuePayment>();
 
         return {
-            data: result.data.map(
-                (appointment) =>
-                    new AppointmentDto(appointment, paymentByAppointmentId.get(appointment.id.toString()) ?? null)
-            ),
+            data: result.data.map((appointment) => {
+                const revenue = canViewPayment
+                    ? projectAppointmentRevenue(
+                          appointment.status,
+                          appointment.procedure?.priceInCents ?? null,
+                          payments.get(appointment.id.toString()) ?? null
+                      )
+                    : null;
+
+                return new AppointmentDto(appointment, revenue);
+            }),
             totalCount: result.totalCount,
         };
     }

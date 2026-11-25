@@ -8268,7 +8268,7 @@
             "name": "startDate",
             "required": true,
             "in": "query",
-            "description": "Start date ISO8601",
+            "description": "Start of the appointment period in ISO 8601",
             "schema": {
               "type": "string",
               "format": "date-time"
@@ -8278,7 +8278,7 @@
             "name": "endDate",
             "required": true,
             "in": "query",
-            "description": "End date ISO8601",
+            "description": "End of the appointment period in ISO 8601",
             "schema": {
               "type": "string",
               "format": "date-time"
@@ -8400,7 +8400,7 @@
             "name": "startDate",
             "required": true,
             "in": "query",
-            "description": "Start date ISO8601",
+            "description": "Start of the appointment period in ISO 8601",
             "schema": {
               "type": "string",
               "format": "date-time"
@@ -8410,7 +8410,7 @@
             "name": "endDate",
             "required": true,
             "in": "query",
-            "description": "End date ISO8601",
+            "description": "End of the appointment period in ISO 8601",
             "schema": {
               "type": "string",
               "format": "date-time"
@@ -10977,6 +10977,69 @@
         ],
         "description": "Financial status of the appointment payment, null if no payment registered"
       },
+      "AppointmentRevenue": {
+        "type": "object",
+        "properties": {
+          "expectedBrl": {
+            "type": "number"
+          },
+          "receivedBrl": {
+            "type": "number"
+          },
+          "pendingBrl": {
+            "type": "number"
+          },
+          "paymentMethod": {
+            "type": "string",
+            "enum": [
+              "CASH",
+              "PIX",
+              "CREDIT_CARD",
+              "DEBIT_CARD",
+              "BANK_TRANSFER",
+              "INSURANCE",
+              "COURTESY",
+              "PACKAGE",
+              "SUBSCRIPTION"
+            ],
+            "nullable": true
+          },
+          "status": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AppointmentPaymentStatus"
+              }
+            ]
+          },
+          "paidAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "insuranceClaimStatus": {
+            "type": "string",
+            "enum": [
+              "DRAFT",
+              "SUBMITTED",
+              "PAID",
+              "PARTIALLY_PAID",
+              "DENIED",
+              "APPEALED",
+              "CANCELLED"
+            ],
+            "nullable": true
+          }
+        },
+        "required": [
+          "expectedBrl",
+          "receivedBrl",
+          "pendingBrl",
+          "paymentMethod",
+          "status",
+          "paidAt",
+          "insuranceClaimStatus"
+        ]
+      },
       "Appointment": {
         "type": "object",
         "properties": {
@@ -11098,6 +11161,14 @@
               }
             ]
           },
+          "revenue": {
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AppointmentRevenue"
+              }
+            ]
+          },
           "roomId": {
             "type": "string",
             "format": "uuid",
@@ -11125,6 +11196,7 @@
           "arrivedAt",
           "calledAt",
           "paymentStatus",
+          "revenue",
           "roomId"
         ]
       },
@@ -15138,7 +15210,7 @@
           "amountBrl": {
             "type": "number",
             "minimum": 0,
-            "exclusiveMinimum": true
+            "description": "Amount in BRL. Defaults to the appointment procedure price when applicable."
           },
           "status": {
             "type": "string",
@@ -15147,8 +15219,7 @@
               "PAID",
               "EXEMPT",
               "REFUNDED"
-            ],
-            "default": "PAID"
+            ]
           },
           "insurancePlanId": {
             "type": "string",
@@ -15180,8 +15251,7 @@
           }
         },
         "required": [
-          "paymentMethod",
-          "amountBrl"
+          "paymentMethod"
         ]
       },
       "AppointmentPayment": {
@@ -16210,10 +16280,12 @@
         "type": "object",
         "properties": {
           "totalBrl": {
-            "type": "number"
+            "type": "number",
+            "description": "Expected revenue in BRL"
           },
           "totalPaid": {
-            "type": "number"
+            "type": "number",
+            "description": "Received revenue in BRL"
           },
           "totalPending": {
             "type": "number"
@@ -16298,9 +16370,59 @@
       "PaymentListItemDto": {
         "type": "object",
         "properties": {
+          "expectedBrl": {
+            "type": "number"
+          },
+          "receivedBrl": {
+            "type": "number"
+          },
+          "pendingBrl": {
+            "type": "number"
+          },
+          "paymentMethod": {
+            "type": "string",
+            "enum": [
+              "CASH",
+              "PIX",
+              "CREDIT_CARD",
+              "DEBIT_CARD",
+              "BANK_TRANSFER",
+              "INSURANCE",
+              "COURTESY",
+              "PACKAGE",
+              "SUBSCRIPTION"
+            ],
+            "nullable": true
+          },
+          "status": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AppointmentPaymentStatus"
+              }
+            ]
+          },
+          "paidAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "insuranceClaimStatus": {
+            "type": "string",
+            "enum": [
+              "DRAFT",
+              "SUBMITTED",
+              "PAID",
+              "PARTIALLY_PAID",
+              "DENIED",
+              "APPEALED",
+              "CANCELLED"
+            ],
+            "nullable": true
+          },
           "paymentId": {
             "type": "string",
-            "format": "uuid"
+            "format": "uuid",
+            "nullable": true
           },
           "appointmentId": {
             "type": "string",
@@ -16316,51 +16438,53 @@
             "type": "string",
             "format": "date-time"
           },
-          "paymentMethod": {
+          "procedureName": {
             "type": "string",
-            "enum": [
-              "CASH",
-              "PIX",
-              "CREDIT_CARD",
-              "DEBIT_CARD",
-              "BANK_TRANSFER",
-              "INSURANCE",
-              "COURTESY",
-              "PACKAGE",
-              "SUBSCRIPTION"
-            ]
-          },
-          "status": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/AppointmentPaymentStatus"
-              }
-            ]
+            "nullable": true
           },
           "amountBrl": {
             "type": "number"
           },
-          "paidAt": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
-          },
           "insurancePlanName": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           }
         },
         "required": [
+          "expectedBrl",
+          "receivedBrl",
+          "pendingBrl",
+          "paymentMethod",
+          "status",
+          "paidAt",
+          "insuranceClaimStatus",
           "paymentId",
           "appointmentId",
           "patientName",
           "professionalName",
           "appointmentDate",
-          "paymentMethod",
-          "status",
+          "procedureName",
           "amountBrl",
-          "paidAt",
           "insurancePlanName"
+        ]
+      },
+      "RevenuePaginationDto": {
+        "type": "object",
+        "properties": {
+          "page": {
+            "type": "number"
+          },
+          "pageSize": {
+            "type": "number"
+          },
+          "total": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "page",
+          "pageSize",
+          "total"
         ]
       },
       "RevenueReport": {
@@ -16394,7 +16518,7 @@
             }
           },
           "pagination": {
-            "type": "object"
+            "$ref": "#/components/schemas/RevenuePaginationDto"
           }
         },
         "required": [
