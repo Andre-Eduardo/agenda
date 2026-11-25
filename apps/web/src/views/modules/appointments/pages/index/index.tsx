@@ -44,7 +44,7 @@ import {
     useUpdatePaymentStatus,
 } from '@agenda-app/client';
 import {useQueries, useQueryClient, type UseQueryResult} from '@tanstack/react-query';
-import {createFileRoute, useNavigate} from '@tanstack/react-router';
+import {createFileRoute, Link, useNavigate} from '@tanstack/react-router';
 import {
     CalendarDays,
     CalendarX2,
@@ -1435,7 +1435,11 @@ function AppointmentDetailSheet({
     const date = new Date(y, mo - 1, da);
     const isDone = ['COMPLETED', 'CANCELLED', 'NO_SHOW'].includes(apt.status);
     const mayViewClinical = useCan({hasAny: ['clinical-profile:view', 'patient-alert:view']});
-    const patientAccess = useGetPatient(apt.patientId, {query: {enabled: !isDone && mayViewClinical}});
+    const mayCreateRecord = useCan({has: 'record:create'});
+    const canStartRecord = mayCreateRecord && (apt.status === 'IN_PROGRESS' || apt.status === 'COMPLETED');
+    const patientAccess = useGetPatient(apt.patientId, {
+        query: {enabled: (!isDone && mayViewClinical) || canStartRecord},
+    });
     const [clinicalPage, setClinicalPage] = useState(1);
     const clinical = usePatientClinicalPreview(
         apt.patientId,
@@ -1566,6 +1570,20 @@ function AppointmentDetailSheet({
                             <p className={styles.sheetNotesEmpty}>Sem observações registradas.</p>
                         )}
                     </div>
+
+                    {canStartRecord && !patientAccess.isError && patientAccess.data?.canWriteClinicalData && (
+                        <div className={styles.sheetSection}>
+                            <Button asChild size="sm">
+                                <Link
+                                    to="/patients/$patientId/records/new"
+                                    params={{patientId: apt.patientId}}
+                                    search={{appointmentId: apt.id}}
+                                >
+                                    {t('recordLifecycle.createFromAppointment')}
+                                </Link>
+                            </Button>
+                        </div>
+                    )}
 
                     {/* Payment */}
                     {canViewPayment && <AppointmentPaymentSection appointment={apt.raw} onChanged={onStatusChanged} />}

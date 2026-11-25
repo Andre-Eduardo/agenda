@@ -159,6 +159,8 @@
     }
   },
   "recordLifecycle": {
+    "createFromAppointment": "Registrar evolução",
+    "appointmentUnavailable": "Não foi possível abrir o agendamento deste paciente.",
     "sign": "Assinar evolução",
     "signTitle": "Confirmar assinatura",
     "signMessage": "A assinatura bloqueia a edição. Qualquer correção posterior exige uma reabertura com motivo.",
