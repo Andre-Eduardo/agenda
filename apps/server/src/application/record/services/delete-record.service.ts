@@ -5,6 +5,7 @@ import {assertEntityBelongsToClinic} from '@application/@shared/validators/cross
 import {PatientAccessChecker} from '@application/clinic-patient-access/services/patient-access-checker.service';
 import {getRecordSchema} from '@application/record/dtos';
 import {ResourceNotFoundException} from '@domain/@shared/exceptions';
+import {Transactional} from '@domain/@shared/repository';
 import {EventDispatcher} from '@domain/event';
 import {PatientId} from '@domain/patient/entities';
 import {RecordRepository} from '@domain/record/record.repository';
@@ -19,7 +20,10 @@ export class DeleteRecordService implements ApplicationService<DeleteRecordDto> 
         private readonly eventDispatcher: EventDispatcher
     ) {}
 
+    @Transactional()
     async execute({actor, payload}: Command<DeleteRecordDto>): Promise<void> {
+        await this.recordRepository.lockForChange(payload.id, actor.clinicId);
+
         const record = await this.recordRepository.findById(payload.id);
 
         if (record === null) {

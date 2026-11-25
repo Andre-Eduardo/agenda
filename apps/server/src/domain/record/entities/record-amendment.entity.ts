@@ -6,6 +6,7 @@ import {
     type EntityProps,
 } from '@domain/@shared/entity';
 import {EntityId} from '@domain/@shared/entity/id';
+import {InvalidInputException} from '@domain/@shared/exceptions';
 import type {ClinicMemberId} from '@domain/clinic-member/entities';
 import type {ClinicId} from '@domain/clinic/entities';
 import type {RecordId} from '@domain/record/entities/record.entity';
@@ -32,16 +33,27 @@ export class RecordAmendment extends AggregateRoot<RecordAmendmentId> {
     }
 
     static create(props: CreateRecordAmendment): RecordAmendment {
-        const now = new Date();
+        const justification = props.justification.trim();
+
+        if (justification.length === 0 || justification.length > 2000) {
+            throw new InvalidInputException('record.invalid_reopen_reason');
+        }
+
+        const now = props.reopenedAt;
 
         return new RecordAmendment({
             ...props,
             id: RecordAmendmentId.generate(),
-            reopenedAt: now,
+            justification,
             relockedAt: null,
             createdAt: now,
             updatedAt: now,
         });
+    }
+
+    relock(signedAt: Date): void {
+        this.relockedAt = signedAt;
+        this.update(signedAt);
     }
 
     toJSON(): EntityJson<RecordAmendment> {

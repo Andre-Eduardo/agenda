@@ -12003,6 +12003,10 @@
             "type": "string",
             "format": "uuid"
           },
+          "requestedByName": {
+            "type": "string",
+            "nullable": true
+          },
           "justification": {
             "type": "string"
           },
@@ -12023,6 +12027,7 @@
           "clinicId",
           "recordId",
           "requestedByMemberId",
+          "requestedByName",
           "justification",
           "reopenedAt",
           "relockedAt"
@@ -12033,6 +12038,7 @@
         "properties": {
           "description": {
             "type": "string",
+            "nullable": true,
             "minLength": 1,
             "example": "Updated clinical note"
           },
@@ -12117,24 +12123,7 @@
           "wasHumanEdited": {
             "type": "boolean"
           }
-        },
-        "required": [
-          "description",
-          "title",
-          "templateType",
-          "attendanceType",
-          "clinicalStatus",
-          "conductTags",
-          "subjective",
-          "objective",
-          "assessment",
-          "plan",
-          "freeNotes",
-          "eventDate",
-          "source",
-          "importedDocumentId",
-          "wasHumanEdited"
-        ]
+        }
       },
       "ClinicalProfile": {
         "type": "object",

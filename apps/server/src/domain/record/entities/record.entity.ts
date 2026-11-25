@@ -6,7 +6,7 @@ import {
     type CreateEntity,
 } from '@domain/@shared/entity';
 import {EntityId} from '@domain/@shared/entity/id';
-import {PreconditionException} from '@domain/@shared/exceptions';
+import {AccessDeniedException, AccessDeniedReason, PreconditionException} from '@domain/@shared/exceptions';
 import type {AppointmentId} from '@domain/appointment/entities';
 import type {ClinicMemberId} from '@domain/clinic-member/entities';
 import type {ClinicId} from '@domain/clinic/entities';
@@ -194,11 +194,23 @@ export class Record extends AggregateRoot<RecordId> {
     }
 
     delete(): void {
+        if (this.isLocked || this.signedAt !== null) {
+            throw new AccessDeniedException('record.signed_delete_forbidden', AccessDeniedReason.NOT_ALLOWED);
+        }
+
         super.delete();
         this.addEvent(new RecordDeletedEvent({record: this}));
     }
 
+    assertEditable(): void {
+        if (this.isLocked) {
+            throw new AccessDeniedException('RECORD_LOCKED', AccessDeniedReason.NOT_ALLOWED);
+        }
+    }
+
     change(props: UpdateRecord): void {
+        this.assertEditable();
+
         const oldState = new Record(this);
 
         if (props.description !== undefined) {
@@ -266,6 +278,7 @@ export class Record extends AggregateRoot<RecordId> {
         }
 
         this.validate();
+        this.update();
 
         this.addEvent(new RecordChangedEvent({oldState, newState: this}));
         this.addEvent(

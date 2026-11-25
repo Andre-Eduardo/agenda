@@ -55,7 +55,48 @@
       "REMOTE": "Remote"
     }
   },
+  "recordLifecycle": {
+    "sign": "Sign clinical note",
+    "signTitle": "Confirm signature",
+    "signMessage": "Signing locks the note. Later corrections require reopening it with a reason.",
+    "signed": "Clinical note signed.",
+    "reopen": "Reopen clinical note",
+    "reopenMessage": "Enter a reason. It will be recorded in the amendment history.",
+    "reopened": "Clinical note reopened.",
+    "reason": "Reason for reopening",
+    "reasonRequired": "Enter a reason of up to 2,000 characters.",
+    "confirmReopen": "Confirm reopening",
+    "edit": "Edit clinical note",
+    "saved": "Clinical note updated.",
+    "error": "Could not update the clinical note.",
+    "history": "Amendment history",
+    "historyError": "Could not load the amendment history.",
+    "retry": "Try again",
+    "noAmendments": "No reopenings recorded.",
+    "reopenedBy": "Reopened by {{name}} on",
+    "resignedAt": "Signed again on",
+    "lastSignature": "Last signature",
+    "createdAt": "Created on",
+    "lockedStatus": "Signed and locked",
+    "reopenedStatus": "Reopened for editing",
+    "draftStatus": "Draft",
+    "fields": {
+      "description": "Description",
+      "subjective": "Subjective",
+      "objective": "Objective",
+      "assessment": "Assessment",
+      "plan": "Plan",
+      "freeNotes": "Additional notes"
+    }
+  },
   "errors": {
+    "RECORD_ALREADY_LOCKED": "The note is already signed.",
+    "RECORD_NOT_LOCKED": "The note must be signed before it can be reopened.",
+    "RECORD_LOCKED": "Reopen the note before editing it.",
+    "record": {
+      "signed_delete_forbidden": "A note that has been signed cannot be deleted.",
+      "invalid_reopen_reason": "Enter a valid reason to reopen the note."
+    },
     "procedure": {
       "required": "Select a procedure or service from the catalog.",
       "not_found": "This procedure is unavailable in this clinic.",

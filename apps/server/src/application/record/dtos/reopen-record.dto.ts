@@ -5,7 +5,7 @@ import {RecordId} from '@domain/record/entities';
 
 export const reopenRecordSchema = z.object({
     id: entityId(RecordId),
-    justification: z.string().min(1).max(2000),
+    justification: z.string().trim().min(1).max(2000),
 });
 
 export class ReopenRecordDto extends createZodDto(reopenRecordSchema) {}

@@ -55,7 +55,48 @@
       "REMOTE": "Remoto"
     }
   },
+  "recordLifecycle": {
+    "sign": "Firmar evolución",
+    "signTitle": "Confirmar firma",
+    "signMessage": "La firma bloquea la edición. Para corregirla después, debes reabrirla e indicar el motivo.",
+    "signed": "Evolución firmada.",
+    "reopen": "Reabrir evolución",
+    "reopenMessage": "Indica el motivo. Quedará registrado en el historial de enmiendas.",
+    "reopened": "Evolución reabierta.",
+    "reason": "Motivo de reapertura",
+    "reasonRequired": "Indica un motivo de hasta 2.000 caracteres.",
+    "confirmReopen": "Confirmar reapertura",
+    "edit": "Editar evolución",
+    "saved": "Evolución actualizada.",
+    "error": "No se pudo actualizar la evolución.",
+    "history": "Historial de enmiendas",
+    "historyError": "No se pudo cargar el historial de enmiendas.",
+    "retry": "Volver a intentar",
+    "noAmendments": "No hay reaperturas registradas.",
+    "reopenedBy": "Reabierta por {{name}} el",
+    "resignedAt": "Firmada de nuevo el",
+    "lastSignature": "Última firma",
+    "createdAt": "Creada el",
+    "lockedStatus": "Firmada y bloqueada",
+    "reopenedStatus": "Reabierta para editar",
+    "draftStatus": "Borrador",
+    "fields": {
+      "description": "Descripción",
+      "subjective": "Subjetivo",
+      "objective": "Objetivo",
+      "assessment": "Evaluación",
+      "plan": "Plan",
+      "freeNotes": "Observaciones adicionales"
+    }
+  },
   "errors": {
+    "RECORD_ALREADY_LOCKED": "La evolución ya está firmada.",
+    "RECORD_NOT_LOCKED": "La evolución debe estar firmada para poder reabrirla.",
+    "RECORD_LOCKED": "Reabre la evolución antes de editarla.",
+    "record": {
+      "signed_delete_forbidden": "Una evolución que ya fue firmada no puede eliminarse.",
+      "invalid_reopen_reason": "Indica un motivo válido para reabrir la evolución."
+    },
     "procedure": {
       "required": "Selecciona un procedimiento o servicio del catálogo.",
       "not_found": "El procedimiento no está disponible en esta clínica.",

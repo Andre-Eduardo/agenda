@@ -55,7 +55,48 @@
       "REMOTE": "Remoto"
     }
   },
+  "recordLifecycle": {
+    "sign": "Assinar evolução",
+    "signTitle": "Confirmar assinatura",
+    "signMessage": "A assinatura bloqueia a edição. Qualquer correção posterior exige uma reabertura com motivo.",
+    "signed": "Evolução assinada.",
+    "reopen": "Reabrir evolução",
+    "reopenMessage": "Informe o motivo. Ele será registrado no histórico de emendas.",
+    "reopened": "Evolução reaberta.",
+    "reason": "Motivo da reabertura",
+    "reasonRequired": "Informe um motivo com até 2.000 caracteres.",
+    "confirmReopen": "Confirmar reabertura",
+    "edit": "Editar evolução",
+    "saved": "Evolução atualizada.",
+    "error": "Não foi possível atualizar a evolução.",
+    "history": "Histórico de emendas",
+    "historyError": "Não foi possível carregar o histórico de emendas.",
+    "retry": "Tentar novamente",
+    "noAmendments": "Nenhuma reabertura registrada.",
+    "reopenedBy": "Reaberta por {{name}} em",
+    "resignedAt": "Assinada novamente em",
+    "lastSignature": "Última assinatura",
+    "createdAt": "Criada em",
+    "lockedStatus": "Assinada e bloqueada",
+    "reopenedStatus": "Reaberta para edição",
+    "draftStatus": "Rascunho",
+    "fields": {
+      "description": "Descrição",
+      "subjective": "Subjetivo",
+      "objective": "Objetivo",
+      "assessment": "Avaliação",
+      "plan": "Plano",
+      "freeNotes": "Observações complementares"
+    }
+  },
   "errors": {
+    "RECORD_ALREADY_LOCKED": "A evolução já está assinada.",
+    "RECORD_NOT_LOCKED": "A evolução precisa estar assinada para ser reaberta.",
+    "RECORD_LOCKED": "Reabra a evolução antes de editar.",
+    "record": {
+      "signed_delete_forbidden": "Uma evolução que já foi assinada não pode ser excluída.",
+      "invalid_reopen_reason": "Informe um motivo válido para reabrir a evolução."
+    },
     "procedure": {
       "required": "Selecione um procedimento ou serviço do catálogo.",
       "not_found": "O procedimento não está disponível nesta clínica.",

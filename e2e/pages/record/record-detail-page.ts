@@ -23,6 +23,15 @@ export class RecordDetailPage extends BasePage {
         await expect(this.soapSectionTitle).toBeVisible();
     }
 
+    async sign() {
+        await this.page.getByRole('button', {name: 'Assinar evolução', exact: true}).click();
+        const confirmation = this.page.getByRole('dialog', {name: 'Confirmar assinatura'});
+
+        await confirmation.getByRole('button', {name: 'Assinar evolução', exact: true}).click();
+        await expect(confirmation).toBeHidden();
+        await expect(this.page.getByText('Assinada e bloqueada', {exact: true})).toBeVisible();
+    }
+
     async verifyContent(text: string) {
         await expect(this.page.getByText(text)).toBeVisible();
     }
