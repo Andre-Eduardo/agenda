@@ -3,6 +3,7 @@ import {
     getGetPatientQueryOptions,
     useCallAppointment,
     useCheckinAppointment,
+    useCompleteAppointment,
     useMarkNoShowAppointment,
     useSearchAppointments,
     type AppointmentListItem,
@@ -10,7 +11,7 @@ import {
 } from '@agenda-app/client';
 import {useQueries, useQueryClient} from '@tanstack/react-query';
 import {createFileRoute, Link} from '@tanstack/react-router';
-import {ArrowRight, CalendarDays, PhoneCall, RefreshCw, UserCheck, UserX} from 'lucide-react';
+import {ArrowRight, CalendarDays, CheckCheck, PhoneCall, RefreshCw, UserCheck, UserX} from 'lucide-react';
 import {useTranslation} from 'react-i18next';
 import {toast} from 'sonner';
 import {Badge} from '@/components/ui/componentes/badge';
@@ -40,7 +41,7 @@ export const Route = createFileRoute('/_stackedLayout/reception')({
     component: ReceptionPage,
 });
 
-type Transition = 'checkin' | 'call' | 'noShow';
+type Transition = 'checkin' | 'call' | 'complete' | 'noShow';
 type Group = 'waiting' | 'arrived' | 'inProgress' | 'finished';
 
 const PAGE_LIMIT = 500;
@@ -71,7 +72,7 @@ function ReceptionPage() {
     const appointmentAccess = useCanState({has: 'appointment:view'});
     const canCheckin = useCan({has: 'appointment:checkin'});
     const canCall = useCan({has: 'appointment:call'});
-    const canMarkNoShow = useCan({has: 'appointment:update'});
+    const canUpdateAppointment = useCan({has: 'appointment:update'});
     const canOpenPatient = useCan({has: 'patient:view'});
 
     useEffect(() => {
@@ -105,7 +106,9 @@ function ReceptionPage() {
 
     const checkin = useCheckinAppointment();
     const call = useCallAppointment();
+    const complete = useCompleteAppointment();
     const noShow = useMarkNoShowAppointment();
+    const transitions = {checkin, call, complete, noShow};
 
     async function transition(id: string, kind: Transition) {
         if (busyId !== null) return;
@@ -113,13 +116,9 @@ function ReceptionPage() {
         setBusyId(id);
 
         try {
-            if (kind === 'checkin') {
-                await checkin.mutateAsync({id});
-            } else if (kind === 'call') {
-                await call.mutateAsync({id});
-            } else {
-                const appointment = await noShow.mutateAsync({id});
+            const appointment = await transitions[kind].mutateAsync({id});
 
+            if (kind === 'complete' || kind === 'noShow') {
                 invalidateAppointmentRevenue(queryClient, appointment.clinicId);
             }
 
@@ -310,9 +309,20 @@ function ReceptionPage() {
                                                             {t('reception.call')}
                                                         </Button>
                                                     )}
+                                                    {appointment.status === 'IN_PROGRESS' && canUpdateAppointment && (
+                                                        <Button
+                                                            type="button"
+                                                            size="sm"
+                                                            disabled={busyId !== null}
+                                                            onClick={() => void transition(appointment.id, 'complete')}
+                                                        >
+                                                            <CheckCheck size={14} aria-hidden />
+                                                            {t('reception.complete')}
+                                                        </Button>
+                                                    )}
                                                     {(appointment.status === 'SCHEDULED' ||
                                                         appointment.status === 'CONFIRMED') &&
-                                                        canMarkNoShow && (
+                                                        canUpdateAppointment && (
                                                             <Button
                                                                 type="button"
                                                                 size="sm"

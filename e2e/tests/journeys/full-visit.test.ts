@@ -99,7 +99,7 @@ test('completes a visit from scheduling through payment and follow-up', async ({
         const detail = page.getByRole('dialog', {name: 'Detalhes do agendamento'});
 
         await detail.getByRole('button', {name: 'Concluir atendimento'}).click();
-        await expect(detail.getByText('Realizado', {exact: true})).toBeVisible();
+        await expect(detail.getByText('Concluído', {exact: true})).toBeVisible();
 
         const payment = detail.getByRole('group', {name: 'Pagamento'});
         const register = payment.getByRole('button', {name: 'Registrar pagamento', exact: true});

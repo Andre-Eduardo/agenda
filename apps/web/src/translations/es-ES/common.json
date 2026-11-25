@@ -300,6 +300,7 @@
     "openPatientFor": "Abrir perfil de {{name}}",
     "checkin": "Registrar llegada",
     "call": "Llamar paciente",
+    "complete": "Finalizar atención",
     "markNoShow": "Marcar ausencia",
     "confirmNoShowTitle": "Confirmar ausencia",
     "confirmNoShowMessage": "¿Marcar la ausencia de {{name}}? Esto cierra la cita.",
@@ -307,6 +308,7 @@
     "success": {
       "checkin": "Llegada registrada",
       "call": "Paciente llamado",
+      "complete": "Atención finalizada",
       "noShow": "Ausencia registrada"
     }
   },
