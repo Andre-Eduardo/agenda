@@ -75,7 +75,8 @@ número conectado aparece "Desconectar"; desconectado, aparecem "Reconectar" e "
 2. **Webhook de status.** O plexter liga um webhook da Evolution para receber mensagens; aqui ele
    não foi ligado, porque entrega/leitura/resposta é o escopo do L2-04.
 3. **Fuso horário fixo.** A mensagem usa `America/Sao_Paulo`; clínicas em outro fuso recebem o
-   horário errado. Resolver junto da configuração por clínica (L2-03).
+   horário errado. A clínica ainda não tem fuso cadastrado, então o L2-03 manteve o fixo; resolver
+   quando o cadastro da clínica ganhar fuso.
 4. **Números internacionais.** O `Phone` guarda só dígitos, então um número estrangeiro com 10 ou
    11 dígitos recebe o DDI 55 por engano. Aceitável enquanto o público é brasileiro.
 5. **Webhooks de entrega/leitura/resposta** (SES via SNS, Evolution via webhook) não estão
@@ -93,3 +94,28 @@ EVOLUTION_SERVER_URL=http://localhost:8080 EVOLUTION_AUTHENTICATION_API_KEY=... 
 
 O `ReminderDispatchTask` roda a cada 5 minutos e envia os lembretes vencidos. O resultado aparece
 no status do lembrete (`SENT`/`FAILED`) e no log (`EvolutionWhatsAppProvider`/`SesEmailProvider`).
+
+## 6. Configuração por clínica (L2-03)
+
+Em **Configurações > Lembretes** (permissão `clinic-reminder-config:view`/`manage`, OWNER e ADMIN)
+o admin define:
+
+| Campo        | Regras                                                                                      |
+| ------------ | ------------------------------------------------------------------------------------------- |
+| Ativação     | Desligado por padrão enquanto a clínica nunca salvou (`configured: false` no `GET`).        |
+| Canais       | WhatsApp e/ou e-mail. SMS é recusado até existir provider.                                  |
+| Antecedência | 1 a 3 valores, horas inteiras de 1 a 168 (7 dias); gravados sem repetição, do maior ao menor. |
+| Texto        | Até 1000 caracteres, só com `{{paciente}}`, `{{data}}`, `{{hora}}`, `{{profissional}}` e `{{clinica}}`. Vazio ou `null` volta ao texto padrão. |
+
+**Quando a mudança vale.** Ativação, canais e antecedência são lidos quando o agendamento é criado
+(`ScheduleRemindersService`), então valem para agendamentos criados depois de salvar; lembretes já
+gerados continuam como estão. O texto é lido no envio (`ReminderMessageRenderer`), então vale para
+os próximos envios. O assunto do e-mail é fixo: "Lembrete de consulta".
+
+**Pré-visualização.** `POST /clinics/:clinicId/reminder-config/preview` preenche um texto (salvo ou
+não) com dados de exemplo: paciente fictícia, amanhã às 14:30, o próprio usuário como profissional e
+o nome real da clínica. Nada é enviado nem gravado.
+
+**Isolamento.** `GET`, `PUT` e `preview` recusam (`403`) um `clinicId` diferente da clínica do
+usuário logado.
+

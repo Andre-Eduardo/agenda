@@ -2550,7 +2550,7 @@
             }
           }
         },
-        "summary": "Get reminder configuration for a clinic",
+        "summary": "Get the clinic's reminder settings (inactive defaults when never saved)",
         "tags": [
           "Clinic Reminder Config"
         ]
@@ -2602,6 +2602,59 @@
           }
         },
         "summary": "Create or update reminder configuration for a clinic",
+        "tags": [
+          "Clinic Reminder Config"
+        ]
+      }
+    },
+    "/api/v1/clinics/{clinicId}/reminder-config/preview": {
+      "post": {
+        "operationId": "previewReminderMessage",
+        "parameters": [
+          {
+            "name": "clinicId",
+            "required": true,
+            "in": "path",
+            "description": "Clinic ID",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PreviewReminderMessageDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Rendered reminder",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReminderMessagePreview"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Request failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Preview a reminder text filled with sample data (nothing is sent or saved)",
         "tags": [
           "Clinic Reminder Config"
         ]
@@ -11192,13 +11245,30 @@
             }
           },
           "hoursBeforeList": {
+            "description": "Hours before the appointment, largest first",
             "type": "array",
             "items": {
               "type": "number"
             }
           },
+          "messageTemplate": {
+            "type": "string",
+            "description": "Reminder text in use (the default text when the clinic has not customized it)"
+          },
+          "usesDefaultTemplate": {
+            "type": "boolean",
+            "description": "Whether the clinic is using the default text"
+          },
+          "defaultMessageTemplate": {
+            "type": "string",
+            "description": "Default reminder text, used when the clinic saves no custom text"
+          },
           "isActive": {
             "type": "boolean"
+          },
+          "configured": {
+            "type": "boolean",
+            "description": "False while the clinic has never saved its reminder settings"
           }
         },
         "required": [
@@ -11208,7 +11278,11 @@
           "clinicId",
           "enabledChannels",
           "hoursBeforeList",
-          "isActive"
+          "messageTemplate",
+          "usesDefaultTemplate",
+          "defaultMessageTemplate",
+          "isActive",
+          "configured"
         ]
       },
       "UpsertReminderConfigDto": {
@@ -11230,10 +11304,16 @@
             "type": "array",
             "items": {
               "type": "integer",
-              "minimum": 0,
-              "exclusiveMinimum": true
+              "minimum": 1,
+              "maximum": 168
             },
-            "minItems": 1
+            "minItems": 1,
+            "maxItems": 3
+          },
+          "messageTemplate": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 1000
           },
           "isActive": {
             "type": "boolean"
@@ -11242,6 +11322,51 @@
         "required": [
           "enabledChannels",
           "hoursBeforeList"
+        ]
+      },
+      "PreviewReminderMessageDto": {
+        "type": "object",
+        "properties": {
+          "messageTemplate": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 1000
+          }
+        },
+        "required": [
+          "messageTemplate"
+        ]
+      },
+      "ReminderMessagePreview": {
+        "type": "object",
+        "properties": {
+          "subject": {
+            "type": "string",
+            "description": "E-mail subject"
+          },
+          "message": {
+            "type": "string",
+            "description": "Message as the patient would receive it, filled with sample data"
+          },
+          "variables": {
+            "type": "array",
+            "description": "Variables the text can use",
+            "items": {
+              "type": "string",
+              "enum": [
+                "paciente",
+                "data",
+                "hora",
+                "profissional",
+                "clinica"
+              ]
+            }
+          }
+        },
+        "required": [
+          "subject",
+          "message",
+          "variables"
         ]
       },
       "CreateRecordDto": {

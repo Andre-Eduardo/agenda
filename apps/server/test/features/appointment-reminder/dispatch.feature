@@ -12,7 +12,7 @@ Feature: Appointment reminder dispatch (POST)
         And I am signed in as "dr_house" with clinic member "${ref:id:clinicMember:dr_house}"
         When I send a "PUT" request to "/api/v1/clinics/${ref:id:clinic:dr_house}/reminder-config" with:
             | enabledChannels | ["WHATSAPP"] |
-            | hoursBeforeList | [1700]       |
+            | hoursBeforeList | [168]        |
             | isActive        | true         |
         Then the request should succeed with a 200 status code
         When I send a "POST" request to "/api/v1/patients" with:

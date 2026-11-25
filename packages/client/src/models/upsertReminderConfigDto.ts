@@ -9,7 +9,15 @@ import type {UpsertReminderConfigDtoEnabledChannelsItem} from './upsertReminderC
 export type UpsertReminderConfigDto = {
     /** @minItems 1 */
     enabledChannels: UpsertReminderConfigDtoEnabledChannelsItem[];
-    /** @minItems 1 */
+    /**
+     * @minItems 1
+     * @maxItems 3
+     */
     hoursBeforeList: number[];
+    /**
+     * @maxLength 1000
+     * @nullable
+     */
+    messageTemplate?: string | null;
     isActive?: boolean;
 };

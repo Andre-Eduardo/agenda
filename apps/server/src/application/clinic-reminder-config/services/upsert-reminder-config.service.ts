@@ -1,5 +1,6 @@
 import {Injectable} from '@nestjs/common';
 import {ApplicationService, Command} from '@application/@shared/application.service';
+import {assertEntityBelongsToClinic} from '@application/@shared/validators/cross-tenant.validator';
 import {
     ClinicReminderConfigDto,
     UpsertReminderConfigDto,
@@ -17,8 +18,10 @@ export class UpsertReminderConfigService implements ApplicationService<
 > {
     constructor(private readonly configRepository: ClinicReminderConfigRepository) {}
 
-    async execute({payload}: Command<UpsertReminderConfigCommand>): Promise<ClinicReminderConfigDto> {
-        const {clinicId, enabledChannels, hoursBeforeList, isActive} = payload;
+    async execute({actor, payload}: Command<UpsertReminderConfigCommand>): Promise<ClinicReminderConfigDto> {
+        const {clinicId, enabledChannels, hoursBeforeList, messageTemplate, isActive} = payload;
+
+        assertEntityBelongsToClinic(clinicId, actor.clinicId);
 
         let config = await this.configRepository.findByClinicId(clinicId);
 
@@ -27,10 +30,11 @@ export class UpsertReminderConfigService implements ApplicationService<
                 clinicId,
                 enabledChannels,
                 hoursBeforeList,
+                messageTemplate,
                 isActive,
             });
         } else {
-            config.configure({enabledChannels, hoursBeforeList, isActive});
+            config.configure({enabledChannels, hoursBeforeList, messageTemplate, isActive});
         }
 
         await this.configRepository.save(config);

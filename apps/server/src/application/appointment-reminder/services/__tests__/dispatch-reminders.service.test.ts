@@ -1,4 +1,5 @@
 import {mock} from 'jest-mock-extended';
+import {ReminderMessageRenderer} from '@application/clinic-reminder-config/services/reminder-message.renderer';
 import {Phone} from '@domain/@shared/value-objects';
 import {AppointmentReminderRepository} from '@domain/appointment-reminder/appointment-reminder.repository';
 import {
@@ -8,6 +9,7 @@ import {
 } from '@domain/appointment-reminder/entities/appointment-reminder.entity';
 import {AppointmentRepository} from '@domain/appointment/appointment.repository';
 import {AppointmentId, type Appointment} from '@domain/appointment/entities';
+import {ClinicMemberId} from '@domain/clinic-member/entities';
 import {ClinicId} from '@domain/clinic/entities';
 import {NotificationProvider} from '@domain/notification/ports/notification-provider.port';
 import {PatientId, type Patient} from '@domain/patient/entities';
@@ -19,20 +21,28 @@ describe('A dispatch-reminders service', () => {
     const reminderRepository = mock<AppointmentReminderRepository>();
     const appointmentRepository = mock<AppointmentRepository>();
     const patientRepository = mock<PatientRepository>();
+    const messageRenderer = mock<ReminderMessageRenderer>();
     const whatsApp = mock<NotificationProvider>({channel: ReminderChannel.WHATSAPP});
     const email = mock<NotificationProvider>({channel: ReminderChannel.EMAIL});
 
-    const appointment = mock<Appointment>({startAt: new Date('2026-12-01T13:30:00Z')});
+    const professionalId = ClinicMemberId.generate();
+    const appointment = mock<Appointment>({
+        startAt: new Date('2026-12-01T13:30:00Z'),
+        attendedByMemberId: professionalId,
+    });
     const patient = mock<Patient>({
         name: 'Maria',
         email: 'maria@example.com',
         phone: Phone.create('11987654321'),
     });
 
-    const service = new DispatchRemindersService(reminderRepository, appointmentRepository, patientRepository, [
-        whatsApp,
-        email,
-    ]);
+    const service = new DispatchRemindersService(
+        reminderRepository,
+        appointmentRepository,
+        patientRepository,
+        messageRenderer,
+        [whatsApp, email]
+    );
 
     function reminder(channel: ReminderChannel): AppointmentReminder {
         return AppointmentReminder.create({
@@ -48,6 +58,7 @@ describe('A dispatch-reminders service', () => {
         jest.resetAllMocks();
         appointmentRepository.findById.mockResolvedValue(appointment);
         patientRepository.findById.mockResolvedValue(patient);
+        messageRenderer.render.mockResolvedValue('Olá, Maria! Sua consulta é em 01/12/2026 às 10:30.');
     });
 
     it('should send a WhatsApp reminder to the patient phone and mark it as sent', async () => {
@@ -62,12 +73,18 @@ describe('A dispatch-reminders service', () => {
             clinicId,
             to: '11987654321',
             subject: 'Lembrete de consulta',
-            message: 'Olá, Maria! Lembramos que você tem uma consulta agendada para 01/12/2026 às 10:30.',
+            message: 'Olá, Maria! Sua consulta é em 01/12/2026 às 10:30.',
             metadata: {
                 reminderId: due.id.toString(),
                 appointmentId: due.appointmentId.toString(),
                 patientId: due.patientId.toString(),
             },
+        });
+        expect(messageRenderer.render).toHaveBeenCalledWith({
+            clinicId,
+            patientName: 'Maria',
+            startAt: appointment.startAt,
+            professionalId,
         });
         expect(due.status).toBe(ReminderStatus.SENT);
         expect(reminderRepository.save).toHaveBeenCalledWith(due);

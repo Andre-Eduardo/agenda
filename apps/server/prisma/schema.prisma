@@ -1676,12 +1676,15 @@ model AppointmentReminder {
 /// Configuração de lembretes automáticos por clínica.
 /// hoursBeforeList: lista de horas antes do agendamento para gerar lembretes (ex: [24, 2]).
 /// enabledChannels: canais habilitados para envio.
+/// messageTemplate: texto do lembrete com variáveis {{paciente}}, {{data}}, {{hora}},
+/// {{profissional}} e {{clinica}}; null usa o texto padrão do domínio.
 model ClinicReminderConfig {
   id              String            @id(map: "clinic_reminder_config_pk") @db.Uuid
   clinicId        String            @unique @map("clinic_id") @db.Uuid
   clinic          Clinic            @relation(fields: [clinicId], references: [id])
   enabledChannels ReminderChannel[] @map("enabled_channels")
   hoursBeforeList Int[]             @map("hours_before_list")
+  messageTemplate String?           @map("message_template") @db.Text
   isActive        Boolean           @default(true) @map("is_active")
   createdAt       DateTime          @map("created_at")
   updatedAt       DateTime          @map("updated_at")
