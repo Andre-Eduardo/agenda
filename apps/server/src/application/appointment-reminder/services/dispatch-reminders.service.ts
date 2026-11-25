@@ -1,14 +1,20 @@
-import {Inject, Injectable} from '@nestjs/common';
+import {Inject, Injectable, Logger} from '@nestjs/common';
 import {AppointmentReminderRepository} from '@domain/appointment-reminder/appointment-reminder.repository';
 import {AppointmentReminder, ReminderChannel} from '@domain/appointment-reminder/entities/appointment-reminder.entity';
 import {AppointmentRepository} from '@domain/appointment/appointment.repository';
 import type {ClinicId} from '@domain/clinic/entities';
-import {NotificationProvider, type NotificationPayload} from '@domain/notification/ports/notification-provider.port';
+import {
+    NotificationProvider,
+    type NotificationPayload,
+    type NotificationResult,
+} from '@domain/notification/ports/notification-provider.port';
 import {PatientRepository} from '@domain/patient/patient.repository';
 import {NOTIFICATION_PROVIDERS} from '@infrastructure/notification/notification-provider.token';
 
 @Injectable()
 export class DispatchRemindersService {
+    private readonly logger = new Logger(DispatchRemindersService.name);
+
     constructor(
         private readonly reminderRepository: AppointmentReminderRepository,
         private readonly appointmentRepository: AppointmentRepository,
@@ -20,7 +26,12 @@ export class DispatchRemindersService {
         const due = await this.reminderRepository.findDueForDispatch(clinicId, 10);
 
         for (const reminder of due) {
-            await this.dispatch(reminder);
+            try {
+                await this.dispatch(reminder);
+            } catch (error) {
+                // A single broken reminder must not block the rest of the batch.
+                this.logger.error(`Failed to dispatch reminder ${reminder.id.toString()}`, error);
+            }
         }
     }
 
@@ -42,7 +53,7 @@ export class DispatchRemindersService {
             return;
         }
 
-        const result = await provider.send(payload);
+        const result = await this.send(provider, payload);
 
         if (result.success) {
             reminder.markSent(new Date());
@@ -51,6 +62,15 @@ export class DispatchRemindersService {
         }
 
         await this.reminderRepository.save(reminder);
+    }
+
+    /** Providers should not throw, but a defect in one must still become a recorded failure. */
+    private async send(provider: NotificationProvider, payload: NotificationPayload): Promise<NotificationResult> {
+        try {
+            return await provider.send(payload);
+        } catch (error) {
+            return {success: false, error: error instanceof Error ? error.message : 'Provider failed to send'};
+        }
     }
 
     private async buildPayload(reminder: AppointmentReminder): Promise<NotificationPayload> {
@@ -92,7 +112,9 @@ export class DispatchRemindersService {
         });
 
         return {
+            clinicId: reminder.clinicId,
             to,
+            subject: 'Lembrete de consulta',
             message: `Olá, ${patient.name}! Lembramos que você tem uma consulta agendada para ${dateStr} às ${timeStr}.`,
             metadata: {
                 reminderId: reminder.id.toString(),
