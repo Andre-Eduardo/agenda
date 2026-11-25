@@ -286,6 +286,16 @@
     "limitNotice": "Se muestran las primeras {{limit}} citas de hoy. Abra la agenda para ver las demás.",
     "patientUnavailable": "Paciente no disponible",
     "appointmentFor": "Cita de {{name}}",
+    "professional": "Profesional: {{name}}",
+    "professionalUnavailable": "Profesional no disponible",
+    "typeUnavailable": "Tipo sin especificar",
+    "types": {
+      "FIRST_VISIT": "Primera consulta",
+      "RETURN": "Consulta de seguimiento",
+      "WALK_IN": "Urgencia",
+      "TELEMEDICINE": "Teleconsulta",
+      "PROCEDURE": "Procedimiento"
+    },
     "openPatient": "Abrir paciente",
     "openPatientFor": "Abrir perfil de {{name}}",
     "checkin": "Registrar llegada",

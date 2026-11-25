@@ -2,6 +2,49 @@ import {expect, test} from '@fixtures/test';
 import {createTestAppointment} from '@lib/factories';
 
 test.describe('Reception operations', () => {
+    test('shows the scheduled professional and visit type separately for the same patient', async ({
+        createProfessional,
+        createAuthenticatedClinicMember,
+        createPatient,
+        receptionPage,
+    }) => {
+        const first = await createProfessional({displayName: 'Dra. Ana Gomes'});
+        const {clinicId} = first;
+        const second = await createProfessional({clinicId, displayName: 'Dr. Bruno Lima'});
+        const secretary = await createAuthenticatedClinicMember({clinicId, role: 'SECRETARY'});
+        const patient = await createPatient({clinicId, grantAccessTo: [secretary.id]});
+        const startAt = new Date();
+        await createTestAppointment({
+            clinicId,
+            patientId: patient.id,
+            memberId: first.clinicMemberId,
+            startAt,
+            type: 'FIRST_VISIT',
+        });
+        await createTestAppointment({
+            clinicId,
+            patientId: patient.id,
+            memberId: second.clinicMemberId,
+            startAt,
+            type: 'RETURN',
+        });
+
+        await receptionPage.navigate();
+        const appointments = receptionPage.appointment(patient.name);
+        const firstVisit = appointments.filter({hasText: 'Dra. Ana Gomes'});
+        const followUp = appointments.filter({hasText: 'Dr. Bruno Lima'});
+
+        await expect(appointments).toHaveCount(2);
+        await expect(firstVisit.getByText('Primeira consulta', {exact: true})).toBeVisible();
+        await expect(followUp.getByText('Retorno', {exact: true})).toBeVisible();
+
+        await firstVisit.getByRole('button', {name: 'Registrar chegada'}).click();
+
+        await expect(firstVisit.getByText('Chegou', {exact: true})).toBeVisible();
+        await expect(firstVisit.getByText('Primeira consulta', {exact: true})).toBeVisible();
+        await expect(followUp.getByText('Agendado', {exact: true})).toBeVisible();
+    });
+
     test('secretary records arrival and call, then opens the patient without editing the appointment', async ({
         createProfessional,
         createAuthenticatedClinicMember,

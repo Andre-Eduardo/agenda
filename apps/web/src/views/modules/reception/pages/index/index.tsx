@@ -5,10 +5,10 @@ import {
     useCheckinAppointment,
     useMarkNoShowAppointment,
     useSearchAppointments,
-    type Appointment,
+    type AppointmentListItem,
     type AppointmentStatus,
 } from '@agenda-app/client';
-import {useQueries, useQueryClient, type UseQueryResult} from '@tanstack/react-query';
+import {useQueries, useQueryClient} from '@tanstack/react-query';
 import {createFileRoute, Link} from '@tanstack/react-router';
 import {ArrowRight, CalendarDays, PhoneCall, RefreshCw, UserCheck, UserX} from 'lucide-react';
 import {useTranslation} from 'react-i18next';
@@ -26,8 +26,8 @@ import {
 import {EmptyStateCard} from '@/components/ui/componentes/empty-state';
 import {Skeleton} from '@/components/ui/componentes/skeleton';
 import {useCan, useCanState} from '@/hooks/useCan';
-import {invalidateAppointmentRevenue} from '@/utils/appointment-revenue';
 import {css} from '@/styled-system/css';
+import {invalidateAppointmentRevenue} from '@/utils/appointment-revenue';
 import {ConfirmDialog} from '@/views/components/ConfirmDialog';
 import {Page} from '@/views/components/Page';
 import {
@@ -39,11 +39,6 @@ import styles from './styles.module.css';
 export const Route = createFileRoute('/_stackedLayout/reception')({
     component: ReceptionPage,
 });
-
-interface PaginatedAppointments {
-    data: Appointment[];
-    totalCount: number;
-}
 
 type Transition = 'checkin' | 'call' | 'noShow';
 type Group = 'waiting' | 'arrived' | 'inProgress' | 'finished';
@@ -95,7 +90,7 @@ function ReceptionPage() {
     };
     const appointmentsQuery = useSearchAppointments(params, {
         query: {enabled: appointmentAccess.allowed, refetchInterval: 60_000, refetchOnWindowFocus: true},
-    }) as unknown as UseQueryResult<PaginatedAppointments>;
+    });
     const appointments = appointmentsQuery.data?.data ?? [];
     const patientIds = [...new Set(appointments.map((appointment) => appointment.patientId))];
     const patientQueries = useQueries({
@@ -105,7 +100,7 @@ function ReceptionPage() {
     const patientNames = new Map(patientIds.map((id) => [id, patientsById.get(id)?.data?.name]));
     const grouped = Object.fromEntries(
         GROUPS.map((group) => [group, appointments.filter((appointment) => STATUS_GROUP[appointment.status] === group)])
-    ) as Record<Group, Appointment[]>;
+    ) as Record<Group, AppointmentListItem[]>;
     const dateLabel = new Intl.DateTimeFormat(i18n.language, {dateStyle: 'full'}).format(new Date(`${day}T12:00:00`));
 
     const checkin = useCheckinAppointment();
@@ -239,6 +234,18 @@ function ReceptionPage() {
                                                     <span className={styles.patientName}>
                                                         {patientNames.get(appointment.patientId) ??
                                                             t('reception.patientUnavailable')}
+                                                    </span>
+                                                    <span className={styles.professional}>
+                                                        {appointment.attendedByName
+                                                            ? t('reception.professional', {
+                                                                  name: appointment.attendedByName,
+                                                              })
+                                                            : t('reception.professionalUnavailable')}
+                                                    </span>
+                                                    <span className={styles.appointmentType}>
+                                                        {t(`reception.types.${appointment.type}`, {
+                                                            defaultValue: t('reception.typeUnavailable'),
+                                                        })}
                                                     </span>
                                                     <span className={styles.status}>
                                                         {t(`reception.status.${appointment.status}`)}

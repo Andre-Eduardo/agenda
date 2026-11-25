@@ -2,7 +2,6 @@ import {Body, Controller, Delete, Get, Patch, Post, Put, Query} from '@nestjs/co
 import {ApiTags} from '@nestjs/swagger';
 import {Authorize} from '@application/@shared/auth';
 import {RequestActor} from '@application/@shared/auth/request-actor.decorator';
-import {PaginatedDto} from '@application/@shared/dto';
 import {ApiOperation} from '@application/@shared/openapi/decorators';
 import {entityIdParam} from '@application/@shared/openapi/params';
 import {ValidatedParam, ZodValidationPipe} from '@application/@shared/validation';
@@ -13,6 +12,7 @@ import {
     AppointmentStatusTransitionDto,
     CancelAppointmentInputDto,
     CreateAppointmentDto,
+    PaginatedAppointmentsDto,
     SearchAppointmentsDto,
     UpdateAppointmentInputDto,
     callAppointmentSchema,
@@ -79,14 +79,14 @@ export class AppointmentController {
 
     @ApiOperation({
         summary: 'Lists and searches appointments',
-        responses: [{status: 200, description: 'Appointments list'}],
+        responses: [{status: 200, description: 'Appointments list', type: PaginatedAppointmentsDto}],
     })
     @Authorize(AppointmentPermission.VIEW)
     @Get()
     searchAppointments(
         @RequestActor() actor: Actor,
         @Query(new ZodValidationPipe(searchAppointmentsSchema)) query: SearchAppointmentsDto
-    ): Promise<PaginatedDto<AppointmentDto>> {
+    ): Promise<PaginatedAppointmentsDto> {
         return this.searchAppointmentsService.execute({actor, payload: query});
     }
 

@@ -52,6 +52,20 @@ export class ClinicMemberPrismaRepository extends PrismaRepository implements Cl
         return members.map((m) => this.mapper.toDomain(m));
     }
 
+    async findDisplayNamesByIds(clinicId: ClinicId, ids: ClinicMemberId[]): Promise<Map<string, string>> {
+        if (ids.length === 0) return new Map();
+
+        const members = await this.prisma.clinicMember.findMany({
+            where: {
+                clinicId: clinicId.toString(),
+                id: {in: ids.map((id) => id.toString())},
+            },
+            select: {id: true, displayName: true, user: {select: {name: true}}},
+        });
+
+        return new Map(members.map((member) => [member.id, member.displayName?.trim() || member.user.name]));
+    }
+
     async save(member: ClinicMember): Promise<void> {
         const data = this.mapper.toPersistence(member);
 
