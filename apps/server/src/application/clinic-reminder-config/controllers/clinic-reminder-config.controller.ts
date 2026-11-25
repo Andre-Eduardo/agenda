@@ -1,4 +1,4 @@
-import {Body, Controller, Get, Put} from '@nestjs/common';
+import {Body, Controller, Get, HttpCode, Post, Put} from '@nestjs/common';
 import {ApiTags} from '@nestjs/swagger';
 import {z} from 'zod';
 import {Authorize} from '@application/@shared/auth';
@@ -8,13 +8,17 @@ import {entityIdParam} from '@application/@shared/openapi/params';
 import {ValidatedParam} from '@application/@shared/validation';
 import {
     ClinicReminderConfigDto,
+    PreviewReminderMessageDto,
+    ReminderMessagePreviewDto,
     UpsertReminderConfigDto,
-} from '@application/clinic-reminder-config/dtos/clinic-reminder-config.dto';
-import {GetReminderConfigService} from '@application/clinic-reminder-config/services/get-reminder-config.service';
+} from '@application/clinic-reminder-config/dtos';
 import {
+    GetReminderConfigService,
+    PreviewReminderMessageService,
     UpsertReminderConfigService,
-    UpsertReminderConfigCommand,
-} from '@application/clinic-reminder-config/services/upsert-reminder-config.service';
+    type PreviewReminderMessageCommand,
+    type UpsertReminderConfigCommand,
+} from '@application/clinic-reminder-config/services';
 import {Actor} from '@domain/@shared/actor';
 import {ClinicReminderConfigPermission} from '@domain/auth';
 import {ClinicId} from '@domain/clinic/entities';
@@ -24,11 +28,12 @@ import {ClinicId} from '@domain/clinic/entities';
 export class ClinicReminderConfigController {
     constructor(
         private readonly getReminderConfigService: GetReminderConfigService,
-        private readonly upsertReminderConfigService: UpsertReminderConfigService
+        private readonly upsertReminderConfigService: UpsertReminderConfigService,
+        private readonly previewReminderMessageService: PreviewReminderMessageService
     ) {}
 
     @ApiOperation({
-        summary: 'Get reminder configuration for a clinic',
+        summary: "Get the clinic's reminder settings (inactive defaults when never saved)",
         parameters: [entityIdParam('Clinic ID', 'clinicId')],
         responses: [{status: 200, description: 'Reminder config', type: ClinicReminderConfigDto}],
     })
@@ -70,6 +75,32 @@ export class ClinicReminderConfigController {
         return this.upsertReminderConfigService.execute({
             actor,
             payload: {...payload, clinicId} satisfies UpsertReminderConfigCommand,
+        });
+    }
+
+    @ApiOperation({
+        summary: 'Preview a reminder text filled with sample data (nothing is sent or saved)',
+        parameters: [entityIdParam('Clinic ID', 'clinicId')],
+        responses: [{status: 200, description: 'Rendered reminder', type: ReminderMessagePreviewDto}],
+    })
+    @Authorize(ClinicReminderConfigPermission.VIEW)
+    @HttpCode(200)
+    @Post(':clinicId/reminder-config/preview')
+    previewReminderMessage(
+        @RequestActor() actor: Actor,
+        @ValidatedParam(
+            'clinicId',
+            z
+                .string()
+                .uuid()
+                .transform((v) => ClinicId.from(v))
+        )
+        clinicId: ClinicId,
+        @Body() payload: PreviewReminderMessageDto
+    ): Promise<ReminderMessagePreviewDto> {
+        return this.previewReminderMessageService.execute({
+            actor,
+            payload: {...payload, clinicId} satisfies PreviewReminderMessageCommand,
         });
     }
 }

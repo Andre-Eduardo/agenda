@@ -1,7 +1,9 @@
 import {Inject, Injectable, Logger} from '@nestjs/common';
+import {ReminderMessageRenderer} from '@application/clinic-reminder-config/services/reminder-message.renderer';
 import {AppointmentReminderRepository} from '@domain/appointment-reminder/appointment-reminder.repository';
 import {AppointmentReminder, ReminderChannel} from '@domain/appointment-reminder/entities/appointment-reminder.entity';
 import {AppointmentRepository} from '@domain/appointment/appointment.repository';
+import {REMINDER_SUBJECT} from '@domain/clinic-reminder-config/reminder-message-template';
 import type {ClinicId} from '@domain/clinic/entities';
 import {
     NotificationProvider,
@@ -19,6 +21,7 @@ export class DispatchRemindersService {
         private readonly reminderRepository: AppointmentReminderRepository,
         private readonly appointmentRepository: AppointmentRepository,
         private readonly patientRepository: PatientRepository,
+        private readonly messageRenderer: ReminderMessageRenderer,
         @Inject(NOTIFICATION_PROVIDERS) private readonly providers: NotificationProvider[]
     ) {}
 
@@ -102,20 +105,19 @@ export class DispatchRemindersService {
             to = patient.phone.toString();
         }
 
-        const dateStr = appointment.startAt.toLocaleDateString('pt-BR', {
-            timeZone: 'America/Sao_Paulo',
-        });
-        const timeStr = appointment.startAt.toLocaleTimeString('pt-BR', {
-            hour: '2-digit',
-            minute: '2-digit',
-            timeZone: 'America/Sao_Paulo',
+        // The text is read at send time, so an edit applies to the next reminders sent.
+        const message = await this.messageRenderer.render({
+            clinicId: reminder.clinicId,
+            patientName: patient.name,
+            startAt: appointment.startAt,
+            professionalId: appointment.attendedByMemberId,
         });
 
         return {
             clinicId: reminder.clinicId,
             to,
-            subject: 'Lembrete de consulta',
-            message: `Olá, ${patient.name}! Lembramos que você tem uma consulta agendada para ${dateStr} às ${timeStr}.`,
+            subject: REMINDER_SUBJECT,
+            message,
             metadata: {
                 reminderId: reminder.id.toString(),
                 appointmentId: reminder.appointmentId.toString(),

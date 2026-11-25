@@ -6,6 +6,7 @@ import {DispatchRemindersService} from '@application/appointment-reminder/servic
 import {ListPendingRemindersService} from '@application/appointment-reminder/services/list-pending-reminders.service';
 import {ScheduleRemindersService} from '@application/appointment-reminder/services/schedule-reminders.service';
 import {ReminderDispatchTask} from '@application/appointment-reminder/tasks/reminder-dispatch.task';
+import {ClinicReminderConfigModule} from '@application/clinic-reminder-config/clinic-reminder-config.module';
 import {EnvConfigService} from '@infrastructure/config';
 import {InfrastructureModule} from '@infrastructure/infrastructure.module';
 import {NOTIFICATION_PROVIDERS} from '@infrastructure/notification/notification-provider.token';
@@ -15,7 +16,7 @@ import {
 } from '@infrastructure/notification/notification-providers.factory';
 
 @Module({
-    imports: [InfrastructureModule],
+    imports: [InfrastructureModule, ClinicReminderConfigModule],
     controllers: [AppointmentReminderController],
     providers: [
         ScheduleRemindersService,
