@@ -1,17 +1,14 @@
 import {Injectable} from '@nestjs/common';
 import {ApplicationService, Command} from '@application/@shared/application.service';
-import {assertEntityBelongsToClinic} from '@application/@shared/validators/cross-tenant.validator';
-import {PatientAccessChecker} from '@application/clinic-patient-access/services/patient-access-checker.service';
+import {RecordAuthorAccess} from '@application/clinic-patient-access/services/record-author-access.service';
 import {GetRecordDto, RecordDto} from '@application/record/dtos';
 import {ResourceNotFoundException} from '@domain/@shared/exceptions';
-import {DocumentEntityType} from '@domain/document-permission/entities';
-import {PatientId} from '@domain/patient/entities';
 import {RecordRepository} from '@domain/record/record.repository';
 
 @Injectable()
 export class GetRecordService implements ApplicationService<GetRecordDto, RecordDto> {
     constructor(
-        private readonly patientAccessChecker: PatientAccessChecker,
+        private readonly recordAuthorAccess: RecordAuthorAccess,
         private readonly recordRepository: RecordRepository
     ) {}
 
@@ -22,13 +19,7 @@ export class GetRecordService implements ApplicationService<GetRecordDto, Record
             throw new ResourceNotFoundException('Record not found.', payload.id.toString());
         }
 
-        assertEntityBelongsToClinic(record.clinicId, actor.clinicId);
-        await this.patientAccessChecker.assertCanReadDocument(
-            actor,
-            PatientId.from(record.patientId.toString()),
-            DocumentEntityType.RECORD,
-            record.id.toString()
-        );
+        await this.recordAuthorAccess.assertCanRead(actor, record);
 
         return new RecordDto(record);
     }

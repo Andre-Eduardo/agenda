@@ -2046,6 +2046,115 @@
         ]
       }
     },
+    "/api/v1/appointments/operational": {
+      "get": {
+        "operationId": "searchOperationalAppointments",
+        "parameters": [
+          {
+            "name": "cursor",
+            "required": false,
+            "in": "query",
+            "description": "The cursor to start from",
+            "schema": {
+              "format": "uuid",
+              "nullable": true,
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "required": true,
+            "in": "query",
+            "description": "The number of items to return",
+            "schema": {
+              "minimum": 0,
+              "exclusiveMinimum": true,
+              "example": 10,
+              "type": "number"
+            }
+          },
+          {
+            "name": "sort",
+            "required": false,
+            "in": "query",
+            "description": "The fields to sort by",
+            "schema": {
+              "properties": {
+                "createdAt": {
+                  "type": "string",
+                  "enum": [
+                    "asc",
+                    "desc"
+                  ]
+                },
+                "updatedAt": {
+                  "type": "string",
+                  "enum": [
+                    "asc",
+                    "desc"
+                  ]
+                },
+                "startAt": {
+                  "type": "string",
+                  "enum": [
+                    "asc",
+                    "desc"
+                  ]
+                }
+              },
+              "nullable": true,
+              "type": "object"
+            }
+          },
+          {
+            "name": "dateFrom",
+            "required": false,
+            "in": "query",
+            "description": "Earliest appointment start to include",
+            "schema": {
+              "nullable": true,
+              "type": "string"
+            }
+          },
+          {
+            "name": "dateTo",
+            "required": false,
+            "in": "query",
+            "description": "Latest appointment start to include",
+            "schema": {
+              "nullable": true,
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Operational appointments",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaginatedOperationalAppointments"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Request failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Lists appointments with operational fields for the dashboard",
+        "tags": [
+          "Appointment"
+        ]
+      }
+    },
     "/api/v1/appointments/manageable-professionals": {
       "get": {
         "operationId": "listManageableProfessionals",
@@ -11474,6 +11583,81 @@
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/AppointmentListItem"
+            }
+          },
+          "totalCount": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "data",
+          "totalCount"
+        ]
+      },
+      "OperationalAppointment": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "The unique identifier of the entity"
+          },
+          "patientId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "The patient ID"
+          },
+          "startAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "The appointment start time"
+          },
+          "endAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "The appointment end time"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "FIRST_VISIT",
+              "RETURN",
+              "WALK_IN",
+              "TELEMEDICINE",
+              "PROCEDURE"
+            ],
+            "description": "The appointment type"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "SCHEDULED",
+              "CONFIRMED",
+              "CANCELLED",
+              "COMPLETED",
+              "NO_SHOW",
+              "ARRIVED",
+              "IN_PROGRESS"
+            ],
+            "description": "The appointment status"
+          }
+        },
+        "required": [
+          "id",
+          "patientId",
+          "startAt",
+          "endAt",
+          "type",
+          "status"
+        ]
+      },
+      "PaginatedOperationalAppointments": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OperationalAppointment"
             }
           },
           "totalCount": {

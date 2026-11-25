@@ -82,9 +82,9 @@ test.describe('Reception operations', () => {
         await expect(review).toContainText('Nenhum alerta crítico ativo.');
         await review.getByRole('button', {name: 'Chamar paciente'}).click();
         await expect(row).toContainText('Em atendimento');
-        await expect.poll(async () => (await db.appointment.findUnique({where: {id: appointment.id}}))?.status).toBe(
-            'IN_PROGRESS'
-        );
+        await expect
+            .poll(async () => (await db.appointment.findUnique({where: {id: appointment.id}}))?.status)
+            .toBe('IN_PROGRESS');
 
         await row.getByRole('button', {name: 'Concluir atendimento'}).click();
         const finished = receptionPage.page.getByRole('region', {name: 'Finalizados'});
@@ -129,9 +129,9 @@ test.describe('Reception operations', () => {
         await receptionPage.page.getByRole('dialog').getByRole('button', {name: 'Marcar falta'}).click();
 
         await expect(row).toContainText('Faltou');
-        await expect.poll(async () => (await db.appointment.findUnique({where: {id: appointment.id}}))?.status).toBe(
-            'NO_SHOW'
-        );
+        await expect
+            .poll(async () => (await db.appointment.findUnique({where: {id: appointment.id}}))?.status)
+            .toBe('NO_SHOW');
         await expect(row.getByRole('button', {name: 'Marcar falta'})).toHaveCount(0);
     });
 
@@ -166,7 +166,9 @@ test.describe('Reception operations', () => {
         await receptionPage.page.getByRole('button', {name: 'Atualizar'}).click();
         await expect(row).toContainText('Em atendimento');
         await expect(row.getByRole('button', {name: 'Concluir atendimento'})).toHaveCount(0);
-        const response = await receptionPage.page.request.patch(`${API_URL}/api/v1/appointments/${appointment.id}/complete`);
+        const response = await receptionPage.page.request.patch(
+            `${API_URL}/api/v1/appointments/${appointment.id}/complete`
+        );
         expect(response.status()).toBe(403);
         expect((await db.appointment.findUnique({where: {id: appointment.id}}))?.status).toBe('IN_PROGRESS');
     });
