@@ -36,13 +36,28 @@ export class CreateRecordService implements ApplicationService<CreateRecordDto, 
         assertEntityBelongsToClinic(patient.clinicId, actor.clinicId);
         await this.patientAccessChecker.assertCanAccess(actor, payload.patientId, 'write');
 
-        const professional = await this.professionalRepository.findById(payload.responsibleProfessionalId);
+        const {appointmentId, responsibleProfessionalId} = payload;
+        const appointment = appointmentId ? await this.appointmentRepository.findById(appointmentId) : null;
+
+        if (appointmentId) {
+            if (!appointment) throw new ResourceNotFoundException('Appointment not found.', appointmentId.toString());
+
+            assertEntityBelongsToClinic(appointment.clinicId, actor.clinicId);
+
+            if (!appointment.patientId.equals(payload.patientId)) {
+                throw new ResourceNotFoundException(
+                    'Appointment does not belong to patient.',
+                    appointmentId.toString()
+                );
+            }
+        }
+
+        const professional = responsibleProfessionalId
+            ? await this.professionalRepository.findById(responsibleProfessionalId)
+            : appointment && (await this.professionalRepository.findByClinicMemberId(appointment.attendedByMemberId));
 
         if (professional === null) {
-            throw new ResourceNotFoundException(
-                'Professional not found.',
-                payload.responsibleProfessionalId.toString()
-            );
+            throw new ResourceNotFoundException('Professional not found.', responsibleProfessionalId?.toString());
         }
 
         const member = await this.clinicMemberRepository.findById(professional.clinicMemberId);
@@ -52,21 +67,6 @@ export class CreateRecordService implements ApplicationService<CreateRecordDto, 
         }
 
         assertEntityBelongsToClinic(member.clinicId, actor.clinicId);
-
-        if (payload.appointmentId) {
-            const appointment = await this.appointmentRepository.findById(payload.appointmentId);
-
-            if (appointment === null)
-                throw new ResourceNotFoundException('Appointment not found.', payload.appointmentId.toString());
-            assertEntityBelongsToClinic(appointment.clinicId, actor.clinicId);
-
-            if (!appointment.patientId.equals(payload.patientId)) {
-                throw new ResourceNotFoundException(
-                    'Appointment does not belong to patient.',
-                    payload.appointmentId.toString()
-                );
-            }
-        }
 
         if (payload.importedDocumentId) {
             const importedDocument = await this.importedDocumentRepository.findById(
@@ -90,7 +90,7 @@ export class CreateRecordService implements ApplicationService<CreateRecordDto, 
         const record = Record.create({
             clinicId: actor.clinicId,
             createdByMemberId: actor.clinicMemberId,
-            responsibleProfessionalId: payload.responsibleProfessionalId,
+            responsibleProfessionalId: professional.id,
             patientId: payload.patientId,
             description: payload.description ?? null,
             templateType: payload.templateType ?? null,

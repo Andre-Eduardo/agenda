@@ -159,6 +159,8 @@
     }
   },
   "recordLifecycle": {
+    "createFromAppointment": "Registrar evolución",
+    "appointmentUnavailable": "No se pudo abrir la cita de este paciente.",
     "sign": "Firmar evolución",
     "signTitle": "Confirmar firma",
     "signMessage": "La firma bloquea la edición. Para corregirla después, debes reabrirla e indicar el motivo.",

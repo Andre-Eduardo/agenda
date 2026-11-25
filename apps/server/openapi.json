@@ -11793,6 +11793,7 @@
           "responsibleProfessionalId": {
             "type": "string",
             "format": "uuid",
+            "description": "Clinically responsible professional. Defaults to the appointment’s attending professional when omitted.",
             "example": "dc5782d4-ce8e-4f95-bb0b-d1a4e130aee8"
           },
           "description": {
@@ -11922,8 +11923,7 @@
           }
         },
         "required": [
-          "patientId",
-          "responsibleProfessionalId"
+          "patientId"
         ]
       },
       "FileDto": {

@@ -159,6 +159,8 @@
     }
   },
   "recordLifecycle": {
+    "createFromAppointment": "Write clinical note",
+    "appointmentUnavailable": "Could not open the appointment for this patient.",
     "sign": "Sign clinical note",
     "signTitle": "Confirm signature",
     "signMessage": "Signing locks the note. Later corrections require reopening it with a reason.",
