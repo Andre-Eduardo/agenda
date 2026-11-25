@@ -30,10 +30,19 @@ import type {
     CancelAppointmentInputDto,
     CreateAppointmentDto,
     SearchAppointmentsParams,
+    SearchOperationalAppointmentsParams,
     UpdateAppointmentInputDto,
 } from '../models';
 import {AppointmentPaymentStatus, ProcedureColor, ProcedureModality} from '../models';
-import type {ApiProblem, Appointment, AppointmentFollowUp, AppointmentStatusTransition, ClinicMember} from '../models';
+import type {
+    ApiProblem,
+    Appointment,
+    AppointmentFollowUp,
+    AppointmentStatusTransition,
+    ClinicMember,
+    PaginatedAppointments,
+    PaginatedOperationalAppointments,
+} from '../models';
 
 type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 
@@ -121,7 +130,7 @@ export const searchAppointments = (
     options?: SecondParameter<typeof apiClient>,
     signal?: AbortSignal
 ) => {
-    return apiClient<void>({url: `/api/v1/appointments`, method: 'GET', params, signal}, options);
+    return apiClient<PaginatedAppointments>({url: `/api/v1/appointments`, method: 'GET', params, signal}, options);
 };
 
 export const getSearchAppointmentsQueryKey = (params?: SearchAppointmentsParams) => {
@@ -306,6 +315,226 @@ export function useSearchAppointmentsSuspense<
     queryClient?: QueryClient
 ): UseSuspenseQueryResult<TData, TError> & {queryKey: DataTag<QueryKey, TData, TError>} {
     const queryOptions = getSearchAppointmentsSuspenseQueryOptions(params, options);
+
+    const query = useSuspenseQuery(queryOptions, queryClient) as UseSuspenseQueryResult<TData, TError> & {
+        queryKey: DataTag<QueryKey, TData, TError>;
+    };
+
+    query.queryKey = queryOptions.queryKey;
+
+    return query;
+}
+
+/**
+ * @summary Lists appointments with operational fields for the dashboard
+ */
+export const searchOperationalAppointments = (
+    params: SearchOperationalAppointmentsParams,
+    options?: SecondParameter<typeof apiClient>,
+    signal?: AbortSignal
+) => {
+    return apiClient<PaginatedOperationalAppointments>(
+        {url: `/api/v1/appointments/operational`, method: 'GET', params, signal},
+        options
+    );
+};
+
+export const getSearchOperationalAppointmentsQueryKey = (params?: SearchOperationalAppointmentsParams) => {
+    return [`/api/v1/appointments/operational`, ...(params ? [params] : [])] as const;
+};
+
+export const getSearchOperationalAppointmentsQueryOptions = <
+    TData = Awaited<ReturnType<typeof searchOperationalAppointments>>,
+    TError = ErrorType<ApiProblem>,
+>(
+    params: SearchOperationalAppointmentsParams,
+    options?: {
+        query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof searchOperationalAppointments>>, TError, TData>>;
+        request?: SecondParameter<typeof apiClient>;
+    }
+) => {
+    const {query: queryOptions, request: requestOptions} = options ?? {};
+
+    const queryKey = queryOptions?.queryKey ?? getSearchOperationalAppointmentsQueryKey(params);
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof searchOperationalAppointments>>> = ({signal}) =>
+        searchOperationalAppointments(params, requestOptions, signal);
+
+    return {queryKey, queryFn, ...queryOptions} as UseQueryOptions<
+        Awaited<ReturnType<typeof searchOperationalAppointments>>,
+        TError,
+        TData
+    > & {queryKey: DataTag<QueryKey, TData, TError>};
+};
+
+export type SearchOperationalAppointmentsQueryResult = NonNullable<
+    Awaited<ReturnType<typeof searchOperationalAppointments>>
+>;
+export type SearchOperationalAppointmentsQueryError = ErrorType<ApiProblem>;
+
+export function useSearchOperationalAppointments<
+    TData = Awaited<ReturnType<typeof searchOperationalAppointments>>,
+    TError = ErrorType<ApiProblem>,
+>(
+    params: SearchOperationalAppointmentsParams,
+    options: {
+        query: Partial<UseQueryOptions<Awaited<ReturnType<typeof searchOperationalAppointments>>, TError, TData>> &
+            Pick<
+                DefinedInitialDataOptions<
+                    Awaited<ReturnType<typeof searchOperationalAppointments>>,
+                    TError,
+                    Awaited<ReturnType<typeof searchOperationalAppointments>>
+                >,
+                'initialData'
+            >;
+        request?: SecondParameter<typeof apiClient>;
+    },
+    queryClient?: QueryClient
+): DefinedUseQueryResult<TData, TError> & {queryKey: DataTag<QueryKey, TData, TError>};
+export function useSearchOperationalAppointments<
+    TData = Awaited<ReturnType<typeof searchOperationalAppointments>>,
+    TError = ErrorType<ApiProblem>,
+>(
+    params: SearchOperationalAppointmentsParams,
+    options?: {
+        query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof searchOperationalAppointments>>, TError, TData>> &
+            Pick<
+                UndefinedInitialDataOptions<
+                    Awaited<ReturnType<typeof searchOperationalAppointments>>,
+                    TError,
+                    Awaited<ReturnType<typeof searchOperationalAppointments>>
+                >,
+                'initialData'
+            >;
+        request?: SecondParameter<typeof apiClient>;
+    },
+    queryClient?: QueryClient
+): UseQueryResult<TData, TError> & {queryKey: DataTag<QueryKey, TData, TError>};
+export function useSearchOperationalAppointments<
+    TData = Awaited<ReturnType<typeof searchOperationalAppointments>>,
+    TError = ErrorType<ApiProblem>,
+>(
+    params: SearchOperationalAppointmentsParams,
+    options?: {
+        query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof searchOperationalAppointments>>, TError, TData>>;
+        request?: SecondParameter<typeof apiClient>;
+    },
+    queryClient?: QueryClient
+): UseQueryResult<TData, TError> & {queryKey: DataTag<QueryKey, TData, TError>};
+/**
+ * @summary Lists appointments with operational fields for the dashboard
+ */
+
+export function useSearchOperationalAppointments<
+    TData = Awaited<ReturnType<typeof searchOperationalAppointments>>,
+    TError = ErrorType<ApiProblem>,
+>(
+    params: SearchOperationalAppointmentsParams,
+    options?: {
+        query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof searchOperationalAppointments>>, TError, TData>>;
+        request?: SecondParameter<typeof apiClient>;
+    },
+    queryClient?: QueryClient
+): UseQueryResult<TData, TError> & {queryKey: DataTag<QueryKey, TData, TError>} {
+    const queryOptions = getSearchOperationalAppointmentsQueryOptions(params, options);
+
+    const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
+        queryKey: DataTag<QueryKey, TData, TError>;
+    };
+
+    query.queryKey = queryOptions.queryKey;
+
+    return query;
+}
+
+export const getSearchOperationalAppointmentsSuspenseQueryOptions = <
+    TData = Awaited<ReturnType<typeof searchOperationalAppointments>>,
+    TError = ErrorType<ApiProblem>,
+>(
+    params: SearchOperationalAppointmentsParams,
+    options?: {
+        query?: Partial<
+            UseSuspenseQueryOptions<Awaited<ReturnType<typeof searchOperationalAppointments>>, TError, TData>
+        >;
+        request?: SecondParameter<typeof apiClient>;
+    }
+) => {
+    const {query: queryOptions, request: requestOptions} = options ?? {};
+
+    const queryKey = queryOptions?.queryKey ?? getSearchOperationalAppointmentsQueryKey(params);
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof searchOperationalAppointments>>> = ({signal}) =>
+        searchOperationalAppointments(params, requestOptions, signal);
+
+    return {queryKey, queryFn, ...queryOptions} as UseSuspenseQueryOptions<
+        Awaited<ReturnType<typeof searchOperationalAppointments>>,
+        TError,
+        TData
+    > & {queryKey: DataTag<QueryKey, TData, TError>};
+};
+
+export type SearchOperationalAppointmentsSuspenseQueryResult = NonNullable<
+    Awaited<ReturnType<typeof searchOperationalAppointments>>
+>;
+export type SearchOperationalAppointmentsSuspenseQueryError = ErrorType<ApiProblem>;
+
+export function useSearchOperationalAppointmentsSuspense<
+    TData = Awaited<ReturnType<typeof searchOperationalAppointments>>,
+    TError = ErrorType<ApiProblem>,
+>(
+    params: SearchOperationalAppointmentsParams,
+    options: {
+        query: Partial<
+            UseSuspenseQueryOptions<Awaited<ReturnType<typeof searchOperationalAppointments>>, TError, TData>
+        >;
+        request?: SecondParameter<typeof apiClient>;
+    },
+    queryClient?: QueryClient
+): UseSuspenseQueryResult<TData, TError> & {queryKey: DataTag<QueryKey, TData, TError>};
+export function useSearchOperationalAppointmentsSuspense<
+    TData = Awaited<ReturnType<typeof searchOperationalAppointments>>,
+    TError = ErrorType<ApiProblem>,
+>(
+    params: SearchOperationalAppointmentsParams,
+    options?: {
+        query?: Partial<
+            UseSuspenseQueryOptions<Awaited<ReturnType<typeof searchOperationalAppointments>>, TError, TData>
+        >;
+        request?: SecondParameter<typeof apiClient>;
+    },
+    queryClient?: QueryClient
+): UseSuspenseQueryResult<TData, TError> & {queryKey: DataTag<QueryKey, TData, TError>};
+export function useSearchOperationalAppointmentsSuspense<
+    TData = Awaited<ReturnType<typeof searchOperationalAppointments>>,
+    TError = ErrorType<ApiProblem>,
+>(
+    params: SearchOperationalAppointmentsParams,
+    options?: {
+        query?: Partial<
+            UseSuspenseQueryOptions<Awaited<ReturnType<typeof searchOperationalAppointments>>, TError, TData>
+        >;
+        request?: SecondParameter<typeof apiClient>;
+    },
+    queryClient?: QueryClient
+): UseSuspenseQueryResult<TData, TError> & {queryKey: DataTag<QueryKey, TData, TError>};
+/**
+ * @summary Lists appointments with operational fields for the dashboard
+ */
+
+export function useSearchOperationalAppointmentsSuspense<
+    TData = Awaited<ReturnType<typeof searchOperationalAppointments>>,
+    TError = ErrorType<ApiProblem>,
+>(
+    params: SearchOperationalAppointmentsParams,
+    options?: {
+        query?: Partial<
+            UseSuspenseQueryOptions<Awaited<ReturnType<typeof searchOperationalAppointments>>, TError, TData>
+        >;
+        request?: SecondParameter<typeof apiClient>;
+    },
+    queryClient?: QueryClient
+): UseSuspenseQueryResult<TData, TError> & {queryKey: DataTag<QueryKey, TData, TError>} {
+    const queryOptions = getSearchOperationalAppointmentsSuspenseQueryOptions(params, options);
 
     const query = useSuspenseQuery(queryOptions, queryClient) as UseSuspenseQueryResult<TData, TError> & {
         queryKey: DataTag<QueryKey, TData, TError>;
@@ -1720,7 +1949,229 @@ export const getCreateAppointmentResponseMockDefault = (overrideResponse: Partia
     ...overrideResponse,
 });
 
+export const getSearchAppointmentsResponseMock = (
+    overrideResponse: Partial<PaginatedAppointments> = {}
+): PaginatedAppointments => ({
+    data: Array.from({length: faker.number.int({min: 1, max: 10})}, (_, i) => i + 1).map(() => ({
+        id: faker.string.uuid(),
+        createdAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
+        updatedAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
+        clinicId: faker.string.uuid(),
+        patientId: faker.string.uuid(),
+        attendedByMemberId: faker.string.uuid(),
+        createdByMemberId: faker.string.uuid(),
+        startAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
+        endAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
+        durationMinutes: faker.number.float({min: undefined, max: undefined, fractionDigits: 2}),
+        procedure: {
+            ...{
+                id: faker.string.uuid(),
+                name: faker.string.alpha({length: {min: 10, max: 20}}),
+                color: faker.helpers.arrayElement(Object.values(ProcedureColor)),
+                priceInCents: faker.number.float({min: undefined, max: undefined, fractionDigits: 2}),
+                modality: faker.helpers.arrayElement(Object.values(ProcedureModality)),
+            },
+        },
+        type: faker.helpers.arrayElement(['FIRST_VISIT', 'RETURN', 'WALK_IN', 'TELEMEDICINE', 'PROCEDURE'] as const),
+        status: faker.helpers.arrayElement([
+            'SCHEDULED',
+            'CONFIRMED',
+            'CANCELLED',
+            'COMPLETED',
+            'NO_SHOW',
+            'ARRIVED',
+            'IN_PROGRESS',
+        ] as const),
+        canceledAt: faker.helpers.arrayElement([`${faker.date.past().toISOString().split('.')[0]}Z`, null]),
+        canceledReason: {},
+        note: {},
+        arrivedAt: faker.helpers.arrayElement([`${faker.date.past().toISOString().split('.')[0]}Z`, null]),
+        calledAt: faker.helpers.arrayElement([`${faker.date.past().toISOString().split('.')[0]}Z`, null]),
+        paymentStatus: faker.helpers.arrayElement(Object.values(AppointmentPaymentStatus)),
+        revenue: {
+            ...{
+                expectedBrl: faker.number.float({min: undefined, max: undefined, fractionDigits: 2}),
+                receivedBrl: faker.number.float({min: undefined, max: undefined, fractionDigits: 2}),
+                pendingBrl: faker.number.float({min: undefined, max: undefined, fractionDigits: 2}),
+                paymentMethod: faker.helpers.arrayElement([
+                    faker.helpers.arrayElement([
+                        'CASH',
+                        'PIX',
+                        'CREDIT_CARD',
+                        'DEBIT_CARD',
+                        'BANK_TRANSFER',
+                        'INSURANCE',
+                        'COURTESY',
+                        'PACKAGE',
+                        'SUBSCRIPTION',
+                    ] as const),
+                    null,
+                ]),
+                status: faker.helpers.arrayElement(Object.values(AppointmentPaymentStatus)),
+                paidAt: faker.helpers.arrayElement([`${faker.date.past().toISOString().split('.')[0]}Z`, null]),
+                insuranceClaimStatus: faker.helpers.arrayElement([
+                    faker.helpers.arrayElement([
+                        'DRAFT',
+                        'SUBMITTED',
+                        'PAID',
+                        'PARTIALLY_PAID',
+                        'DENIED',
+                        'APPEALED',
+                        'CANCELLED',
+                    ] as const),
+                    null,
+                ]),
+            },
+        },
+        roomId: faker.helpers.arrayElement([faker.string.uuid(), null]),
+        attendedByName: faker.helpers.arrayElement([faker.string.alpha({length: {min: 10, max: 20}}), null]),
+    })),
+    totalCount: faker.number.float({min: undefined, max: undefined, fractionDigits: 2}),
+    ...overrideResponse,
+});
+
+export const getSearchAppointmentsResponseMock200 = (
+    overrideResponse: Partial<PaginatedAppointments> = {}
+): PaginatedAppointments => ({
+    data: Array.from({length: faker.number.int({min: 1, max: 10})}, (_, i) => i + 1).map(() => ({
+        id: faker.string.uuid(),
+        createdAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
+        updatedAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
+        clinicId: faker.string.uuid(),
+        patientId: faker.string.uuid(),
+        attendedByMemberId: faker.string.uuid(),
+        createdByMemberId: faker.string.uuid(),
+        startAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
+        endAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
+        durationMinutes: faker.number.float({min: undefined, max: undefined, fractionDigits: 2}),
+        procedure: {
+            ...{
+                id: faker.string.uuid(),
+                name: faker.string.alpha({length: {min: 10, max: 20}}),
+                color: faker.helpers.arrayElement(Object.values(ProcedureColor)),
+                priceInCents: faker.number.float({min: undefined, max: undefined, fractionDigits: 2}),
+                modality: faker.helpers.arrayElement(Object.values(ProcedureModality)),
+            },
+        },
+        type: faker.helpers.arrayElement(['FIRST_VISIT', 'RETURN', 'WALK_IN', 'TELEMEDICINE', 'PROCEDURE'] as const),
+        status: faker.helpers.arrayElement([
+            'SCHEDULED',
+            'CONFIRMED',
+            'CANCELLED',
+            'COMPLETED',
+            'NO_SHOW',
+            'ARRIVED',
+            'IN_PROGRESS',
+        ] as const),
+        canceledAt: faker.helpers.arrayElement([`${faker.date.past().toISOString().split('.')[0]}Z`, null]),
+        canceledReason: {},
+        note: {},
+        arrivedAt: faker.helpers.arrayElement([`${faker.date.past().toISOString().split('.')[0]}Z`, null]),
+        calledAt: faker.helpers.arrayElement([`${faker.date.past().toISOString().split('.')[0]}Z`, null]),
+        paymentStatus: faker.helpers.arrayElement(Object.values(AppointmentPaymentStatus)),
+        revenue: {
+            ...{
+                expectedBrl: faker.number.float({min: undefined, max: undefined, fractionDigits: 2}),
+                receivedBrl: faker.number.float({min: undefined, max: undefined, fractionDigits: 2}),
+                pendingBrl: faker.number.float({min: undefined, max: undefined, fractionDigits: 2}),
+                paymentMethod: faker.helpers.arrayElement([
+                    faker.helpers.arrayElement([
+                        'CASH',
+                        'PIX',
+                        'CREDIT_CARD',
+                        'DEBIT_CARD',
+                        'BANK_TRANSFER',
+                        'INSURANCE',
+                        'COURTESY',
+                        'PACKAGE',
+                        'SUBSCRIPTION',
+                    ] as const),
+                    null,
+                ]),
+                status: faker.helpers.arrayElement(Object.values(AppointmentPaymentStatus)),
+                paidAt: faker.helpers.arrayElement([`${faker.date.past().toISOString().split('.')[0]}Z`, null]),
+                insuranceClaimStatus: faker.helpers.arrayElement([
+                    faker.helpers.arrayElement([
+                        'DRAFT',
+                        'SUBMITTED',
+                        'PAID',
+                        'PARTIALLY_PAID',
+                        'DENIED',
+                        'APPEALED',
+                        'CANCELLED',
+                    ] as const),
+                    null,
+                ]),
+            },
+        },
+        roomId: faker.helpers.arrayElement([faker.string.uuid(), null]),
+        attendedByName: faker.helpers.arrayElement([faker.string.alpha({length: {min: 10, max: 20}}), null]),
+    })),
+    totalCount: faker.number.float({min: undefined, max: undefined, fractionDigits: 2}),
+    ...overrideResponse,
+});
+
 export const getSearchAppointmentsResponseMockDefault = (overrideResponse: Partial<ApiProblem> = {}): ApiProblem => ({
+    title: faker.string.alpha({length: {min: 10, max: 20}}),
+    type: faker.internet.url(),
+    detail: faker.string.alpha({length: {min: 10, max: 20}}),
+    status: faker.helpers.arrayElement([
+        400, 401, 402, 403, 404, 405, 406, 407, 408, 409, 410, 411, 412, 413, 414, 415, 416, 417, 418, 421, 422, 423,
+        424, 428, 429, 456, 500, 501, 502, 503, 504, 505, 507, 508,
+    ] as const),
+    instance: faker.string.alpha({length: {min: 10, max: 20}}),
+    ...overrideResponse,
+});
+
+export const getSearchOperationalAppointmentsResponseMock = (
+    overrideResponse: Partial<PaginatedOperationalAppointments> = {}
+): PaginatedOperationalAppointments => ({
+    data: Array.from({length: faker.number.int({min: 1, max: 10})}, (_, i) => i + 1).map(() => ({
+        id: faker.string.uuid(),
+        patientId: faker.string.uuid(),
+        startAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
+        endAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
+        type: faker.helpers.arrayElement(['FIRST_VISIT', 'RETURN', 'WALK_IN', 'TELEMEDICINE', 'PROCEDURE'] as const),
+        status: faker.helpers.arrayElement([
+            'SCHEDULED',
+            'CONFIRMED',
+            'CANCELLED',
+            'COMPLETED',
+            'NO_SHOW',
+            'ARRIVED',
+            'IN_PROGRESS',
+        ] as const),
+    })),
+    totalCount: faker.number.float({min: undefined, max: undefined, fractionDigits: 2}),
+    ...overrideResponse,
+});
+
+export const getSearchOperationalAppointmentsResponseMock200 = (
+    overrideResponse: Partial<PaginatedOperationalAppointments> = {}
+): PaginatedOperationalAppointments => ({
+    data: Array.from({length: faker.number.int({min: 1, max: 10})}, (_, i) => i + 1).map(() => ({
+        id: faker.string.uuid(),
+        patientId: faker.string.uuid(),
+        startAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
+        endAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
+        type: faker.helpers.arrayElement(['FIRST_VISIT', 'RETURN', 'WALK_IN', 'TELEMEDICINE', 'PROCEDURE'] as const),
+        status: faker.helpers.arrayElement([
+            'SCHEDULED',
+            'CONFIRMED',
+            'CANCELLED',
+            'COMPLETED',
+            'NO_SHOW',
+            'ARRIVED',
+            'IN_PROGRESS',
+        ] as const),
+    })),
+    totalCount: faker.number.float({min: undefined, max: undefined, fractionDigits: 2}),
+    ...overrideResponse,
+});
+
+export const getSearchOperationalAppointmentsResponseMockDefault = (
+    overrideResponse: Partial<ApiProblem> = {}
+): ApiProblem => ({
     title: faker.string.alpha({length: {min: 10, max: 20}}),
     type: faker.internet.url(),
     detail: faker.string.alpha({length: {min: 10, max: 20}}),
@@ -3271,34 +3722,52 @@ export const getCreateAppointmentMockHandlerDefault = (
 };
 
 export const getSearchAppointmentsMockHandler = (
-    overrideResponse?: void | ((info: Parameters<Parameters<typeof http.get>[1]>[0]) => Promise<void> | void),
+    overrideResponse?:
+        | PaginatedAppointments
+        | ((
+              info: Parameters<Parameters<typeof http.get>[1]>[0]
+          ) => Promise<PaginatedAppointments> | PaginatedAppointments),
     options?: RequestHandlerOptions
 ) => {
     return http.get(
         '*/api/v1/appointments',
         async (info) => {
-            if (typeof overrideResponse === 'function') {
-                await overrideResponse(info);
-            }
-
-            return new HttpResponse(null, {status: 200});
+            return new HttpResponse(
+                JSON.stringify(
+                    overrideResponse !== undefined
+                        ? typeof overrideResponse === 'function'
+                            ? await overrideResponse(info)
+                            : overrideResponse
+                        : getSearchAppointmentsResponseMock()
+                ),
+                {status: 200, headers: {'Content-Type': 'application/json'}}
+            );
         },
         options
     );
 };
 
 export const getSearchAppointmentsMockHandler200 = (
-    overrideResponse?: void | ((info: Parameters<Parameters<typeof http.get>[1]>[0]) => Promise<void> | void),
+    overrideResponse?:
+        | PaginatedAppointments
+        | ((
+              info: Parameters<Parameters<typeof http.get>[1]>[0]
+          ) => Promise<PaginatedAppointments> | PaginatedAppointments),
     options?: RequestHandlerOptions
 ) => {
     return http.get(
         '*/api/v1/appointments',
         async (info) => {
-            if (typeof overrideResponse === 'function') {
-                await overrideResponse(info);
-            }
-
-            return new HttpResponse(null, {status: 200});
+            return new HttpResponse(
+                JSON.stringify(
+                    overrideResponse !== undefined
+                        ? typeof overrideResponse === 'function'
+                            ? await overrideResponse(info)
+                            : overrideResponse
+                        : getSearchAppointmentsResponseMock200()
+                ),
+                {status: 200, headers: {'Content-Type': 'application/json'}}
+            );
         },
         options
     );
@@ -3320,6 +3789,82 @@ export const getSearchAppointmentsMockHandlerDefault = (
                             ? await overrideResponse(info)
                             : overrideResponse
                         : getSearchAppointmentsResponseMockDefault()
+                ),
+                {status: 200, headers: {'Content-Type': 'application/json'}}
+            );
+        },
+        options
+    );
+};
+
+export const getSearchOperationalAppointmentsMockHandler = (
+    overrideResponse?:
+        | PaginatedOperationalAppointments
+        | ((
+              info: Parameters<Parameters<typeof http.get>[1]>[0]
+          ) => Promise<PaginatedOperationalAppointments> | PaginatedOperationalAppointments),
+    options?: RequestHandlerOptions
+) => {
+    return http.get(
+        '*/api/v1/appointments/operational',
+        async (info) => {
+            return new HttpResponse(
+                JSON.stringify(
+                    overrideResponse !== undefined
+                        ? typeof overrideResponse === 'function'
+                            ? await overrideResponse(info)
+                            : overrideResponse
+                        : getSearchOperationalAppointmentsResponseMock()
+                ),
+                {status: 200, headers: {'Content-Type': 'application/json'}}
+            );
+        },
+        options
+    );
+};
+
+export const getSearchOperationalAppointmentsMockHandler200 = (
+    overrideResponse?:
+        | PaginatedOperationalAppointments
+        | ((
+              info: Parameters<Parameters<typeof http.get>[1]>[0]
+          ) => Promise<PaginatedOperationalAppointments> | PaginatedOperationalAppointments),
+    options?: RequestHandlerOptions
+) => {
+    return http.get(
+        '*/api/v1/appointments/operational',
+        async (info) => {
+            return new HttpResponse(
+                JSON.stringify(
+                    overrideResponse !== undefined
+                        ? typeof overrideResponse === 'function'
+                            ? await overrideResponse(info)
+                            : overrideResponse
+                        : getSearchOperationalAppointmentsResponseMock200()
+                ),
+                {status: 200, headers: {'Content-Type': 'application/json'}}
+            );
+        },
+        options
+    );
+};
+
+export const getSearchOperationalAppointmentsMockHandlerDefault = (
+    overrideResponse?:
+        | ApiProblem
+        | ((info: Parameters<Parameters<typeof http.get>[1]>[0]) => Promise<ApiProblem> | ApiProblem),
+    options?: RequestHandlerOptions
+) => {
+    return http.get(
+        '*/api/v1/appointments/operational',
+        async (info) => {
+            return new HttpResponse(
+                JSON.stringify(
+                    overrideResponse !== undefined
+                        ? typeof overrideResponse === 'function'
+                            ? await overrideResponse(info)
+                            : overrideResponse
+                        : getSearchOperationalAppointmentsResponseMockDefault()
                 ),
                 {status: 200, headers: {'Content-Type': 'application/json'}}
             );
@@ -4189,6 +4734,7 @@ export const getMarkNoShowAppointmentMockHandlerDefault = (
 export const getAppointmentMock = () => [
     getCreateAppointmentMockHandler(),
     getSearchAppointmentsMockHandler(),
+    getSearchOperationalAppointmentsMockHandler(),
     getListManageableProfessionalsMockHandler(),
     getListAppointmentFollowUpsMockHandler(),
     getGetAppointmentMockHandler(),

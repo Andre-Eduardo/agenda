@@ -286,10 +286,21 @@
     "limitNotice": "Showing the first {{limit}} appointments today. Open the schedule to see the rest.",
     "patientUnavailable": "Patient unavailable",
     "appointmentFor": "Appointment for {{name}}",
+    "professional": "Professional: {{name}}",
+    "professionalUnavailable": "Professional unavailable",
+    "typeUnavailable": "Type not specified",
+    "types": {
+      "FIRST_VISIT": "First visit",
+      "RETURN": "Follow-up",
+      "WALK_IN": "Urgent visit",
+      "TELEMEDICINE": "Telehealth",
+      "PROCEDURE": "Procedure"
+    },
     "openPatient": "Open patient",
     "openPatientFor": "Open {{name}}'s profile",
     "checkin": "Record arrival",
     "call": "Call patient",
+    "complete": "Complete visit",
     "markNoShow": "Mark no-show",
     "confirmNoShowTitle": "Confirm no-show",
     "confirmNoShowMessage": "Mark {{name}} as a no-show? This closes the appointment.",
@@ -297,6 +308,7 @@
     "success": {
       "checkin": "Arrival recorded",
       "call": "Patient called",
+      "complete": "Visit completed",
       "noShow": "No-show recorded"
     }
   },

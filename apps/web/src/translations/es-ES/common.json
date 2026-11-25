@@ -286,10 +286,21 @@
     "limitNotice": "Se muestran las primeras {{limit}} citas de hoy. Abra la agenda para ver las demás.",
     "patientUnavailable": "Paciente no disponible",
     "appointmentFor": "Cita de {{name}}",
+    "professional": "Profesional: {{name}}",
+    "professionalUnavailable": "Profesional no disponible",
+    "typeUnavailable": "Tipo sin especificar",
+    "types": {
+      "FIRST_VISIT": "Primera consulta",
+      "RETURN": "Consulta de seguimiento",
+      "WALK_IN": "Urgencia",
+      "TELEMEDICINE": "Teleconsulta",
+      "PROCEDURE": "Procedimiento"
+    },
     "openPatient": "Abrir paciente",
     "openPatientFor": "Abrir perfil de {{name}}",
     "checkin": "Registrar llegada",
     "call": "Llamar paciente",
+    "complete": "Finalizar atención",
     "markNoShow": "Marcar ausencia",
     "confirmNoShowTitle": "Confirmar ausencia",
     "confirmNoShowMessage": "¿Marcar la ausencia de {{name}}? Esto cierra la cita.",
@@ -297,6 +308,7 @@
     "success": {
       "checkin": "Llegada registrada",
       "call": "Paciente llamado",
+      "complete": "Atención finalizada",
       "noShow": "Ausencia registrada"
     }
   },

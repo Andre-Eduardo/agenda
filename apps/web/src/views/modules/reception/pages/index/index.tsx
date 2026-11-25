@@ -3,14 +3,15 @@ import {
     getGetPatientQueryOptions,
     useCallAppointment,
     useCheckinAppointment,
+    useCompleteAppointment,
     useMarkNoShowAppointment,
     useSearchAppointments,
-    type Appointment,
+    type AppointmentListItem,
     type AppointmentStatus,
 } from '@agenda-app/client';
-import {useQueries, useQueryClient, type UseQueryResult} from '@tanstack/react-query';
+import {useQueries, useQueryClient} from '@tanstack/react-query';
 import {createFileRoute, Link} from '@tanstack/react-router';
-import {ArrowRight, CalendarDays, PhoneCall, RefreshCw, UserCheck, UserX} from 'lucide-react';
+import {ArrowRight, CalendarDays, CheckCheck, PhoneCall, RefreshCw, UserCheck, UserX} from 'lucide-react';
 import {useTranslation} from 'react-i18next';
 import {toast} from 'sonner';
 import {Badge} from '@/components/ui/componentes/badge';
@@ -26,8 +27,8 @@ import {
 import {EmptyStateCard} from '@/components/ui/componentes/empty-state';
 import {Skeleton} from '@/components/ui/componentes/skeleton';
 import {useCan, useCanState} from '@/hooks/useCan';
-import {invalidateAppointmentRevenue} from '@/utils/appointment-revenue';
 import {css} from '@/styled-system/css';
+import {invalidateAppointmentRevenue} from '@/utils/appointment-revenue';
 import {ConfirmDialog} from '@/views/components/ConfirmDialog';
 import {Page} from '@/views/components/Page';
 import {
@@ -40,12 +41,7 @@ export const Route = createFileRoute('/_stackedLayout/reception')({
     component: ReceptionPage,
 });
 
-interface PaginatedAppointments {
-    data: Appointment[];
-    totalCount: number;
-}
-
-type Transition = 'checkin' | 'call' | 'noShow';
+type Transition = 'checkin' | 'call' | 'complete' | 'noShow';
 type Group = 'waiting' | 'arrived' | 'inProgress' | 'finished';
 
 const PAGE_LIMIT = 500;
@@ -76,7 +72,7 @@ function ReceptionPage() {
     const appointmentAccess = useCanState({has: 'appointment:view'});
     const canCheckin = useCan({has: 'appointment:checkin'});
     const canCall = useCan({has: 'appointment:call'});
-    const canMarkNoShow = useCan({has: 'appointment:update'});
+    const canUpdateAppointment = useCan({has: 'appointment:update'});
     const canOpenPatient = useCan({has: 'patient:view'});
 
     useEffect(() => {
@@ -95,7 +91,7 @@ function ReceptionPage() {
     };
     const appointmentsQuery = useSearchAppointments(params, {
         query: {enabled: appointmentAccess.allowed, refetchInterval: 60_000, refetchOnWindowFocus: true},
-    }) as unknown as UseQueryResult<PaginatedAppointments>;
+    });
     const appointments = appointmentsQuery.data?.data ?? [];
     const patientIds = [...new Set(appointments.map((appointment) => appointment.patientId))];
     const patientQueries = useQueries({
@@ -105,12 +101,14 @@ function ReceptionPage() {
     const patientNames = new Map(patientIds.map((id) => [id, patientsById.get(id)?.data?.name]));
     const grouped = Object.fromEntries(
         GROUPS.map((group) => [group, appointments.filter((appointment) => STATUS_GROUP[appointment.status] === group)])
-    ) as Record<Group, Appointment[]>;
+    ) as Record<Group, AppointmentListItem[]>;
     const dateLabel = new Intl.DateTimeFormat(i18n.language, {dateStyle: 'full'}).format(new Date(`${day}T12:00:00`));
 
     const checkin = useCheckinAppointment();
     const call = useCallAppointment();
+    const complete = useCompleteAppointment();
     const noShow = useMarkNoShowAppointment();
+    const transitions = {checkin, call, complete, noShow};
 
     async function transition(id: string, kind: Transition) {
         if (busyId !== null) return;
@@ -118,13 +116,9 @@ function ReceptionPage() {
         setBusyId(id);
 
         try {
-            if (kind === 'checkin') {
-                await checkin.mutateAsync({id});
-            } else if (kind === 'call') {
-                await call.mutateAsync({id});
-            } else {
-                const appointment = await noShow.mutateAsync({id});
+            const appointment = await transitions[kind].mutateAsync({id});
 
+            if (kind === 'complete' || kind === 'noShow') {
                 invalidateAppointmentRevenue(queryClient, appointment.clinicId);
             }
 
@@ -240,6 +234,18 @@ function ReceptionPage() {
                                                         {patientNames.get(appointment.patientId) ??
                                                             t('reception.patientUnavailable')}
                                                     </span>
+                                                    <span className={styles.professional}>
+                                                        {appointment.attendedByName
+                                                            ? t('reception.professional', {
+                                                                  name: appointment.attendedByName,
+                                                              })
+                                                            : t('reception.professionalUnavailable')}
+                                                    </span>
+                                                    <span className={styles.appointmentType}>
+                                                        {t(`reception.types.${appointment.type}`, {
+                                                            defaultValue: t('reception.typeUnavailable'),
+                                                        })}
+                                                    </span>
                                                     <span className={styles.status}>
                                                         {t(`reception.status.${appointment.status}`)}
                                                     </span>
@@ -303,9 +309,20 @@ function ReceptionPage() {
                                                             {t('reception.call')}
                                                         </Button>
                                                     )}
+                                                    {appointment.status === 'IN_PROGRESS' && canUpdateAppointment && (
+                                                        <Button
+                                                            type="button"
+                                                            size="sm"
+                                                            disabled={busyId !== null}
+                                                            onClick={() => void transition(appointment.id, 'complete')}
+                                                        >
+                                                            <CheckCheck size={14} aria-hidden />
+                                                            {t('reception.complete')}
+                                                        </Button>
+                                                    )}
                                                     {(appointment.status === 'SCHEDULED' ||
                                                         appointment.status === 'CONFIRMED') &&
-                                                        canMarkNoShow && (
+                                                        canUpdateAppointment && (
                                                             <Button
                                                                 type="button"
                                                                 size="sm"

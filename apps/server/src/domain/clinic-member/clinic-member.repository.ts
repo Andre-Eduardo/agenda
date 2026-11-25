@@ -14,6 +14,7 @@ export interface ClinicMemberRepository {
     findByClinicAndUser(clinicId: ClinicId, userId: UserId): Promise<ClinicMember | null>;
     findByUserId(userId: UserId): Promise<ClinicMember[]>;
     findByClinicId(clinicId: ClinicId): Promise<ClinicMember[]>;
+    findDisplayNamesByIds(clinicId: ClinicId, ids: ClinicMemberId[]): Promise<Map<string, string>>;
     save(member: ClinicMember): Promise<void>;
 }
 

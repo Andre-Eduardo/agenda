@@ -1,7 +1,7 @@
 import {Injectable} from '@nestjs/common';
 import {ApplicationService, Command} from '@application/@shared/application.service';
-import {assertEntityBelongsToClinic} from '@application/@shared/validators/cross-tenant.validator';
 import {PatientAccessChecker} from '@application/clinic-patient-access/services/patient-access-checker.service';
+import {RecordAuthorAccess} from '@application/clinic-patient-access/services/record-author-access.service';
 import {RecordDto, SignRecordDto} from '@application/record/dtos';
 import {AccessDeniedException, AccessDeniedReason, ResourceNotFoundException} from '@domain/@shared/exceptions';
 import {Transactional} from '@domain/@shared/repository';
@@ -25,6 +25,7 @@ export class SignRecordService implements ApplicationService<SignRecordDto, Reco
         private readonly recordRepository: RecordRepository,
         private readonly recordAmendmentRepository: RecordAmendmentRepository,
         private readonly clinicMemberRepository: ClinicMemberRepository,
+        private readonly recordAuthorAccess: RecordAuthorAccess,
         private readonly eventDispatcher: EventDispatcher
     ) {}
 
@@ -44,7 +45,7 @@ export class SignRecordService implements ApplicationService<SignRecordDto, Reco
             throw new ResourceNotFoundException('Record not found.', payload.id.toString());
         }
 
-        assertEntityBelongsToClinic(record.clinicId, actor.clinicId);
+        await this.recordAuthorAccess.assertCanRead(actor, record);
         await this.patientAccessChecker.assertCanAccess(actor, PatientId.from(record.patientId.toString()), 'write');
 
         record.sign(actor.clinicMemberId);

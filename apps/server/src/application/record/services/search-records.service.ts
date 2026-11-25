@@ -3,6 +3,7 @@ import {ApplicationService, Command} from '@application/@shared/application.serv
 import {PaginatedDto} from '@application/@shared/dto';
 import {assertEntityBelongsToClinic} from '@application/@shared/validators/cross-tenant.validator';
 import {PatientAccessChecker} from '@application/clinic-patient-access/services/patient-access-checker.service';
+import {RecordAuthorAccess} from '@application/clinic-patient-access/services/record-author-access.service';
 import {RecordDto, SearchRecordsDto} from '@application/record/dtos';
 import {AccessDeniedException, AccessDeniedReason, ResourceNotFoundException} from '@domain/@shared/exceptions';
 import {PatientRepository} from '@domain/patient/patient.repository';
@@ -13,11 +14,15 @@ export class SearchRecordsService implements ApplicationService<SearchRecordsDto
     constructor(
         private readonly recordRepository: RecordRepository,
         private readonly patientRepository: PatientRepository,
-        private readonly patientAccessChecker: PatientAccessChecker
+        private readonly patientAccessChecker: PatientAccessChecker,
+        private readonly recordAuthorAccess: RecordAuthorAccess
     ) {}
 
     async execute({actor, payload}: Command<SearchRecordsDto>): Promise<PaginatedDto<RecordDto>> {
         const {term, sort, patientId, attendanceType, clinicalStatus, dateStart, dateEnd, source, ...rest} = payload;
+        const authorScope = await this.recordAuthorAccess.authorScope(actor);
+
+        if (authorScope.kind === 'none') return {data: [], totalCount: 0};
 
         if (patientId) {
             const patient = await this.patientRepository.findById(patientId);
@@ -26,7 +31,7 @@ export class SearchRecordsService implements ApplicationService<SearchRecordsDto
             assertEntityBelongsToClinic(patient.clinicId, actor.clinicId);
         }
 
-        const visibility = await this.patientAccessChecker.recordVisibility(actor);
+        const visibility = authorScope.kind === 'all' ? null : await this.patientAccessChecker.recordVisibility(actor);
 
         if (
             patientId &&
@@ -53,6 +58,7 @@ export class SearchRecordsService implements ApplicationService<SearchRecordsDto
                 allowedRecordIds: visibility?.allowedRecordIds,
                 deniedRecordIds: visibility?.deniedRecordIds,
                 clinicId: actor.clinicId ?? undefined,
+                createdByMemberId: authorScope.kind === 'author' ? authorScope.memberId : undefined,
                 attendanceType: attendanceType ?? undefined,
                 clinicalStatus: clinicalStatus ?? undefined,
                 dateStart: dateStart ?? undefined,
