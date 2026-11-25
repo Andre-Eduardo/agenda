@@ -26,6 +26,7 @@ import {
     RegisterPaymentDtoStatus,
     useListEnrollments,
     useListInsurancePlans,
+    useGetPatient,
     getListMemberBlocksQueryOptions,
     getListWorkingHoursQueryOptions,
     useListManageableProfessionals,
@@ -73,6 +74,10 @@ import {cx} from '@/styled-system/css';
 import {invalidateAppointmentRevenue, REVENUE_AMOUNT_FIELDS} from '@/utils/appointment-revenue';
 import {translateApiError} from '@/utils/translate-api-error';
 import {ConfirmDialog} from '@/views/components/ConfirmDialog';
+import {
+    PatientClinicalPreviewContent,
+    usePatientClinicalPreview,
+} from '@/views/modules/patients/components/ClinicalData/PatientClinicalPreview';
 import {ProcedureColorDot} from '../../components/ProcedureFields';
 import {useAppointmentProcedure} from '../../components/ProcedureFields/useAppointmentProcedure';
 import * as styles from './styles';
@@ -1423,6 +1428,14 @@ function AppointmentDetailSheet({
     const [y, mo, da] = apt.date.split('-').map(Number);
     const date = new Date(y, mo - 1, da);
     const isDone = ['COMPLETED', 'CANCELLED', 'NO_SHOW'].includes(apt.status);
+    const mayViewClinical = useCan({hasAny: ['clinical-profile:view', 'patient-alert:view']});
+    const patientAccess = useGetPatient(apt.patientId, {query: {enabled: !isDone && mayViewClinical}});
+    const [clinicalPage, setClinicalPage] = useState(1);
+    const clinical = usePatientClinicalPreview(
+        apt.patientId,
+        !isDone && !patientAccess.isError && patientAccess.data?.canReadClinicalData === true,
+        clinicalPage
+    );
 
     const confirm = useConfirmAppointment();
     const checkin = useCheckinAppointment();
@@ -1478,6 +1491,14 @@ function AppointmentDetailSheet({
                             Ver perfil <ArrowUpRight className={icon3} />
                         </button>
                     </div>
+
+                    {!isDone && (
+                        <PatientClinicalPreviewContent
+                            clinical={clinical}
+                            page={clinicalPage}
+                            onPage={setClinicalPage}
+                        />
+                    )}
 
                     {/* Schedule */}
                     <div className={styles.sheetSection}>
@@ -1573,7 +1594,11 @@ function AppointmentDetailSheet({
                                     size="sm"
                                     variant="outline"
                                     className={gap1_5}
-                                    disabled={transitionPending}
+                                    disabled={
+                                        transitionPending ||
+                                        (mayViewClinical && patientAccess.isLoading) ||
+                                        clinical.isLoading
+                                    }
                                     onClick={() => runTransition(call, 'Paciente chamado')}
                                 >
                                     <PhoneCall className={icon35} /> Chamar
@@ -2939,6 +2964,7 @@ export function AppointmentsPage() {
             {/* Detail Sheet */}
             {detailApt && (
                 <AppointmentDetailSheet
+                    key={detailApt.patientId}
                     apt={detailApt}
                     patients={patients}
                     onClose={closeDetail}

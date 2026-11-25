@@ -23,6 +23,12 @@ export class ClinicalProfilePrismaRepository extends PrismaRepository implements
         return record === null ? null : this.mapper.toDomain(record);
     }
 
+    async findByPatientIdForUpdate(patientId: PatientId): Promise<ClinicalProfile | null> {
+        await this.prisma.$queryRaw`SELECT id FROM patient WHERE id = ${patientId.toString()}::uuid FOR NO KEY UPDATE`;
+
+        return this.findByPatientId(patientId);
+    }
+
     async findById(id: ClinicalProfileId): Promise<ClinicalProfile | null> {
         const record = await this.prisma.clinicalProfile.findUnique({
             where: {id: id.toString()},

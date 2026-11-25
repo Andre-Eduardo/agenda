@@ -623,6 +623,8 @@ export const getCreatePatientResponseMock = (overrideResponse: Partial<Patient> 
             isActive: faker.datatype.boolean(),
         },
     },
+    canReadClinicalData: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
+    canWriteClinicalData: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
     ...overrideResponse,
 });
 
@@ -654,6 +656,8 @@ export const getCreatePatientResponseMock201 = (overrideResponse: Partial<Patien
             isActive: faker.datatype.boolean(),
         },
     },
+    canReadClinicalData: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
+    canWriteClinicalData: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
     ...overrideResponse,
 });
 
@@ -709,6 +713,8 @@ export const getGetPatientResponseMock = (overrideResponse: Partial<Patient> = {
             isActive: faker.datatype.boolean(),
         },
     },
+    canReadClinicalData: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
+    canWriteClinicalData: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
     ...overrideResponse,
 });
 
@@ -740,6 +746,8 @@ export const getGetPatientResponseMock200 = (overrideResponse: Partial<Patient> 
             isActive: faker.datatype.boolean(),
         },
     },
+    canReadClinicalData: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
+    canWriteClinicalData: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
     ...overrideResponse,
 });
 
@@ -783,6 +791,8 @@ export const getUpdatePatientResponseMock = (overrideResponse: Partial<Patient> 
             isActive: faker.datatype.boolean(),
         },
     },
+    canReadClinicalData: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
+    canWriteClinicalData: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
     ...overrideResponse,
 });
 
@@ -814,6 +824,8 @@ export const getUpdatePatientResponseMock200 = (overrideResponse: Partial<Patien
             isActive: faker.datatype.boolean(),
         },
     },
+    canReadClinicalData: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
+    canWriteClinicalData: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
     ...overrideResponse,
 });
 

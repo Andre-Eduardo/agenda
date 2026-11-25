@@ -123,3 +123,19 @@ usava `patient-form:view` e a pré-evolução usava `imported-document:*`.
    reservada a `SUPER_ADMIN` e fica fora de todos os papéis da clínica,
    inclusive `OWNER` e `ADMIN`, que passam a receber `Permission.clinicScoped()`
    em vez de `Permission.all()`.
+
+## Perfil clínico e alertas (L1-07)
+
+Na ficha do paciente, membros com as permissões clínicas do papel e acesso
+`FULL` podem preencher alergias, condições crônicas e medicações, além de criar,
+editar, ativar e desativar alertas. O perfil mantém o profissional escolhido
+na criação. Uma atualização pode limpar um campo explicitamente com `null`.
+
+O acesso `READ_ONLY` permite consultar dados clínicos conforme o papel.
+`REGISTER_ONLY` permite as rotinas cadastrais e de agenda concedidas ao membro.
+`OWNER` e `ADMIN` têm acesso clínico aos pacientes da própria clínica.
+
+Alertas ativos de gravidade `HIGH` aparecem como **Alertas críticos** na nova
+evolução e nos detalhes de um atendimento em aberto. Na Recepção, membros com
+acesso clínico veem os dados ao revisar o paciente antes de confirmar a chamada.
+Alertas desativados continuam disponíveis na ficha para consulta e reativação.

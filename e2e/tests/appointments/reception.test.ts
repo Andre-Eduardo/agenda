@@ -30,6 +30,9 @@ test.describe('Reception operations', () => {
         await row.getByRole('button', {name: 'Registrar chegada'}).click();
         await expect(row).toContainText('Chegou');
         await row.getByRole('button', {name: 'Chamar paciente'}).click();
+        const review = receptionPage.page.getByRole('dialog', {name: 'Antes do atendimento'});
+        await expect(review).toContainText('Nenhum alerta crítico ativo.');
+        await review.getByRole('button', {name: 'Chamar paciente'}).click();
         await expect(row).toContainText('Em atendimento');
         await expect.poll(async () => (await db.appointment.findUnique({where: {id: appointment.id}}))?.status).toBe(
             'IN_PROGRESS'

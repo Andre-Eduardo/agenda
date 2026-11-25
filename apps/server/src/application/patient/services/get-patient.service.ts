@@ -4,7 +4,6 @@ import {assertEntityBelongsToClinic} from '@application/@shared/validators/cross
 import {PatientAccessChecker} from '@application/clinic-patient-access/services/patient-access-checker.service';
 import {GetPatientDto, PatientDto} from '@application/patient/dtos';
 import {ResourceNotFoundException} from '@domain/@shared/exceptions';
-import {PatientId} from '@domain/patient/entities';
 import {PatientRepository} from '@domain/patient/patient.repository';
 
 @Injectable()
@@ -22,8 +21,8 @@ export class GetPatientService implements ApplicationService<GetPatientDto, Pati
         }
 
         assertEntityBelongsToClinic(patient.clinicId, actor.clinicId);
-        await this.patientAccessChecker.assertCanAccess(actor, PatientId.from(patient.id.toString()), 'basic');
+        const clinicalAccess = await this.patientAccessChecker.clinicalAccessForPatient(actor, payload.id);
 
-        return new PatientDto(patient);
+        return new PatientDto(patient, clinicalAccess);
     }
 }

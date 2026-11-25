@@ -52,6 +52,7 @@ import {PageHeader} from '@/components/ui/componentes/page-header';
 import {Skeleton} from '@/components/ui/componentes/skeleton';
 import {Textarea} from '@/components/ui/componentes/textarea';
 import {cx} from '@/styled-system/css';
+import {PatientClinicalPreview} from '@/views/modules/patients/components/ClinicalData/PatientClinicalPreview';
 import {
     ConductGrid,
     FooterBar,
@@ -79,9 +80,7 @@ import {
     icon18,
     icon22,
     icon3,
-    icon35,
     icon4,
-    icon5,
     imcTag,
     modalIcon,
     monoDate,
@@ -477,7 +476,6 @@ function PublishModal({
     );
 }
 
-
 function DiscardModal({onCancel, onConfirm}: {onCancel: () => void; onConfirm: () => void}) {
     return (
         <ModalBackdrop onClick={onCancel}>
@@ -762,6 +760,12 @@ function NewEvolutionForm({patient}: {patient: Patient}) {
                     </div>
                 </div>
             </div>
+
+            <PatientClinicalPreview
+                key={patient.id}
+                patientId={patient.id}
+                canRead={patient.canReadClinicalData === true}
+            />
 
             {/* Two-column layout */}
             <div className="layout">

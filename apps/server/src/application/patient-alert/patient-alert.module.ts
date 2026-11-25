@@ -1,4 +1,5 @@
 import {Module} from '@nestjs/common';
+import {ClinicPatientAccessModule} from '@application/clinic-patient-access/clinic-patient-access.module';
 import {PatientAlertController} from '@application/patient-alert/controllers/patient-alert.controller';
 import {
     CreatePatientAlertService,
@@ -10,7 +11,7 @@ import {
 import {InfrastructureModule} from '@infrastructure/infrastructure.module';
 
 @Module({
-    imports: [InfrastructureModule],
+    imports: [InfrastructureModule, ClinicPatientAccessModule],
     controllers: [PatientAlertController],
     providers: [
         CreatePatientAlertService,

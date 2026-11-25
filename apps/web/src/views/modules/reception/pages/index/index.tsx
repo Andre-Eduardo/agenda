@@ -15,12 +15,25 @@ import {useTranslation} from 'react-i18next';
 import {toast} from 'sonner';
 import {Badge} from '@/components/ui/componentes/badge';
 import {Button} from '@/components/ui/componentes/button';
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from '@/components/ui/componentes/dialog';
 import {EmptyStateCard} from '@/components/ui/componentes/empty-state';
 import {Skeleton} from '@/components/ui/componentes/skeleton';
 import {useCan, useCanState} from '@/hooks/useCan';
 import {invalidateAppointmentRevenue} from '@/utils/appointment-revenue';
+import {css} from '@/styled-system/css';
 import {ConfirmDialog} from '@/views/components/ConfirmDialog';
 import {Page} from '@/views/components/Page';
+import {
+    PatientClinicalPreviewContent,
+    usePatientClinicalPreview,
+} from '@/views/modules/patients/components/ClinicalData/PatientClinicalPreview';
 import styles from './styles.module.css';
 
 export const Route = createFileRoute('/_stackedLayout/reception')({
@@ -58,6 +71,8 @@ function ReceptionPage() {
     const [day, setDay] = useState(() => localDayKey(new Date()));
     const [busyId, setBusyId] = useState<string | null>(null);
     const [noShowId, setNoShowId] = useState<string | null>(null);
+    const [reviewId, setReviewId] = useState<string | null>(null);
+    const mayViewClinical = useCan({hasAny: ['clinical-profile:view', 'patient-alert:view']});
     const appointmentAccess = useCanState({has: 'appointment:view'});
     const canCheckin = useCan({has: 'appointment:checkin'});
     const canCall = useCan({has: 'appointment:call'});
@@ -86,7 +101,8 @@ function ReceptionPage() {
     const patientQueries = useQueries({
         queries: patientIds.map((id) => getGetPatientQueryOptions(id, {query: {staleTime: 5 * 60_000}})),
     });
-    const patientNames = new Map(patientIds.map((id, index) => [id, patientQueries[index]?.data?.name]));
+    const patientsById = new Map(patientIds.map((id, index) => [id, patientQueries[index]]));
+    const patientNames = new Map(patientIds.map((id) => [id, patientsById.get(id)?.data?.name]));
     const grouped = Object.fromEntries(
         GROUPS.map((group) => [group, appointments.filter((appointment) => STATUS_GROUP[appointment.status] === group)])
     ) as Record<Group, Appointment[]>;
@@ -119,9 +135,14 @@ function ReceptionPage() {
             await appointmentsQuery.refetch();
             setBusyId(null);
             setNoShowId(null);
+            setReviewId(null);
         }
     }
 
+    const reviewAppointment = appointments.find(
+        (appointment) => appointment.id === reviewId && appointment.status === 'ARRIVED'
+    );
+    const reviewPatient = reviewAppointment && patientsById.get(reviewAppointment.patientId);
     const selectedNoShow = appointments.find((appointment) => appointment.id === noShowId);
 
     return (
@@ -259,8 +280,24 @@ function ReceptionPage() {
                                                         <Button
                                                             type="button"
                                                             size="sm"
-                                                            disabled={busyId !== null}
-                                                            onClick={() => void transition(appointment.id, 'call')}
+                                                            disabled={
+                                                                busyId !== null ||
+                                                                (mayViewClinical &&
+                                                                    patientsById.get(appointment.patientId)?.isLoading)
+                                                            }
+                                                            onClick={() => {
+                                                                const patient = patientsById.get(appointment.patientId);
+
+                                                                if (
+                                                                    mayViewClinical &&
+                                                                    !patient?.isError &&
+                                                                    patient?.data?.canReadClinicalData
+                                                                ) {
+                                                                    setReviewId(appointment.id);
+                                                                } else {
+                                                                    void transition(appointment.id, 'call');
+                                                                }
+                                                            }}
                                                         >
                                                             <PhoneCall size={14} aria-hidden />
                                                             {t('reception.call')}
@@ -291,6 +328,20 @@ function ReceptionPage() {
                 )}
             </div>
 
+            {reviewAppointment &&
+                mayViewClinical &&
+                !reviewPatient?.isError &&
+                reviewPatient?.data?.canReadClinicalData && (
+                    <ReceptionClinicalReview
+                        key={reviewAppointment.id}
+                        patientId={reviewAppointment.patientId}
+                        patientName={reviewPatient.data.name}
+                        isCalling={busyId !== null}
+                        onCancel={() => setReviewId(null)}
+                        onCall={() => void transition(reviewAppointment.id, 'call')}
+                    />
+                )}
+
             <ConfirmDialog
                 opened={selectedNoShow !== undefined}
                 title={t('reception.confirmNoShowTitle')}
@@ -307,6 +358,44 @@ function ReceptionPage() {
                 onCancel={() => setNoShowId(null)}
             />
         </Page>
+    );
+}
+
+function ReceptionClinicalReview({
+    patientId,
+    patientName,
+    isCalling,
+    onCancel,
+    onCall,
+}: {
+    patientId: string;
+    patientName: string;
+    isCalling: boolean;
+    onCancel: () => void;
+    onCall: () => void;
+}) {
+    const {t} = useTranslation();
+    const [page, setPage] = useState(1);
+    const clinical = usePatientClinicalPreview(patientId, true, page);
+
+    return (
+        <Dialog open onOpenChange={(open) => !open && !isCalling && onCancel()}>
+            <DialogContent className={css({maxH: '90dvh', overflowY: 'auto'})}>
+                <DialogHeader>
+                    <DialogTitle>{t('clinicalData.beforeVisit')}</DialogTitle>
+                    <DialogDescription>{t('clinicalData.reviewPatient', {name: patientName})}</DialogDescription>
+                </DialogHeader>
+                <PatientClinicalPreviewContent clinical={clinical} page={page} onPage={setPage} showEmpty />
+                <DialogFooter>
+                    <Button type="button" variant="outline" disabled={isCalling} onClick={onCancel}>
+                        {t('actions.cancel')}
+                    </Button>
+                    <Button type="button" disabled={isCalling || clinical.isLoading} onClick={onCall}>
+                        {t('reception.call')}
+                    </Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
     );
 }
 
