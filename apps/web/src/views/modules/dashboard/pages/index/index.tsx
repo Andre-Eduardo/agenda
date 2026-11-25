@@ -1,31 +1,24 @@
 import {
-    useSearchAppointments,
+    useSearchOperationalAppointments,
     useSearchRecords,
     getGetPatientQueryOptions,
     AppointmentStatus,
     AppointmentType,
-    type Appointment,
+    type OperationalAppointment,
     type Patient,
     type Record as ClinicalRecord,
     type SearchRecordsParams,
 } from '@agenda-app/client';
 import {useQueries, type UseQueryResult} from '@tanstack/react-query';
 import {createFileRoute, Link, useNavigate} from '@tanstack/react-router';
-import {
-    ArrowUpRight,
-    CalendarX2,
-    CalendarPlus,
-    ChevronRight,
-    FileText,
-    Stethoscope,
-    UserPlus,
-} from 'lucide-react';
+import {ArrowUpRight, CalendarX2, CalendarPlus, ChevronRight, FileText, Stethoscope, UserPlus} from 'lucide-react';
 import {useTranslation} from 'react-i18next';
 import {Button} from '@/components/ui/componentes/button';
 import {Skeleton} from '@/components/ui/componentes/skeleton';
+import {useCan} from '@/hooks/useCan';
 import {css, cva} from '@/styled-system/css';
 import {Page} from '@/views/components/Page';
-import {flex1, minW0, mt1, skeletonH3Full, skeletonH3W20, skeletonH9W12} from './styles';
+import {flex1, minW0, mt1, skeletonH3W20, skeletonH9W12} from './styles';
 
 // ── Styles ────────────────────────────────────────────────────────────────────
 
@@ -214,11 +207,6 @@ const apptPatType = css({
     fontSize: '[11px]',
     color: 'text.tertiary',
     mt: '0.5',
-});
-
-const apptStartBtn = css({
-    flexShrink: '0',
-    gap: '1.5',
 });
 
 const statusBadge = cva({
@@ -464,8 +452,6 @@ const upType = css({
 const upChevron = css({color: 'text.secondary', flexShrink: '0'});
 
 const skeletonStatValue = css({h: '6', w: '8', mb: '1'});
-const skeletonListCol = css({display: 'flex', flexDirection: 'column', gap: '4'});
-const skeletonListRow = css({display: 'flex', alignItems: 'flex-start', gap: '3'});
 const skeletonApptCol = css({display: 'flex', flexDirection: 'column', gap: '3'});
 const skeletonApptRow = css({display: 'flex', alignItems: 'center', gap: '3'});
 const skeletonAvatar = css({h: '8', w: '8', rounded: 'full', flexShrink: '0'});
@@ -618,22 +604,30 @@ const ACTIVE_STATUSES = new Set<AppointmentStatus>([
 
 export function DashboardPage() {
     const navigate = useNavigate();
+    const canViewAppointments = useCan({has: 'appointment:view'});
+    const canCreateAppointment = useCan({has: 'appointment:create'});
+    const canViewRecords = useCan({has: 'record:view'});
+    const canCreateRecord = useCan({hasAll: ['record:create', 'record:view', 'patient:view']});
+    const canCreatePatient = useCan({has: 'patient:create'});
+    const canViewPatients = useCan({has: 'patient:view'});
 
     const today = todayStr();
     const todayStart = new Date();
 
     todayStart.setHours(0, 0, 0, 0);
 
-    const apptQuery = useSearchAppointments({
-        term: '',
-        limit: 200,
-        cursor: null,
-        sort: {startAt: 'asc'},
-        dateFrom: todayStart.toISOString(),
-        dateTo: null,
-    }) as unknown as UseQueryResult<PaginatedPage<Appointment>>;
+    const apptQuery = useSearchOperationalAppointments(
+        {
+            limit: 200,
+            cursor: null,
+            sort: {startAt: 'asc'},
+            dateFrom: todayStart.toISOString(),
+            dateTo: null,
+        },
+        {query: {enabled: canViewAppointments}}
+    );
 
-    const allAppts = apptQuery.data?.data ?? [];
+    const allAppts = canViewAppointments ? (apptQuery.data?.data ?? []) : [];
 
     const todayAppts = allAppts
         .filter((a) => toDateStr(a.startAt) === today)
@@ -653,14 +647,17 @@ export function DashboardPage() {
 
     // SearchRecordsParams marks these filters as required strings even though the server
     // treats them as optional; omit rather than send '' (see patients/pages/detail).
-    const recentQuery = useSearchRecords({
-        term: '',
-        limit: 5,
-        cursor: null,
-        sort: {eventDate: 'desc'},
-    } as SearchRecordsParams) as unknown as UseQueryResult<PaginatedPage<ClinicalRecord>>;
+    const recentQuery = useSearchRecords(
+        {
+            term: '',
+            limit: 5,
+            cursor: null,
+            sort: {eventDate: 'desc'},
+        } as SearchRecordsParams,
+        {query: {enabled: canViewRecords}}
+    ) as unknown as UseQueryResult<PaginatedPage<ClinicalRecord>>;
 
-    const recentRecords = recentQuery.data?.data ?? [];
+    const recentRecords = canViewRecords ? (recentQuery.data?.data ?? []) : [];
     const {isLoading} = apptQuery;
     const patientIds = [
         ...new Set([
@@ -670,12 +667,14 @@ export function DashboardPage() {
         ]),
     ];
     const patientQueries = useQueries({
-        queries: patientIds.map((id) => getGetPatientQueryOptions(id, {query: {staleTime: 5 * 60_000}})),
+        queries: canViewPatients
+            ? patientIds.map((id) => getGetPatientQueryOptions(id, {query: {staleTime: 5 * 60_000}}))
+            : [],
     });
     const patientsById = new Map<string, {patient?: Patient; loading: boolean}>(
         patientIds.map((id, index) => [
             id,
-            {patient: patientQueries[index]?.data, loading: patientQueries[index]?.isPending ?? true},
+            {patient: patientQueries[index]?.data, loading: patientQueries[index]?.isPending ?? false},
         ])
     );
 
@@ -683,92 +682,78 @@ export function DashboardPage() {
         <Page title="Hoje na clínica" subtitle={fmtFullDate()} className={page}>
             <div className={content}>
                 {/* ── Stats ─────────────────────────────────────────────────────── */}
-                <div className={statsGrid}>
-                    <StatCard label="Consultas hoje" value={counts.total} loading={isLoading} />
-                    <StatCard label="Confirmadas" value={counts.confirmed} loading={isLoading} />
-                    <StatCard label="Realizadas" value={counts.done} loading={isLoading} />
-                    <StatCard label="Pendentes" value={counts.pending} loading={isLoading} />
-                </div>
+                {canViewAppointments && (
+                    <div className={statsGrid}>
+                        <StatCard label="Consultas hoje" value={counts.total} loading={isLoading} />
+                        <StatCard label="Confirmadas" value={counts.confirmed} loading={isLoading} />
+                        <StatCard label="Realizadas" value={counts.done} loading={isLoading} />
+                        <StatCard label="Pendentes" value={counts.pending} loading={isLoading} />
+                    </div>
+                )}
 
                 {/* ── Two-column body ───────────────────────────────────────────── */}
                 <div className={cols}>
                     {/* Left column */}
                     <div className={colMain}>
                         {/* Today's appointments */}
-                        <section className={sectionCard}>
-                            <div className={sectionHead}>
-                                <div>
-                                    <div className={sectionTitle}>Consultas de hoje</div>
-                                    {counts.total > 0 && (
-                                        <div className={sectionSub}>
-                                            {counts.total}{' '}
-                                            {counts.total === 1 ? 'consulta agendada' : 'consultas agendadas'}
+                        {canViewAppointments && (
+                            <section className={sectionCard}>
+                                <div className={sectionHead}>
+                                    <div>
+                                        <div className={sectionTitle}>Consultas de hoje</div>
+                                        {counts.total > 0 && (
+                                            <div className={sectionSub}>
+                                                {counts.total}{' '}
+                                                {counts.total === 1 ? 'consulta agendada' : 'consultas agendadas'}
+                                            </div>
+                                        )}
+                                    </div>
+                                    <button
+                                        type="button"
+                                        className={secLink}
+                                        onClick={() => navigate({to: '/appointments'})}
+                                    >
+                                        Ver agenda <ArrowUpRight size={12} />
+                                    </button>
+                                </div>
+                                <div className={sectionBody}>
+                                    {/* eslint-disable-next-line no-nested-ternary -- loading/empty/list pattern is a clear render branch */}
+                                    {isLoading ? (
+                                        <AppointmentSkeleton rows={3} />
+                                    ) : todayAppts.length === 0 ? (
+                                        <div className={empty}>
+                                            <CalendarX2 size={28} className={emptyIcon} />
+                                            <div className={emptyTitle}>Sem consultas hoje</div>
+                                            <p className={emptySub}>
+                                                Aproveite para revisar pendências ou criar novos agendamentos.
+                                            </p>
+                                        </div>
+                                    ) : (
+                                        <div className={apptList}>
+                                            {todayAppts.map((apt) => (
+                                                <ApptRow
+                                                    key={apt.id}
+                                                    apt={apt}
+                                                    patientName={patientsById.get(apt.patientId)?.patient?.name}
+                                                    patientLoading={patientsById.get(apt.patientId)?.loading}
+                                                />
+                                            ))}
                                         </div>
                                     )}
                                 </div>
-                                <button
-                                    type="button"
-                                    className={secLink}
-                                    onClick={() => navigate({to: '/appointments'})}
-                                >
-                                    Ver agenda <ArrowUpRight size={12} />
-                                </button>
-                            </div>
-                            <div className={sectionBody}>
-                                {/* eslint-disable-next-line no-nested-ternary -- loading/empty/list pattern is a clear render branch */}
-                                {isLoading ? (
-                                    <AppointmentSkeleton rows={3} />
-                                ) : todayAppts.length === 0 ? (
-                                    <div className={empty}>
-                                        <CalendarX2 size={28} className={emptyIcon} />
-                                        <div className={emptyTitle}>Sem consultas hoje</div>
-                                        <p className={emptySub}>
-                                            Aproveite para revisar pendências ou criar novos agendamentos.
-                                        </p>
-                                    </div>
-                                ) : (
-                                    <div className={apptList}>
-                                        {todayAppts.map((apt) => (
-                                            <ApptRow
-                                                key={apt.id}
-                                                apt={apt}
-                                                patientName={patientsById.get(apt.patientId)?.patient?.name}
-                                                patientLoading={patientsById.get(apt.patientId)?.loading}
-                                            />
-                                        ))}
-                                    </div>
-                                )}
-                            </div>
-                        </section>
+                            </section>
+                        )}
 
                         {/* Recent records */}
-                        <section className={sectionCard}>
-                            <div className={sectionHead}>
-                                <div>
-                                    <div className={sectionTitle}>Atividade recente</div>
-                                    <div className={sectionSub}>Últimas evoluções registradas</div>
+                        {recentRecords.length > 0 && (
+                            <section className={sectionCard}>
+                                <div className={sectionHead}>
+                                    <div>
+                                        <div className={sectionTitle}>Atividade recente</div>
+                                        <div className={sectionSub}>Últimas evoluções registradas</div>
+                                    </div>
                                 </div>
-                            </div>
-                            <div className={sectionBody}>
-                                {/* eslint-disable-next-line no-nested-ternary -- loading/empty/list pattern is a clear render branch */}
-                                {recentQuery.isLoading ? (
-                                    <div className={skeletonListCol}>
-                                        {Array.from({length: 3}).map((_, i) => (
-                                            <div key={i} className={skeletonListRow}>
-                                                <Skeleton className={skeletonAvatar} />
-                                                <div className={flex1}>
-                                                    <Skeleton className={skeletonNameMd} />
-                                                    <Skeleton className={skeletonH3Full} />
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                ) : recentRecords.length === 0 ? (
-                                    <div className={empty}>
-                                        <FileText size={24} className={emptyIcon} />
-                                        <div className={emptyTitle}>Nenhuma evolução registrada</div>
-                                    </div>
-                                ) : (
+                                <div className={sectionBody}>
                                     <div className={evolList}>
                                         {recentRecords.map((rec) => (
                                             <RecentRecordRow
@@ -779,9 +764,9 @@ export function DashboardPage() {
                                             />
                                         ))}
                                     </div>
-                                )}
-                            </div>
-                        </section>
+                                </div>
+                            </section>
+                        )}
                     </div>
 
                     {/* Right column */}
@@ -793,78 +778,90 @@ export function DashboardPage() {
                             </div>
                             <div className={sectionBody}>
                                 <div className={qaGrid}>
-                                    <QuickAction
-                                        icon={<UserPlus size={16} />}
-                                        label="Novo paciente"
-                                        onClick={() => navigate({to: '/patients/new'})}
-                                    />
-                                    <QuickAction
-                                        icon={<FileText size={16} />}
-                                        label="Nova evolução"
-                                        sub="Buscar paciente"
-                                        onClick={() => navigate({to: '/patients'})}
-                                    />
-                                    <QuickAction
-                                        icon={<CalendarPlus size={16} />}
-                                        label="Novo agendamento"
-                                        onClick={() => navigate({to: '/appointments'})}
-                                    />
-                                    <QuickAction
-                                        icon={<Stethoscope size={16} />}
-                                        label="Ver pacientes"
-                                        onClick={() => navigate({to: '/patients'})}
-                                    />
+                                    {canCreatePatient && (
+                                        <QuickAction
+                                            icon={<UserPlus size={16} />}
+                                            label="Novo paciente"
+                                            onClick={() => navigate({to: '/patients/new'})}
+                                        />
+                                    )}
+                                    {canCreateRecord && (
+                                        <QuickAction
+                                            icon={<FileText size={16} />}
+                                            label="Nova evolução"
+                                            sub="Buscar paciente"
+                                            onClick={() => navigate({to: '/patients'})}
+                                        />
+                                    )}
+                                    {canCreateAppointment && (
+                                        <QuickAction
+                                            icon={<CalendarPlus size={16} />}
+                                            label="Novo agendamento"
+                                            onClick={() => navigate({to: '/appointments'})}
+                                        />
+                                    )}
+                                    {canViewPatients && (
+                                        <QuickAction
+                                            icon={<Stethoscope size={16} />}
+                                            label="Ver pacientes"
+                                            onClick={() => navigate({to: '/patients'})}
+                                        />
+                                    )}
                                 </div>
                             </div>
                         </section>
 
                         {/* Upcoming appointments */}
-                        <section className={sectionCard}>
-                            <div className={sectionHead}>
-                                <div>
-                                    <div className={sectionTitle}>Próximas consultas</div>
-                                    <div className={sectionSub}>A partir de amanhã</div>
+                        {canViewAppointments && (
+                            <section className={sectionCard}>
+                                <div className={sectionHead}>
+                                    <div>
+                                        <div className={sectionTitle}>Próximas consultas</div>
+                                        <div className={sectionSub}>A partir de amanhã</div>
+                                    </div>
+                                    <button
+                                        type="button"
+                                        className={secLink}
+                                        onClick={() => navigate({to: '/appointments'})}
+                                    >
+                                        Ver agenda <ArrowUpRight size={12} />
+                                    </button>
                                 </div>
-                                <button
-                                    type="button"
-                                    className={secLink}
-                                    onClick={() => navigate({to: '/appointments'})}
-                                >
-                                    Ver agenda <ArrowUpRight size={12} />
-                                </button>
-                            </div>
-                            <div className={sectionBody}>
-                                {/* eslint-disable-next-line no-nested-ternary -- loading/empty/list pattern is a clear render branch */}
-                                {isLoading ? (
-                                    <AppointmentSkeleton rows={3} compact />
-                                ) : upcomingAppts.length === 0 ? (
-                                    <div className={empty}>
-                                        <CalendarX2 size={22} className={emptyIcon} />
-                                        <div className={emptyTitle}>Nenhuma consulta agendada</div>
-                                        <Button
-                                            variant="outline"
-                                            size="sm"
-                                            onClick={() => navigate({to: '/appointments'})}
-                                            className={mt1}
-                                        >
-                                            <CalendarPlus size={13} />
-                                            Criar agendamento
-                                        </Button>
-                                    </div>
-                                ) : (
-                                    <div className={upList}>
-                                        {upcomingAppts.map((apt) => (
-                                            <UpcomingRow
-                                                key={apt.id}
-                                                apt={apt}
-                                                patientName={patientsById.get(apt.patientId)?.patient?.name}
-                                                patientLoading={patientsById.get(apt.patientId)?.loading}
-                                            />
-                                        ))}
-                                    </div>
-                                )}
-                            </div>
-                        </section>
+                                <div className={sectionBody}>
+                                    {/* eslint-disable-next-line no-nested-ternary -- loading/empty/list pattern is a clear render branch */}
+                                    {isLoading ? (
+                                        <AppointmentSkeleton rows={3} compact />
+                                    ) : upcomingAppts.length === 0 ? (
+                                        <div className={empty}>
+                                            <CalendarX2 size={22} className={emptyIcon} />
+                                            <div className={emptyTitle}>Nenhuma consulta agendada</div>
+                                            {canCreateAppointment && (
+                                                <Button
+                                                    variant="outline"
+                                                    size="sm"
+                                                    onClick={() => navigate({to: '/appointments'})}
+                                                    className={mt1}
+                                                >
+                                                    <CalendarPlus size={13} />
+                                                    Criar agendamento
+                                                </Button>
+                                            )}
+                                        </div>
+                                    ) : (
+                                        <div className={upList}>
+                                            {upcomingAppts.map((apt) => (
+                                                <UpcomingRow
+                                                    key={apt.id}
+                                                    apt={apt}
+                                                    patientName={patientsById.get(apt.patientId)?.patient?.name}
+                                                    patientLoading={patientsById.get(apt.patientId)?.loading}
+                                                />
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+                            </section>
+                        )}
                     </div>
                 </div>
             </div>
@@ -888,7 +885,7 @@ function ApptRow({
     patientName,
     patientLoading,
 }: {
-    apt: Appointment;
+    apt: OperationalAppointment;
     patientName?: string;
     patientLoading?: boolean;
 }) {
@@ -896,7 +893,6 @@ function ApptRow({
     const start = fmtTime(apt.startAt);
     const end = fmtTime(apt.endAt);
     const {status} = apt;
-    const isActive = ACTIVE_STATUSES.has(status);
 
     return (
         <div className={apptRow}>
@@ -921,13 +917,6 @@ function ApptRow({
                 <span className={statusDot} />
                 {STATUS_LABELS[status] ?? status}
             </span>
-
-            {isActive && (
-                <Button size="sm" variant="outline" className={apptStartBtn}>
-                    <Stethoscope size={12} />
-                    Iniciar
-                </Button>
-            )}
         </div>
     );
 }
@@ -981,7 +970,7 @@ function UpcomingRow({
     patientName,
     patientLoading,
 }: {
-    apt: Appointment;
+    apt: OperationalAppointment;
     patientName?: string;
     patientLoading?: boolean;
 }) {

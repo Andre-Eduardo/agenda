@@ -5,12 +5,18 @@ import {
     RevokeClinicPatientAccessService,
 } from '@application/clinic-patient-access/services';
 import {PatientAccessChecker} from '@application/clinic-patient-access/services/patient-access-checker.service';
+import {RecordAuthorAccess} from '@application/clinic-patient-access/services/record-author-access.service';
 import {InfrastructureModule} from '@infrastructure/infrastructure.module';
 
 @Module({
     imports: [InfrastructureModule],
     controllers: [ClinicPatientAccessController],
-    providers: [GrantClinicPatientAccessService, RevokeClinicPatientAccessService, PatientAccessChecker],
-    exports: [PatientAccessChecker],
+    providers: [
+        GrantClinicPatientAccessService,
+        RevokeClinicPatientAccessService,
+        PatientAccessChecker,
+        RecordAuthorAccess,
+    ],
+    exports: [PatientAccessChecker, RecordAuthorAccess],
 })
 export class ClinicPatientAccessModule {}

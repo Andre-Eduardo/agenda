@@ -13,7 +13,9 @@ import {
     AppointmentStatusTransitionDto,
     CancelAppointmentInputDto,
     CreateAppointmentDto,
+    PaginatedOperationalAppointmentsDto,
     SearchAppointmentsDto,
+    SearchOperationalAppointmentsDto,
     UpdateAppointmentInputDto,
     callAppointmentSchema,
     cancelAppointmentSchema,
@@ -23,6 +25,7 @@ import {
     getAppointmentSchema,
     noShowAppointmentSchema,
     searchAppointmentsSchema,
+    searchOperationalAppointmentsSchema,
     updateAppointmentSchema,
 } from '@application/appointment/dtos';
 import {
@@ -88,6 +91,19 @@ export class AppointmentController {
         @Query(new ZodValidationPipe(searchAppointmentsSchema)) query: SearchAppointmentsDto
     ): Promise<PaginatedDto<AppointmentDto>> {
         return this.searchAppointmentsService.execute({actor, payload: query});
+    }
+
+    @ApiOperation({
+        summary: 'Lists appointments with operational fields for the dashboard',
+        responses: [{status: 200, description: 'Operational appointments', type: PaginatedOperationalAppointmentsDto}],
+    })
+    @Authorize(AppointmentPermission.VIEW)
+    @Get('operational')
+    searchOperationalAppointments(
+        @RequestActor() actor: Actor,
+        @Query(new ZodValidationPipe(searchOperationalAppointmentsSchema)) query: SearchOperationalAppointmentsDto
+    ): Promise<PaginatedOperationalAppointmentsDto> {
+        return this.searchAppointmentsService.searchOperational({actor, payload: query});
     }
 
     @ApiOperation({

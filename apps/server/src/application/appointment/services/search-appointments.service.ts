@@ -1,7 +1,13 @@
 import {Injectable} from '@nestjs/common';
 import {ApplicationService, Command} from '@application/@shared/application.service';
 import {PaginatedDto} from '@application/@shared/dto';
-import {AppointmentDto, SearchAppointmentsDto} from '@application/appointment/dtos';
+import {
+    AppointmentDto,
+    OperationalAppointmentDto,
+    PaginatedOperationalAppointmentsDto,
+    SearchAppointmentsDto,
+    SearchOperationalAppointmentsDto,
+} from '@application/appointment/dtos';
 import {PatientAccessChecker} from '@application/clinic-patient-access/services/patient-access-checker.service';
 import {AppointmentPaymentRepository} from '@domain/appointment-payment/appointment-payment.repository';
 import {projectAppointmentRevenue, type RevenuePayment} from '@domain/appointment-payment/appointment-revenue';
@@ -22,22 +28,9 @@ export class SearchAppointmentsService implements ApplicationService<
     ) {}
 
     async execute({actor, payload}: Command<SearchAppointmentsDto>): Promise<PaginatedDto<AppointmentDto>> {
-        const {term, sort, ...rest} = payload;
-        const patientIds = await this.patientAccessChecker.patientIdsForAction(actor, 'appointment');
+        const result = await this.findVisibleAppointments({actor, payload});
 
-        if (patientIds !== null && patientIds.length === 0) return {data: [], totalCount: 0};
-
-        const result = await this.appointmentRepository.search(
-            {
-                ...rest,
-                sort: sort ?? undefined,
-            },
-            {
-                term: term ?? undefined,
-                clinicId: actor.clinicId ?? undefined,
-                patientIds: patientIds ?? undefined,
-            }
-        );
+        if (result.data.length === 0) return {data: [], totalCount: result.totalCount};
 
         const canViewPayment = await this.authorizer.validate(
             actor.clinicMemberId,
@@ -65,5 +58,34 @@ export class SearchAppointmentsService implements ApplicationService<
             }),
             totalCount: result.totalCount,
         };
+    }
+
+    async searchOperational(
+        command: Command<SearchOperationalAppointmentsDto>
+    ): Promise<PaginatedOperationalAppointmentsDto> {
+        const {data, totalCount} = await this.findVisibleAppointments(command);
+
+        return {
+            data: data.map((appointment) => new OperationalAppointmentDto(appointment)),
+            totalCount,
+        };
+    }
+
+    private async findVisibleAppointments({actor, payload}: Command<SearchAppointmentsDto>) {
+        const {term, sort, dateFrom, dateTo, ...pagination} = payload;
+        const patientIds = await this.patientAccessChecker.patientIdsForAction(actor, 'appointment');
+
+        if (patientIds !== null && patientIds.length === 0) return {data: [], totalCount: 0};
+
+        return this.appointmentRepository.search(
+            {...pagination, sort: sort ?? undefined},
+            {
+                clinicId: actor.clinicId,
+                patientIds: patientIds ?? undefined,
+                term: term ?? undefined,
+                dateFrom,
+                dateTo,
+            }
+        );
     }
 }

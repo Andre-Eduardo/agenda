@@ -1,4 +1,4 @@
-import {ApiProperty, ApiSchema} from '@nestjs/swagger';
+import {ApiProperty, ApiSchema, PickType} from '@nestjs/swagger';
 import {EntityDto} from '@application/@shared/dto';
 import {AppointmentRevenueDto} from '@application/appointment-payment/dtos';
 import type {AppointmentRevenue} from '@domain/appointment-payment/appointment-revenue';
@@ -138,4 +138,33 @@ export class AppointmentDto extends EntityDto {
         this.revenue = revenue === null ? null : new AppointmentRevenueDto(revenue);
         this.roomId = appointment.roomId?.toString() ?? null;
     }
+}
+
+@ApiSchema({name: 'OperationalAppointment'})
+export class OperationalAppointmentDto extends PickType(AppointmentDto, [
+    'id',
+    'patientId',
+    'startAt',
+    'endAt',
+    'type',
+    'status',
+]) {
+    constructor(appointment: Appointment) {
+        super();
+        this.id = appointment.id.toString();
+        this.patientId = appointment.patientId.toString();
+        this.startAt = appointment.startAt.toISOString();
+        this.endAt = appointment.endAt.toISOString();
+        this.type = appointment.type;
+        this.status = appointment.status;
+    }
+}
+
+@ApiSchema({name: 'PaginatedOperationalAppointments'})
+export class PaginatedOperationalAppointmentsDto {
+    @ApiProperty({type: () => [OperationalAppointmentDto]})
+    data!: OperationalAppointmentDto[];
+
+    @ApiProperty()
+    totalCount!: number;
 }

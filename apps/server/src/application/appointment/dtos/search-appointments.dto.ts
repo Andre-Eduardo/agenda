@@ -9,3 +9,7 @@ export const searchAppointmentsSchema = pagination(['createdAt', 'updatedAt', 's
 });
 
 export class SearchAppointmentsDto extends createZodDto(searchAppointmentsSchema) {}
+
+export const searchOperationalAppointmentsSchema = searchAppointmentsSchema.omit({term: true});
+
+export class SearchOperationalAppointmentsDto extends createZodDto(searchOperationalAppointmentsSchema) {}
