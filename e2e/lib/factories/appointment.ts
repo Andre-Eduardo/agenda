@@ -1,4 +1,5 @@
 import {uuidv7} from 'uuidv7';
+import type {AppointmentType} from '@prisma/client';
 import {prisma} from './prisma';
 
 export type CreateAppointmentEntry = {
@@ -7,6 +8,7 @@ export type CreateAppointmentEntry = {
     memberId: string;
     startAt: Date;
     durationMinutes?: number;
+    type?: AppointmentType;
 };
 
 export async function createTestAppointment(entry: CreateAppointmentEntry) {
@@ -23,7 +25,7 @@ export async function createTestAppointment(entry: CreateAppointmentEntry) {
             startAt: entry.startAt,
             endAt: new Date(entry.startAt.getTime() + durationMinutes * 60_000),
             durationMinutes,
-            type: 'RETURN',
+            type: entry.type ?? 'RETURN',
             status: 'SCHEDULED',
             createdAt: now,
             updatedAt: now,

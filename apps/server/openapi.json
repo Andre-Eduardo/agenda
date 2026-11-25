@@ -2020,7 +2020,14 @@
         ],
         "responses": {
           "200": {
-            "description": "Appointments list"
+            "description": "Appointments list",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaginatedAppointments"
+                }
+              }
+            }
           },
           "default": {
             "description": "Request failed",
@@ -11292,6 +11299,190 @@
           "paymentStatus",
           "revenue",
           "roomId"
+        ]
+      },
+      "AppointmentListItem": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "The unique identifier of the entity"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "The date and time the entity was created"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "The date and time the entity was last updated"
+          },
+          "clinicId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "The clinic this appointment belongs to"
+          },
+          "patientId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "The patient ID"
+          },
+          "attendedByMemberId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "ClinicMember scheduled to attend"
+          },
+          "createdByMemberId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "ClinicMember who created/scheduled the appointment"
+          },
+          "startAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "The appointment start time"
+          },
+          "endAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "The appointment end time"
+          },
+          "durationMinutes": {
+            "type": "number",
+            "description": "Duration in minutes"
+          },
+          "procedure": {
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ScheduledProcedure"
+              }
+            ]
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "FIRST_VISIT",
+              "RETURN",
+              "WALK_IN",
+              "TELEMEDICINE",
+              "PROCEDURE"
+            ],
+            "description": "The appointment type"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "SCHEDULED",
+              "CONFIRMED",
+              "CANCELLED",
+              "COMPLETED",
+              "NO_SHOW",
+              "ARRIVED",
+              "IN_PROGRESS"
+            ],
+            "description": "The appointment status"
+          },
+          "canceledAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "description": "When the appointment was canceled"
+          },
+          "canceledReason": {
+            "type": "object",
+            "nullable": true,
+            "description": "The reason for cancellation"
+          },
+          "note": {
+            "type": "object",
+            "nullable": true,
+            "description": "Notes about the appointment"
+          },
+          "arrivedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "description": "When the patient arrived at the reception"
+          },
+          "calledAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "description": "When the patient was called to the room"
+          },
+          "paymentStatus": {
+            "nullable": true,
+            "description": "Financial status of the appointment payment, null if no payment registered",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AppointmentPaymentStatus"
+              }
+            ]
+          },
+          "revenue": {
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AppointmentRevenue"
+              }
+            ]
+          },
+          "roomId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true,
+            "description": "Room where the appointment takes place, when room management is enabled"
+          },
+          "attendedByName": {
+            "type": "string",
+            "nullable": true,
+            "description": "Display name of the scheduled clinic member"
+          }
+        },
+        "required": [
+          "id",
+          "createdAt",
+          "updatedAt",
+          "clinicId",
+          "patientId",
+          "attendedByMemberId",
+          "createdByMemberId",
+          "startAt",
+          "endAt",
+          "durationMinutes",
+          "procedure",
+          "type",
+          "status",
+          "canceledAt",
+          "canceledReason",
+          "note",
+          "arrivedAt",
+          "calledAt",
+          "paymentStatus",
+          "revenue",
+          "roomId",
+          "attendedByName"
+        ]
+      },
+      "PaginatedAppointments": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AppointmentListItem"
+            }
+          },
+          "totalCount": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "data",
+          "totalCount"
         ]
       },
       "AppointmentFollowUp": {

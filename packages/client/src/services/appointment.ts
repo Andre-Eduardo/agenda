@@ -33,7 +33,14 @@ import type {
     UpdateAppointmentInputDto,
 } from '../models';
 import {AppointmentPaymentStatus, ProcedureColor, ProcedureModality} from '../models';
-import type {ApiProblem, Appointment, AppointmentFollowUp, AppointmentStatusTransition, ClinicMember} from '../models';
+import type {
+    ApiProblem,
+    Appointment,
+    AppointmentFollowUp,
+    AppointmentStatusTransition,
+    ClinicMember,
+    PaginatedAppointments,
+} from '../models';
 
 type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 
@@ -121,7 +128,7 @@ export const searchAppointments = (
     options?: SecondParameter<typeof apiClient>,
     signal?: AbortSignal
 ) => {
-    return apiClient<void>({url: `/api/v1/appointments`, method: 'GET', params, signal}, options);
+    return apiClient<PaginatedAppointments>({url: `/api/v1/appointments`, method: 'GET', params, signal}, options);
 };
 
 export const getSearchAppointmentsQueryKey = (params?: SearchAppointmentsParams) => {
@@ -1720,6 +1727,168 @@ export const getCreateAppointmentResponseMockDefault = (overrideResponse: Partia
     ...overrideResponse,
 });
 
+export const getSearchAppointmentsResponseMock = (
+    overrideResponse: Partial<PaginatedAppointments> = {}
+): PaginatedAppointments => ({
+    data: Array.from({length: faker.number.int({min: 1, max: 10})}, (_, i) => i + 1).map(() => ({
+        id: faker.string.uuid(),
+        createdAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
+        updatedAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
+        clinicId: faker.string.uuid(),
+        patientId: faker.string.uuid(),
+        attendedByMemberId: faker.string.uuid(),
+        createdByMemberId: faker.string.uuid(),
+        startAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
+        endAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
+        durationMinutes: faker.number.float({min: undefined, max: undefined, fractionDigits: 2}),
+        procedure: {
+            ...{
+                id: faker.string.uuid(),
+                name: faker.string.alpha({length: {min: 10, max: 20}}),
+                color: faker.helpers.arrayElement(Object.values(ProcedureColor)),
+                priceInCents: faker.number.float({min: undefined, max: undefined, fractionDigits: 2}),
+                modality: faker.helpers.arrayElement(Object.values(ProcedureModality)),
+            },
+        },
+        type: faker.helpers.arrayElement(['FIRST_VISIT', 'RETURN', 'WALK_IN', 'TELEMEDICINE', 'PROCEDURE'] as const),
+        status: faker.helpers.arrayElement([
+            'SCHEDULED',
+            'CONFIRMED',
+            'CANCELLED',
+            'COMPLETED',
+            'NO_SHOW',
+            'ARRIVED',
+            'IN_PROGRESS',
+        ] as const),
+        canceledAt: faker.helpers.arrayElement([`${faker.date.past().toISOString().split('.')[0]}Z`, null]),
+        canceledReason: {},
+        note: {},
+        arrivedAt: faker.helpers.arrayElement([`${faker.date.past().toISOString().split('.')[0]}Z`, null]),
+        calledAt: faker.helpers.arrayElement([`${faker.date.past().toISOString().split('.')[0]}Z`, null]),
+        paymentStatus: faker.helpers.arrayElement(Object.values(AppointmentPaymentStatus)),
+        revenue: {
+            ...{
+                expectedBrl: faker.number.float({min: undefined, max: undefined, fractionDigits: 2}),
+                receivedBrl: faker.number.float({min: undefined, max: undefined, fractionDigits: 2}),
+                pendingBrl: faker.number.float({min: undefined, max: undefined, fractionDigits: 2}),
+                paymentMethod: faker.helpers.arrayElement([
+                    faker.helpers.arrayElement([
+                        'CASH',
+                        'PIX',
+                        'CREDIT_CARD',
+                        'DEBIT_CARD',
+                        'BANK_TRANSFER',
+                        'INSURANCE',
+                        'COURTESY',
+                        'PACKAGE',
+                        'SUBSCRIPTION',
+                    ] as const),
+                    null,
+                ]),
+                status: faker.helpers.arrayElement(Object.values(AppointmentPaymentStatus)),
+                paidAt: faker.helpers.arrayElement([`${faker.date.past().toISOString().split('.')[0]}Z`, null]),
+                insuranceClaimStatus: faker.helpers.arrayElement([
+                    faker.helpers.arrayElement([
+                        'DRAFT',
+                        'SUBMITTED',
+                        'PAID',
+                        'PARTIALLY_PAID',
+                        'DENIED',
+                        'APPEALED',
+                        'CANCELLED',
+                    ] as const),
+                    null,
+                ]),
+            },
+        },
+        roomId: faker.helpers.arrayElement([faker.string.uuid(), null]),
+        attendedByName: faker.helpers.arrayElement([faker.string.alpha({length: {min: 10, max: 20}}), null]),
+    })),
+    totalCount: faker.number.float({min: undefined, max: undefined, fractionDigits: 2}),
+    ...overrideResponse,
+});
+
+export const getSearchAppointmentsResponseMock200 = (
+    overrideResponse: Partial<PaginatedAppointments> = {}
+): PaginatedAppointments => ({
+    data: Array.from({length: faker.number.int({min: 1, max: 10})}, (_, i) => i + 1).map(() => ({
+        id: faker.string.uuid(),
+        createdAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
+        updatedAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
+        clinicId: faker.string.uuid(),
+        patientId: faker.string.uuid(),
+        attendedByMemberId: faker.string.uuid(),
+        createdByMemberId: faker.string.uuid(),
+        startAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
+        endAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
+        durationMinutes: faker.number.float({min: undefined, max: undefined, fractionDigits: 2}),
+        procedure: {
+            ...{
+                id: faker.string.uuid(),
+                name: faker.string.alpha({length: {min: 10, max: 20}}),
+                color: faker.helpers.arrayElement(Object.values(ProcedureColor)),
+                priceInCents: faker.number.float({min: undefined, max: undefined, fractionDigits: 2}),
+                modality: faker.helpers.arrayElement(Object.values(ProcedureModality)),
+            },
+        },
+        type: faker.helpers.arrayElement(['FIRST_VISIT', 'RETURN', 'WALK_IN', 'TELEMEDICINE', 'PROCEDURE'] as const),
+        status: faker.helpers.arrayElement([
+            'SCHEDULED',
+            'CONFIRMED',
+            'CANCELLED',
+            'COMPLETED',
+            'NO_SHOW',
+            'ARRIVED',
+            'IN_PROGRESS',
+        ] as const),
+        canceledAt: faker.helpers.arrayElement([`${faker.date.past().toISOString().split('.')[0]}Z`, null]),
+        canceledReason: {},
+        note: {},
+        arrivedAt: faker.helpers.arrayElement([`${faker.date.past().toISOString().split('.')[0]}Z`, null]),
+        calledAt: faker.helpers.arrayElement([`${faker.date.past().toISOString().split('.')[0]}Z`, null]),
+        paymentStatus: faker.helpers.arrayElement(Object.values(AppointmentPaymentStatus)),
+        revenue: {
+            ...{
+                expectedBrl: faker.number.float({min: undefined, max: undefined, fractionDigits: 2}),
+                receivedBrl: faker.number.float({min: undefined, max: undefined, fractionDigits: 2}),
+                pendingBrl: faker.number.float({min: undefined, max: undefined, fractionDigits: 2}),
+                paymentMethod: faker.helpers.arrayElement([
+                    faker.helpers.arrayElement([
+                        'CASH',
+                        'PIX',
+                        'CREDIT_CARD',
+                        'DEBIT_CARD',
+                        'BANK_TRANSFER',
+                        'INSURANCE',
+                        'COURTESY',
+                        'PACKAGE',
+                        'SUBSCRIPTION',
+                    ] as const),
+                    null,
+                ]),
+                status: faker.helpers.arrayElement(Object.values(AppointmentPaymentStatus)),
+                paidAt: faker.helpers.arrayElement([`${faker.date.past().toISOString().split('.')[0]}Z`, null]),
+                insuranceClaimStatus: faker.helpers.arrayElement([
+                    faker.helpers.arrayElement([
+                        'DRAFT',
+                        'SUBMITTED',
+                        'PAID',
+                        'PARTIALLY_PAID',
+                        'DENIED',
+                        'APPEALED',
+                        'CANCELLED',
+                    ] as const),
+                    null,
+                ]),
+            },
+        },
+        roomId: faker.helpers.arrayElement([faker.string.uuid(), null]),
+        attendedByName: faker.helpers.arrayElement([faker.string.alpha({length: {min: 10, max: 20}}), null]),
+    })),
+    totalCount: faker.number.float({min: undefined, max: undefined, fractionDigits: 2}),
+    ...overrideResponse,
+});
+
 export const getSearchAppointmentsResponseMockDefault = (overrideResponse: Partial<ApiProblem> = {}): ApiProblem => ({
     title: faker.string.alpha({length: {min: 10, max: 20}}),
     type: faker.internet.url(),
@@ -3271,34 +3440,52 @@ export const getCreateAppointmentMockHandlerDefault = (
 };
 
 export const getSearchAppointmentsMockHandler = (
-    overrideResponse?: void | ((info: Parameters<Parameters<typeof http.get>[1]>[0]) => Promise<void> | void),
+    overrideResponse?:
+        | PaginatedAppointments
+        | ((
+              info: Parameters<Parameters<typeof http.get>[1]>[0]
+          ) => Promise<PaginatedAppointments> | PaginatedAppointments),
     options?: RequestHandlerOptions
 ) => {
     return http.get(
         '*/api/v1/appointments',
         async (info) => {
-            if (typeof overrideResponse === 'function') {
-                await overrideResponse(info);
-            }
-
-            return new HttpResponse(null, {status: 200});
+            return new HttpResponse(
+                JSON.stringify(
+                    overrideResponse !== undefined
+                        ? typeof overrideResponse === 'function'
+                            ? await overrideResponse(info)
+                            : overrideResponse
+                        : getSearchAppointmentsResponseMock()
+                ),
+                {status: 200, headers: {'Content-Type': 'application/json'}}
+            );
         },
         options
     );
 };
 
 export const getSearchAppointmentsMockHandler200 = (
-    overrideResponse?: void | ((info: Parameters<Parameters<typeof http.get>[1]>[0]) => Promise<void> | void),
+    overrideResponse?:
+        | PaginatedAppointments
+        | ((
+              info: Parameters<Parameters<typeof http.get>[1]>[0]
+          ) => Promise<PaginatedAppointments> | PaginatedAppointments),
     options?: RequestHandlerOptions
 ) => {
     return http.get(
         '*/api/v1/appointments',
         async (info) => {
-            if (typeof overrideResponse === 'function') {
-                await overrideResponse(info);
-            }
-
-            return new HttpResponse(null, {status: 200});
+            return new HttpResponse(
+                JSON.stringify(
+                    overrideResponse !== undefined
+                        ? typeof overrideResponse === 'function'
+                            ? await overrideResponse(info)
+                            : overrideResponse
+                        : getSearchAppointmentsResponseMock200()
+                ),
+                {status: 200, headers: {'Content-Type': 'application/json'}}
+            );
         },
         options
     );

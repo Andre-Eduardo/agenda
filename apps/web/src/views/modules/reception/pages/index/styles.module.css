@@ -60,6 +60,14 @@
     @apply truncate text-sm font-medium text-(--color-text-primary);
 }
 
+.professional {
+    @apply wrap-break-word text-sm text-(--color-text-secondary);
+}
+
+.appointmentType {
+    @apply text-xs font-medium text-(--color-text-primary);
+}
+
 .status {
     @apply text-xs text-(--color-text-secondary);
 }

@@ -139,3 +139,23 @@ export class AppointmentDto extends EntityDto {
         this.roomId = appointment.roomId?.toString() ?? null;
     }
 }
+
+@ApiSchema({name: 'AppointmentListItem'})
+export class AppointmentListItemDto extends AppointmentDto {
+    @ApiProperty({type: String, nullable: true, description: 'Display name of the scheduled clinic member'})
+    attendedByName: string | null;
+
+    constructor(appointment: Appointment, revenue: AppointmentRevenue | null, attendedByName: string | null) {
+        super(appointment, revenue);
+        this.attendedByName = attendedByName;
+    }
+}
+
+@ApiSchema({name: 'PaginatedAppointments'})
+export class PaginatedAppointmentsDto {
+    @ApiProperty({type: () => [AppointmentListItemDto]})
+    data!: AppointmentListItemDto[];
+
+    @ApiProperty()
+    totalCount!: number;
+}
