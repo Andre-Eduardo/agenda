@@ -4,7 +4,6 @@
  * Automo API
  * OpenAPI spec version: 0.0.0
  */
-import type {PatientAlertDescription} from './patientAlertDescription';
 import type {PatientAlertSeverity} from './patientAlertSeverity';
 
 export type PatientAlert = {
@@ -26,7 +25,7 @@ export type PatientAlert = {
      * Alert description
      * @nullable
      */
-    description: PatientAlertDescription;
+    description: string | null;
     /** Alert severity */
     severity: PatientAlertSeverity;
     /** Whether the alert is active */

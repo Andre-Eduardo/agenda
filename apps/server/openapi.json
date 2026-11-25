@@ -3443,7 +3443,7 @@
           },
           {
             "name": "cursor",
-            "required": true,
+            "required": false,
             "in": "query",
             "description": "The cursor to start from",
             "schema": {
@@ -3466,7 +3466,7 @@
           },
           {
             "name": "sort",
-            "required": true,
+            "required": false,
             "in": "query",
             "description": "The fields to sort by",
             "schema": {
@@ -3498,18 +3498,52 @@
             }
           },
           {
-            "name": "isActive",
-            "required": true,
+            "name": "page",
+            "required": false,
             "in": "query",
-            "description": "Filter by active status (true/false)",
             "schema": {
-              "type": "string"
+              "minimum": 0,
+              "exclusiveMinimum": true,
+              "default": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "name": "isActive",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "true",
+                "false"
+              ]
+            }
+          },
+          {
+            "name": "severity",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "LOW",
+                "MEDIUM",
+                "HIGH"
+              ]
             }
           }
         ],
         "responses": {
           "200": {
-            "description": "List of patient alerts"
+            "description": "List of patient alerts",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PatientAlertPage"
+                }
+              }
+            }
           },
           "default": {
             "description": "Request failed",
@@ -3584,20 +3618,20 @@
         "operationId": "updatePatientAlert",
         "parameters": [
           {
-            "name": "alertId",
+            "name": "patientId",
             "required": true,
             "in": "path",
-            "description": "Alert ID",
+            "description": "Patient ID",
             "schema": {
               "format": "uuid",
               "type": "string"
             }
           },
           {
-            "name": "patientId",
+            "name": "alertId",
             "required": true,
             "in": "path",
-            "description": "Patient ID",
+            "description": "Alert ID",
             "schema": {
               "format": "uuid",
               "type": "string"
@@ -3645,20 +3679,20 @@
         "operationId": "deletePatientAlert",
         "parameters": [
           {
-            "name": "alertId",
+            "name": "patientId",
             "required": true,
             "in": "path",
-            "description": "Alert ID",
+            "description": "Patient ID",
             "schema": {
               "format": "uuid",
               "type": "string"
             }
           },
           {
-            "name": "patientId",
+            "name": "alertId",
             "required": true,
             "in": "path",
-            "description": "Patient ID",
+            "description": "Alert ID",
             "schema": {
               "format": "uuid",
               "type": "string"
@@ -10689,6 +10723,14 @@
                 "$ref": "#/components/schemas/PatientInsurancePlanDto"
               }
             ]
+          },
+          "canReadClinicalData": {
+            "type": "boolean",
+            "description": "Whether the current member can read clinical data for this patient"
+          },
+          "canWriteClinicalData": {
+            "type": "boolean",
+            "description": "Whether the current member can edit clinical data for this patient"
           }
         },
         "required": [
@@ -12175,37 +12217,37 @@
             "description": "Professional clinically responsible"
           },
           "allergies": {
-            "type": "object",
+            "type": "string",
             "nullable": true,
             "description": "Known allergies"
           },
           "chronicConditions": {
-            "type": "object",
+            "type": "string",
             "nullable": true,
             "description": "Chronic conditions"
           },
           "currentMedications": {
-            "type": "object",
+            "type": "string",
             "nullable": true,
             "description": "Current medications"
           },
           "surgicalHistory": {
-            "type": "object",
+            "type": "string",
             "nullable": true,
             "description": "Surgical history"
           },
           "familyHistory": {
-            "type": "object",
+            "type": "string",
             "nullable": true,
             "description": "Family history"
           },
           "socialHistory": {
-            "type": "object",
+            "type": "string",
             "nullable": true,
             "description": "Social history"
           },
           "generalNotes": {
-            "type": "object",
+            "type": "string",
             "nullable": true,
             "description": "General notes"
           }
@@ -12275,38 +12317,6 @@
           "responsibleProfessionalId"
         ]
       },
-      "CreatePatientAlertInputDto": {
-        "type": "object",
-        "properties": {
-          "title": {
-            "type": "string",
-            "minLength": 1,
-            "maxLength": 255,
-            "example": "Penicillin allergy — severe reaction"
-          },
-          "description": {
-            "type": "string",
-            "nullable": true,
-            "example": "Patient had anaphylaxis in 2018 — carry epipen"
-          },
-          "severity": {
-            "type": "string",
-            "enum": [
-              "LOW",
-              "MEDIUM",
-              "HIGH"
-            ],
-            "default": "MEDIUM"
-          },
-          "isActive": {
-            "type": "boolean",
-            "default": true
-          }
-        },
-        "required": [
-          "title"
-        ]
-      },
       "PatientAlert": {
         "type": "object",
         "properties": {
@@ -12345,7 +12355,7 @@
             "description": "Alert title"
           },
           "description": {
-            "type": "object",
+            "type": "string",
             "nullable": true,
             "description": "Alert description"
           },
@@ -12376,6 +12386,56 @@
           "isActive"
         ]
       },
+      "PatientAlertPage": {
+        "type": "object",
+        "properties": {
+          "totalCount": {
+            "type": "number"
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PatientAlert"
+            }
+          }
+        },
+        "required": [
+          "totalCount",
+          "data"
+        ]
+      },
+      "CreatePatientAlertInputDto": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 255,
+            "example": "Penicillin allergy — severe reaction"
+          },
+          "description": {
+            "type": "string",
+            "nullable": true,
+            "example": "Patient had anaphylaxis in 2018 — carry epipen"
+          },
+          "severity": {
+            "type": "string",
+            "enum": [
+              "LOW",
+              "MEDIUM",
+              "HIGH"
+            ],
+            "default": "MEDIUM"
+          },
+          "isActive": {
+            "type": "boolean",
+            "default": true
+          }
+        },
+        "required": [
+          "title"
+        ]
+      },
       "UpdatePatientAlertInputDto": {
         "type": "object",
         "properties": {
@@ -12401,13 +12461,7 @@
           "isActive": {
             "type": "boolean"
           }
-        },
-        "required": [
-          "title",
-          "description",
-          "severity",
-          "isActive"
-        ]
+        }
       },
       "PrepareUploadInputDto": {
         "type": "object",

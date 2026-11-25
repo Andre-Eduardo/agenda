@@ -1,5 +1,6 @@
 import {Injectable} from '@nestjs/common';
 import {ApplicationService, Command} from '@application/@shared/application.service';
+import {PatientAccessChecker} from '@application/clinic-patient-access/services/patient-access-checker.service';
 import {CreatePatientAlertDto, PatientAlertDto} from '@application/patient-alert/dtos';
 import {ResourceNotFoundException} from '@domain/@shared/exceptions';
 import {EventDispatcher} from '@domain/event';
@@ -12,6 +13,7 @@ export class CreatePatientAlertService implements ApplicationService<CreatePatie
     constructor(
         private readonly patientAlertRepository: PatientAlertRepository,
         private readonly patientRepository: PatientRepository,
+        private readonly patientAccessChecker: PatientAccessChecker,
         private readonly eventDispatcher: EventDispatcher
     ) {}
 
@@ -21,6 +23,8 @@ export class CreatePatientAlertService implements ApplicationService<CreatePatie
         if (!patient) {
             throw new ResourceNotFoundException('Patient not found.', payload.patientId.toString());
         }
+
+        await this.patientAccessChecker.assertCanAccess(actor, payload.patientId, 'write');
 
         const alert = PatientAlert.create({
             clinicId: actor.clinicId,

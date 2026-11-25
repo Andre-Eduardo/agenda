@@ -44,11 +44,6 @@ hoje. Os stubs comentados correspondentes estão em `e2e/tests/pending/`.
 - **Assinatura e bloqueio da evolução** — o detalhe do registro já mostra o badge de
   assinado/rascunho (`isLocked`), mas não há botão "Assinar" nem "Reabrir", e não há
   visualização da trilha de `RecordAmendment`.
-- **Perfil clínico do paciente (edição)** — exibido somente leitura via
-  `useGetClinicalProfile`; não há formulário para criar/editar alergias, condições crônicas
-  ou medicamentos.
-- **Alertas do paciente (criação)** — badges de alerta são somente leitura
-  (`useSearchPatientAlerts`); não há ação "Novo alerta".
 - **Pré-evolução gerada por IA (revisável)** — `DraftEvolution` e o fluxo de
   aprovação existem no backend, mas não há tela para revisar, editar ou aprovar um rascunho.
 

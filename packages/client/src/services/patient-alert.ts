@@ -27,7 +27,7 @@ import type {RequestHandlerOptions} from 'msw';
 import {apiClient} from '../api-client';
 import type {ErrorType} from '../api-client';
 import type {CreatePatientAlertInputDto, SearchPatientAlertsParams, UpdatePatientAlertInputDto} from '../models';
-import type {ApiProblem, PatientAlert} from '../models';
+import type {ApiProblem, PatientAlert, PatientAlertPage} from '../models';
 
 type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 
@@ -40,7 +40,10 @@ export const searchPatientAlerts = (
     options?: SecondParameter<typeof apiClient>,
     signal?: AbortSignal
 ) => {
-    return apiClient<void>({url: `/api/v1/patients/${patientId}/alerts`, method: 'GET', params, signal}, options);
+    return apiClient<PatientAlertPage>(
+        {url: `/api/v1/patients/${patientId}/alerts`, method: 'GET', params, signal},
+        options
+    );
 };
 
 export const getSearchPatientAlertsQueryKey = (patientId?: string, params?: SearchPatientAlertsParams) => {
@@ -479,6 +482,44 @@ export const useDeletePatientAlert = <TError = ErrorType<ApiProblem>, TContext =
     return useMutation(mutationOptions, queryClient);
 };
 
+export const getSearchPatientAlertsResponseMock = (
+    overrideResponse: Partial<PatientAlertPage> = {}
+): PatientAlertPage => ({
+    totalCount: faker.number.float({min: undefined, max: undefined, fractionDigits: 2}),
+    data: Array.from({length: faker.number.int({min: 1, max: 10})}, (_, i) => i + 1).map(() => ({
+        id: faker.string.uuid(),
+        createdAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
+        updatedAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
+        clinicId: faker.string.uuid(),
+        patientId: faker.string.uuid(),
+        createdByMemberId: faker.string.uuid(),
+        title: faker.string.alpha({length: {min: 10, max: 20}}),
+        description: faker.helpers.arrayElement([faker.string.alpha({length: {min: 10, max: 20}}), null]),
+        severity: faker.helpers.arrayElement(['LOW', 'MEDIUM', 'HIGH'] as const),
+        isActive: faker.datatype.boolean(),
+    })),
+    ...overrideResponse,
+});
+
+export const getSearchPatientAlertsResponseMock200 = (
+    overrideResponse: Partial<PatientAlertPage> = {}
+): PatientAlertPage => ({
+    totalCount: faker.number.float({min: undefined, max: undefined, fractionDigits: 2}),
+    data: Array.from({length: faker.number.int({min: 1, max: 10})}, (_, i) => i + 1).map(() => ({
+        id: faker.string.uuid(),
+        createdAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
+        updatedAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
+        clinicId: faker.string.uuid(),
+        patientId: faker.string.uuid(),
+        createdByMemberId: faker.string.uuid(),
+        title: faker.string.alpha({length: {min: 10, max: 20}}),
+        description: faker.helpers.arrayElement([faker.string.alpha({length: {min: 10, max: 20}}), null]),
+        severity: faker.helpers.arrayElement(['LOW', 'MEDIUM', 'HIGH'] as const),
+        isActive: faker.datatype.boolean(),
+    })),
+    ...overrideResponse,
+});
+
 export const getSearchPatientAlertsResponseMockDefault = (overrideResponse: Partial<ApiProblem> = {}): ApiProblem => ({
     title: faker.string.alpha({length: {min: 10, max: 20}}),
     type: faker.internet.url(),
@@ -499,7 +540,7 @@ export const getCreatePatientAlertResponseMock = (overrideResponse: Partial<Pati
     patientId: faker.string.uuid(),
     createdByMemberId: faker.string.uuid(),
     title: faker.string.alpha({length: {min: 10, max: 20}}),
-    description: {},
+    description: faker.helpers.arrayElement([faker.string.alpha({length: {min: 10, max: 20}}), null]),
     severity: faker.helpers.arrayElement(['LOW', 'MEDIUM', 'HIGH'] as const),
     isActive: faker.datatype.boolean(),
     ...overrideResponse,
@@ -513,7 +554,7 @@ export const getCreatePatientAlertResponseMock201 = (overrideResponse: Partial<P
     patientId: faker.string.uuid(),
     createdByMemberId: faker.string.uuid(),
     title: faker.string.alpha({length: {min: 10, max: 20}}),
-    description: {},
+    description: faker.helpers.arrayElement([faker.string.alpha({length: {min: 10, max: 20}}), null]),
     severity: faker.helpers.arrayElement(['LOW', 'MEDIUM', 'HIGH'] as const),
     isActive: faker.datatype.boolean(),
     ...overrideResponse,
@@ -539,7 +580,7 @@ export const getUpdatePatientAlertResponseMock = (overrideResponse: Partial<Pati
     patientId: faker.string.uuid(),
     createdByMemberId: faker.string.uuid(),
     title: faker.string.alpha({length: {min: 10, max: 20}}),
-    description: {},
+    description: faker.helpers.arrayElement([faker.string.alpha({length: {min: 10, max: 20}}), null]),
     severity: faker.helpers.arrayElement(['LOW', 'MEDIUM', 'HIGH'] as const),
     isActive: faker.datatype.boolean(),
     ...overrideResponse,
@@ -553,7 +594,7 @@ export const getUpdatePatientAlertResponseMock200 = (overrideResponse: Partial<P
     patientId: faker.string.uuid(),
     createdByMemberId: faker.string.uuid(),
     title: faker.string.alpha({length: {min: 10, max: 20}}),
-    description: {},
+    description: faker.helpers.arrayElement([faker.string.alpha({length: {min: 10, max: 20}}), null]),
     severity: faker.helpers.arrayElement(['LOW', 'MEDIUM', 'HIGH'] as const),
     isActive: faker.datatype.boolean(),
     ...overrideResponse,
@@ -584,34 +625,48 @@ export const getDeletePatientAlertResponseMockDefault = (overrideResponse: Parti
 });
 
 export const getSearchPatientAlertsMockHandler = (
-    overrideResponse?: void | ((info: Parameters<Parameters<typeof http.get>[1]>[0]) => Promise<void> | void),
+    overrideResponse?:
+        | PatientAlertPage
+        | ((info: Parameters<Parameters<typeof http.get>[1]>[0]) => Promise<PatientAlertPage> | PatientAlertPage),
     options?: RequestHandlerOptions
 ) => {
     return http.get(
         '*/api/v1/patients/:patientId/alerts',
         async (info) => {
-            if (typeof overrideResponse === 'function') {
-                await overrideResponse(info);
-            }
-
-            return new HttpResponse(null, {status: 200});
+            return new HttpResponse(
+                JSON.stringify(
+                    overrideResponse !== undefined
+                        ? typeof overrideResponse === 'function'
+                            ? await overrideResponse(info)
+                            : overrideResponse
+                        : getSearchPatientAlertsResponseMock()
+                ),
+                {status: 200, headers: {'Content-Type': 'application/json'}}
+            );
         },
         options
     );
 };
 
 export const getSearchPatientAlertsMockHandler200 = (
-    overrideResponse?: void | ((info: Parameters<Parameters<typeof http.get>[1]>[0]) => Promise<void> | void),
+    overrideResponse?:
+        | PatientAlertPage
+        | ((info: Parameters<Parameters<typeof http.get>[1]>[0]) => Promise<PatientAlertPage> | PatientAlertPage),
     options?: RequestHandlerOptions
 ) => {
     return http.get(
         '*/api/v1/patients/:patientId/alerts',
         async (info) => {
-            if (typeof overrideResponse === 'function') {
-                await overrideResponse(info);
-            }
-
-            return new HttpResponse(null, {status: 200});
+            return new HttpResponse(
+                JSON.stringify(
+                    overrideResponse !== undefined
+                        ? typeof overrideResponse === 'function'
+                            ? await overrideResponse(info)
+                            : overrideResponse
+                        : getSearchPatientAlertsResponseMock200()
+                ),
+                {status: 200, headers: {'Content-Type': 'application/json'}}
+            );
         },
         options
     );

@@ -11,9 +11,9 @@ export type UpdatePatientAlertInputDto = {
      * @minLength 1
      * @maxLength 255
      */
-    title: string;
+    title?: string;
     /** @nullable */
-    description: string | null;
-    severity: UpdatePatientAlertInputDtoSeverity;
-    isActive: boolean;
+    description?: string | null;
+    severity?: UpdatePatientAlertInputDtoSeverity;
+    isActive?: boolean;
 };

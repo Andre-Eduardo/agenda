@@ -8,6 +8,7 @@ import {entityIdParam} from '@application/@shared/openapi/params';
 import {ValidatedParam, ZodValidationPipe} from '@application/@shared/validation';
 import {
     PatientAlertDto,
+    PatientAlertPageDto,
     CreatePatientAlertInputDto,
     UpdatePatientAlertInputDto,
     searchPatientAlertsSchema,
@@ -39,7 +40,7 @@ export class PatientAlertController {
     @ApiOperation({
         summary: 'Lists clinical alerts for a patient',
         parameters: [entityIdParam('Patient ID', 'patientId')],
-        responses: [{status: 200, description: 'List of patient alerts'}],
+        responses: [{status: 200, description: 'List of patient alerts', type: PatientAlertPageDto}],
     })
     @Authorize(PatientAlertPermission.VIEW)
     @Get()
@@ -77,10 +78,11 @@ export class PatientAlertController {
     @Put(':alertId')
     updatePatientAlert(
         @RequestActor() actor: Actor,
+        @ValidatedParam('patientId', patientAlertParamsSchema.shape.patientId) patientId: PatientId,
         @ValidatedParam('alertId', patientAlertParamsSchema.shape.alertId) alertId: PatientAlertId,
         @Body() payload: UpdatePatientAlertInputDto
     ): Promise<PatientAlertDto> {
-        return this.updatePatientAlertService.execute({actor, payload: {alertId, ...payload}});
+        return this.updatePatientAlertService.execute({actor, payload: {patientId, alertId, ...payload}});
     }
 
     @ApiOperation({
@@ -92,8 +94,9 @@ export class PatientAlertController {
     @Delete(':alertId')
     async deletePatientAlert(
         @RequestActor() actor: Actor,
+        @ValidatedParam('patientId', patientAlertParamsSchema.shape.patientId) patientId: PatientId,
         @ValidatedParam('alertId', patientAlertParamsSchema.shape.alertId) alertId: PatientAlertId
     ): Promise<void> {
-        await this.deletePatientAlertService.execute({actor, payload: {alertId}});
+        await this.deletePatientAlertService.execute({actor, payload: {patientId, alertId}});
     }
 }

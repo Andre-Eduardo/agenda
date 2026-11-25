@@ -16,25 +16,25 @@ export class ClinicalProfileDto extends EntityDto {
     @ApiProperty({format: 'uuid', description: 'Professional clinically responsible'})
     responsibleProfessionalId: string;
 
-    @ApiProperty({nullable: true, description: 'Known allergies'})
+    @ApiProperty({type: 'string', nullable: true, description: 'Known allergies'})
     allergies: string | null;
 
-    @ApiProperty({nullable: true, description: 'Chronic conditions'})
+    @ApiProperty({type: 'string', nullable: true, description: 'Chronic conditions'})
     chronicConditions: string | null;
 
-    @ApiProperty({nullable: true, description: 'Current medications'})
+    @ApiProperty({type: 'string', nullable: true, description: 'Current medications'})
     currentMedications: string | null;
 
-    @ApiProperty({nullable: true, description: 'Surgical history'})
+    @ApiProperty({type: 'string', nullable: true, description: 'Surgical history'})
     surgicalHistory: string | null;
 
-    @ApiProperty({nullable: true, description: 'Family history'})
+    @ApiProperty({type: 'string', nullable: true, description: 'Family history'})
     familyHistory: string | null;
 
-    @ApiProperty({nullable: true, description: 'Social history'})
+    @ApiProperty({type: 'string', nullable: true, description: 'Social history'})
     socialHistory: string | null;
 
-    @ApiProperty({nullable: true, description: 'General notes'})
+    @ApiProperty({type: 'string', nullable: true, description: 'General notes'})
     generalNotes: string | null;
 
     constructor(profile: ClinicalProfile) {
