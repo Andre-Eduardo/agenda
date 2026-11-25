@@ -5,6 +5,7 @@ import {SesEmailProvider} from '@infrastructure/notification/ses-email.provider'
 import {StubEmailProvider} from '@infrastructure/notification/stub-email.provider';
 import {StubSmsProvider} from '@infrastructure/notification/stub-sms.provider';
 import {StubWhatsAppProvider} from '@infrastructure/notification/stub-whatsapp.provider';
+import {EvolutionApiClient} from '@infrastructure/whatsapp/evolution-api.client';
 
 /**
  * Selects one provider per channel from the environment, defaulting to the stubs so local
@@ -16,6 +17,7 @@ import {StubWhatsAppProvider} from '@infrastructure/notification/stub-whatsapp.p
  */
 export function notificationProvidersFactory(
     config: EnvConfigService,
+    evolutionClient: EvolutionApiClient,
     evolutionWhatsApp: EvolutionWhatsAppProvider,
     stubWhatsApp: StubWhatsAppProvider,
     sesEmail: SesEmailProvider,
@@ -23,13 +25,14 @@ export function notificationProvidersFactory(
     stubSms: StubSmsProvider
 ): NotificationProvider[] {
     return [
-        EvolutionWhatsAppProvider.isConfigured(config) ? evolutionWhatsApp : stubWhatsApp,
+        evolutionClient.isEnabled ? evolutionWhatsApp : stubWhatsApp,
         SesEmailProvider.isConfigured(config) ? sesEmail : stubEmail,
         stubSms,
     ];
 }
 
 export const NOTIFICATION_PROVIDER_FACTORY_PROVIDERS = [
+    EvolutionApiClient,
     EvolutionWhatsAppProvider,
     StubWhatsAppProvider,
     SesEmailProvider,

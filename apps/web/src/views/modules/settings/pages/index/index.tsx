@@ -61,6 +61,7 @@ import {
     Laptop,
     Lock,
     LogOut,
+    MessageCircle,
     MonitorSmartphone,
     Plus,
     ShieldCheck,
@@ -83,6 +84,7 @@ import {formatBRL} from '@/lib/utils';
 import {translateApiError} from '@/utils/translate-api-error';
 import {AgendaScheduleEditor} from '@/views/components/AgendaScheduleEditor';
 import {ConfirmDialog} from '@/views/components/ConfirmDialog';
+import {WhatsAppSection} from '@/views/modules/settings/components/WhatsAppSection';
 import {
     FooterBar,
     FormCard,
@@ -233,13 +235,14 @@ const PROFILE_TABS = [
 ] as const;
 
 type TabKey = 'identity' | 'pro' | 'office' | 'security';
-type Section = 'perfil' | 'agenda' | 'assinatura' | 'salas' | 'ia' | 'geral';
+type Section = 'perfil' | 'agenda' | 'assinatura' | 'salas' | 'whatsapp' | 'ia' | 'geral';
 
 const SECTION_LABELS: Record<Section, string> = {
     perfil: 'Perfil',
     agenda: 'Agenda',
     assinatura: 'Assinatura',
     salas: 'Salas',
+    whatsapp: 'WhatsApp',
     ia: 'Módulos de IA',
     geral: 'Geral',
 };
@@ -249,6 +252,7 @@ const SECTION_LABELS: Record<Section, string> = {
 export function SettingsPage() {
     const [section, setSection] = useState<Section>('perfil');
     const canViewAiModules = useCan({has: 'clinic-module:view'});
+    const canViewWhatsApp = useCan({has: 'whatsapp:view'});
 
     return (
         <PageShell>
@@ -295,6 +299,16 @@ export function SettingsPage() {
                         <DoorOpen size={15} />
                         <span>Salas</span>
                     </button>
+                    {canViewWhatsApp && (
+                        <button
+                            type="button"
+                            className={sideNavItem({active: section === 'whatsapp'})}
+                            onClick={() => setSection('whatsapp')}
+                        >
+                            <MessageCircle size={15} />
+                            <span>WhatsApp</span>
+                        </button>
+                    )}
                     {canViewAiModules && (
                         <button
                             type="button"
@@ -321,6 +335,7 @@ export function SettingsPage() {
                     {section === 'agenda' && <AgendaSection />}
                     {section === 'assinatura' && <SubscriptionSection />}
                     {section === 'salas' && <RoomsSection />}
+                    {section === 'whatsapp' && canViewWhatsApp && <WhatsAppSection />}
                     {section === 'ia' && canViewAiModules && <AiModulesSection />}
                     {section === 'geral' && <GeneralSection />}
                 </div>

@@ -150,9 +150,9 @@ código não define nada, o documento diz "não definida" e registra a lacuna na
 - **Dados enviados:** telefone ou e-mail do paciente e a mensagem
   `Olá, {nome}! Lembramos que você tem uma consulta agendada para {data} às {hora}.`
   Os ids em `metadata` **não** saem do servidor (nenhum adapter os envia).
-- **Suboperadores:** AWS (SES, região padrão `sa-east-1`). A Evolution API é auto-hospedada, mas
-  entrega pelo WhatsApp (Meta); com a integração Baileys não há contrato com a Meta (ver riscos no
-  documento de providers).
+- **Suboperadores:** AWS (SES, região padrão `sa-east-1`). A Evolution API roda em servidor
+  próprio (Baileys), então mensagens e sessões ficam na nossa infra até chegarem ao WhatsApp; não
+  há contrato com a Meta (risco aceito, ver documento de providers).
 - **Logs:** stubs e adapters registram só o destino mascarado (`55*******4321`,
   `ma***@dominio`) e o tamanho da mensagem; o texto não vai mais para o log (corrige F-02 para
   este fluxo).

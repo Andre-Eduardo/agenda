@@ -1,5 +1,6 @@
 import {ConfigService} from '@nestjs/config';
 import {EnvConfigService, type EnvConfig} from '@infrastructure/config';
+import {EvolutionApiClient} from '@infrastructure/whatsapp/evolution-api.client';
 import {EvolutionWhatsAppProvider} from '../evolution-whatsapp.provider';
 import {notificationProvidersFactory} from '../notification-providers.factory';
 import {SesEmailProvider} from '../ses-email.provider';
@@ -10,9 +11,12 @@ import {StubWhatsAppProvider} from '../stub-whatsapp.provider';
 function select(config: Partial<EnvConfig>) {
     const env = new EnvConfigService(new ConfigService({mail: {}, evolutionApi: {}, ...config}));
 
+    const client = new EvolutionApiClient(env);
+
     return notificationProvidersFactory(
         env,
-        new EvolutionWhatsAppProvider(env),
+        client,
+        new EvolutionWhatsAppProvider(client),
         new StubWhatsAppProvider(),
         new SesEmailProvider(env),
         new StubEmailProvider(),

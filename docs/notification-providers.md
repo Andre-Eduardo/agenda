@@ -27,14 +27,31 @@ conhecimento. O agenda já usa AWS (S3), então o SES não adiciona um fornecedo
   O `DispatchRemindersService` também captura exceções inesperadas do provider e de cada lembrete,
   então um envio com problema vira `FAILED` com `errorMessage` e não interrompe o lote nem a agenda.
 - **WhatsApp:** `POST {EVOLUTION_SERVER_URL}/message/sendText/{instância}` com header `apikey`.
-  A instância é `EVOLUTION_INSTANCE_NAME`, se definida (um número para todas as clínicas), ou o id
-  da clínica (convenção do plexter: uma instância por tenant, pareada no manager da Evolution com o
-  id da clínica como nome). Números com 10 ou 11 dígitos recebem o DDI `55`. Timeout padrão de
-  10 s (`EVOLUTION_TIMEOUT_MS`). O id da mensagem (`key.id`) volta como `providerId`.
+  Cada clínica tem uma instância com o id da clínica como nome (convenção do plexter), criada e
+  pareada pela tela **Configurações > WhatsApp** (seção 2.1). Números com 10 ou 11 dígitos recebem
+  o DDI `55`. Timeout padrão de 10 s (`EVOLUTION_TIMEOUT_MS`). O id da mensagem (`key.id`) volta
+  como `providerId`. Se a clínica não conectou um número, o envio falha e o lembrete fica `FAILED`.
 - **E-mail:** `SendEmail` do SES v2 com corpo em texto e em HTML escapado, assunto
   "Lembrete de consulta", `MAIL_REPLY_TO` opcional. Região padrão `sa-east-1`. Sem
   `MAIL_SES_ACCESS_KEY_ID`/`MAIL_SES_SECRET_ACCESS_KEY` usa a cadeia padrão de credenciais da AWS.
   O `MessageId` volta como `providerId`.
+
+### 2.1 Conexão do WhatsApp por clínica
+
+Mesmas regras do plexter (`whatsapp-config`):
+
+| Endpoint                         | Permissão          | O que faz                                                          |
+| -------------------------------- | ------------------ | ------------------------------------------------------------------ |
+| `GET /whatsapp-config`           | `whatsapp:view`    | Instância da clínica (lista vazia se não existe ou Evolution está desligada) |
+| `POST /whatsapp-config`          | `whatsapp:create`  | Cria a instância Baileys com o número informado e devolve o QR code |
+| `GET /whatsapp-config/qrcode`    | `whatsapp:connect` | Gera um QR code novo para reconectar                                |
+| `POST /whatsapp-config/logout`   | `whatsapp:logout`  | Desconecta o celular, mantendo a instância                         |
+| `DELETE /whatsapp-config`        | `whatsapp:delete`  | Remove a instância                                                  |
+
+A clínica é sempre a do usuário autenticado (`actor.clinicId`); não há parâmetro de clínica na
+URL. As permissões ficam com `OWNER` e `ADMIN` (`docs/rbac-matrix.md`). Na tela, a clínica cadastra
+um número, escaneia o QR code e acompanha o status (conectado, conectando, desconectado). Com o
+número conectado aparece "Desconectar"; desconectado, aparecem "Reconectar" e "Remover".
 
 ## 3. Critérios do L2-01
 
@@ -49,16 +66,14 @@ conhecimento. O agenda já usa AWS (S3), então o SES não adiciona um fornecedo
 
 ## 4. Riscos e pontos em aberto
 
-1. **WhatsApp não oficial (Baileys).** O plexter cria as instâncias com a integração
-   `WHATSAPP-BAILEYS`, que conecta como o WhatsApp Web, sem contrato com a Meta. Para dados de saúde
-   isso significa: sem DPA com a Meta, risco de bloqueio do número e sem garantia de entrega.
-   A Evolution também suporta a API oficial (`WHATSAPP-BUSINESS`, Cloud API), mas nela mensagens
-   iniciadas pela empresa fora da janela de 24 h exigem **template aprovado**; o adapter atual envia
-   texto livre (`sendText`) e precisaria de um envio por template. **Decisão de Produto/Jurídico.**
-2. **Gestão de instâncias por clínica.** Este PR só envia. Criar a instância, mostrar o QR code e
-   acompanhar o status de conexão (o plexter tem `WhatsAppClientService` e telas para isso) fica
-   para um card próprio, junto do L2-03. Até lá, use `EVOLUTION_INSTANCE_NAME` ou crie a instância
-   no manager da Evolution com o id da clínica.
+1. **WhatsApp não oficial (Baileys) — decisão: manter.** As instâncias usam a integração
+   `WHATSAPP-BAILEYS`, como no plexter. A Evolution roda em servidor próprio, então mensagens e
+   sessões não passam por terceiros além do próprio WhatsApp. Riscos aceitos: sem contrato com a
+   Meta, possibilidade de bloqueio do número por uso fora dos termos e sem garantia de entrega.
+   Se um dia for preciso a API oficial (`WHATSAPP-BUSINESS`), os lembretes precisarão de templates
+   aprovados pela Meta.
+2. **Webhook de status.** O plexter liga um webhook da Evolution para receber mensagens; aqui ele
+   não foi ligado, porque entrega/leitura/resposta é o escopo do L2-04.
 3. **Fuso horário fixo.** A mensagem usa `America/Sao_Paulo`; clínicas em outro fuso recebem o
    horário errado. Resolver junto da configuração por clínica (L2-03).
 4. **Números internacionais.** O `Phone` guarda só dígitos, então um número estrangeiro com 10 ou
@@ -72,9 +87,8 @@ conhecimento. O agenda já usa AWS (S3), então o SES não adiciona um fornecedo
 # E-mail: com remetente e destinatário verificados no SES (sandbox)
 MAIL_FROM_ADDRESS=lembretes@suaclinica.com.br MAIL_SES_REGION=sa-east-1 pnpm -F @agenda-app/server start:dev
 
-# WhatsApp: Evolution local com uma instância pareada
-EVOLUTION_SERVER_URL=http://localhost:8080 EVOLUTION_AUTHENTICATION_API_KEY=... \
-EVOLUTION_INSTANCE_NAME=agenda-teste pnpm -F @agenda-app/server start:dev
+# WhatsApp: Evolution local (docker) e depois Configurações > WhatsApp para parear um número de teste
+EVOLUTION_SERVER_URL=http://localhost:8080 EVOLUTION_AUTHENTICATION_API_KEY=... pnpm -F @agenda-app/server start:dev
 ```
 
 O `ReminderDispatchTask` roda a cada 5 minutos e envia os lembretes vencidos. O resultado aparece

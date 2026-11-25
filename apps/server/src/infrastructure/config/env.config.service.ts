@@ -66,7 +66,6 @@ const envConfig = z.object({
         .object({
             url: z.string().optional(),
             apiKey: z.string().optional(),
-            instanceName: z.string().optional(),
             timeoutMs: z.coerce.number().int().positive().default(10_000),
         })
         .default({timeoutMs: 10_000}),
@@ -183,7 +182,6 @@ export class EnvConfigService {
             evolutionApi: {
                 url: process.env.EVOLUTION_SERVER_URL,
                 apiKey: process.env.EVOLUTION_AUTHENTICATION_API_KEY,
-                instanceName: process.env.EVOLUTION_INSTANCE_NAME,
                 timeoutMs: process.env.EVOLUTION_TIMEOUT_MS,
             },
         } satisfies EnvParse);

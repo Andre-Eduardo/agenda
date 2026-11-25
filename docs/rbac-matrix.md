@@ -1,6 +1,6 @@
-# Matriz RBAC da clínica — v0.4.0
+# Matriz RBAC da clínica — v0.5.0
 
-**Estado:** v0.2.0 aprovada pelo solicitante em 2026-09-23; extensão v0.3.0 aguarda revisão do PR L3-02; extensão v0.4.0 (pacotes de IA) aguarda revisão.
+**Estado:** v0.2.0 aprovada pelo solicitante em 2026-09-23; extensão v0.3.0 aguarda revisão do PR L3-02; extensão v0.4.0 (pacotes de IA) aguarda revisão; extensão v0.5.0 (conexão do WhatsApp da clínica, L2-02) aguarda revisão.
 **Referência:** L0-02 e L3-02, Sprint 0.
 
 Esta tabela explicita o teto de capacidade de cada papel para as permissões de
@@ -81,6 +81,7 @@ verificações de clínica e paciente às ações críticas.
 | upload | prepare, upload | prepare, upload | prepare, upload | prepare, upload | — |
 | user | change-password, create, delete, update, view, view-profile | change-password, create, delete, update, view, view-profile | — | — | — |
 | working-hours | manage | manage | manage | manage | — |
+| whatsapp | connect, create, delete, logout, view | connect, create, delete, logout, view | — | — | — |
 
 ## Decisões aprovadas
 

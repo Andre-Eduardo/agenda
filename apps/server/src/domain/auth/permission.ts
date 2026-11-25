@@ -41,6 +41,14 @@ export enum ClinicReminderConfigPermission {
     MANAGE = 'clinic-reminder-config:manage',
 }
 
+export enum WhatsAppPermission {
+    VIEW = 'whatsapp:view',
+    CREATE = 'whatsapp:create',
+    CONNECT = 'whatsapp:connect',
+    DELETE = 'whatsapp:delete',
+    LOGOUT = 'whatsapp:logout',
+}
+
 export enum RecordPermission {
     VIEW = 'record:view',
     CREATE = 'record:create',
@@ -276,6 +284,7 @@ const PERMISSIONS = [
     ...Object.values(ClinicalDocumentPermission),
     ...Object.values(AppointmentReminderPermission),
     ...Object.values(ClinicReminderConfigPermission),
+    ...Object.values(WhatsAppPermission),
     ...Object.values(SubscriptionPermission),
     ...Object.values(BillingPermission),
     ...Object.values(PaymentPermission),

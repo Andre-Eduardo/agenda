@@ -2,6 +2,7 @@ import {ConfigService} from '@nestjs/config';
 import {ReminderChannel} from '@domain/appointment-reminder/entities/appointment-reminder.entity';
 import {ClinicId} from '@domain/clinic/entities';
 import {EnvConfigService, type EnvConfig} from '@infrastructure/config';
+import {EvolutionApiClient} from '@infrastructure/whatsapp/evolution-api.client';
 import {EvolutionWhatsAppProvider} from '../evolution-whatsapp.provider';
 
 const clinicId = ClinicId.generate();
@@ -9,7 +10,7 @@ const clinicId = ClinicId.generate();
 function makeProvider(evolutionApi: Partial<EnvConfig['evolutionApi']>): EvolutionWhatsAppProvider {
     const config = new EnvConfigService(new ConfigService({evolutionApi: {timeoutMs: 5_000, ...evolutionApi}}));
 
-    return new EvolutionWhatsAppProvider(config);
+    return new EvolutionWhatsAppProvider(new EvolutionApiClient(config));
 }
 
 function jsonResponse(status: number, body: unknown): Response {
@@ -37,14 +38,6 @@ describe('An Evolution API WhatsApp provider', () => {
         expect(EvolutionWhatsAppProvider.toWhatsAppNumber(input)).toBe(expected);
     });
 
-    it('should report whether it is configured', () => {
-        const configured = new EnvConfigService(new ConfigService({evolutionApi: {url: 'http://evo', apiKey: 'k'}}));
-        const missingKey = new EnvConfigService(new ConfigService({evolutionApi: {url: 'http://evo'}}));
-
-        expect(EvolutionWhatsAppProvider.isConfigured(configured)).toBe(true);
-        expect(EvolutionWhatsAppProvider.isConfigured(missingKey)).toBe(false);
-    });
-
     it('should send the text to the clinic instance by default', async () => {
         fetchMock.mockResolvedValue(jsonResponse(201, {key: {id: 'msg-1', remoteJid: 'x', fromMe: true}}));
 
@@ -63,16 +56,6 @@ describe('An Evolution API WhatsApp provider', () => {
                 body: JSON.stringify({number: '5511987654321', text: 'Olá!'}),
             })
         );
-    });
-
-    it('should use the shared instance when one is configured', async () => {
-        fetchMock.mockResolvedValue(jsonResponse(201, {key: {id: 'msg-2'}}));
-
-        const provider = makeProvider({url: 'http://evo', apiKey: 'secret', instanceName: 'agenda main'});
-
-        await provider.send({clinicId, to: '5511987654321', message: 'Olá!'});
-
-        expect(fetchMock).toHaveBeenCalledWith('http://evo/message/sendText/agenda%20main', expect.anything());
     });
 
     it('should return a failure when the API answers with an error status', async () => {
@@ -102,7 +85,7 @@ describe('An Evolution API WhatsApp provider', () => {
 
         await expect(provider.send({clinicId, to: '11987654321', message: 'Olá!'})).resolves.toEqual({
             success: false,
-            error: 'Evolution API is not configured',
+            error: 'Evolution API request failed: EvolutionApiDisabledError: Evolution API is not configured',
         });
         expect(fetchMock).not.toHaveBeenCalled();
     });
