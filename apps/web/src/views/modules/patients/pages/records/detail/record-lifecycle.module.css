@@ -1,0 +1,30 @@
+@reference "../../../../../../app/globals.css";
+
+.dialog {
+    max-block-size: calc(100dvh - 1rem);
+    overflow-y: auto;
+}
+
+.form {
+    @apply flex flex-col gap-2;
+}
+
+.editForm {
+    @apply flex flex-col gap-4;
+}
+
+.history {
+    @apply flex flex-col gap-4 divide-y divide-border text-sm;
+}
+
+.history li {
+    @apply space-y-1 pb-4;
+}
+
+.history li:last-child {
+    @apply pb-0;
+}
+
+.reason {
+    @apply whitespace-pre-wrap break-words;
+}

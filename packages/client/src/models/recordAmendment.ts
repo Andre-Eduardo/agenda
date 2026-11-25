@@ -15,6 +15,8 @@ export type RecordAmendment = {
     clinicId: string;
     recordId: string;
     requestedByMemberId: string;
+    /** @nullable */
+    requestedByName: string | null;
     justification: string;
     reopenedAt: string;
     /** @nullable */

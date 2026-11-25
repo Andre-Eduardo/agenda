@@ -32,8 +32,8 @@ export class GetRecordAmendmentsService implements ApplicationService<GetRecordD
             record.id.toString()
         );
 
-        const amendments = await this.recordAmendmentRepository.findAllByRecordId(payload.id);
+        const amendments = await this.recordAmendmentRepository.findAllByRecordId(payload.id, actor.clinicId);
 
-        return amendments.map((a) => new RecordAmendmentDto(a));
+        return amendments.map(({amendment, requestedByName}) => new RecordAmendmentDto(amendment, requestedByName));
     }
 }

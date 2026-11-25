@@ -3,7 +3,8 @@ import {ApplicationService, Command} from '@application/@shared/application.serv
 import {assertEntityBelongsToClinic} from '@application/@shared/validators/cross-tenant.validator';
 import {PatientAccessChecker} from '@application/clinic-patient-access/services/patient-access-checker.service';
 import {RecordDto, UpdateRecordDto} from '@application/record/dtos';
-import {AccessDeniedException, AccessDeniedReason, ResourceNotFoundException} from '@domain/@shared/exceptions';
+import {ResourceNotFoundException} from '@domain/@shared/exceptions';
+import {Transactional} from '@domain/@shared/repository';
 import {EventDispatcher} from '@domain/event';
 import {PatientId} from '@domain/patient/entities';
 import {ImportedDocumentId} from '@domain/record/entities';
@@ -19,7 +20,10 @@ export class UpdateRecordService implements ApplicationService<UpdateRecordDto, 
         private readonly eventDispatcher: EventDispatcher
     ) {}
 
+    @Transactional()
     async execute({actor, payload: {id, ...props}}: Command<UpdateRecordDto>): Promise<RecordDto> {
+        await this.recordRepository.lockForChange(id, actor.clinicId);
+
         const record = await this.recordRepository.findById(id);
 
         if (record === null) {
@@ -29,9 +33,7 @@ export class UpdateRecordService implements ApplicationService<UpdateRecordDto, 
         assertEntityBelongsToClinic(record.clinicId, actor.clinicId);
         await this.patientAccessChecker.assertCanAccess(actor, PatientId.from(record.patientId.toString()), 'write');
 
-        if (record.isLocked) {
-            throw new AccessDeniedException('RECORD_LOCKED', AccessDeniedReason.NOT_ALLOWED);
-        }
+        record.assertEditable();
 
         let importedDocumentId;
 

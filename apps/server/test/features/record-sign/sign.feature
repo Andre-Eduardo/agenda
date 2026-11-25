@@ -77,3 +77,92 @@ Feature: Record sign and reopen (POST)
         Given I sign out
         When I send a "POST" request to "/api/v1/records/01900000-0000-7000-8000-000000000000/sign"
         Then the request should fail with a 401 status code
+
+    Scenario: A signed note can be corrected only through a traced reopening
+        Given the clinic member "dr_house" also has the role "OWNER"
+        When I send a "POST" request to "/api/v1/records" with:
+            | patientId                  | ${ref:id:patient:sign_patient}   |
+            | responsibleProfessionalId | ${ref:id:professional:dr_house} |
+            | subjective                 | Original signed content          |
+        Then the request should succeed with a 201 status code
+        And I save the response field "id" as "record" id for "signed_correction"
+        When I send a "POST" request to "/api/v1/records/${ref:id:record:signed_correction}/sign"
+        Then the request should succeed with a 200 status code
+        And the response should contain:
+            | isLocked         | true                            |
+            | signedByMemberId | ${ref:id:clinicMember:dr_house} |
+        When I send a "PUT" request to "/api/v1/records/${ref:id:record:signed_correction}" with:
+            | subjective | This edit should be rejected |
+        Then the request should fail with a 403 status code
+        When I send a "DELETE" request to "/api/v1/records/${ref:id:record:signed_correction}"
+        Then the request should fail with a 403 status code
+        When I send a "POST" request to "/api/v1/records/${ref:id:record:signed_correction}/reopen" with body:
+            """JSON
+            {"justification":"   "}
+            """
+        Then the request should fail with a 400 status code
+        When I send a "GET" request to "/api/v1/records/${ref:id:record:signed_correction}"
+        Then the request should succeed with a 200 status code
+        And the response should contain:
+            | isLocked   | true                    |
+            | subjective | Original signed content |
+        When I send a "POST" request to "/api/v1/records/${ref:id:record:signed_correction}/reopen" with:
+            | justification | Correct recording error |
+        Then the request should succeed with a 200 status code
+        And the response should contain:
+            | isLocked | false |
+        When I send a "DELETE" request to "/api/v1/records/${ref:id:record:signed_correction}"
+        Then the request should fail with a 403 status code
+        When I send a "PUT" request to "/api/v1/records/${ref:id:record:signed_correction}" with:
+            | subjective | Corrected clinical text |
+        Then the request should succeed with a 200 status code
+        When I send a "POST" request to "/api/v1/records/${ref:id:record:signed_correction}/sign"
+        Then the request should succeed with a 200 status code
+        And the response should contain:
+            | isLocked   | true                   |
+            | subjective | Corrected clinical text |
+        When I send a "GET" request to "/api/v1/records/${ref:id:record:signed_correction}/amendments"
+        Then the request should succeed with a 200 status code
+        And the response should match:
+            """JSON
+            [{
+              "id": "_.isString",
+              "clinicId": "${ref:id:clinic:dr_house}",
+              "recordId": "${ref:id:record:signed_correction}",
+              "requestedByMemberId": "${ref:id:clinicMember:dr_house}",
+              "requestedByName": "_.isString",
+              "justification": "Correct recording error",
+              "reopenedAt": "_.isString",
+              "relockedAt": "_.isString",
+              "createdAt": "_.isString",
+              "updatedAt": "_.isString"
+            }]
+            """
+
+    Scenario: Concurrent reopen attempts create only one amendment
+        When I send a "POST" request to "/api/v1/records" with:
+            | patientId                  | ${ref:id:patient:sign_patient}   |
+            | responsibleProfessionalId | ${ref:id:professional:dr_house} |
+            | description                | Note for concurrent reopening    |
+        Then the request should succeed with a 201 status code
+        And I save the response field "id" as "record" id for "concurrent"
+        When I send a "POST" request to "/api/v1/records/${ref:id:record:concurrent}/sign"
+        Then the request should succeed with a 200 status code
+        And only one concurrent reopening of record "concurrent" should succeed
+        When I send a "GET" request to "/api/v1/records/${ref:id:record:concurrent}/amendments"
+        Then the request should succeed with a 200 status code
+        And the response should match:
+            """JSON
+            [{
+              "id": "_.isString",
+              "clinicId": "${ref:id:clinic:dr_house}",
+              "recordId": "${ref:id:record:concurrent}",
+              "requestedByMemberId": "${ref:id:clinicMember:dr_house}",
+              "requestedByName": "_.isString",
+              "justification": "Correct concurrent note",
+              "reopenedAt": "_.isString",
+              "relockedAt": null,
+              "createdAt": "_.isString",
+              "updatedAt": "_.isString"
+            }]
+            """

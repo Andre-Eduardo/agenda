@@ -4,6 +4,7 @@ import {assertEntityBelongsToClinic} from '@application/@shared/validators/cross
 import {PatientAccessChecker} from '@application/clinic-patient-access/services/patient-access-checker.service';
 import {RecordDto, ReopenRecordDto} from '@application/record/dtos';
 import {AccessDeniedException, AccessDeniedReason, ResourceNotFoundException} from '@domain/@shared/exceptions';
+import {Transactional} from '@domain/@shared/repository';
 import {ClinicMemberRepository} from '@domain/clinic-member/clinic-member.repository';
 import {ClinicMemberRole} from '@domain/clinic-member/entities/clinic-member-role';
 import {EventDispatcher} from '@domain/event';
@@ -28,12 +29,15 @@ export class ReopenRecordService implements ApplicationService<ReopenRecordDto, 
         private readonly eventDispatcher: EventDispatcher
     ) {}
 
+    @Transactional()
     async execute({actor, payload}: Command<ReopenRecordDto>): Promise<RecordDto> {
         const member = await this.clinicMemberRepository.findById(actor.clinicMemberId);
 
         if (member === null || !member.roles.some((role) => ALLOWED_ROLES.includes(role))) {
             throw new AccessDeniedException('RECORD_REOPEN_FORBIDDEN', AccessDeniedReason.INSUFFICIENT_PERMISSIONS);
         }
+
+        await this.recordRepository.lockForChange(payload.id, actor.clinicId);
 
         const record = await this.recordRepository.findById(payload.id);
 
@@ -51,7 +55,7 @@ export class ReopenRecordService implements ApplicationService<ReopenRecordDto, 
             recordId: record.id,
             requestedByMemberId: actor.clinicMemberId,
             justification: payload.justification,
-            reopenedAt: new Date(),
+            reopenedAt: record.updatedAt,
         });
 
         await this.recordRepository.save(record);
