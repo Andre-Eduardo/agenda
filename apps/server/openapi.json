@@ -2431,6 +2431,62 @@
         ]
       }
     },
+    "/api/v1/clinics/{clinicId}/appointments/{appointmentId}/reminders": {
+      "get": {
+        "operationId": "getAppointmentReminderTimeline",
+        "parameters": [
+          {
+            "name": "clinicId",
+            "required": true,
+            "in": "path",
+            "description": "Clinic ID",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "appointmentId",
+            "required": true,
+            "in": "path",
+            "description": "Appointment ID",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Reminders with timeline",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AppointmentReminderTimeline"
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Request failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Lists an appointment's reminders with their delivery timeline (attempts, delivery, errors, retries, replies)",
+        "tags": [
+          "Appointment Reminder"
+        ]
+      }
+    },
     "/api/v1/clinics/{clinicId}/reminders/pending": {
       "get": {
         "operationId": "listPendingReminders",
@@ -11126,6 +11182,186 @@
           "reason"
         ]
       },
+      "ReminderEventType": {
+        "type": "string",
+        "enum": [
+          "SENT",
+          "SEND_FAILED",
+          "RETRY_SCHEDULED",
+          "DELIVERED",
+          "READ",
+          "DELIVERY_FAILED",
+          "COMPLAINED",
+          "REPLIED"
+        ]
+      },
+      "ReminderEventSource": {
+        "type": "string",
+        "enum": [
+          "SYSTEM",
+          "EVOLUTION",
+          "SES"
+        ]
+      },
+      "AppointmentReminderEvent": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "type": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ReminderEventType"
+              }
+            ]
+          },
+          "source": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ReminderEventSource"
+              }
+            ]
+          },
+          "attempt": {
+            "type": "integer",
+            "nullable": true,
+            "description": "Attempt number the event refers to"
+          },
+          "detail": {
+            "type": "string",
+            "nullable": true,
+            "description": "Error message (SEND_FAILED, DELIVERY_FAILED), next attempt time in ISO 8601 (RETRY_SCHEDULED) or the patient reply (REPLIED), truncated to 500 characters"
+          },
+          "occurredAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "type",
+          "source",
+          "attempt",
+          "detail",
+          "occurredAt"
+        ]
+      },
+      "AppointmentReminderTimeline": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "The unique identifier of the entity"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "The date and time the entity was created"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "The date and time the entity was last updated"
+          },
+          "clinicId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "appointmentId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "patientId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "channel": {
+            "type": "string",
+            "enum": [
+              "WHATSAPP",
+              "SMS",
+              "EMAIL"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "PENDING",
+              "SENT",
+              "DELIVERED",
+              "READ",
+              "REPLIED",
+              "FAILED",
+              "CANCELLED"
+            ]
+          },
+          "scheduledAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "sentAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "failedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "attempts": {
+            "type": "number"
+          },
+          "errorMessage": {
+            "type": "object",
+            "nullable": true
+          },
+          "deliveredAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "readAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "repliedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "events": {
+            "description": "Oldest first",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AppointmentReminderEvent"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "createdAt",
+          "updatedAt",
+          "clinicId",
+          "appointmentId",
+          "patientId",
+          "channel",
+          "status",
+          "scheduledAt",
+          "sentAt",
+          "failedAt",
+          "attempts",
+          "errorMessage",
+          "deliveredAt",
+          "readAt",
+          "repliedAt",
+          "events"
+        ]
+      },
       "AppointmentReminder": {
         "type": "object",
         "properties": {
@@ -11169,6 +11405,9 @@
             "enum": [
               "PENDING",
               "SENT",
+              "DELIVERED",
+              "READ",
+              "REPLIED",
               "FAILED",
               "CANCELLED"
             ]

@@ -49,7 +49,7 @@ export class EvolutionWhatsAppProvider extends NotificationProvider {
         try {
             const providerId = await this.client.sendText(instance, number, payload.message);
 
-            return {success: true, providerId};
+            return {success: true, providerId, destination: number};
         } catch (error) {
             const message =
                 error instanceof EvolutionApiError

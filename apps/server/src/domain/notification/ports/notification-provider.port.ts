@@ -14,7 +14,10 @@ export interface NotificationPayload {
 
 export interface NotificationResult {
     success: boolean;
+    /** Message id assigned by the provider; status webhooks refer to it. */
     providerId?: string;
+    /** Destination in the provider's format (e.g. WhatsApp number with country code). Defaults to `to`. */
+    destination?: string;
     error?: string;
 }
 

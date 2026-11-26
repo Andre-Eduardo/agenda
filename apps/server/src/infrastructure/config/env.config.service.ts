@@ -60,6 +60,10 @@ const envConfig = z.object({
             region: z.string().default('sa-east-1'),
             accessKeyId: z.string().optional(),
             secretAccessKey: z.string().optional(),
+            /** SES configuration set whose event destination publishes to SNS (delivery tracking). */
+            configurationSet: z.string().optional(),
+            /** SNS topic ARN accepted by the SES events webhook. Unset = webhook disabled. */
+            eventsTopicArn: z.string().optional(),
         })
         .default({region: 'sa-east-1'}),
     evolutionApi: z
@@ -67,6 +71,10 @@ const envConfig = z.object({
             url: z.string().optional(),
             apiKey: z.string().optional(),
             timeoutMs: z.coerce.number().int().positive().default(10_000),
+            /** Signs the per-clinic webhook token. Unset = no webhook is registered or accepted. */
+            webhookSecret: z.string().optional(),
+            /** Public base URL Evolution calls back (defaults to PUBLIC_BASE_URL). */
+            webhookBaseUrl: z.string().optional(),
         })
         .default({timeoutMs: 10_000}),
 });
@@ -178,11 +186,15 @@ export class EnvConfigService {
                 region: process.env.MAIL_SES_REGION,
                 accessKeyId: process.env.MAIL_SES_ACCESS_KEY_ID,
                 secretAccessKey: process.env.MAIL_SES_SECRET_ACCESS_KEY,
+                configurationSet: process.env.MAIL_SES_CONFIGURATION_SET,
+                eventsTopicArn: process.env.MAIL_SES_EVENTS_TOPIC_ARN,
             },
             evolutionApi: {
                 url: process.env.EVOLUTION_SERVER_URL,
                 apiKey: process.env.EVOLUTION_AUTHENTICATION_API_KEY,
                 timeoutMs: process.env.EVOLUTION_TIMEOUT_MS,
+                webhookSecret: process.env.EVOLUTION_WEBHOOK_SECRET,
+                webhookBaseUrl: process.env.EVOLUTION_WEBHOOK_BASE_URL,
             },
         } satisfies EnvParse);
     }

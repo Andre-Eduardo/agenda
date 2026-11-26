@@ -56,6 +56,15 @@ export type EvolutionQrCode = z.infer<typeof qrCodeSchema>;
 export type EvolutionCreateInstanceResponse = z.infer<typeof createInstanceResponseSchema>;
 export type EvolutionFetchedInstance = z.infer<typeof fetchedInstanceSchema>;
 
+/** Evolution webhook events used by L2-04: status acks of sent messages and incoming replies. */
+export type EvolutionWebhookEvent = 'MESSAGES_UPDATE' | 'MESSAGES_UPSERT';
+
+export type EvolutionWebhookConfig = {
+    url: string;
+    events: EvolutionWebhookEvent[];
+    headers: Record<string, string>;
+};
+
 type RequestOptions = {
     method: 'GET' | 'POST' | 'DELETE';
     path: string;
@@ -126,6 +135,24 @@ export class EvolutionApiClient {
         const parsed = sendTextResponseSchema.safeParse(data);
 
         return parsed.success ? parsed.data.key?.id : undefined;
+    }
+
+    /** Points the instance webhook at `url`. Replaces any webhook the instance had. */
+    async setWebhook(instanceName: string, webhook: EvolutionWebhookConfig): Promise<void> {
+        await this.request({
+            method: 'POST',
+            path: `/webhook/set/${encode(instanceName)}`,
+            body: {
+                webhook: {
+                    enabled: true,
+                    url: webhook.url,
+                    events: webhook.events,
+                    headers: webhook.headers,
+                    byEvents: false,
+                    base64: false,
+                },
+            },
+        });
     }
 
     private async request({method, path, body}: RequestOptions): Promise<unknown> {

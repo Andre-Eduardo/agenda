@@ -1,7 +1,8 @@
-# Providers de notificação (lembretes) — L2-01 / L2-02
+# Providers de notificação (lembretes) — L2-01 a L2-04
 
 **Estado:** decisão de engenharia, **pendente de validação** de Produto e Jurídico/DPO.
-**Referência:** cards L2-01 (seleção) e L2-02 (adapters reais).
+**Referência:** cards L2-01 (seleção), L2-02 (adapters reais), L2-03 (configuração por clínica) e
+L2-04 (entrega, falha e resposta — seção 7).
 
 ## 1. Decisão
 
@@ -61,7 +62,7 @@ número conectado aparece "Desconectar"; desconectado, aparecem "Reconectar" e "
 | SLA               | SES tem SLA publicado pela AWS. Evolution auto-hospedada não tem SLA: depende da nossa infra e da estabilidade da sessão do WhatsApp.                                               |
 | Sandbox           | SES começa em sandbox (remetente e destinatários verificados); produção exige pedido de liberação. Evolution: subir local (`docker`) e parear um número de teste.                   |
 | Opt-in / opt-out  | **Não implementado.** É o card L3-04. Até lá, o lembrete é enviado ao contato cadastrado do paciente.                                                                              |
-| Fallback          | **Não há troca automática de canal.** A falha fica registrada (`FAILED`, `attempts`, `errorMessage`). Reenvio e fallback entram no L2-04/L2-05.                                     |
+| Fallback          | **Não há troca automática de canal.** Uma falha de envio é repetida até 3 tentativas no mesmo canal (L2-04, seção 7.2); reenvio manual é o L2-05.                                 |
 | Contrato de dados | AWS tem DPA padrão. Ver riscos do WhatsApp abaixo.                                                                                                                                |
 
 ## 4. Riscos e pontos em aberto
@@ -72,15 +73,13 @@ número conectado aparece "Desconectar"; desconectado, aparecem "Reconectar" e "
    Meta, possibilidade de bloqueio do número por uso fora dos termos e sem garantia de entrega.
    Se um dia for preciso a API oficial (`WHATSAPP-BUSINESS`), os lembretes precisarão de templates
    aprovados pela Meta.
-2. **Webhook de status.** O plexter liga um webhook da Evolution para receber mensagens; aqui ele
-   não foi ligado, porque entrega/leitura/resposta é o escopo do L2-04.
+2. **Webhook de status.** Ligado no L2-04 (seção 7): a Evolution avisa entrega, leitura e respostas.
 3. **Fuso horário fixo.** A mensagem usa `America/Sao_Paulo`; clínicas em outro fuso recebem o
    horário errado. A clínica ainda não tem fuso cadastrado, então o L2-03 manteve o fixo; resolver
    quando o cadastro da clínica ganhar fuso.
 4. **Números internacionais.** O `Phone` guarda só dígitos, então um número estrangeiro com 10 ou
    11 dígitos recebe o DDI 55 por engano. Aceitável enquanto o público é brasileiro.
-5. **Webhooks de entrega/leitura/resposta** (SES via SNS, Evolution via webhook) não estão
-   ligados: é o L2-04.
+5. **Webhooks de entrega/leitura/resposta**: ligados no L2-04 (seção 7).
 
 ## 5. Como testar no sandbox
 
@@ -119,3 +118,76 @@ o nome real da clínica. Nada é enviado nem gravado.
 **Isolamento.** `GET`, `PUT` e `preview` recusam (`403`) um `clinicId` diferente da clínica do
 usuário logado.
 
+## 7. Entrega, falha e resposta (L2-04)
+
+Cada lembrete ganha uma **linha do tempo** (`AppointmentReminderEvent`, só cresce) e o status
+passa a avançar depois do envio: `PENDING → SENT → DELIVERED → READ → REPLIED`, ou `FAILED`.
+
+### 7.1 Linha do tempo
+
+| Evento            | Quem registra            | Quando                                                              | `detail`                      |
+| ----------------- | ------------------------ | ------------------------------------------------------------------- | ----------------------------- |
+| `SENT`            | sistema                  | o provider aceitou a tentativa                                      | —                             |
+| `SEND_FAILED`     | sistema                  | a tentativa falhou antes de o provider aceitar                      | erro                          |
+| `RETRY_SCHEDULED` | sistema                  | a falha vai ser repetida                                            | horário da próxima tentativa  |
+| `DELIVERED`       | Evolution / SES          | ack de entrega (`DELIVERY_ACK`) / evento `Delivery`                 | —                             |
+| `READ`            | Evolution / SES          | ack de leitura (`READ`, `PLAYED`) / evento `Open`                   | —                             |
+| `DELIVERY_FAILED` | Evolution / SES          | ack `ERROR` / `Bounce`, `Reject`, `Rendering Failure`               | motivo                        |
+| `COMPLAINED`      | SES                      | o paciente marcou como spam (opt-out fica para o L3-04)             | tipo da reclamação            |
+| `REPLIED`         | Evolution                | o paciente respondeu no WhatsApp                                    | texto (até 500 caracteres)    |
+
+`GET /clinics/:clinicId/appointments/:appointmentId/reminders` (permissão
+`appointment-reminder:view`) devolve os lembretes do agendamento com `events` em ordem
+cronológica, `deliveredAt`, `readAt` e `repliedAt`. A tela que mostra isso é o L2-05.
+
+O status só anda para frente: um ack de entrega que chega depois da leitura não volta o status;
+uma falha de entrega depois da leitura é registrada na linha do tempo mas não muda o status.
+
+### 7.2 Reenvio automático
+
+Uma tentativa que falha (provider fora, timeout, WhatsApp desconectado) volta para a fila: nova
+tentativa em **15 minutos** e depois em **60 minutos**, no máximo **3 tentativas**
+(`reminder-retry-policy.ts`). Não há reenvio quando o próximo horário passaria do início da
+consulta, nem quando falta dado do paciente (sem telefone ou e-mail), que não se resolve sozinho.
+`attempts` conta todas as tentativas, inclusive a que deu certo.
+
+### 7.3 Webhook da Evolution (WhatsApp)
+
+- **Rota:** `POST /api/v1/webhooks/evolution/:clinicId` (pública, fora do OpenAPI).
+- **Autenticação:** header `x-agenda-whatsapp-token` = HMAC-SHA256 do id da clínica com
+  `EVOLUTION_WEBHOOK_SECRET` (mesmo esquema do plexter). Token errado ou segredo ausente → `401`.
+- **Registro:** ao criar a instância e a cada novo QR code (reconectar), o server chama
+  `POST /webhook/set/{instância}` com os eventos `MESSAGES_UPDATE` e `MESSAGES_UPSERT` e o token
+  no header. Instâncias criadas antes do L2-04 passam a ter o webhook na próxima reconexão. Se
+  trocar o segredo, reconecte o WhatsApp de cada clínica. URL base: `EVOLUTION_WEBHOOK_BASE_URL`
+  ou `PUBLIC_BASE_URL`.
+- **Status:** casa pelo id da mensagem (`key.id` devolvido no envio, `providerMessageId`).
+- **Resposta:** se o paciente responder citando o lembrete, casa pela citação; senão, vai para o
+  último lembrete enviado para aquele número na clínica nos últimos 7 dias (com e sem o nono
+  dígito). Mensagens que não casam com lembrete são ignoradas.
+
+### 7.4 Webhook do SES (e-mail)
+
+- **Configuração na AWS:** um configuration set (`MAIL_SES_CONFIGURATION_SET`, enviado em cada
+  `SendEmail`) com destino de eventos SNS para `Delivery`, `Bounce`, `Complaint`, `Reject`,
+  `Open` e `Rendering Failure`, e uma assinatura HTTPS do tópico para
+  `https://<api>/api/v1/webhooks/ses`. Sem o configuration set, as notificações de identidade do
+  SES (Delivery/Bounce/Complaint) no mesmo tópico também funcionam.
+- **Autenticação:** assinatura SNS (v1 e v2) verificada com o certificado baixado só de
+  `https://sns.<região>.amazonaws.com/*.pem`, e o `TopicArn` precisa ser
+  `MAIL_SES_EVENTS_TOPIC_ARN`. Sem o ARN o webhook recusa tudo (`401`).
+- **Assinatura do tópico:** a `SubscriptionConfirmation` é confirmada automaticamente.
+- **Casamento:** pelo `mail.messageId` (o `MessageId` devolvido no envio).
+
+### 7.5 Idempotência
+
+Os providers repetem webhooks em timeout. Cada evento externo tem uma chave única por origem
+(`source` + `externalId`, índice único no banco): `<idDaMensagem>:<status>` para acks da
+Evolution, o id da mensagem recebida para respostas e o `MessageId` do SNS para o SES. A
+gravação do evento e a mudança de status acontecem na mesma transação, e um evento repetido não
+muda nada.
+
+### 7.6 Métricas e alertas
+
+O fluxo é instrumentado com OpenTelemetry (`notification.*`); dashboards e alertas no Grafana
+estão em [`observability.md`](observability.md).

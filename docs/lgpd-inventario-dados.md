@@ -158,6 +158,15 @@ código não define nada, o documento diz "não definida" e registra a lacuna na
   este fluxo).
 - **Retenção:** SES não guarda o conteúdo após a entrega (só métricas e eventos, se configurados).
   A retenção na Evolution API depende do banco da instância auto-hospedada: a definir.
+- **Rastreio de entrega (L2-04):** os webhooks da Evolution e do SES (via SNS) gravam em
+  `AppointmentReminderEvent` a linha do tempo de cada lembrete. Ficam no banco o número/e-mail
+  usado no envio (`AppointmentReminder.destination`, para casar respostas), o id da mensagem no
+  provider e, para respostas no WhatsApp, **o texto que o paciente escreveu** (até 500
+  caracteres, em `detail`). O diagnóstico de bounce do SES pode conter o e-mail do paciente.
+  Nada disso vai para log nem para métricas. Retenção: a definir junto com a dos lembretes.
+- **Observabilidade:** com `OTEL_ENABLED=true` traces, métricas e logs vão para o Grafana
+  (local ou Grafana Cloud, suboperador). Métricas só têm canal/resultado (nunca paciente ou
+  clínica); logs seguem a regra de destino mascarado acima.
 
 ### INT-07 — Google Fonts (frontend)
 
