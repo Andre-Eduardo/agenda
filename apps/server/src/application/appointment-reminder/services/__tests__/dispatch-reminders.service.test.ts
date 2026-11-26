@@ -81,13 +81,13 @@ describe('DispatchRemindersService', () => {
         const reminder = buildReminder();
         let claimed = false;
 
-        reminderRepository.findDueForDispatch.mockImplementation(async () => [reminder]);
-        reminderRepository.claimForDispatch.mockImplementation(async () => {
-            if (claimed) return false;
+        reminderRepository.findDueForDispatch.mockResolvedValue([reminder]);
+        reminderRepository.claimForDispatch.mockImplementation(() => {
+            if (claimed) return Promise.resolve(false);
 
             claimed = true;
 
-            return true;
+            return Promise.resolve(true);
         });
 
         await Promise.all([service.dispatchDue(clinicId), service.dispatchDue(clinicId)]);
