@@ -13,9 +13,18 @@ import {PatientId} from '@domain/patient/entities';
 import {MapperWithoutDto} from '@infrastructure/mappers/mapper';
 
 export type AppointmentReminderModel = PrismaClient.AppointmentReminder;
+/**
+ * `claimedUntil` é um lease de infraestrutura gerido só pelo repositório
+ * (`claimForDispatch`), então não faz parte do que o domínio grava.
+ */
+export type AppointmentReminderWriteModel = Omit<AppointmentReminderModel, 'claimedUntil'>;
 
 @Injectable()
-export class AppointmentReminderMapper extends MapperWithoutDto<AppointmentReminder, AppointmentReminderModel> {
+export class AppointmentReminderMapper extends MapperWithoutDto<
+    AppointmentReminder,
+    AppointmentReminderModel,
+    AppointmentReminderWriteModel
+> {
     toDomain(model: AppointmentReminderModel): AppointmentReminder {
         return new AppointmentReminder({
             id: AppointmentReminderId.from(model.id),
@@ -35,7 +44,7 @@ export class AppointmentReminderMapper extends MapperWithoutDto<AppointmentRemin
         });
     }
 
-    toPersistence(entity: AppointmentReminder): AppointmentReminderModel {
+    toPersistence(entity: AppointmentReminder): AppointmentReminderWriteModel {
         return {
             id: entity.id.toString(),
             clinicId: entity.clinicId.toString(),

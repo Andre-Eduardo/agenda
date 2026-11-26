@@ -1663,6 +1663,9 @@ model AppointmentReminder {
   failedAt     DateTime?       @map("failed_at")
   attempts     Int             @default(0)
   errorMessage String?         @map("error_message") @db.Text
+  /// Lease de envio: enquanto no futuro, uma instância da API já reivindicou o lembrete
+  /// e as demais não podem enviá-lo. Evita envio duplicado com múltiplas réplicas.
+  claimedUntil DateTime?       @map("claimed_until")
 
   createdAt DateTime @map("created_at")
   updatedAt DateTime @map("updated_at")

@@ -7,6 +7,12 @@ import {NotificationProvider, type NotificationPayload} from '@domain/notificati
 import {PatientRepository} from '@domain/patient/patient.repository';
 import {NOTIFICATION_PROVIDERS} from '@infrastructure/notification/notification-provider.token';
 
+/**
+ * Tempo que uma instância tem para enviar um lembrete reivindicado antes que outra possa
+ * tentar de novo. Bem acima do tempo de um envio e do intervalo do cron (5 min).
+ */
+export const REMINDER_DISPATCH_LEASE_MS = 10 * 60 * 1000;
+
 @Injectable()
 export class DispatchRemindersService {
     constructor(
@@ -28,6 +34,12 @@ export class DispatchRemindersService {
         const provider = this.providers.find((p) => p.channel === reminder.channel);
 
         if (!provider) return;
+
+        // Com várias réplicas da API o cron roda em todas ao mesmo tempo. Só envia quem
+        // ganhar o claim atômico no banco; as outras pulam o lembrete.
+        const claimed = await this.reminderRepository.claimForDispatch(reminder.id, REMINDER_DISPATCH_LEASE_MS);
+
+        if (!claimed) return;
 
         let payload: NotificationPayload;
 

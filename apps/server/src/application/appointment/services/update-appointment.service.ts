@@ -6,6 +6,7 @@ import {PatientAccessChecker} from '@application/clinic-patient-access/services/
 import {AgendaAccessChecker} from '@application/professional-agenda-access/services';
 import {InvalidInputException, PreconditionException, ResourceNotFoundException} from '@domain/@shared/exceptions';
 import {Transactional} from '@domain/@shared/repository';
+import {toZonedParts} from '@domain/@shared/utils';
 import {AppointmentRepository} from '@domain/appointment/appointment.repository';
 import {UpdateAppointment} from '@domain/appointment/entities';
 import {ClinicMemberRepository} from '@domain/clinic-member/clinic-member.repository';
@@ -79,7 +80,8 @@ export class UpdateAppointmentService implements ApplicationService<UpdateAppoin
             }
 
             // Working hours — advisory only, see CreateAppointmentService for the rationale.
-            const dayOfWeek = startAt.getDay();
+            // Dia da semana no fuso da clínica: às 21h30 em Brasília já é o dia seguinte em UTC.
+            const {dayOfWeek} = toZonedParts(startAt);
             const workingHours = await this.workingHoursRepository.findByMemberAndDay(attendedByMemberId, dayOfWeek);
 
             if (workingHours.length > 0) {
