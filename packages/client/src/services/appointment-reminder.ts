@@ -26,9 +26,241 @@ import {HttpResponse, http} from 'msw';
 import type {RequestHandlerOptions} from 'msw';
 import {apiClient} from '../api-client';
 import type {ErrorType} from '../api-client';
-import type {ApiProblem, AppointmentReminder} from '../models';
+import {ReminderEventSource, ReminderEventType} from '../models';
+import type {ApiProblem, AppointmentReminder, AppointmentReminderTimeline} from '../models';
 
 type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
+
+/**
+ * @summary Lists an appointment's reminders with their delivery timeline (attempts, delivery, errors, retries, replies)
+ */
+export const getAppointmentReminderTimeline = (
+    clinicId: string,
+    appointmentId: string,
+    options?: SecondParameter<typeof apiClient>,
+    signal?: AbortSignal
+) => {
+    return apiClient<AppointmentReminderTimeline[]>(
+        {url: `/api/v1/clinics/${clinicId}/appointments/${appointmentId}/reminders`, method: 'GET', signal},
+        options
+    );
+};
+
+export const getGetAppointmentReminderTimelineQueryKey = (clinicId?: string, appointmentId?: string) => {
+    return [`/api/v1/clinics/${clinicId}/appointments/${appointmentId}/reminders`] as const;
+};
+
+export const getGetAppointmentReminderTimelineQueryOptions = <
+    TData = Awaited<ReturnType<typeof getAppointmentReminderTimeline>>,
+    TError = ErrorType<ApiProblem>,
+>(
+    clinicId: string,
+    appointmentId: string,
+    options?: {
+        query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getAppointmentReminderTimeline>>, TError, TData>>;
+        request?: SecondParameter<typeof apiClient>;
+    }
+) => {
+    const {query: queryOptions, request: requestOptions} = options ?? {};
+
+    const queryKey = queryOptions?.queryKey ?? getGetAppointmentReminderTimelineQueryKey(clinicId, appointmentId);
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAppointmentReminderTimeline>>> = ({signal}) =>
+        getAppointmentReminderTimeline(clinicId, appointmentId, requestOptions, signal);
+
+    return {queryKey, queryFn, enabled: !!(clinicId && appointmentId), ...queryOptions} as UseQueryOptions<
+        Awaited<ReturnType<typeof getAppointmentReminderTimeline>>,
+        TError,
+        TData
+    > & {queryKey: DataTag<QueryKey, TData, TError>};
+};
+
+export type GetAppointmentReminderTimelineQueryResult = NonNullable<
+    Awaited<ReturnType<typeof getAppointmentReminderTimeline>>
+>;
+export type GetAppointmentReminderTimelineQueryError = ErrorType<ApiProblem>;
+
+export function useGetAppointmentReminderTimeline<
+    TData = Awaited<ReturnType<typeof getAppointmentReminderTimeline>>,
+    TError = ErrorType<ApiProblem>,
+>(
+    clinicId: string,
+    appointmentId: string,
+    options: {
+        query: Partial<UseQueryOptions<Awaited<ReturnType<typeof getAppointmentReminderTimeline>>, TError, TData>> &
+            Pick<
+                DefinedInitialDataOptions<
+                    Awaited<ReturnType<typeof getAppointmentReminderTimeline>>,
+                    TError,
+                    Awaited<ReturnType<typeof getAppointmentReminderTimeline>>
+                >,
+                'initialData'
+            >;
+        request?: SecondParameter<typeof apiClient>;
+    },
+    queryClient?: QueryClient
+): DefinedUseQueryResult<TData, TError> & {queryKey: DataTag<QueryKey, TData, TError>};
+export function useGetAppointmentReminderTimeline<
+    TData = Awaited<ReturnType<typeof getAppointmentReminderTimeline>>,
+    TError = ErrorType<ApiProblem>,
+>(
+    clinicId: string,
+    appointmentId: string,
+    options?: {
+        query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getAppointmentReminderTimeline>>, TError, TData>> &
+            Pick<
+                UndefinedInitialDataOptions<
+                    Awaited<ReturnType<typeof getAppointmentReminderTimeline>>,
+                    TError,
+                    Awaited<ReturnType<typeof getAppointmentReminderTimeline>>
+                >,
+                'initialData'
+            >;
+        request?: SecondParameter<typeof apiClient>;
+    },
+    queryClient?: QueryClient
+): UseQueryResult<TData, TError> & {queryKey: DataTag<QueryKey, TData, TError>};
+export function useGetAppointmentReminderTimeline<
+    TData = Awaited<ReturnType<typeof getAppointmentReminderTimeline>>,
+    TError = ErrorType<ApiProblem>,
+>(
+    clinicId: string,
+    appointmentId: string,
+    options?: {
+        query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getAppointmentReminderTimeline>>, TError, TData>>;
+        request?: SecondParameter<typeof apiClient>;
+    },
+    queryClient?: QueryClient
+): UseQueryResult<TData, TError> & {queryKey: DataTag<QueryKey, TData, TError>};
+/**
+ * @summary Lists an appointment's reminders with their delivery timeline (attempts, delivery, errors, retries, replies)
+ */
+
+export function useGetAppointmentReminderTimeline<
+    TData = Awaited<ReturnType<typeof getAppointmentReminderTimeline>>,
+    TError = ErrorType<ApiProblem>,
+>(
+    clinicId: string,
+    appointmentId: string,
+    options?: {
+        query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getAppointmentReminderTimeline>>, TError, TData>>;
+        request?: SecondParameter<typeof apiClient>;
+    },
+    queryClient?: QueryClient
+): UseQueryResult<TData, TError> & {queryKey: DataTag<QueryKey, TData, TError>} {
+    const queryOptions = getGetAppointmentReminderTimelineQueryOptions(clinicId, appointmentId, options);
+
+    const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
+        queryKey: DataTag<QueryKey, TData, TError>;
+    };
+
+    query.queryKey = queryOptions.queryKey;
+
+    return query;
+}
+
+export const getGetAppointmentReminderTimelineSuspenseQueryOptions = <
+    TData = Awaited<ReturnType<typeof getAppointmentReminderTimeline>>,
+    TError = ErrorType<ApiProblem>,
+>(
+    clinicId: string,
+    appointmentId: string,
+    options?: {
+        query?: Partial<
+            UseSuspenseQueryOptions<Awaited<ReturnType<typeof getAppointmentReminderTimeline>>, TError, TData>
+        >;
+        request?: SecondParameter<typeof apiClient>;
+    }
+) => {
+    const {query: queryOptions, request: requestOptions} = options ?? {};
+
+    const queryKey = queryOptions?.queryKey ?? getGetAppointmentReminderTimelineQueryKey(clinicId, appointmentId);
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAppointmentReminderTimeline>>> = ({signal}) =>
+        getAppointmentReminderTimeline(clinicId, appointmentId, requestOptions, signal);
+
+    return {queryKey, queryFn, ...queryOptions} as UseSuspenseQueryOptions<
+        Awaited<ReturnType<typeof getAppointmentReminderTimeline>>,
+        TError,
+        TData
+    > & {queryKey: DataTag<QueryKey, TData, TError>};
+};
+
+export type GetAppointmentReminderTimelineSuspenseQueryResult = NonNullable<
+    Awaited<ReturnType<typeof getAppointmentReminderTimeline>>
+>;
+export type GetAppointmentReminderTimelineSuspenseQueryError = ErrorType<ApiProblem>;
+
+export function useGetAppointmentReminderTimelineSuspense<
+    TData = Awaited<ReturnType<typeof getAppointmentReminderTimeline>>,
+    TError = ErrorType<ApiProblem>,
+>(
+    clinicId: string,
+    appointmentId: string,
+    options: {
+        query: Partial<
+            UseSuspenseQueryOptions<Awaited<ReturnType<typeof getAppointmentReminderTimeline>>, TError, TData>
+        >;
+        request?: SecondParameter<typeof apiClient>;
+    },
+    queryClient?: QueryClient
+): UseSuspenseQueryResult<TData, TError> & {queryKey: DataTag<QueryKey, TData, TError>};
+export function useGetAppointmentReminderTimelineSuspense<
+    TData = Awaited<ReturnType<typeof getAppointmentReminderTimeline>>,
+    TError = ErrorType<ApiProblem>,
+>(
+    clinicId: string,
+    appointmentId: string,
+    options?: {
+        query?: Partial<
+            UseSuspenseQueryOptions<Awaited<ReturnType<typeof getAppointmentReminderTimeline>>, TError, TData>
+        >;
+        request?: SecondParameter<typeof apiClient>;
+    },
+    queryClient?: QueryClient
+): UseSuspenseQueryResult<TData, TError> & {queryKey: DataTag<QueryKey, TData, TError>};
+export function useGetAppointmentReminderTimelineSuspense<
+    TData = Awaited<ReturnType<typeof getAppointmentReminderTimeline>>,
+    TError = ErrorType<ApiProblem>,
+>(
+    clinicId: string,
+    appointmentId: string,
+    options?: {
+        query?: Partial<
+            UseSuspenseQueryOptions<Awaited<ReturnType<typeof getAppointmentReminderTimeline>>, TError, TData>
+        >;
+        request?: SecondParameter<typeof apiClient>;
+    },
+    queryClient?: QueryClient
+): UseSuspenseQueryResult<TData, TError> & {queryKey: DataTag<QueryKey, TData, TError>};
+/**
+ * @summary Lists an appointment's reminders with their delivery timeline (attempts, delivery, errors, retries, replies)
+ */
+
+export function useGetAppointmentReminderTimelineSuspense<
+    TData = Awaited<ReturnType<typeof getAppointmentReminderTimeline>>,
+    TError = ErrorType<ApiProblem>,
+>(
+    clinicId: string,
+    appointmentId: string,
+    options?: {
+        query?: Partial<
+            UseSuspenseQueryOptions<Awaited<ReturnType<typeof getAppointmentReminderTimeline>>, TError, TData>
+        >;
+        request?: SecondParameter<typeof apiClient>;
+    },
+    queryClient?: QueryClient
+): UseSuspenseQueryResult<TData, TError> & {queryKey: DataTag<QueryKey, TData, TError>} {
+    const queryOptions = getGetAppointmentReminderTimelineSuspenseQueryOptions(clinicId, appointmentId, options);
+
+    const query = useSuspenseQuery(queryOptions, queryClient) as UseSuspenseQueryResult<TData, TError> & {
+        queryKey: DataTag<QueryKey, TData, TError>;
+    };
+
+    query.queryKey = queryOptions.queryKey;
+
+    return query;
+}
 
 /**
  * @summary Lists pending reminders due within the next 10 minutes for a clinic
@@ -291,6 +523,92 @@ export const useDispatchReminders = <TError = ErrorType<ApiProblem>, TContext = 
     return useMutation(mutationOptions, queryClient);
 };
 
+export const getGetAppointmentReminderTimelineResponseMock = (): AppointmentReminderTimeline[] =>
+    Array.from({length: faker.number.int({min: 1, max: 10})}, (_, i) => i + 1).map(() => ({
+        id: faker.string.uuid(),
+        createdAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
+        updatedAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
+        clinicId: faker.string.uuid(),
+        appointmentId: faker.string.uuid(),
+        patientId: faker.string.uuid(),
+        channel: faker.helpers.arrayElement(['WHATSAPP', 'SMS', 'EMAIL'] as const),
+        status: faker.helpers.arrayElement([
+            'PENDING',
+            'SENT',
+            'DELIVERED',
+            'READ',
+            'REPLIED',
+            'FAILED',
+            'CANCELLED',
+        ] as const),
+        scheduledAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
+        sentAt: faker.helpers.arrayElement([`${faker.date.past().toISOString().split('.')[0]}Z`, null]),
+        failedAt: faker.helpers.arrayElement([`${faker.date.past().toISOString().split('.')[0]}Z`, null]),
+        attempts: faker.number.float({min: undefined, max: undefined, fractionDigits: 2}),
+        errorMessage: {},
+        deliveredAt: faker.helpers.arrayElement([`${faker.date.past().toISOString().split('.')[0]}Z`, null]),
+        readAt: faker.helpers.arrayElement([`${faker.date.past().toISOString().split('.')[0]}Z`, null]),
+        repliedAt: faker.helpers.arrayElement([`${faker.date.past().toISOString().split('.')[0]}Z`, null]),
+        events: Array.from({length: faker.number.int({min: 1, max: 10})}, (_, i) => i + 1).map(() => ({
+            id: faker.string.uuid(),
+            type: faker.helpers.arrayElement(Object.values(ReminderEventType)),
+            source: faker.helpers.arrayElement(Object.values(ReminderEventSource)),
+            attempt: faker.helpers.arrayElement([faker.number.int({min: undefined, max: undefined}), null]),
+            detail: faker.helpers.arrayElement([faker.string.alpha({length: {min: 10, max: 20}}), null]),
+            occurredAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
+        })),
+    }));
+
+export const getGetAppointmentReminderTimelineResponseMock200 = (): AppointmentReminderTimeline[] =>
+    Array.from({length: faker.number.int({min: 1, max: 10})}, (_, i) => i + 1).map(() => ({
+        id: faker.string.uuid(),
+        createdAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
+        updatedAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
+        clinicId: faker.string.uuid(),
+        appointmentId: faker.string.uuid(),
+        patientId: faker.string.uuid(),
+        channel: faker.helpers.arrayElement(['WHATSAPP', 'SMS', 'EMAIL'] as const),
+        status: faker.helpers.arrayElement([
+            'PENDING',
+            'SENT',
+            'DELIVERED',
+            'READ',
+            'REPLIED',
+            'FAILED',
+            'CANCELLED',
+        ] as const),
+        scheduledAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
+        sentAt: faker.helpers.arrayElement([`${faker.date.past().toISOString().split('.')[0]}Z`, null]),
+        failedAt: faker.helpers.arrayElement([`${faker.date.past().toISOString().split('.')[0]}Z`, null]),
+        attempts: faker.number.float({min: undefined, max: undefined, fractionDigits: 2}),
+        errorMessage: {},
+        deliveredAt: faker.helpers.arrayElement([`${faker.date.past().toISOString().split('.')[0]}Z`, null]),
+        readAt: faker.helpers.arrayElement([`${faker.date.past().toISOString().split('.')[0]}Z`, null]),
+        repliedAt: faker.helpers.arrayElement([`${faker.date.past().toISOString().split('.')[0]}Z`, null]),
+        events: Array.from({length: faker.number.int({min: 1, max: 10})}, (_, i) => i + 1).map(() => ({
+            id: faker.string.uuid(),
+            type: faker.helpers.arrayElement(Object.values(ReminderEventType)),
+            source: faker.helpers.arrayElement(Object.values(ReminderEventSource)),
+            attempt: faker.helpers.arrayElement([faker.number.int({min: undefined, max: undefined}), null]),
+            detail: faker.helpers.arrayElement([faker.string.alpha({length: {min: 10, max: 20}}), null]),
+            occurredAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
+        })),
+    }));
+
+export const getGetAppointmentReminderTimelineResponseMockDefault = (
+    overrideResponse: Partial<ApiProblem> = {}
+): ApiProblem => ({
+    title: faker.string.alpha({length: {min: 10, max: 20}}),
+    type: faker.internet.url(),
+    detail: faker.string.alpha({length: {min: 10, max: 20}}),
+    status: faker.helpers.arrayElement([
+        400, 401, 402, 403, 404, 405, 406, 407, 408, 409, 410, 411, 412, 413, 414, 415, 416, 417, 418, 421, 422, 423,
+        424, 428, 429, 456, 500, 501, 502, 503, 504, 505, 507, 508,
+    ] as const),
+    instance: faker.string.alpha({length: {min: 10, max: 20}}),
+    ...overrideResponse,
+});
+
 export const getListPendingRemindersResponseMock = (): AppointmentReminder[] =>
     Array.from({length: faker.number.int({min: 1, max: 10})}, (_, i) => i + 1).map(() => ({
         id: faker.string.uuid(),
@@ -300,7 +618,15 @@ export const getListPendingRemindersResponseMock = (): AppointmentReminder[] =>
         appointmentId: faker.string.uuid(),
         patientId: faker.string.uuid(),
         channel: faker.helpers.arrayElement(['WHATSAPP', 'SMS', 'EMAIL'] as const),
-        status: faker.helpers.arrayElement(['PENDING', 'SENT', 'FAILED', 'CANCELLED'] as const),
+        status: faker.helpers.arrayElement([
+            'PENDING',
+            'SENT',
+            'DELIVERED',
+            'READ',
+            'REPLIED',
+            'FAILED',
+            'CANCELLED',
+        ] as const),
         scheduledAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
         sentAt: faker.helpers.arrayElement([`${faker.date.past().toISOString().split('.')[0]}Z`, null]),
         failedAt: faker.helpers.arrayElement([`${faker.date.past().toISOString().split('.')[0]}Z`, null]),
@@ -317,7 +643,15 @@ export const getListPendingRemindersResponseMock200 = (): AppointmentReminder[] 
         appointmentId: faker.string.uuid(),
         patientId: faker.string.uuid(),
         channel: faker.helpers.arrayElement(['WHATSAPP', 'SMS', 'EMAIL'] as const),
-        status: faker.helpers.arrayElement(['PENDING', 'SENT', 'FAILED', 'CANCELLED'] as const),
+        status: faker.helpers.arrayElement([
+            'PENDING',
+            'SENT',
+            'DELIVERED',
+            'READ',
+            'REPLIED',
+            'FAILED',
+            'CANCELLED',
+        ] as const),
         scheduledAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
         sentAt: faker.helpers.arrayElement([`${faker.date.past().toISOString().split('.')[0]}Z`, null]),
         failedAt: faker.helpers.arrayElement([`${faker.date.past().toISOString().split('.')[0]}Z`, null]),
@@ -348,6 +682,82 @@ export const getDispatchRemindersResponseMockDefault = (overrideResponse: Partia
     instance: faker.string.alpha({length: {min: 10, max: 20}}),
     ...overrideResponse,
 });
+
+export const getGetAppointmentReminderTimelineMockHandler = (
+    overrideResponse?:
+        | AppointmentReminderTimeline[]
+        | ((
+              info: Parameters<Parameters<typeof http.get>[1]>[0]
+          ) => Promise<AppointmentReminderTimeline[]> | AppointmentReminderTimeline[]),
+    options?: RequestHandlerOptions
+) => {
+    return http.get(
+        '*/api/v1/clinics/:clinicId/appointments/:appointmentId/reminders',
+        async (info) => {
+            return new HttpResponse(
+                JSON.stringify(
+                    overrideResponse !== undefined
+                        ? typeof overrideResponse === 'function'
+                            ? await overrideResponse(info)
+                            : overrideResponse
+                        : getGetAppointmentReminderTimelineResponseMock()
+                ),
+                {status: 200, headers: {'Content-Type': 'application/json'}}
+            );
+        },
+        options
+    );
+};
+
+export const getGetAppointmentReminderTimelineMockHandler200 = (
+    overrideResponse?:
+        | AppointmentReminderTimeline[]
+        | ((
+              info: Parameters<Parameters<typeof http.get>[1]>[0]
+          ) => Promise<AppointmentReminderTimeline[]> | AppointmentReminderTimeline[]),
+    options?: RequestHandlerOptions
+) => {
+    return http.get(
+        '*/api/v1/clinics/:clinicId/appointments/:appointmentId/reminders',
+        async (info) => {
+            return new HttpResponse(
+                JSON.stringify(
+                    overrideResponse !== undefined
+                        ? typeof overrideResponse === 'function'
+                            ? await overrideResponse(info)
+                            : overrideResponse
+                        : getGetAppointmentReminderTimelineResponseMock200()
+                ),
+                {status: 200, headers: {'Content-Type': 'application/json'}}
+            );
+        },
+        options
+    );
+};
+
+export const getGetAppointmentReminderTimelineMockHandlerDefault = (
+    overrideResponse?:
+        | ApiProblem
+        | ((info: Parameters<Parameters<typeof http.get>[1]>[0]) => Promise<ApiProblem> | ApiProblem),
+    options?: RequestHandlerOptions
+) => {
+    return http.get(
+        '*/api/v1/clinics/:clinicId/appointments/:appointmentId/reminders',
+        async (info) => {
+            return new HttpResponse(
+                JSON.stringify(
+                    overrideResponse !== undefined
+                        ? typeof overrideResponse === 'function'
+                            ? await overrideResponse(info)
+                            : overrideResponse
+                        : getGetAppointmentReminderTimelineResponseMockDefault()
+                ),
+                {status: 200, headers: {'Content-Type': 'application/json'}}
+            );
+        },
+        options
+    );
+};
 
 export const getListPendingRemindersMockHandler = (
     overrideResponse?:
@@ -484,6 +894,7 @@ export const getDispatchRemindersMockHandlerDefault = (
 };
 
 export const getAppointmentReminderMock = () => [
+    getGetAppointmentReminderTimelineMockHandler(),
     getListPendingRemindersMockHandler(),
     getDispatchRemindersMockHandler(),
 ];

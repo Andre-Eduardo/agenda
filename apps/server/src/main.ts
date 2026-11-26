@@ -1,11 +1,20 @@
+// Must be the first import so the OpenTelemetry SDK patches http/express/prisma/etc.
+// before any other module loads them.
+// oxlint-disable-next-line import/no-unassigned-import -- side effect: starts the OpenTelemetry SDK
+import './infrastructure/telemetry/register';
 import {NestFactory} from '@nestjs/core';
 import {NestExpressApplication} from '@nestjs/platform-express';
 import {Logger} from '@application/@shared/logger';
+import {NestWinstonLogger} from '@infrastructure/logger';
 import {setupApp} from '@infrastructure/setup';
 import {AppModule} from './app.module';
 
 async function bootstrap() {
-    const app = await NestFactory.create<NestExpressApplication>(AppModule);
+    const app = await NestFactory.create<NestExpressApplication>(AppModule, {bufferLogs: true});
+
+    app.useLogger(new NestWinstonLogger());
+    // Flushes pending telemetry on SIGTERM (TelemetryShutdownService).
+    app.enableShutdownHooks();
 
     const {port, docsPath} = setupApp(app);
 

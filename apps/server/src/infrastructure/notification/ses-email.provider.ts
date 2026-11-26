@@ -70,7 +70,7 @@ export class SesEmailProvider extends NotificationProvider {
     }
 
     async send(payload: NotificationPayload): Promise<NotificationResult> {
-        const {fromAddress, replyTo} = this.config.mail;
+        const {fromAddress, replyTo, configurationSet} = this.config.mail;
 
         if (!fromAddress) {
             return {success: false, error: 'E-mail sender (MAIL_FROM_ADDRESS) is not configured'};
@@ -81,6 +81,8 @@ export class SesEmailProvider extends NotificationProvider {
                 new SendEmailCommand({
                     FromEmailAddress: fromAddress,
                     ReplyToAddresses: replyTo ? [replyTo] : undefined,
+                    // The configuration set publishes delivery/bounce/open events to SNS (L2-04).
+                    ConfigurationSetName: configurationSet || undefined,
                     Destination: {ToAddresses: [payload.to]},
                     Content: {
                         Simple: {

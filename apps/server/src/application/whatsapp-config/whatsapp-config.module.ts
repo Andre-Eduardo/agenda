@@ -1,6 +1,7 @@
 import {Module} from '@nestjs/common';
 import {WhatsAppConfigController} from '@application/whatsapp-config/controllers';
 import {
+    ConfigureWhatsAppWebhookService,
     CreateWhatsAppConfigService,
     DeleteWhatsAppConfigService,
     GetWhatsAppConfigService,
@@ -15,6 +16,7 @@ import {EvolutionApiClient} from '@infrastructure/whatsapp/evolution-api.client'
     controllers: [WhatsAppConfigController],
     providers: [
         EvolutionApiClient,
+        ConfigureWhatsAppWebhookService,
         GetWhatsAppConfigService,
         CreateWhatsAppConfigService,
         GetWhatsAppQrcodeService,

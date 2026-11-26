@@ -74,6 +74,8 @@ Sempre que a API do servidor mudar:
 - `docs/service-patterns.md` — BaseApplicationService, Command, mappers
 - `docs/testing-patterns.md` — testes unitários (Jest + jest-mock-extended)
 - `docs/integration-test-patterns.md` — BDD (Cucumber.js), isolamento, referências
+- `docs/observability.md` — OpenTelemetry, métricas de notificação, Grafana (`infra/grafana`)
+- `docs/notification-providers.md` — providers de lembrete, webhooks de entrega/resposta (L2-04)
 - `docs/frontend/` — arquitetura, roteamento, auth, state, forms, i18n
 
 ## Type safety (resumo)

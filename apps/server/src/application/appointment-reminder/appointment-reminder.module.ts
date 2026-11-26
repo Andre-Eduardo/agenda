@@ -3,8 +3,10 @@ import {AppointmentReminderController} from '@application/appointment-reminder/c
 import {AppointmentReminderListener} from '@application/appointment-reminder/listeners/appointment-reminder.listener';
 import {CancelRemindersService} from '@application/appointment-reminder/services/cancel-reminders.service';
 import {DispatchRemindersService} from '@application/appointment-reminder/services/dispatch-reminders.service';
+import {GetReminderTimelineService} from '@application/appointment-reminder/services/get-reminder-timeline.service';
 import {ListPendingRemindersService} from '@application/appointment-reminder/services/list-pending-reminders.service';
 import {ScheduleRemindersService} from '@application/appointment-reminder/services/schedule-reminders.service';
+import {TrackReminderDeliveryService} from '@application/appointment-reminder/services/track-reminder-delivery.service';
 import {ReminderDispatchTask} from '@application/appointment-reminder/tasks/reminder-dispatch.task';
 import {ClinicReminderConfigModule} from '@application/clinic-reminder-config/clinic-reminder-config.module';
 import {EnvConfigService} from '@infrastructure/config';
@@ -23,6 +25,8 @@ import {
         CancelRemindersService,
         ListPendingRemindersService,
         DispatchRemindersService,
+        TrackReminderDeliveryService,
+        GetReminderTimelineService,
         AppointmentReminderListener,
         ReminderDispatchTask,
         ...NOTIFICATION_PROVIDER_FACTORY_PROVIDERS,
@@ -32,5 +36,6 @@ import {
             inject: [EnvConfigService, ...NOTIFICATION_PROVIDER_FACTORY_PROVIDERS],
         },
     ],
+    exports: [TrackReminderDeliveryService],
 })
 export class AppointmentReminderModule {}

@@ -36,6 +36,8 @@ export function setupApp(app: NestExpressApplication): SetupAppResult {
         fs.writeFileSync('./openapi.json', JSON.stringify(document, null, 2));
     }
 
+    // Amazon SNS posts its JSON with `Content-Type: text/plain` (SES delivery webhook, L2-04).
+    app.useBodyParser('text', {type: 'text/plain', limit: '256kb'});
     app.use(helmet());
     app.use(compression());
     app.use(cookieParser(configService.cookieSecret));

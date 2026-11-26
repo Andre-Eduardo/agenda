@@ -46,6 +46,7 @@ describe('An Evolution API WhatsApp provider', () => {
         await expect(provider.send({clinicId, to: '11987654321', message: 'Olá!'})).resolves.toEqual({
             success: true,
             providerId: 'msg-1',
+            destination: '5511987654321',
         });
 
         expect(fetchMock).toHaveBeenCalledWith(

@@ -1,12 +1,17 @@
 import {mock} from 'jest-mock-extended';
+import type {Metrics} from '@application/@shared/telemetry';
 import {ReminderMessageRenderer} from '@application/clinic-reminder-config/services/reminder-message.renderer';
 import {Phone} from '@domain/@shared/value-objects';
+import {AppointmentReminderEventRepository} from '@domain/appointment-reminder/appointment-reminder-event.repository';
 import {AppointmentReminderRepository} from '@domain/appointment-reminder/appointment-reminder.repository';
 import {
     AppointmentReminder,
+    type AppointmentReminderEvent,
     ReminderChannel,
+    ReminderEventSource,
+    ReminderEventType,
     ReminderStatus,
-} from '@domain/appointment-reminder/entities/appointment-reminder.entity';
+} from '@domain/appointment-reminder/entities';
 import {AppointmentRepository} from '@domain/appointment/appointment.repository';
 import {AppointmentId, type Appointment} from '@domain/appointment/entities';
 import {ClinicMemberId} from '@domain/clinic-member/entities';
@@ -22,6 +27,8 @@ describe('A dispatch-reminders service', () => {
     const appointmentRepository = mock<AppointmentRepository>();
     const patientRepository = mock<PatientRepository>();
     const messageRenderer = mock<ReminderMessageRenderer>();
+    const eventRepository = mock<AppointmentReminderEventRepository>();
+    const metrics = mock<Metrics>();
     const whatsApp = mock<NotificationProvider>({channel: ReminderChannel.WHATSAPP});
     const email = mock<NotificationProvider>({channel: ReminderChannel.EMAIL});
 
@@ -41,8 +48,19 @@ describe('A dispatch-reminders service', () => {
         appointmentRepository,
         patientRepository,
         messageRenderer,
-        [whatsApp, email]
+        [whatsApp, email],
+        eventRepository,
+        metrics
     );
+
+    function recordedEvents(): Array<Pick<AppointmentReminderEvent, 'type' | 'attempt' | 'detail' | 'source'>> {
+        return eventRepository.recordIfAbsent.mock.calls.map(([event]) => ({
+            type: event.type,
+            attempt: event.attempt,
+            detail: event.detail,
+            source: event.source,
+        }));
+    }
 
     function reminder(channel: ReminderChannel): AppointmentReminder {
         return AppointmentReminder.create({
@@ -56,9 +74,15 @@ describe('A dispatch-reminders service', () => {
 
     beforeEach(() => {
         jest.resetAllMocks();
+        jest.useFakeTimers({now: new Date('2026-11-30T13:30:00Z'), doNotFake: ['nextTick', 'setImmediate']});
+        eventRepository.recordIfAbsent.mockResolvedValue(true);
         appointmentRepository.findById.mockResolvedValue(appointment);
         patientRepository.findById.mockResolvedValue(patient);
         messageRenderer.render.mockResolvedValue('Olá, Maria! Sua consulta é em 01/12/2026 às 10:30.');
+    });
+
+    afterEach(() => {
+        jest.useRealTimers();
     });
 
     it('should send a WhatsApp reminder to the patient phone and mark it as sent', async () => {
@@ -90,6 +114,26 @@ describe('A dispatch-reminders service', () => {
         expect(reminderRepository.save).toHaveBeenCalledWith(due);
     });
 
+    it('should keep the provider message id and destination and record the attempt on the timeline', async () => {
+        const due = reminder(ReminderChannel.WHATSAPP);
+
+        reminderRepository.findDueForDispatch.mockResolvedValue([due]);
+        whatsApp.send.mockResolvedValue({success: true, providerId: 'msg-1', destination: '5511987654321'});
+
+        await service.dispatchDue(clinicId);
+
+        expect(due.providerMessageId).toBe('msg-1');
+        expect(due.destination).toBe('5511987654321');
+        expect(due.attempts).toBe(1);
+        expect(recordedEvents()).toEqual([
+            {type: ReminderEventType.SENT, attempt: 1, detail: null, source: ReminderEventSource.SYSTEM},
+        ]);
+        expect(metrics.count).toHaveBeenCalledWith('notification.reminder.attempt', 1, {
+            channel: ReminderChannel.WHATSAPP,
+            outcome: 'sent',
+        });
+    });
+
     it('should send an e-mail reminder to the patient e-mail', async () => {
         const due = reminder(ReminderChannel.EMAIL);
 
@@ -102,7 +146,7 @@ describe('A dispatch-reminders service', () => {
         expect(due.status).toBe(ReminderStatus.SENT);
     });
 
-    it('should record the provider error as a failure', async () => {
+    it('should record the provider error and schedule a retry 15 minutes later', async () => {
         const due = reminder(ReminderChannel.WHATSAPP);
 
         reminderRepository.findDueForDispatch.mockResolvedValue([due]);
@@ -110,10 +154,59 @@ describe('A dispatch-reminders service', () => {
 
         await service.dispatchDue(clinicId);
 
-        expect(due.status).toBe(ReminderStatus.FAILED);
+        expect(due.status).toBe(ReminderStatus.PENDING);
+        expect(due.scheduledAt).toEqual(new Date('2026-11-30T13:45:00Z'));
         expect(due.errorMessage).toBe('Evolution API error 404');
         expect(due.attempts).toBe(1);
         expect(reminderRepository.save).toHaveBeenCalledWith(due);
+        expect(recordedEvents()).toEqual([
+            {
+                type: ReminderEventType.SEND_FAILED,
+                attempt: 1,
+                detail: 'Evolution API error 404',
+                source: ReminderEventSource.SYSTEM,
+            },
+            {
+                type: ReminderEventType.RETRY_SCHEDULED,
+                attempt: 1,
+                detail: '2026-11-30T13:45:00.000Z',
+                source: ReminderEventSource.SYSTEM,
+            },
+        ]);
+        expect(metrics.count).toHaveBeenCalledWith('notification.reminder.attempt', 1, {
+            channel: ReminderChannel.WHATSAPP,
+            outcome: 'retry',
+        });
+    });
+
+    it('should fail for good after the third attempt', async () => {
+        const due = reminder(ReminderChannel.WHATSAPP);
+
+        due.attempts = 2;
+        reminderRepository.findDueForDispatch.mockResolvedValue([due]);
+        whatsApp.send.mockResolvedValue({success: false, error: 'Evolution API error 500'});
+
+        await service.dispatchDue(clinicId);
+
+        expect(due.status).toBe(ReminderStatus.FAILED);
+        expect(due.attempts).toBe(3);
+        expect(recordedEvents().map((event) => event.type)).toEqual([ReminderEventType.SEND_FAILED]);
+        expect(metrics.count).toHaveBeenCalledWith('notification.reminder.attempt', 1, {
+            channel: ReminderChannel.WHATSAPP,
+            outcome: 'failed',
+        });
+    });
+
+    it('should not schedule a retry past the appointment start', async () => {
+        const due = reminder(ReminderChannel.WHATSAPP);
+
+        jest.setSystemTime(new Date('2026-12-01T13:20:00Z'));
+        reminderRepository.findDueForDispatch.mockResolvedValue([due]);
+        whatsApp.send.mockResolvedValue({success: false, error: 'timeout'});
+
+        await service.dispatchDue(clinicId);
+
+        expect(due.status).toBe(ReminderStatus.FAILED);
     });
 
     it('should record a failure when the provider throws and keep dispatching the batch', async () => {
@@ -126,7 +219,7 @@ describe('A dispatch-reminders service', () => {
 
         await service.dispatchDue(clinicId);
 
-        expect(first.status).toBe(ReminderStatus.FAILED);
+        expect(first.status).toBe(ReminderStatus.PENDING);
         expect(first.errorMessage).toBe('socket hang up');
         expect(second.status).toBe(ReminderStatus.SENT);
     });
@@ -157,5 +250,7 @@ describe('A dispatch-reminders service', () => {
         expect(email.send).not.toHaveBeenCalled();
         expect(due.status).toBe(ReminderStatus.FAILED);
         expect(due.errorMessage).toContain('has no email address');
+        // Missing contact data does not fix itself, so there is no retry.
+        expect(recordedEvents().map((event) => event.type)).toEqual([ReminderEventType.SEND_FAILED]);
     });
 });

@@ -24,3 +24,8 @@ onlyBuiltDependencies:
   - '@swc/core'
   - esbuild
   - prisma
+
+overrides:
+  # @prisma/instrumentation 6 accepts any 0.x instrumentation; the latest needs @opentelemetry/api 1.10.
+  # Keep it on the same OpenTelemetry release as the rest of apps/server (see docs/observability.md).
+  '@prisma/instrumentation>@opentelemetry/instrumentation': 0.220.0

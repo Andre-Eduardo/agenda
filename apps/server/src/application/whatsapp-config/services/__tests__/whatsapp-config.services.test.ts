@@ -9,6 +9,7 @@ import {WhatsAppConnectionStatus} from '@domain/notification/whatsapp-connection
 import {UserId} from '@domain/user/entities';
 import {EvolutionApiClient, EvolutionApiError} from '@infrastructure/whatsapp/evolution-api.client';
 import {
+    ConfigureWhatsAppWebhookService,
     CreateWhatsAppConfigService,
     DeleteWhatsAppConfigService,
     GetWhatsAppConfigService,
@@ -26,6 +27,7 @@ describe('The WhatsApp config services', () => {
     };
     const instanceName = clinicId.toString();
     const client = mock<EvolutionApiClient>();
+    const webhook = mock<ConfigureWhatsAppWebhookService>();
 
     function enable(enabled: boolean): void {
         Object.defineProperty(client, 'isEnabled', {get: () => enabled, configurable: true});
@@ -83,7 +85,7 @@ describe('The WhatsApp config services', () => {
     });
 
     describe('creating the config', () => {
-        const service = new CreateWhatsAppConfigService(client);
+        const service = new CreateWhatsAppConfigService(client, webhook);
         const payload = {number: Phone.create('11987654321')};
 
         it('should create the clinic instance with the full number and return its QR code', async () => {
@@ -99,6 +101,7 @@ describe('The WhatsApp config services', () => {
                 qrcode: {base64: 'qr', pairingCode: 'ABCD'},
             });
             expect(client.createInstance).toHaveBeenCalledWith(instanceName, '5511987654321');
+            expect(webhook.configure).toHaveBeenCalledWith(clinicId);
         });
 
         it('should fall back to the state field and to connecting', async () => {
@@ -137,7 +140,7 @@ describe('The WhatsApp config services', () => {
     });
 
     describe('getting a QR code', () => {
-        const service = new GetWhatsAppQrcodeService(client);
+        const service = new GetWhatsAppQrcodeService(client, webhook);
 
         it('should return a fresh QR code for the clinic instance', async () => {
             client.connectInstance.mockResolvedValue({base64: 'qr', code: 'raw', pairingCode: null});
@@ -147,6 +150,7 @@ describe('The WhatsApp config services', () => {
                 pairingCode: null,
             });
             expect(client.connectInstance).toHaveBeenCalledWith(instanceName);
+            expect(webhook.configure).toHaveBeenCalledWith(clinicId);
         });
 
         it('should fail when Evolution fails', async () => {

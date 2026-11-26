@@ -1,6 +1,13 @@
 import {Injectable} from '@nestjs/common';
+import * as PrismaClient from '@prisma/client';
+import {toEnum} from '@domain/@shared/utils';
 import {AppointmentReminderRepository} from '@domain/appointment-reminder/appointment-reminder.repository';
-import {AppointmentReminder, AppointmentReminderId, ReminderStatus} from '@domain/appointment-reminder/entities';
+import {
+    AppointmentReminder,
+    AppointmentReminderId,
+    ReminderChannel,
+    ReminderStatus,
+} from '@domain/appointment-reminder/entities';
 import type {AppointmentId} from '@domain/appointment/entities';
 import type {ClinicId} from '@domain/clinic/entities';
 import {AppointmentReminderMapper} from '@infrastructure/mappers/appointment-reminder.mapper';
@@ -76,5 +83,58 @@ export class AppointmentReminderPrismaRepository extends PrismaRepository implem
                 updatedAt: new Date(),
             },
         });
+    }
+
+    async findByAppointmentId(appointmentId: AppointmentId): Promise<AppointmentReminder[]> {
+        const records = await this.prisma.appointmentReminder.findMany({
+            where: {appointmentId: appointmentId.toString()},
+            orderBy: [{scheduledAt: 'asc'}, {createdAt: 'asc'}],
+        });
+
+        return records.map((r) => this.mapper.toDomain(r));
+    }
+
+    countPendingScheduledBefore(scheduledBefore: Date): Promise<number> {
+        return this.prisma.appointmentReminder.count({
+            where: {status: ReminderStatus.PENDING, scheduledAt: {lt: scheduledBefore}},
+        });
+    }
+
+    async findByProviderMessageId(
+        clinicId: ClinicId | null,
+        channel: ReminderChannel,
+        providerMessageId: string
+    ): Promise<AppointmentReminder | null> {
+        const record = await this.prisma.appointmentReminder.findFirst({
+            where: {
+                ...(clinicId === null ? {} : {clinicId: clinicId.toString()}),
+                channel: toEnum(PrismaClient.ReminderChannel, channel),
+                providerMessageId,
+            },
+            orderBy: {sentAt: 'desc'},
+        });
+
+        return record === null ? null : this.mapper.toDomain(record);
+    }
+
+    async findLatestSentTo(
+        clinicId: ClinicId,
+        channel: ReminderChannel,
+        destinations: string[],
+        sentSince: Date
+    ): Promise<AppointmentReminder | null> {
+        if (destinations.length === 0) return null;
+
+        const record = await this.prisma.appointmentReminder.findFirst({
+            where: {
+                clinicId: clinicId.toString(),
+                channel: toEnum(PrismaClient.ReminderChannel, channel),
+                destination: {in: destinations},
+                sentAt: {gte: sentSince},
+            },
+            orderBy: {sentAt: 'desc'},
+        });
+
+        return record === null ? null : this.mapper.toDomain(record);
     }
 }

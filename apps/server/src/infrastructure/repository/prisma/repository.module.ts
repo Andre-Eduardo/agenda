@@ -2,6 +2,7 @@ import {Module, Provider} from '@nestjs/common';
 import {AtomicExecutor} from '@domain/@shared/repository';
 import {AgentProposalRepository} from '@domain/agent-proposal/agent-proposal.repository';
 import {AppointmentPaymentRepository} from '@domain/appointment-payment/appointment-payment.repository';
+import {AppointmentReminderEventRepository} from '@domain/appointment-reminder/appointment-reminder-event.repository';
 import {AppointmentReminderRepository} from '@domain/appointment-reminder/appointment-reminder.repository';
 import {AppointmentRepository} from '@domain/appointment/appointment.repository';
 import {AuditLogRepository} from '@domain/audit/audit-log.repository';
@@ -53,6 +54,7 @@ import {MapperModule} from '@infrastructure/mappers';
 import {AgentProposalPrismaRepository} from '@infrastructure/repository/agent-proposal.prisma.repository';
 import {AiAgentProfilePrismaRepository} from '@infrastructure/repository/ai-agent-profile.prisma.repository';
 import {AppointmentPaymentPrismaRepository} from '@infrastructure/repository/appointment-payment.prisma.repository';
+import {AppointmentReminderEventPrismaRepository} from '@infrastructure/repository/appointment-reminder-event.prisma.repository';
 import {AppointmentReminderPrismaRepository} from '@infrastructure/repository/appointment-reminder.prisma.repository';
 import {AppointmentPrismaRepository} from '@infrastructure/repository/appointment.prisma.repository';
 import {AuditLogPrismaRepository} from '@infrastructure/repository/audit-log.prisma.repository';
@@ -130,6 +132,7 @@ const repositories: Provider[] = [
     {provide: AppointmentRepository, useClass: AppointmentPrismaRepository},
     {provide: AppointmentPaymentRepository, useClass: AppointmentPaymentPrismaRepository},
     {provide: AppointmentReminderRepository, useClass: AppointmentReminderPrismaRepository},
+    {provide: AppointmentReminderEventRepository, useClass: AppointmentReminderEventPrismaRepository},
     {provide: ClinicReminderConfigRepository, useClass: ClinicReminderConfigPrismaRepository},
     {provide: WorkingHoursRepository, useClass: WorkingHoursPrismaRepository},
     {provide: MemberBlockRepository, useClass: MemberBlockPrismaRepository},
