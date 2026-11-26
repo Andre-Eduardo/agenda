@@ -23,6 +23,11 @@ export class ClinicMemberDto extends EntityDto {
     @ApiProperty({description: 'Is the membership active'})
     isActive: boolean;
 
+    @ApiProperty({
+        description: 'True when this is a global support user inside the clinic, not an employee (read-only)',
+    })
+    supportAccess: boolean;
+
     @ApiProperty({type: 'string', format: 'uuid', nullable: true, description: 'Inviter member id'})
     invitedByMemberId: string | null;
 
@@ -34,6 +39,7 @@ export class ClinicMemberDto extends EntityDto {
         this.displayName = member.displayName;
         this.color = member.color;
         this.isActive = member.isActive;
+        this.supportAccess = member.supportAccess;
         this.invitedByMemberId = member.invitedByMemberId?.toString() ?? null;
     }
 }

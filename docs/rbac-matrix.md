@@ -80,6 +80,8 @@ verificações de clínica e paciente às ações críticas.
 | record | create, delete, update, view | create, delete, update, view | create, update, view | view | view |
 | room | create, delete, update, view | create, delete, update, view | view | view | — |
 | subscription | manage, view-clinic | manage, view-clinic | — | — | — |
+| support-access | — | — | — | — | — |
+| support-user | — | — | — | — | — |
 | upload | prepare, upload | prepare, upload | prepare, upload | prepare, upload | — |
 | user | change-password, create, delete, update, view, view-profile | change-password, create, delete, update, view, view-profile | — | — | — |
 | working-hours | manage | manage | manage | manage | — |
@@ -139,6 +141,20 @@ usava `patient-form:view` e a pré-evolução usava `imported-document:*`.
    reservada a `SUPER_ADMIN` e fica fora de todos os papéis da clínica,
    inclusive `OWNER` e `ADMIN`, que passam a receber `Permission.clinicScoped()`
    em vez de `Permission.all()`.
+
+## Suporte global (multiclínica)
+
+`support-access:enter` (entrar em qualquer clínica pelo suporte) e
+`support-user:manage` (criar e revogar usuários de suporte) também são globais e
+ficam fora de todos os papéis da clínica. O papel global `SUPPORT` entra em
+qualquer clínica sem ser funcionário dela, por um vínculo técnico
+(`ClinicMember.supportAccess`) sem papel de clínica, fora da equipe e da licença.
+Lá dentro ele só tem as permissões de leitura de `SUPPORT_PERMISSIONS`
+(`GlobalAuthorizer`), sem dados clínicos (prontuário, perfil clínico, documentos,
+formulários, alertas e IA), e o `AuthGuard` recusa qualquer método que não seja
+de leitura. `SUPER_ADMIN` entra do mesmo jeito, com acesso total. Cada entrada e
+saída fica no log de auditoria da clínica (`SUPPORT_ACCESS:ENTER` e
+`SUPPORT_ACCESS:LEAVE`), assim como cada request feita lá dentro.
 
 ## Perfil clínico e alertas (L1-07)
 

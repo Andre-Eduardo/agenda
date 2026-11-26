@@ -2,7 +2,7 @@ import {Injectable} from '@nestjs/common';
 import type {Actor} from '@domain/@shared/actor';
 import {AccessDeniedException, AccessDeniedReason} from '@domain/@shared/exceptions';
 import {ClinicMemberRepository} from '@domain/clinic-member/clinic-member.repository';
-import {ClinicMemberRole} from '@domain/clinic-member/entities';
+import {type ClinicMember, ClinicMemberRole} from '@domain/clinic-member/entities';
 import {ClinicPatientAccessRepository} from '@domain/clinic-patient-access/clinic-patient-access.repository';
 import type {ClinicPatientAccess} from '@domain/clinic-patient-access/entities';
 import {DocumentPermissionRepository} from '@domain/document-permission/document-permission.repository';
@@ -13,6 +13,9 @@ import {RecordId} from '@domain/record/entities';
 export type PatientAccessAction = 'read' | 'write' | 'register' | 'basic' | 'appointment';
 
 export type PatientClinicalAccess = {canRead: boolean; canWrite: boolean};
+
+/** O suporte global vê o cadastro e a agenda do paciente, nunca o dado clínico (LGPD). */
+const SUPPORT_ACTIONS: ReadonlySet<PatientAccessAction> = new Set(['basic', 'appointment']);
 
 @Injectable()
 export class PatientAccessChecker {
@@ -27,6 +30,8 @@ export class PatientAccessChecker {
     }
 
     async clinicalAccessForPatient(actor: Actor, patientId: PatientId): Promise<PatientClinicalAccess> {
+        if ((await this.activeMember(actor)).supportAccess) return {canRead: false, canWrite: false};
+
         const access = await this.requireAccess(actor, patientId, 'basic');
 
         return {canRead: access?.canRead() ?? true, canWrite: access?.canWrite() ?? true};
@@ -38,7 +43,11 @@ export class PatientAccessChecker {
         entityType: DocumentEntityType,
         entityId: string
     ): Promise<void> {
-        if (await this.isManager(actor)) return;
+        const member = await this.activeMember(actor);
+
+        if (member.supportAccess) this.deny();
+
+        if (this.isManager(member)) return;
         const override = await this.documentPermissionRepository.findByMemberAndEntity(
             actor.clinicMemberId,
             entityType,
@@ -74,7 +83,11 @@ export class PatientAccessChecker {
     }
 
     async patientIdsForAction(actor: Actor, action: PatientAccessAction): Promise<PatientId[] | null> {
-        if (await this.isManager(actor)) return null;
+        const member = await this.activeMember(actor);
+
+        if (member.supportAccess) return SUPPORT_ACTIONS.has(action) ? null : [];
+
+        if (this.isManager(member)) return null;
         const accesses = await this.accessRepository.findByMemberId(actor.clinicId, actor.clinicMemberId);
 
         return accesses
@@ -118,7 +131,15 @@ export class PatientAccessChecker {
         patientId: PatientId,
         action: PatientAccessAction
     ): Promise<ClinicPatientAccess | null> {
-        if (await this.isManager(actor)) return null;
+        const member = await this.activeMember(actor);
+
+        if (member.supportAccess) {
+            if (SUPPORT_ACTIONS.has(action)) return null;
+
+            this.deny();
+        }
+
+        if (this.isManager(member)) return null;
 
         const access = await this.accessRepository.findByMemberAndPatient(actor.clinicMemberId, patientId);
 
@@ -154,7 +175,11 @@ export class PatientAccessChecker {
         return false;
     }
 
-    private async isManager(actor: Actor): Promise<boolean> {
+    private isManager(member: ClinicMember): boolean {
+        return member.roles.includes(ClinicMemberRole.OWNER) || member.roles.includes(ClinicMemberRole.ADMIN);
+    }
+
+    private async activeMember(actor: Actor): Promise<ClinicMember> {
         const member = await this.memberRepository.findById(actor.clinicMemberId);
 
         if (
@@ -166,7 +191,7 @@ export class PatientAccessChecker {
             this.deny();
         }
 
-        return member.roles.includes(ClinicMemberRole.OWNER) || member.roles.includes(ClinicMemberRole.ADMIN);
+        return member;
     }
 
     private deny(): never {

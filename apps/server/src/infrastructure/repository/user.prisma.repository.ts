@@ -109,6 +109,7 @@ export class UserPrismaRepository extends PrismaRepository implements UserReposi
     async search(pagination: Pagination<UserSortOptions>, filter: UserSearchFilter = {}): Promise<PaginatedList<User>> {
         const where: Prisma.UserWhereInput = {
             id: filter.ids ? {in: filter.ids.map((id) => id.toString())} : undefined,
+            globalRole: filter.globalRoles ? {in: filter.globalRoles} : undefined,
             OR: filter.term
                 ? [
                       {name: {contains: filter.term, mode: 'insensitive'}},

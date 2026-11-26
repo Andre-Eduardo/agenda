@@ -17,8 +17,9 @@ import type {ClinicId} from '@domain/clinic/entities';
 import type {UserId} from '@domain/user/entities';
 
 export type ClinicMemberProps = EntityProps<ClinicMember>;
-export type CreateClinicMember = CreateEntity<ClinicMember>;
-export type UpdateClinicMember = Partial<ClinicMemberProps>;
+export type CreateClinicMember = Omit<CreateEntity<ClinicMember>, 'supportAccess'>;
+export type UpdateClinicMember = Partial<Omit<ClinicMemberProps, 'supportAccess'>>;
+export type CreateSupportAccess = {clinicId: ClinicId; userId: UserId; displayName: string};
 
 /**
  * Pivô central do sistema. Toda ação registra o ClinicMember responsável
@@ -38,10 +39,16 @@ export class ClinicMember extends AggregateRoot<ClinicMemberId> {
     /** Cor na agenda (substitui ProfessionalConfig.color) */
     color: string | null;
     isActive: boolean;
+    /**
+     * Vínculo técnico de um usuário global (SUPPORT/SUPER_ADMIN) que entrou na clínica pelo
+     * suporte. Não é funcionário: não tem papel, fica fora da equipe e da licença, e o que
+     * ele pode fazer vem só do papel global (GlobalAuthorizer).
+     */
+    supportAccess: boolean;
     /** Auditoria de onboarding. Null para o OWNER inicial da clínica. */
     invitedByMemberId: ClinicMemberId | null;
 
-    constructor(props: AllEntityProps<ClinicMember>) {
+    constructor(props: Override<AllEntityProps<ClinicMember>, {supportAccess?: boolean}>) {
         super(props);
         this.clinicId = props.clinicId;
         this.userId = props.userId;
@@ -49,6 +56,7 @@ export class ClinicMember extends AggregateRoot<ClinicMemberId> {
         this.displayName = props.displayName ?? null;
         this.color = props.color ?? null;
         this.isActive = props.isActive;
+        this.supportAccess = props.supportAccess ?? false;
         this.invitedByMemberId = props.invitedByMemberId ?? null;
         this.validate();
     }
@@ -65,7 +73,32 @@ export class ClinicMember extends AggregateRoot<ClinicMemberId> {
             displayName: props.displayName ?? null,
             color: props.color ?? null,
             isActive: props.isActive ?? true,
+            supportAccess: false,
             invitedByMemberId: props.invitedByMemberId ?? null,
+            createdAt: now,
+            updatedAt: now,
+            deletedAt: null,
+        });
+
+        member.addEvent(new ClinicMemberCreatedEvent({member, timestamp: now}));
+
+        return member;
+    }
+
+    /** Vínculo técnico de suporte: criado na primeira vez que um usuário global entra na clínica. */
+    static createSupportAccess(props: CreateSupportAccess): ClinicMember {
+        const now = new Date();
+
+        const member = new ClinicMember({
+            id: ClinicMemberId.generate(),
+            clinicId: props.clinicId,
+            userId: props.userId,
+            roles: [],
+            displayName: props.displayName,
+            color: null,
+            isActive: true,
+            supportAccess: true,
+            invitedByMemberId: null,
             createdAt: now,
             updatedAt: now,
             deletedAt: null,
@@ -82,6 +115,10 @@ export class ClinicMember extends AggregateRoot<ClinicMemberId> {
     }
 
     change(props: UpdateClinicMember): void {
+        if (this.supportAccess && props.roles !== undefined) {
+            throw new InvalidInputException('A support access cannot receive clinic roles.');
+        }
+
         const oldState = new ClinicMember(this);
 
         if (props.roles !== undefined) {
@@ -114,6 +151,14 @@ export class ClinicMember extends AggregateRoot<ClinicMemberId> {
             throw new InvalidInputException('Display name must be at least 1 character long when provided.');
         }
 
+        if (this.supportAccess) {
+            if (this.roles.length > 0) {
+                throw new InvalidInputException('A support access cannot have clinic roles.');
+            }
+
+            return;
+        }
+
         if (this.roles.length === 0) {
             throw new InvalidInputException('A clinic member must have at least one role.');
         }
@@ -128,6 +173,7 @@ export class ClinicMember extends AggregateRoot<ClinicMemberId> {
             displayName: this.displayName,
             color: this.color,
             isActive: this.isActive,
+            supportAccess: this.supportAccess,
             invitedByMemberId: this.invitedByMemberId?.toJSON() ?? null,
             createdAt: this.createdAt.toJSON(),
             updatedAt: this.updatedAt.toJSON(),

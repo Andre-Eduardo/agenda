@@ -68,6 +68,25 @@ describe('Module access', () => {
         expect(permissions.has(ClinicalChatPermission.CREATE)).toBe(false);
     });
 
+    it('lets a support access see every module the clinic contracted, without taking a seat', async () => {
+        const clinicId = ClinicId.generate();
+        const support = ClinicMember.createSupportAccess({clinicId, userId: UserId.generate(), displayName: 'Suporte'});
+        const license = ClinicLicense.create({clinicId});
+
+        license.enableModule(ModuleType.AI_CHAT, {includedSeats: 1, maxSeats: 1});
+
+        const clinicLicenseRepository = mock<ClinicLicenseRepository>();
+        const clinicMemberRepository = mock<ClinicMemberRepository>();
+
+        clinicLicenseRepository.findByClinicId.mockResolvedValue(license);
+        clinicMemberRepository.findById.mockResolvedValue(support);
+
+        const access = new ModuleAccess(clinicLicenseRepository, clinicMemberRepository);
+
+        await expect(access.getMemberModules(support.id)).resolves.toEqual(new Set([ModuleType.AI_CHAT]));
+        expect(license.membersOf(ModuleType.AI_CHAT)).toEqual([]);
+    });
+
     it('grants nothing to a clinic without license', async () => {
         const {clinicId, memberId, access} = setup({withLicense: false});
 

@@ -1,16 +1,20 @@
 import {useEffect, useState} from 'react';
-import {useGetClinicLicense, useSearchClinics, type Clinic} from '@agenda-app/client';
-import type {UseQueryResult} from '@tanstack/react-query';
-import {createFileRoute, Link} from '@tanstack/react-router';
-import {Building2, ChevronRight, Search} from 'lucide-react';
+import {useEnterClinic, useGetClinicLicense, useSearchClinics, type Clinic} from '@agenda-app/client';
+import {useQueryClient, type UseQueryResult} from '@tanstack/react-query';
+import {createFileRoute, Link, useNavigate} from '@tanstack/react-router';
+import {Building2, ChevronRight, LogIn, Search} from 'lucide-react';
+import {toast} from 'sonner';
 import {Badge} from '@/components/ui/componentes/badge';
+import {Button} from '@/components/ui/componentes/button';
 import {EmptyStateCard} from '@/components/ui/componentes/empty-state';
 import {Input} from '@/components/ui/componentes/input';
 import {Skeleton} from '@/components/ui/componentes/skeleton';
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from '@/components/ui/componentes/table';
+import {useCan} from '@/hooks/useCan';
 import {MODULE_LABELS} from '@/utils/ai-modules';
 import {Page} from '@/views/components/Page';
 import {
+    actionsCell,
     clinicName,
     clinicSub,
     emptyText,
@@ -58,7 +62,44 @@ function ClinicLicenseSummary({clinicId}: {clinicId: string}) {
     );
 }
 
+/** Enters the clinic as a global support user (read-only, audited) and opens its dashboard. */
+function EnterClinicButton({clinic}: {clinic: Clinic}) {
+    const queryClient = useQueryClient();
+    const navigate = useNavigate();
+    const enterClinic = useEnterClinic();
+
+    function handleEnter() {
+        enterClinic.mutate(
+            {clinicId: clinic.id},
+            {
+                onSuccess: () => {
+                    // Everything cached so far belongs to no clinic or to another one.
+                    queryClient.clear();
+                    toast.success(`Você entrou em ${clinic.name} como suporte`);
+                    void navigate({to: '/dashboard'});
+                },
+                onError: () => toast.error('Não foi possível entrar na clínica'),
+            }
+        );
+    }
+
+    return (
+        <Button
+            variant="outline"
+            size="sm"
+            onClick={handleEnter}
+            disabled={enterClinic.isPending}
+            aria-label={`Entrar em ${clinic.name} como suporte`}
+        >
+            <LogIn size={14} aria-hidden />
+            Entrar
+        </Button>
+    );
+}
+
 export function AdminClinicsPage() {
+    const canManageLicenses = useCan({has: 'clinic-license:manage'});
+    const canEnter = useCan({has: 'support-access:enter'});
     const [search, setSearch] = useState('');
     const [debouncedSearch, setDebouncedSearch] = useState('');
 
@@ -113,7 +154,7 @@ export function AdminClinicsPage() {
                     <TableHeader>
                         <TableRow>
                             <TableHead>Clínica</TableHead>
-                            <TableHead>Licença</TableHead>
+                            {canManageLicenses && <TableHead>Licença</TableHead>}
                             <TableHead />
                         </TableRow>
                     </TableHeader>
@@ -126,18 +167,25 @@ export function AdminClinicsPage() {
                                         {[clinic.city, clinic.state].filter(Boolean).join(' - ') || '—'}
                                     </div>
                                 </TableCell>
+                                {canManageLicenses && (
+                                    <TableCell>
+                                        <ClinicLicenseSummary clinicId={clinic.id} />
+                                    </TableCell>
+                                )}
                                 <TableCell>
-                                    <ClinicLicenseSummary clinicId={clinic.id} />
-                                </TableCell>
-                                <TableCell>
-                                    <Link
-                                        to="/admin/clinics/$clinicId"
-                                        params={{clinicId: clinic.id}}
-                                        className={linkCell}
-                                        aria-label="Gerenciar licença da clínica"
-                                    >
-                                        <ChevronRight size={16} />
-                                    </Link>
+                                    <div className={actionsCell}>
+                                        {canEnter && <EnterClinicButton clinic={clinic} />}
+                                        {canManageLicenses && (
+                                            <Link
+                                                to="/admin/clinics/$clinicId"
+                                                params={{clinicId: clinic.id}}
+                                                className={linkCell}
+                                                aria-label="Gerenciar licença da clínica"
+                                            >
+                                                <ChevronRight size={16} />
+                                            </Link>
+                                        )}
+                                    </div>
                                 </TableCell>
                             </TableRow>
                         ))}

@@ -34,6 +34,9 @@ export class ModuleAccess {
 
         const license = await this.clinicLicenseRepository.findByClinicId(member.clinicId);
 
+        // O suporte avalia a clínica como ela foi contratada: vê os pacotes dela, sem ocupar vaga.
+        if (member.supportAccess) return new Set(license?.modules.keys());
+
         return license?.modulesOf(clinicMemberId) ?? new Set();
     }
 

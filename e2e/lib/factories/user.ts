@@ -3,7 +3,7 @@ import {uuidv7} from 'uuidv7';
 import {hashPassword} from '../auth';
 import {prisma} from './prisma';
 
-export type GlobalRole = 'SUPER_ADMIN' | 'OWNER' | 'NONE';
+export type GlobalRole = 'SUPER_ADMIN' | 'SUPPORT' | 'OWNER' | 'NONE';
 
 export type CreateUserEntry = {
     username?: string;

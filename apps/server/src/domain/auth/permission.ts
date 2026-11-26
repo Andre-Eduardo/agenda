@@ -268,6 +268,16 @@ export enum ClinicLicensePermission {
     MANAGE = 'clinic-license:manage',
 }
 
+/** Entrar em qualquer clínica pelo suporte, sem ser funcionário dela. Só papéis globais. */
+export enum SupportAccessPermission {
+    ENTER = 'support-access:enter',
+}
+
+/** Criar e revogar usuários globais de suporte. Só SUPER_ADMIN. */
+export enum SupportUserPermission {
+    MANAGE = 'support-user:manage',
+}
+
 export enum AuditLogPermission {
     VIEW = 'audit-log:view',
 }
@@ -320,9 +330,15 @@ const PERMISSIONS = [
     ...Object.values(DraftEvolutionPermission),
     ...Object.values(ClinicModulePermission),
     ...Object.values(ClinicLicensePermission),
+    ...Object.values(SupportAccessPermission),
+    ...Object.values(SupportUserPermission),
 ];
 
-const GLOBAL_ONLY_PERMISSIONS: readonly string[] = Object.values(ClinicLicensePermission);
+const GLOBAL_ONLY_PERMISSIONS: readonly string[] = [
+    ...Object.values(ClinicLicensePermission),
+    ...Object.values(SupportAccessPermission),
+    ...Object.values(SupportUserPermission),
+];
 
 export type Permission = (typeof PERMISSIONS)[number];
 

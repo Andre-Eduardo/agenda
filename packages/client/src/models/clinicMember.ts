@@ -31,6 +31,8 @@ export type ClinicMember = {
     color: string | null;
     /** Is the membership active */
     isActive: boolean;
+    /** True when this is a global support user inside the clinic, not an employee (read-only) */
+    supportAccess: boolean;
     /**
      * Inviter member id
      * @nullable

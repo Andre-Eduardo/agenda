@@ -262,7 +262,8 @@
     "menu": "Menú principal",
     "admin": "Administración",
     "clinics": "Empresas",
-    "logout": "Salir"
+    "logout": "Salir",
+    "supportUsers": "Usuarios de soporte"
   },
   "patientCall": {
     "settings": "Configurar panel de llamadas",
@@ -499,5 +500,9 @@
     "terms": "Términos de Uso",
     "draftNotice": "Borrador pendiente de revisión del delegado de protección de datos (DPO). El texto entre corchetes aún se completará. El documento está en portugués.",
     "versionInfo": "Versión {{version}} · actualizado el {{date}}"
+  },
+  "support": {
+    "banner": "Estás en {{clinic}} como soporte: solo lectura, sin datos clínicos. Esta sesión queda en el registro de auditoría de la clínica.",
+    "leave": "Salir de la clínica"
   }
 }

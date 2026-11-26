@@ -262,7 +262,8 @@
     "menu": "Main menu",
     "admin": "Administration",
     "clinics": "Clinics",
-    "logout": "Sign out"
+    "logout": "Sign out",
+    "supportUsers": "Support users"
   },
   "patientCall": {
     "settings": "Call display settings",
@@ -499,5 +500,9 @@
     "terms": "Terms of Use",
     "draftNotice": "Draft pending review by the data protection officer (DPO). Text in brackets is still to be filled in. The document is in Portuguese.",
     "versionInfo": "Version {{version}} · updated on {{date}}"
+  },
+  "support": {
+    "banner": "You are in {{clinic}} as support: read-only, no clinical data. This session is recorded in the clinic audit log.",
+    "leave": "Leave clinic"
   }
 }

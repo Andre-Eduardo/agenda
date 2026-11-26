@@ -44,9 +44,10 @@ export class ClinicMemberPrismaRepository extends PrismaRepository implements Cl
         return members.map((m) => this.mapper.toDomain(m));
     }
 
+    /** Equipe da clínica: acessos de suporte global não são funcionários e ficam de fora. */
     async findByClinicId(clinicId: ClinicId): Promise<ClinicMember[]> {
         const members = await this.prisma.clinicMember.findMany({
-            where: {clinicId: clinicId.toString(), deletedAt: null},
+            where: {clinicId: clinicId.toString(), deletedAt: null, supportAccess: false},
         });
 
         return members.map((m) => this.mapper.toDomain(m));

@@ -120,4 +120,45 @@ describe('PatientAccessChecker', () => {
         accessRepository.findByMemberId.mockResolvedValue([access, other]);
         await expect(checker.readablePatientIds(actor)).resolves.toEqual([patientId]);
     });
+
+    describe('for a global support access', () => {
+        function supportSetup() {
+            const context = setup();
+            const support = ClinicMember.createSupportAccess({
+                clinicId: context.actor.clinicId,
+                userId: context.actor.userId,
+                displayName: 'Suporte',
+            });
+
+            support.id = context.actor.clinicMemberId;
+            context.memberRepository.findById.mockResolvedValue(support);
+
+            return context;
+        }
+
+        it('should see the registration and agenda of every patient', async () => {
+            const {actor, patientId, checker, accessRepository} = supportSetup();
+
+            await expect(checker.assertCanAccess(actor, patientId, 'basic')).resolves.toBeUndefined();
+            await expect(checker.assertCanAccess(actor, patientId, 'appointment')).resolves.toBeUndefined();
+            await expect(checker.patientIdsForAction(actor, 'basic')).resolves.toBeNull();
+            expect(accessRepository.findByMemberAndPatient).not.toHaveBeenCalled();
+        });
+
+        it('should never read or write clinical data', async () => {
+            const {actor, patientId, checker} = supportSetup();
+
+            await expect(checker.assertCanAccess(actor, patientId, 'read')).rejects.toThrow(AccessDeniedException);
+            await expect(checker.assertCanAccess(actor, patientId, 'write')).rejects.toThrow(AccessDeniedException);
+            await expect(checker.assertCanAccess(actor, patientId, 'register')).rejects.toThrow(AccessDeniedException);
+            await expect(checker.clinicalAccessForPatient(actor, patientId)).resolves.toEqual({
+                canRead: false,
+                canWrite: false,
+            });
+            await expect(checker.readablePatientIds(actor)).resolves.toEqual([]);
+            await expect(
+                checker.assertCanReadDocument(actor, patientId, DocumentEntityType.RECORD, 'record-id')
+            ).rejects.toThrow(AccessDeniedException);
+        });
+    });
 });

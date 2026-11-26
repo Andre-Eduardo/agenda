@@ -23,7 +23,7 @@ import {
 import {ClinicDto, SearchClinicsDto, searchClinicsSchema} from '@application/clinic/dtos';
 import {SearchClinicsService} from '@application/clinic/services';
 import {Actor, MaybeAuthenticatedActor} from '@domain/@shared/actor';
-import {ClinicLicensePermission, ClinicModulePermission, UserPermission} from '@domain/auth';
+import {ClinicLicensePermission, ClinicModulePermission, SupportAccessPermission, UserPermission} from '@domain/auth';
 import {ModuleType} from '@domain/clinic-license/models';
 import {ClinicId} from '@domain/clinic/entities';
 
@@ -49,7 +49,8 @@ export class ClinicLicenseController {
         responses: [{status: 200, description: 'Clinics list'}],
     })
     @BypassClinicMember()
-    @Authorize(ClinicLicensePermission.MANAGE)
+    // Support users list every clinic too, to pick which one to enter.
+    @Authorize(ClinicLicensePermission.MANAGE, SupportAccessPermission.ENTER)
     @Get('admin/clinics')
     searchClinics(
         @RequestActor() actor: MaybeAuthenticatedActor,

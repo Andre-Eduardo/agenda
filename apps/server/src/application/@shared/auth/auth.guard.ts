@@ -7,11 +7,15 @@ import {IS_PUBLIC_KEY} from '@application/@shared/auth/public.decorator';
 import {auditResourceId} from '@application/audit/audit-resource-id';
 import {AccessDeniedException, AccessDeniedReason, UnauthenticatedException} from '@domain/@shared/exceptions';
 import {AuditLogRepository} from '@domain/audit/audit-log.repository';
-import {Permission} from '@domain/auth';
+import {canAccessAllClinics, GlobalRole, Permission} from '@domain/auth';
 import {Authorizer} from '@domain/auth/authorizer';
 import {ClinicMemberRepository} from '@domain/clinic-member/clinic-member.repository';
-import {ClinicMemberId} from '@domain/clinic-member/entities';
-import {Token, TokenProvider, TokenScope} from '@domain/user/token';
+import {ClinicMember, ClinicMemberId} from '@domain/clinic-member/entities';
+import {Token, TokenClinicMember, TokenProvider, TokenScope} from '@domain/user/token';
+import {UserRepository} from '@domain/user/user.repository';
+
+/** Métodos que não alteram nada: os únicos que o suporte (só leitura) usa dentro de uma clínica. */
+const READ_ONLY_METHODS: ReadonlySet<string> = new Set(['GET', 'HEAD', 'OPTIONS']);
 
 @Injectable()
 export class AuthGuard implements CanActivate {
@@ -22,7 +26,8 @@ export class AuthGuard implements CanActivate {
         private readonly authorizer: Authorizer,
         private readonly reflector: Reflector,
         private readonly clinicMemberRepository: ClinicMemberRepository,
-        private readonly auditLogRepository?: AuditLogRepository
+        private readonly auditLogRepository?: AuditLogRepository,
+        private readonly userRepository?: UserRepository
     ) {}
 
     async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -56,10 +61,18 @@ export class AuthGuard implements CanActivate {
             context.getClass(),
         ]);
 
-        const matchingMember =
+        let matchingMember: TokenClinicMember | null =
             clinicMemberId === null
                 ? null
                 : (token.clinicMembers.find((m) => m.clinicMemberId.equals(clinicMemberId)) ?? null);
+
+        const member = clinicMemberId === null ? null : await this.clinicMemberRepository.findById(clinicMemberId);
+
+        // A support access never goes in the token: the user enters it explicitly (audited) and it
+        // only holds while their global role still reaches every clinic.
+        if (member?.supportAccess === true) {
+            matchingMember = await this.resolveSupportAccess(token, member);
+        }
 
         if (!shouldBypassClinicMember && matchingMember === null) {
             throw new AccessDeniedException(
@@ -69,8 +82,6 @@ export class AuthGuard implements CanActivate {
         }
 
         if (matchingMember !== null) {
-            const member = await this.clinicMemberRepository.findById(matchingMember.clinicMemberId);
-
             if (
                 member === null ||
                 !member.isActive ||
@@ -91,6 +102,21 @@ export class AuthGuard implements CanActivate {
             clinicMemberId: matchingMember?.clinicMemberId ?? null,
         };
 
+        if (
+            !shouldBypassClinicMember &&
+            matchingMember !== null &&
+            member?.supportAccess === true &&
+            !READ_ONLY_METHODS.has(request.method) &&
+            (await this.globalRoleOf(token)) === GlobalRole.SUPPORT
+        ) {
+            await this.auditDenied(context, request, token, matchingMember);
+
+            throw new AccessDeniedException(
+                'Support access is read-only.',
+                AccessDeniedReason.INSUFFICIENT_PERMISSIONS
+            );
+        }
+
         const permissions = this.reflector.get<Permission[] | undefined>(AUTHORIZE_KEY, context.getHandler());
 
         if (permissions === undefined) {
@@ -103,24 +129,49 @@ export class AuthGuard implements CanActivate {
             }
         }
 
-        if (matchingMember !== null && this.auditLogRepository !== undefined) {
-            await this.auditLogRepository.append({
-                clinicId: matchingMember.clinicId.toString(),
-                actorUserId: token.userId.toString(),
-                actorMemberId: matchingMember.clinicMemberId.toString(),
-                resource: context.getClass().name,
-                resourceId: auditResourceId(request.params),
-                action: `${request.method}:${context.getHandler().name}`,
-                result: 'DENIED',
-                statusCode: 403,
-                ip: request.actor.ip,
-            });
+        if (matchingMember !== null) {
+            await this.auditDenied(context, request, token, matchingMember);
         }
 
         throw new AccessDeniedException(
             `The user "${token.userId}" does not have the required permissions: [${permissions.join(', ')}]`,
             await this.authorizer.denialReason(clinicMemberId, token.userId, permissions)
         );
+    }
+
+    private async resolveSupportAccess(token: Token, member: ClinicMember): Promise<TokenClinicMember | null> {
+        if (!member.userId.equals(token.userId)) return null;
+
+        const role = await this.globalRoleOf(token);
+
+        if (role === null || !canAccessAllClinics(role)) return null;
+
+        return {clinicMemberId: member.id, clinicId: member.clinicId};
+    }
+
+    private async globalRoleOf(token: Token): Promise<GlobalRole | null> {
+        const user = (await this.userRepository?.findById(token.userId)) ?? null;
+
+        return user?.globalRole ?? null;
+    }
+
+    private async auditDenied(
+        context: ExecutionContext,
+        request: Request,
+        token: Token,
+        matchingMember: TokenClinicMember
+    ): Promise<void> {
+        await this.auditLogRepository?.append({
+            clinicId: matchingMember.clinicId.toString(),
+            actorUserId: token.userId.toString(),
+            actorMemberId: matchingMember.clinicMemberId.toString(),
+            resource: context.getClass().name,
+            resourceId: auditResourceId(request.params),
+            action: `${request.method}:${context.getHandler().name}`,
+            result: 'DENIED',
+            statusCode: 403,
+            ip: request.actor.ip,
+        });
     }
 
     private getTokenFromRequest(request: Request): Token | null {

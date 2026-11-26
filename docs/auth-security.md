@@ -66,3 +66,27 @@ Com `STORAGE_TYPE=local`, os arquivos em `LOCAL_UPLOAD_DIR` são servidos por
 cookie de sessão válido (escopo `AUTH`). Antes eram servidos publicamente pelo
 `ServeStaticModule`. A checagem é de autenticação, não de clínica: os nomes são UUIDv7, mas um
 usuário de outra clínica com a URL ainda conseguiria baixar o arquivo.
+
+## Usuário global de suporte (multiclínica)
+
+Equivalente ao usuário de suporte do plexter: entra em qualquer clínica para avaliar a
+configuração sem estar cadastrado como funcionário dela.
+
+- **Quem é:** um usuário com `GlobalRole.SUPPORT`. Só um `SUPER_ADMIN` cria e revoga esses
+  usuários (`/admin/support-users`, permissão `support-user:manage`). Revogar volta o papel para
+  `NONE`, e como o `AuthGuard` confere o papel global a cada request de um acesso de suporte, o
+  usuário perde as clínicas na hora, mesmo com a sessão aberta.
+- **Como entra:** `POST /support-access/clinics/:clinicId` (permissão `support-access:enter`, que
+  só `SUPPORT` e `SUPER_ADMIN` têm). Como toda ação aqui precisa de um `ClinicMember` (autoria e
+  auditoria), a primeira entrada cria um vínculo técnico (`ClinicMember.supportAccess = true`)
+  sem papel de clínica. Ele não aparece na equipe, não ocupa vaga da licença e não entra no token
+  no login: o usuário sempre escolhe a clínica de forma explícita. Se o usuário já é funcionário
+  da clínica, entra pelo vínculo normal.
+- **O que pode fazer:** só ler, sem dados clínicos (`SUPPORT_PERMISSIONS` em `GlobalAuthorizer`).
+  Prontuário, evoluções, perfil clínico, documentos, formulários, alertas e IA ficam de fora, e o
+  `PatientAccessChecker` só libera cadastro e agenda do paciente. Por segurança extra, o
+  `AuthGuard` recusa (e audita) qualquer método que não seja `GET`, `HEAD` ou `OPTIONS` vindo de
+  um acesso de suporte. Um `SUPER_ADMIN` que entra pelo mesmo fluxo tem acesso total.
+- **Auditoria:** a entrada (`SUPPORT_ACCESS:ENTER`), a saída (`SUPPORT_ACCESS:LEAVE`, em
+  `POST /support-access/leave`) e cada request feita lá dentro ficam no log de auditoria da
+  própria clínica, com o vínculo de suporte como autor.

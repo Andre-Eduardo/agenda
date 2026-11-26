@@ -6,6 +6,7 @@ import {
     Calendar,
     ClipboardList,
     Home,
+    LifeBuoy,
     LogOut,
     Menu,
     Moon,
@@ -26,12 +27,15 @@ import {useHasModule} from '@/hooks/useHasModule';
 import {useAppStore} from '@/store/appStore';
 import * as styles from './styles';
 import {icon, navLink, srOnly} from './styles';
+import {SupportBanner} from './SupportBanner';
 
 interface NavItem {
     icon: LucideIcon;
     labelKey: string;
     path: string;
     permission?: Permission;
+    /** Shown when the member has any of these permissions. */
+    anyPermission?: Permission[];
     /** Also requires the current member to be released by the clinic for this AI module. */
     module?: ModuleType;
 }
@@ -63,7 +67,18 @@ const NAV_GROUPS: NavGroup[] = [
     {
         labelKey: 'nav.admin',
         items: [
-            {icon: Building2, labelKey: 'nav.clinics', path: '/admin/clinics', permission: 'clinic-license:manage'},
+            {
+                icon: Building2,
+                labelKey: 'nav.clinics',
+                path: '/admin/clinics',
+                anyPermission: ['clinic-license:manage', 'support-access:enter'],
+            },
+            {
+                icon: LifeBuoy,
+                labelKey: 'nav.supportUsers',
+                path: '/admin/support-users',
+                permission: 'support-user:manage',
+            },
         ],
     },
 ];
@@ -97,7 +112,9 @@ interface NavLinkProps {
 
 function NavLink({item, currentPath, onClick}: NavLinkProps) {
     const {t} = useTranslation();
-    const allowed = useCan(item.permission ? {has: item.permission} : undefined);
+    const allowed = useCan(
+        item.permission || item.anyPermission ? {has: item.permission, hasAny: item.anyPermission} : undefined
+    );
     const hasModule = useHasModule(item.module);
     const isActive = item.path === '/' ? currentPath === '/' : currentPath.startsWith(item.path);
     const Icon = item.icon;
@@ -231,6 +248,8 @@ export function StackedLayout() {
                         </Avatar>
                     </div>
                 </header>
+
+                <SupportBanner />
 
                 <main className={styles.main}>
                     <Outlet />

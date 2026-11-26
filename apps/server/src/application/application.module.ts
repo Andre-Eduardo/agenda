@@ -49,6 +49,7 @@ import {ProfessionalModule} from '@application/professional/professional.module'
 import {RecordModule} from '@application/record/record.module';
 import {RoomModule} from '@application/room/room.module';
 import {SubscriptionModule} from '@application/subscription/subscription.module';
+import {SupportAccessModule} from '@application/support-access/support-access.module';
 import {UploadModule} from '@application/upload/upload.module';
 import {UserModule} from '@application/user/user.module';
 import {WhatsAppConfigModule} from '@application/whatsapp-config/whatsapp-config.module';
@@ -120,7 +121,8 @@ const guards: Provider[] = [
                 createAuthorizer(userRepository, clinicMemberRepository, clinicLicenseRepository),
                 new Reflector(),
                 clinicMemberRepository,
-                auditLogRepository
+                auditLogRepository,
+                userRepository
             ),
         inject: [
             EnvConfigService,
@@ -143,6 +145,7 @@ const guards: Provider[] = [
         ClinicModule,
         ClinicMemberModule,
         ClinicLicenseModule,
+        SupportAccessModule,
         ClinicPatientAccessModule,
         ProfessionalAgendaAccessModule,
         DocumentPermissionModule,

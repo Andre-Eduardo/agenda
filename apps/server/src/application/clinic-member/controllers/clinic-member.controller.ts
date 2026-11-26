@@ -82,9 +82,10 @@ export class ClinicMemberController {
     }
 
     @ApiOperation({
-        summary: 'Gets effective permissions for the current active clinic member',
+        summary: 'Gets effective permissions for the current active clinic member (global ones outside a clinic)',
         responses: [{status: 200, description: 'Effective permissions', type: ClinicMemberPermissionsDto}],
     })
+    @BypassClinicMember()
     @Get('me/permissions')
     getCurrentClinicMemberPermissions(@RequestActor() actor: Actor): Promise<ClinicMemberPermissionsDto> {
         return this.getCurrentClinicMemberPermissionsService.execute({actor, payload: undefined});

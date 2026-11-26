@@ -39,6 +39,7 @@ export const routes = rootRoute('../root.tsx', [
         route('/financial', filePath('financial', 'index')),
         route('/admin/clinics', filePath('admin', 'index')),
         route('/admin/clinics/$clinicId', filePath('admin', 'detail')),
+        route('/admin/support-users', filePath('admin', 'support-users')),
     ]),
 ]);
 
