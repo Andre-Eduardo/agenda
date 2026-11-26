@@ -23,7 +23,7 @@ function createStorage(s3: S3Options): S3FileStorage {
 
 describe('An S3 file storage', () => {
     beforeEach(() => {
-        jest.spyOn(S3Client.prototype, 'send').mockImplementation(() => Promise.resolve({}));
+        jest.spyOn(S3Client.prototype, 'send').mockResolvedValue({} as never);
     });
 
     afterEach(() => {

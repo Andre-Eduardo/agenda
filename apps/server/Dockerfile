@@ -24,12 +24,12 @@ RUN pnpm fetch --store-dir /pnpm/store
 
 FROM fetch AS build
 COPY . .
-RUN pnpm install --offline --frozen-lockfile --store-dir /pnpm/store --filter @agenda-app/server \
+RUN pnpm install --prefer-offline --frozen-lockfile --store-dir /pnpm/store --filter @agenda-app/server \
     && pnpm -F @agenda-app/server build
 
 FROM fetch AS prod-deps
 COPY . .
-RUN pnpm install --offline --frozen-lockfile --prod --store-dir /pnpm/store --filter @agenda-app/server
+RUN pnpm install --prefer-offline --frozen-lockfile --prod --store-dir /pnpm/store --filter @agenda-app/server
 
 FROM node:${NODE_VERSION}-alpine AS runtime
 RUN apk add --no-cache openssl tini

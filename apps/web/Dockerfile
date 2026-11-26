@@ -29,12 +29,15 @@ ARG VITE_API_URL=""
 ENV VITE_API_URL=${VITE_API_URL}
 COPY . .
 # "@agenda-app/app..." also installs (and builds, via postinstall) the generated API client.
-RUN pnpm install --offline --frozen-lockfile --store-dir /pnpm/store --filter "@agenda-app/app..." \
+RUN pnpm install --prefer-offline --frozen-lockfile --store-dir /pnpm/store --filter "@agenda-app/app..." \
     && pnpm -F @agenda-app/app build
 
 FROM nginxinc/nginx-unprivileged:${NGINX_VERSION} AS runtime
+# NGINX_ENTRYPOINT_LOCAL_RESOLVERS makes the image export NGINX_LOCAL_RESOLVERS (from /etc/resolv.conf),
+# used by the template to resolve API_UPSTREAM at request time.
 ENV API_UPSTREAM=http://server:3000 \
-    CLIENT_MAX_BODY_SIZE=25m
+    CLIENT_MAX_BODY_SIZE=25m \
+    NGINX_ENTRYPOINT_LOCAL_RESOLVERS=1
 COPY apps/web/nginx/default.conf.template /etc/nginx/templates/default.conf.template
 COPY --from=build /repo/apps/web/dist /usr/share/nginx/html
 
