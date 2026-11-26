@@ -1,5 +1,5 @@
 import type {ReactNode} from 'react';
-import {useGetRecord, useGetPatient, useSearchRecords} from '@agenda-app/client';
+import {useGetRecord, useGetPatient, useListAppointmentFollowUps, useSearchRecords} from '@agenda-app/client';
 import type {
     Record as MedicalRecord,
     Patient,
@@ -10,8 +10,10 @@ import type {
 } from '@agenda-app/client';
 import type {UseQueryResult} from '@tanstack/react-query';
 import {createFileRoute, useNavigate, Link} from '@tanstack/react-router';
+import {format} from 'date-fns';
 import {
     ChevronRight,
+    CalendarPlus,
     ChevronLeft,
     Clock,
     Sparkles,
@@ -23,6 +25,7 @@ import {
     Eye,
     Printer,
 } from 'lucide-react';
+import {useTranslation} from 'react-i18next';
 import {AvatarInitials} from '@/components/ui/componentes/avatar';
 import {Badge} from '@/components/ui/componentes/badge';
 import {
@@ -35,6 +38,8 @@ import {
 } from '@/components/ui/componentes/breadcrumb';
 import {Button} from '@/components/ui/componentes/button';
 import {Skeleton} from '@/components/ui/componentes/skeleton';
+import {useCan} from '@/hooks/useCan';
+import {RecordAmendmentsSection, RecordLifecycleActions} from './RecordLifecycle';
 import {
     FilesList,
     Notes,
@@ -314,18 +319,84 @@ function TagsSection({record}: {record: MedicalRecord}): ReactNode {
 
 // ── Notes section ──────────────────────────────────────────────────────────────
 
-function NotesSection({record}: {record: MedicalRecord}): ReactNode {
-    const freeNotes = asStr(record.freeNotes);
+function RecordFollowUps({recordId}: {recordId: string}) {
+    const {t, i18n} = useTranslation();
+    const canSchedule = useCan({hasAll: ['appointment:create', 'record:view', 'professional:view']});
+    const canView = useCan({has: 'appointment:view'});
+    const followUps = useListAppointmentFollowUps(recordId, {query: {enabled: canView}});
 
-    if (!freeNotes) return null;
+    if (!canSchedule && !canView) return null;
+
+    const dateTime = new Intl.DateTimeFormat(i18n.language, {dateStyle: 'short', timeStyle: 'short'});
 
     return (
         <SectionCard>
             <div className="head">
-                <div className="title">Observações complementares</div>
+                <h2 className="title">{t('followUp.title')}</h2>
             </div>
-            <Notes>{freeNotes}</Notes>
+            {canView && followUps.isLoading && <p role="status">{t('states.loading')}</p>}
+            {canView && followUps.isError && <p role="status">{t('followUp.listError')}</p>}
+            {canView && followUps.isSuccess && followUps.data.length === 0 && (
+                <p className="mb-3">{t('followUp.empty')}</p>
+            )}
+            {canView && followUps.isSuccess && followUps.data.length > 0 && (
+                <ul className="mb-3 space-y-2">
+                    {followUps.data.map((appointment) => {
+                        const date = new Date(appointment.startAt);
+
+                        return (
+                            <li key={appointment.id}>
+                                <Button asChild variant="outline" size="sm">
+                                    <Link
+                                        to="/appointments"
+                                        search={{date: format(date, 'yyyy-MM-dd'), appointmentId: appointment.id}}
+                                    >
+                                        {t('followUp.open', {date: dateTime.format(date)})}
+                                        {' · '}
+                                        {t(`reception.status.${appointment.status}`)}
+                                    </Link>
+                                </Button>
+                            </li>
+                        );
+                    })}
+                </ul>
+            )}
+            {canSchedule && (
+                <Button asChild size="sm">
+                    <Link to="/appointments" search={{followUpFromRecordId: recordId}}>
+                        <CalendarPlus size={16} aria-hidden />
+                        {t('followUp.schedule')}
+                    </Link>
+                </Button>
+            )}
         </SectionCard>
+    );
+}
+
+function NotesSection({record}: {record: MedicalRecord}): ReactNode {
+    const {t} = useTranslation();
+    const description = asStr(record.description);
+    const freeNotes = asStr(record.freeNotes);
+
+    return (
+        <>
+            {description && (
+                <SectionCard>
+                    <div className="head">
+                        <div className="title">{t('recordLifecycle.fields.description')}</div>
+                    </div>
+                    <Notes>{description}</Notes>
+                </SectionCard>
+            )}
+            {freeNotes && (
+                <SectionCard>
+                    <div className="head">
+                        <div className="title">{t('recordLifecycle.fields.freeNotes')}</div>
+                    </div>
+                    <Notes>{freeNotes}</Notes>
+                </SectionCard>
+            )}
+        </>
     );
 }
 
@@ -384,8 +455,9 @@ function FilesSection({record}: {record: MedicalRecord}): ReactNode {
 // ── Traceability section ───────────────────────────────────────────────────────
 
 function TraceabilitySection({record}: {record: MedicalRecord}): ReactNode {
+    const {t} = useTranslation();
     const isAI = record.source === 'IMPORT';
-    const publishedAt = asStr(record.signedAt) ?? record.createdAt;
+    const signedAt = asStr(record.signedAt);
 
     return (
         <TraceCard>
@@ -399,8 +471,10 @@ function TraceabilitySection({record}: {record: MedicalRecord}): ReactNode {
             </div>
             <div className="trace-grid">
                 <div className="trace-row">
-                    <div className="key">Publicado em</div>
-                    <div className={traceValMono}>{formatDateTime(publishedAt)}</div>
+                    <div className="key">
+                        {t(signedAt ? 'recordLifecycle.lastSignature' : 'recordLifecycle.createdAt')}
+                    </div>
+                    <div className={traceValMono}>{formatDateTime(signedAt ?? record.createdAt)}</div>
                 </div>
                 <div className="trace-row">
                     <div className="key">Status</div>
@@ -408,12 +482,12 @@ function TraceabilitySection({record}: {record: MedicalRecord}): ReactNode {
                         {record.isLocked ? (
                             <span className={signedBadge}>
                                 <span className="status-dot" />
-                                Assinado e imutável
+                                {t('recordLifecycle.lockedStatus')}
                             </span>
                         ) : (
                             <span className={draftBadge}>
                                 <span className="status-dot" />
-                                Rascunho
+                                {t(signedAt ? 'recordLifecycle.reopenedStatus' : 'recordLifecycle.draftStatus')}
                             </span>
                         )}
                     </div>
@@ -561,6 +635,7 @@ function RecordDetailView({
                             <ChevronRight className={chevronPatCard} />
                         </div>
                         <div className="header-actions">
+                            <RecordLifecycleActions key={record.id} record={record} />
                             <Button variant="outline" size="sm">
                                 <Printer className={icon4} />
                                 Imprimir
@@ -576,10 +651,12 @@ function RecordDetailView({
                 {/* Body */}
                 <div className="body">
                     <SoapSection record={record} />
+                    <RecordFollowUps recordId={record.id} />
                     <TagsSection record={record} />
                     <NotesSection record={record} />
                     <FilesSection record={record} />
                     <TraceabilitySection record={record} />
+                    <RecordAmendmentsSection recordId={record.id} />
                 </div>
 
                 {/* Bottom navigation */}
@@ -649,7 +726,7 @@ export function RecordDetailPage() {
 
     if (loadingRecord || loadingPatient) return <DetailSkeleton />;
 
-    if (errorRecord || errorPatient || !record || !patient) {
+    if (errorRecord || errorPatient || !record || !patient || record.patientId !== patientId) {
         return (
             <div className={pageErrorState}>
                 <p className={errorText}>Evolução não encontrada ou erro ao carregar.</p>

@@ -80,6 +80,12 @@ export class AppointmentListPage extends BasePage {
         return this.page.getByRole('button', {name: new RegExp(this.escapeRegExp(patientName))});
     }
 
+    async startNewAppointment(patientName: string) {
+        await this.newAppointmentButton.click();
+        await this.patientSearchInput.fill(patientName);
+        await this.page.getByRole('button', {name: patientName}).click();
+    }
+
     async createAppointment(
         patientName: string,
         options: {
@@ -91,11 +97,7 @@ export class AppointmentListPage extends BasePage {
             confirmOutsideAvailability?: boolean;
         } = {}
     ) {
-        await this.newAppointmentButton.click();
-        await this.patientSearchInput.fill(patientName);
-
-        const patientOption = this.page.getByRole('button', {name: patientName});
-        await patientOption.click();
+        await this.startNewAppointment(patientName);
 
         if (options.date) {
             await this.dateInput.fill(options.date);
@@ -134,11 +136,7 @@ export class AppointmentListPage extends BasePage {
         expectedMessage: RegExp,
         options: {date?: string; startTime?: string; durationMin?: number; room?: string; professional?: string} = {}
     ) {
-        await this.newAppointmentButton.click();
-        await this.patientSearchInput.fill(patientName);
-
-        const patientOption = this.page.getByRole('button', {name: patientName});
-        await patientOption.click();
+        await this.startNewAppointment(patientName);
 
         if (options.date) {
             await this.dateInput.fill(options.date);

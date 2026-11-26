@@ -26,11 +26,203 @@ import {HttpResponse, http} from 'msw';
 import type {RequestHandlerOptions} from 'msw';
 import {apiClient} from '../api-client';
 import type {ErrorType} from '../api-client';
-import type {ConfigureClinicLicenseInputDto, SetModuleMembersInputDto} from '../models';
+import type {ConfigureClinicLicenseInputDto, SearchClinicsParams, SetModuleMembersInputDto} from '../models';
 import {ModuleType} from '../models';
 import type {ApiProblem, ClinicLicense, MemberModules} from '../models';
 
 type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
+
+/**
+ * Feeds the AI module management panel: every clinic, independent of any active license.
+ * @summary Lists and searches clinics (platform admin)
+ */
+export const searchClinics = (
+    params: SearchClinicsParams,
+    options?: SecondParameter<typeof apiClient>,
+    signal?: AbortSignal
+) => {
+    return apiClient<void>({url: `/api/v1/admin/clinics`, method: 'GET', params, signal}, options);
+};
+
+export const getSearchClinicsQueryKey = (params?: SearchClinicsParams) => {
+    return [`/api/v1/admin/clinics`, ...(params ? [params] : [])] as const;
+};
+
+export const getSearchClinicsQueryOptions = <
+    TData = Awaited<ReturnType<typeof searchClinics>>,
+    TError = ErrorType<ApiProblem>,
+>(
+    params: SearchClinicsParams,
+    options?: {
+        query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof searchClinics>>, TError, TData>>;
+        request?: SecondParameter<typeof apiClient>;
+    }
+) => {
+    const {query: queryOptions, request: requestOptions} = options ?? {};
+
+    const queryKey = queryOptions?.queryKey ?? getSearchClinicsQueryKey(params);
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof searchClinics>>> = ({signal}) =>
+        searchClinics(params, requestOptions, signal);
+
+    return {queryKey, queryFn, ...queryOptions} as UseQueryOptions<
+        Awaited<ReturnType<typeof searchClinics>>,
+        TError,
+        TData
+    > & {queryKey: DataTag<QueryKey, TData, TError>};
+};
+
+export type SearchClinicsQueryResult = NonNullable<Awaited<ReturnType<typeof searchClinics>>>;
+export type SearchClinicsQueryError = ErrorType<ApiProblem>;
+
+export function useSearchClinics<TData = Awaited<ReturnType<typeof searchClinics>>, TError = ErrorType<ApiProblem>>(
+    params: SearchClinicsParams,
+    options: {
+        query: Partial<UseQueryOptions<Awaited<ReturnType<typeof searchClinics>>, TError, TData>> &
+            Pick<
+                DefinedInitialDataOptions<
+                    Awaited<ReturnType<typeof searchClinics>>,
+                    TError,
+                    Awaited<ReturnType<typeof searchClinics>>
+                >,
+                'initialData'
+            >;
+        request?: SecondParameter<typeof apiClient>;
+    },
+    queryClient?: QueryClient
+): DefinedUseQueryResult<TData, TError> & {queryKey: DataTag<QueryKey, TData, TError>};
+export function useSearchClinics<TData = Awaited<ReturnType<typeof searchClinics>>, TError = ErrorType<ApiProblem>>(
+    params: SearchClinicsParams,
+    options?: {
+        query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof searchClinics>>, TError, TData>> &
+            Pick<
+                UndefinedInitialDataOptions<
+                    Awaited<ReturnType<typeof searchClinics>>,
+                    TError,
+                    Awaited<ReturnType<typeof searchClinics>>
+                >,
+                'initialData'
+            >;
+        request?: SecondParameter<typeof apiClient>;
+    },
+    queryClient?: QueryClient
+): UseQueryResult<TData, TError> & {queryKey: DataTag<QueryKey, TData, TError>};
+export function useSearchClinics<TData = Awaited<ReturnType<typeof searchClinics>>, TError = ErrorType<ApiProblem>>(
+    params: SearchClinicsParams,
+    options?: {
+        query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof searchClinics>>, TError, TData>>;
+        request?: SecondParameter<typeof apiClient>;
+    },
+    queryClient?: QueryClient
+): UseQueryResult<TData, TError> & {queryKey: DataTag<QueryKey, TData, TError>};
+/**
+ * @summary Lists and searches clinics (platform admin)
+ */
+
+export function useSearchClinics<TData = Awaited<ReturnType<typeof searchClinics>>, TError = ErrorType<ApiProblem>>(
+    params: SearchClinicsParams,
+    options?: {
+        query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof searchClinics>>, TError, TData>>;
+        request?: SecondParameter<typeof apiClient>;
+    },
+    queryClient?: QueryClient
+): UseQueryResult<TData, TError> & {queryKey: DataTag<QueryKey, TData, TError>} {
+    const queryOptions = getSearchClinicsQueryOptions(params, options);
+
+    const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
+        queryKey: DataTag<QueryKey, TData, TError>;
+    };
+
+    query.queryKey = queryOptions.queryKey;
+
+    return query;
+}
+
+export const getSearchClinicsSuspenseQueryOptions = <
+    TData = Awaited<ReturnType<typeof searchClinics>>,
+    TError = ErrorType<ApiProblem>,
+>(
+    params: SearchClinicsParams,
+    options?: {
+        query?: Partial<UseSuspenseQueryOptions<Awaited<ReturnType<typeof searchClinics>>, TError, TData>>;
+        request?: SecondParameter<typeof apiClient>;
+    }
+) => {
+    const {query: queryOptions, request: requestOptions} = options ?? {};
+
+    const queryKey = queryOptions?.queryKey ?? getSearchClinicsQueryKey(params);
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof searchClinics>>> = ({signal}) =>
+        searchClinics(params, requestOptions, signal);
+
+    return {queryKey, queryFn, ...queryOptions} as UseSuspenseQueryOptions<
+        Awaited<ReturnType<typeof searchClinics>>,
+        TError,
+        TData
+    > & {queryKey: DataTag<QueryKey, TData, TError>};
+};
+
+export type SearchClinicsSuspenseQueryResult = NonNullable<Awaited<ReturnType<typeof searchClinics>>>;
+export type SearchClinicsSuspenseQueryError = ErrorType<ApiProblem>;
+
+export function useSearchClinicsSuspense<
+    TData = Awaited<ReturnType<typeof searchClinics>>,
+    TError = ErrorType<ApiProblem>,
+>(
+    params: SearchClinicsParams,
+    options: {
+        query: Partial<UseSuspenseQueryOptions<Awaited<ReturnType<typeof searchClinics>>, TError, TData>>;
+        request?: SecondParameter<typeof apiClient>;
+    },
+    queryClient?: QueryClient
+): UseSuspenseQueryResult<TData, TError> & {queryKey: DataTag<QueryKey, TData, TError>};
+export function useSearchClinicsSuspense<
+    TData = Awaited<ReturnType<typeof searchClinics>>,
+    TError = ErrorType<ApiProblem>,
+>(
+    params: SearchClinicsParams,
+    options?: {
+        query?: Partial<UseSuspenseQueryOptions<Awaited<ReturnType<typeof searchClinics>>, TError, TData>>;
+        request?: SecondParameter<typeof apiClient>;
+    },
+    queryClient?: QueryClient
+): UseSuspenseQueryResult<TData, TError> & {queryKey: DataTag<QueryKey, TData, TError>};
+export function useSearchClinicsSuspense<
+    TData = Awaited<ReturnType<typeof searchClinics>>,
+    TError = ErrorType<ApiProblem>,
+>(
+    params: SearchClinicsParams,
+    options?: {
+        query?: Partial<UseSuspenseQueryOptions<Awaited<ReturnType<typeof searchClinics>>, TError, TData>>;
+        request?: SecondParameter<typeof apiClient>;
+    },
+    queryClient?: QueryClient
+): UseSuspenseQueryResult<TData, TError> & {queryKey: DataTag<QueryKey, TData, TError>};
+/**
+ * @summary Lists and searches clinics (platform admin)
+ */
+
+export function useSearchClinicsSuspense<
+    TData = Awaited<ReturnType<typeof searchClinics>>,
+    TError = ErrorType<ApiProblem>,
+>(
+    params: SearchClinicsParams,
+    options?: {
+        query?: Partial<UseSuspenseQueryOptions<Awaited<ReturnType<typeof searchClinics>>, TError, TData>>;
+        request?: SecondParameter<typeof apiClient>;
+    },
+    queryClient?: QueryClient
+): UseSuspenseQueryResult<TData, TError> & {queryKey: DataTag<QueryKey, TData, TError>} {
+    const queryOptions = getSearchClinicsSuspenseQueryOptions(params, options);
+
+    const query = useSuspenseQuery(queryOptions, queryClient) as UseSuspenseQueryResult<TData, TError> & {
+        queryKey: DataTag<QueryKey, TData, TError>;
+    };
+
+    query.queryKey = queryOptions.queryKey;
+
+    return query;
+}
 
 /**
  * Professionals covered by the plan, contracted AI modules, their seats and assigned members.
@@ -761,6 +953,18 @@ export const useConfigureClinicLicense = <TError = ErrorType<ApiProblem>, TConte
     return useMutation(mutationOptions, queryClient);
 };
 
+export const getSearchClinicsResponseMockDefault = (overrideResponse: Partial<ApiProblem> = {}): ApiProblem => ({
+    title: faker.string.alpha({length: {min: 10, max: 20}}),
+    type: faker.internet.url(),
+    detail: faker.string.alpha({length: {min: 10, max: 20}}),
+    status: faker.helpers.arrayElement([
+        400, 401, 402, 403, 404, 405, 406, 407, 408, 409, 410, 411, 412, 413, 414, 415, 416, 417, 418, 421, 422, 423,
+        424, 428, 429, 456, 500, 501, 502, 503, 504, 505, 507, 508,
+    ] as const),
+    instance: faker.string.alpha({length: {min: 10, max: 20}}),
+    ...overrideResponse,
+});
+
 export const getGetCurrentLicenseResponseMock = (overrideResponse: Partial<ClinicLicense> = {}): ClinicLicense => ({
     clinicId: faker.string.uuid(),
     professionals: {
@@ -996,6 +1200,64 @@ export const getConfigureClinicLicenseResponseMockDefault = (
     instance: faker.string.alpha({length: {min: 10, max: 20}}),
     ...overrideResponse,
 });
+
+export const getSearchClinicsMockHandler = (
+    overrideResponse?: void | ((info: Parameters<Parameters<typeof http.get>[1]>[0]) => Promise<void> | void),
+    options?: RequestHandlerOptions
+) => {
+    return http.get(
+        '*/api/v1/admin/clinics',
+        async (info) => {
+            if (typeof overrideResponse === 'function') {
+                await overrideResponse(info);
+            }
+
+            return new HttpResponse(null, {status: 200});
+        },
+        options
+    );
+};
+
+export const getSearchClinicsMockHandler200 = (
+    overrideResponse?: void | ((info: Parameters<Parameters<typeof http.get>[1]>[0]) => Promise<void> | void),
+    options?: RequestHandlerOptions
+) => {
+    return http.get(
+        '*/api/v1/admin/clinics',
+        async (info) => {
+            if (typeof overrideResponse === 'function') {
+                await overrideResponse(info);
+            }
+
+            return new HttpResponse(null, {status: 200});
+        },
+        options
+    );
+};
+
+export const getSearchClinicsMockHandlerDefault = (
+    overrideResponse?:
+        | ApiProblem
+        | ((info: Parameters<Parameters<typeof http.get>[1]>[0]) => Promise<ApiProblem> | ApiProblem),
+    options?: RequestHandlerOptions
+) => {
+    return http.get(
+        '*/api/v1/admin/clinics',
+        async (info) => {
+            return new HttpResponse(
+                JSON.stringify(
+                    overrideResponse !== undefined
+                        ? typeof overrideResponse === 'function'
+                            ? await overrideResponse(info)
+                            : overrideResponse
+                        : getSearchClinicsResponseMockDefault()
+                ),
+                {status: 200, headers: {'Content-Type': 'application/json'}}
+            );
+        },
+        options
+    );
+};
 
 export const getGetCurrentLicenseMockHandler = (
     overrideResponse?:
@@ -1392,6 +1654,7 @@ export const getConfigureClinicLicenseMockHandlerDefault = (
 };
 
 export const getClinicLicenseMock = () => [
+    getSearchClinicsMockHandler(),
     getGetCurrentLicenseMockHandler(),
     getSetModuleMembersMockHandler(),
     getGetMyModulesMockHandler(),

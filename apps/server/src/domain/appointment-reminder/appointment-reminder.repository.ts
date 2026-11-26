@@ -1,4 +1,4 @@
-import type {AppointmentReminder, AppointmentReminderId} from '@domain/appointment-reminder/entities';
+import type {AppointmentReminder, AppointmentReminderId, ReminderChannel} from '@domain/appointment-reminder/entities';
 import type {AppointmentId} from '@domain/appointment/entities';
 import type {ClinicId} from '@domain/clinic/entities';
 
@@ -16,6 +16,25 @@ export interface AppointmentReminderRepository {
      */
     claimForDispatch(id: AppointmentReminderId, leaseMs: number): Promise<boolean>;
     cancelAllPending(appointmentId: AppointmentId): Promise<void>;
+    findByAppointmentId(appointmentId: AppointmentId): Promise<AppointmentReminder[]>;
+    /** Pending reminders, across clinics, whose time is before `scheduledBefore`. */
+    countPendingScheduledBefore(scheduledBefore: Date): Promise<number>;
+    /** The reminder the provider identified with this message id, within the clinic. */
+    findByProviderMessageId(
+        clinicId: ClinicId | null,
+        channel: ReminderChannel,
+        providerMessageId: string
+    ): Promise<AppointmentReminder | null>;
+    /**
+     * Most recently sent reminder to any of the destinations since `sentSince`. Used to attribute a
+     * patient reply that does not quote the reminder.
+     */
+    findLatestSentTo(
+        clinicId: ClinicId,
+        channel: ReminderChannel,
+        destinations: string[],
+        sentSince: Date
+    ): Promise<AppointmentReminder | null>;
 }
 
 export abstract class AppointmentReminderRepository {}

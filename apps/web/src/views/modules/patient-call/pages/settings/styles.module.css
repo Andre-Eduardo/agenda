@@ -1,0 +1,38 @@
+@reference '../../../../../app/globals.css';
+
+.layout {
+    @apply grid gap-5 xl:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)];
+}
+
+.card,
+.linkCard {
+    @apply flex min-w-0 flex-col gap-4 rounded-(--radius-card) border border-(--color-border) bg-(--color-bg-card) p-5;
+}
+
+.linkCard {
+    @apply items-start xl:col-span-2;
+}
+
+.heading {
+    @apply text-lg font-semibold;
+}
+
+.field {
+    @apply flex flex-col gap-1.5 text-sm font-medium;
+}
+
+.colors {
+    @apply grid grid-cols-2 gap-3;
+}
+
+.toggle {
+    @apply flex items-center gap-2 text-sm;
+}
+
+.preview {
+    @apply min-h-64 flex-1 overflow-hidden rounded-(--radius-card-sm);
+}
+
+.actions {
+    @apply flex flex-wrap gap-2;
+}

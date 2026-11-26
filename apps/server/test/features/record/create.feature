@@ -54,3 +54,20 @@ Feature: Clinical record creation (POST)
             | responsibleProfessionalId | ${ref:id:professional:dr_house} |
             | description    | Unauthorised note               |
         Then the request should fail with a 401 status code
+
+    Scenario: Create an evolution using the professional from its appointment
+        Given an appointment "visit" exists for patient "rec_patient" attended by "dr_house"
+        When I send a "POST" request to "/api/v1/records" with:
+            | patientId     | ${ref:id:patient:rec_patient} |
+            | appointmentId | ${ref:id:appointment:visit}   |
+            | plan          | Review after the visit        |
+        Then the request should succeed with a 201 status code
+        And the response should contain:
+            | appointmentId             | ${ref:id:appointment:visit}     |
+            | responsibleProfessionalId | ${ref:id:professional:dr_house} |
+
+    Scenario: A standalone evolution requires a responsible professional
+        When I send a "POST" request to "/api/v1/records" with:
+            | patientId | ${ref:id:patient:rec_patient} |
+            | plan      | Review after the visit        |
+        Then the request should fail with a 400 status code

@@ -1,6 +1,6 @@
-# Matriz RBAC da clínica — v0.4.0
+# Matriz RBAC da clínica — v0.5.0
 
-**Estado:** v0.2.0 aprovada pelo solicitante em 2026-09-23; extensão v0.3.0 aguarda revisão do PR L3-02; extensão v0.4.0 (pacotes de IA) aguarda revisão.
+**Estado:** v0.2.0 aprovada pelo solicitante em 2026-09-23; extensão v0.3.0 aguarda revisão do PR L3-02; extensão v0.4.0 (pacotes de IA) aguarda revisão; extensão v0.5.0 (conexão do WhatsApp da clínica, L2-02) aguarda revisão.
 **Referência:** L0-02 e L3-02, Sprint 0.
 
 Esta tabela explicita o teto de capacidade de cada papel para as permissões de
@@ -20,8 +20,8 @@ verificações de clínica e paciente às ações críticas.
   de vínculo com clínica, paciente, documento ou agenda.
 - O papel define apenas o teto funcional. Os endpoints de paciente,
   prontuário, agenda e documento clínico também consultam
-  `ClinicPatientAccess`; a leitura individual de prontuário respeita
-  `DocumentPermission`. Para agenda de terceiros, aplica-se
+  `ClinicPatientAccess`. A leitura de evoluções também verifica autoria e
+  respeita `DocumentPermission` dentro desse escopo. Para agenda de terceiros, aplica-se
   `ProfessionalAgendaAccess`. As ações críticas verificam a clínica do recurso
   antes de ler ou gravar.
 - `user:*` representa o catálogo de permissões no contexto da clínica. As
@@ -43,7 +43,7 @@ verificações de clínica e paciente às ações críticas.
 | audit-log | view | view | — | — | — |
 | appointment-payment | register, update, view | register, update, view | view | register, update, view | — |
 | appointment-reminder | dispatch, view | dispatch, view | — | — | — |
-| appointment | call, cancel, checkin, create, delete, update, view | call, cancel, checkin, create, delete, update, view | call, cancel, checkin, create, update, view | call, cancel, checkin, create, update, view | view |
+| appointment | call, cancel, checkin, create, delete, start, update, view | call, cancel, checkin, create, delete, start, update, view | call, cancel, checkin, create, start, update, view | call, cancel, checkin, create, start, update, view | view |
 | billing | view-clinic, view-member | view-clinic, view-member | — | — | — |
 | clinic-license | — | — | — | — | — |
 | clinic-member | create | create | — | — | — |
@@ -65,6 +65,7 @@ verificações de clínica e paciente às ações críticas.
 | member-block | create, delete, list | create, delete, list | create, delete, list | create, delete, list | — |
 | package-plan | create, update, view | create, update, view | view | view | — |
 | patient-alert | create, delete, update, view | create, delete, update, view | create, update, view | view | view |
+| patient-call | configure, operate | configure, operate | operate | operate | — |
 | patient-form | create, delete, update, view | create, delete, update, view | create, update, view | create, view | view |
 | patient-insurance-enrollment | create, update, view | create, update, view | view | create, update, view | — |
 | patient-package | sell, view | sell, view | view | sell, view | — |
@@ -73,6 +74,7 @@ verificações de clínica e paciente às ações críticas.
 | patient | create, delete, update, view | create, delete, update, view | create, update, view | create, update, view | view |
 | payment | manage, view | manage, view | — | — | — |
 | person | create, delete, update, view | create, delete, update, view | — | create, update, view | — |
+| procedure | manage, override | manage, override | — | — | — |
 | professional-agenda-access | grant, list, revoke | grant, list, revoke | — | — | — |
 | professional | create, delete, update, view | create, delete, update, view | update, view | — | — |
 | record | create, delete, update, view | create, delete, update, view | create, update, view | view | view |
@@ -81,6 +83,7 @@ verificações de clínica e paciente às ações críticas.
 | upload | prepare, upload | prepare, upload | prepare, upload | prepare, upload | — |
 | user | change-password, create, delete, update, view, view-profile | change-password, create, delete, update, view, view-profile | — | — | — |
 | working-hours | manage | manage | manage | manage | — |
+| whatsapp | connect, create, delete, logout, view | connect, create, delete, logout, view | — | — | — |
 
 ## Decisões aprovadas
 
@@ -96,6 +99,20 @@ verificações de clínica e paciente às ações críticas.
 
 Qualquer mudança posterior nas decisões exige nova versão e revisão da tabela,
 do mapa do domínio e do teste de correspondência.
+
+## Acesso às consultas e evoluções no dashboard
+
+A visão operacional usa `GET /api/v1/appointments/operational` com
+`appointment:view` e o escopo de atendimento do paciente na clínica ativa.
+A resposta traz os IDs da consulta e do paciente, início, fim, tipo e estado.
+Os detalhes do paciente seguem a permissão `patient:view`.
+
+O escopo clínico da evolução é aplicado antes da paginação e no acesso por ID
+ou pelo histórico de emendas. São exigidos o papel `PROFESSIONAL`, a permissão
+`record:view`, a autoria por `createdByMemberId` e o acesso clínico ao documento.
+O superadmin pode consultar as evoluções dentro da clínica ativa autenticada.
+Um vínculo de paciente ou uma concessão de documento a outro membro não amplia
+o escopo de autoria. A autoria é obrigatória no banco.
 
 ## Revisão v0.3.0 (L3-02)
 
@@ -122,3 +139,19 @@ usava `patient-form:view` e a pré-evolução usava `imported-document:*`.
    reservada a `SUPER_ADMIN` e fica fora de todos os papéis da clínica,
    inclusive `OWNER` e `ADMIN`, que passam a receber `Permission.clinicScoped()`
    em vez de `Permission.all()`.
+
+## Perfil clínico e alertas (L1-07)
+
+Na ficha do paciente, membros com as permissões clínicas do papel e acesso
+`FULL` podem preencher alergias, condições crônicas e medicações, além de criar,
+editar, ativar e desativar alertas. O perfil mantém o profissional escolhido
+na criação. Uma atualização pode limpar um campo explicitamente com `null`.
+
+O acesso `READ_ONLY` permite consultar dados clínicos conforme o papel.
+`REGISTER_ONLY` permite as rotinas cadastrais e de agenda concedidas ao membro.
+`OWNER` e `ADMIN` têm acesso clínico aos pacientes da própria clínica.
+
+Alertas ativos de gravidade `HIGH` aparecem como **Alertas críticos** na nova
+evolução e nos detalhes de um atendimento em aberto. Na Recepção, membros com
+acesso clínico veem os dados ao revisar o paciente antes de confirmar a chamada.
+Alertas desativados continuam disponíveis na ficha para consulta e reativação.

@@ -1,0 +1,55 @@
+@reference '../../../../../app/globals.css';
+
+.queue {
+    @apply overflow-hidden rounded-(--radius-card) border border-(--color-border) bg-(--color-bg-card);
+}
+
+.header {
+    @apply flex flex-wrap items-center justify-between gap-3 border-b border-(--color-border) px-4 py-3;
+}
+
+.heading {
+    @apply text-base font-medium text-(--color-text-primary);
+}
+
+.rows {
+    @apply divide-y divide-(--color-border);
+}
+
+.row {
+    @apply flex flex-wrap items-center gap-3 px-4 py-3;
+}
+
+.ticket {
+    @apply rounded-(--radius-card-sm) bg-(--color-primary-surface) px-2 py-1 font-mono text-sm font-semibold tabular-nums;
+}
+
+.identity {
+    @apply flex grow basis-32 flex-col gap-0.5 text-sm text-(--color-text-primary);
+}
+
+.identity time,
+.empty {
+    @apply text-sm text-(--color-text-secondary);
+}
+
+.empty {
+    @apply px-4 py-5;
+}
+
+.actions {
+    @apply flex flex-wrap gap-2;
+}
+
+.form,
+.field {
+    @apply flex flex-col gap-3;
+}
+
+.field {
+    @apply gap-1.5 text-sm font-medium;
+}
+
+.select {
+    @apply h-9 rounded-md border border-(--color-border) bg-(--color-bg-card) px-3 text-sm;
+}

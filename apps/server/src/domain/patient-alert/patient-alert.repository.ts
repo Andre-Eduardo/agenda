@@ -1,7 +1,7 @@
 import type {PaginatedList, Pagination} from '@domain/@shared/repository';
 import type {ClinicMemberId} from '@domain/clinic-member/entities';
 import type {ClinicId} from '@domain/clinic/entities';
-import type {PatientAlert, PatientAlertId} from '@domain/patient-alert/entities';
+import type {AlertSeverity, PatientAlert, PatientAlertId} from '@domain/patient-alert/entities';
 import type {PatientId} from '@domain/patient/entities';
 
 export type PatientAlertSearchFilter = {
@@ -9,6 +9,7 @@ export type PatientAlertSearchFilter = {
     patientId?: PatientId;
     createdByMemberId?: ClinicMemberId;
     isActive?: boolean;
+    severity?: AlertSeverity;
 };
 
 export type PatientAlertSortOptions = ['createdAt', 'updatedAt', 'severity'];

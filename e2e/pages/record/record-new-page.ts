@@ -62,7 +62,7 @@ export class RecordNewPage extends BasePage {
     }
 
     async verifyPageLoaded() {
-        await expect(this.page).toHaveURL(/\/patients\/[^/]+\/records\/new$/);
+        await expect(this.page).toHaveURL(/\/patients\/[^/]+\/records\/new(?:\?.*)?$/);
         await expect(this.title).toBeVisible();
     }
 

@@ -36,3 +36,26 @@ Feature: Patient alert listing (GET)
         Given I sign out
         When I send a "GET" request to "/api/v1/patients/${ref:id:patient:alert_patient}/alerts"
         Then the request should fail with a 401 status code
+
+    Scenario: Filter active critical alerts before the appointment
+        When I send a "POST" request to "/api/v1/patients/${ref:id:patient:alert_patient}/alerts" with:
+            | title    | Severe allergy |
+            | severity | HIGH           |
+        Then the request should succeed with a 201 status code
+        When I send a "POST" request to "/api/v1/patients/${ref:id:patient:alert_patient}/alerts" with:
+            | title    | Resolved warning |
+            | severity | HIGH             |
+            | isActive | false            |
+        Then the request should succeed with a 201 status code
+        When I send a "POST" request to "/api/v1/patients/${ref:id:patient:alert_patient}/alerts" with:
+            | title    | Routine observation |
+            | severity | MEDIUM              |
+        Then the request should succeed with a 201 status code
+        When I send a "GET" request to "/api/v1/patients/${ref:id:patient:alert_patient}/alerts" with the query:
+            | limit    | 10   |
+            | isActive | true |
+            | severity | HIGH |
+        Then the request should succeed with a 200 status code
+        And the response should contain:
+            | totalCount | 1 |
+            | data       | [{"title":"Severe allergy","severity":"HIGH","isActive":true}] |

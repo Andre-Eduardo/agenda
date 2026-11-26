@@ -17,13 +17,15 @@ import {
 import type {ClinicMemberId} from '@domain/clinic-member/entities';
 import type {ClinicId} from '@domain/clinic/entities';
 import type {PatientId} from '@domain/patient/entities';
+import type {ScheduledProcedure} from '@domain/procedure/procedure.entity';
+import type {RecordId} from '@domain/record/entities';
 import type {RoomId} from '@domain/room/entities';
 
 export type AppointmentProps = EntityProps<Appointment>;
 export type CreateAppointment = Omit<CreateEntity<Appointment>, 'status' | 'arrivedAt' | 'calledAt'> & {
     status?: AppointmentStatus;
 };
-export type UpdateAppointment = Partial<AppointmentProps>;
+export type UpdateAppointment = Partial<Omit<AppointmentProps, 'procedure'>> & {procedure?: ScheduledProcedure};
 
 export enum AppointmentStatus {
     SCHEDULED = 'SCHEDULED',
@@ -68,6 +70,7 @@ export class Appointment extends AggregateRoot<AppointmentId> {
     startAt: Date;
     endAt: Date;
     durationMinutes: number;
+    procedure: ScheduledProcedure | null;
     type: AppointmentType;
     canceledAt: Date | null;
     canceledReason: string | null;
@@ -79,8 +82,14 @@ export class Appointment extends AggregateRoot<AppointmentId> {
     calledAt: Date | null;
     /** Sala do atendimento. Só usado quando Clinic.roomManagementEnabled está ativo. */
     roomId: RoomId | null;
+    readonly followUpFromRecordId: RecordId | null;
 
-    constructor(props: AllEntityProps<Appointment>) {
+    constructor(
+        props: Omit<AllEntityProps<Appointment>, 'procedure' | 'followUpFromRecordId'> & {
+            procedure?: ScheduledProcedure | null;
+            followUpFromRecordId?: RecordId | null;
+        }
+    ) {
         super(props);
         this.clinicId = props.clinicId;
         this.patientId = props.patientId;
@@ -89,6 +98,7 @@ export class Appointment extends AggregateRoot<AppointmentId> {
         this.startAt = props.startAt;
         this.endAt = props.endAt;
         this.durationMinutes = props.durationMinutes;
+        this.procedure = props.procedure ?? null;
         this.type = props.type;
         this.canceledAt = props.canceledAt ?? null;
         this.canceledReason = props.canceledReason ?? null;
@@ -97,10 +107,15 @@ export class Appointment extends AggregateRoot<AppointmentId> {
         this.arrivedAt = props.arrivedAt ?? null;
         this.calledAt = props.calledAt ?? null;
         this.roomId = props.roomId ?? null;
+        this.followUpFromRecordId = props.followUpFromRecordId ?? null;
         this.validate();
     }
 
     static create(props: CreateAppointment): Appointment {
+        if (props.type === AppointmentType.PROCEDURE && props.procedure == null) {
+            throw new InvalidInputException('procedure.required');
+        }
+
         const id = AppointmentId.generate();
         const now = new Date();
 
@@ -138,6 +153,14 @@ export class Appointment extends AggregateRoot<AppointmentId> {
             throw new PreconditionException(`Cannot modify an appointment with status ${this.status}.`);
         }
 
+        if (
+            props.type === AppointmentType.PROCEDURE &&
+            this.type !== props.type &&
+            (props.procedure ?? this.procedure) === null
+        ) {
+            throw new InvalidInputException('procedure.required');
+        }
+
         const oldState = new Appointment(this);
 
         if (props.startAt !== undefined) {
@@ -150,6 +173,10 @@ export class Appointment extends AggregateRoot<AppointmentId> {
 
         if (props.durationMinutes !== undefined) {
             this.durationMinutes = props.durationMinutes;
+        }
+
+        if (props.procedure !== undefined) {
+            this.procedure = props.procedure;
         }
 
         if (props.type !== undefined) {
@@ -250,6 +277,10 @@ export class Appointment extends AggregateRoot<AppointmentId> {
     }
 
     validate(): void {
+        if (this.followUpFromRecordId !== null && this.type !== AppointmentType.RETURN) {
+            throw new InvalidInputException('appointment.follow_up_type_required');
+        }
+
         if (this.startAt >= this.endAt) {
             throw new InvalidInputException('endAt must be after startAt', [
                 {field: 'endAt', reason: 'endAt must be after startAt'},
@@ -273,6 +304,7 @@ export class Appointment extends AggregateRoot<AppointmentId> {
             startAt: this.startAt.toJSON(),
             endAt: this.endAt.toJSON(),
             durationMinutes: this.durationMinutes,
+            procedure: this.procedure,
             type: this.type,
             canceledAt: this.canceledAt?.toJSON() ?? null,
             canceledReason: this.canceledReason,
@@ -281,6 +313,7 @@ export class Appointment extends AggregateRoot<AppointmentId> {
             arrivedAt: this.arrivedAt?.toJSON() ?? null,
             calledAt: this.calledAt?.toJSON() ?? null,
             roomId: this.roomId?.toJSON() ?? null,
+            followUpFromRecordId: this.followUpFromRecordId?.toJSON() ?? null,
             createdAt: this.createdAt.toJSON(),
             updatedAt: this.updatedAt.toJSON(),
             deletedAt: this.deletedAt?.toJSON() ?? null,

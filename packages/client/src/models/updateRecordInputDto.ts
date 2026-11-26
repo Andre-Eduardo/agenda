@@ -11,22 +11,25 @@ import type {UpdateRecordInputDtoSource} from './updateRecordInputDtoSource';
 import type {UpdateRecordInputDtoTemplateType} from './updateRecordInputDtoTemplateType';
 
 export type UpdateRecordInputDto = {
-    /** @minLength 1 */
-    description: string;
+    /**
+     * @minLength 1
+     * @nullable
+     */
+    description?: string | null;
     /** @maxLength 255 */
-    title: string;
-    templateType: UpdateRecordInputDtoTemplateType;
-    attendanceType: UpdateRecordInputDtoAttendanceType;
-    clinicalStatus: UpdateRecordInputDtoClinicalStatus;
-    conductTags: UpdateRecordInputDtoConductTagsItem[];
-    subjective: string;
-    objective: string;
-    assessment: string;
-    plan: string;
-    freeNotes: string;
+    title?: string;
+    templateType?: UpdateRecordInputDtoTemplateType;
+    attendanceType?: UpdateRecordInputDtoAttendanceType;
+    clinicalStatus?: UpdateRecordInputDtoClinicalStatus;
+    conductTags?: UpdateRecordInputDtoConductTagsItem[];
+    subjective?: string;
+    objective?: string;
+    assessment?: string;
+    plan?: string;
+    freeNotes?: string;
     /** A datetime in ISO 8601 format. */
-    eventDate: string;
-    source: UpdateRecordInputDtoSource;
-    importedDocumentId: string;
-    wasHumanEdited: boolean;
+    eventDate?: string;
+    source?: UpdateRecordInputDtoSource;
+    importedDocumentId?: string;
+    wasHumanEdited?: boolean;
 };

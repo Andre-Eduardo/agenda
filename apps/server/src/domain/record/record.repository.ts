@@ -30,6 +30,9 @@ export type RecordSortOptions = ['createdAt', 'updatedAt', 'eventDate'];
 export interface RecordRepository {
     findById(id: RecordId): Promise<Record | null>;
 
+    /** Hold the record row until the surrounding write transaction finishes. */
+    lockForChange(id: RecordId, clinicId: ClinicId): Promise<void>;
+
     delete(id: RecordId): Promise<void>;
 
     search(pagination: Pagination<RecordSortOptions>, filter?: RecordSearchFilter): Promise<PaginatedList<Record>>;

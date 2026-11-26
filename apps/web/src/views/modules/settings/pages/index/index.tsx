@@ -42,7 +42,6 @@ import {
 import type {UseQueryResult} from '@tanstack/react-query';
 import {createFileRoute} from '@tanstack/react-router';
 import {
-    Bot,
     Briefcase,
     Calendar,
     Camera,
@@ -51,25 +50,26 @@ import {
     ChevronRight,
     CreditCard,
     DoorOpen,
-    FileSearch,
-    FileText,
     Hospital,
-    MessageSquare,
     Minus,
     PackagePlus,
     KeyRound,
     Laptop,
     Lock,
     LogOut,
+    MessageCircle,
+    BellRing,
     MonitorSmartphone,
     Plus,
     ShieldCheck,
     Sliders,
+    Stethoscope,
     Smartphone,
     Sparkles,
     Trash2,
     UserRound,
 } from 'lucide-react';
+import {useTranslation} from 'react-i18next';
 import {toast} from 'sonner';
 import {Button} from '@/components/ui/componentes/button';
 import {Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle} from '@/components/ui/componentes/dialog';
@@ -80,9 +80,13 @@ import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@/c
 import {Skeleton} from '@/components/ui/componentes/skeleton';
 import {useCan} from '@/hooks/useCan';
 import {formatBRL} from '@/lib/utils';
+import {MODULE_ICONS, MODULE_LABELS} from '@/utils/ai-modules';
 import {translateApiError} from '@/utils/translate-api-error';
 import {AgendaScheduleEditor} from '@/views/components/AgendaScheduleEditor';
 import {ConfirmDialog} from '@/views/components/ConfirmDialog';
+import {RemindersSection} from '@/views/modules/settings/components/RemindersSection';
+import {WhatsAppSection} from '@/views/modules/settings/components/WhatsAppSection';
+import {ProcedureCatalog} from '../../components/ProcedureCatalog';
 import {
     FooterBar,
     FormCard,
@@ -233,13 +237,15 @@ const PROFILE_TABS = [
 ] as const;
 
 type TabKey = 'identity' | 'pro' | 'office' | 'security';
-type Section = 'perfil' | 'agenda' | 'assinatura' | 'salas' | 'ia' | 'geral';
+type Section = 'perfil' | 'agenda' | 'assinatura' | 'salas' | 'whatsapp' | 'lembretes' | 'ia' | 'geral' | 'procedures';
 
-const SECTION_LABELS: Record<Section, string> = {
+const SECTION_LABELS: Record<Exclude<Section, 'procedures'>, string> = {
     perfil: 'Perfil',
     agenda: 'Agenda',
     assinatura: 'Assinatura',
     salas: 'Salas',
+    whatsapp: 'WhatsApp',
+    lembretes: 'Lembretes',
     ia: 'Módulos de IA',
     geral: 'Geral',
 };
@@ -247,8 +253,12 @@ const SECTION_LABELS: Record<Section, string> = {
 // ─── Page ────────────────────────────────────────────────────────────────────
 
 export function SettingsPage() {
+    const {t} = useTranslation();
     const [section, setSection] = useState<Section>('perfil');
+    const canManageProcedures = useCan({has: 'procedure:manage'});
     const canViewAiModules = useCan({has: 'clinic-module:view'});
+    const canViewWhatsApp = useCan({has: 'whatsapp:view'});
+    const canViewReminders = useCan({has: 'clinic-reminder-config:view'});
 
     return (
         <PageShell>
@@ -256,7 +266,9 @@ export function SettingsPage() {
             <nav className="breadcrumb">
                 <span className="crumb-link">Configurações</span>
                 <span className="crumb-sep">›</span>
-                <span className="crumb-current">{SECTION_LABELS[section]}</span>
+                <span className="crumb-current">
+                    {section === 'procedures' ? t('procedure.title') : SECTION_LABELS[section]}
+                </span>
             </nav>
 
             <div className="layout">
@@ -295,6 +307,36 @@ export function SettingsPage() {
                         <DoorOpen size={15} />
                         <span>Salas</span>
                     </button>
+                    {canManageProcedures && (
+                        <button
+                            type="button"
+                            className={sideNavItem({active: section === 'procedures'})}
+                            onClick={() => setSection('procedures')}
+                        >
+                            <Stethoscope size={15} />
+                            <span>{t('procedure.title')}</span>
+                        </button>
+                    )}
+                    {canViewWhatsApp && (
+                        <button
+                            type="button"
+                            className={sideNavItem({active: section === 'whatsapp'})}
+                            onClick={() => setSection('whatsapp')}
+                        >
+                            <MessageCircle size={15} />
+                            <span>WhatsApp</span>
+                        </button>
+                    )}
+                    {canViewReminders && (
+                        <button
+                            type="button"
+                            className={sideNavItem({active: section === 'lembretes'})}
+                            onClick={() => setSection('lembretes')}
+                        >
+                            <BellRing size={15} />
+                            <span>Lembretes</span>
+                        </button>
+                    )}
                     {canViewAiModules && (
                         <button
                             type="button"
@@ -321,6 +363,9 @@ export function SettingsPage() {
                     {section === 'agenda' && <AgendaSection />}
                     {section === 'assinatura' && <SubscriptionSection />}
                     {section === 'salas' && <RoomsSection />}
+                    {section === 'procedures' && canManageProcedures && <ProcedureCatalog />}
+                    {section === 'whatsapp' && canViewWhatsApp && <WhatsAppSection />}
+                    {section === 'lembretes' && canViewReminders && <RemindersSection />}
                     {section === 'ia' && canViewAiModules && <AiModulesSection />}
                     {section === 'geral' && <GeneralSection />}
                 </div>
@@ -562,20 +607,6 @@ function RoomsSection() {
 }
 
 // ─── Módulos de IA ──────────────────────────────────────────────────────────
-
-const MODULE_LABELS: Record<ModuleType, string> = {
-    AI_CHAT: 'Chat clínico com IA',
-    AI_AGENT: 'Agente autônomo',
-    AI_FORMS: 'Fichas com IA',
-    AI_DOCUMENT_IMPORT: 'Importação de documentos com IA',
-};
-
-const MODULE_ICONS = {
-    AI_CHAT: MessageSquare,
-    AI_AGENT: Bot,
-    AI_FORMS: FileText,
-    AI_DOCUMENT_IMPORT: FileSearch,
-} satisfies Record<ModuleType, typeof MessageSquare>;
 
 function AiModulesSection() {
     const memberQuery = useGetCurrentClinicMember();

@@ -13,6 +13,8 @@ export type ClinicalProfileSearchFilter = {
 
 export interface ClinicalProfileRepository {
     findByPatientId(patientId: PatientId): Promise<ClinicalProfile | null>;
+    /** Serializes profile writes for a patient within the current transaction, even before a profile exists. */
+    findByPatientIdForUpdate(patientId: PatientId): Promise<ClinicalProfile | null>;
     findById(id: ClinicalProfileId): Promise<ClinicalProfile | null>;
     save(profile: ClinicalProfile): Promise<void>;
 }

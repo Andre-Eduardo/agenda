@@ -53,14 +53,20 @@ export class PatientAlertPrismaRepository extends PrismaRepository implements Pa
             clinicId: filter.clinicId ? filter.clinicId.toString() : undefined,
             patientId: filter.patientId ? filter.patientId.toString() : undefined,
             createdByMemberId: filter.createdByMemberId ? filter.createdByMemberId.toString() : undefined,
-            isActive: filter.isActive ?? undefined,
+            isActive: filter.isActive,
+            severity: filter.severity,
             deletedAt: null,
         };
 
         const [data, totalCount] = await Promise.all([
             this.prisma.patientAlert.findMany({
                 where,
-                ...this.normalizePagination(pagination, {isActive: 'desc', createdAt: 'desc'}),
+                ...this.normalizePagination(pagination, {
+                    isActive: 'desc',
+                    severity: 'desc',
+                    createdAt: 'desc',
+                    id: 'desc',
+                }),
             }),
             this.prisma.patientAlert.count({where}),
         ]);

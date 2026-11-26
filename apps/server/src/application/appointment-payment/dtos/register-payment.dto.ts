@@ -8,8 +8,10 @@ import {PatientSubscriptionId} from '@domain/patient-subscription/entities';
 
 export const registerPaymentSchema = z.object({
     paymentMethod: z.nativeEnum(PaymentMethod),
-    amountBrl: z.number().positive(),
-    status: z.nativeEnum(AppointmentPaymentStatus).optional().default(AppointmentPaymentStatus.PAID),
+    amountBrl: z.number().nonnegative().multipleOf(0.01).optional().openapi({
+        description: 'Amount in BRL. Defaults to the appointment procedure price when applicable.',
+    }),
+    status: z.nativeEnum(AppointmentPaymentStatus).optional(),
     insurancePlanId: entityId(InsurancePlanId).nullish(),
     insuranceAuthCode: z.string().max(100).nullish(),
     /** Required when paymentMethod = PACKAGE — the package credit to debit. */

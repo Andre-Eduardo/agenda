@@ -7,6 +7,7 @@ import type {CreatedUser, CreateUserEntry} from './user';
 import {createTestUser, isCreatedUser} from './user';
 
 export type CreateProfessionalEntry = {
+    clinicId?: string;
     user?: CreateUserEntry | CreatedUser;
     /** Roles held besides PROFESSIONAL (e.g. ['OWNER'] for a member who also manages the clinic). */
     additionalRoles?: Exclude<ClinicMemberRole, 'PROFESSIONAL'>[];
@@ -38,7 +39,7 @@ export async function createTestProfessional(
 
     const now = new Date();
 
-    const clinic = await prisma.clinic.create({
+    const clinicId = entry.clinicId ?? (await prisma.clinic.create({
         data: {
             id: uuidv7(),
             name: `Clínica ${suffix}`,
@@ -46,12 +47,12 @@ export async function createTestProfessional(
             createdAt: now,
             updatedAt: now,
         },
-    });
+    })).id;
 
     const clinicMember = await prisma.clinicMember.create({
         data: {
             id: uuidv7(),
-            clinicId: clinic.id,
+            clinicId,
             userId: user.id,
             roles: ['PROFESSIONAL', ...(entry.additionalRoles ?? [])],
             displayName: entry.displayName ?? user.name,
@@ -76,7 +77,7 @@ export async function createTestProfessional(
     return {
         id: professional.id,
         clinicMemberId: clinicMember.id,
-        clinicId: clinic.id,
+        clinicId,
         userId: user.id,
         user,
     };

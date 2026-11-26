@@ -2,16 +2,21 @@ import {Body, Controller, Delete, Get, Patch, Post, Put, Query} from '@nestjs/co
 import {ApiTags} from '@nestjs/swagger';
 import {Authorize} from '@application/@shared/auth';
 import {RequestActor} from '@application/@shared/auth/request-actor.decorator';
-import {PaginatedDto} from '@application/@shared/dto';
 import {ApiOperation} from '@application/@shared/openapi/decorators';
 import {entityIdParam} from '@application/@shared/openapi/params';
 import {ValidatedParam, ZodValidationPipe} from '@application/@shared/validation';
 import {
     AppointmentDto,
+    CheckinAppointmentResultDto,
+    AppointmentFollowUpDto,
+    followUpRecordIdSchema,
     AppointmentStatusTransitionDto,
     CancelAppointmentInputDto,
     CreateAppointmentDto,
+    PaginatedAppointmentsDto,
+    PaginatedOperationalAppointmentsDto,
     SearchAppointmentsDto,
+    SearchOperationalAppointmentsDto,
     UpdateAppointmentInputDto,
     callAppointmentSchema,
     cancelAppointmentSchema,
@@ -21,9 +26,11 @@ import {
     getAppointmentSchema,
     noShowAppointmentSchema,
     searchAppointmentsSchema,
+    searchOperationalAppointmentsSchema,
     updateAppointmentSchema,
 } from '@application/appointment/dtos';
 import {
+    AppointmentFollowUpService,
     CallAppointmentService,
     CancelAppointmentService,
     CheckinAppointmentService,
@@ -42,6 +49,7 @@ import {ListManageableAgendasService} from '@application/professional-agenda-acc
 import {Actor} from '@domain/@shared/actor';
 import {AppointmentId} from '@domain/appointment/entities';
 import {AppointmentPermission} from '@domain/auth';
+import {RecordId} from '@domain/record/entities';
 
 @ApiTags('Appointment')
 @Controller('appointments')
@@ -59,7 +67,8 @@ export class AppointmentController {
         private readonly confirmAppointmentService: ConfirmAppointmentService,
         private readonly completeAppointmentService: CompleteAppointmentService,
         private readonly markNoShowAppointmentService: MarkNoShowAppointmentService,
-        private readonly listManageableAgendasService: ListManageableAgendasService
+        private readonly listManageableAgendasService: ListManageableAgendasService,
+        private readonly appointmentFollowUps: AppointmentFollowUpService
     ) {}
 
     @ApiOperation({
@@ -74,15 +83,28 @@ export class AppointmentController {
 
     @ApiOperation({
         summary: 'Lists and searches appointments',
-        responses: [{status: 200, description: 'Appointments list'}],
+        responses: [{status: 200, description: 'Appointments list', type: PaginatedAppointmentsDto}],
     })
     @Authorize(AppointmentPermission.VIEW)
     @Get()
     searchAppointments(
         @RequestActor() actor: Actor,
         @Query(new ZodValidationPipe(searchAppointmentsSchema)) query: SearchAppointmentsDto
-    ): Promise<PaginatedDto<AppointmentDto>> {
+    ): Promise<PaginatedAppointmentsDto> {
         return this.searchAppointmentsService.execute({actor, payload: query});
+    }
+
+    @ApiOperation({
+        summary: 'Lists appointments with operational fields for the dashboard',
+        responses: [{status: 200, description: 'Operational appointments', type: PaginatedOperationalAppointmentsDto}],
+    })
+    @Authorize(AppointmentPermission.VIEW)
+    @Get('operational')
+    searchOperationalAppointments(
+        @RequestActor() actor: Actor,
+        @Query(new ZodValidationPipe(searchOperationalAppointmentsSchema)) query: SearchOperationalAppointmentsDto
+    ): Promise<PaginatedOperationalAppointmentsDto> {
+        return this.searchAppointmentsService.searchOperational({actor, payload: query});
     }
 
     @ApiOperation({
@@ -93,6 +115,20 @@ export class AppointmentController {
     @Get('manageable-professionals')
     listManageableProfessionals(@RequestActor() actor: Actor): Promise<ClinicMemberDto[]> {
         return this.listManageableAgendasService.execute({actor, payload: undefined});
+    }
+
+    @ApiOperation({
+        summary: 'Lists follow-up appointments originating from a clinical record',
+        parameters: [entityIdParam('Source record ID', 'recordId')],
+        responses: [{status: 200, description: 'Follow-up appointments', type: [AppointmentFollowUpDto]}],
+    })
+    @Authorize(AppointmentPermission.VIEW)
+    @Get('follow-ups/:recordId')
+    listAppointmentFollowUps(
+        @RequestActor() actor: Actor,
+        @ValidatedParam('recordId', followUpRecordIdSchema) recordId: RecordId
+    ): Promise<AppointmentFollowUpDto[]> {
+        return this.appointmentFollowUps.list(actor, recordId);
     }
 
     @ApiOperation({
@@ -158,19 +194,19 @@ export class AppointmentController {
     @ApiOperation({
         summary: 'Checks in a patient at the reception (SCHEDULED/CONFIRMED → ARRIVED)',
         parameters: [entityIdParam('Appointment ID')],
-        responses: [{status: 200, description: 'Patient checked in', type: AppointmentDto}],
+        responses: [{status: 200, description: 'Patient checked in', type: CheckinAppointmentResultDto}],
     })
     @Authorize(AppointmentPermission.CHECKIN)
     @Patch(':id/checkin')
     checkinAppointment(
         @RequestActor() actor: Actor,
         @ValidatedParam('id', checkinAppointmentSchema.shape.id) id: AppointmentId
-    ): Promise<AppointmentDto> {
+    ): Promise<CheckinAppointmentResultDto> {
         return this.checkinAppointmentService.execute({actor, payload: {id}});
     }
 
     @ApiOperation({
-        summary: 'Calls the patient to the room (ARRIVED → IN_PROGRESS)',
+        summary: 'Starts an appointment using the legacy reception flow (ARRIVED → IN_PROGRESS)',
         parameters: [entityIdParam('Appointment ID')],
         responses: [{status: 200, description: 'Patient called', type: AppointmentDto}],
     })
@@ -181,6 +217,20 @@ export class AppointmentController {
         @ValidatedParam('id', callAppointmentSchema.shape.id) id: AppointmentId
     ): Promise<AppointmentDto> {
         return this.callAppointmentService.execute({actor, payload: {id}});
+    }
+
+    @ApiOperation({
+        summary: 'Starts care for a checked-in appointment (ARRIVED → IN_PROGRESS)',
+        parameters: [entityIdParam('Appointment ID')],
+        responses: [{status: 200, description: 'Care started', type: AppointmentDto}],
+    })
+    @Authorize(AppointmentPermission.START)
+    @Patch(':id/start')
+    startAppointment(
+        @RequestActor() actor: Actor,
+        @ValidatedParam('id', callAppointmentSchema.shape.id) id: AppointmentId
+    ): Promise<AppointmentDto> {
+        return this.callAppointmentService.start({actor, payload: {id}});
     }
 
     @ApiOperation({

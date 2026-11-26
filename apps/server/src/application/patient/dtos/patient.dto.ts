@@ -1,5 +1,6 @@
-import {ApiProperty, ApiSchema} from '@nestjs/swagger';
+import {ApiProperty, ApiPropertyOptional, ApiSchema} from '@nestjs/swagger';
 import {EntityDto} from '@application/@shared/dto';
+import type {PatientClinicalAccess} from '@application/clinic-patient-access/services/patient-access-checker.service';
 import type {Patient, PatientAddressData, InsurancePlanSummary} from '@domain/patient/entities';
 import {Gender, PersonType} from '@domain/person/entities';
 
@@ -112,9 +113,17 @@ export class PatientDto extends EntityDto {
     })
     insurancePlan: PatientInsurancePlanDto | null;
 
-    constructor(patient: Patient) {
+    @ApiPropertyOptional({description: 'Whether the current member can read clinical data for this patient'})
+    canReadClinicalData?: boolean;
+
+    @ApiPropertyOptional({description: 'Whether the current member can edit clinical data for this patient'})
+    canWriteClinicalData?: boolean;
+
+    constructor(patient: Patient, clinicalAccess?: PatientClinicalAccess) {
         super(patient);
         this.name = patient.name;
+        this.canReadClinicalData = clinicalAccess?.canRead;
+        this.canWriteClinicalData = clinicalAccess?.canWrite;
         this.documentId = patient.documentId.toString();
         this.phone = patient.phone?.toString() ?? null;
         this.gender = patient.gender;

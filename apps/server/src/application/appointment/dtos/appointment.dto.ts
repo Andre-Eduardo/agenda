@@ -1,8 +1,37 @@
-import {ApiProperty, ApiSchema} from '@nestjs/swagger';
+import {ApiProperty, ApiSchema, PickType} from '@nestjs/swagger';
 import {EntityDto} from '@application/@shared/dto';
+import {AppointmentRevenueDto} from '@application/appointment-payment/dtos';
+import type {AppointmentRevenue} from '@domain/appointment-payment/appointment-revenue';
 import {AppointmentPaymentStatus} from '@domain/appointment-payment/entities';
 import type {Appointment} from '@domain/appointment/entities';
 import {AppointmentStatus, AppointmentType} from '@domain/appointment/entities';
+import {ProcedureColor, ProcedureModality, ScheduledProcedure} from '@domain/procedure/procedure.entity';
+
+@ApiSchema({name: 'ScheduledProcedure'})
+export class ScheduledProcedureDto implements ScheduledProcedure {
+    @ApiProperty({format: 'uuid'})
+    id: string;
+
+    @ApiProperty()
+    name: string;
+
+    @ApiProperty({enum: ProcedureColor, enumName: 'ProcedureColor'})
+    color: ProcedureColor;
+
+    @ApiProperty({description: 'Price in BRL cents'})
+    priceInCents: number;
+
+    @ApiProperty({enum: ProcedureModality, enumName: 'ProcedureModality'})
+    modality: ProcedureModality;
+
+    constructor(procedure: ScheduledProcedure) {
+        this.id = procedure.id;
+        this.name = procedure.name;
+        this.color = procedure.color;
+        this.priceInCents = procedure.priceInCents;
+        this.modality = procedure.modality;
+    }
+}
 
 @ApiSchema({name: 'Appointment'})
 export class AppointmentDto extends EntityDto {
@@ -29,6 +58,9 @@ export class AppointmentDto extends EntityDto {
 
     @ApiProperty({description: 'Duration in minutes'})
     durationMinutes: number;
+
+    @ApiProperty({type: ScheduledProcedureDto, nullable: true})
+    procedure: ScheduledProcedureDto | null;
 
     @ApiProperty({enum: AppointmentType, description: 'The appointment type'})
     type: AppointmentType;
@@ -74,6 +106,9 @@ export class AppointmentDto extends EntityDto {
     })
     paymentStatus: AppointmentPaymentStatus | null;
 
+    @ApiProperty({type: AppointmentRevenueDto, nullable: true})
+    revenue: AppointmentRevenueDto | null;
+
     @ApiProperty({
         type: String,
         format: 'uuid',
@@ -82,7 +117,7 @@ export class AppointmentDto extends EntityDto {
     })
     roomId: string | null;
 
-    constructor(appointment: Appointment, paymentStatus: AppointmentPaymentStatus | null = null) {
+    constructor(appointment: Appointment, revenue: AppointmentRevenue | null = null) {
         super(appointment);
         this.clinicId = appointment.clinicId.toString();
         this.patientId = appointment.patientId.toString();
@@ -91,6 +126,7 @@ export class AppointmentDto extends EntityDto {
         this.startAt = appointment.startAt.toISOString();
         this.endAt = appointment.endAt.toISOString();
         this.durationMinutes = appointment.durationMinutes;
+        this.procedure = appointment.procedure === null ? null : new ScheduledProcedureDto(appointment.procedure);
         this.type = appointment.type;
         this.status = appointment.status;
         this.canceledAt = appointment.canceledAt?.toISOString() ?? null;
@@ -98,7 +134,57 @@ export class AppointmentDto extends EntityDto {
         this.note = appointment.note;
         this.arrivedAt = appointment.arrivedAt?.toISOString() ?? null;
         this.calledAt = appointment.calledAt?.toISOString() ?? null;
-        this.paymentStatus = paymentStatus;
+        this.paymentStatus = revenue?.status ?? null;
+        this.revenue = revenue === null ? null : new AppointmentRevenueDto(revenue);
         this.roomId = appointment.roomId?.toString() ?? null;
     }
+}
+
+@ApiSchema({name: 'AppointmentListItem'})
+export class AppointmentListItemDto extends AppointmentDto {
+    @ApiProperty({type: String, nullable: true, description: 'Display name of the scheduled clinic member'})
+    attendedByName: string | null;
+
+    constructor(appointment: Appointment, revenue: AppointmentRevenue | null, attendedByName: string | null) {
+        super(appointment, revenue);
+        this.attendedByName = attendedByName;
+    }
+}
+
+@ApiSchema({name: 'PaginatedAppointments'})
+export class PaginatedAppointmentsDto {
+    @ApiProperty({type: () => [AppointmentListItemDto]})
+    data!: AppointmentListItemDto[];
+
+    @ApiProperty()
+    totalCount!: number;
+}
+
+@ApiSchema({name: 'OperationalAppointment'})
+export class OperationalAppointmentDto extends PickType(AppointmentDto, [
+    'id',
+    'patientId',
+    'startAt',
+    'endAt',
+    'type',
+    'status',
+]) {
+    constructor(appointment: Appointment) {
+        super();
+        this.id = appointment.id.toString();
+        this.patientId = appointment.patientId.toString();
+        this.startAt = appointment.startAt.toISOString();
+        this.endAt = appointment.endAt.toISOString();
+        this.type = appointment.type;
+        this.status = appointment.status;
+    }
+}
+
+@ApiSchema({name: 'PaginatedOperationalAppointments'})
+export class PaginatedOperationalAppointmentsDto {
+    @ApiProperty({type: () => [OperationalAppointmentDto]})
+    data!: OperationalAppointmentDto[];
+
+    @ApiProperty()
+    totalCount!: number;
 }

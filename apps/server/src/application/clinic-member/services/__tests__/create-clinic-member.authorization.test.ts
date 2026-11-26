@@ -139,7 +139,7 @@ describe('clinic member creation authorization', () => {
             const {actor, clinic, memberRepository, service} = setupWithManager(null);
 
             await expect(service.execute({actor, payload: professionalPayload(clinic, true)})).rejects.toThrow(
-                /SEAT_LIMIT_REACHED/
+                /clinic_license\.seat_limit_reached/
             );
             expect(memberRepository.save).not.toHaveBeenCalled();
         });

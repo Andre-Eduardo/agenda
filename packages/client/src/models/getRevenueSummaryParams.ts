@@ -9,11 +9,11 @@ import type {GetRevenueSummaryStatus} from './getRevenueSummaryStatus';
 
 export type GetRevenueSummaryParams = {
     /**
-     * Start date ISO8601
+     * Start of the appointment period in ISO 8601
      */
     startDate: string;
     /**
-     * End date ISO8601
+     * End of the appointment period in ISO 8601
      */
     endDate: string;
     /**

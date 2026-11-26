@@ -1,9 +1,10 @@
 import {Injectable} from '@nestjs/common';
 import {ApplicationService, Command} from '@application/@shared/application.service';
-import {assertEntityBelongsToClinic} from '@application/@shared/validators/cross-tenant.validator';
 import {PatientAccessChecker} from '@application/clinic-patient-access/services/patient-access-checker.service';
+import {RecordAuthorAccess} from '@application/clinic-patient-access/services/record-author-access.service';
 import {RecordDto, ReopenRecordDto} from '@application/record/dtos';
 import {AccessDeniedException, AccessDeniedReason, ResourceNotFoundException} from '@domain/@shared/exceptions';
+import {Transactional} from '@domain/@shared/repository';
 import {ClinicMemberRepository} from '@domain/clinic-member/clinic-member.repository';
 import {ClinicMemberRole} from '@domain/clinic-member/entities/clinic-member-role';
 import {EventDispatcher} from '@domain/event';
@@ -25,9 +26,11 @@ export class ReopenRecordService implements ApplicationService<ReopenRecordDto, 
         private readonly recordRepository: RecordRepository,
         private readonly recordAmendmentRepository: RecordAmendmentRepository,
         private readonly clinicMemberRepository: ClinicMemberRepository,
+        private readonly recordAuthorAccess: RecordAuthorAccess,
         private readonly eventDispatcher: EventDispatcher
     ) {}
 
+    @Transactional()
     async execute({actor, payload}: Command<ReopenRecordDto>): Promise<RecordDto> {
         const member = await this.clinicMemberRepository.findById(actor.clinicMemberId);
 
@@ -35,13 +38,15 @@ export class ReopenRecordService implements ApplicationService<ReopenRecordDto, 
             throw new AccessDeniedException('RECORD_REOPEN_FORBIDDEN', AccessDeniedReason.INSUFFICIENT_PERMISSIONS);
         }
 
+        await this.recordRepository.lockForChange(payload.id, actor.clinicId);
+
         const record = await this.recordRepository.findById(payload.id);
 
         if (record === null) {
             throw new ResourceNotFoundException('Record not found.', payload.id.toString());
         }
 
-        assertEntityBelongsToClinic(record.clinicId, actor.clinicId);
+        await this.recordAuthorAccess.assertCanRead(actor, record);
         await this.patientAccessChecker.assertCanAccess(actor, PatientId.from(record.patientId.toString()), 'write');
 
         record.unlock(actor.clinicMemberId);
@@ -51,7 +56,7 @@ export class ReopenRecordService implements ApplicationService<ReopenRecordDto, 
             recordId: record.id,
             requestedByMemberId: actor.clinicMemberId,
             justification: payload.justification,
-            reopenedAt: new Date(),
+            reopenedAt: record.updatedAt,
         });
 
         await this.recordRepository.save(record);

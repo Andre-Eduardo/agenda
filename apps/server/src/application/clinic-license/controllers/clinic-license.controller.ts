@@ -1,12 +1,13 @@
-import {Body, Controller, Get, Param, Patch, Put} from '@nestjs/common';
+import {Body, Controller, Get, Patch, Put, Query} from '@nestjs/common';
 import {ApiTags} from '@nestjs/swagger';
 import {z} from 'zod';
 import {Authorize} from '@application/@shared/auth';
 import {BypassClinicMember} from '@application/@shared/auth/bypass-clinic-member.decorator';
 import {RequestActor} from '@application/@shared/auth/request-actor.decorator';
+import {PaginatedDto} from '@application/@shared/dto';
 import {ApiOperation} from '@application/@shared/openapi/decorators';
 import {entityIdParam} from '@application/@shared/openapi/params';
-import {ValidatedParam} from '@application/@shared/validation';
+import {ValidatedParam, ZodValidationPipe} from '@application/@shared/validation';
 import {
     ClinicLicenseDto,
     ConfigureClinicLicenseInputDto,
@@ -19,6 +20,8 @@ import {
     GetMyModulesService,
     SetModuleMembersService,
 } from '@application/clinic-license/services';
+import {ClinicDto, SearchClinicsDto, searchClinicsSchema} from '@application/clinic/dtos';
+import {SearchClinicsService} from '@application/clinic/services';
 import {Actor, MaybeAuthenticatedActor} from '@domain/@shared/actor';
 import {ClinicLicensePermission, ClinicModulePermission, UserPermission} from '@domain/auth';
 import {ModuleType} from '@domain/clinic-license/models';
@@ -36,8 +39,24 @@ export class ClinicLicenseController {
         private readonly getClinicLicenseService: GetClinicLicenseService,
         private readonly configureClinicLicenseService: ConfigureClinicLicenseService,
         private readonly setModuleMembersService: SetModuleMembersService,
-        private readonly getMyModulesService: GetMyModulesService
+        private readonly getMyModulesService: GetMyModulesService,
+        private readonly searchClinicsService: SearchClinicsService
     ) {}
+
+    @ApiOperation({
+        summary: 'Lists and searches clinics (platform admin)',
+        description: 'Feeds the AI module management panel: every clinic, independent of any active license.',
+        responses: [{status: 200, description: 'Clinics list'}],
+    })
+    @BypassClinicMember()
+    @Authorize(ClinicLicensePermission.MANAGE)
+    @Get('admin/clinics')
+    searchClinics(
+        @RequestActor() actor: MaybeAuthenticatedActor,
+        @Query(new ZodValidationPipe(searchClinicsSchema)) query: SearchClinicsDto
+    ): Promise<PaginatedDto<ClinicDto>> {
+        return this.searchClinicsService.execute({actor, payload: query});
+    }
 
     @ApiOperation({
         summary: 'Gets the license of the current clinic',

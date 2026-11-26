@@ -18,6 +18,7 @@ export class SettingsPage extends BasePage {
     // Side-nav sections
     readonly agendaSectionButton: Locator;
     readonly salasSectionButton: Locator;
+    readonly lembretesSectionButton: Locator;
 
     // Salas section
     readonly roomManagementToggleOn: Locator;
@@ -42,6 +43,7 @@ export class SettingsPage extends BasePage {
 
         this.agendaSectionButton = page.getByRole('button', {name: /^agenda$/i});
         this.salasSectionButton = page.getByRole('button', {name: /^salas$/i});
+        this.lembretesSectionButton = page.getByRole('button', {name: /^lembretes$/i});
 
         this.roomManagementToggleOn = page.getByRole('radio', {name: /^ativado$/i});
         this.roomManagementToggleOff = page.getByRole('radio', {name: /^desativado$/i});
@@ -55,6 +57,39 @@ export class SettingsPage extends BasePage {
 
     async goToSalasSection() {
         await this.salasSectionButton.click();
+    }
+
+    async goToLembretesSection() {
+        await this.lembretesSectionButton.click();
+    }
+
+    get reminderTemplate(): Locator {
+        return this.page.getByLabel('Texto do lembrete');
+    }
+
+    get reminderPreview(): Locator {
+        return this.page.getByRole('region', {name: 'Pré-visualização do lembrete'});
+    }
+
+    async configureReminders(options: {channels: string[]; leadTimes: string[]; template: string}) {
+        await this.page.getByRole('radio', {name: /^ativado$/i}).click();
+
+        for (const channel of ['WhatsApp', 'E-mail']) {
+            await this.page.getByRole('checkbox', {name: channel}).setChecked(options.channels.includes(channel));
+        }
+
+        await this.page.getByLabel('Antecedência 1, em horas').fill(options.leadTimes[0] ?? '24');
+
+        for (const [index, value] of options.leadTimes.slice(1).entries()) {
+            await this.page.getByRole('button', {name: /adicionar antecedência/i}).click();
+            await this.page.getByLabel(`Antecedência ${index + 2}, em horas`).fill(value);
+        }
+
+        await this.reminderTemplate.fill(options.template);
+    }
+
+    async saveReminders() {
+        await this.page.getByRole('button', {name: /salvar lembretes/i}).click();
     }
 
     async enableRoomManagement() {
@@ -74,6 +109,22 @@ export class SettingsPage extends BasePage {
         await this.roomRow(name)
             .getByRole('button', {name: /remover sala/i})
             .click();
+    }
+
+    async createProcedure(name: string, duration: string, price: string) {
+        await this.page.getByRole('button', {name: 'Procedimentos e serviços', exact: true}).click();
+        await this.page.getByRole('button', {name: 'Novo procedimento', exact: true}).click();
+
+        const dialog = this.page.getByRole('dialog', {name: 'Novo procedimento'});
+        await dialog.getByLabel('Nome', {exact: true}).fill(name);
+        await dialog.getByLabel('Duração (min)', {exact: true}).fill(duration);
+        await dialog.getByLabel('Valor (R$)', {exact: true}).fill(price);
+        await dialog.getByRole('combobox', {name: 'Cor', exact: true}).click();
+        await this.page.getByRole('option', {name: 'Verde', exact: true}).click();
+        await dialog.getByRole('combobox', {name: 'Modalidade', exact: true}).click();
+        await this.page.getByRole('option', {name: 'Remoto', exact: true}).click();
+        await dialog.getByRole('button', {name: 'Salvar', exact: true}).click();
+        await expect(dialog).toBeHidden();
     }
 
     async navigate() {

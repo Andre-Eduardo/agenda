@@ -15,6 +15,15 @@ export type ClinicReminderConfig = {
     updatedAt: string;
     clinicId: string;
     enabledChannels: ClinicReminderConfigEnabledChannelsItem[];
+    /** Hours before the appointment, largest first */
     hoursBeforeList: number[];
+    /** Reminder text in use (the default text when the clinic has not customized it) */
+    messageTemplate: string;
+    /** Whether the clinic is using the default text */
+    usesDefaultTemplate: boolean;
+    /** Default reminder text, used when the clinic saves no custom text */
+    defaultMessageTemplate: string;
     isActive: boolean;
+    /** False while the clinic has never saved its reminder settings */
+    configured: boolean;
 };

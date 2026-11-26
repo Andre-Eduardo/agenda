@@ -5,6 +5,7 @@ import {AppointmentDto, GetAppointmentDto} from '@application/appointment/dtos';
 import {PatientAccessChecker} from '@application/clinic-patient-access/services/patient-access-checker.service';
 import {ResourceNotFoundException} from '@domain/@shared/exceptions';
 import {AppointmentPaymentRepository} from '@domain/appointment-payment/appointment-payment.repository';
+import {projectAppointmentRevenue} from '@domain/appointment-payment/appointment-revenue';
 import {AppointmentRepository} from '@domain/appointment/appointment.repository';
 import {AppointmentPaymentPermission} from '@domain/auth';
 import {Authorizer} from '@domain/auth/authorizer';
@@ -38,8 +39,16 @@ export class GetAppointmentService implements ApplicationService<GetAppointmentD
             actor.userId,
             AppointmentPaymentPermission.VIEW
         );
-        const payment = canViewPayment ? await this.appointmentPaymentRepository.findByAppointmentId(payload.id) : null;
 
-        return new AppointmentDto(appointment, payment?.status ?? null);
+        if (!canViewPayment) return new AppointmentDto(appointment);
+
+        const payments = await this.appointmentPaymentRepository.findRevenuePayments(actor.clinicId, [appointment.id]);
+        const revenue = projectAppointmentRevenue(
+            appointment.status,
+            appointment.procedure?.priceInCents ?? null,
+            payments.get(appointment.id.toString()) ?? null
+        );
+
+        return new AppointmentDto(appointment, revenue);
     }
 }

@@ -60,9 +60,9 @@ O lançamento não deve depender de IA, prescrição própria, RNDS ou de um ERP
 | L1-01 | Revisar e formalizar a máquina de estados do agendamento: agendado, confirmado, chegou, em atendimento, concluído, faltou e cancelado. | Produto + backend | L0-02 | Transições inválidas são rejeitadas; cada transição tem responsável, data/hora e motivo quando aplicável. |
 | L1-02 | Criar painel operacional de recepção para os atendimentos do dia, com filtros de status e ação rápida. | Frontend | L1-01 | Recepção consegue confirmar chegada, chamar, registrar falta e abrir paciente sem entrar na edição do agendamento. |
 | L1-03 | Completar disponibilidade e bloqueios na experiência de agenda, incluindo conflitos visíveis e mensagem de motivo. | Frontend + backend | L1-01 | Não é possível salvar conflito sem confirmação explícita de regra permitida; bloqueios aparecem no calendário. |
-| L1-04 | Criar catálogo de procedimentos/serviços com duração, cor, valor e modalidade. | Full-stack | L1-01 | Agendamento usa o catálogo; duração, preço e indicador visual são preenchidos automaticamente e editáveis por permissão. |
-| L1-05 | Vincular procedimento ao pagamento e ao relatório de receita. | Backend + frontend | L1-04 | Valor previsto, recebido, pendente e forma de pagamento aparecem de forma consistente na agenda e no financeiro. |
-| L1-06 | Implementar assinatura, reabertura controlada e visualização de emendas da evolução. | Full-stack | L0-05 | Evolução assinada fica bloqueada; reabertura exige motivo e gera trilha auditável. |
+| L1-04 | Criar [catálogo de procedimentos e serviços](./procedure-catalog.md) com duração, cor, valor e modalidade. | Full-stack | L1-01 | Agendamento usa o catálogo; duração, preço e indicador visual são preenchidos automaticamente e editáveis por permissão. |
+| L1-05 | Vincular procedimento ao pagamento e ao [relatório de receita](./appointment-revenue.md). | Backend + frontend | L1-04 | Valor previsto, recebido, pendente e forma de pagamento aparecem de forma consistente na agenda e no financeiro. |
+| L1-06 | Implementar [assinatura, reabertura e histórico de emendas da evolução](./record-signatures.md). | Full-stack | L0-05 | Evolução assinada fica bloqueada; reabertura exige motivo e gera trilha auditável. |
 | L1-07 | Criar alertas e perfil clínico editáveis: alergias, condições, medicamentos e alertas críticos. | Full-stack | L0-05 | Profissional autorizado cria/edita; alerta crítico aparece antes da evolução e do atendimento. |
 | L1-08 | Implementar retorno a partir da evolução: sugerir/agendar próximo atendimento com contexto do paciente. | Frontend | L1-01 | Profissional agenda retorno sem recadastrar paciente; conduta de retorno fica ligada ao registro. |
 | L1-09 | Criar cobertura e2e do fluxo inteiro de um atendimento. | QA + full-stack | L1-01 a L1-08 | Teste: agenda → chegada → evolução → assinatura → pagamento → retorno. |
@@ -175,3 +175,14 @@ Cada ticket deve conter:
 - [Resolução CFM nº 2.299/2021](https://sistemas.cfm.org.br/normas/arquivos/resolucoes/BR/2021/2299_2021.pdf).
 - [DATASUS — Modelo Padrão de Dados / RNDS e HL7 FHIR](https://datasus.saude.gov.br/modelo-padrao-de-dados-mad/).
 - [ANPD — Nota Técnica sobre tratamento de dados de saúde](https://www.gov.br/anpd/pt-br/acesso-a-informacao/participacao-social/outras-acoes/documentos/ts-05-2024-nota-tecnica-no-26-2024-cgn-anpd.pdf).
+
+### Agendar retorno pela evolução (L1-08)
+
+Em uma evolução salva, use **Agendar retorno** na seção **Retornos da evolução**.
+A agenda abre com o paciente e o profissional responsável da evolução e sugere
+o dia seguinte. A data, o horário e as demais opções do agendamento podem ser
+ajustados com as mesmas regras de disponibilidade da agenda.
+
+O retorno aparece na evolução com data, status e link para a agenda.
+O identificador da evolução de origem fica no agendamento. O plano clínico fica
+disponível para consulta durante o preenchimento e permanece no prontuário.

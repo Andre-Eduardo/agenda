@@ -2,6 +2,7 @@ import {Injectable} from '@nestjs/common';
 import {ApplicationService, Command} from '@application/@shared/application.service';
 import {assertEntityBelongsToClinic} from '@application/@shared/validators/cross-tenant.validator';
 import {AppointmentDto, UpdateAppointmentDto} from '@application/appointment/dtos';
+import {ResolveScheduledProcedureService} from '@application/appointment/services/resolve-scheduled-procedure.service';
 import {PatientAccessChecker} from '@application/clinic-patient-access/services/patient-access-checker.service';
 import {AgendaAccessChecker} from '@application/professional-agenda-access/services';
 import {InvalidInputException, PreconditionException, ResourceNotFoundException} from '@domain/@shared/exceptions';
@@ -31,6 +32,7 @@ export class UpdateAppointmentService implements ApplicationService<UpdateAppoin
         private readonly workingHoursRepository: WorkingHoursRepository,
         private readonly memberBlockRepository: MemberBlockRepository,
         private readonly agendaAccessChecker: AgendaAccessChecker,
+        private readonly scheduledProcedure: ResolveScheduledProcedureService,
         private readonly eventDispatcher: EventDispatcher
     ) {}
 
@@ -49,13 +51,26 @@ export class UpdateAppointmentService implements ApplicationService<UpdateAppoin
             'appointment'
         );
 
-        const rescheduling = props.startAt !== undefined || props.endAt !== undefined;
+        const modifiesProcedure =
+            props.procedureId !== undefined ||
+            props.procedureOverrides !== undefined ||
+            (appointment.procedure !== null && (props.startAt !== undefined || props.endAt !== undefined));
+
+        if (modifiesProcedure) {
+            await this.agendaAccessChecker.assertCanManage(actor, appointment.attendedByMemberId);
+        }
+
+        const startAt = props.startAt ?? appointment.startAt;
+        const {endAt, procedure} = await this.scheduledProcedure.resolve(actor, {...props, startAt}, appointment);
+        const rescheduling =
+            props.startAt !== undefined || props.endAt !== undefined || endAt.getTime() !== appointment.endAt.getTime();
         const changingProfessional = props.attendedByMemberId !== undefined;
         const changingRoom = props.roomId !== undefined;
 
         const changeProps: UpdateAppointment = {
             type: props.type,
-            note: props.note === undefined ? undefined : props.note,
+            note: props.note,
+            procedure: procedure ?? undefined,
         };
 
         const attendedByMemberId = await this.resolveAttendedByMember(
@@ -65,14 +80,14 @@ export class UpdateAppointmentService implements ApplicationService<UpdateAppoin
         );
 
         if (changingProfessional) {
-            await this.agendaAccessChecker.assertCanManage(actor, attendedByMemberId);
+            if (!modifiesProcedure || !attendedByMemberId.equals(appointment.attendedByMemberId)) {
+                await this.agendaAccessChecker.assertCanManage(actor, attendedByMemberId);
+            }
+
             changeProps.attendedByMemberId = attendedByMemberId;
         }
 
         if (rescheduling || changingProfessional) {
-            const startAt = props.startAt ?? appointment.startAt;
-            const endAt = props.endAt ?? appointment.endAt;
-
             if (startAt >= endAt) {
                 throw new InvalidInputException('endAt must be after startAt', [
                     {field: 'endAt', reason: 'endAt must be after startAt'},
@@ -126,8 +141,6 @@ export class UpdateAppointmentService implements ApplicationService<UpdateAppoin
         }
 
         if (rescheduling || changingRoom) {
-            const startAt = changeProps.startAt ?? appointment.startAt;
-            const endAt = changeProps.endAt ?? appointment.endAt;
             const requestedRoomId = changingRoom ? (props.roomId ?? null) : appointment.roomId;
 
             const roomId = await this.resolveRoom(actor.clinicId, requestedRoomId);
