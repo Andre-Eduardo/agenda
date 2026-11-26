@@ -29,7 +29,6 @@
     "socket.io-client": "^4.8.3"
   },
   "devDependencies": {
-    "@ecxus/eslint-plugin": "^0.0.13",
     "@eslint-community/eslint-plugin-eslint-comments": "^4.4.1",
     "@stylistic/eslint-plugin": "^4.0.0",
     "eslint-plugin-sort-export-all": "^2.1.0",

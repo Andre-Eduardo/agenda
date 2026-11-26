@@ -1,13 +1,21 @@
 services:
+  # Local smoke test of the production image. For the full production stack see deploy/docker-compose.prod.yml.
   app:
-    build: .
-    command: ["bash", "-c", "npx prisma migrate deploy && npm run start:prod"]
+    profiles: [app]
+    build:
+      context: ../..
+      dockerfile: apps/server/Dockerfile
     ports:
       - "3000:3000"
     depends_on:
       - postgres
     environment:
-      DATABASE_URL: "postgresql://postgres:postgres@postgres:5432/postgres?schema=public"
+      DATABASE_URL: "postgresql://${DATABASE_USER}:${DATABASE_PASSWORD}@postgres:5432/${DATABASE_NAME}?schema=public"
+    env_file:
+      - path: .env
+        required: false
+    volumes:
+      - uploads:/data/uploads
 
   postgres:
     container_name: postgres
@@ -23,3 +31,4 @@ services:
 
 volumes:
   postgres:
+  uploads:
