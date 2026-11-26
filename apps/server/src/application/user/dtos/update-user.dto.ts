@@ -4,7 +4,7 @@ import {entityId} from '@application/@shared/validation/schemas';
 import {signUpUserSchema} from '@application/user/dtos/sign-up-user.dto';
 import {UserId} from '@domain/user/entities';
 
-const updateUserInputSchema = signUpUserSchema.omit({password: true}).partial().extend({
+const updateUserInputSchema = signUpUserSchema.omit({password: true, inviteCode: true}).partial().extend({
     currentPassword: z.string(),
 });
 

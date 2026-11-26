@@ -418,7 +418,8 @@
         },
         "credentials": {
           "invalid": "Usuário ou senha incorretos"
-        }
+        },
+        "rateLimited": "Muitas tentativas. Aguarde alguns minutos e tente de novo."
       },
       "panel": {
         "title": "Consultas e registros clínicos",
@@ -434,6 +435,31 @@
       },
       "footer": {
         "security": "Acesso à área profissional"
+      }
+    },
+    "forgotPassword": {
+      "title": "Esqueceu a senha?",
+      "subtitle": "Informe o e-mail da sua conta. Se ele estiver cadastrado, enviaremos um link para criar uma nova senha.",
+      "email": "E-mail",
+      "submit": "Enviar link",
+      "sent": "Se o e-mail estiver cadastrado, você vai receber um link em alguns minutos. Confira também a caixa de spam.",
+      "back": "Voltar para o login",
+      "validation": {
+        "email": "Informe um e-mail válido"
+      }
+    },
+    "resetPassword": {
+      "title": "Criar nova senha",
+      "subtitle": "Escolha uma senha com pelo menos 8 caracteres, letras maiúsculas e minúsculas, número e símbolo.",
+      "password": "Nova senha",
+      "confirm": "Confirme a nova senha",
+      "submit": "Salvar nova senha",
+      "success": "Senha alterada. Entre com a nova senha.",
+      "invalidLink": "O link é inválido ou expirou. Peça um novo.",
+      "requestNew": "Pedir novo link",
+      "validation": {
+        "password": "A senha precisa ter 8 caracteres, com maiúscula, minúscula, número e símbolo",
+        "mismatch": "As senhas não conferem"
       }
     }
   },

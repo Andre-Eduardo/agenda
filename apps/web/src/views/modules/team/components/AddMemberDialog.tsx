@@ -1,8 +1,7 @@
 import {useState} from 'react';
 import {
     AxiosError,
-    useInviteClinicMember,
-    useSignUp,
+    useCreateClinicMemberAccount,
     type ClinicMemberRolesItem,
     type ApiProblem,
 } from '@agenda-app/client';
@@ -48,10 +47,11 @@ export function AddMemberDialog({onClose, onCreated}: AddMemberDialogProps) {
     const [password, setPassword] = useState('');
     const [roles, setRoles] = useState<AssignableRole[]>(['PROFESSIONAL']);
 
-    const signUp = useSignUp();
-    const inviteMember = useInviteClinicMember();
+    // One authenticated call creates the login (without permission to create clinics) and the
+    // membership; public sign-up is closed in production.
+    const createAccount = useCreateClinicMemberAccount();
 
-    const isPending = signUp.isPending || inviteMember.isPending;
+    const {isPending} = createAccount;
     const canSubmit = !!name && !!username && !!email && !!password && roles.length > 0 && !isPending;
 
     function toggleRole(role: AssignableRole) {
@@ -61,26 +61,16 @@ export function AddMemberDialog({onClose, onCreated}: AddMemberDialogProps) {
     function handleSubmit() {
         if (!canSubmit) return;
 
-        signUp.mutate(
-            {data: {name, username, email, password}},
+        createAccount.mutate(
+            {data: {name, username, email, password, roles, displayName: name, color: randomMemberColor()}},
             {
-                onSuccess: (user) => {
-                    inviteMember.mutate(
-                        {data: {userId: user.id, roles, displayName: name, color: randomMemberColor()}},
-                        {
-                            onSuccess: () => {
-                                toast.success('Membro adicionado à clínica');
-                                onCreated();
-                                onClose();
-                            },
-                            onError: (error) => {
-                                toast.error(extractErrorDetail(error) ?? 'Erro ao adicionar membro à clínica');
-                            },
-                        }
-                    );
+                onSuccess: () => {
+                    toast.success('Membro adicionado à clínica');
+                    onCreated();
+                    onClose();
                 },
                 onError: (error) => {
-                    toast.error(extractErrorDetail(error) ?? 'Erro ao criar usuário');
+                    toast.error(extractErrorDetail(error) ?? 'Erro ao adicionar membro à clínica');
                 },
             }
         );

@@ -5,6 +5,7 @@ import {BypassClinicMember} from '@application/@shared/auth/bypass-clinic-member
 import {RequestActor} from '@application/@shared/auth/request-actor.decorator';
 import {ApiOperation} from '@application/@shared/openapi/decorators';
 import {entityIdParam} from '@application/@shared/openapi/params';
+import {RateLimit} from '@application/@shared/rate-limit';
 import {ValidatedParam} from '@application/@shared/validation';
 import {
     UserDto,
@@ -40,7 +41,7 @@ export class UserController {
     ) {}
 
     @ApiOperation({
-        summary: 'Signs up a new user',
+        summary: 'Signs up a new user (gated by SIGN_UP_MODE; closed by default in production)',
         responses: [
             {
                 status: 201,
@@ -50,6 +51,7 @@ export class UserController {
         ],
     })
     @Public()
+    @RateLimit({name: 'sign-up:ip', limit: 10, windowSeconds: 60 * 60, key: 'ip'})
     @Post('/sign-up')
     signUp(@RequestActor() actor: UnauthenticatedActor, @Body() payload: SignUpUserDto): Promise<UserDto> {
         return this.signUpUserService.execute({actor, payload});

@@ -343,6 +343,12 @@ export function LoginPage() {
                 await navigate({to: redirectTo ?? '/', replace: true});
             },
             onError: (error: {status?: number}) => {
+                if (error.status === 429) {
+                    setError('username', {message: t('auth.login.validation.rateLimited')});
+
+                    return;
+                }
+
                 if (error.status === 400 || error.status === 401 || error.status === 403) {
                     setError('username', {
                         message: t('auth.login.validation.credentials.invalid'),
@@ -392,9 +398,9 @@ export function LoginPage() {
                         <div>
                             <div className={fieldPasswordHeader}>
                                 <label className={fieldLabelInline}>{t('auth.login.form.password')}</label>
-                                <button type="button" className={fieldForgotBtn}>
+                                <Link to="/auth/forgot-password" className={fieldForgotBtn}>
                                     {t('auth.login.form.forgotPassword')}
-                                </button>
+                                </Link>
                             </div>
                             <div className={fieldInputWrap}>
                                 <Lock size={13} className={fieldIcon} />

@@ -27,7 +27,10 @@ async function bootstrap() {
     const appUrl = await app.getUrl();
 
     logger.info(`Application running at ${appUrl}`);
-    logger.info(`API documentation available at ${appUrl}/${docsPath}`);
+
+    if (docsPath !== null) {
+        logger.info(`API documentation available at ${appUrl}/${docsPath}`);
+    }
 }
 
 // eslint-disable-next-line @typescript-eslint/no-floating-promises -- This is the entry point of the application

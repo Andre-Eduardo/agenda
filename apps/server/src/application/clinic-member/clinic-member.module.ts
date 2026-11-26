@@ -1,6 +1,7 @@
 import {Module} from '@nestjs/common';
 import {ClinicMemberController} from '@application/clinic-member/controllers/clinic-member.controller';
 import {
+    CreateClinicMemberAccountService,
     CreateClinicMemberService,
     GetCurrentClinicMemberPermissionsService,
     GetCurrentClinicMemberService,
@@ -17,6 +18,7 @@ import {InfrastructureModule} from '@infrastructure/infrastructure.module';
     controllers: [ClinicMemberController],
     providers: [
         CreateClinicMemberService,
+        CreateClinicMemberAccountService,
         ListClinicMembersService,
         GetCurrentClinicMemberService,
         GetCurrentClinicMemberPermissionsService,

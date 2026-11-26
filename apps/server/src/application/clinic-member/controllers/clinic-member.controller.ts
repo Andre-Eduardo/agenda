@@ -7,10 +7,12 @@ import {ApiOperation} from '@application/@shared/openapi/decorators';
 import {
     ClinicMemberDto,
     ClinicMemberPermissionsDto,
+    CreateClinicMemberAccountDto,
     CreateClinicMemberDto,
     CreateClinicMemberInputDto,
 } from '@application/clinic-member/dtos';
 import {
+    CreateClinicMemberAccountService,
     CreateClinicMemberService,
     GetCurrentClinicMemberPermissionsService,
     GetCurrentClinicMemberService,
@@ -27,7 +29,8 @@ export class ClinicMemberController {
         private readonly createClinicMemberService: CreateClinicMemberService,
         private readonly listClinicMembersService: ListClinicMembersService,
         private readonly getCurrentClinicMemberService: GetCurrentClinicMemberService,
-        private readonly getCurrentClinicMemberPermissionsService: GetCurrentClinicMemberPermissionsService
+        private readonly getCurrentClinicMemberPermissionsService: GetCurrentClinicMemberPermissionsService,
+        private readonly createClinicMemberAccountService: CreateClinicMemberAccountService
     ) {}
 
     @ApiOperation({
@@ -54,6 +57,19 @@ export class ClinicMemberController {
             actor,
             payload: {...payload, clinicId: actor.clinicId.toString()},
         });
+    }
+
+    @ApiOperation({
+        summary: "Creates a login for a new team member and adds it to the current actor's clinic",
+        responses: [{status: 201, description: 'Member created', type: ClinicMemberDto}],
+    })
+    @Authorize(ClinicMemberPermission.CREATE)
+    @Post('accounts')
+    createClinicMemberAccount(
+        @RequestActor() actor: Actor,
+        @Body() payload: CreateClinicMemberAccountDto
+    ): Promise<ClinicMemberDto> {
+        return this.createClinicMemberAccountService.execute({actor, payload});
     }
 
     @ApiOperation({

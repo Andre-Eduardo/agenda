@@ -418,7 +418,8 @@
         },
         "credentials": {
           "invalid": "Correo electrónico o contraseña incorrectos"
-        }
+        },
+        "rateLimited": "Demasiados intentos. Espera unos minutos e inténtalo de nuevo."
       },
       "panel": {
         "title": "Consultas e historias clínicas",
@@ -434,6 +435,31 @@
       },
       "footer": {
         "security": "Acceso profesional"
+      }
+    },
+    "forgotPassword": {
+      "title": "¿Olvidaste tu contraseña?",
+      "subtitle": "Ingresa el correo de tu cuenta. Si está registrado, te enviaremos un enlace para crear una nueva contraseña.",
+      "email": "Correo electrónico",
+      "submit": "Enviar enlace",
+      "sent": "Si el correo está registrado, recibirás un enlace en unos minutos. Revisa también la carpeta de spam.",
+      "back": "Volver al inicio de sesión",
+      "validation": {
+        "email": "Ingresa un correo válido"
+      }
+    },
+    "resetPassword": {
+      "title": "Crear nueva contraseña",
+      "subtitle": "Elige una contraseña de al menos 8 caracteres, con mayúsculas, minúsculas, un número y un símbolo.",
+      "password": "Nueva contraseña",
+      "confirm": "Confirma la nueva contraseña",
+      "submit": "Guardar nueva contraseña",
+      "success": "Contraseña cambiada. Inicia sesión con la nueva contraseña.",
+      "invalidLink": "El enlace no es válido o expiró. Solicita uno nuevo.",
+      "requestNew": "Solicitar nuevo enlace",
+      "validation": {
+        "password": "La contraseña necesita 8 caracteres, con mayúscula, minúscula, número y símbolo",
+        "mismatch": "Las contraseñas no coinciden"
       }
     }
   },
