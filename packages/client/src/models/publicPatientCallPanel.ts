@@ -5,6 +5,7 @@
  * OpenAPI spec version: 0.0.0
  */
 import type {PublicPatientCallPanelCall} from './publicPatientCallPanelCall';
+import type {RecentPatientCall} from './recentPatientCall';
 
 export type PublicPatientCallPanel = {
     title: string;
@@ -16,4 +17,5 @@ export type PublicPatientCallPanel = {
     logoUrl: string | null;
     /** @nullable */
     call: PublicPatientCallPanelCall;
+    recentCalls: RecentPatientCall[];
 };

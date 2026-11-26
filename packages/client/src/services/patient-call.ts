@@ -1160,6 +1160,7 @@ export const getGetPatientCallSettingsResponseMock = (
     publicToken: faker.helpers.arrayElement([faker.string.alpha({length: {min: 10, max: 20}}), null]),
     clinicLogoUrl: faker.helpers.arrayElement([faker.string.alpha({length: {min: 10, max: 20}}), null]),
     useClinicLogo: faker.datatype.boolean(),
+    showRecentCalls: faker.datatype.boolean(),
     displaySeconds: faker.number.float({min: undefined, max: undefined, fractionDigits: 2}),
     ...overrideResponse,
 });
@@ -1176,6 +1177,7 @@ export const getGetPatientCallSettingsResponseMock200 = (
     publicToken: faker.helpers.arrayElement([faker.string.alpha({length: {min: 10, max: 20}}), null]),
     clinicLogoUrl: faker.helpers.arrayElement([faker.string.alpha({length: {min: 10, max: 20}}), null]),
     useClinicLogo: faker.datatype.boolean(),
+    showRecentCalls: faker.datatype.boolean(),
     displaySeconds: faker.number.float({min: undefined, max: undefined, fractionDigits: 2}),
     ...overrideResponse,
 });
@@ -1192,6 +1194,7 @@ export const getSavePatientCallSettingsResponseMock = (
     publicToken: faker.helpers.arrayElement([faker.string.alpha({length: {min: 10, max: 20}}), null]),
     clinicLogoUrl: faker.helpers.arrayElement([faker.string.alpha({length: {min: 10, max: 20}}), null]),
     useClinicLogo: faker.datatype.boolean(),
+    showRecentCalls: faker.datatype.boolean(),
     displaySeconds: faker.number.float({min: undefined, max: undefined, fractionDigits: 2}),
     ...overrideResponse,
 });
@@ -1208,6 +1211,7 @@ export const getSavePatientCallSettingsResponseMock200 = (
     publicToken: faker.helpers.arrayElement([faker.string.alpha({length: {min: 10, max: 20}}), null]),
     clinicLogoUrl: faker.helpers.arrayElement([faker.string.alpha({length: {min: 10, max: 20}}), null]),
     useClinicLogo: faker.datatype.boolean(),
+    showRecentCalls: faker.datatype.boolean(),
     displaySeconds: faker.number.float({min: undefined, max: undefined, fractionDigits: 2}),
     ...overrideResponse,
 });
@@ -1224,6 +1228,7 @@ export const getPublishPatientCallLinkResponseMock = (
     publicToken: faker.helpers.arrayElement([faker.string.alpha({length: {min: 10, max: 20}}), null]),
     clinicLogoUrl: faker.helpers.arrayElement([faker.string.alpha({length: {min: 10, max: 20}}), null]),
     useClinicLogo: faker.datatype.boolean(),
+    showRecentCalls: faker.datatype.boolean(),
     displaySeconds: faker.number.float({min: undefined, max: undefined, fractionDigits: 2}),
     ...overrideResponse,
 });
@@ -1240,6 +1245,7 @@ export const getPublishPatientCallLinkResponseMock200 = (
     publicToken: faker.helpers.arrayElement([faker.string.alpha({length: {min: 10, max: 20}}), null]),
     clinicLogoUrl: faker.helpers.arrayElement([faker.string.alpha({length: {min: 10, max: 20}}), null]),
     useClinicLogo: faker.datatype.boolean(),
+    showRecentCalls: faker.datatype.boolean(),
     displaySeconds: faker.number.float({min: undefined, max: undefined, fractionDigits: 2}),
     ...overrideResponse,
 });
@@ -1256,6 +1262,7 @@ export const getRevokePatientCallLinkResponseMock = (
     publicToken: faker.helpers.arrayElement([faker.string.alpha({length: {min: 10, max: 20}}), null]),
     clinicLogoUrl: faker.helpers.arrayElement([faker.string.alpha({length: {min: 10, max: 20}}), null]),
     useClinicLogo: faker.datatype.boolean(),
+    showRecentCalls: faker.datatype.boolean(),
     displaySeconds: faker.number.float({min: undefined, max: undefined, fractionDigits: 2}),
     ...overrideResponse,
 });
@@ -1272,6 +1279,7 @@ export const getRevokePatientCallLinkResponseMock200 = (
     publicToken: faker.helpers.arrayElement([faker.string.alpha({length: {min: 10, max: 20}}), null]),
     clinicLogoUrl: faker.helpers.arrayElement([faker.string.alpha({length: {min: 10, max: 20}}), null]),
     useClinicLogo: faker.datatype.boolean(),
+    showRecentCalls: faker.datatype.boolean(),
     displaySeconds: faker.number.float({min: undefined, max: undefined, fractionDigits: 2}),
     ...overrideResponse,
 });
@@ -1287,11 +1295,15 @@ export const getGetPatientCallDisplayResponseMock = (
     logoUrl: faker.helpers.arrayElement([faker.string.alpha({length: {min: 10, max: 20}}), null]),
     call: {
         ...{
-            code: faker.string.alpha({length: {min: 10, max: 20}}),
+            patientName: faker.string.alpha({length: {min: 10, max: 20}}),
             destination: faker.string.alpha({length: {min: 10, max: 20}}),
             expiresAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
         },
     },
+    recentCalls: Array.from({length: faker.number.int({min: 1, max: 10})}, (_, i) => i + 1).map(() => ({
+        patientName: faker.string.alpha({length: {min: 10, max: 20}}),
+        destination: faker.string.alpha({length: {min: 10, max: 20}}),
+    })),
     ...overrideResponse,
 });
 
@@ -1306,18 +1318,21 @@ export const getGetPatientCallDisplayResponseMock200 = (
     logoUrl: faker.helpers.arrayElement([faker.string.alpha({length: {min: 10, max: 20}}), null]),
     call: {
         ...{
-            code: faker.string.alpha({length: {min: 10, max: 20}}),
+            patientName: faker.string.alpha({length: {min: 10, max: 20}}),
             destination: faker.string.alpha({length: {min: 10, max: 20}}),
             expiresAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
         },
     },
+    recentCalls: Array.from({length: faker.number.int({min: 1, max: 10})}, (_, i) => i + 1).map(() => ({
+        patientName: faker.string.alpha({length: {min: 10, max: 20}}),
+        destination: faker.string.alpha({length: {min: 10, max: 20}}),
+    })),
     ...overrideResponse,
 });
 
 export const getListPatientCallQueueResponseMock = (): PatientCallQueueItem[] =>
     Array.from({length: faker.number.int({min: 1, max: 10})}, (_, i) => i + 1).map(() => ({
         appointmentId: faker.string.uuid(),
-        code: faker.string.alpha({length: {min: 10, max: 20}}),
         arrivedAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
         callCount: faker.number.float({min: undefined, max: undefined, fractionDigits: 2}),
         destination: faker.helpers.arrayElement([faker.string.alpha({length: {min: 10, max: 20}}), null]),
@@ -1327,7 +1342,6 @@ export const getListPatientCallQueueResponseMock = (): PatientCallQueueItem[] =>
 export const getListPatientCallQueueResponseMock200 = (): PatientCallQueueItem[] =>
     Array.from({length: faker.number.int({min: 1, max: 10})}, (_, i) => i + 1).map(() => ({
         appointmentId: faker.string.uuid(),
-        code: faker.string.alpha({length: {min: 10, max: 20}}),
         arrivedAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
         callCount: faker.number.float({min: undefined, max: undefined, fractionDigits: 2}),
         destination: faker.helpers.arrayElement([faker.string.alpha({length: {min: 10, max: 20}}), null]),
@@ -1338,7 +1352,6 @@ export const getAnnouncePatientCallResponseMock = (
     overrideResponse: Partial<PatientCallQueueEntry> = {}
 ): PatientCallQueueEntry => ({
     appointmentId: faker.string.uuid(),
-    code: faker.string.alpha({length: {min: 10, max: 20}}),
     arrivedAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
     callCount: faker.number.float({min: undefined, max: undefined, fractionDigits: 2}),
     destination: faker.helpers.arrayElement([faker.string.alpha({length: {min: 10, max: 20}}), null]),
@@ -1349,7 +1362,6 @@ export const getAnnouncePatientCallResponseMock200 = (
     overrideResponse: Partial<PatientCallQueueEntry> = {}
 ): PatientCallQueueEntry => ({
     appointmentId: faker.string.uuid(),
-    code: faker.string.alpha({length: {min: 10, max: 20}}),
     arrivedAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
     callCount: faker.number.float({min: undefined, max: undefined, fractionDigits: 2}),
     destination: faker.helpers.arrayElement([faker.string.alpha({length: {min: 10, max: 20}}), null]),
@@ -1360,7 +1372,6 @@ export const getRecallPatientCallResponseMock = (
     overrideResponse: Partial<PatientCallQueueEntry> = {}
 ): PatientCallQueueEntry => ({
     appointmentId: faker.string.uuid(),
-    code: faker.string.alpha({length: {min: 10, max: 20}}),
     arrivedAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
     callCount: faker.number.float({min: undefined, max: undefined, fractionDigits: 2}),
     destination: faker.helpers.arrayElement([faker.string.alpha({length: {min: 10, max: 20}}), null]),
@@ -1371,7 +1382,6 @@ export const getRecallPatientCallResponseMock200 = (
     overrideResponse: Partial<PatientCallQueueEntry> = {}
 ): PatientCallQueueEntry => ({
     appointmentId: faker.string.uuid(),
-    code: faker.string.alpha({length: {min: 10, max: 20}}),
     arrivedAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
     callCount: faker.number.float({min: undefined, max: undefined, fractionDigits: 2}),
     destination: faker.helpers.arrayElement([faker.string.alpha({length: {min: 10, max: 20}}), null]),

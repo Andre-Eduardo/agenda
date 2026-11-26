@@ -2958,7 +2958,7 @@ export const getCheckinAppointmentResponseMock = (
         },
     },
     roomId: faker.helpers.arrayElement([faker.string.uuid(), null]),
-    patientCallCode: faker.helpers.arrayElement([faker.string.alpha({length: {min: 10, max: 20}}), null]),
+    inPatientCallQueue: faker.datatype.boolean(),
     ...overrideResponse,
 });
 
@@ -3036,7 +3036,7 @@ export const getCheckinAppointmentResponseMock200 = (
         },
     },
     roomId: faker.helpers.arrayElement([faker.string.uuid(), null]),
-    patientCallCode: faker.helpers.arrayElement([faker.string.alpha({length: {min: 10, max: 20}}), null]),
+    inPatientCallQueue: faker.datatype.boolean(),
     ...overrideResponse,
 });
 

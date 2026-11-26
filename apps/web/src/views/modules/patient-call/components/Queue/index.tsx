@@ -2,11 +2,11 @@ import {useId, useState} from 'react';
 import {
     type PatientCallQueueItem,
     useAnnouncePatientCall,
-    useListPatientCallQueue,
     useRecallPatientCall,
     useRemovePatientCall,
 } from '@agenda-app/client';
 import {zodResolver} from '@hookform/resolvers/zod';
+import type {UseQueryResult} from '@tanstack/react-query';
 import {useForm} from 'react-hook-form';
 import {useTranslation} from 'react-i18next';
 import {toast} from 'sonner';
@@ -31,11 +31,13 @@ const destinationSchema = z.object({place: z.enum(['ROOM', 'DESK']), number: z.n
 const removalSchema = z.object({reason: z.string().trim().min(1).max(250)});
 
 export function PatientCallQueue({
+    queue,
     published,
     isStarting,
     shownAppointmentIds,
     onStart,
 }: {
+    queue: UseQueryResult<PatientCallQueueItem[]>;
     published: boolean;
     isStarting: boolean;
     shownAppointmentIds: Set<string>;
@@ -43,7 +45,6 @@ export function PatientCallQueue({
 }) {
     const {t, i18n} = useTranslation();
     const [action, setAction] = useState<Action | null>(null);
-    const queue = useListPatientCallQueue({query: {refetchInterval: 5000, refetchOnWindowFocus: true}});
     const options = {mutation: {retry: false, onError: () => undefined}};
     const announce = useAnnouncePatientCall(options);
     const recall = useRecallPatientCall(options);
@@ -87,7 +88,6 @@ export function PatientCallQueue({
                 <ol className={styles.rows}>
                     {queue.data.map((entry) => (
                         <li className={styles.row} key={entry.appointmentId}>
-                            <span className={styles.ticket}>{entry.code}</span>
                             <div className={styles.identity}>
                                 <strong>{entry.patientName}</strong>
                                 <time dateTime={entry.arrivedAt}>{arrivalTime.format(new Date(entry.arrivedAt))}</time>
@@ -192,7 +192,7 @@ function QueueDialog({
                 <DialogHeader>
                     <DialogTitle>{label}</DialogTitle>
                     <DialogDescription>
-                        {action.entry.code} · {action.entry.patientName}
+                        {action.entry.patientName}
                         {action.operation === 'recall' && action.entry.destination
                             ? ` · ${action.entry.destination}`
                             : ''}

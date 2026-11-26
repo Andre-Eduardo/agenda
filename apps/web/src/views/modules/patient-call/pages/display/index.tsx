@@ -117,6 +117,7 @@ function LiveDisplay({token}: {token: string}) {
                 identity={unavailable ? undefined : display.data}
                 logoUrl={unavailable ? null : display.data?.logoUrl}
                 call={call}
+                recentCalls={unavailable || reconnecting ? [] : display.data?.recentCalls}
                 status={status}
                 onEnableSound={!unavailable && soundEnabled && !soundReady ? () => void enableSound() : undefined}
             />

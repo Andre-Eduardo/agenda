@@ -25,7 +25,7 @@ When(
         const responses = await Promise.all([this.agent.patch(url), this.agent.patch(url)]);
 
         chai.expect(responses.map((response) => response.status)).to.deep.equal([200, 200]);
-        chai.expect(responses.map((response) => response.body.patientCallCode)).to.deep.equal(['A-001', 'A-001']);
+        chai.expect(responses.map((response) => response.body.inPatientCallQueue)).to.deep.equal([true, true]);
     }
 );
 
@@ -71,8 +71,8 @@ Then(
 );
 
 Then(
-    'the public panel displays ticket {string} for {string} without patient data',
-    async function (this: Context, code: string, destination: string) {
+    'the public panel displays patient {string} for {string} with only display fields',
+    async function (this: Context, patientName: string, destination: string) {
         const response = await this.agent
             .get('/api/v1/patient-call/display')
             .set('x-patient-call-token', this.getVariableId('panel', 'house'));
@@ -87,9 +87,10 @@ Then(
             'soundEnabled',
             'logoUrl',
             'call',
+            'recentCalls',
         ]);
-        chai.expect(response.body.call).to.have.all.keys(['code', 'destination', 'expiresAt']);
-        chai.expect(response.body.call).to.include({code, destination});
+        chai.expect(response.body.call).to.have.all.keys(['patientName', 'destination', 'expiresAt']);
+        chai.expect(response.body.call).to.include({patientName, destination});
     }
 );
 
@@ -109,3 +110,44 @@ Then('appointment {string} was withdrawn for {string}', async function (this: Co
     chai.expect(entry.removalReason).to.equal(reason);
     chai.expect(entry.removedByMemberId).to.equal(this.getVariableId('clinicMember', 'dr_house'));
 });
+
+When('I turn the public call history {string}', async function (this: Context, setting: string) {
+    const response = await this.agent.put('/api/v1/patient-call/settings').send({
+        title: 'Painel de chamada',
+        message: 'Dirija-se ao local indicado',
+        foregroundColor: '#FFFFFF',
+        backgroundColor: '#17324D',
+        useClinicLogo: true,
+        soundEnabled: false,
+        displaySeconds: 15,
+        showRecentCalls: setting === 'on',
+    });
+
+    chai.expect(response.status).to.equal(200);
+    chai.expect(response.body.showRecentCalls).to.equal(setting === 'on');
+});
+
+When(
+    'the announcement for appointment {string} expired {int} minutes ago',
+    async function (this: Context, key: string, minutesAgo: number) {
+        const expiresAt = new Date(Date.now() - minutesAgo * 60_000);
+
+        await this.prisma.patientCallAnnouncement.updateMany({
+            where: {appointmentId: this.getVariableId('appointment', key)},
+            data: {visibleFrom: new Date(expiresAt.getTime() - 15_000), expiresAt},
+        });
+    }
+);
+
+Then('the public panel shows no recent calls', function (this: Context) {
+    chai.expect(this.variables.lastResponse).to.have.property('recentCalls').that.deep.equals([]);
+});
+
+Then(
+    'the public panel lists {string} for {string} as the only recent call',
+    function (this: Context, patientName: string, destination: string) {
+        chai.expect(this.variables.lastResponse)
+            .to.have.property('recentCalls')
+            .that.deep.equals([{patientName, destination}]);
+    }
+);

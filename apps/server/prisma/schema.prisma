@@ -811,7 +811,7 @@ model PatientCallPanel {
   useClinicLogo      Boolean  @map("use_clinic_logo")
   soundEnabled       Boolean  @map("sound_enabled")
   displaySeconds     Int      @map("display_seconds")
-  nextTicket         Int      @default(0) @map("next_ticket")
+  showRecentCalls    Boolean  @default(false) @map("show_recent_calls")
   entries            PatientCallEntry[]
   announcements      PatientCallAnnouncement[]
 
@@ -823,7 +823,6 @@ model PatientCallEntry {
   appointment        Appointment @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
   clinicId           String   @map("clinic_id") @db.Uuid
   panel              PatientCallPanel @relation(fields: [clinicId], references: [clinicId], onDelete: Cascade)
-  ticket             Int
   arrivedAt          DateTime @map("arrived_at")
   callCount          Int      @default(0) @map("call_count")
   destination        String?  @db.VarChar(80)
@@ -832,8 +831,7 @@ model PatientCallEntry {
   removedByMemberId  String?  @map("removed_by_member_id") @db.Uuid
   announcements      PatientCallAnnouncement[]
 
-  @@unique([clinicId, ticket])
-  @@index([clinicId, closedAt, arrivedAt, ticket])
+  @@index([clinicId, closedAt, arrivedAt, appointmentId])
   @@map("patient_call_entry")
 }
 

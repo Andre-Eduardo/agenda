@@ -37,6 +37,7 @@ const formSchema = z.object({
     backgroundColor: themeSchema,
     useClinicLogo: z.boolean(),
     soundEnabled: z.boolean(),
+    showRecentCalls: z.boolean(),
     displaySeconds: z.number().int().min(8).max(60),
 });
 
@@ -167,6 +168,10 @@ function SettingsForm({settings}: {settings: PatientCallPanelSettings}) {
                     <input type="checkbox" {...form.register('soundEnabled')} />
                     {t('patientCall.sound')}
                 </label>
+                <label className={styles.toggle}>
+                    <input type="checkbox" {...form.register('showRecentCalls')} />
+                    {t('patientCall.showRecentCalls')}
+                </label>
                 {Object.keys(form.formState.errors).length > 0 && <p role="alert">{t('patientCall.invalidFields')}</p>}
                 <Button disabled={busy} type="submit">
                     {t('actions.save')}
@@ -179,7 +184,21 @@ function SettingsForm({settings}: {settings: PatientCallPanelSettings}) {
                     <PatientCallDisplay
                         identity={{...settings, ...preview}}
                         logoUrl={preview.useClinicLogo ? settings.clinicLogoUrl : null}
-                        call={{code: 'A-042', destination: t('patientCall.exampleDestination'), expiresAt: ''}}
+                        call={{
+                            patientName: t('patientCall.examplePatient'),
+                            destination: t('patientCall.exampleDestination'),
+                            expiresAt: '',
+                        }}
+                        recentCalls={
+                            preview.showRecentCalls
+                                ? [
+                                      {
+                                          patientName: t('patientCall.exampleRecentPatient'),
+                                          destination: t('patientCall.exampleRecentDestination'),
+                                      },
+                                  ]
+                                : []
+                        }
                     />
                 </div>
             </div>
@@ -255,6 +274,7 @@ function formValues(settings: PatientCallPanelSettings): SavePatientCallPanelDto
         backgroundColor: settings.backgroundColor,
         useClinicLogo: settings.useClinicLogo,
         soundEnabled: settings.soundEnabled,
+        showRecentCalls: settings.showRecentCalls,
         displaySeconds: settings.displaySeconds,
     };
 }

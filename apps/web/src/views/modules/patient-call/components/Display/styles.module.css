@@ -1,7 +1,7 @@
 @reference '../../../../../app/globals.css';
 
 .display {
-    @apply flex min-h-full flex-col justify-between gap-6 overflow-hidden bg-(--color-bg-card) p-[clamp(1.25rem,5vw,5rem)] text-(--color-text-primary);
+    @apply flex min-h-full flex-col justify-between gap-6 overflow-hidden bg-(--color-bg-card) p-[clamp(1rem,4vw,4rem)] text-(--color-text-primary);
     container-type: inline-size;
 }
 
@@ -26,15 +26,12 @@
 }
 
 .board {
-    @apply grid min-h-[50%] flex-1 content-center justify-items-center gap-2 text-center;
+    @apply grid flex-1 content-center justify-items-center gap-2 text-center;
 }
 
-.label {
-    @apply text-[clamp(1rem,3cqw,2rem)] font-medium;
-}
-
-.code {
-    @apply font-mono text-[clamp(3rem,14cqw,14rem)] leading-none font-semibold tabular-nums;
+.name {
+    @apply text-[clamp(2.2rem,8cqw,7rem)] leading-tight font-semibold;
+    overflow-wrap: anywhere;
 }
 
 .destination {
@@ -43,4 +40,21 @@
 
 .instructions {
     @apply text-center text-[clamp(1rem,3cqw,2rem)];
+}
+
+.recent {
+    @apply mx-auto w-full max-w-5xl rounded-xl border border-current/40 px-4 py-3;
+}
+
+.recentTitle {
+    @apply mb-2 text-[clamp(1rem,2.5cqw,1.6rem)] font-semibold;
+}
+
+.recentList {
+    @apply divide-y divide-current/30;
+}
+
+.recentRow {
+    @apply flex flex-wrap items-baseline justify-between gap-x-5 gap-y-0.5 py-1.5 text-[clamp(0.95rem,2cqw,1.4rem)];
+    overflow-wrap: anywhere;
 }

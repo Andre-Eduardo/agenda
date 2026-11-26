@@ -17,5 +17,6 @@ export type PatientCallPanelSettings = {
     /** @nullable */
     clinicLogoUrl: string | null;
     useClinicLogo: boolean;
+    showRecentCalls: boolean;
     displaySeconds: number;
 };

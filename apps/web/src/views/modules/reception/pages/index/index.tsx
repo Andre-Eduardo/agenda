@@ -6,6 +6,7 @@ import {
     useCheckinAppointment,
     useCompleteAppointment,
     useGetPatientCallAvailability,
+    useListPatientCallQueue,
     useMarkNoShowAppointment,
     useSearchAppointments,
     useStartAppointment,
@@ -45,7 +46,7 @@ export const Route = createFileRoute('/_stackedLayout/reception')({
     component: ReceptionPage,
 });
 
-type Transition = 'checkin' | 'ticket' | 'call' | 'start' | 'complete' | 'noShow';
+type Transition = 'checkin' | 'enqueue' | 'call' | 'start' | 'complete' | 'noShow';
 type Group = 'waiting' | 'arrived' | 'inProgress' | 'finished';
 
 const PAGE_LIMIT = 500;
@@ -85,6 +86,14 @@ function ReceptionPage() {
     });
     const queueEnabled = availability.data?.enabled === true;
     const queuePublished = availability.data?.published === true;
+    const queueQuery = useListPatientCallQueue({
+        query: {
+            enabled: appointmentAccess.allowed && queueEnabled && canOperateQueue,
+            refetchInterval: 5000,
+            refetchOnWindowFocus: true,
+        },
+    });
+    const queuedIds = new Set(queueQuery.data?.map((entry) => entry.appointmentId));
     const canBegin = availability.isSuccess && (queueEnabled ? canStart : canCall);
     const beginLabel = queueEnabled ? t('patientCall.start') : t('reception.call');
     const canUpdateAppointment = useCan({has: 'appointment:update'});
@@ -132,14 +141,12 @@ function ReceptionPage() {
         setBusyId(id);
 
         try {
-            if (kind === 'checkin' || kind === 'ticket') {
-                const {patientCallCode} = await checkin.mutateAsync({id});
+            if (kind === 'checkin' || kind === 'enqueue') {
+                const {inPatientCallQueue} = await checkin.mutateAsync({id});
 
-                if (patientCallCode) {
-                    toast.success(t('patientCall.deliverTicket', {code: patientCallCode}), {duration: 12_000});
-                } else {
-                    toast.info(t(kind === 'ticket' ? 'patientCall.noTicket' : 'reception.success.checkin'));
-                }
+                if (kind === 'checkin') toast.success(t('reception.success.checkin'));
+                else if (inPatientCallQueue) toast.success(t('patientCall.addedToQueue'));
+                else toast.info(t('patientCall.entryUnavailable'));
 
                 return;
             }
@@ -234,6 +241,7 @@ function ReceptionPage() {
                 )}
                 {appointmentAccess.allowed && queueEnabled && canOperateQueue && (
                     <PatientCallQueue
+                        queue={queueQuery}
                         published={queuePublished}
                         isStarting={busyId !== null}
                         shownAppointmentIds={new Set(grouped.arrived.map((appointment) => appointment.id))}
@@ -361,17 +369,24 @@ function ReceptionPage() {
                                                                 {t('reception.checkin')}
                                                             </Button>
                                                         )}
-                                                    {appointment.status === 'ARRIVED' && queueEnabled && canCheckin && (
-                                                        <Button
-                                                            type="button"
-                                                            variant="outline"
-                                                            size="sm"
-                                                            disabled={busyId !== null}
-                                                            onClick={() => void transition(appointment.id, 'ticket')}
-                                                        >
-                                                            {t('patientCall.showTicket')}
-                                                        </Button>
-                                                    )}
+                                                    {appointment.status === 'ARRIVED' &&
+                                                        queueEnabled &&
+                                                        canCheckin &&
+                                                        (!canOperateQueue ||
+                                                            (queueQuery.isSuccess &&
+                                                                !queuedIds.has(appointment.id))) && (
+                                                            <Button
+                                                                type="button"
+                                                                variant="outline"
+                                                                size="sm"
+                                                                disabled={busyId !== null}
+                                                                onClick={() =>
+                                                                    void transition(appointment.id, 'enqueue')
+                                                                }
+                                                            >
+                                                                {t('patientCall.addToQueue')}
+                                                            </Button>
+                                                        )}
                                                     {appointment.status === 'ARRIVED' && canBegin && (
                                                         <Button
                                                             type="button"

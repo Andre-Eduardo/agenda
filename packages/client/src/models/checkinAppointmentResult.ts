@@ -76,6 +76,5 @@ export type CheckinAppointmentResult = {
      * @nullable
      */
     roomId: string | null;
-    /** @nullable */
-    patientCallCode: string | null;
+    inPatientCallQueue: boolean;
 };

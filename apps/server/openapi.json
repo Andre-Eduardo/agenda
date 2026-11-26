@@ -11663,6 +11663,9 @@
           "useClinicLogo": {
             "type": "boolean"
           },
+          "showRecentCalls": {
+            "type": "boolean"
+          },
           "displaySeconds": {
             "type": "number"
           }
@@ -11677,6 +11680,7 @@
           "publicToken",
           "clinicLogoUrl",
           "useClinicLogo",
+          "showRecentCalls",
           "displaySeconds"
         ]
       },
@@ -11707,6 +11711,9 @@
           "soundEnabled": {
             "type": "boolean"
           },
+          "showRecentCalls": {
+            "type": "boolean"
+          },
           "displaySeconds": {
             "type": "integer",
             "minimum": 8,
@@ -11720,13 +11727,14 @@
           "backgroundColor",
           "useClinicLogo",
           "soundEnabled",
+          "showRecentCalls",
           "displaySeconds"
         ]
       },
       "PublicPatientCall": {
         "type": "object",
         "properties": {
-          "code": {
+          "patientName": {
             "type": "string"
           },
           "destination": {
@@ -11738,9 +11746,24 @@
           }
         },
         "required": [
-          "code",
+          "patientName",
           "destination",
           "expiresAt"
+        ]
+      },
+      "RecentPatientCall": {
+        "type": "object",
+        "properties": {
+          "patientName": {
+            "type": "string"
+          },
+          "destination": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "patientName",
+          "destination"
         ]
       },
       "PublicPatientCallPanel": {
@@ -11772,6 +11795,12 @@
                 "$ref": "#/components/schemas/PublicPatientCall"
               }
             ]
+          },
+          "recentCalls": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RecentPatientCall"
+            }
           }
         },
         "required": [
@@ -11781,7 +11810,8 @@
           "backgroundColor",
           "soundEnabled",
           "logoUrl",
-          "call"
+          "call",
+          "recentCalls"
         ]
       },
       "PatientCallQueueItem": {
@@ -11790,9 +11820,6 @@
           "appointmentId": {
             "type": "string",
             "format": "uuid"
-          },
-          "code": {
-            "type": "string"
           },
           "arrivedAt": {
             "type": "string",
@@ -11811,7 +11838,6 @@
         },
         "required": [
           "appointmentId",
-          "code",
           "arrivedAt",
           "callCount",
           "destination",
@@ -11846,9 +11872,6 @@
             "type": "string",
             "format": "uuid"
           },
-          "code": {
-            "type": "string"
-          },
           "arrivedAt": {
             "type": "string",
             "format": "date-time"
@@ -11863,7 +11886,6 @@
         },
         "required": [
           "appointmentId",
-          "code",
           "arrivedAt",
           "callCount",
           "destination"
@@ -12853,9 +12875,8 @@
             "nullable": true,
             "description": "Room where the appointment takes place, when room management is enabled"
           },
-          "patientCallCode": {
-            "type": "string",
-            "nullable": true
+          "inPatientCallQueue": {
+            "type": "boolean"
           }
         },
         "required": [
@@ -12880,7 +12901,7 @@
           "paymentStatus",
           "revenue",
           "roomId",
-          "patientCallCode"
+          "inPatientCallQueue"
         ]
       },
       "Procedure": {
