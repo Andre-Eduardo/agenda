@@ -47,13 +47,14 @@ export class SignInService implements ApplicationService<SignInDto, SignInRespon
 
         // Resolve the full {clinicMemberId, clinicId} payload for each membership.
         // If a ClinicMember row was deleted out from under the User aggregate,
-        // drop it silently from the JWT instead of failing sign-in.
+        // drop it silently from the JWT instead of failing sign-in. Support accesses stay out:
+        // a global user enters a clinic only explicitly, through the audited support flow.
         const clinicMembers: TokenClinicMember[] = [];
 
         for (const memberId of user.clinicMembers) {
             const member = await this.clinicMemberRepository.findById(memberId);
 
-            if (member !== null) {
+            if (member !== null && !member.supportAccess) {
                 clinicMembers.push({
                     clinicMemberId: member.id,
                     clinicId: member.clinicId,

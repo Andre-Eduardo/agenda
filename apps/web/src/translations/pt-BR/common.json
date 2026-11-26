@@ -262,7 +262,8 @@
     "menu": "Menu principal",
     "admin": "Administração",
     "clinics": "Empresas",
-    "logout": "Sair"
+    "logout": "Sair",
+    "supportUsers": "Usuários de suporte"
   },
   "patientCall": {
     "settings": "Configurar painel de chamada",
@@ -499,5 +500,9 @@
     "terms": "Termos de Uso",
     "draftNotice": "Rascunho pendente de revisão do encarregado de dados (DPO). Os trechos entre colchetes ainda serão preenchidos.",
     "versionInfo": "Versão {{version}} · atualizado em {{date}}"
+  },
+  "support": {
+    "banner": "Você está em {{clinic}} como suporte: só leitura, sem dados clínicos. Esta sessão fica no log de auditoria da clínica.",
+    "leave": "Sair da clínica"
   }
 }

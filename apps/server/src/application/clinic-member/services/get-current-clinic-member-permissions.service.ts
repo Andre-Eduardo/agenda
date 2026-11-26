@@ -16,6 +16,12 @@ export class GetCurrentClinicMemberPermissionsService implements ApplicationServ
     ) {}
 
     async execute({actor}: Command): Promise<ClinicMemberPermissionsDto> {
+        // Outside any clinic (e.g. a global support user who has not entered one yet) only
+        // the global permissions apply.
+        if (actor.clinicMemberId === null) {
+            return new ClinicMemberPermissionsDto(await this.authorizer.getPermissions(null, actor.userId));
+        }
+
         const member = await this.clinicMemberRepository.findById(actor.clinicMemberId);
 
         if (

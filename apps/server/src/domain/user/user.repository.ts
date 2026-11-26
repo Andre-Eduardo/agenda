@@ -1,11 +1,13 @@
 import {PaginatedList, Pagination} from '@domain/@shared/repository';
 import type {Email} from '@domain/@shared/value-objects';
+import type {GlobalRole} from '@domain/auth';
 import type {User, UserId} from '@domain/user/entities';
 import type {Username} from '@domain/user/value-objects';
 
 export type UserSearchFilter = {
     ids?: UserId[];
     term?: string;
+    globalRoles?: GlobalRole[];
 };
 
 export type UserSortOptions = ['createdAt', 'updatedAt'];

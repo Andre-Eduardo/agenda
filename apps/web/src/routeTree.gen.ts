@@ -27,6 +27,7 @@ import { Route as teamPagesDetailIndexRouteImport } from './views/modules/team/p
 import { Route as patientCallPagesSettingsIndexRouteImport } from './views/modules/patient-call/pages/settings/index'
 import { Route as patientsPagesNewIndexRouteImport } from './views/modules/patients/pages/new/index'
 import { Route as patientsPagesDetailIndexRouteImport } from './views/modules/patients/pages/detail/index'
+import { Route as adminPagesSupportUsersIndexRouteImport } from './views/modules/admin/pages/support-users/index'
 import { Route as adminPagesIndexIndexRouteImport } from './views/modules/admin/pages/index/index'
 import { Route as authPagesResetPasswordIndexRouteImport } from './views/modules/auth/pages/reset-password/index'
 import { Route as authPagesLoginIndexRouteImport } from './views/modules/auth/pages/login/index'
@@ -134,6 +135,12 @@ const patientsPagesDetailIndexRoute =
     path: '/patients/$patientId',
     getParentRoute: () => DotDotLayoutsStackedLayoutIndexRoute,
   } as any)
+const adminPagesSupportUsersIndexRoute =
+  adminPagesSupportUsersIndexRouteImport.update({
+    id: '/admin/support-users',
+    path: '/admin/support-users',
+    getParentRoute: () => DotDotLayoutsStackedLayoutIndexRoute,
+  } as any)
 const adminPagesIndexIndexRoute = adminPagesIndexIndexRouteImport.update({
   id: '/admin/clinics',
   path: '/admin/clinics',
@@ -196,6 +203,7 @@ export interface FileRoutesByFullPath {
   '/auth/login': typeof authPagesLoginIndexRoute
   '/auth/reset-password': typeof authPagesResetPasswordIndexRoute
   '/admin/clinics': typeof adminPagesIndexIndexRoute
+  '/admin/support-users': typeof adminPagesSupportUsersIndexRoute
   '/patients/$patientId': typeof patientsPagesDetailIndexRoute
   '/patients/new': typeof patientsPagesNewIndexRoute
   '/reception/panel-settings': typeof patientCallPagesSettingsIndexRoute
@@ -222,6 +230,7 @@ export interface FileRoutesByTo {
   '/auth/login': typeof authPagesLoginIndexRoute
   '/auth/reset-password': typeof authPagesResetPasswordIndexRoute
   '/admin/clinics': typeof adminPagesIndexIndexRoute
+  '/admin/support-users': typeof adminPagesSupportUsersIndexRoute
   '/patients/$patientId': typeof patientsPagesDetailIndexRoute
   '/patients/new': typeof patientsPagesNewIndexRoute
   '/reception/panel-settings': typeof patientCallPagesSettingsIndexRoute
@@ -251,6 +260,7 @@ export interface FileRoutesById {
   '/_auth/auth/login': typeof authPagesLoginIndexRoute
   '/_auth/auth/reset-password': typeof authPagesResetPasswordIndexRoute
   '/_stackedLayout/admin/clinics': typeof adminPagesIndexIndexRoute
+  '/_stackedLayout/admin/support-users': typeof adminPagesSupportUsersIndexRoute
   '/_stackedLayout/patients/$patientId': typeof patientsPagesDetailIndexRoute
   '/_stackedLayout/patients/new': typeof patientsPagesNewIndexRoute
   '/_stackedLayout/reception/panel-settings': typeof patientCallPagesSettingsIndexRoute
@@ -279,6 +289,7 @@ export interface FileRouteTypes {
     | '/auth/login'
     | '/auth/reset-password'
     | '/admin/clinics'
+    | '/admin/support-users'
     | '/patients/$patientId'
     | '/patients/new'
     | '/reception/panel-settings'
@@ -305,6 +316,7 @@ export interface FileRouteTypes {
     | '/auth/login'
     | '/auth/reset-password'
     | '/admin/clinics'
+    | '/admin/support-users'
     | '/patients/$patientId'
     | '/patients/new'
     | '/reception/panel-settings'
@@ -333,6 +345,7 @@ export interface FileRouteTypes {
     | '/_auth/auth/login'
     | '/_auth/auth/reset-password'
     | '/_stackedLayout/admin/clinics'
+    | '/_stackedLayout/admin/support-users'
     | '/_stackedLayout/patients/$patientId'
     | '/_stackedLayout/patients/new'
     | '/_stackedLayout/reception/panel-settings'
@@ -479,6 +492,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof patientsPagesDetailIndexRouteImport
       parentRoute: typeof DotDotLayoutsStackedLayoutIndexRoute
     }
+    '/_stackedLayout/admin/support-users': {
+      id: '/_stackedLayout/admin/support-users'
+      path: '/admin/support-users'
+      fullPath: '/admin/support-users'
+      preLoaderRoute: typeof adminPagesSupportUsersIndexRouteImport
+      parentRoute: typeof DotDotLayoutsStackedLayoutIndexRoute
+    }
     '/_stackedLayout/admin/clinics': {
       id: '/_stackedLayout/admin/clinics'
       path: '/admin/clinics'
@@ -567,6 +587,7 @@ interface DotDotLayoutsStackedLayoutIndexRouteChildren {
   settingsPagesIndexIndexRoute: typeof settingsPagesIndexIndexRoute
   teamPagesIndexIndexRoute: typeof teamPagesIndexIndexRoute
   adminPagesIndexIndexRoute: typeof adminPagesIndexIndexRoute
+  adminPagesSupportUsersIndexRoute: typeof adminPagesSupportUsersIndexRoute
   patientsPagesDetailIndexRoute: typeof patientsPagesDetailIndexRoute
   patientsPagesNewIndexRoute: typeof patientsPagesNewIndexRoute
   patientCallPagesSettingsIndexRoute: typeof patientCallPagesSettingsIndexRoute
@@ -589,6 +610,7 @@ const DotDotLayoutsStackedLayoutIndexRouteChildren: DotDotLayoutsStackedLayoutIn
     settingsPagesIndexIndexRoute: settingsPagesIndexIndexRoute,
     teamPagesIndexIndexRoute: teamPagesIndexIndexRoute,
     adminPagesIndexIndexRoute: adminPagesIndexIndexRoute,
+    adminPagesSupportUsersIndexRoute: adminPagesSupportUsersIndexRoute,
     patientsPagesDetailIndexRoute: patientsPagesDetailIndexRoute,
     patientsPagesNewIndexRoute: patientsPagesNewIndexRoute,
     patientCallPagesSettingsIndexRoute: patientCallPagesSettingsIndexRoute,

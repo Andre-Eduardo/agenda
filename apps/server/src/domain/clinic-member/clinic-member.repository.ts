@@ -13,6 +13,7 @@ export interface ClinicMemberRepository {
     findById(id: ClinicMemberId): Promise<ClinicMember | null>;
     findByClinicAndUser(clinicId: ClinicId, userId: UserId): Promise<ClinicMember | null>;
     findByUserId(userId: UserId): Promise<ClinicMember[]>;
+    /** Members of the clinic's team. Global support accesses are left out. */
     findByClinicId(clinicId: ClinicId): Promise<ClinicMember[]>;
     findDisplayNamesByIds(clinicId: ClinicId, ids: ClinicMemberId[]): Promise<Map<string, string>>;
     save(member: ClinicMember): Promise<void>;

@@ -86,6 +86,44 @@ export class User extends AggregateRoot<UserId> {
         return user;
     }
 
+    /**
+     * Usuário global de suporte: entra em qualquer clínica sem ser funcionário dela.
+     * Quem cria é sempre um SUPER_ADMIN (SupportUserPermission.MANAGE).
+     */
+    static async createSupport(props: Omit<CreateUser, 'clinicMembers'>): Promise<User> {
+        const userId = UserId.generate();
+        const now = new Date();
+
+        const user = new User({
+            ...props,
+            id: userId,
+            email: props.email ?? null,
+            password: await ObfuscatedPassword.obfuscate(props.password),
+            name: props.name,
+            globalRole: GlobalRole.SUPPORT,
+            clinicMembers: [],
+            createdAt: now,
+            updatedAt: now,
+            deletedAt: null,
+        });
+
+        user.addEvent(new UserCreatedEvent({user, timestamp: now}));
+
+        return user;
+    }
+
+    /** Tira o papel de suporte: sem papel global e sem vínculo, o usuário não entra mais no sistema. */
+    revokeSupport(): void {
+        if (this.globalRole !== GlobalRole.SUPPORT) {
+            throw new InvalidInputException('Only a support user can have the support role revoked.');
+        }
+
+        const oldUser = new User(this);
+
+        this.globalRole = GlobalRole.NONE;
+        this.addEvent(new UserChangedEvent({oldState: oldUser, newState: this}));
+    }
+
     async signIn(password: string): Promise<void> {
         if (!(await this.password.verify(password))) {
             throw new AccessDeniedException('Incorrect password.', AccessDeniedReason.BAD_CREDENTIALS);

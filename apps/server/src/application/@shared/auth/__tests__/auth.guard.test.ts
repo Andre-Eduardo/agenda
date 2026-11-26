@@ -9,14 +9,16 @@ import {
     UnauthenticatedException,
 } from '../../../../domain/@shared/exceptions';
 import type {AuditLogRepository} from '../../../../domain/audit/audit-log.repository';
-import {RoomPermission} from '../../../../domain/auth';
+import {GlobalRole, RoomPermission} from '../../../../domain/auth';
 import type {Authorizer} from '../../../../domain/auth/authorizer';
 import type {ClinicMemberRepository} from '../../../../domain/clinic-member/clinic-member.repository';
 import {ClinicMember, ClinicMemberId, ClinicMemberRole} from '../../../../domain/clinic-member/entities';
 import {ClinicId} from '../../../../domain/clinic/entities';
 import {UserId} from '../../../../domain/user/entities';
+import {fakeUser} from '../../../../domain/user/entities/__tests__/fake-user';
 import {TokenScope} from '../../../../domain/user/token';
 import type {TokenClinicMember} from '../../../../domain/user/token';
+import type {UserRepository} from '../../../../domain/user/user.repository';
 import {JsonWebToken, JsonWebTokenProvider} from '../../../../infrastructure/auth/jwt';
 import {AuthGuard} from '../auth.guard';
 
@@ -302,8 +304,6 @@ describe('An auth guard', () => {
             'Token does not have access to the requested clinic member.'
         );
         await expectation.rejects.toContainEntry(['reason', AccessDeniedReason.NOT_ALLOWED]);
-
-        expect(clinicMemberRepository.findById).not.toHaveBeenCalled();
     });
 
     it.each([
@@ -406,5 +406,124 @@ describe('An auth guard', () => {
 
         expect(authorizer.validate).toHaveBeenCalledWith(null, token.userId, RoomPermission.DELETE);
         expect(auditLogRepository.append).not.toHaveBeenCalled();
+    });
+});
+
+describe('An auth guard with global support access', () => {
+    const authCookie = 'authCookie';
+    const clinicMemberCookie = 'clinicMemberCookie';
+    const tokenProvider = new JsonWebTokenProvider(60, 'secret');
+    const authorizer = mock<Authorizer>();
+    const reflector = mock<Reflector>();
+    const clinicMemberRepository = mock<ClinicMemberRepository>();
+    const auditLogRepository = mock<AuditLogRepository>();
+    const userRepository = mock<UserRepository>();
+    const guard = new AuthGuard(
+        authCookie,
+        clinicMemberCookie,
+        tokenProvider,
+        authorizer,
+        reflector,
+        clinicMemberRepository,
+        auditLogRepository,
+        userRepository
+    );
+
+    function supportSetup(method: string, globalRole: GlobalRole) {
+        const user = fakeUser({globalRole, clinicMembers: []});
+        // Support accesses never go in the token.
+        const token = tokenProvider.issue(user.id, {scope: [TokenScope.AUTH], clinicMembers: []});
+        const member = ClinicMember.createSupportAccess({
+            clinicId: ClinicId.generate(),
+            userId: user.id,
+            displayName: 'John Doe (suporte)',
+        });
+        const context = mock<ExecutionContext>();
+        const request = mock<Request>({
+            signedCookies: {[authCookie]: token.toString(), [clinicMemberCookie]: member.id.toString()},
+            params: {},
+            method,
+        });
+        const httpArgumentsHost = mockDeep<HttpArgumentsHost>();
+
+        httpArgumentsHost.getRequest.mockReturnValueOnce(request);
+        context.switchToHttp.mockReturnValueOnce(httpArgumentsHost);
+        context.getClass.mockReturnValue(RoomController);
+        context.getHandler.mockReturnValue(RoomController.prototype.remove);
+        reflector.getAllAndOverride.mockReturnValueOnce(false).mockReturnValueOnce(false);
+        clinicMemberRepository.findById.mockResolvedValue(member);
+        userRepository.findById.mockResolvedValue(user);
+
+        return {context, request, member, user};
+    }
+
+    it('should let a support user read inside a clinic they are not an employee of', async () => {
+        const {context, request, member, user} = supportSetup('GET', GlobalRole.SUPPORT);
+
+        reflector.get.mockReturnValueOnce(undefined);
+
+        await expect(guard.canActivate(context)).resolves.toBe(true);
+
+        expect(request.actor).toMatchObject({
+            userId: user.id,
+            clinicId: member.clinicId,
+            clinicMemberId: member.id,
+        });
+    });
+
+    it('should refuse the support access once the user lost the global role', async () => {
+        const {context} = supportSetup('GET', GlobalRole.NONE);
+
+        await expect(guard.canActivate(context)).rejects.toThrowWithMessage(
+            AccessDeniedException,
+            'Token does not have access to the requested clinic member.'
+        );
+    });
+
+    it('should refuse the support access of another user', async () => {
+        const {context} = supportSetup('GET', GlobalRole.SUPPORT);
+        const otherUsersAccess = ClinicMember.createSupportAccess({
+            clinicId: ClinicId.generate(),
+            userId: UserId.generate(),
+            displayName: 'Other (suporte)',
+        });
+
+        clinicMemberRepository.findById.mockReset();
+        clinicMemberRepository.findById.mockResolvedValue(otherUsersAccess);
+
+        await expect(guard.canActivate(context)).rejects.toThrow(AccessDeniedException);
+    });
+
+    it.each(['POST', 'PUT', 'PATCH', 'DELETE'])(
+        'should block %s for a support user and record the denial in the audit log',
+        async (method) => {
+            const {context, member, user} = supportSetup(method, GlobalRole.SUPPORT);
+
+            // eslint-disable-next-line jest/valid-expect -- To allow multiple assertions
+            const expectation = expect(guard.canActivate(context));
+
+            await expectation.rejects.toThrowWithMessage(AccessDeniedException, 'Support access is read-only.');
+            await expectation.rejects.toContainEntry(['reason', AccessDeniedReason.INSUFFICIENT_PERMISSIONS]);
+
+            expect(auditLogRepository.append).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    clinicId: member.clinicId.toString(),
+                    actorUserId: user.id.toString(),
+                    actorMemberId: member.id.toString(),
+                    result: 'DENIED',
+                    statusCode: 403,
+                })
+            );
+            expect(authorizer.validate).not.toHaveBeenCalled();
+        }
+    );
+
+    it('should let a super admin change data through the support access', async () => {
+        const {context} = supportSetup('DELETE', GlobalRole.SUPER_ADMIN);
+
+        reflector.get.mockReturnValueOnce([RoomPermission.DELETE]);
+        authorizer.validate.mockResolvedValueOnce(true);
+
+        await expect(guard.canActivate(context)).resolves.toBe(true);
     });
 });

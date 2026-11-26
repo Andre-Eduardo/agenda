@@ -4,7 +4,7 @@ import {AccessDeniedException, AccessDeniedReason} from '@domain/@shared/excepti
 import {createAuthorizer} from '@domain/auth/authorizer';
 import {clinicMemberRolePermissionsMap} from '@domain/auth/authorizer/clinic-member-role.authorizer';
 import {GlobalRole} from '@domain/auth/global-role';
-import {UserPermission} from '@domain/auth/permission';
+import {SupportAccessPermission, SupportUserPermission, UserPermission} from '@domain/auth/permission';
 import type {ClinicLicenseRepository} from '@domain/clinic-license/clinic-license.repository';
 import {ClinicLicense} from '@domain/clinic-license/entities';
 import {ModuleType} from '@domain/clinic-license/models';
@@ -120,4 +120,19 @@ describe('current clinic member permissions', () => {
             expect(userRepository.findById).not.toHaveBeenCalled();
         }
     );
+
+    it('returns only the global permissions outside any clinic', async () => {
+        const {actor, service, clinicMemberRepository, userRepository} = setup([ClinicMemberRole.OWNER]);
+
+        userRepository.findById.mockResolvedValue(fakeUser({id: actor.userId, globalRole: GlobalRole.SUPPORT}));
+
+        const result = await service.execute({
+            actor: {...actor, clinicMemberId: null} as unknown as Actor,
+            payload: undefined,
+        });
+
+        expect(result.permissions).toContain(SupportAccessPermission.ENTER);
+        expect(result.permissions).not.toContain(SupportUserPermission.MANAGE);
+        expect(clinicMemberRepository.findById).not.toHaveBeenCalled();
+    });
 });

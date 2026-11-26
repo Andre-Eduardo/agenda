@@ -10,3 +10,4 @@ export const licenseCell = css({display: 'flex', flexDirection: 'column', gap: '
 export const seatText = css({fontSize: 'xs', color: 'text.secondary', fontFamily: 'mono'});
 export const moduleBadges = css({display: 'flex', flexWrap: 'wrap', gap: '1'});
 export const emptyText = css({fontSize: 'xs', color: 'text.tertiary'});
+export const actionsCell = css({display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '2'});

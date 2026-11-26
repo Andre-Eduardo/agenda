@@ -658,7 +658,7 @@
             }
           }
         },
-        "summary": "Gets effective permissions for the current active clinic member",
+        "summary": "Gets effective permissions for the current active clinic member (global ones outside a clinic)",
         "tags": [
           "ClinicMember"
         ]
@@ -964,6 +964,186 @@
         "summary": "Configures the plan limits and AI modules of a clinic (platform admin)",
         "tags": [
           "ClinicLicense"
+        ]
+      }
+    },
+    "/api/v1/support-access/clinics/{clinicId}": {
+      "post": {
+        "description": "Selects the clinic for the session without making the user an employee of it. Every entry is recorded in the clinic audit log.",
+        "operationId": "enterClinic",
+        "parameters": [
+          {
+            "name": "clinicId",
+            "required": true,
+            "in": "path",
+            "description": "Clinic ID",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Clinic entered",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClinicMember"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Request failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Enters a clinic as a global support user",
+        "tags": [
+          "Support access"
+        ]
+      }
+    },
+    "/api/v1/support-access/leave": {
+      "post": {
+        "operationId": "leaveClinic",
+        "parameters": [],
+        "responses": {
+          "204": {
+            "description": "Clinic left"
+          },
+          "default": {
+            "description": "Request failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Leaves the clinic the support user entered",
+        "tags": [
+          "Support access"
+        ]
+      }
+    },
+    "/api/v1/admin/support-users": {
+      "get": {
+        "operationId": "listSupportUsers",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Support users",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SupportUser"
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Request failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Lists the global support users",
+        "tags": [
+          "Support access"
+        ]
+      },
+      "post": {
+        "operationId": "createSupportUser",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateSupportUserDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Support user created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SupportUser"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Request failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Creates a global support user",
+        "tags": [
+          "Support access"
+        ]
+      }
+    },
+    "/api/v1/admin/support-users/{id}": {
+      "delete": {
+        "operationId": "revokeSupportUser",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "User ID",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Support role revoked"
+          },
+          "default": {
+            "description": "Request failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Revokes the support role of a user",
+        "tags": [
+          "Support access"
         ]
       }
     },
@@ -10633,6 +10813,10 @@
             "type": "boolean",
             "description": "Is the membership active"
           },
+          "supportAccess": {
+            "type": "boolean",
+            "description": "True when this is a global support user inside the clinic, not an employee (read-only)"
+          },
           "invitedByMemberId": {
             "type": "string",
             "format": "uuid",
@@ -10650,6 +10834,7 @@
           "displayName",
           "color",
           "isActive",
+          "supportAccess",
           "invitedByMemberId"
         ]
       },
@@ -10942,6 +11127,77 @@
           "includedProfessionals",
           "maxProfessionals",
           "modules"
+        ]
+      },
+      "SupportUser": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "The unique identifier of the entity"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "The date and time the entity was created"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "The date and time the entity was last updated"
+          },
+          "username": {
+            "type": "string",
+            "description": "The username of the support user",
+            "example": "suporte.ana"
+          },
+          "email": {
+            "type": "string",
+            "nullable": true,
+            "description": "The email of the support user"
+          },
+          "name": {
+            "type": "string",
+            "description": "The name of the support user",
+            "example": "Ana (Suporte)"
+          }
+        },
+        "required": [
+          "id",
+          "createdAt",
+          "updatedAt",
+          "username",
+          "email",
+          "name"
+        ]
+      },
+      "CreateSupportUserDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "example": "Ana (Suporte)"
+          },
+          "username": {
+            "type": "string",
+            "example": "john_doe"
+          },
+          "email": {
+            "type": "string",
+            "nullable": true,
+            "example": "john.doe@example.com"
+          },
+          "password": {
+            "type": "string",
+            "example": "J0hn@d03"
+          }
+        },
+        "required": [
+          "name",
+          "username",
+          "password"
         ]
       },
       "GrantClinicPatientAccessDto": {

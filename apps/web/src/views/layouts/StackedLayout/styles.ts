@@ -123,3 +123,21 @@ export const icon = css({w: '5', h: '5'});
 export const srOnly = css({srOnly: true});
 
 export const main = css({flex: '1', overflow: 'auto'});
+
+export const supportBanner = css({
+    display: 'flex',
+    flexWrap: 'wrap',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: '3',
+    px: {base: '4', lg: '6'},
+    py: '2',
+    bg: 'warning.surface',
+    color: '[#78350f]',
+    fontSize: 'sm-body',
+    borderBottomWidth: '1px',
+    borderBottomStyle: 'solid',
+    borderBottomColor: 'border',
+});
+
+export const supportBannerText = css({display: 'flex', alignItems: 'center', gap: '2'});

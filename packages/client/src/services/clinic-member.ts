@@ -676,7 +676,7 @@ export function useGetCurrentClinicMemberSuspense<
 }
 
 /**
- * @summary Gets effective permissions for the current active clinic member
+ * @summary Gets effective permissions for the current active clinic member (global ones outside a clinic)
  */
 export const getCurrentClinicMemberPermissions = (
     options?: SecondParameter<typeof apiClient>,
@@ -765,7 +765,7 @@ export function useGetCurrentClinicMemberPermissions<
     queryClient?: QueryClient
 ): UseQueryResult<TData, TError> & {queryKey: DataTag<QueryKey, TData, TError>};
 /**
- * @summary Gets effective permissions for the current active clinic member
+ * @summary Gets effective permissions for the current active clinic member (global ones outside a clinic)
  */
 
 export function useGetCurrentClinicMemberPermissions<
@@ -854,7 +854,7 @@ export function useGetCurrentClinicMemberPermissionsSuspense<
     queryClient?: QueryClient
 ): UseSuspenseQueryResult<TData, TError> & {queryKey: DataTag<QueryKey, TData, TError>};
 /**
- * @summary Gets effective permissions for the current active clinic member
+ * @summary Gets effective permissions for the current active clinic member (global ones outside a clinic)
  */
 
 export function useGetCurrentClinicMemberPermissionsSuspense<
@@ -890,6 +890,7 @@ export const getCreateClinicMemberResponseMock = (overrideResponse: Partial<Clin
     displayName: faker.helpers.arrayElement([faker.string.alpha({length: {min: 10, max: 20}}), null]),
     color: faker.helpers.arrayElement([faker.string.alpha({length: {min: 10, max: 20}}), null]),
     isActive: faker.datatype.boolean(),
+    supportAccess: faker.datatype.boolean(),
     invitedByMemberId: faker.helpers.arrayElement([faker.string.uuid(), null]),
     ...overrideResponse,
 });
@@ -904,6 +905,7 @@ export const getCreateClinicMemberResponseMock201 = (overrideResponse: Partial<C
     displayName: faker.helpers.arrayElement([faker.string.alpha({length: {min: 10, max: 20}}), null]),
     color: faker.helpers.arrayElement([faker.string.alpha({length: {min: 10, max: 20}}), null]),
     isActive: faker.datatype.boolean(),
+    supportAccess: faker.datatype.boolean(),
     invitedByMemberId: faker.helpers.arrayElement([faker.string.uuid(), null]),
     ...overrideResponse,
 });
@@ -931,6 +933,7 @@ export const getListClinicMembersResponseMock = (): ClinicMember[] =>
         displayName: faker.helpers.arrayElement([faker.string.alpha({length: {min: 10, max: 20}}), null]),
         color: faker.helpers.arrayElement([faker.string.alpha({length: {min: 10, max: 20}}), null]),
         isActive: faker.datatype.boolean(),
+        supportAccess: faker.datatype.boolean(),
         invitedByMemberId: faker.helpers.arrayElement([faker.string.uuid(), null]),
     }));
 
@@ -945,6 +948,7 @@ export const getListClinicMembersResponseMock200 = (): ClinicMember[] =>
         displayName: faker.helpers.arrayElement([faker.string.alpha({length: {min: 10, max: 20}}), null]),
         color: faker.helpers.arrayElement([faker.string.alpha({length: {min: 10, max: 20}}), null]),
         isActive: faker.datatype.boolean(),
+        supportAccess: faker.datatype.boolean(),
         invitedByMemberId: faker.helpers.arrayElement([faker.string.uuid(), null]),
     }));
 
@@ -970,6 +974,7 @@ export const getInviteClinicMemberResponseMock = (overrideResponse: Partial<Clin
     displayName: faker.helpers.arrayElement([faker.string.alpha({length: {min: 10, max: 20}}), null]),
     color: faker.helpers.arrayElement([faker.string.alpha({length: {min: 10, max: 20}}), null]),
     isActive: faker.datatype.boolean(),
+    supportAccess: faker.datatype.boolean(),
     invitedByMemberId: faker.helpers.arrayElement([faker.string.uuid(), null]),
     ...overrideResponse,
 });
@@ -984,6 +989,7 @@ export const getInviteClinicMemberResponseMock201 = (overrideResponse: Partial<C
     displayName: faker.helpers.arrayElement([faker.string.alpha({length: {min: 10, max: 20}}), null]),
     color: faker.helpers.arrayElement([faker.string.alpha({length: {min: 10, max: 20}}), null]),
     isActive: faker.datatype.boolean(),
+    supportAccess: faker.datatype.boolean(),
     invitedByMemberId: faker.helpers.arrayElement([faker.string.uuid(), null]),
     ...overrideResponse,
 });
@@ -1012,6 +1018,7 @@ export const getCreateClinicMemberAccountResponseMock = (
     displayName: faker.helpers.arrayElement([faker.string.alpha({length: {min: 10, max: 20}}), null]),
     color: faker.helpers.arrayElement([faker.string.alpha({length: {min: 10, max: 20}}), null]),
     isActive: faker.datatype.boolean(),
+    supportAccess: faker.datatype.boolean(),
     invitedByMemberId: faker.helpers.arrayElement([faker.string.uuid(), null]),
     ...overrideResponse,
 });
@@ -1028,6 +1035,7 @@ export const getCreateClinicMemberAccountResponseMock201 = (
     displayName: faker.helpers.arrayElement([faker.string.alpha({length: {min: 10, max: 20}}), null]),
     color: faker.helpers.arrayElement([faker.string.alpha({length: {min: 10, max: 20}}), null]),
     isActive: faker.datatype.boolean(),
+    supportAccess: faker.datatype.boolean(),
     invitedByMemberId: faker.helpers.arrayElement([faker.string.uuid(), null]),
     ...overrideResponse,
 });
@@ -1056,6 +1064,7 @@ export const getGetCurrentClinicMemberResponseMock = (overrideResponse: Partial<
     displayName: faker.helpers.arrayElement([faker.string.alpha({length: {min: 10, max: 20}}), null]),
     color: faker.helpers.arrayElement([faker.string.alpha({length: {min: 10, max: 20}}), null]),
     isActive: faker.datatype.boolean(),
+    supportAccess: faker.datatype.boolean(),
     invitedByMemberId: faker.helpers.arrayElement([faker.string.uuid(), null]),
     ...overrideResponse,
 });
@@ -1072,6 +1081,7 @@ export const getGetCurrentClinicMemberResponseMock200 = (
     displayName: faker.helpers.arrayElement([faker.string.alpha({length: {min: 10, max: 20}}), null]),
     color: faker.helpers.arrayElement([faker.string.alpha({length: {min: 10, max: 20}}), null]),
     isActive: faker.datatype.boolean(),
+    supportAccess: faker.datatype.boolean(),
     invitedByMemberId: faker.helpers.arrayElement([faker.string.uuid(), null]),
     ...overrideResponse,
 });

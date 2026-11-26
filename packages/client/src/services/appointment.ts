@@ -2241,6 +2241,7 @@ export const getListManageableProfessionalsResponseMock = (): ClinicMember[] =>
         displayName: faker.helpers.arrayElement([faker.string.alpha({length: {min: 10, max: 20}}), null]),
         color: faker.helpers.arrayElement([faker.string.alpha({length: {min: 10, max: 20}}), null]),
         isActive: faker.datatype.boolean(),
+        supportAccess: faker.datatype.boolean(),
         invitedByMemberId: faker.helpers.arrayElement([faker.string.uuid(), null]),
     }));
 
@@ -2255,6 +2256,7 @@ export const getListManageableProfessionalsResponseMock200 = (): ClinicMember[] 
         displayName: faker.helpers.arrayElement([faker.string.alpha({length: {min: 10, max: 20}}), null]),
         color: faker.helpers.arrayElement([faker.string.alpha({length: {min: 10, max: 20}}), null]),
         isActive: faker.datatype.boolean(),
+        supportAccess: faker.datatype.boolean(),
         invitedByMemberId: faker.helpers.arrayElement([faker.string.uuid(), null]),
     }));
 

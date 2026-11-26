@@ -1,4 +1,12 @@
-import {ClinicLicensePermission, Permission, PatientPermission, RoomPermission, UserPermission} from '../permission';
+import {
+    ClinicLicensePermission,
+    Permission,
+    PatientPermission,
+    RoomPermission,
+    SupportAccessPermission,
+    SupportUserPermission,
+    UserPermission,
+} from '../permission';
 
 describe('A permission', () => {
     it.each([
@@ -26,6 +34,13 @@ describe('A permission', () => {
 
         expect(permissions.has(PatientPermission.VIEW)).toBe(true);
         expect(permissions.has(ClinicLicensePermission.MANAGE)).toBe(false);
-        expect(permissions.size).toBe(Permission.all().size - Object.values(ClinicLicensePermission).length);
+        expect(permissions.has(SupportAccessPermission.ENTER)).toBe(false);
+        expect(permissions.has(SupportUserPermission.MANAGE)).toBe(false);
+        expect(permissions.size).toBe(
+            Permission.all().size -
+                Object.values(ClinicLicensePermission).length -
+                Object.values(SupportAccessPermission).length -
+                Object.values(SupportUserPermission).length
+        );
     });
 });

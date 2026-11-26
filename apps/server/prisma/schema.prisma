@@ -35,6 +35,8 @@ model User {
 
 enum GlobalRole {
   SUPER_ADMIN
+  /// Suporte global: entra em qualquer clínica sem ser funcionário dela, só leitura e sem dados clínicos.
+  SUPPORT
   OWNER
   NONE
 
@@ -212,6 +214,9 @@ model ClinicMember {
   /// Cor na agenda (substitui ProfessionalConfig.color)
   color             String?
   isActive          Boolean            @default(true) @map("is_active")
+  /// Vínculo técnico de um usuário global (SUPPORT/SUPER_ADMIN) que entrou na clínica pelo suporte.
+  /// Não é funcionário: fica fora da equipe, não tem papel nem ocupa vaga da licença.
+  supportAccess     Boolean            @default(false) @map("support_access")
   /// Auditoria de onboarding. Null para o OWNER inicial da clínica.
   invitedByMemberId String?            @map("invited_by_member_id") @db.Uuid
   invitedBy         ClinicMember?      @relation("MemberInvites", fields: [invitedByMemberId], references: [id])

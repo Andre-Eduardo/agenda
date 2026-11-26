@@ -130,6 +130,36 @@ describe('A sign-in service', () => {
         expectSignedIn(existingUser, payload);
     });
 
+    it('should keep support accesses out of the token so a support user enters clinics explicitly', async () => {
+        const supportMemberId = ClinicMemberId.generate();
+        const existingUser = await existingUserWith([supportMemberId], GlobalRole.SUPPORT);
+        const supportMember = ClinicMember.createSupportAccess({
+            clinicId: ClinicId.generate(),
+            userId: existingUser.id,
+            displayName: 'John Doe (suporte)',
+        });
+
+        const payload: SignInDto = {
+            username: Username.create('johndoe'),
+            password: '@SecurePassword123',
+            clinicMemberId: supportMember.id,
+        };
+
+        const token = tokenFor(existingUser, []);
+
+        userRepository.findByUsername.mockResolvedValueOnce(existingUser);
+        clinicMemberRepository.findById.mockResolvedValueOnce(supportMember);
+        tokenProvider.issue.mockReturnValue(token);
+
+        await expect(signInService.execute({actor, payload})).resolves.toEqual({token, clinicMemberId: undefined});
+
+        expect(tokenProvider.issue).toHaveBeenCalledWith(existingUser.id, {
+            scope: [TokenScope.AUTH],
+            clinicMembers: [],
+            clinicMemberId: undefined,
+        });
+    });
+
     it('should select the clinic member the user is requesting for sign-in', async () => {
         const firstMemberId = ClinicMemberId.generate();
         const requestedMemberId = ClinicMemberId.generate();
