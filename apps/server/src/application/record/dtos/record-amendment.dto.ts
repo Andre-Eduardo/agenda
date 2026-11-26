@@ -13,6 +13,9 @@ export class RecordAmendmentDto extends EntityDto {
     @ApiProperty({format: 'uuid'})
     requestedByMemberId: string;
 
+    @ApiProperty({type: String, nullable: true})
+    requestedByName: string | null;
+
     @ApiProperty()
     justification: string;
 
@@ -22,11 +25,12 @@ export class RecordAmendmentDto extends EntityDto {
     @ApiProperty({type: 'string', format: 'date-time', nullable: true})
     relockedAt: string | null;
 
-    constructor(amendment: RecordAmendment) {
+    constructor(amendment: RecordAmendment, requestedByName: string | null) {
         super(amendment);
         this.clinicId = amendment.clinicId.toString();
         this.recordId = amendment.recordId.toString();
         this.requestedByMemberId = amendment.requestedByMemberId.toString();
+        this.requestedByName = requestedByName;
         this.justification = amendment.justification;
         this.reopenedAt = amendment.reopenedAt.toISOString();
         this.relockedAt = amendment.relockedAt?.toISOString() ?? null;

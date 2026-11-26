@@ -79,6 +79,22 @@ describe('AppointmentPrismaRepository status history', () => {
         });
     });
 
+    it('closes the active call entry in the same transaction when care starts', async () => {
+        const appointment = arrivedAppointment();
+
+        appointment.call();
+        prisma.appointment.updateMany.mockResolvedValue({count: 1});
+
+        await repository.saveStatusTransition(appointment, AppointmentStatus.ARRIVED, actor, null);
+
+        expect(provider.runAtomically).toHaveBeenCalledTimes(1);
+        expect(prisma.patientCallEntry.updateMany).toHaveBeenCalledWith({
+            where: {clinicId: actor.clinicId.toString(), appointmentId: appointment.id.toString(), closedAt: null},
+            data: {closedAt: appointment.updatedAt},
+        });
+        expect(prisma.appointmentStatusTransition.create).toHaveBeenCalledTimes(1);
+    });
+
     it('rejects a stale transition without writing a history row', async () => {
         const appointment = arrivedAppointment();
 

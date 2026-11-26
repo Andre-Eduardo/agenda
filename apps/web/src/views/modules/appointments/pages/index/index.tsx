@@ -1,4 +1,4 @@
-import {useCallback, useEffect, useMemo, useState} from 'react';
+import {useCallback, useEffect, useId, useMemo, useState} from 'react';
 import type {
     ApiProblem,
     Appointment,
@@ -8,14 +8,13 @@ import type {
     CreateAppointmentDtoType,
     MemberBlock,
     Patient,
-    RegisterPaymentDto,
     Room,
     UpdateAppointmentInputDtoType,
-    UpdatePaymentStatusDto,
     WorkingHours,
 } from '@agenda-app/client';
 import {
     AxiosError,
+    getListAppointmentFollowUpsQueryKey,
     useCallAppointment,
     useCancelAppointment,
     useCheckinAppointment,
@@ -24,7 +23,13 @@ import {
     useCreateAppointment,
     useGetClinic,
     useGetCurrentClinicMember,
-    useGetPaymentByAppointment,
+    RegisterPaymentDtoPaymentMethod,
+    RegisterPaymentDtoStatus,
+    useListEnrollments,
+    useListInsurancePlans,
+    useGetPatient,
+    useGetProfessional,
+    useGetRecord,
     getListMemberBlocksQueryOptions,
     getListWorkingHoursQueryOptions,
     useListManageableProfessionals,
@@ -38,8 +43,8 @@ import {
     useUpdateAppointment,
     useUpdatePaymentStatus,
 } from '@agenda-app/client';
-import {useQueries, type UseQueryResult} from '@tanstack/react-query';
-import {createFileRoute, useNavigate} from '@tanstack/react-router';
+import {useQueries, useQueryClient, type UseQueryResult} from '@tanstack/react-query';
+import {createFileRoute, Link, useNavigate} from '@tanstack/react-router';
 import {
     CalendarDays,
     CalendarX2,
@@ -56,19 +61,28 @@ import {
     PhoneCall,
     UserX,
 } from 'lucide-react';
+import {useTranslation} from 'react-i18next';
 import {toast} from 'sonner';
 import {Badge} from '@/components/ui/componentes/badge';
 import {Button} from '@/components/ui/componentes/button';
-import {Dialog, DialogContent, DialogHeader, DialogTitle} from '@/components/ui/componentes/dialog';
+import {Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle} from '@/components/ui/componentes/dialog';
 import {Input} from '@/components/ui/componentes/input';
 import {Label} from '@/components/ui/componentes/label';
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@/components/ui/componentes/select';
 import {Sheet, SheetContent, SheetHeader, SheetTitle} from '@/components/ui/componentes/sheet';
 import {Textarea} from '@/components/ui/componentes/textarea';
+import {useCan, useCanState} from '@/hooks/useCan';
 import {formatBRL} from '@/lib/utils';
-import {cx} from '@/styled-system/css';
+import {css, cx} from '@/styled-system/css';
+import {invalidateAppointmentRevenue, REVENUE_AMOUNT_FIELDS} from '@/utils/appointment-revenue';
 import {translateApiError} from '@/utils/translate-api-error';
 import {ConfirmDialog} from '@/views/components/ConfirmDialog';
+import {
+    PatientClinicalPreviewContent,
+    usePatientClinicalPreview,
+} from '@/views/modules/patients/components/ClinicalData/PatientClinicalPreview';
+import {ProcedureColorDot} from '../../components/ProcedureFields';
+import {useAppointmentProcedure} from '../../components/ProcedureFields/useAppointmentProcedure';
 import * as styles from './styles';
 import {
     apptBar,
@@ -113,9 +127,12 @@ import {
 
 // ── Route ─────────────────────────────────────────────────────────
 export const Route = createFileRoute('/_stackedLayout/appointments')({
-    validateSearch: (search: Record<string, unknown>): {date?: string; appointmentId?: string} => ({
+    validateSearch: (
+        search: Record<string, unknown>
+    ): {date?: string; appointmentId?: string; followUpFromRecordId?: string} => ({
         date: typeof search.date === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(search.date) ? search.date : undefined,
         appointmentId: typeof search.appointmentId === 'string' ? search.appointmentId : undefined,
+        followUpFromRecordId: typeof search.followUpFromRecordId === 'string' ? search.followUpFromRecordId : undefined,
     }),
     component: AppointmentsPage,
 });
@@ -158,7 +175,7 @@ const HOURS = Array.from({length: GRID_END - GRID_START}, (_, i) => i + GRID_STA
 const STATUS_LABELS: Record<AppointmentStatus, string> = {
     SCHEDULED: 'Agendado',
     CONFIRMED: 'Confirmado',
-    COMPLETED: 'Realizado',
+    COMPLETED: 'Concluído',
     CANCELLED: 'Cancelado',
     NO_SHOW: 'Faltou',
     ARRIVED: 'Chegou',
@@ -491,8 +508,15 @@ function ApptBlock({
                 <div className={styles.apptTime}>
                     {apt.start} – {apt.end}
                 </div>
-                <div className={styles.apptName}>{getPatientName(patients, apt.patientId)}</div>
-                {!compact && <div className={styles.apptType}>{TYPE_LABELS[apt.type]}</div>}
+                <div className={styles.apptName}>
+                    {apt.raw.procedure && (
+                        <>
+                            <ProcedureColorDot color={apt.raw.procedure.color} />{' '}
+                        </>
+                    )}
+                    {getPatientName(patients, apt.patientId)}
+                </div>
+                {!compact && <div className={styles.apptType}>{apt.raw.procedure?.name ?? TYPE_LABELS[apt.type]}</div>}
             </div>
             {onResizeStart && (
                 <span
@@ -888,6 +912,7 @@ function ProfessionalsView({
     onApptMove,
     onApptResize,
 }: ProfessionalsViewProps) {
+    const canOverrideProcedure = useCan({has: 'procedure:override'});
     const [resizePreview, setResizePreview] = useState<{id: string; endMin: number} | null>(null);
     const dayAppts = appts.filter((apt) => apt.date === fmtDate(cursor));
     const nowTop = (now.h + now.m / 60 - GRID_START) * HOUR_H_DAY;
@@ -904,7 +929,7 @@ function ProfessionalsView({
         if (!apt || !canMove(apt)) return;
 
         const rect = event.currentTarget.getBoundingClientRect();
-        const duration = timeToMin(apt.end) - timeToMin(apt.start);
+        const duration = apt.raw.durationMinutes;
         const minuteAtPointer = GRID_START_MIN + ((event.clientY - rect.top) / HOUR_H_DAY) * 60;
         const startMin = Math.max(GRID_START_MIN, Math.min(snapToSlot(minuteAtPointer), GRID_END_MIN - duration));
 
@@ -1052,7 +1077,9 @@ function ProfessionalsView({
                                             event.dataTransfer.setData('application/x-agenda-appointment', apt.id);
                                         }}
                                         onResizeStart={
-                                            canMove(apt) ? (event) => handleResizeStart(event, apt) : undefined
+                                            canMove(apt) && (!apt.raw.procedure || canOverrideProcedure)
+                                                ? (event) => handleResizeStart(event, apt)
+                                                : undefined
                                         }
                                         onClick={() => onApptClick(apt.id)}
                                     />
@@ -1242,6 +1269,7 @@ function MonthView({appts, patients, cursor, today, highlightId, onSlotClick, on
                                         onApptClick(a.id);
                                     }}
                                 >
+                                    {a.raw.procedure && <ProcedureColorDot color={a.raw.procedure.color} />}
                                     <span className={styles.apptTimeMono}>{a.start}</span>
                                     {getPatientName(patients, a.patientId).split(' ').slice(0, 2).join(' ')}
                                 </button>
@@ -1396,13 +1424,29 @@ function AppointmentDetailSheet({
     onOpenPatient,
     onStatusChanged,
 }: DetailSheetProps) {
+    const {t} = useTranslation();
+    const {procedure} = apt.raw;
+    const canViewPayment = useCan({has: 'appointment-payment:view'});
     const patient = patients.find((p) => p.id === apt.patientId);
-    const durMin = timeToMin(apt.end) - timeToMin(apt.start);
+    const durMin = apt.raw.durationMinutes;
     const durLabel =
         durMin >= 60 ? `${Math.floor(durMin / 60)}h${durMin % 60 ? ` ${durMin % 60}min` : ''}` : `${durMin} min`;
     const [y, mo, da] = apt.date.split('-').map(Number);
     const date = new Date(y, mo - 1, da);
     const isDone = ['COMPLETED', 'CANCELLED', 'NO_SHOW'].includes(apt.status);
+    const mayViewClinical = useCan({hasAny: ['clinical-profile:view', 'patient-alert:view']});
+    const mayCreateRecord = useCan({has: 'record:create'});
+    const canCompleteAppointment = useCan({has: 'appointment:update'});
+    const canStartRecord = mayCreateRecord && (apt.status === 'IN_PROGRESS' || apt.status === 'COMPLETED');
+    const patientAccess = useGetPatient(apt.patientId, {
+        query: {enabled: (!isDone && mayViewClinical) || canStartRecord},
+    });
+    const [clinicalPage, setClinicalPage] = useState(1);
+    const clinical = usePatientClinicalPreview(
+        apt.patientId,
+        !isDone && !patientAccess.isError && patientAccess.data?.canReadClinicalData === true,
+        clinicalPage
+    );
 
     const confirm = useConfirmAppointment();
     const checkin = useCheckinAppointment();
@@ -1459,6 +1503,14 @@ function AppointmentDetailSheet({
                         </button>
                     </div>
 
+                    {!isDone && (
+                        <PatientClinicalPreviewContent
+                            clinical={clinical}
+                            page={clinicalPage}
+                            onPage={setClinicalPage}
+                        />
+                    )}
+
                     {/* Schedule */}
                     <div className={styles.sheetSection}>
                         <div className={styles.sheetSectionTitle}>Horário</div>
@@ -1486,6 +1538,30 @@ function AppointmentDetailSheet({
                         </div>
                     </div>
 
+                    {procedure && (
+                        <div className={styles.sheetSection} role="group" aria-label={t('procedure.selection')}>
+                            <div className={styles.sheetSectionTitle}>{t('procedure.selection')}</div>
+                            <div className={styles.sheetKvGrid}>
+                                <div className={styles.sheetKv}>
+                                    <span className={styles.sheetKvKey}>{t('procedure.name')}</span>
+                                    <span className={styles.sheetKvText}>
+                                        <ProcedureColorDot color={procedure.color} /> {procedure.name}
+                                    </span>
+                                </div>
+                                <div className={styles.sheetKv}>
+                                    <span className={styles.sheetKvKey}>{t('procedure.modality')}</span>
+                                    <span className={styles.sheetKvText}>
+                                        {t(`procedure.modalities.${procedure.modality}`)}
+                                    </span>
+                                </div>
+                                <div className={styles.sheetKv}>
+                                    <span className={styles.sheetKvKey}>{t('procedure.price')}</span>
+                                    <span className={styles.sheetKvVal}>{formatBRL(procedure.priceInCents / 100)}</span>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
                     {/* Notes */}
                     <div className={styles.sheetSection}>
                         <div className={styles.sheetSectionTitle}>Observações</div>
@@ -1496,12 +1572,22 @@ function AppointmentDetailSheet({
                         )}
                     </div>
 
+                    {canStartRecord && !patientAccess.isError && patientAccess.data?.canWriteClinicalData && (
+                        <div className={styles.sheetSection}>
+                            <Button asChild size="sm">
+                                <Link
+                                    to="/patients/$patientId/records/new"
+                                    params={{patientId: apt.patientId}}
+                                    search={{appointmentId: apt.id}}
+                                >
+                                    {t('recordLifecycle.createFromAppointment')}
+                                </Link>
+                            </Button>
+                        </div>
+                    )}
+
                     {/* Payment */}
-                    <AppointmentPaymentSection
-                        appointmentId={apt.id}
-                        patientId={apt.patientId}
-                        appointmentStatus={apt.status}
-                    />
+                    {canViewPayment && <AppointmentPaymentSection appointment={apt.raw} onChanged={onStatusChanged} />}
 
                     {/* Actions */}
                     {!isDone && (
@@ -1533,21 +1619,25 @@ function AppointmentDetailSheet({
                                     size="sm"
                                     variant="outline"
                                     className={gap1_5}
-                                    disabled={transitionPending}
+                                    disabled={
+                                        transitionPending ||
+                                        (mayViewClinical && patientAccess.isLoading) ||
+                                        clinical.isLoading
+                                    }
                                     onClick={() => runTransition(call, 'Paciente chamado')}
                                 >
                                     <PhoneCall className={icon35} /> Chamar
                                 </Button>
                             )}
-                            {apt.status === 'IN_PROGRESS' && (
+                            {apt.status === 'IN_PROGRESS' && canCompleteAppointment && (
                                 <Button
                                     size="sm"
                                     variant="outline"
                                     className={gap1_5}
                                     disabled={transitionPending}
-                                    onClick={() => runTransition(complete, 'Atendimento concluído')}
+                                    onClick={() => runTransition(complete, t('reception.success.complete'))}
                                 >
-                                    <CheckCheck className={icon35} /> Concluir atendimento
+                                    <CheckCheck className={icon35} /> {t('reception.complete')}
                                 </Button>
                             )}
                             {(apt.status === 'SCHEDULED' || apt.status === 'CONFIRMED') && (
@@ -1581,25 +1671,6 @@ function AppointmentDetailSheet({
 
 // ── Payment (register / view / update) ───────────────────────────────
 
-const PAYMENT_METHOD_LABELS: Record<string, string> = {
-    CASH: 'Dinheiro',
-    PIX: 'Pix',
-    CREDIT_CARD: 'Cartão de crédito',
-    DEBIT_CARD: 'Cartão de débito',
-    BANK_TRANSFER: 'Transferência',
-    INSURANCE: 'Convênio',
-    PACKAGE: 'Pacote de sessões',
-    SUBSCRIPTION: 'Assinatura recorrente',
-    COURTESY: 'Cortesia',
-};
-
-const PAYMENT_STATUS_LABELS: Record<string, string> = {
-    PENDING: 'Pendente',
-    PAID: 'Pago',
-    EXEMPT: 'Isento',
-    REFUNDED: 'Reembolsado',
-};
-
 const PAYMENT_STATUS_BADGE_VARIANT: Record<string, 'warning' | 'success' | 'secondary' | 'destructive'> = {
     PENDING: 'warning',
     PAID: 'success',
@@ -1607,275 +1678,313 @@ const PAYMENT_STATUS_BADGE_VARIANT: Record<string, 'warning' | 'success' | 'seco
     REFUNDED: 'destructive',
 };
 
-function AppointmentPaymentSection({
-    appointmentId,
-    patientId,
-    appointmentStatus,
+function PaymentCoverageSelect({
+    label,
+    value,
+    onChange,
+    options,
+    loading,
 }: {
-    appointmentId: string;
-    patientId: string;
-    appointmentStatus: AppointmentStatus;
+    label: string;
+    value: string;
+    onChange: (value: string) => void;
+    options: Array<{id: string; name: string}>;
+    loading: boolean;
 }) {
-    const paymentQuery = useGetPaymentByAppointment(appointmentId);
+    const id = useId();
+    const {t} = useTranslation();
+
+    return (
+        <div className={styles.sheetKv}>
+            <Label htmlFor={id}>{label}</Label>
+            <Select value={value} onValueChange={onChange} disabled={loading || options.length === 0}>
+                <SelectTrigger id={id}>
+                    <SelectValue placeholder={t('appointmentRevenue.selectCoverage')} />
+                </SelectTrigger>
+                <SelectContent>
+                    {options.map((option) => (
+                        <SelectItem key={option.id} value={option.id}>
+                            {option.name}
+                        </SelectItem>
+                    ))}
+                </SelectContent>
+            </Select>
+            {loading && <p role="status">{t('states.loading')}</p>}
+            {!loading && options.length === 0 && (
+                <p className={styles.sheetNotesEmpty}>{t('appointmentRevenue.noCoverage')}</p>
+            )}
+        </div>
+    );
+}
+
+function AppointmentPaymentSection({appointment, onChanged}: {appointment: Appointment; onChanged: () => void}) {
+    const {t} = useTranslation();
     const registerPayment = useRegisterPayment();
     const updatePaymentStatus = useUpdatePaymentStatus();
+    const canRegister = useCan({has: 'appointment-payment:register'});
+    const canUpdate = useCan({has: 'appointment-payment:update'});
 
     const [showForm, setShowForm] = useState(false);
-    const [method, setMethod] = useState('PIX');
+    const [method, setMethod] = useState<RegisterPaymentDtoPaymentMethod>('PIX');
     const [amount, setAmount] = useState('');
-    const [status, setStatus] = useState('PAID');
-    const [notes, setNotes] = useState('');
+    const [status, setStatus] = useState<RegisterPaymentDtoStatus>('PAID');
     const [insurancePlanId, setInsurancePlanId] = useState('');
     const [insuranceAuthCode, setInsuranceAuthCode] = useState('');
     const [patientPackageId, setPatientPackageId] = useState('');
     const [patientSubscriptionId, setPatientSubscriptionId] = useState('');
+    const [notes, setNotes] = useState('');
 
-    const isCompleted = appointmentStatus === 'COMPLETED';
-
-    const packagesQuery = useListPackages(patientId, {query: {enabled: showForm && method === 'PACKAGE'}});
-    const activePackages = (packagesQuery.data ?? []).filter((p) => p.status === 'ACTIVE' && p.remainingCredits > 0);
-
-    const subscriptionsQuery = useListSubscriptions(patientId, {
-        query: {enabled: showForm && method === 'SUBSCRIPTION'},
-    });
-    const activeSubscriptions = (subscriptionsQuery.data ?? []).filter((s) => s.status === 'ACTIVE');
-
-    const payment = paymentQuery.data;
+    const {revenue, patientId, clinicId, id} = appointment;
+    const hasPayment = revenue?.paymentMethod != null;
+    const mayRegister = canRegister && !hasPayment && appointment.status !== 'CANCELLED';
+    const isCompleted = appointment.status === 'COMPLETED';
+    const isInsurance = method === 'INSURANCE';
+    const registeredStatusByMethod: Partial<Record<RegisterPaymentDtoPaymentMethod, RegisterPaymentDtoStatus>> = {
+        INSURANCE: 'PENDING',
+        COURTESY: 'EXEMPT',
+        PACKAGE: 'PAID',
+        SUBSCRIPTION: 'PAID',
+    };
+    const isCovered = method === 'PACKAGE' || method === 'SUBSCRIPTION' || method === 'COURTESY';
+    const packages = useListPackages(patientId, {query: {enabled: showForm && method === 'PACKAGE'}});
+    const subscriptions = useListSubscriptions(patientId, {query: {enabled: showForm && method === 'SUBSCRIPTION'}});
+    const enrollments = useListEnrollments(patientId, {query: {enabled: showForm && isInsurance}});
+    const plans = useListInsurancePlans(clinicId, {query: {enabled: showForm && isInsurance}});
+    const activePackages = (packages.data ?? []).filter((pkg) => pkg.status === 'ACTIVE' && pkg.remainingCredits > 0);
+    const activeSubscriptions = (subscriptions.data ?? []).filter((subscription) => subscription.status === 'ACTIVE');
+    const activePlans = (plans.data ?? []).filter((plan) =>
+        enrollments.data?.some((enrollment) => enrollment.status === 'ACTIVE' && enrollment.insurancePlanId === plan.id)
+    );
 
     function handleRegister() {
-        const amountBrl = Number(amount.replace(',', '.'));
+        const amountBrl = isCovered || amount.trim() === '' ? undefined : Number(amount.replace(',', '.'));
+        const invalidAmount =
+            !isCovered &&
+            ((amountBrl === undefined && !appointment.procedure) ||
+                (amountBrl !== undefined && !/^\d+(?:[.,]\d{1,2})?$/.test(amount.trim())));
+        const missingCoverage =
+            (isInsurance && !insurancePlanId) ||
+            (method === 'PACKAGE' && !patientPackageId) ||
+            (method === 'SUBSCRIPTION' && !patientSubscriptionId);
 
-        if (!amountBrl || amountBrl <= 0) {
-            toast.error('Informe um valor válido.');
-
-            return;
-        }
-
-        if (method === 'INSURANCE' && !insurancePlanId.trim()) {
-            toast.error('Informe o convênio para pagamentos por convênio.');
-
-            return;
-        }
-
-        if (method === 'PACKAGE' && !patientPackageId) {
-            toast.error('Selecione o pacote de sessões a debitar.');
-
-            return;
-        }
-
-        if (method === 'SUBSCRIPTION' && !patientSubscriptionId) {
-            toast.error('Selecione a assinatura a debitar.');
+        if (invalidAmount || missingCoverage) {
+            toast.error(t(invalidAmount ? 'appointmentRevenue.invalidAmount' : 'appointmentRevenue.selectCoverage'));
 
             return;
         }
 
         registerPayment.mutate(
             {
-                id: appointmentId,
+                id,
                 data: {
-                    paymentMethod: method as RegisterPaymentDto['paymentMethod'],
+                    paymentMethod: method,
                     amountBrl,
-                    status: status as RegisterPaymentDto['status'],
-                    ...(method === 'INSURANCE' ? {insurancePlanId: insurancePlanId.trim()} : {}),
-                    ...(insuranceAuthCode.trim() ? {insuranceAuthCode: insuranceAuthCode.trim()} : {}),
-                    ...(method === 'PACKAGE' ? {patientPackageId} : {}),
-                    ...(method === 'SUBSCRIPTION' ? {patientSubscriptionId} : {}),
-                    ...(notes.trim() ? {notes: notes.trim()} : {}),
+                    status: registeredStatusByMethod[method] ?? status,
+                    insurancePlanId: isInsurance ? insurancePlanId : undefined,
+                    insuranceAuthCode: isInsurance ? insuranceAuthCode.trim() || undefined : undefined,
+                    patientPackageId: method === 'PACKAGE' ? patientPackageId : undefined,
+                    patientSubscriptionId: method === 'SUBSCRIPTION' ? patientSubscriptionId : undefined,
+                    notes: notes.trim() || undefined,
                 },
             },
             {
                 onSuccess: () => {
-                    toast.success('Pagamento registrado');
+                    toast.success(t('appointmentRevenue.registered'));
                     setShowForm(false);
-                    void paymentQuery.refetch();
+                    onChanged();
                 },
-                onError: (error) => toast.error(getApiErrorDetail(error) ?? 'Erro ao registrar pagamento.'),
+                onError: (error) => toast.error(getApiErrorDetail(error) ?? t('appointmentRevenue.saveError')),
             }
         );
     }
 
-    function handleMarkAsPaid() {
+    function markAsPaid() {
         updatePaymentStatus.mutate(
-            {id: appointmentId, data: {status: 'PAID' as UpdatePaymentStatusDto['status']}},
+            {id, data: {status: 'PAID'}},
             {
                 onSuccess: () => {
-                    toast.success('Pagamento atualizado');
-                    void paymentQuery.refetch();
+                    toast.success(t('appointmentRevenue.updated'));
+                    onChanged();
                 },
-                onError: () => toast.error('Erro ao atualizar pagamento.'),
+                onError: (error) => toast.error(getApiErrorDetail(error) ?? t('appointmentRevenue.saveError')),
             }
         );
     }
 
     return (
-        <div className={styles.sheetSection}>
-            <div className={styles.sheetSectionTitle}>Pagamento</div>
-
-            {payment && (
-                <>
-                    <div className={styles.sheetKvGrid}>
-                        <div className={styles.sheetKv}>
-                            <span className={styles.sheetKvKey}>Método</span>
-                            <span className={styles.sheetKvText}>
-                                {PAYMENT_METHOD_LABELS[payment.paymentMethod] ?? payment.paymentMethod}
-                            </span>
-                        </div>
-                        <div className={styles.sheetKv}>
-                            <span className={styles.sheetKvKey}>Valor</span>
-                            <span className={styles.sheetKvVal}>{formatBRL(payment.amountBrl)}</span>
-                        </div>
-                        <div className={styles.sheetKv}>
-                            <span className={styles.sheetKvKey}>Status</span>
-                            <Badge variant={PAYMENT_STATUS_BADGE_VARIANT[payment.status] ?? 'outline'}>
-                                {PAYMENT_STATUS_LABELS[payment.status] ?? payment.status}
-                            </Badge>
-                        </div>
-                        {payment.paidAt && (
-                            <div className={styles.sheetKv}>
-                                <span className={styles.sheetKvKey}>Pago em</span>
-                                <span className={styles.sheetKvText}>
-                                    {new Date(payment.paidAt).toLocaleDateString('pt-BR')}
-                                </span>
-                            </div>
-                        )}
-                    </div>
-
-                    {payment.status !== 'PAID' && (
-                        <Button
-                            size="sm"
-                            variant="outline"
-                            className={mt2}
-                            disabled={updatePaymentStatus.isPending}
-                            onClick={handleMarkAsPaid}
-                        >
-                            Marcar como pago
-                        </Button>
-                    )}
-                </>
-            )}
-
-            {!payment && showForm && (
+        <div className={styles.sheetSection} role="group" aria-label={t('appointmentRevenue.title')}>
+            <div className={styles.sheetSectionTitle}>{t('appointmentRevenue.title')}</div>
+            {revenue && (
                 <div className={styles.sheetKvGrid}>
+                    {REVENUE_AMOUNT_FIELDS.map((field) => (
+                        <div key={field} className={styles.sheetKv}>
+                            <span className={styles.sheetKvKey}>{t(`appointmentRevenue.${field}`)}</span>
+                            <span className={styles.sheetKvVal}>{formatBRL(revenue[field])}</span>
+                        </div>
+                    ))}
                     <div className={styles.sheetKv}>
-                        <span className={styles.sheetKvKey}>Método</span>
-                        <Select value={method} onValueChange={setMethod}>
-                            <SelectTrigger>
-                                <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {Object.entries(PAYMENT_METHOD_LABELS).map(([code, label]) => (
-                                    <SelectItem
-                                        key={code}
-                                        value={code}
-                                        disabled={(code === 'PACKAGE' || code === 'SUBSCRIPTION') && !isCompleted}
-                                    >
-                                        {label}
-                                        {(code === 'PACKAGE' || code === 'SUBSCRIPTION') && !isCompleted
-                                            ? ' (requer atendimento concluído)'
-                                            : ''}
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                    </div>
-                    <div className={styles.sheetKv}>
-                        <span className={styles.sheetKvKey}>Valor (R$)</span>
-                        <Input value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="0,00" />
+                        <span className={styles.sheetKvKey}>{t('appointmentRevenue.method')}</span>
+                        <span className={styles.sheetKvText}>
+                            {revenue.paymentMethod
+                                ? t(`appointmentRevenue.methods.${revenue.paymentMethod}`)
+                                : t('appointmentRevenue.noMethod')}
+                        </span>
                     </div>
                     <div className={styles.sheetKv}>
                         <span className={styles.sheetKvKey}>Status</span>
-                        <Select value={status} onValueChange={setStatus}>
-                            <SelectTrigger>
+                        <Badge variant={PAYMENT_STATUS_BADGE_VARIANT[revenue.status]}>
+                            {t(`appointmentRevenue.statuses.${revenue.status}`)}
+                        </Badge>
+                    </div>
+                    {revenue.paidAt && (
+                        <div className={styles.sheetKv}>
+                            <span className={styles.sheetKvKey}>{t('appointmentRevenue.paidAt')}</span>
+                            <span className={styles.sheetKvText}>{new Date(revenue.paidAt).toLocaleDateString()}</span>
+                        </div>
+                    )}
+                </div>
+            )}
+
+            {canUpdate && revenue?.status === 'PENDING' && hasPayment && revenue.insuranceClaimStatus === null && (
+                <Button
+                    size="sm"
+                    variant="outline"
+                    className={mt2}
+                    disabled={updatePaymentStatus.isPending}
+                    onClick={markAsPaid}
+                >
+                    {t('appointmentRevenue.markPaid')}
+                </Button>
+            )}
+
+            {mayRegister && showForm && (
+                <div className={styles.sheetKvGrid}>
+                    <div className={styles.sheetKv}>
+                        <Label htmlFor="appointment-payment-method">{t('appointmentRevenue.method')}</Label>
+                        <Select
+                            value={method}
+                            onValueChange={(value: RegisterPaymentDtoPaymentMethod) => setMethod(value)}
+                        >
+                            <SelectTrigger id="appointment-payment-method">
                                 <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
-                                {Object.entries(PAYMENT_STATUS_LABELS).map(([code, label]) => (
-                                    <SelectItem key={code} value={code}>
-                                        {label}
+                                {Object.values(RegisterPaymentDtoPaymentMethod).map((code) => (
+                                    <SelectItem
+                                        key={code}
+                                        value={code}
+                                        disabled={!isCompleted && (code === 'PACKAGE' || code === 'SUBSCRIPTION')}
+                                    >
+                                        {t(`appointmentRevenue.methods.${code}`)}
                                     </SelectItem>
                                 ))}
                             </SelectContent>
                         </Select>
                     </div>
-                    {method === 'INSURANCE' && (
+                    {!isCovered && (
+                        <div className={styles.sheetKv}>
+                            <Label htmlFor="appointment-payment-amount">{t('appointmentRevenue.amount')}</Label>
+                            <Input
+                                id="appointment-payment-amount"
+                                inputMode="decimal"
+                                value={amount}
+                                onChange={(event) => setAmount(event.target.value)}
+                            />
+                        </div>
+                    )}
+                    {!isCovered && !isInsurance && (
+                        <div className={styles.sheetKv}>
+                            <Label htmlFor="appointment-payment-status">Status</Label>
+                            <Select
+                                value={status}
+                                onValueChange={(value: RegisterPaymentDtoStatus) => setStatus(value)}
+                            >
+                                <SelectTrigger id="appointment-payment-status">
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {Object.values(RegisterPaymentDtoStatus).map((code) => (
+                                        <SelectItem key={code} value={code}>
+                                            {t(`appointmentRevenue.statuses.${code}`)}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                    )}
+                    {isInsurance && (
                         <>
+                            <PaymentCoverageSelect
+                                label={t('appointmentRevenue.methods.INSURANCE')}
+                                value={insurancePlanId}
+                                onChange={setInsurancePlanId}
+                                options={activePlans.map((plan) => ({id: plan.id, name: plan.name}))}
+                                loading={plans.isPending || enrollments.isPending}
+                            />
                             <div className={styles.sheetKv}>
-                                <span className={styles.sheetKvKey}>Convênio (ID)</span>
-                                <Input value={insurancePlanId} onChange={(e) => setInsurancePlanId(e.target.value)} />
-                            </div>
-                            <div className={styles.sheetKv}>
-                                <span className={styles.sheetKvKey}>Código de autorização</span>
+                                <Label htmlFor="appointment-payment-auth">
+                                    {t('appointmentRevenue.authorization')}
+                                </Label>
                                 <Input
+                                    id="appointment-payment-auth"
                                     value={insuranceAuthCode}
-                                    onChange={(e) => setInsuranceAuthCode(e.target.value)}
+                                    onChange={(event) => setInsuranceAuthCode(event.target.value)}
                                 />
                             </div>
                         </>
                     )}
                     {method === 'PACKAGE' && (
-                        <div className={styles.sheetKv}>
-                            <span className={styles.sheetKvKey}>Pacote a debitar</span>
-                            <Select value={patientPackageId} onValueChange={setPatientPackageId}>
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Selecione um pacote" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {activePackages.map((pkg) => (
-                                        <SelectItem key={pkg.id} value={pkg.id}>
-                                            {pkg.planNameSnapshot} ({pkg.remainingCredits}/{pkg.totalCredits} créditos)
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                            {activePackages.length === 0 && (
-                                <p className={styles.sheetNotesEmpty}>
-                                    Este paciente não possui pacotes com saldo disponível.
-                                </p>
-                            )}
-                        </div>
+                        <PaymentCoverageSelect
+                            label={t('appointmentRevenue.methods.PACKAGE')}
+                            value={patientPackageId}
+                            onChange={setPatientPackageId}
+                            loading={packages.isPending}
+                            options={activePackages.map((pkg) => ({id: pkg.id, name: pkg.planNameSnapshot}))}
+                        />
                     )}
                     {method === 'SUBSCRIPTION' && (
-                        <div className={styles.sheetKv}>
-                            <span className={styles.sheetKvKey}>Assinatura a debitar</span>
-                            <Select value={patientSubscriptionId} onValueChange={setPatientSubscriptionId}>
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Selecione uma assinatura" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {activeSubscriptions.map((sub) => (
-                                        <SelectItem key={sub.id} value={sub.id}>
-                                            {sub.planNameSnapshot} ({sub.monthlyQuotaSnapshot} atend./mês)
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                            {activeSubscriptions.length === 0 && (
-                                <p className={styles.sheetNotesEmpty}>Este paciente não possui assinatura ativa.</p>
-                            )}
-                        </div>
+                        <PaymentCoverageSelect
+                            label={t('appointmentRevenue.methods.SUBSCRIPTION')}
+                            value={patientSubscriptionId}
+                            onChange={setPatientSubscriptionId}
+                            loading={subscriptions.isPending}
+                            options={activeSubscriptions.map((subscription) => ({
+                                id: subscription.id,
+                                name: subscription.planNameSnapshot,
+                            }))}
+                        />
                     )}
                     <div className={styles.sheetKv}>
-                        <span className={styles.sheetKvKey}>Observações</span>
-                        <Input value={notes} onChange={(e) => setNotes(e.target.value)} />
+                        <Label htmlFor="appointment-payment-notes">{t('appointmentRevenue.notes')}</Label>
+                        <Input
+                            id="appointment-payment-notes"
+                            value={notes}
+                            onChange={(event) => setNotes(event.target.value)}
+                        />
                     </div>
                     <div className={gap1_5}>
                         <Button size="sm" disabled={registerPayment.isPending} onClick={handleRegister}>
-                            Registrar pagamento
+                            {t('appointmentRevenue.register')}
                         </Button>
                         <Button size="sm" variant="outline" onClick={() => setShowForm(false)}>
-                            Cancelar
+                            {t('actions.cancel')}
                         </Button>
                     </div>
                 </div>
             )}
 
-            {!payment && !showForm && (
-                <>
-                    <p className={styles.sheetNotesEmpty}>Nenhum pagamento registrado para esta consulta.</p>
-                    <Button size="sm" variant="outline" className={mt2} onClick={() => setShowForm(true)}>
-                        Registrar pagamento
-                    </Button>
-                </>
+            {mayRegister && !showForm && (
+                <Button
+                    size="sm"
+                    variant="outline"
+                    className={mt2}
+                    onClick={() => {
+                        setAmount(appointment.procedure ? (appointment.procedure.priceInCents / 100).toFixed(2) : '');
+                        setShowForm(true);
+                    }}
+                >
+                    {t('appointmentRevenue.register')}
+                </Button>
             )}
         </div>
     );
@@ -1893,8 +2002,12 @@ interface EditDialogProps {
 function EditAppointmentDialog({apt, onClose, onSaved}: EditDialogProps) {
     const [date, setDate] = useState(apt.date);
     const [startTime, setStartTime] = useState(apt.start);
-    const [durMin, setDurMin] = useState(timeToMin(apt.end) - timeToMin(apt.start));
+    const [durMin, setDurMin] = useState(apt.raw.durationMinutes);
     const [type, setType] = useState<AppointmentType>(apt.type);
+    const procedure = useAppointmentProcedure(
+        apt.raw.procedure ? {...apt.raw.procedure, durationMinutes: apt.raw.durationMinutes} : undefined
+    );
+    const requiresProcedure = type === 'PROCEDURE' && apt.type !== 'PROCEDURE';
     const [note, setNote] = useState(apt.note ?? '');
     const [roomId, setRoomId] = useState(apt.roomId ?? '');
     const [availabilityWarning, setAvailabilityWarning] = useState<string | null>(null);
@@ -1906,14 +2019,16 @@ function EditAppointmentDialog({apt, onClose, onSaved}: EditDialogProps) {
     const roomsQuery = useListRooms({query: {enabled: roomManagementEnabled}});
 
     const submit = (confirmOutsideAvailability: boolean) => {
-        const endTime = minToTime(timeToMin(startTime) + durMin);
+        if (!date || !startTime || !procedure.valid || (requiresProcedure && !procedure.hasProcedure)) return;
+
+        const startAt = localDateTimeToISO(date, startTime);
 
         update.mutate(
             {
                 id: apt.id,
                 data: {
-                    startAt: localDateTimeToISO(date, startTime),
-                    endAt: localDateTimeToISO(date, endTime),
+                    startAt,
+                    ...procedure.buildFields(startAt, durMin),
                     type: type as unknown as UpdateAppointmentInputDtoType,
                     note: note || null,
                     attendedByMemberId: apt.attendedByMemberId,
@@ -1972,24 +2087,29 @@ function EditAppointmentDialog({apt, onClose, onSaved}: EditDialogProps) {
                                 />
                             </div>
                         </div>
+                        {procedure.renderFields(requiresProcedure)}
                         <div className={styles.formRow}>
-                            <div className={styles.formField}>
-                                <Label>Duração</Label>
-                                <Select value={String(durMin)} onValueChange={(v) => setDurMin(Number(v))}>
-                                    <SelectTrigger aria-label="Duração">
-                                        <SelectValue />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {DURATIONS.map((d) => (
-                                            <SelectItem key={d} value={String(d)}>
-                                                {d >= 60
-                                                    ? `${Math.floor(d / 60)}h${d % 60 ? ` ${d % 60}min` : ''}`
-                                                    : `${d} min`}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                            </div>
+                            {!procedure.hasProcedure && (
+                                <div className={styles.formField}>
+                                    <Label>Duração</Label>
+                                    <Select value={String(durMin)} onValueChange={(v) => setDurMin(Number(v))}>
+                                        <SelectTrigger aria-label="Duração">
+                                            <SelectValue />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {[...new Set([...DURATIONS, durMin])]
+                                                .sort((a, b) => a - b)
+                                                .map((d) => (
+                                                    <SelectItem key={d} value={String(d)}>
+                                                        {d >= 60
+                                                            ? `${Math.floor(d / 60)}h${d % 60 ? ` ${d % 60}min` : ''}`
+                                                            : `${d} min`}
+                                                    </SelectItem>
+                                                ))}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                            )}
                             <div className={styles.formField}>
                                 <Label>Tipo</Label>
                                 <Select value={type} onValueChange={(v) => setType(v as AppointmentType)}>
@@ -2041,7 +2161,16 @@ function EditAppointmentDialog({apt, onClose, onSaved}: EditDialogProps) {
                         <Button variant="outline" onClick={onClose}>
                             Cancelar
                         </Button>
-                        <Button onClick={handleSave} disabled={update.isPending}>
+                        <Button
+                            onClick={handleSave}
+                            disabled={
+                                update.isPending ||
+                                !date ||
+                                !startTime ||
+                                !procedure.valid ||
+                                (requiresProcedure && !procedure.hasProcedure)
+                            }
+                        >
                             {update.isPending ? 'Salvando…' : 'Salvar alterações'}
                         </Button>
                     </div>
@@ -2066,30 +2195,46 @@ function EditAppointmentDialog({apt, onClose, onSaved}: EditDialogProps) {
 // ─────────────────────────────────────────────────────────────────
 //   New Appointment Dialog
 // ─────────────────────────────────────────────────────────────────
+const followUpPlan = css({whiteSpace: 'pre-wrap', overflowWrap: 'anywhere', fontSize: 'sm', mt: '1'});
+
+interface AppointmentFollowUpContext {
+    recordId: string;
+    patient: Patient;
+    professional: ClinicMember;
+    plan: string | null;
+}
+
 interface NewApptDialogProps {
     prefill: NewAppointmentPrefill | null;
     defaultMemberId: string;
+    followUp?: AppointmentFollowUpContext;
     onClose: () => void;
     onSaved: () => void;
 }
 
-function NewAppointmentDialog({prefill, defaultMemberId, onClose, onSaved}: NewApptDialogProps) {
+function NewAppointmentDialog({prefill, defaultMemberId, followUp, onClose, onSaved}: NewApptDialogProps) {
+    const {t} = useTranslation();
     const today = fmtDate(new Date());
     const [patientSearch, setPatientSearch] = useState('');
-    const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
+    const [selectedPatient, setSelectedPatient] = useState<Patient | null>(followUp?.patient ?? null);
     const [date, setDate] = useState(prefill?.date ?? today);
     const [startTime, setStartTime] = useState(prefill?.start ?? '09:00');
     const [durMin, setDurMin] = useState(60);
     const [type, setType] = useState<CreateAppointmentDtoType>('RETURN');
+    const procedure = useAppointmentProcedure();
+    const requiresProcedure = type === 'PROCEDURE';
     const [note, setNote] = useState('');
     const [showDrop, setShowDrop] = useState(false);
 
-    const patientsQ = useSearchPatients({
-        term: patientSearch,
-        limit: 20,
-        cursor: null,
-        sort: null,
-    }) as unknown as UseQueryResult<PaginatedPage<Patient>>;
+    const patientsQ = useSearchPatients(
+        {
+            term: patientSearch,
+            limit: 20,
+            cursor: null,
+            sort: null,
+        },
+        {query: {enabled: !followUp}}
+    ) as unknown as UseQueryResult<PaginatedPage<Patient>>;
     const patientsList = patientsQ.data?.data ?? [];
 
     const [roomId, setRoomId] = useState(prefill?.roomId ?? '');
@@ -2105,19 +2250,21 @@ function NewAppointmentDialog({prefill, defaultMemberId, onClose, onSaved}: NewA
     // Which professional the appointment is for. Only surfaced as a field when the
     // actor manages more than one agenda (owner/admin, or a grantee with multiple
     // grants) — a plain professional only ever manages their own, so it's implicit.
-    const manageableData = useListManageableProfessionals().data;
+    const manageableData = useListManageableProfessionals({query: {enabled: !followUp}}).data;
     const manageableProfessionals = manageableData ?? [];
-    const showProfessionalField = manageableProfessionals.length > 1;
+    const showProfessionalField = !followUp && manageableProfessionals.length > 1;
 
-    const [attendedByMemberId, setAttendedByMemberId] = useState(prefill?.attendedByMemberId ?? defaultMemberId);
+    const [attendedByMemberId, setAttendedByMemberId] = useState(
+        followUp?.professional.id ?? prefill?.attendedByMemberId ?? defaultMemberId
+    );
 
     useEffect(() => {
-        if (!manageableData || manageableData.length === 0) return;
+        if (followUp || !manageableData || manageableData.length === 0) return;
 
         setAttendedByMemberId((prev) =>
             manageableData.some((m) => m.id === prev) ? prev : (manageableData[0]?.id ?? prev)
         );
-    }, [manageableData]);
+    }, [followUp, manageableData]);
 
     const submit = (confirmOutsideAvailability: boolean) => {
         if (!selectedPatient) {
@@ -2126,27 +2273,35 @@ function NewAppointmentDialog({prefill, defaultMemberId, onClose, onSaved}: NewA
             return;
         }
 
-        const endTime = minToTime(timeToMin(startTime) + durMin);
+        if (!date || !startTime || !procedure.valid || (requiresProcedure && !procedure.hasProcedure)) return;
+
+        const startAt = localDateTimeToISO(date, startTime);
+
+        if (followUp && new Date(startAt).getTime() <= Date.now()) {
+            toast.error(t('followUp.futureDate'));
+
+            return;
+        }
 
         create.mutate(
             {
                 data: {
                     patientId: selectedPatient.id,
                     attendedByMemberId,
-                    startAt: localDateTimeToISO(date, startTime),
-                    endAt: localDateTimeToISO(date, endTime),
+                    startAt,
+                    ...procedure.buildFields(startAt, durMin),
                     type,
                     note: note || null,
-                    retroactive: true, // allow past dates too
+                    retroactive: !followUp,
+                    followUpFromRecordId: followUp?.recordId,
                     roomId: roomManagementEnabled && roomId ? roomId : undefined,
                     confirmOutsideAvailability,
                 },
             },
             {
                 onSuccess: () => {
-                    toast.success('Consulta agendada');
+                    toast.success(followUp ? t('followUp.saved') : 'Consulta agendada');
                     onSaved();
-                    onClose();
                 },
                 onError: (error) => {
                     const warning = getAvailabilityWarning(error);
@@ -2157,20 +2312,24 @@ function NewAppointmentDialog({prefill, defaultMemberId, onClose, onSaved}: NewA
                         return;
                     }
 
-                    toast.error(getApiErrorDetail(error) ?? 'Erro ao criar consulta');
+                    toast.error(
+                        getApiErrorDetail(error) ?? (followUp ? t('followUp.saveError') : 'Erro ao criar consulta')
+                    );
                 },
             }
         );
     };
 
     const handleSave = () => submit(false);
+    const submitLabel = followUp ? t('followUp.schedule') : 'Agendar consulta';
 
     return (
         <>
-            <Dialog open onOpenChange={(o) => !o && onClose()}>
+            <Dialog open onOpenChange={(o) => !o && !create.isPending && onClose()}>
                 <DialogContent className={styles.newApptDialogWidth}>
                     <DialogHeader>
-                        <DialogTitle>Novo agendamento</DialogTitle>
+                        <DialogTitle>{followUp ? t('followUp.schedule') : 'Novo agendamento'}</DialogTitle>
+                        {followUp && <DialogDescription>{t('followUp.linkedToRecord')}</DialogDescription>}
                     </DialogHeader>
                     <div className={styles.formBody}>
                         {/* Patient */}
@@ -2180,13 +2339,15 @@ function NewAppointmentDialog({prefill, defaultMemberId, onClose, onSaved}: NewA
                                 <div className={styles.patSearchPill}>
                                     <div className={styles.patAvatarSm}>{getInitials(selectedPatient.name)}</div>
                                     <span className={styles.patSearchName}>{selectedPatient.name}</span>
-                                    <button
-                                        type="button"
-                                        className={styles.patClearBtn}
-                                        onClick={() => setSelectedPatient(null)}
-                                    >
-                                        <X className={icon35} />
-                                    </button>
+                                    {!followUp && (
+                                        <button
+                                            type="button"
+                                            className={styles.patClearBtn}
+                                            onClick={() => setSelectedPatient(null)}
+                                        >
+                                            <X className={icon35} />
+                                        </button>
+                                    )}
                                 </div>
                             ) : (
                                 <div className={styles.patSearchWrap}>
@@ -2223,6 +2384,19 @@ function NewAppointmentDialog({prefill, defaultMemberId, onClose, onSaved}: NewA
                             )}
                         </div>
 
+                        {followUp && (
+                            <div className={styles.formField}>
+                                <Label>{t('followUp.professional')}</Label>
+                                <span>{followUp.professional.displayName ?? t('followUp.professional')}</span>
+                                {followUp.plan && (
+                                    <details>
+                                        <summary>{t('followUp.sourcePlan')}</summary>
+                                        <p className={followUpPlan}>{followUp.plan}</p>
+                                    </details>
+                                )}
+                            </div>
+                        )}
+
                         {showProfessionalField && (
                             <div className={styles.formField}>
                                 <Label>Profissional</Label>
@@ -2247,6 +2421,7 @@ function NewAppointmentDialog({prefill, defaultMemberId, onClose, onSaved}: NewA
                                 <Input
                                     type="date"
                                     aria-label="Data"
+                                    min={followUp ? today : undefined}
                                     value={date}
                                     onChange={(e) => setDate(e.target.value)}
                                 />
@@ -2262,27 +2437,36 @@ function NewAppointmentDialog({prefill, defaultMemberId, onClose, onSaved}: NewA
                             </div>
                         </div>
 
+                        {procedure.renderFields(requiresProcedure)}
                         <div className={styles.formRow}>
-                            <div className={styles.formField}>
-                                <Label>Duração</Label>
-                                <Select value={String(durMin)} onValueChange={(v) => setDurMin(Number(v))}>
-                                    <SelectTrigger aria-label="Duração">
-                                        <SelectValue />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {DURATIONS.map((d) => (
-                                            <SelectItem key={d} value={String(d)}>
-                                                {d >= 60
-                                                    ? `${Math.floor(d / 60)}h${d % 60 ? ` ${d % 60}min` : ''}`
-                                                    : `${d} min`}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                            </div>
+                            {!procedure.hasProcedure && (
+                                <div className={styles.formField}>
+                                    <Label>Duração</Label>
+                                    <Select value={String(durMin)} onValueChange={(v) => setDurMin(Number(v))}>
+                                        <SelectTrigger aria-label="Duração">
+                                            <SelectValue />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {[...new Set([...DURATIONS, durMin])]
+                                                .sort((a, b) => a - b)
+                                                .map((d) => (
+                                                    <SelectItem key={d} value={String(d)}>
+                                                        {d >= 60
+                                                            ? `${Math.floor(d / 60)}h${d % 60 ? ` ${d % 60}min` : ''}`
+                                                            : `${d} min`}
+                                                    </SelectItem>
+                                                ))}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                            )}
                             <div className={styles.formField}>
                                 <Label>Tipo</Label>
-                                <Select value={type} onValueChange={(v) => setType(v as CreateAppointmentDtoType)}>
+                                <Select
+                                    value={type}
+                                    disabled={!!followUp}
+                                    onValueChange={(v) => setType(v as CreateAppointmentDtoType)}
+                                >
                                     <SelectTrigger>
                                         <SelectValue />
                                     </SelectTrigger>
@@ -2330,14 +2514,22 @@ function NewAppointmentDialog({prefill, defaultMemberId, onClose, onSaved}: NewA
                         </div>
                     </div>
                     <div className={styles.formFooter}>
-                        <Button variant="outline" onClick={onClose}>
+                        <Button variant="outline" onClick={onClose} disabled={create.isPending}>
                             Cancelar
                         </Button>
                         <Button
                             onClick={handleSave}
-                            disabled={create.isPending || !selectedPatient || !attendedByMemberId}
+                            disabled={
+                                create.isPending ||
+                                !selectedPatient ||
+                                !attendedByMemberId ||
+                                !date ||
+                                !startTime ||
+                                !procedure.valid ||
+                                (requiresProcedure && !procedure.hasProcedure)
+                            }
                         >
-                            {create.isPending ? 'Salvando…' : 'Agendar consulta'}
+                            {create.isPending ? t('states.saving') : submitLabel}
                         </Button>
                     </div>
                 </DialogContent>
@@ -2355,6 +2547,77 @@ function NewAppointmentDialog({prefill, defaultMemberId, onClose, onSaved}: NewA
                 onCancel={() => setAvailabilityWarning(null)}
             />
         </>
+    );
+}
+
+function RecordFollowUpDialog({recordId, onDismiss}: {recordId: string; onDismiss: () => void}) {
+    const {t} = useTranslation();
+    const navigate = useNavigate();
+    const queryClient = useQueryClient();
+    const access = useCanState({hasAll: ['appointment:create', 'record:view', 'professional:view']});
+    const recordQuery = useGetRecord(recordId, {query: {enabled: access.allowed}});
+    const record = recordQuery.data;
+    const patientQuery = useGetPatient(record?.patientId ?? '', {query: {enabled: !!record && access.allowed}});
+    const professionalQuery = useGetProfessional(record?.responsibleProfessionalId ?? '', {
+        query: {enabled: !!record && access.allowed},
+    });
+    const agendasQuery = useListManageableProfessionals({query: {enabled: access.allowed}});
+    const professional = agendasQuery.data?.find((member) => member.id === professionalQuery.data?.clinicMemberId);
+    const loading =
+        access.isLoading ||
+        recordQuery.isLoading ||
+        patientQuery.isLoading ||
+        professionalQuery.isLoading ||
+        agendasQuery.isLoading;
+    const error =
+        access.isError ||
+        recordQuery.isError ||
+        patientQuery.isError ||
+        professionalQuery.isError ||
+        agendasQuery.isError;
+
+    const returnToRecord = () => {
+        if (record && access.allowed && !recordQuery.isError) {
+            void navigate({
+                to: '/patients/$patientId/records/$recordId',
+                params: {patientId: record.patientId, recordId},
+                replace: true,
+            });
+        } else {
+            onDismiss();
+        }
+    };
+
+    if (!access.allowed || error || !record || !patientQuery.data || !professional) {
+        return (
+            <Dialog open onOpenChange={(open) => !open && returnToRecord()}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>{t('followUp.schedule')}</DialogTitle>
+                        <DialogDescription role="status">
+                            {loading ? t('states.loading') : t('followUp.unavailable')}
+                        </DialogDescription>
+                    </DialogHeader>
+                    <Button variant="outline" onClick={returnToRecord}>
+                        {t('actions.close')}
+                    </Button>
+                </DialogContent>
+            </Dialog>
+        );
+    }
+
+    return (
+        <NewAppointmentDialog
+            prefill={{date: fmtDate(addDays(new Date(), 1)), start: '09:00'}}
+            defaultMemberId={professional.id}
+            followUp={{recordId, patient: patientQuery.data, professional, plan: asStr(record.plan)}}
+            onClose={returnToRecord}
+            onSaved={() => {
+                invalidateAppointmentRevenue(queryClient, record.clinicId);
+                void queryClient.invalidateQueries({queryKey: getListAppointmentFollowUpsQueryKey(recordId)});
+                returnToRecord();
+            }}
+        />
     );
 }
 
@@ -2421,6 +2684,7 @@ function CancelDialog({apt, onClose, onCancelled}: CancelDialogProps) {
 // ─────────────────────────────────────────────────────────────────
 export function AppointmentsPage() {
     const navigate = useNavigate();
+    const queryClient = useQueryClient();
     const search = Route.useSearch();
 
     const today = useMemo(() => {
@@ -2560,6 +2824,12 @@ export function AppointmentsPage() {
     const roomsById = useMemo(() => new Map(rooms.map((r) => [r.id, r])), [rooms]);
     const roomIndexById = useMemo(() => new Map(rooms.map((r, i) => [r.id, i])), [rooms]);
 
+    const clinicId = meQuery.data?.clinicId;
+    const refreshAppointments = useCallback(
+        () => invalidateAppointmentRevenue(queryClient, clinicId),
+        [queryClient, clinicId]
+    );
+
     const allAppts = useMemo(() => rawAppts.map(toApptView), [rawAppts]);
     const filteredAppts = useMemo(() => allAppts.filter((a) => statusFilters.has(a.status)), [allAppts, statusFilters]);
 
@@ -2620,7 +2890,11 @@ export function AppointmentsPage() {
                     id: placement.apt.id,
                     data: {
                         startAt: localDateTimeToISO(placement.apt.date, placement.start),
-                        endAt: localDateTimeToISO(placement.apt.date, placement.end),
+                        endAt:
+                            !placement.apt.raw.procedure ||
+                            (placement.start === placement.apt.start && placement.end !== placement.apt.end)
+                                ? localDateTimeToISO(placement.apt.date, placement.end)
+                                : undefined,
                         type: placement.apt.type as unknown as UpdateAppointmentInputDtoType,
                         note: placement.apt.note,
                         attendedByMemberId: placement.attendedByMemberId,
@@ -2633,7 +2907,7 @@ export function AppointmentsPage() {
                         setPendingPlacement(null);
                         setPlacementWarning(null);
                         toast.success('Agendamento atualizado');
-                        void apptQ.refetch();
+                        refreshAppointments();
                     },
                     onError: (error) => {
                         const warning = getAvailabilityWarning(error);
@@ -2652,12 +2926,12 @@ export function AppointmentsPage() {
                 }
             );
         },
-        [apptQ, updateAppointment]
+        [refreshAppointments, updateAppointment]
     );
 
     const moveAppointment = useCallback(
         (apt: ApptView, attendedByMemberId: string, start: string) => {
-            const duration = timeToMin(apt.end) - timeToMin(apt.start);
+            const duration = apt.raw.durationMinutes;
             const end = minToTime(timeToMin(start) + duration);
 
             if (apt.attendedByMemberId === attendedByMemberId && apt.start === start) return;
@@ -2832,6 +3106,7 @@ export function AppointmentsPage() {
             {/* Detail Sheet */}
             {detailApt && (
                 <AppointmentDetailSheet
+                    key={detailApt.patientId}
                     apt={detailApt}
                     patients={patients}
                     onClose={closeDetail}
@@ -2844,7 +3119,7 @@ export function AppointmentsPage() {
                         closeDetail();
                     }}
                     onOpenPatient={(id) => navigate({to: '/patients/$patientId', params: {patientId: id}})}
-                    onStatusChanged={() => void apptQ.refetch()}
+                    onStatusChanged={refreshAppointments}
                 />
             )}
 
@@ -2855,23 +3130,33 @@ export function AppointmentsPage() {
                     onClose={() => setEditId(null)}
                     onSaved={() => {
                         highlightFor(editApt.id);
-                        void apptQ.refetch();
+                        refreshAppointments();
                     }}
                 />
             )}
 
             {/* Cancel Dialog */}
             {cancelApt && (
-                <CancelDialog apt={cancelApt} onClose={() => setCancelId(null)} onCancelled={() => apptQ.refetch()} />
+                <CancelDialog apt={cancelApt} onClose={() => setCancelId(null)} onCancelled={refreshAppointments} />
             )}
 
             {/* New Appointment Dialog */}
-            {newAppt && (
+            {search.followUpFromRecordId && (
+                <RecordFollowUpDialog
+                    key={search.followUpFromRecordId}
+                    recordId={search.followUpFromRecordId}
+                    onDismiss={() => void navigate({to: '/appointments', search: {date: search.date}, replace: true})}
+                />
+            )}
+            {newAppt && !search.followUpFromRecordId && (
                 <NewAppointmentDialog
                     prefill={typeof newAppt === 'object' ? newAppt : null}
                     defaultMemberId={defaultMemberId}
                     onClose={() => setNewAppt(null)}
-                    onSaved={() => apptQ.refetch()}
+                    onSaved={() => {
+                        setNewAppt(null);
+                        refreshAppointments();
+                    }}
                 />
             )}
             <ConfirmDialog

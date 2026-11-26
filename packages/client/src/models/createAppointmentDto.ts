@@ -4,6 +4,7 @@
  * Automo API
  * OpenAPI spec version: 0.0.0
  */
+import type {CreateAppointmentDtoProcedureOverrides} from './createAppointmentDtoProcedureOverrides';
 import type {CreateAppointmentDtoType} from './createAppointmentDtoType';
 
 export type CreateAppointmentDto = {
@@ -12,8 +13,12 @@ export type CreateAppointmentDto = {
     /** A datetime in ISO 8601 format. */
     startAt: string;
     /** A datetime in ISO 8601 format. */
-    endAt: string;
+    endAt?: string;
+    procedureId?: string;
+    procedureOverrides?: CreateAppointmentDtoProcedureOverrides;
     type: CreateAppointmentDtoType;
+    /** Clinical record that originated this follow-up */
+    followUpFromRecordId?: string;
     /** @nullable */
     note?: string | null;
     retroactive?: boolean;

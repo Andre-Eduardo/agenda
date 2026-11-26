@@ -2,16 +2,12 @@ import {Injectable} from '@nestjs/common';
 import * as PrismaClient from '@prisma/client';
 import {PaginatedList, Pagination} from '@domain/@shared/repository';
 import {toEnumOrNull} from '@domain/@shared/utils';
+import type {ClinicId} from '@domain/clinic/entities';
 import {Record, RecordId} from '@domain/record/entities/record.entity';
 import {RecordRepository, RecordSearchFilter, RecordSortOptions} from '@domain/record/record.repository';
 import {RecordMapper} from '@infrastructure/mappers/record.mapper';
 import {PrismaRepository} from '@infrastructure/repository/prisma.repository';
 import {PrismaProvider} from '@infrastructure/repository/prisma/prisma.provider';
-
-// Define a type that includes the relation
-type RecordWithFiles = PrismaClient.Record & {
-    files: PrismaClient.File[];
-};
 
 @Injectable()
 export class RecordPrismaRepository extends PrismaRepository implements RecordRepository {
@@ -20,6 +16,14 @@ export class RecordPrismaRepository extends PrismaRepository implements RecordRe
         private readonly mapper: RecordMapper
     ) {
         super(prismaProvider);
+    }
+
+    async lockForChange(id: RecordId, clinicId: ClinicId): Promise<void> {
+        await this.prisma.$queryRaw`
+            SELECT "id" FROM "record"
+            WHERE "id" = ${id.toString()}::uuid AND "clinic_id" = ${clinicId.toString()}::uuid AND "deleted_at" IS NULL
+            FOR UPDATE
+        `;
     }
 
     async findById(id: RecordId): Promise<Record | null> {
@@ -96,7 +100,7 @@ export class RecordPrismaRepository extends PrismaRepository implements RecordRe
         ]);
 
         return {
-            data: data.map((item) => this.mapper.toDomain(item as RecordWithFiles)),
+            data: data.map((item) => this.mapper.toDomain(item)),
             totalCount,
         };
     }

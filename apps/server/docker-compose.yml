@@ -11,11 +11,27 @@ services:
       - postgres
     environment:
       DATABASE_URL: "postgresql://${DATABASE_USER}:${DATABASE_PASSWORD}@postgres:5432/${DATABASE_NAME}?schema=public"
+      OTEL_ENABLED: "${OTEL_ENABLED:-false}"
+      OTEL_SERVICE_NAME: "${OTEL_SERVICE_NAME:-agenda-server}"
+      OTEL_EXPORTER_OTLP_ENDPOINT: "${OTEL_EXPORTER_OTLP_ENDPOINT:-http://lgtm:4318}"
     env_file:
       - path: .env
         required: false
     volumes:
       - uploads:/data/uploads
+
+  # Grafana (UI) + Tempo (traces) + Loki (logs) + Prometheus (métricas) + OTel Collector,
+  # mesma imagem do plexter. Grafana em http://localhost:3001 (admin/admin).
+  # Ligue no server com OTEL_ENABLED=true (docs/observability.md).
+  lgtm:
+    container_name: agenda_lgtm
+    image: grafana/otel-lgtm:0.28.0
+    ports:
+      - "${GRAFANA_PORT:-3001}:3000"
+      - "4317:4317" # OTLP gRPC
+      - "4318:4318" # OTLP HTTP
+    volumes:
+      - lgtm:/data
 
   postgres:
     container_name: postgres
@@ -32,3 +48,4 @@ services:
 volumes:
   postgres:
   uploads:
+  lgtm:

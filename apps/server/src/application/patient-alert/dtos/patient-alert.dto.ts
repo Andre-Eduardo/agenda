@@ -17,7 +17,7 @@ export class PatientAlertDto extends EntityDto {
     @ApiProperty({description: 'Alert title'})
     title: string;
 
-    @ApiProperty({nullable: true, description: 'Alert description'})
+    @ApiProperty({type: 'string', nullable: true, description: 'Alert description'})
     description: string | null;
 
     @ApiProperty({enum: AlertSeverity, description: 'Alert severity'})
@@ -36,4 +36,13 @@ export class PatientAlertDto extends EntityDto {
         this.severity = alert.severity;
         this.isActive = alert.isActive;
     }
+}
+
+@ApiSchema({name: 'PatientAlertPage'})
+export class PatientAlertPageDto {
+    @ApiProperty()
+    totalCount!: number;
+
+    @ApiProperty({type: [PatientAlertDto]})
+    data!: PatientAlertDto[];
 }

@@ -52,7 +52,7 @@ export async function main() {
             email: 'admin@agenda.dev',
             name: 'Administrador',
             password,
-            globalRole: 'OWNER',
+            globalRole: 'SUPER_ADMIN',
             createdAt: now,
             updatedAt: now,
         },
@@ -60,7 +60,7 @@ export async function main() {
             username: 'admin',
             email: 'admin@agenda.dev',
             name: 'Administrador',
-            globalRole: 'OWNER',
+            globalRole: 'SUPER_ADMIN',
             updatedAt: now,
         },
     });

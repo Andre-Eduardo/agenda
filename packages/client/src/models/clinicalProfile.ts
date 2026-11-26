@@ -4,13 +4,6 @@
  * Automo API
  * OpenAPI spec version: 0.0.0
  */
-import type {ClinicalProfileAllergies} from './clinicalProfileAllergies';
-import type {ClinicalProfileChronicConditions} from './clinicalProfileChronicConditions';
-import type {ClinicalProfileCurrentMedications} from './clinicalProfileCurrentMedications';
-import type {ClinicalProfileFamilyHistory} from './clinicalProfileFamilyHistory';
-import type {ClinicalProfileGeneralNotes} from './clinicalProfileGeneralNotes';
-import type {ClinicalProfileSocialHistory} from './clinicalProfileSocialHistory';
-import type {ClinicalProfileSurgicalHistory} from './clinicalProfileSurgicalHistory';
 
 export type ClinicalProfile = {
     /** The unique identifier of the entity */
@@ -31,35 +24,35 @@ export type ClinicalProfile = {
      * Known allergies
      * @nullable
      */
-    allergies: ClinicalProfileAllergies;
+    allergies: string | null;
     /**
      * Chronic conditions
      * @nullable
      */
-    chronicConditions: ClinicalProfileChronicConditions;
+    chronicConditions: string | null;
     /**
      * Current medications
      * @nullable
      */
-    currentMedications: ClinicalProfileCurrentMedications;
+    currentMedications: string | null;
     /**
      * Surgical history
      * @nullable
      */
-    surgicalHistory: ClinicalProfileSurgicalHistory;
+    surgicalHistory: string | null;
     /**
      * Family history
      * @nullable
      */
-    familyHistory: ClinicalProfileFamilyHistory;
+    familyHistory: string | null;
     /**
      * Social history
      * @nullable
      */
-    socialHistory: ClinicalProfileSocialHistory;
+    socialHistory: string | null;
     /**
      * General notes
      * @nullable
      */
-    generalNotes: ClinicalProfileGeneralNotes;
+    generalNotes: string | null;
 };

@@ -10,6 +10,7 @@ import {Authorizer} from '@domain/auth/authorizer';
 import {ClinicMemberId} from '@domain/clinic-member/entities';
 import {ClinicId} from '@domain/clinic/entities';
 import {PatientId} from '@domain/patient/entities';
+import {ProcedureColor, ProcedureId, ProcedureModality} from '@domain/procedure/procedure.entity';
 import {UserId} from '@domain/user/entities';
 
 const actor: Actor = {
@@ -45,7 +46,7 @@ describe('critical resource tenant isolation', () => {
         );
 
         await expect(service.execute({actor, payload: {id: appointment.id}})).rejects.toThrow(AccessDeniedException);
-        expect(paymentRepository.findByAppointmentId).not.toHaveBeenCalled();
+        expect(paymentRepository.findRevenuePayments).not.toHaveBeenCalled();
     });
 
     it('hides appointment payment status from a member without financial permission', async () => {
@@ -54,6 +55,13 @@ describe('critical resource tenant isolation', () => {
         const authorizer = mock<Authorizer>();
         const appointment = Appointment.create({
             clinicId: actor.clinicId,
+            procedure: {
+                id: ProcedureId.generate().toString(),
+                name: 'Evaluation',
+                color: ProcedureColor.BLUE,
+                priceInCents: 12_550,
+                modality: ProcedureModality.IN_PERSON,
+            },
             patientId: PatientId.generate(),
             attendedByMemberId: ClinicMemberId.generate(),
             createdByMemberId: ClinicMemberId.generate(),
@@ -76,7 +84,8 @@ describe('critical resource tenant isolation', () => {
 
         await expect(service.execute({actor, payload: {id: appointment.id}})).resolves.toMatchObject({
             paymentStatus: null,
+            revenue: null,
         });
-        expect(paymentRepository.findByAppointmentId).not.toHaveBeenCalled();
+        expect(paymentRepository.findRevenuePayments).not.toHaveBeenCalled();
     });
 });

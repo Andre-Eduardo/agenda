@@ -81,7 +81,7 @@ Feature: Critical resource authorization
             | accessLevel | FULL                         |
         Then the request should fail with a 403 status code
 
-    Scenario: A viewer can read a patient after access is granted
+    Scenario: A viewer can read the patient after access is granted while the evolution remains private
         When I send a "POST" request to "/api/v1/clinic-members/invite" with:
             | userId      | ${ref:id:user:dr_bob} |
             | roles       | ["VIEWER"]           |
@@ -99,9 +99,9 @@ Feature: Critical resource authorization
         When I send a "GET" request to "/api/v1/patients/${ref:id:patient:restricted}"
         Then the request should succeed with a 200 status code
         When I send a "GET" request to "/api/v1/records/${ref:id:record:restricted}"
-        Then the request should succeed with a 200 status code
+        Then the request should fail with a 403 status code
 
-    Scenario: A document override denies record reads and removes the record from search
+    Scenario: A document grant preserves the record author scope
         When I send a "POST" request to "/api/v1/clinic-members/invite" with:
             | userId      | ${ref:id:user:dr_bob} |
             | roles       | ["VIEWER"]           |
@@ -120,7 +120,7 @@ Feature: Critical resource authorization
             | memberId   | ${ref:id:clinicMember:dr_bob}  |
             | entityType | RECORD                         |
             | entityId   | ${ref:id:record:restricted}    |
-            | canView    | false                          |
+            | canView    | true                           |
         Then the request should succeed with a 201 status code
         Given I am signed in as "dr_bob" with clinic member "${ref:id:clinicMember:dr_bob}"
         When I send a "GET" request to "/api/v1/records/${ref:id:record:restricted}"

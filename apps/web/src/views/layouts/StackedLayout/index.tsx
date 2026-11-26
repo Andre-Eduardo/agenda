@@ -2,6 +2,7 @@ import {useState} from 'react';
 import type {ModuleType} from '@agenda-app/client';
 import {Outlet, Link, useRouterState, useNavigate, createFileRoute, redirect} from '@tanstack/react-router';
 import {
+    Building2,
     Calendar,
     ClipboardList,
     Home,
@@ -57,6 +58,12 @@ const NAV_GROUPS: NavGroup[] = [
         items: [
             {icon: Wallet, labelKey: 'nav.financial', path: '/financial', permission: 'financial-report:view'},
             {icon: Settings, labelKey: 'nav.settings', path: '/settings'},
+        ],
+    },
+    {
+        labelKey: 'nav.admin',
+        items: [
+            {icon: Building2, labelKey: 'nav.clinics', path: '/admin/clinics', permission: 'clinic-license:manage'},
         ],
     },
 ];

@@ -139,7 +139,7 @@ export const PageShell = styled('div', {
                         '& .pat-name': {fontSize: 'sm', fontWeight: 'medium', color: 'text.primary'},
                         '& .pat-meta': {mt: '[2px]', fontSize: '2xs', color: 'text.tertiary'},
                     },
-                    '& > .header-actions': {display: 'flex', gap: '2'},
+                    '& > .header-actions': {display: 'flex', flexWrap: 'wrap', gap: '2'},
                 },
             },
 

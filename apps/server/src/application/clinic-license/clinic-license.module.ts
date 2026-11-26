@@ -6,11 +6,12 @@ import {
     GetMyModulesService,
     SetModuleMembersService,
 } from '@application/clinic-license/services';
+import {ClinicModule} from '@application/clinic/clinic.module';
 import {ModuleAccess} from '@domain/clinic-license/services';
 import {InfrastructureModule} from '@infrastructure/infrastructure.module';
 
 @Module({
-    imports: [InfrastructureModule],
+    imports: [InfrastructureModule, ClinicModule],
     controllers: [ClinicLicenseController],
     providers: [
         ModuleAccess,

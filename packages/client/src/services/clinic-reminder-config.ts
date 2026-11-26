@@ -26,13 +26,13 @@ import {HttpResponse, http} from 'msw';
 import type {RequestHandlerOptions} from 'msw';
 import {apiClient} from '../api-client';
 import type {ErrorType} from '../api-client';
-import type {UpsertReminderConfigDto} from '../models';
-import type {ApiProblem, ClinicReminderConfig} from '../models';
+import type {PreviewReminderMessageDto, UpsertReminderConfigDto} from '../models';
+import type {ApiProblem, ClinicReminderConfig, ReminderMessagePreview} from '../models';
 
 type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 
 /**
- * @summary Get reminder configuration for a clinic
+ * @summary Get the clinic's reminder settings (inactive defaults when never saved)
  */
 export const getReminderConfig = (
     clinicId: string,
@@ -126,7 +126,7 @@ export function useGetReminderConfig<
     queryClient?: QueryClient
 ): UseQueryResult<TData, TError> & {queryKey: DataTag<QueryKey, TData, TError>};
 /**
- * @summary Get reminder configuration for a clinic
+ * @summary Get the clinic's reminder settings (inactive defaults when never saved)
  */
 
 export function useGetReminderConfig<
@@ -212,7 +212,7 @@ export function useGetReminderConfigSuspense<
     queryClient?: QueryClient
 ): UseSuspenseQueryResult<TData, TError> & {queryKey: DataTag<QueryKey, TData, TError>};
 /**
- * @summary Get reminder configuration for a clinic
+ * @summary Get the clinic's reminder settings (inactive defaults when never saved)
  */
 
 export function useGetReminderConfigSuspense<
@@ -318,6 +318,89 @@ export const useUpsertReminderConfig = <TError = ErrorType<ApiProblem>, TContext
     return useMutation(mutationOptions, queryClient);
 };
 
+/**
+ * @summary Preview a reminder text filled with sample data (nothing is sent or saved)
+ */
+export const previewReminderMessage = (
+    clinicId: string,
+    previewReminderMessageDto: PreviewReminderMessageDto,
+    options?: SecondParameter<typeof apiClient>,
+    signal?: AbortSignal
+) => {
+    return apiClient<ReminderMessagePreview>(
+        {
+            url: `/api/v1/clinics/${clinicId}/reminder-config/preview`,
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            data: previewReminderMessageDto,
+            signal,
+        },
+        options
+    );
+};
+
+export const getPreviewReminderMessageMutationOptions = <TError = ErrorType<ApiProblem>, TContext = unknown>(options?: {
+    mutation?: UseMutationOptions<
+        Awaited<ReturnType<typeof previewReminderMessage>>,
+        TError,
+        {clinicId: string; data: PreviewReminderMessageDto},
+        TContext
+    >;
+    request?: SecondParameter<typeof apiClient>;
+}): UseMutationOptions<
+    Awaited<ReturnType<typeof previewReminderMessage>>,
+    TError,
+    {clinicId: string; data: PreviewReminderMessageDto},
+    TContext
+> => {
+    const mutationKey = ['previewReminderMessage'];
+    const {mutation: mutationOptions, request: requestOptions} = options
+        ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
+            ? options
+            : {...options, mutation: {...options.mutation, mutationKey}}
+        : {mutation: {mutationKey}, request: undefined};
+
+    const mutationFn: MutationFunction<
+        Awaited<ReturnType<typeof previewReminderMessage>>,
+        {clinicId: string; data: PreviewReminderMessageDto}
+    > = (props) => {
+        const {clinicId, data} = props ?? {};
+
+        return previewReminderMessage(clinicId, data, requestOptions);
+    };
+
+    return {mutationFn, ...mutationOptions};
+};
+
+export type PreviewReminderMessageMutationResult = NonNullable<Awaited<ReturnType<typeof previewReminderMessage>>>;
+export type PreviewReminderMessageMutationBody = PreviewReminderMessageDto;
+export type PreviewReminderMessageMutationError = ErrorType<ApiProblem>;
+
+/**
+ * @summary Preview a reminder text filled with sample data (nothing is sent or saved)
+ */
+export const usePreviewReminderMessage = <TError = ErrorType<ApiProblem>, TContext = unknown>(
+    options?: {
+        mutation?: UseMutationOptions<
+            Awaited<ReturnType<typeof previewReminderMessage>>,
+            TError,
+            {clinicId: string; data: PreviewReminderMessageDto},
+            TContext
+        >;
+        request?: SecondParameter<typeof apiClient>;
+    },
+    queryClient?: QueryClient
+): UseMutationResult<
+    Awaited<ReturnType<typeof previewReminderMessage>>,
+    TError,
+    {clinicId: string; data: PreviewReminderMessageDto},
+    TContext
+> => {
+    const mutationOptions = getPreviewReminderMessageMutationOptions(options);
+
+    return useMutation(mutationOptions, queryClient);
+};
+
 export const getGetReminderConfigResponseMock = (
     overrideResponse: Partial<ClinicReminderConfig> = {}
 ): ClinicReminderConfig => ({
@@ -329,7 +412,11 @@ export const getGetReminderConfigResponseMock = (
     hoursBeforeList: Array.from({length: faker.number.int({min: 1, max: 10})}, (_, i) => i + 1).map(() =>
         faker.number.float({min: undefined, max: undefined, fractionDigits: 2})
     ),
+    messageTemplate: faker.string.alpha({length: {min: 10, max: 20}}),
+    usesDefaultTemplate: faker.datatype.boolean(),
+    defaultMessageTemplate: faker.string.alpha({length: {min: 10, max: 20}}),
     isActive: faker.datatype.boolean(),
+    configured: faker.datatype.boolean(),
     ...overrideResponse,
 });
 
@@ -344,7 +431,11 @@ export const getGetReminderConfigResponseMock200 = (
     hoursBeforeList: Array.from({length: faker.number.int({min: 1, max: 10})}, (_, i) => i + 1).map(() =>
         faker.number.float({min: undefined, max: undefined, fractionDigits: 2})
     ),
+    messageTemplate: faker.string.alpha({length: {min: 10, max: 20}}),
+    usesDefaultTemplate: faker.datatype.boolean(),
+    defaultMessageTemplate: faker.string.alpha({length: {min: 10, max: 20}}),
     isActive: faker.datatype.boolean(),
+    configured: faker.datatype.boolean(),
     ...overrideResponse,
 });
 
@@ -371,7 +462,11 @@ export const getUpsertReminderConfigResponseMock = (
     hoursBeforeList: Array.from({length: faker.number.int({min: 1, max: 10})}, (_, i) => i + 1).map(() =>
         faker.number.float({min: undefined, max: undefined, fractionDigits: 2})
     ),
+    messageTemplate: faker.string.alpha({length: {min: 10, max: 20}}),
+    usesDefaultTemplate: faker.datatype.boolean(),
+    defaultMessageTemplate: faker.string.alpha({length: {min: 10, max: 20}}),
     isActive: faker.datatype.boolean(),
+    configured: faker.datatype.boolean(),
     ...overrideResponse,
 });
 
@@ -386,11 +481,47 @@ export const getUpsertReminderConfigResponseMock200 = (
     hoursBeforeList: Array.from({length: faker.number.int({min: 1, max: 10})}, (_, i) => i + 1).map(() =>
         faker.number.float({min: undefined, max: undefined, fractionDigits: 2})
     ),
+    messageTemplate: faker.string.alpha({length: {min: 10, max: 20}}),
+    usesDefaultTemplate: faker.datatype.boolean(),
+    defaultMessageTemplate: faker.string.alpha({length: {min: 10, max: 20}}),
     isActive: faker.datatype.boolean(),
+    configured: faker.datatype.boolean(),
     ...overrideResponse,
 });
 
 export const getUpsertReminderConfigResponseMockDefault = (overrideResponse: Partial<ApiProblem> = {}): ApiProblem => ({
+    title: faker.string.alpha({length: {min: 10, max: 20}}),
+    type: faker.internet.url(),
+    detail: faker.string.alpha({length: {min: 10, max: 20}}),
+    status: faker.helpers.arrayElement([
+        400, 401, 402, 403, 404, 405, 406, 407, 408, 409, 410, 411, 412, 413, 414, 415, 416, 417, 418, 421, 422, 423,
+        424, 428, 429, 456, 500, 501, 502, 503, 504, 505, 507, 508,
+    ] as const),
+    instance: faker.string.alpha({length: {min: 10, max: 20}}),
+    ...overrideResponse,
+});
+
+export const getPreviewReminderMessageResponseMock = (
+    overrideResponse: Partial<ReminderMessagePreview> = {}
+): ReminderMessagePreview => ({
+    subject: faker.string.alpha({length: {min: 10, max: 20}}),
+    message: faker.string.alpha({length: {min: 10, max: 20}}),
+    variables: faker.helpers.arrayElements(['paciente', 'data', 'hora', 'profissional', 'clinica'] as const),
+    ...overrideResponse,
+});
+
+export const getPreviewReminderMessageResponseMock200 = (
+    overrideResponse: Partial<ReminderMessagePreview> = {}
+): ReminderMessagePreview => ({
+    subject: faker.string.alpha({length: {min: 10, max: 20}}),
+    message: faker.string.alpha({length: {min: 10, max: 20}}),
+    variables: faker.helpers.arrayElements(['paciente', 'data', 'hora', 'profissional', 'clinica'] as const),
+    ...overrideResponse,
+});
+
+export const getPreviewReminderMessageResponseMockDefault = (
+    overrideResponse: Partial<ApiProblem> = {}
+): ApiProblem => ({
     title: faker.string.alpha({length: {min: 10, max: 20}}),
     type: faker.internet.url(),
     detail: faker.string.alpha({length: {min: 10, max: 20}}),
@@ -554,7 +685,84 @@ export const getUpsertReminderConfigMockHandlerDefault = (
     );
 };
 
+export const getPreviewReminderMessageMockHandler = (
+    overrideResponse?:
+        | ReminderMessagePreview
+        | ((
+              info: Parameters<Parameters<typeof http.post>[1]>[0]
+          ) => Promise<ReminderMessagePreview> | ReminderMessagePreview),
+    options?: RequestHandlerOptions
+) => {
+    return http.post(
+        '*/api/v1/clinics/:clinicId/reminder-config/preview',
+        async (info) => {
+            return new HttpResponse(
+                JSON.stringify(
+                    overrideResponse !== undefined
+                        ? typeof overrideResponse === 'function'
+                            ? await overrideResponse(info)
+                            : overrideResponse
+                        : getPreviewReminderMessageResponseMock()
+                ),
+                {status: 200, headers: {'Content-Type': 'application/json'}}
+            );
+        },
+        options
+    );
+};
+
+export const getPreviewReminderMessageMockHandler200 = (
+    overrideResponse?:
+        | ReminderMessagePreview
+        | ((
+              info: Parameters<Parameters<typeof http.post>[1]>[0]
+          ) => Promise<ReminderMessagePreview> | ReminderMessagePreview),
+    options?: RequestHandlerOptions
+) => {
+    return http.post(
+        '*/api/v1/clinics/:clinicId/reminder-config/preview',
+        async (info) => {
+            return new HttpResponse(
+                JSON.stringify(
+                    overrideResponse !== undefined
+                        ? typeof overrideResponse === 'function'
+                            ? await overrideResponse(info)
+                            : overrideResponse
+                        : getPreviewReminderMessageResponseMock200()
+                ),
+                {status: 200, headers: {'Content-Type': 'application/json'}}
+            );
+        },
+        options
+    );
+};
+
+export const getPreviewReminderMessageMockHandlerDefault = (
+    overrideResponse?:
+        | ApiProblem
+        | ((info: Parameters<Parameters<typeof http.post>[1]>[0]) => Promise<ApiProblem> | ApiProblem),
+    options?: RequestHandlerOptions
+) => {
+    return http.post(
+        '*/api/v1/clinics/:clinicId/reminder-config/preview',
+        async (info) => {
+            return new HttpResponse(
+                JSON.stringify(
+                    overrideResponse !== undefined
+                        ? typeof overrideResponse === 'function'
+                            ? await overrideResponse(info)
+                            : overrideResponse
+                        : getPreviewReminderMessageResponseMockDefault()
+                ),
+                {status: 200, headers: {'Content-Type': 'application/json'}}
+            );
+        },
+        options
+    );
+};
+
 export const getClinicReminderConfigMock = () => [
     getGetReminderConfigMockHandler(),
     getUpsertReminderConfigMockHandler(),
+    getPreviewReminderMessageMockHandler(),
 ];

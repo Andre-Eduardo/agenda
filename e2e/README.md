@@ -79,3 +79,21 @@ e2e/
 2. Registrar a fixture em `fixtures/test.ts`.
 3. Adicionar um teste em `tests/navigation/<feature>.test.ts` com `navigate()` +
    `verifyPageLoaded()`.
+
+## Atendimento integral (L1-09)
+
+Em `tests/journeys/full-visit.test.ts`, a mesma consulta passa por agenda,
+chegada, chamada, evolução assinada e pagamento. O retorno é agendado a partir
+da evolução e reaberto na agenda. O teste confere os vínculos entre consulta,
+prontuário, pagamento e retorno.
+
+```bash
+pnpm -F @agenda-app/e2e exec playwright test tests/journeys/full-visit.test.ts \
+  --project=desktop-chrome --project=mobile-chrome --workers=2
+```
+
+Para rodar em homologação antes do piloto, configure `BASE_URL`, `API_URL` e
+`DATABASE_URL` para o mesmo ambiente de teste, com as migrations aplicadas.
+As fixtures gravam dados sintéticos no PostgreSQL. Use uma base isolada para
+o teste e mantenha o frontend e a documentação da API acessíveis para a
+configuração do Playwright reutilizar os serviços.

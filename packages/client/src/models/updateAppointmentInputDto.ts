@@ -4,18 +4,21 @@
  * Automo API
  * OpenAPI spec version: 0.0.0
  */
+import type {UpdateAppointmentInputDtoProcedureOverrides} from './updateAppointmentInputDtoProcedureOverrides';
 import type {UpdateAppointmentInputDtoType} from './updateAppointmentInputDtoType';
 
 export type UpdateAppointmentInputDto = {
     /** A datetime in ISO 8601 format. */
-    startAt: string;
+    startAt?: string;
     /** A datetime in ISO 8601 format. */
-    endAt: string;
-    type: UpdateAppointmentInputDtoType;
+    endAt?: string;
+    procedureId?: string;
+    procedureOverrides?: UpdateAppointmentInputDtoProcedureOverrides;
+    type?: UpdateAppointmentInputDtoType;
     /** @nullable */
-    note: string | null;
-    attendedByMemberId: string;
+    note?: string | null;
+    attendedByMemberId?: string;
     /** @nullable */
-    roomId: string | null;
-    confirmOutsideAvailability: boolean;
+    roomId?: string | null;
+    confirmOutsideAvailability?: boolean;
 };

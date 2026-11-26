@@ -4,6 +4,7 @@ import type {Appointment, AppointmentId, AppointmentStatus} from '@domain/appoin
 import type {ClinicMemberId} from '@domain/clinic-member/entities';
 import type {ClinicId} from '@domain/clinic/entities';
 import type {PatientId} from '@domain/patient/entities';
+import type {RecordId} from '@domain/record/entities';
 import type {RoomId} from '@domain/room/entities';
 import type {UserId} from '@domain/user/entities';
 
@@ -36,6 +37,7 @@ export type AppointmentStatusTransition = {
 
 export interface AppointmentRepository {
     findById(id: AppointmentId): Promise<Appointment | null>;
+    findFollowUps(clinicId: ClinicId, patientId: PatientId, recordId: RecordId): Promise<Appointment[]>;
 
     delete(id: AppointmentId): Promise<void>;
 

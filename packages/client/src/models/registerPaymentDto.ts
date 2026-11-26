@@ -10,10 +10,10 @@ import type {RegisterPaymentDtoStatus} from './registerPaymentDtoStatus';
 export type RegisterPaymentDto = {
     paymentMethod: RegisterPaymentDtoPaymentMethod;
     /**
+     * Amount in BRL. Defaults to the appointment procedure price when applicable.
      * @minimum 0
-     * @exclusiveMinimum
      */
-    amountBrl: number;
+    amountBrl?: number;
     status?: RegisterPaymentDtoStatus;
     /** @nullable */
     insurancePlanId?: string | null;

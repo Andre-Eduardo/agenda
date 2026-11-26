@@ -84,4 +84,8 @@ export type Patient = {
      * @nullable
      */
     insurancePlan: PatientInsurancePlan;
+    /** Whether the current member can read clinical data for this patient */
+    canReadClinicalData?: boolean;
+    /** Whether the current member can edit clinical data for this patient */
+    canWriteClinicalData?: boolean;
 };

@@ -44,3 +44,6 @@ export * from './services/patient-subscription-plan';
 export * from './services/patient-subscription';
 export * from './services/audit-log';
 export * from './services/clinic-license';
+export * from './services/procedure';
+export * from './services/patient-call';
+export * from './services/whats-app';

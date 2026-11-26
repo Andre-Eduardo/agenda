@@ -5,6 +5,7 @@ import {
     CreateRecordDtoConductTagsItem,
     CreateRecordDtoTemplateType,
     useCreateRecord,
+    useGetAppointment,
     useGetPatient,
     useSearchProfessionals,
     type Patient,
@@ -34,6 +35,7 @@ import {
     Syringe,
     CalendarClock,
 } from 'lucide-react';
+import {useTranslation} from 'react-i18next';
 import {toast} from 'sonner';
 import {AvatarInitials} from '@/components/ui/componentes/avatar';
 import {
@@ -52,6 +54,7 @@ import {PageHeader} from '@/components/ui/componentes/page-header';
 import {Skeleton} from '@/components/ui/componentes/skeleton';
 import {Textarea} from '@/components/ui/componentes/textarea';
 import {cx} from '@/styled-system/css';
+import {PatientClinicalPreview} from '@/views/modules/patients/components/ClinicalData/PatientClinicalPreview';
 import {
     ConductGrid,
     FooterBar,
@@ -79,9 +82,7 @@ import {
     icon18,
     icon22,
     icon3,
-    icon35,
     icon4,
-    icon5,
     imcTag,
     modalIcon,
     monoDate,
@@ -98,6 +99,9 @@ import {
 } from './styles';
 
 export const Route = createFileRoute('/_stackedLayout/patients/$patientId/records/new')({
+    validateSearch: (search: Record<string, unknown>): {appointmentId?: string} => ({
+        appointmentId: typeof search.appointmentId === 'string' ? search.appointmentId : undefined,
+    }),
     component: NewEvolutionPage,
 });
 
@@ -477,7 +481,6 @@ function PublishModal({
     );
 }
 
-
 function DiscardModal({onCancel, onConfirm}: {onCancel: () => void; onConfirm: () => void}) {
     return (
         <ModalBackdrop onClick={onCancel}>
@@ -507,10 +510,13 @@ function DiscardModal({onCancel, onConfirm}: {onCancel: () => void; onConfirm: (
 // ── Main page ─────────────────────────────────────────────────────────────────
 
 export function NewEvolutionPage() {
+    const {t} = useTranslation();
     const {patientId} = Route.useParams();
+    const {appointmentId} = Route.useSearch();
     const {data: patient, isLoading, isError} = useGetPatient(patientId);
+    const appointment = useGetAppointment(appointmentId ?? '', {query: {enabled: !!appointmentId}});
 
-    if (isLoading) return <PageSkeleton />;
+    if (isLoading || appointment.isLoading) return <PageSkeleton />;
 
     if (isError || !patient) {
         return (
@@ -523,7 +529,20 @@ export function NewEvolutionPage() {
         );
     }
 
-    return <NewEvolutionForm patient={patient} />;
+    if (appointmentId && (appointment.isError || appointment.data?.patientId !== patient.id)) {
+        return (
+            <div className={pageErrorState}>
+                <p role="alert" className={errorText}>
+                    {t('recordLifecycle.appointmentUnavailable')}
+                </p>
+                <Link to="/patients/$patientId" params={{patientId}} className={pageErrorLink}>
+                    {t('actions.back')}
+                </Link>
+            </div>
+        );
+    }
+
+    return <NewEvolutionForm key={appointmentId ?? patientId} patient={patient} appointmentId={appointmentId} />;
 }
 
 function PageSkeleton() {
@@ -548,14 +567,17 @@ function PageSkeleton() {
     );
 }
 
-function NewEvolutionForm({patient}: {patient: Patient}) {
+function NewEvolutionForm({patient, appointmentId}: {patient: Patient; appointmentId?: string}) {
     const navigate = useNavigate();
-    const professionalsQuery = useSearchProfessionals({
-        term: '',
-        limit: 1,
-        cursor: null,
-        sort: null,
-    }) as unknown as UseQueryResult<{data: Professional[]; totalCount: number}>;
+    const professionalsQuery = useSearchProfessionals(
+        {
+            term: '',
+            limit: 1,
+            cursor: null,
+            sort: null,
+        },
+        {query: {enabled: !appointmentId}}
+    ) as unknown as UseQueryResult<{data: Professional[]; totalCount: number}>;
     const currentProfessional = professionalsQuery.data?.data?.[0];
 
     // ── Form state ─────────────────────────────────────────────────────────────
@@ -638,9 +660,18 @@ function NewEvolutionForm({patient}: {patient: Patient}) {
     // ── Mutation ───────────────────────────────────────────────────────────────
     const createRecord = useCreateRecord({
         mutation: {
-            onSuccess: async () => {
+            onSuccess: async (record) => {
                 toast.success('Evolução registrada com sucesso');
-                await navigate({to: '/patients/$patientId', params: {patientId: patient.id}});
+
+                if (appointmentId) {
+                    await navigate({
+                        to: '/patients/$patientId/records/$recordId',
+                        params: {patientId: patient.id, recordId: record.id},
+                        replace: true,
+                    });
+                } else {
+                    await navigate({to: '/patients/$patientId', params: {patientId: patient.id}});
+                }
             },
             onError: () => {
                 toast.error('Erro ao registrar evolução. Verifique os dados e tente novamente.');
@@ -684,12 +715,13 @@ function NewEvolutionForm({patient}: {patient: Patient}) {
         const vitalsText = composeVitalsText(vitals);
         const finalObjective = objective || vitalsText || undefined;
 
-        const responsibleProfessionalId = currentProfessional?.id ?? '';
+        const responsibleProfessionalId = appointmentId ? undefined : (currentProfessional?.id ?? '');
 
         createRecord.mutate({
             data: {
                 patientId: patient.id,
                 responsibleProfessionalId,
+                appointmentId,
                 templateType: CreateRecordDtoTemplateType.SOAP,
                 attendanceType,
                 clinicalStatus,
@@ -762,6 +794,12 @@ function NewEvolutionForm({patient}: {patient: Patient}) {
                     </div>
                 </div>
             </div>
+
+            <PatientClinicalPreview
+                key={patient.id}
+                patientId={patient.id}
+                canRead={patient.canReadClinicalData === true}
+            />
 
             {/* Two-column layout */}
             <div className="layout">

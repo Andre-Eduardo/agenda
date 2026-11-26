@@ -1,3 +1,4 @@
+import {useState} from 'react';
 import type {ReactNode} from 'react';
 import {
     useGetPatient,
@@ -7,6 +8,7 @@ import {
     useSearchPatientForms,
 } from '@agenda-app/client';
 import type {
+    ClinicalProfile,
     Patient,
     PatientGender,
     PatientAlert,
@@ -38,6 +40,7 @@ import {
     Sparkles,
     TriangleAlert,
 } from 'lucide-react';
+import {useTranslation} from 'react-i18next';
 import {AvatarInitials, avatarColorVariants} from '@/components/ui/componentes/avatar';
 import {Badge} from '@/components/ui/componentes/badge';
 import {
@@ -67,7 +70,11 @@ import {KV as UIKv, KVGrid} from '@/components/ui/componentes/kv';
 import {EntityHeader} from '@/components/ui/componentes/page-header';
 import {Skeleton} from '@/components/ui/componentes/skeleton';
 import {StatTile} from '@/components/ui/componentes/stat-tile';
+import {useCan} from '@/hooks/useCan';
 import {css, cx} from '@/styled-system/css';
+import {ClinicalProfileDialog} from '@/views/modules/patients/components/ClinicalData/ClinicalProfileDialog';
+import {PatientAlertsSection} from '@/views/modules/patients/components/ClinicalData/PatientAlertsSection';
+import {PROFILE_FIELDS} from '@/views/modules/patients/components/ClinicalData/PatientClinicalPreview';
 import {PatientPlansSection} from '@/views/modules/patients/components/PatientPlansSection';
 import {
     emptySectionPy,
@@ -205,8 +212,13 @@ const allergyBox = css({
 const allergyIcon = css({mt: '[1px]', w: '[14px]', h: '[14px]', flexShrink: '0', color: 'danger'});
 const allergyText = css({fontSize: 'sm', lineHeight: '[1.4]', color: 'danger'});
 
-const profileText = css({fontSize: 'sm', lineHeight: '[1.5]', color: 'text.primary'});
-const profileTextSecondary = css({fontSize: 'sm', lineHeight: '[1.5]', color: 'text.secondary'});
+const profileText = css({
+    fontSize: 'sm',
+    lineHeight: '[1.5]',
+    color: 'text.primary',
+    whiteSpace: 'pre-wrap',
+    overflowWrap: 'anywhere',
+});
 const profileTextEmpty = css({fontSize: 'sm', fontStyle: 'italic', color: 'text.tertiary'});
 
 const recordRow = css({
@@ -224,7 +236,13 @@ const recordRow = css({
 });
 
 const recordDateText = css({fontSize: 'sm', fontWeight: 'medium', lineHeight: '[1.2]', color: 'text.primary'});
-const recordTime = css({mt: '[2px]', fontFamily: 'mono', fontSize: 'xs', fontVariantNumeric: 'tabular-nums', color: 'text.tertiary'});
+const recordTime = css({
+    mt: '[2px]',
+    fontFamily: 'mono',
+    fontSize: 'xs',
+    fontVariantNumeric: 'tabular-nums',
+    color: 'text.tertiary',
+});
 
 const recordDotBase = css({mt: '[5px]', w: '[10px]', h: '[10px]', rounded: 'full', bg: 'primary'});
 
@@ -525,7 +543,7 @@ function ActionTile({
 
 function AlertBadge({alert}: {alert: PatientAlert}) {
     return (
-        <Badge severity={alert.severity as 'HIGH' | 'MEDIUM' | 'LOW'} className={alertBadge}>
+        <Badge severity={alert.severity} className={alertBadge}>
             <TriangleAlert className={icon10} />
             {alert.title}
         </Badge>
@@ -641,10 +659,7 @@ function RecordsContent({
                             <div className={recordDateText}>{formatDateShort(eventDate)}</div>
                             <div className={recordTime}>{formatTime(eventDate)}</div>
                         </div>
-                        <div
-                            className={recordDotBase}
-                            style={{boxShadow: '0 0 0 3px var(--color-primary-surface)'}}
-                        />
+                        <div className={recordDotBase} style={{boxShadow: '0 0 0 3px var(--color-primary-surface)'}} />
                         <div className={minW0}>
                             <div className={recordTags}>
                                 <span className={recordTypeTag}>
@@ -669,25 +684,15 @@ function RecordsContent({
 
 function ProfileContent({
     isLoading,
-    hasData,
-    allergiesText,
-    conditionsText,
-    medicationsText,
-    surgicalHistoryText,
-    familyHistoryText,
-    socialHistoryText,
-    generalNotesText,
+    isError,
+    profile,
 }: {
     isLoading: boolean;
-    hasData: string | null;
-    allergiesText: string | null;
-    conditionsText: string | null;
-    medicationsText: string | null;
-    surgicalHistoryText: string | null;
-    familyHistoryText: string | null;
-    socialHistoryText: string | null;
-    generalNotesText: string | null;
+    isError: boolean;
+    profile?: ClinicalProfile | null;
 }) {
+    const {t} = useTranslation();
+
     if (isLoading) {
         return (
             <div className={skeletonListStack}>
@@ -698,50 +703,35 @@ function ProfileContent({
         );
     }
 
-    if (!hasData) return <EmptySection label="Perfil clínico ainda não preenchido" />;
+    if (isError)
+        return (
+            <p role="alert" className={errorText}>
+                {t('clinicalData.loadError')}
+            </p>
+        );
 
-    return (
-        <>
-            {allergiesText && (
-                <InfoGroup title="Alergias conhecidas">
+    if (!profile || !PROFILE_FIELDS.some((field) => profile[field]?.trim())) {
+        return <EmptySection label={t('clinicalData.emptyProfile')} />;
+    }
+
+    return PROFILE_FIELDS.map((field) => {
+        const value = profile[field];
+
+        if (!value?.trim()) return null;
+
+        return (
+            <InfoGroup key={field} title={t(`clinicalData.fields.${field}`)}>
+                {field === 'allergies' ? (
                     <div className={allergyBox}>
-                        <TriangleAlert className={allergyIcon} />
-                        <p className={allergyText}>{allergiesText}</p>
+                        <TriangleAlert className={allergyIcon} aria-hidden />
+                        <p className={allergyText}>{value}</p>
                     </div>
-                </InfoGroup>
-            )}
-            {conditionsText && (
-                <InfoGroup title="Condições crônicas">
-                    <p className={profileText}>{conditionsText}</p>
-                </InfoGroup>
-            )}
-            {medicationsText && (
-                <InfoGroup title="Medicações em uso">
-                    <p className={profileText}>{medicationsText}</p>
-                </InfoGroup>
-            )}
-            {surgicalHistoryText && (
-                <InfoGroup title="Histórico cirúrgico">
-                    <p className={profileText}>{surgicalHistoryText}</p>
-                </InfoGroup>
-            )}
-            {familyHistoryText && (
-                <InfoGroup title="Histórico familiar">
-                    <p className={profileText}>{familyHistoryText}</p>
-                </InfoGroup>
-            )}
-            {socialHistoryText && (
-                <InfoGroup title="Histórico social">
-                    <p className={profileText}>{socialHistoryText}</p>
-                </InfoGroup>
-            )}
-            {generalNotesText && (
-                <InfoGroup title="Observações gerais">
-                    <p className={profileTextSecondary}>{generalNotesText}</p>
-                </InfoGroup>
-            )}
-        </>
-    );
+                ) : (
+                    <p className={profileText}>{value}</p>
+                )}
+            </InfoGroup>
+        );
+    });
 }
 
 function FormsContent({isLoading, forms}: {isLoading: boolean; forms: PatientForm[]}) {
@@ -766,7 +756,9 @@ function FormsContent({isLoading, forms}: {isLoading: boolean; forms: PatientFor
 
                 return (
                     <div key={f.id} className={cx(formItemRootBase, isDone && formItemRootDone)}>
-                        <ClipboardList className={cx(formItemIconBase, isDone ? formItemIconDone : formItemIconNotDone)} />
+                        <ClipboardList
+                            className={cx(formItemIconBase, isDone ? formItemIconDone : formItemIconNotDone)}
+                        />
                         <div className={formItemBody}>
                             <div className={formItemTitle}>Formulário clínico</div>
                             <div className={formItemMeta}>
@@ -806,7 +798,7 @@ export function PatientDetailPage() {
         );
     }
 
-    return <PatientProfile patient={patient} />;
+    return <PatientProfile key={patient.id} patient={patient} />;
 }
 
 function PatientProfile({patient}: {patient: Patient}) {
@@ -815,14 +807,19 @@ function PatientProfile({patient}: {patient: Patient}) {
     const dob = formatDate(patient.birthDate);
     const gender = genderLabel(patient.gender);
 
-    const clinicalProfile = useGetClinicalProfile(patient.id);
-
-    const alertsQuery = useSearchPatientAlerts(patient.id, {
-        cursor: null,
-        limit: 10,
-        isActive: 'true',
-        sort: {severity: 'desc' as const},
-    }) as unknown as UseQueryResult<PaginatedPage<PatientAlert>>;
+    const {t} = useTranslation();
+    const canReadClinicalData = patient.canReadClinicalData === true;
+    const canWriteClinicalData = patient.canWriteClinicalData === true;
+    const canReadProfile = useCan({has: 'clinical-profile:view'}) && canReadClinicalData;
+    const canEditProfile = useCan({has: 'clinical-profile:update'}) && canWriteClinicalData;
+    const canReadAlerts = useCan({has: 'patient-alert:view'}) && canReadClinicalData;
+    const [profileDialogOpen, setProfileDialogOpen] = useState(false);
+    const clinicalProfile = useGetClinicalProfile(patient.id, {query: {enabled: canReadProfile}});
+    const alertsQuery = useSearchPatientAlerts(
+        patient.id,
+        {limit: 10, isActive: 'true'},
+        {query: {enabled: canReadAlerts}}
+    );
 
     // The generated SearchRecordsParams type marks attendanceType/clinicalStatus/source/
     // dateStart/dateEnd as required strings, but the server schema treats them as optional
@@ -850,12 +847,11 @@ function PatientProfile({patient}: {patient: Patient}) {
         limit: 10,
     }) as unknown as UseQueryResult<PaginatedPage<PatientForm>>;
 
-    const alerts = alertsQuery.data?.data ?? [];
+    const alerts = canReadAlerts && !alertsQuery.isError ? (alertsQuery.data?.data ?? []) : [];
     const records = recordsQuery.data?.data ?? [];
     const totalRecords = recordsTotalQuery.data?.totalCount;
     const forms = formsQuery.data?.data ?? [];
     const totalForms = formsQuery.data?.totalCount;
-    const profile = clinicalProfile.data;
 
     const addr = patient.address;
     const addrParts = addr
@@ -874,23 +870,6 @@ function PatientProfile({patient}: {patient: Patient}) {
     const email = asStr(patient.email);
     const emergencyName = asStr(patient.emergencyContactName);
     const emergencyPhone = asStr(patient.emergencyContactPhone);
-
-    const allergiesText = asDisplayStr(profile?.allergies);
-    const conditionsText = asDisplayStr(profile?.chronicConditions);
-    const medicationsText = asDisplayStr(profile?.currentMedications);
-    const surgicalHistoryText = asDisplayStr(profile?.surgicalHistory);
-    const familyHistoryText = asDisplayStr(profile?.familyHistory);
-    const socialHistoryText = asDisplayStr(profile?.socialHistory);
-    const generalNotesText = asDisplayStr(profile?.generalNotes);
-
-    const hasProfileData =
-        allergiesText ??
-        conditionsText ??
-        medicationsText ??
-        surgicalHistoryText ??
-        familyHistoryText ??
-        socialHistoryText ??
-        generalNotesText;
 
     return (
         <div className={pageRoot}>
@@ -1083,35 +1062,39 @@ function PatientProfile({patient}: {patient: Patient}) {
                     </InfoGroup>
                 </SectionCard>
 
-                {/* Saúde inicial */}
-                <SectionCard
-                    title="Saúde inicial"
-                    action={
-                        <SecLink
-                            onClick={() =>
-                                navigate({
-                                    to: '/patients/$patientId/edit',
-                                    params: {patientId: patient.id},
-                                })
-                            }
-                        >
-                            Editar <Pencil className={icon3} />
-                        </SecLink>
-                    }
-                >
-                    <ProfileContent
-                        isLoading={clinicalProfile.isLoading}
-                        hasData={hasProfileData}
-                        allergiesText={allergiesText}
-                        conditionsText={conditionsText}
-                        medicationsText={medicationsText}
-                        surgicalHistoryText={surgicalHistoryText}
-                        familyHistoryText={familyHistoryText}
-                        socialHistoryText={socialHistoryText}
-                        generalNotesText={generalNotesText}
-                    />
-                </SectionCard>
+                {canReadProfile && (
+                    <SectionCard
+                        title={t('clinicalData.profile')}
+                        action={
+                            canEditProfile && clinicalProfile.isSuccess ? (
+                                <SecLink onClick={() => setProfileDialogOpen(true)}>
+                                    {t('clinicalData.editProfile')} <Pencil className={icon3} />
+                                </SecLink>
+                            ) : undefined
+                        }
+                    >
+                        <ProfileContent
+                            isLoading={clinicalProfile.isLoading}
+                            isError={clinicalProfile.isError}
+                            profile={clinicalProfile.data}
+                        />
+                    </SectionCard>
+                )}
             </div>
+
+            {canReadProfile && canEditProfile && profileDialogOpen && (
+                <ClinicalProfileDialog
+                    patientId={patient.id}
+                    profile={clinicalProfile.data}
+                    onClose={() => setProfileDialogOpen(false)}
+                />
+            )}
+
+            {canReadAlerts && (
+                <SectionCard title={t('clinicalData.alerts')}>
+                    <PatientAlertsSection key={patient.id} patientId={patient.id} canWrite={canWriteClinicalData} />
+                </SectionCard>
+            )}
 
             {/* Planos do paciente */}
             <SectionCard title="Planos do paciente">

@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './views/root'
+import { Route as patientCallPagesDisplayIndexRouteImport } from './views/modules/patient-call/pages/display/index'
 import { Route as DotDotLayoutsStackedLayoutIndexRouteImport } from './views/layouts/StackedLayout/index'
 import { Route as DotDotLayoutsAuthLayoutIndexRouteImport } from './views/layouts/AuthLayout/index'
 import { Route as teamPagesIndexIndexRouteImport } from './views/modules/team/pages/index/index'
@@ -21,13 +22,22 @@ import { Route as dashboardPagesIndexIndexRouteImport } from './views/modules/da
 import { Route as appointmentsPagesIndexIndexRouteImport } from './views/modules/appointments/pages/index/index'
 import { Route as welcomePagesIndexIndexRouteImport } from './views/modules/welcome/pages/index/index'
 import { Route as teamPagesDetailIndexRouteImport } from './views/modules/team/pages/detail/index'
+import { Route as patientCallPagesSettingsIndexRouteImport } from './views/modules/patient-call/pages/settings/index'
 import { Route as patientsPagesNewIndexRouteImport } from './views/modules/patients/pages/new/index'
 import { Route as patientsPagesDetailIndexRouteImport } from './views/modules/patients/pages/detail/index'
+import { Route as adminPagesIndexIndexRouteImport } from './views/modules/admin/pages/index/index'
 import { Route as authPagesLoginIndexRouteImport } from './views/modules/auth/pages/login/index'
 import { Route as patientsPagesEditIndexRouteImport } from './views/modules/patients/pages/edit/index'
+import { Route as adminPagesDetailIndexRouteImport } from './views/modules/admin/pages/detail/index'
 import { Route as patientsPagesRecordsNewIndexRouteImport } from './views/modules/patients/pages/records/new/index'
 import { Route as patientsPagesRecordsDetailIndexRouteImport } from './views/modules/patients/pages/records/detail/index'
 
+const patientCallPagesDisplayIndexRoute =
+  patientCallPagesDisplayIndexRouteImport.update({
+    id: '/patient-call',
+    path: '/patient-call',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const DotDotLayoutsStackedLayoutIndexRoute =
   DotDotLayoutsStackedLayoutIndexRouteImport.update({
     id: '/_stackedLayout',
@@ -93,6 +103,12 @@ const teamPagesDetailIndexRoute = teamPagesDetailIndexRouteImport.update({
   path: '/team/$memberId',
   getParentRoute: () => DotDotLayoutsStackedLayoutIndexRoute,
 } as any)
+const patientCallPagesSettingsIndexRoute =
+  patientCallPagesSettingsIndexRouteImport.update({
+    id: '/reception/panel-settings',
+    path: '/reception/panel-settings',
+    getParentRoute: () => DotDotLayoutsStackedLayoutIndexRoute,
+  } as any)
 const patientsPagesNewIndexRoute = patientsPagesNewIndexRouteImport.update({
   id: '/patients/new',
   path: '/patients/new',
@@ -104,6 +120,11 @@ const patientsPagesDetailIndexRoute =
     path: '/patients/$patientId',
     getParentRoute: () => DotDotLayoutsStackedLayoutIndexRoute,
   } as any)
+const adminPagesIndexIndexRoute = adminPagesIndexIndexRouteImport.update({
+  id: '/admin/clinics',
+  path: '/admin/clinics',
+  getParentRoute: () => DotDotLayoutsStackedLayoutIndexRoute,
+} as any)
 const authPagesLoginIndexRoute = authPagesLoginIndexRouteImport.update({
   id: '/auth/login',
   path: '/auth/login',
@@ -112,6 +133,11 @@ const authPagesLoginIndexRoute = authPagesLoginIndexRouteImport.update({
 const patientsPagesEditIndexRoute = patientsPagesEditIndexRouteImport.update({
   id: '/patients/$patientId/edit',
   path: '/patients/$patientId/edit',
+  getParentRoute: () => DotDotLayoutsStackedLayoutIndexRoute,
+} as any)
+const adminPagesDetailIndexRoute = adminPagesDetailIndexRouteImport.update({
+  id: '/admin/clinics/$clinicId',
+  path: '/admin/clinics/$clinicId',
   getParentRoute: () => DotDotLayoutsStackedLayoutIndexRoute,
 } as any)
 const patientsPagesRecordsNewIndexRoute =
@@ -129,6 +155,7 @@ const patientsPagesRecordsDetailIndexRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof welcomePagesIndexIndexRoute
+  '/patient-call': typeof patientCallPagesDisplayIndexRoute
   '/appointments': typeof appointmentsPagesIndexIndexRoute
   '/dashboard': typeof dashboardPagesIndexIndexRoute
   '/financial': typeof financialPagesIndexIndexRoute
@@ -138,15 +165,19 @@ export interface FileRoutesByFullPath {
   '/settings': typeof settingsPagesIndexIndexRoute
   '/team': typeof teamPagesIndexIndexRoute
   '/auth/login': typeof authPagesLoginIndexRoute
+  '/admin/clinics': typeof adminPagesIndexIndexRoute
   '/patients/$patientId': typeof patientsPagesDetailIndexRoute
   '/patients/new': typeof patientsPagesNewIndexRoute
+  '/reception/panel-settings': typeof patientCallPagesSettingsIndexRoute
   '/team/$memberId': typeof teamPagesDetailIndexRoute
+  '/admin/clinics/$clinicId': typeof adminPagesDetailIndexRoute
   '/patients/$patientId/edit': typeof patientsPagesEditIndexRoute
   '/patients/$patientId/records/$recordId': typeof patientsPagesRecordsDetailIndexRoute
   '/patients/$patientId/records/new': typeof patientsPagesRecordsNewIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof welcomePagesIndexIndexRoute
+  '/patient-call': typeof patientCallPagesDisplayIndexRoute
   '/appointments': typeof appointmentsPagesIndexIndexRoute
   '/dashboard': typeof dashboardPagesIndexIndexRoute
   '/financial': typeof financialPagesIndexIndexRoute
@@ -156,9 +187,12 @@ export interface FileRoutesByTo {
   '/settings': typeof settingsPagesIndexIndexRoute
   '/team': typeof teamPagesIndexIndexRoute
   '/auth/login': typeof authPagesLoginIndexRoute
+  '/admin/clinics': typeof adminPagesIndexIndexRoute
   '/patients/$patientId': typeof patientsPagesDetailIndexRoute
   '/patients/new': typeof patientsPagesNewIndexRoute
+  '/reception/panel-settings': typeof patientCallPagesSettingsIndexRoute
   '/team/$memberId': typeof teamPagesDetailIndexRoute
+  '/admin/clinics/$clinicId': typeof adminPagesDetailIndexRoute
   '/patients/$patientId/edit': typeof patientsPagesEditIndexRoute
   '/patients/$patientId/records/$recordId': typeof patientsPagesRecordsDetailIndexRoute
   '/patients/$patientId/records/new': typeof patientsPagesRecordsNewIndexRoute
@@ -167,6 +201,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_auth': typeof DotDotLayoutsAuthLayoutIndexRouteWithChildren
   '/_stackedLayout': typeof DotDotLayoutsStackedLayoutIndexRouteWithChildren
+  '/patient-call': typeof patientCallPagesDisplayIndexRoute
   '/_stackedLayout/': typeof welcomePagesIndexIndexRoute
   '/_stackedLayout/appointments': typeof appointmentsPagesIndexIndexRoute
   '/_stackedLayout/dashboard': typeof dashboardPagesIndexIndexRoute
@@ -177,9 +212,12 @@ export interface FileRoutesById {
   '/_stackedLayout/settings': typeof settingsPagesIndexIndexRoute
   '/_stackedLayout/team': typeof teamPagesIndexIndexRoute
   '/_auth/auth/login': typeof authPagesLoginIndexRoute
+  '/_stackedLayout/admin/clinics': typeof adminPagesIndexIndexRoute
   '/_stackedLayout/patients/$patientId': typeof patientsPagesDetailIndexRoute
   '/_stackedLayout/patients/new': typeof patientsPagesNewIndexRoute
+  '/_stackedLayout/reception/panel-settings': typeof patientCallPagesSettingsIndexRoute
   '/_stackedLayout/team/$memberId': typeof teamPagesDetailIndexRoute
+  '/_stackedLayout/admin/clinics/$clinicId': typeof adminPagesDetailIndexRoute
   '/_stackedLayout/patients/$patientId/edit': typeof patientsPagesEditIndexRoute
   '/_stackedLayout/patients/$patientId/records/$recordId': typeof patientsPagesRecordsDetailIndexRoute
   '/_stackedLayout/patients/$patientId/records/new': typeof patientsPagesRecordsNewIndexRoute
@@ -188,6 +226,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/patient-call'
     | '/appointments'
     | '/dashboard'
     | '/financial'
@@ -197,15 +236,19 @@ export interface FileRouteTypes {
     | '/settings'
     | '/team'
     | '/auth/login'
+    | '/admin/clinics'
     | '/patients/$patientId'
     | '/patients/new'
+    | '/reception/panel-settings'
     | '/team/$memberId'
+    | '/admin/clinics/$clinicId'
     | '/patients/$patientId/edit'
     | '/patients/$patientId/records/$recordId'
     | '/patients/$patientId/records/new'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/patient-call'
     | '/appointments'
     | '/dashboard'
     | '/financial'
@@ -215,9 +258,12 @@ export interface FileRouteTypes {
     | '/settings'
     | '/team'
     | '/auth/login'
+    | '/admin/clinics'
     | '/patients/$patientId'
     | '/patients/new'
+    | '/reception/panel-settings'
     | '/team/$memberId'
+    | '/admin/clinics/$clinicId'
     | '/patients/$patientId/edit'
     | '/patients/$patientId/records/$recordId'
     | '/patients/$patientId/records/new'
@@ -225,6 +271,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/_auth'
     | '/_stackedLayout'
+    | '/patient-call'
     | '/_stackedLayout/'
     | '/_stackedLayout/appointments'
     | '/_stackedLayout/dashboard'
@@ -235,9 +282,12 @@ export interface FileRouteTypes {
     | '/_stackedLayout/settings'
     | '/_stackedLayout/team'
     | '/_auth/auth/login'
+    | '/_stackedLayout/admin/clinics'
     | '/_stackedLayout/patients/$patientId'
     | '/_stackedLayout/patients/new'
+    | '/_stackedLayout/reception/panel-settings'
     | '/_stackedLayout/team/$memberId'
+    | '/_stackedLayout/admin/clinics/$clinicId'
     | '/_stackedLayout/patients/$patientId/edit'
     | '/_stackedLayout/patients/$patientId/records/$recordId'
     | '/_stackedLayout/patients/$patientId/records/new'
@@ -246,10 +296,18 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   DotDotLayoutsAuthLayoutIndexRoute: typeof DotDotLayoutsAuthLayoutIndexRouteWithChildren
   DotDotLayoutsStackedLayoutIndexRoute: typeof DotDotLayoutsStackedLayoutIndexRouteWithChildren
+  patientCallPagesDisplayIndexRoute: typeof patientCallPagesDisplayIndexRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/patient-call': {
+      id: '/patient-call'
+      path: '/patient-call'
+      fullPath: '/patient-call'
+      preLoaderRoute: typeof patientCallPagesDisplayIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_stackedLayout': {
       id: '/_stackedLayout'
       path: ''
@@ -334,6 +392,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof teamPagesDetailIndexRouteImport
       parentRoute: typeof DotDotLayoutsStackedLayoutIndexRoute
     }
+    '/_stackedLayout/reception/panel-settings': {
+      id: '/_stackedLayout/reception/panel-settings'
+      path: '/reception/panel-settings'
+      fullPath: '/reception/panel-settings'
+      preLoaderRoute: typeof patientCallPagesSettingsIndexRouteImport
+      parentRoute: typeof DotDotLayoutsStackedLayoutIndexRoute
+    }
     '/_stackedLayout/patients/new': {
       id: '/_stackedLayout/patients/new'
       path: '/patients/new'
@@ -348,6 +413,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof patientsPagesDetailIndexRouteImport
       parentRoute: typeof DotDotLayoutsStackedLayoutIndexRoute
     }
+    '/_stackedLayout/admin/clinics': {
+      id: '/_stackedLayout/admin/clinics'
+      path: '/admin/clinics'
+      fullPath: '/admin/clinics'
+      preLoaderRoute: typeof adminPagesIndexIndexRouteImport
+      parentRoute: typeof DotDotLayoutsStackedLayoutIndexRoute
+    }
     '/_auth/auth/login': {
       id: '/_auth/auth/login'
       path: '/auth/login'
@@ -360,6 +432,13 @@ declare module '@tanstack/react-router' {
       path: '/patients/$patientId/edit'
       fullPath: '/patients/$patientId/edit'
       preLoaderRoute: typeof patientsPagesEditIndexRouteImport
+      parentRoute: typeof DotDotLayoutsStackedLayoutIndexRoute
+    }
+    '/_stackedLayout/admin/clinics/$clinicId': {
+      id: '/_stackedLayout/admin/clinics/$clinicId'
+      path: '/admin/clinics/$clinicId'
+      fullPath: '/admin/clinics/$clinicId'
+      preLoaderRoute: typeof adminPagesDetailIndexRouteImport
       parentRoute: typeof DotDotLayoutsStackedLayoutIndexRoute
     }
     '/_stackedLayout/patients/$patientId/records/new': {
@@ -403,9 +482,12 @@ interface DotDotLayoutsStackedLayoutIndexRouteChildren {
   receptionPagesIndexIndexRoute: typeof receptionPagesIndexIndexRoute
   settingsPagesIndexIndexRoute: typeof settingsPagesIndexIndexRoute
   teamPagesIndexIndexRoute: typeof teamPagesIndexIndexRoute
+  adminPagesIndexIndexRoute: typeof adminPagesIndexIndexRoute
   patientsPagesDetailIndexRoute: typeof patientsPagesDetailIndexRoute
   patientsPagesNewIndexRoute: typeof patientsPagesNewIndexRoute
+  patientCallPagesSettingsIndexRoute: typeof patientCallPagesSettingsIndexRoute
   teamPagesDetailIndexRoute: typeof teamPagesDetailIndexRoute
+  adminPagesDetailIndexRoute: typeof adminPagesDetailIndexRoute
   patientsPagesEditIndexRoute: typeof patientsPagesEditIndexRoute
   patientsPagesRecordsDetailIndexRoute: typeof patientsPagesRecordsDetailIndexRoute
   patientsPagesRecordsNewIndexRoute: typeof patientsPagesRecordsNewIndexRoute
@@ -422,9 +504,12 @@ const DotDotLayoutsStackedLayoutIndexRouteChildren: DotDotLayoutsStackedLayoutIn
     receptionPagesIndexIndexRoute: receptionPagesIndexIndexRoute,
     settingsPagesIndexIndexRoute: settingsPagesIndexIndexRoute,
     teamPagesIndexIndexRoute: teamPagesIndexIndexRoute,
+    adminPagesIndexIndexRoute: adminPagesIndexIndexRoute,
     patientsPagesDetailIndexRoute: patientsPagesDetailIndexRoute,
     patientsPagesNewIndexRoute: patientsPagesNewIndexRoute,
+    patientCallPagesSettingsIndexRoute: patientCallPagesSettingsIndexRoute,
     teamPagesDetailIndexRoute: teamPagesDetailIndexRoute,
+    adminPagesDetailIndexRoute: adminPagesDetailIndexRoute,
     patientsPagesEditIndexRoute: patientsPagesEditIndexRoute,
     patientsPagesRecordsDetailIndexRoute: patientsPagesRecordsDetailIndexRoute,
     patientsPagesRecordsNewIndexRoute: patientsPagesRecordsNewIndexRoute,
@@ -440,6 +525,7 @@ const rootRouteChildren: RootRouteChildren = {
     DotDotLayoutsAuthLayoutIndexRouteWithChildren,
   DotDotLayoutsStackedLayoutIndexRoute:
     DotDotLayoutsStackedLayoutIndexRouteWithChildren,
+  patientCallPagesDisplayIndexRoute: patientCallPagesDisplayIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

@@ -1,4 +1,5 @@
 import {ApiProperty, ApiSchema} from '@nestjs/swagger';
+import {AppointmentRevenueDto} from '@application/appointment-payment/dtos';
 import type {
     PaymentListItem,
     PaymentMethodSummary,
@@ -10,8 +11,8 @@ import type {
 import {AppointmentPaymentStatus, PaymentMethod} from '@domain/appointment-payment/entities';
 
 class RevenueSummaryDto {
-    @ApiProperty() totalBrl: number;
-    @ApiProperty() totalPaid: number;
+    @ApiProperty({description: 'Expected revenue in BRL'}) totalBrl: number;
+    @ApiProperty({description: 'Received revenue in BRL'}) totalPaid: number;
     @ApiProperty() totalPending: number;
     @ApiProperty() totalExempt: number;
     @ApiProperty() totalRefunded: number;
@@ -55,30 +56,53 @@ class ProfessionalSummaryDto {
     }
 }
 
-class PaymentListItemDto {
-    @ApiProperty({format: 'uuid'}) paymentId: string;
-    @ApiProperty({format: 'uuid'}) appointmentId: string;
-    @ApiProperty() patientName: string;
-    @ApiProperty() professionalName: string;
-    @ApiProperty({format: 'date-time'}) appointmentDate: string;
-    @ApiProperty({enum: PaymentMethod}) paymentMethod: PaymentMethod;
-    @ApiProperty({enum: AppointmentPaymentStatus, enumName: 'AppointmentPaymentStatus'})
-    status: AppointmentPaymentStatus;
-    @ApiProperty() amountBrl: number;
-    @ApiProperty({type: 'string', format: 'date-time', nullable: true}) paidAt: string | null;
-    @ApiProperty({nullable: true}) insurancePlanName: string | null;
+class PaymentListItemDto extends AppointmentRevenueDto {
+    @ApiProperty({type: String, format: 'uuid', nullable: true})
+    paymentId: string | null;
+
+    @ApiProperty({format: 'uuid'})
+    appointmentId: string;
+
+    @ApiProperty()
+    patientName: string;
+
+    @ApiProperty()
+    professionalName: string;
+
+    @ApiProperty({format: 'date-time'})
+    appointmentDate: string;
+
+    @ApiProperty({type: String, nullable: true})
+    procedureName: string | null;
+
+    @ApiProperty()
+    amountBrl: number;
+
+    @ApiProperty({type: String, nullable: true})
+    insurancePlanName: string | null;
 
     constructor(p: PaymentListItem) {
+        super(p);
         this.paymentId = p.paymentId;
         this.appointmentId = p.appointmentId;
         this.patientName = p.patientName;
         this.professionalName = p.professionalName;
         this.appointmentDate = p.appointmentDate;
-        this.paymentMethod = p.paymentMethod;
-        this.status = p.status;
+        this.procedureName = p.procedureName;
         this.amountBrl = p.amountBrl;
-        this.paidAt = p.paidAt;
         this.insurancePlanName = p.insurancePlanName;
+    }
+}
+
+class RevenuePaginationDto {
+    @ApiProperty() page: number;
+    @ApiProperty() pageSize: number;
+    @ApiProperty() total: number;
+
+    constructor(pagination: RevenueReport['pagination']) {
+        this.page = pagination.page;
+        this.pageSize = pagination.pageSize;
+        this.total = pagination.total;
     }
 }
 
@@ -94,7 +118,7 @@ export class RevenueReportDto {
     @ApiProperty({type: [PaymentMethodSummaryDto]}) byPaymentMethod: PaymentMethodSummaryDto[];
     @ApiProperty({type: [ProfessionalSummaryDto]}) byProfessional: ProfessionalSummaryDto[];
     @ApiProperty({type: [PaymentListItemDto]}) payments: PaymentListItemDto[];
-    @ApiProperty() pagination: {page: number; pageSize: number; total: number};
+    @ApiProperty({type: RevenuePaginationDto}) pagination: RevenuePaginationDto;
 
     constructor(report: RevenueReport) {
         this.period = report.period;
@@ -103,7 +127,7 @@ export class RevenueReportDto {
         this.byPaymentMethod = report.byPaymentMethod.map((s) => new PaymentMethodSummaryDto(s));
         this.byProfessional = report.byProfessional.map((s) => new ProfessionalSummaryDto(s));
         this.payments = report.payments.map((p) => new PaymentListItemDto(p));
-        this.pagination = report.pagination;
+        this.pagination = new RevenuePaginationDto(report.pagination);
     }
 }
 

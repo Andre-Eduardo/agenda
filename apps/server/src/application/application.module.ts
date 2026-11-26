@@ -30,8 +30,10 @@ import {ImportedDocumentModule} from '@application/imported-document/imported-do
 import {InsuranceClaimModule} from '@application/insurance-claim/insurance-claim.module';
 import {KnowledgeBaseModule} from '@application/knowledge-base/knowledge-base.module';
 import {MemberBlockModule} from '@application/member-block/member-block.module';
+import {NotificationWebhookModule} from '@application/notification-webhook/notification-webhook.module';
 import {PackagePlanModule} from '@application/package-plan/package-plan.module';
 import {PatientAlertModule} from '@application/patient-alert/patient-alert.module';
+import {PatientCallModule} from '@application/patient-call/patient-call.module';
 import {PatientFormModule} from '@application/patient-form/patient-form.module';
 import {PatientInsuranceEnrollmentModule} from '@application/patient-insurance-enrollment/patient-insurance-enrollment.module';
 import {PatientPackageModule} from '@application/patient-package/patient-package.module';
@@ -39,6 +41,7 @@ import {PatientSubscriptionPlanModule} from '@application/patient-subscription-p
 import {PatientSubscriptionModule} from '@application/patient-subscription/patient-subscription.module';
 import {PatientModule} from '@application/patient/patient.module';
 import {PaymentModule} from '@application/payment/payment.module';
+import {ProcedureModule} from '@application/procedure/procedure.module';
 import {ProfessionalAgendaAccessModule} from '@application/professional-agenda-access/professional-agenda-access.module';
 import {ProfessionalModule} from '@application/professional/professional.module';
 import {RecordModule} from '@application/record/record.module';
@@ -46,6 +49,7 @@ import {RoomModule} from '@application/room/room.module';
 import {SubscriptionModule} from '@application/subscription/subscription.module';
 import {UploadModule} from '@application/upload/upload.module';
 import {UserModule} from '@application/user/user.module';
+import {WhatsAppConfigModule} from '@application/whatsapp-config/whatsapp-config.module';
 import {WorkingHoursModule} from '@application/working-hours/working-hours.module';
 import {AuditLogRepository} from '@domain/audit/audit-log.repository';
 import {createAuthorizer} from '@domain/auth/authorizer';
@@ -136,8 +140,11 @@ const guards: Provider[] = [
         UserModule,
         ProfessionalModule,
         PatientModule,
+        PatientCallModule,
         AppointmentModule,
+        ProcedureModule,
         AppointmentReminderModule,
+        NotificationWebhookModule,
         ClinicReminderConfigModule,
         RecordModule,
         ClinicalProfileModule,
@@ -164,6 +171,7 @@ const guards: Provider[] = [
         WorkingHoursModule,
         MemberBlockModule,
         RoomModule,
+        WhatsAppConfigModule,
     ],
     providers: [...exceptionFilters, ...pipes, ...interceptors, ...guards],
 })

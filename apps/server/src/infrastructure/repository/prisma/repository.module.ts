@@ -2,6 +2,7 @@ import {Module, Provider} from '@nestjs/common';
 import {AtomicExecutor} from '@domain/@shared/repository';
 import {AgentProposalRepository} from '@domain/agent-proposal/agent-proposal.repository';
 import {AppointmentPaymentRepository} from '@domain/appointment-payment/appointment-payment.repository';
+import {AppointmentReminderEventRepository} from '@domain/appointment-reminder/appointment-reminder-event.repository';
 import {AppointmentReminderRepository} from '@domain/appointment-reminder/appointment-reminder.repository';
 import {AppointmentRepository} from '@domain/appointment/appointment.repository';
 import {AuditLogRepository} from '@domain/audit/audit-log.repository';
@@ -31,6 +32,7 @@ import {InsurancePlanRepository} from '@domain/insurance-plan/insurance-plan.rep
 import {KnowledgeChunkRepository} from '@domain/knowledge-base/knowledge-chunk.repository';
 import {PackagePlanRepository} from '@domain/package-plan/package-plan.repository';
 import {PatientAlertRepository} from '@domain/patient-alert/patient-alert.repository';
+import {PatientCallRepository} from '@domain/patient-call/patient-call.repository';
 import {PatientFormRepository} from '@domain/patient-form/patient-form.repository';
 import {PatientInsuranceEnrollmentRepository} from '@domain/patient-insurance-enrollment/patient-insurance-enrollment.repository';
 import {PatientPackageCreditRepository} from '@domain/patient-package/patient-package-credit.repository';
@@ -40,6 +42,7 @@ import {PatientSubscriptionUsageRepository} from '@domain/patient-subscription/p
 import {PatientSubscriptionRepository} from '@domain/patient-subscription/patient-subscription.repository';
 import {PatientRepository} from '@domain/patient/patient.repository';
 import {PersonRepository} from '@domain/person/person.repository';
+import {ProcedureRepository} from '@domain/procedure/procedure.repository';
 import {ProfessionalAgendaAccessRepository} from '@domain/professional-agenda-access/professional-agenda-access.repository';
 import {MemberBlockRepository} from '@domain/professional/member-block.repository';
 import {ProfessionalRepository} from '@domain/professional/professional.repository';
@@ -53,6 +56,7 @@ import {MapperModule} from '@infrastructure/mappers';
 import {AgentProposalPrismaRepository} from '@infrastructure/repository/agent-proposal.prisma.repository';
 import {AiAgentProfilePrismaRepository} from '@infrastructure/repository/ai-agent-profile.prisma.repository';
 import {AppointmentPaymentPrismaRepository} from '@infrastructure/repository/appointment-payment.prisma.repository';
+import {AppointmentReminderEventPrismaRepository} from '@infrastructure/repository/appointment-reminder-event.prisma.repository';
 import {AppointmentReminderPrismaRepository} from '@infrastructure/repository/appointment-reminder.prisma.repository';
 import {AppointmentPrismaRepository} from '@infrastructure/repository/appointment.prisma.repository';
 import {AuditLogPrismaRepository} from '@infrastructure/repository/audit-log.prisma.repository';
@@ -78,6 +82,7 @@ import {KnowledgeChunkPrismaRepository} from '@infrastructure/repository/knowled
 import {MemberBlockPrismaRepository} from '@infrastructure/repository/member-block.prisma.repository';
 import {PackagePlanPrismaRepository} from '@infrastructure/repository/package-plan.prisma.repository';
 import {PatientAlertPrismaRepository} from '@infrastructure/repository/patient-alert.prisma.repository';
+import {PatientCallPrismaRepository} from '@infrastructure/repository/patient-call.prisma.repository';
 import {PatientChatMessagePrismaRepository} from '@infrastructure/repository/patient-chat-message.prisma.repository';
 import {PatientChatSessionPrismaRepository} from '@infrastructure/repository/patient-chat-session.prisma.repository';
 import {PatientContextChunkPrismaRepository} from '@infrastructure/repository/patient-context-chunk.prisma.repository';
@@ -92,6 +97,7 @@ import {PatientSubscriptionPrismaRepository} from '@infrastructure/repository/pa
 import {PatientPrismaRepository} from '@infrastructure/repository/patient.prisma.repository';
 import {PersonPrismaRepository} from '@infrastructure/repository/person.prisma.repository';
 import {PrismaProvider} from '@infrastructure/repository/prisma/prisma.provider';
+import {ProcedurePrismaRepository} from '@infrastructure/repository/procedure.prisma.repository';
 import {ProfessionalAgendaAccessPrismaRepository} from '@infrastructure/repository/professional-agenda-access.prisma.repository';
 import {ProfessionalPrismaRepository} from '@infrastructure/repository/professional.prisma.repository';
 import {RecordAmendmentPrismaRepository} from '@infrastructure/repository/record-amendment.prisma.repository';
@@ -128,8 +134,11 @@ const repositories: Provider[] = [
     {provide: PatientSubscriptionUsageRepository, useClass: PatientSubscriptionUsagePrismaRepository},
     // Schedule
     {provide: AppointmentRepository, useClass: AppointmentPrismaRepository},
+    {provide: PatientCallRepository, useClass: PatientCallPrismaRepository},
+    {provide: ProcedureRepository, useClass: ProcedurePrismaRepository},
     {provide: AppointmentPaymentRepository, useClass: AppointmentPaymentPrismaRepository},
     {provide: AppointmentReminderRepository, useClass: AppointmentReminderPrismaRepository},
+    {provide: AppointmentReminderEventRepository, useClass: AppointmentReminderEventPrismaRepository},
     {provide: ClinicReminderConfigRepository, useClass: ClinicReminderConfigPrismaRepository},
     {provide: WorkingHoursRepository, useClass: WorkingHoursPrismaRepository},
     {provide: MemberBlockRepository, useClass: MemberBlockPrismaRepository},

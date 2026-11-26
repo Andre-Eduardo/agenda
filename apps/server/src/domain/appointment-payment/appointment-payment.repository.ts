@@ -1,3 +1,4 @@
+import type {RevenuePayment} from '@domain/appointment-payment/appointment-revenue';
 import type {
     AppointmentPayment,
     AppointmentPaymentId,
@@ -19,7 +20,7 @@ export type AppointmentPaymentSearchFilter = {
 export interface AppointmentPaymentRepository {
     findById(id: AppointmentPaymentId): Promise<AppointmentPayment | null>;
     findByAppointmentId(appointmentId: AppointmentId): Promise<AppointmentPayment | null>;
-    findByAppointmentIds(appointmentIds: AppointmentId[]): Promise<AppointmentPayment[]>;
+    findRevenuePayments(clinicId: ClinicId, appointmentIds: AppointmentId[]): Promise<Map<string, RevenuePayment>>;
     save(payment: AppointmentPayment): Promise<void>;
     search(
         filter: AppointmentPaymentSearchFilter,

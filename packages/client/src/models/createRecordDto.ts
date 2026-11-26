@@ -13,7 +13,8 @@ import type {CreateRecordDtoTemplateType} from './createRecordDtoTemplateType';
 
 export type CreateRecordDto = {
     patientId: string;
-    responsibleProfessionalId: string;
+    /** Clinically responsible professional. Defaults to the appointment’s attending professional when omitted. */
+    responsibleProfessionalId?: string;
     /** @minLength 1 */
     description?: string;
     files?: CreateRecordDtoFilesItem[];

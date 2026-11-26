@@ -29,6 +29,17 @@ export enum AppointmentPermission {
     DELETE = 'appointment:delete',
     CHECKIN = 'appointment:checkin',
     CALL = 'appointment:call',
+    START = 'appointment:start',
+}
+
+export enum PatientCallPermission {
+    OPERATE = 'patient-call:operate',
+    CONFIGURE = 'patient-call:configure',
+}
+
+export enum ProcedurePermission {
+    MANAGE = 'procedure:manage',
+    OVERRIDE = 'procedure:override',
 }
 
 export enum AppointmentReminderPermission {
@@ -39,6 +50,14 @@ export enum AppointmentReminderPermission {
 export enum ClinicReminderConfigPermission {
     VIEW = 'clinic-reminder-config:view',
     MANAGE = 'clinic-reminder-config:manage',
+}
+
+export enum WhatsAppPermission {
+    VIEW = 'whatsapp:view',
+    CREATE = 'whatsapp:create',
+    CONNECT = 'whatsapp:connect',
+    DELETE = 'whatsapp:delete',
+    LOGOUT = 'whatsapp:logout',
 }
 
 export enum RecordPermission {
@@ -259,6 +278,8 @@ const PERMISSIONS = [
     ...Object.values(ProfessionalPermission),
     ...Object.values(PatientPermission),
     ...Object.values(AppointmentPermission),
+    ...Object.values(PatientCallPermission),
+    ...Object.values(ProcedurePermission),
     ...Object.values(RecordPermission),
     ...Object.values(ImportedDocumentPermission),
     ...Object.values(PersonPermission),
@@ -276,6 +297,7 @@ const PERMISSIONS = [
     ...Object.values(ClinicalDocumentPermission),
     ...Object.values(AppointmentReminderPermission),
     ...Object.values(ClinicReminderConfigPermission),
+    ...Object.values(WhatsAppPermission),
     ...Object.values(SubscriptionPermission),
     ...Object.values(BillingPermission),
     ...Object.values(PaymentPermission),

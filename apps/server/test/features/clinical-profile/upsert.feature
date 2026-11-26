@@ -52,3 +52,17 @@ Feature: Clinical profile upsert (PUT)
             | responsibleProfessionalId | ${ref:id:professional:dr_house} |
             | allergies                 | Aspirin                         |
         Then the request should fail with a 401 status code
+
+    Scenario: Clear one field while preserving the omitted fields
+        When I send a "PUT" request to "/api/v1/patients/${ref:id:patient:profile_patient}/clinical-profile" with:
+            | responsibleProfessionalId | ${ref:id:professional:dr_house} |
+            | allergies                 | Aspirin                         |
+            | currentMedications        | Metformin                       |
+        Then the request should succeed with a 200 status code
+        When I send a "PUT" request to "/api/v1/patients/${ref:id:patient:profile_patient}/clinical-profile" with:
+            | responsibleProfessionalId | ${ref:id:professional:dr_house} |
+            | allergies                 | null                            |
+        Then the request should succeed with a 200 status code
+        And the response should contain:
+            | allergies          | null      |
+            | currentMedications | Metformin |

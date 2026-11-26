@@ -48,7 +48,7 @@ Feature: Clinic reminder config (PUT / GET)
     Scenario: Appointment created with active config generates a pending reminder
         When I send a "PUT" request to "/api/v1/clinics/${ref:id:clinic:dr_house}/reminder-config" with body:
             """JSON
-            {"enabledChannels": ["WHATSAPP"], "hoursBeforeList": [1700], "isActive": true}
+            {"enabledChannels": ["WHATSAPP"], "hoursBeforeList": [48], "isActive": true}
             """
         Then the request should succeed with a 200 status code
         When I send a "POST" request to "/api/v1/patients" with:
@@ -74,3 +74,60 @@ Feature: Clinic reminder config (PUT / GET)
             {"enabledChannels": ["WHATSAPP"], "hoursBeforeList": [24], "isActive": true}
             """
         Then the request should fail with a 401 status code
+
+    Scenario: Get config before saving returns inactive defaults
+        When I send a "GET" request to "/api/v1/clinics/${ref:id:clinic:dr_house}/reminder-config"
+        Then the request should succeed with a 200 status code
+        And the response should contain:
+            | isActive            | false |
+            | configured          | false |
+            | usesDefaultTemplate | true  |
+
+    Scenario: Save a custom reminder text
+        When I send a "PUT" request to "/api/v1/clinics/${ref:id:clinic:dr_house}/reminder-config" with body:
+            """JSON
+            {"enabledChannels": ["WHATSAPP", "EMAIL"], "hoursBeforeList": [2, 24], "messageTemplate": "Oi {{paciente}}, sua consulta é {{data}} às {{hora}}.", "isActive": true}
+            """
+        Then the request should succeed with a 200 status code
+        And the response should contain:
+            | messageTemplate     | Oi {{paciente}}, sua consulta é {{data}} às {{hora}}. |
+            | usesDefaultTemplate | false                                                 |
+            | configured          | true                                                  |
+
+    Scenario: Reject a reminder text with an unknown variable
+        When I send a "PUT" request to "/api/v1/clinics/${ref:id:clinic:dr_house}/reminder-config" with body:
+            """JSON
+            {"enabledChannels": ["WHATSAPP"], "hoursBeforeList": [24], "messageTemplate": "Oi {{nome}}"}
+            """
+        Then the request should fail with a 400 status code
+
+    Scenario: Reject SMS and lead times over one week
+        When I send a "PUT" request to "/api/v1/clinics/${ref:id:clinic:dr_house}/reminder-config" with body:
+            """JSON
+            {"enabledChannels": ["SMS"], "hoursBeforeList": [24]}
+            """
+        Then the request should fail with a 400 status code
+        When I send a "PUT" request to "/api/v1/clinics/${ref:id:clinic:dr_house}/reminder-config" with body:
+            """JSON
+            {"enabledChannels": ["WHATSAPP"], "hoursBeforeList": [169]}
+            """
+        Then the request should fail with a 400 status code
+
+    Scenario: Preview a reminder text without saving it
+        When I send a "POST" request to "/api/v1/clinics/${ref:id:clinic:dr_house}/reminder-config/preview" with body:
+            """JSON
+            {"messageTemplate": "Oi {{paciente}}!"}
+            """
+        Then the request should succeed with a 200 status code
+        And the response should contain:
+            | message | Oi Maria Silva!      |
+            | subject | Lembrete de consulta |
+
+    Scenario: Another clinic config cannot be read or changed
+        When I send a "GET" request to "/api/v1/clinics/0195c3d6-0000-7000-8000-000000000000/reminder-config"
+        Then the request should fail with a 403 status code
+        When I send a "PUT" request to "/api/v1/clinics/0195c3d6-0000-7000-8000-000000000000/reminder-config" with body:
+            """JSON
+            {"enabledChannels": ["WHATSAPP"], "hoursBeforeList": [24], "isActive": true}
+            """
+        Then the request should fail with a 403 status code

@@ -4,12 +4,15 @@ import {AccessDeniedException, AccessDeniedReason} from '@domain/@shared/excepti
 import {ClinicMemberRepository} from '@domain/clinic-member/clinic-member.repository';
 import {ClinicMemberRole} from '@domain/clinic-member/entities';
 import {ClinicPatientAccessRepository} from '@domain/clinic-patient-access/clinic-patient-access.repository';
+import type {ClinicPatientAccess} from '@domain/clinic-patient-access/entities';
 import {DocumentPermissionRepository} from '@domain/document-permission/document-permission.repository';
 import {DocumentEntityType} from '@domain/document-permission/entities';
 import {PatientId} from '@domain/patient/entities';
 import {RecordId} from '@domain/record/entities';
 
 export type PatientAccessAction = 'read' | 'write' | 'register' | 'basic' | 'appointment';
+
+export type PatientClinicalAccess = {canRead: boolean; canWrite: boolean};
 
 @Injectable()
 export class PatientAccessChecker {
@@ -20,17 +23,13 @@ export class PatientAccessChecker {
     ) {}
 
     async assertCanAccess(actor: Actor, patientId: PatientId, action: PatientAccessAction): Promise<void> {
-        if (await this.isManager(actor)) return;
+        await this.requireAccess(actor, patientId, action);
+    }
 
-        const access = await this.accessRepository.findByMemberAndPatient(actor.clinicMemberId, patientId);
-        const allowed =
-            access !== null &&
-            access.clinicId.equals(actor.clinicId) &&
-            access.memberId.equals(actor.clinicMemberId) &&
-            access.patientId.equals(patientId) &&
-            this.allows(access, action);
+    async clinicalAccessForPatient(actor: Actor, patientId: PatientId): Promise<PatientClinicalAccess> {
+        const access = await this.requireAccess(actor, patientId, 'basic');
 
-        if (!allowed) this.deny();
+        return {canRead: access?.canRead() ?? true, canWrite: access?.canWrite() ?? true};
     }
 
     async assertCanReadDocument(
@@ -112,6 +111,28 @@ export class PatientAccessChecker {
                 .filter((permission) => !permission.canView)
                 .map((permission) => RecordId.from(permission.entityId)),
         };
+    }
+
+    private async requireAccess(
+        actor: Actor,
+        patientId: PatientId,
+        action: PatientAccessAction
+    ): Promise<ClinicPatientAccess | null> {
+        if (await this.isManager(actor)) return null;
+
+        const access = await this.accessRepository.findByMemberAndPatient(actor.clinicMemberId, patientId);
+
+        if (
+            access === null ||
+            !access.clinicId.equals(actor.clinicId) ||
+            !access.memberId.equals(actor.clinicMemberId) ||
+            !access.patientId.equals(patientId) ||
+            !this.allows(access, action)
+        ) {
+            this.deny();
+        }
+
+        return access;
     }
 
     private allows(

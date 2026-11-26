@@ -1,3 +1,4 @@
+export * from '@application/appointment/services/appointment-follow-up.service';
 export * from '@application/appointment/services/call-appointment.service';
 export * from '@application/appointment/services/cancel-appointment.service';
 export * from '@application/appointment/services/checkin-appointment.service';
