@@ -3,9 +3,9 @@ import {CLINIC_CREATION_NOT_ALLOWED, CreateClinicService} from '@application/cli
 import type {Actor} from '@domain/@shared/actor';
 import {AccessDeniedException} from '@domain/@shared/exceptions';
 import {GlobalRole} from '@domain/auth';
+import {ClinicMemberId} from '@domain/clinic-member/entities';
 import type {ClinicRepository} from '@domain/clinic/clinic.repository';
 import {ClinicId} from '@domain/clinic/entities';
-import {ClinicMemberId} from '@domain/clinic-member/entities';
 import type {EventDispatcher} from '@domain/event';
 import {fakeUser} from '@domain/user/entities/__tests__/fake-user';
 import type {UserRepository} from '@domain/user/user.repository';

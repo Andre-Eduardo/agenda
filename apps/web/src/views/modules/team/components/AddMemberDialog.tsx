@@ -51,7 +51,7 @@ export function AddMemberDialog({onClose, onCreated}: AddMemberDialogProps) {
     // membership; public sign-up is closed in production.
     const createAccount = useCreateClinicMemberAccount();
 
-    const isPending = createAccount.isPending;
+    const {isPending} = createAccount;
     const canSubmit = !!name && !!username && !!email && !!password && roles.length > 0 && !isPending;
 
     function toggleRole(role: AssignableRole) {

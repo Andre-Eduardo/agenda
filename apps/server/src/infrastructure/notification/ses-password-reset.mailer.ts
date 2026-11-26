@@ -38,7 +38,9 @@ export class SesPasswordResetMailer implements PasswordResetMailer {
             if (this.config.isProd) {
                 this.logger.error('Password reset e-mail not sent: MAIL_FROM_ADDRESS is not configured.');
             } else {
-                this.logger.warn(`MAIL_FROM_ADDRESS not set; password reset link for ${maskDestination(email.to)}: ${email.resetUrl}`);
+                this.logger.warn(
+                    `MAIL_FROM_ADDRESS not set; password reset link for ${maskDestination(email.to)}: ${email.resetUrl}`
+                );
             }
 
             return false;

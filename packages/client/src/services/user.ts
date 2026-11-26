@@ -32,7 +32,7 @@ import type {ApiProblem, User} from '../models';
 type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 
 /**
- * @summary Signs up a new user
+ * @summary Signs up a new user (gated by SIGN_UP_MODE; closed by default in production)
  */
 export const signUp = (
     signUpUserDto: SignUpUserDto,
@@ -76,7 +76,7 @@ export type SignUpMutationBody = SignUpUserDto;
 export type SignUpMutationError = ErrorType<ApiProblem>;
 
 /**
- * @summary Signs up a new user
+ * @summary Signs up a new user (gated by SIGN_UP_MODE; closed by default in production)
  */
 export const useSignUp = <TError = ErrorType<ApiProblem>, TContext = unknown>(
     options?: {

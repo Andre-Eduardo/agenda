@@ -74,6 +74,7 @@ export function setupApp(app: NestExpressApplication): SetupAppResult {
             )
         );
     }
+
     app.set('query parser', 'extended');
 
     if (configService.isDev || configService.isTest) {
@@ -106,7 +107,8 @@ export function parseTrustProxy(value: string): boolean | number | string {
 }
 
 function buildOpenApiDocument(app: INestApplication, port: number): OpenAPIObject {
-    const config = new DocumentBuilder()        .setTitle('Automo API')
+    const config = new DocumentBuilder()
+        .setTitle('Automo API')
         .setDescription(
             'The backend API for the Automo project' +
                 `<h3>Authentication</h3>

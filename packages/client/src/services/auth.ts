@@ -11,7 +11,7 @@ import {HttpResponse, http} from 'msw';
 import type {RequestHandlerOptions} from 'msw';
 import {apiClient} from '../api-client';
 import type {ErrorType} from '../api-client';
-import type {SignInDto} from '../models';
+import type {RequestPasswordResetDto, ResetPasswordDto, SignInDto} from '../models';
 import type {ApiProblem} from '../models';
 
 type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
@@ -115,6 +115,159 @@ export const useSignOut = <TError = ErrorType<ApiProblem>, TContext = unknown>(
     return useMutation(mutationOptions, queryClient);
 };
 
+/**
+ * @summary Sends a password reset link to the e-mail, if it belongs to an account
+ */
+export const requestPasswordReset = (
+    requestPasswordResetDto: RequestPasswordResetDto,
+    options?: SecondParameter<typeof apiClient>,
+    signal?: AbortSignal
+) => {
+    return apiClient<void>(
+        {
+            url: `/api/v1/auth/password-reset/request`,
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            data: requestPasswordResetDto,
+            signal,
+        },
+        options
+    );
+};
+
+export const getRequestPasswordResetMutationOptions = <TError = ErrorType<ApiProblem>, TContext = unknown>(options?: {
+    mutation?: UseMutationOptions<
+        Awaited<ReturnType<typeof requestPasswordReset>>,
+        TError,
+        {data: RequestPasswordResetDto},
+        TContext
+    >;
+    request?: SecondParameter<typeof apiClient>;
+}): UseMutationOptions<
+    Awaited<ReturnType<typeof requestPasswordReset>>,
+    TError,
+    {data: RequestPasswordResetDto},
+    TContext
+> => {
+    const mutationKey = ['requestPasswordReset'];
+    const {mutation: mutationOptions, request: requestOptions} = options
+        ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
+            ? options
+            : {...options, mutation: {...options.mutation, mutationKey}}
+        : {mutation: {mutationKey}, request: undefined};
+
+    const mutationFn: MutationFunction<
+        Awaited<ReturnType<typeof requestPasswordReset>>,
+        {data: RequestPasswordResetDto}
+    > = (props) => {
+        const {data} = props ?? {};
+
+        return requestPasswordReset(data, requestOptions);
+    };
+
+    return {mutationFn, ...mutationOptions};
+};
+
+export type RequestPasswordResetMutationResult = NonNullable<Awaited<ReturnType<typeof requestPasswordReset>>>;
+export type RequestPasswordResetMutationBody = RequestPasswordResetDto;
+export type RequestPasswordResetMutationError = ErrorType<ApiProblem>;
+
+/**
+ * @summary Sends a password reset link to the e-mail, if it belongs to an account
+ */
+export const useRequestPasswordReset = <TError = ErrorType<ApiProblem>, TContext = unknown>(
+    options?: {
+        mutation?: UseMutationOptions<
+            Awaited<ReturnType<typeof requestPasswordReset>>,
+            TError,
+            {data: RequestPasswordResetDto},
+            TContext
+        >;
+        request?: SecondParameter<typeof apiClient>;
+    },
+    queryClient?: QueryClient
+): UseMutationResult<
+    Awaited<ReturnType<typeof requestPasswordReset>>,
+    TError,
+    {data: RequestPasswordResetDto},
+    TContext
+> => {
+    const mutationOptions = getRequestPasswordResetMutationOptions(options);
+
+    return useMutation(mutationOptions, queryClient);
+};
+
+/**
+ * @summary Sets a new password using the link sent by e-mail
+ */
+export const resetPassword = (
+    resetPasswordDto: ResetPasswordDto,
+    options?: SecondParameter<typeof apiClient>,
+    signal?: AbortSignal
+) => {
+    return apiClient<void>(
+        {
+            url: `/api/v1/auth/password-reset/confirm`,
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            data: resetPasswordDto,
+            signal,
+        },
+        options
+    );
+};
+
+export const getResetPasswordMutationOptions = <TError = ErrorType<ApiProblem>, TContext = unknown>(options?: {
+    mutation?: UseMutationOptions<
+        Awaited<ReturnType<typeof resetPassword>>,
+        TError,
+        {data: ResetPasswordDto},
+        TContext
+    >;
+    request?: SecondParameter<typeof apiClient>;
+}): UseMutationOptions<Awaited<ReturnType<typeof resetPassword>>, TError, {data: ResetPasswordDto}, TContext> => {
+    const mutationKey = ['resetPassword'];
+    const {mutation: mutationOptions, request: requestOptions} = options
+        ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
+            ? options
+            : {...options, mutation: {...options.mutation, mutationKey}}
+        : {mutation: {mutationKey}, request: undefined};
+
+    const mutationFn: MutationFunction<Awaited<ReturnType<typeof resetPassword>>, {data: ResetPasswordDto}> = (
+        props
+    ) => {
+        const {data} = props ?? {};
+
+        return resetPassword(data, requestOptions);
+    };
+
+    return {mutationFn, ...mutationOptions};
+};
+
+export type ResetPasswordMutationResult = NonNullable<Awaited<ReturnType<typeof resetPassword>>>;
+export type ResetPasswordMutationBody = ResetPasswordDto;
+export type ResetPasswordMutationError = ErrorType<ApiProblem>;
+
+/**
+ * @summary Sets a new password using the link sent by e-mail
+ */
+export const useResetPassword = <TError = ErrorType<ApiProblem>, TContext = unknown>(
+    options?: {
+        mutation?: UseMutationOptions<
+            Awaited<ReturnType<typeof resetPassword>>,
+            TError,
+            {data: ResetPasswordDto},
+            TContext
+        >;
+        request?: SecondParameter<typeof apiClient>;
+    },
+    queryClient?: QueryClient
+): UseMutationResult<Awaited<ReturnType<typeof resetPassword>>, TError, {data: ResetPasswordDto}, TContext> => {
+    const mutationOptions = getResetPasswordMutationOptions(options);
+
+    return useMutation(mutationOptions, queryClient);
+};
+
 export const getSignInResponseMockDefault = (overrideResponse: Partial<ApiProblem> = {}): ApiProblem => ({
     title: faker.string.alpha({length: {min: 10, max: 20}}),
     type: faker.internet.url(),
@@ -128,6 +281,30 @@ export const getSignInResponseMockDefault = (overrideResponse: Partial<ApiProble
 });
 
 export const getSignOutResponseMockDefault = (overrideResponse: Partial<ApiProblem> = {}): ApiProblem => ({
+    title: faker.string.alpha({length: {min: 10, max: 20}}),
+    type: faker.internet.url(),
+    detail: faker.string.alpha({length: {min: 10, max: 20}}),
+    status: faker.helpers.arrayElement([
+        400, 401, 402, 403, 404, 405, 406, 407, 408, 409, 410, 411, 412, 413, 414, 415, 416, 417, 418, 421, 422, 423,
+        424, 428, 429, 456, 500, 501, 502, 503, 504, 505, 507, 508,
+    ] as const),
+    instance: faker.string.alpha({length: {min: 10, max: 20}}),
+    ...overrideResponse,
+});
+
+export const getRequestPasswordResetResponseMockDefault = (overrideResponse: Partial<ApiProblem> = {}): ApiProblem => ({
+    title: faker.string.alpha({length: {min: 10, max: 20}}),
+    type: faker.internet.url(),
+    detail: faker.string.alpha({length: {min: 10, max: 20}}),
+    status: faker.helpers.arrayElement([
+        400, 401, 402, 403, 404, 405, 406, 407, 408, 409, 410, 411, 412, 413, 414, 415, 416, 417, 418, 421, 422, 423,
+        424, 428, 429, 456, 500, 501, 502, 503, 504, 505, 507, 508,
+    ] as const),
+    instance: faker.string.alpha({length: {min: 10, max: 20}}),
+    ...overrideResponse,
+});
+
+export const getResetPasswordResponseMockDefault = (overrideResponse: Partial<ApiProblem> = {}): ApiProblem => ({
     title: faker.string.alpha({length: {min: 10, max: 20}}),
     type: faker.internet.url(),
     detail: faker.string.alpha({length: {min: 10, max: 20}}),
@@ -255,4 +432,125 @@ export const getSignOutMockHandlerDefault = (
     );
 };
 
-export const getAuthMock = () => [getSignInMockHandler(), getSignOutMockHandler()];
+export const getRequestPasswordResetMockHandler = (
+    overrideResponse?: void | ((info: Parameters<Parameters<typeof http.post>[1]>[0]) => Promise<void> | void),
+    options?: RequestHandlerOptions
+) => {
+    return http.post(
+        '*/api/v1/auth/password-reset/request',
+        async (info) => {
+            if (typeof overrideResponse === 'function') {
+                await overrideResponse(info);
+            }
+
+            return new HttpResponse(null, {status: 204});
+        },
+        options
+    );
+};
+
+export const getRequestPasswordResetMockHandler204 = (
+    overrideResponse?: void | ((info: Parameters<Parameters<typeof http.post>[1]>[0]) => Promise<void> | void),
+    options?: RequestHandlerOptions
+) => {
+    return http.post(
+        '*/api/v1/auth/password-reset/request',
+        async (info) => {
+            if (typeof overrideResponse === 'function') {
+                await overrideResponse(info);
+            }
+
+            return new HttpResponse(null, {status: 204});
+        },
+        options
+    );
+};
+
+export const getRequestPasswordResetMockHandlerDefault = (
+    overrideResponse?:
+        | ApiProblem
+        | ((info: Parameters<Parameters<typeof http.post>[1]>[0]) => Promise<ApiProblem> | ApiProblem),
+    options?: RequestHandlerOptions
+) => {
+    return http.post(
+        '*/api/v1/auth/password-reset/request',
+        async (info) => {
+            return new HttpResponse(
+                JSON.stringify(
+                    overrideResponse !== undefined
+                        ? typeof overrideResponse === 'function'
+                            ? await overrideResponse(info)
+                            : overrideResponse
+                        : getRequestPasswordResetResponseMockDefault()
+                ),
+                {status: 200, headers: {'Content-Type': 'application/json'}}
+            );
+        },
+        options
+    );
+};
+
+export const getResetPasswordMockHandler = (
+    overrideResponse?: void | ((info: Parameters<Parameters<typeof http.post>[1]>[0]) => Promise<void> | void),
+    options?: RequestHandlerOptions
+) => {
+    return http.post(
+        '*/api/v1/auth/password-reset/confirm',
+        async (info) => {
+            if (typeof overrideResponse === 'function') {
+                await overrideResponse(info);
+            }
+
+            return new HttpResponse(null, {status: 204});
+        },
+        options
+    );
+};
+
+export const getResetPasswordMockHandler204 = (
+    overrideResponse?: void | ((info: Parameters<Parameters<typeof http.post>[1]>[0]) => Promise<void> | void),
+    options?: RequestHandlerOptions
+) => {
+    return http.post(
+        '*/api/v1/auth/password-reset/confirm',
+        async (info) => {
+            if (typeof overrideResponse === 'function') {
+                await overrideResponse(info);
+            }
+
+            return new HttpResponse(null, {status: 204});
+        },
+        options
+    );
+};
+
+export const getResetPasswordMockHandlerDefault = (
+    overrideResponse?:
+        | ApiProblem
+        | ((info: Parameters<Parameters<typeof http.post>[1]>[0]) => Promise<ApiProblem> | ApiProblem),
+    options?: RequestHandlerOptions
+) => {
+    return http.post(
+        '*/api/v1/auth/password-reset/confirm',
+        async (info) => {
+            return new HttpResponse(
+                JSON.stringify(
+                    overrideResponse !== undefined
+                        ? typeof overrideResponse === 'function'
+                            ? await overrideResponse(info)
+                            : overrideResponse
+                        : getResetPasswordResponseMockDefault()
+                ),
+                {status: 200, headers: {'Content-Type': 'application/json'}}
+            );
+        },
+        options
+    );
+};
+
+export const getAuthMock = () => [
+    getSignInMockHandler(),
+    getSignOutMockHandler(),
+    getRequestPasswordResetMockHandler(),
+    getResetPasswordMockHandler(),
+];

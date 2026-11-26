@@ -39,7 +39,7 @@ export function createProtectedUploadsHandlers(
 }
 
 function readToken(request: Request, authCookie: string, tokenProvider: TokenProvider): Token | null {
-    const signedCookies: unknown = request.signedCookies;
+    const {signedCookies}: {signedCookies: unknown} = request;
 
     if (typeof signedCookies !== 'object' || signedCookies === null) return null;
 

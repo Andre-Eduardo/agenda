@@ -4,8 +4,8 @@ import {Authorize, Public} from '@application/@shared/auth';
 import {BypassClinicMember} from '@application/@shared/auth/bypass-clinic-member.decorator';
 import {RequestActor} from '@application/@shared/auth/request-actor.decorator';
 import {ApiOperation} from '@application/@shared/openapi/decorators';
-import {RateLimit} from '@application/@shared/rate-limit';
 import {entityIdParam} from '@application/@shared/openapi/params';
+import {RateLimit} from '@application/@shared/rate-limit';
 import {ValidatedParam} from '@application/@shared/validation';
 import {
     UserDto,

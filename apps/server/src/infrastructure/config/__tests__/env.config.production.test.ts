@@ -1,25 +1,35 @@
 import {EnvConfigService, SignUpMode} from '../env.config.service';
 
+// The loader reads a module-level `process.env`, so the tests mutate it in place instead of replacing it.
+const snapshot = {...process.env};
+
+function setEnv(values: Record<string, string | undefined>): void {
+    for (const key of Object.keys(process.env)) delete process.env[key];
+
+    Object.assign(process.env, snapshot);
+
+    for (const [key, value] of Object.entries(values)) {
+        if (value === undefined) delete process.env[key];
+        else process.env[key] = value;
+    }
+}
+
 describe('Environment configuration in production', () => {
-    const original = process.env;
+    afterEach(() => setEnv({}));
+
     const strongSecret = 'x'.repeat(48);
 
     beforeEach(() => {
-        process.env = {
-            ...original,
+        setEnv({
             NODE_ENV: 'production',
             PUBLIC_BASE_URL: 'https://api.example.com',
             COOKIE_SECRET: strongSecret,
             AUTH_TOKEN_SECRET: `${strongSecret}y`,
-        };
-        delete process.env.SIGN_UP_MODE;
-        delete process.env.SIGN_UP_INVITE_CODE;
-        delete process.env.SWAGGER_ENABLED;
-        delete process.env.RATE_LIMIT_ENABLED;
-    });
-
-    afterEach(() => {
-        process.env = original;
+            SIGN_UP_MODE: undefined,
+            SIGN_UP_INVITE_CODE: undefined,
+            SWAGGER_ENABLED: undefined,
+            RATE_LIMIT_ENABLED: undefined,
+        });
     });
 
     it('loads with strong secrets and safe defaults', () => {
@@ -61,18 +71,16 @@ describe('Environment configuration in production', () => {
 });
 
 describe('Environment configuration outside production', () => {
-    const original = process.env;
-
-    afterEach(() => {
-        process.env = original;
-    });
+    afterEach(() => setEnv({}));
 
     it('falls back to the dev secret and keeps sign-up and Swagger open', () => {
-        process.env = {...original, NODE_ENV: 'development'};
-        delete process.env.COOKIE_SECRET;
-        delete process.env.AUTH_TOKEN_SECRET;
-        delete process.env.SIGN_UP_MODE;
-        delete process.env.SWAGGER_ENABLED;
+        setEnv({
+            NODE_ENV: 'development',
+            COOKIE_SECRET: undefined,
+            AUTH_TOKEN_SECRET: undefined,
+            SIGN_UP_MODE: undefined,
+            SWAGGER_ENABLED: undefined,
+        });
 
         const config = EnvConfigService.load();
 
@@ -83,8 +91,7 @@ describe('Environment configuration outside production', () => {
     });
 
     it('turns rate limits off in the test env by default', () => {
-        process.env = {...original, NODE_ENV: 'test'};
-        delete process.env.RATE_LIMIT_ENABLED;
+        setEnv({NODE_ENV: 'test', RATE_LIMIT_ENABLED: undefined});
 
         expect(EnvConfigService.load().http.rateLimitEnabled).toBe(false);
     });

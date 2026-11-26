@@ -6,9 +6,9 @@ import {RATE_LIMIT_KEY} from '../rate-limit.decorator';
 import {RateLimitGuard} from '../rate-limit.guard';
 import {InMemoryRateLimitStore} from '../rate-limit.store';
 
-function contextFor(request: Record<string, unknown>, setHeader = jest.fn()): ExecutionContext {
-    const handler = () => undefined;
+const handler = (): undefined => undefined;
 
+function contextFor(request: Record<string, unknown>, setHeader = jest.fn()): ExecutionContext {
     return {
         getType: () => 'http',
         getHandler: () => handler,

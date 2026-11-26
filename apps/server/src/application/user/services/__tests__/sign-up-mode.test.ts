@@ -10,20 +10,20 @@ import {SignUpMode} from '../../../../infrastructure/config';
 import type {SignUpUserDto} from '../../dtos';
 import {SIGN_UP_CLOSED, SIGN_UP_INVALID_INVITE, SignUpUserService} from '../sign-up-user.service';
 
+const payload = (inviteCode?: string | null): SignUpUserDto => ({
+    name: 'John Doe',
+    email: Email.create('john.doe@example.com'),
+    username: Username.create('johndoe'),
+    password: '@SecurePassword123',
+    inviteCode,
+});
+
 describe('Sign-up gating', () => {
     const userRepository = mock<UserRepository>();
     const config = mock<EnvConfigService>();
     const service = new SignUpUserService(userRepository, mock<EventDispatcher>(), config);
 
     const actor: UnauthenticatedActor = {userId: null, clinicId: null, clinicMemberId: null, ip: '127.0.0.1'};
-
-    const payload = (inviteCode?: string | null): SignUpUserDto => ({
-        name: 'John Doe',
-        email: Email.create('john.doe@example.com'),
-        username: Username.create('johndoe'),
-        password: '@SecurePassword123',
-        inviteCode,
-    });
 
     function withMode(mode: SignUpMode, inviteCode?: string): void {
         Object.defineProperty(config, 'signUp', {get: () => ({mode, inviteCode}), configurable: true});

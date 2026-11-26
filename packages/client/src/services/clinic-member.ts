@@ -26,7 +26,12 @@ import {HttpResponse, http} from 'msw';
 import type {RequestHandlerOptions} from 'msw';
 import {apiClient} from '../api-client';
 import type {ErrorType} from '../api-client';
-import type {CreateClinicMemberDto, CreateClinicMemberInputDto, ListClinicMembersParams} from '../models';
+import type {
+    CreateClinicMemberAccountDto,
+    CreateClinicMemberDto,
+    CreateClinicMemberInputDto,
+    ListClinicMembersParams,
+} from '../models';
 import type {ApiProblem, ClinicMember, ClinicMemberPermissions} from '../models';
 
 type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
@@ -394,6 +399,93 @@ export const useInviteClinicMember = <TError = ErrorType<ApiProblem>, TContext =
     TContext
 > => {
     const mutationOptions = getInviteClinicMemberMutationOptions(options);
+
+    return useMutation(mutationOptions, queryClient);
+};
+
+/**
+ * @summary Creates a login for a new team member and adds it to the current actor's clinic
+ */
+export const createClinicMemberAccount = (
+    createClinicMemberAccountDto: CreateClinicMemberAccountDto,
+    options?: SecondParameter<typeof apiClient>,
+    signal?: AbortSignal
+) => {
+    return apiClient<ClinicMember>(
+        {
+            url: `/api/v1/clinic-members/accounts`,
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            data: createClinicMemberAccountDto,
+            signal,
+        },
+        options
+    );
+};
+
+export const getCreateClinicMemberAccountMutationOptions = <
+    TError = ErrorType<ApiProblem>,
+    TContext = unknown,
+>(options?: {
+    mutation?: UseMutationOptions<
+        Awaited<ReturnType<typeof createClinicMemberAccount>>,
+        TError,
+        {data: CreateClinicMemberAccountDto},
+        TContext
+    >;
+    request?: SecondParameter<typeof apiClient>;
+}): UseMutationOptions<
+    Awaited<ReturnType<typeof createClinicMemberAccount>>,
+    TError,
+    {data: CreateClinicMemberAccountDto},
+    TContext
+> => {
+    const mutationKey = ['createClinicMemberAccount'];
+    const {mutation: mutationOptions, request: requestOptions} = options
+        ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
+            ? options
+            : {...options, mutation: {...options.mutation, mutationKey}}
+        : {mutation: {mutationKey}, request: undefined};
+
+    const mutationFn: MutationFunction<
+        Awaited<ReturnType<typeof createClinicMemberAccount>>,
+        {data: CreateClinicMemberAccountDto}
+    > = (props) => {
+        const {data} = props ?? {};
+
+        return createClinicMemberAccount(data, requestOptions);
+    };
+
+    return {mutationFn, ...mutationOptions};
+};
+
+export type CreateClinicMemberAccountMutationResult = NonNullable<
+    Awaited<ReturnType<typeof createClinicMemberAccount>>
+>;
+export type CreateClinicMemberAccountMutationBody = CreateClinicMemberAccountDto;
+export type CreateClinicMemberAccountMutationError = ErrorType<ApiProblem>;
+
+/**
+ * @summary Creates a login for a new team member and adds it to the current actor's clinic
+ */
+export const useCreateClinicMemberAccount = <TError = ErrorType<ApiProblem>, TContext = unknown>(
+    options?: {
+        mutation?: UseMutationOptions<
+            Awaited<ReturnType<typeof createClinicMemberAccount>>,
+            TError,
+            {data: CreateClinicMemberAccountDto},
+            TContext
+        >;
+        request?: SecondParameter<typeof apiClient>;
+    },
+    queryClient?: QueryClient
+): UseMutationResult<
+    Awaited<ReturnType<typeof createClinicMemberAccount>>,
+    TError,
+    {data: CreateClinicMemberAccountDto},
+    TContext
+> => {
+    const mutationOptions = getCreateClinicMemberAccountMutationOptions(options);
 
     return useMutation(mutationOptions, queryClient);
 };
@@ -908,6 +1000,52 @@ export const getInviteClinicMemberResponseMockDefault = (overrideResponse: Parti
     ...overrideResponse,
 });
 
+export const getCreateClinicMemberAccountResponseMock = (
+    overrideResponse: Partial<ClinicMember> = {}
+): ClinicMember => ({
+    id: faker.string.uuid(),
+    createdAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
+    updatedAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
+    clinicId: faker.string.uuid(),
+    userId: faker.string.uuid(),
+    roles: faker.helpers.arrayElements(['OWNER', 'ADMIN', 'PROFESSIONAL', 'SECRETARY', 'VIEWER'] as const),
+    displayName: faker.helpers.arrayElement([faker.string.alpha({length: {min: 10, max: 20}}), null]),
+    color: faker.helpers.arrayElement([faker.string.alpha({length: {min: 10, max: 20}}), null]),
+    isActive: faker.datatype.boolean(),
+    invitedByMemberId: faker.helpers.arrayElement([faker.string.uuid(), null]),
+    ...overrideResponse,
+});
+
+export const getCreateClinicMemberAccountResponseMock201 = (
+    overrideResponse: Partial<ClinicMember> = {}
+): ClinicMember => ({
+    id: faker.string.uuid(),
+    createdAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
+    updatedAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
+    clinicId: faker.string.uuid(),
+    userId: faker.string.uuid(),
+    roles: faker.helpers.arrayElements(['OWNER', 'ADMIN', 'PROFESSIONAL', 'SECRETARY', 'VIEWER'] as const),
+    displayName: faker.helpers.arrayElement([faker.string.alpha({length: {min: 10, max: 20}}), null]),
+    color: faker.helpers.arrayElement([faker.string.alpha({length: {min: 10, max: 20}}), null]),
+    isActive: faker.datatype.boolean(),
+    invitedByMemberId: faker.helpers.arrayElement([faker.string.uuid(), null]),
+    ...overrideResponse,
+});
+
+export const getCreateClinicMemberAccountResponseMockDefault = (
+    overrideResponse: Partial<ApiProblem> = {}
+): ApiProblem => ({
+    title: faker.string.alpha({length: {min: 10, max: 20}}),
+    type: faker.internet.url(),
+    detail: faker.string.alpha({length: {min: 10, max: 20}}),
+    status: faker.helpers.arrayElement([
+        400, 401, 402, 403, 404, 405, 406, 407, 408, 409, 410, 411, 412, 413, 414, 415, 416, 417, 418, 421, 422, 423,
+        424, 428, 429, 456, 500, 501, 502, 503, 504, 505, 507, 508,
+    ] as const),
+    instance: faker.string.alpha({length: {min: 10, max: 20}}),
+    ...overrideResponse,
+});
+
 export const getGetCurrentClinicMemberResponseMock = (overrideResponse: Partial<ClinicMember> = {}): ClinicMember => ({
     id: faker.string.uuid(),
     createdAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
@@ -1200,6 +1338,78 @@ export const getInviteClinicMemberMockHandlerDefault = (
     );
 };
 
+export const getCreateClinicMemberAccountMockHandler = (
+    overrideResponse?:
+        | ClinicMember
+        | ((info: Parameters<Parameters<typeof http.post>[1]>[0]) => Promise<ClinicMember> | ClinicMember),
+    options?: RequestHandlerOptions
+) => {
+    return http.post(
+        '*/api/v1/clinic-members/accounts',
+        async (info) => {
+            return new HttpResponse(
+                JSON.stringify(
+                    overrideResponse !== undefined
+                        ? typeof overrideResponse === 'function'
+                            ? await overrideResponse(info)
+                            : overrideResponse
+                        : getCreateClinicMemberAccountResponseMock()
+                ),
+                {status: 201, headers: {'Content-Type': 'application/json'}}
+            );
+        },
+        options
+    );
+};
+
+export const getCreateClinicMemberAccountMockHandler201 = (
+    overrideResponse?:
+        | ClinicMember
+        | ((info: Parameters<Parameters<typeof http.post>[1]>[0]) => Promise<ClinicMember> | ClinicMember),
+    options?: RequestHandlerOptions
+) => {
+    return http.post(
+        '*/api/v1/clinic-members/accounts',
+        async (info) => {
+            return new HttpResponse(
+                JSON.stringify(
+                    overrideResponse !== undefined
+                        ? typeof overrideResponse === 'function'
+                            ? await overrideResponse(info)
+                            : overrideResponse
+                        : getCreateClinicMemberAccountResponseMock201()
+                ),
+                {status: 201, headers: {'Content-Type': 'application/json'}}
+            );
+        },
+        options
+    );
+};
+
+export const getCreateClinicMemberAccountMockHandlerDefault = (
+    overrideResponse?:
+        | ApiProblem
+        | ((info: Parameters<Parameters<typeof http.post>[1]>[0]) => Promise<ApiProblem> | ApiProblem),
+    options?: RequestHandlerOptions
+) => {
+    return http.post(
+        '*/api/v1/clinic-members/accounts',
+        async (info) => {
+            return new HttpResponse(
+                JSON.stringify(
+                    overrideResponse !== undefined
+                        ? typeof overrideResponse === 'function'
+                            ? await overrideResponse(info)
+                            : overrideResponse
+                        : getCreateClinicMemberAccountResponseMockDefault()
+                ),
+                {status: 200, headers: {'Content-Type': 'application/json'}}
+            );
+        },
+        options
+    );
+};
+
 export const getGetCurrentClinicMemberMockHandler = (
     overrideResponse?:
         | ClinicMember
@@ -1352,6 +1562,7 @@ export const getClinicMemberMock = () => [
     getCreateClinicMemberMockHandler(),
     getListClinicMembersMockHandler(),
     getInviteClinicMemberMockHandler(),
+    getCreateClinicMemberAccountMockHandler(),
     getGetCurrentClinicMemberMockHandler(),
     getGetCurrentClinicMemberPermissionsMockHandler(),
 ];

@@ -26,7 +26,9 @@ import { Route as patientCallPagesSettingsIndexRouteImport } from './views/modul
 import { Route as patientsPagesNewIndexRouteImport } from './views/modules/patients/pages/new/index'
 import { Route as patientsPagesDetailIndexRouteImport } from './views/modules/patients/pages/detail/index'
 import { Route as adminPagesIndexIndexRouteImport } from './views/modules/admin/pages/index/index'
+import { Route as authPagesResetPasswordIndexRouteImport } from './views/modules/auth/pages/reset-password/index'
 import { Route as authPagesLoginIndexRouteImport } from './views/modules/auth/pages/login/index'
+import { Route as authPagesForgotPasswordIndexRouteImport } from './views/modules/auth/pages/forgot-password/index'
 import { Route as patientsPagesEditIndexRouteImport } from './views/modules/patients/pages/edit/index'
 import { Route as adminPagesDetailIndexRouteImport } from './views/modules/admin/pages/detail/index'
 import { Route as patientsPagesRecordsNewIndexRouteImport } from './views/modules/patients/pages/records/new/index'
@@ -125,11 +127,23 @@ const adminPagesIndexIndexRoute = adminPagesIndexIndexRouteImport.update({
   path: '/admin/clinics',
   getParentRoute: () => DotDotLayoutsStackedLayoutIndexRoute,
 } as any)
+const authPagesResetPasswordIndexRoute =
+  authPagesResetPasswordIndexRouteImport.update({
+    id: '/auth/reset-password',
+    path: '/auth/reset-password',
+    getParentRoute: () => DotDotLayoutsAuthLayoutIndexRoute,
+  } as any)
 const authPagesLoginIndexRoute = authPagesLoginIndexRouteImport.update({
   id: '/auth/login',
   path: '/auth/login',
   getParentRoute: () => DotDotLayoutsAuthLayoutIndexRoute,
 } as any)
+const authPagesForgotPasswordIndexRoute =
+  authPagesForgotPasswordIndexRouteImport.update({
+    id: '/auth/forgot-password',
+    path: '/auth/forgot-password',
+    getParentRoute: () => DotDotLayoutsAuthLayoutIndexRoute,
+  } as any)
 const patientsPagesEditIndexRoute = patientsPagesEditIndexRouteImport.update({
   id: '/patients/$patientId/edit',
   path: '/patients/$patientId/edit',
@@ -164,7 +178,9 @@ export interface FileRoutesByFullPath {
   '/reception': typeof receptionPagesIndexIndexRoute
   '/settings': typeof settingsPagesIndexIndexRoute
   '/team': typeof teamPagesIndexIndexRoute
+  '/auth/forgot-password': typeof authPagesForgotPasswordIndexRoute
   '/auth/login': typeof authPagesLoginIndexRoute
+  '/auth/reset-password': typeof authPagesResetPasswordIndexRoute
   '/admin/clinics': typeof adminPagesIndexIndexRoute
   '/patients/$patientId': typeof patientsPagesDetailIndexRoute
   '/patients/new': typeof patientsPagesNewIndexRoute
@@ -186,7 +202,9 @@ export interface FileRoutesByTo {
   '/reception': typeof receptionPagesIndexIndexRoute
   '/settings': typeof settingsPagesIndexIndexRoute
   '/team': typeof teamPagesIndexIndexRoute
+  '/auth/forgot-password': typeof authPagesForgotPasswordIndexRoute
   '/auth/login': typeof authPagesLoginIndexRoute
+  '/auth/reset-password': typeof authPagesResetPasswordIndexRoute
   '/admin/clinics': typeof adminPagesIndexIndexRoute
   '/patients/$patientId': typeof patientsPagesDetailIndexRoute
   '/patients/new': typeof patientsPagesNewIndexRoute
@@ -211,7 +229,9 @@ export interface FileRoutesById {
   '/_stackedLayout/reception': typeof receptionPagesIndexIndexRoute
   '/_stackedLayout/settings': typeof settingsPagesIndexIndexRoute
   '/_stackedLayout/team': typeof teamPagesIndexIndexRoute
+  '/_auth/auth/forgot-password': typeof authPagesForgotPasswordIndexRoute
   '/_auth/auth/login': typeof authPagesLoginIndexRoute
+  '/_auth/auth/reset-password': typeof authPagesResetPasswordIndexRoute
   '/_stackedLayout/admin/clinics': typeof adminPagesIndexIndexRoute
   '/_stackedLayout/patients/$patientId': typeof patientsPagesDetailIndexRoute
   '/_stackedLayout/patients/new': typeof patientsPagesNewIndexRoute
@@ -235,7 +255,9 @@ export interface FileRouteTypes {
     | '/reception'
     | '/settings'
     | '/team'
+    | '/auth/forgot-password'
     | '/auth/login'
+    | '/auth/reset-password'
     | '/admin/clinics'
     | '/patients/$patientId'
     | '/patients/new'
@@ -257,7 +279,9 @@ export interface FileRouteTypes {
     | '/reception'
     | '/settings'
     | '/team'
+    | '/auth/forgot-password'
     | '/auth/login'
+    | '/auth/reset-password'
     | '/admin/clinics'
     | '/patients/$patientId'
     | '/patients/new'
@@ -281,7 +305,9 @@ export interface FileRouteTypes {
     | '/_stackedLayout/reception'
     | '/_stackedLayout/settings'
     | '/_stackedLayout/team'
+    | '/_auth/auth/forgot-password'
     | '/_auth/auth/login'
+    | '/_auth/auth/reset-password'
     | '/_stackedLayout/admin/clinics'
     | '/_stackedLayout/patients/$patientId'
     | '/_stackedLayout/patients/new'
@@ -420,11 +446,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof adminPagesIndexIndexRouteImport
       parentRoute: typeof DotDotLayoutsStackedLayoutIndexRoute
     }
+    '/_auth/auth/reset-password': {
+      id: '/_auth/auth/reset-password'
+      path: '/auth/reset-password'
+      fullPath: '/auth/reset-password'
+      preLoaderRoute: typeof authPagesResetPasswordIndexRouteImport
+      parentRoute: typeof DotDotLayoutsAuthLayoutIndexRoute
+    }
     '/_auth/auth/login': {
       id: '/_auth/auth/login'
       path: '/auth/login'
       fullPath: '/auth/login'
       preLoaderRoute: typeof authPagesLoginIndexRouteImport
+      parentRoute: typeof DotDotLayoutsAuthLayoutIndexRoute
+    }
+    '/_auth/auth/forgot-password': {
+      id: '/_auth/auth/forgot-password'
+      path: '/auth/forgot-password'
+      fullPath: '/auth/forgot-password'
+      preLoaderRoute: typeof authPagesForgotPasswordIndexRouteImport
       parentRoute: typeof DotDotLayoutsAuthLayoutIndexRoute
     }
     '/_stackedLayout/patients/$patientId/edit': {
@@ -459,12 +499,16 @@ declare module '@tanstack/react-router' {
 }
 
 interface DotDotLayoutsAuthLayoutIndexRouteChildren {
+  authPagesForgotPasswordIndexRoute: typeof authPagesForgotPasswordIndexRoute
   authPagesLoginIndexRoute: typeof authPagesLoginIndexRoute
+  authPagesResetPasswordIndexRoute: typeof authPagesResetPasswordIndexRoute
 }
 
 const DotDotLayoutsAuthLayoutIndexRouteChildren: DotDotLayoutsAuthLayoutIndexRouteChildren =
   {
+    authPagesForgotPasswordIndexRoute: authPagesForgotPasswordIndexRoute,
     authPagesLoginIndexRoute: authPagesLoginIndexRoute,
+    authPagesResetPasswordIndexRoute: authPagesResetPasswordIndexRoute,
   }
 
 const DotDotLayoutsAuthLayoutIndexRouteWithChildren =

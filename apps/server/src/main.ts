@@ -27,6 +27,7 @@ async function bootstrap() {
     const appUrl = await app.getUrl();
 
     logger.info(`Application running at ${appUrl}`);
+
     if (docsPath !== null) {
         logger.info(`API documentation available at ${appUrl}/${docsPath}`);
     }

@@ -53,7 +53,7 @@ export class RateLimitGuard implements CanActivate {
             return request.ip ?? request.socket.remoteAddress ?? 'unknown';
         }
 
-        const body: unknown = request.body;
+        const {body}: {body: unknown} = request;
 
         if (typeof body !== 'object' || body === null) return null;
 

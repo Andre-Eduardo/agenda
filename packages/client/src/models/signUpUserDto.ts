@@ -11,4 +11,9 @@ export type SignUpUserDto = {
     username: string;
     email: string;
     password: string;
+    /**
+     * @maxLength 256
+     * @nullable
+     */
+    inviteCode?: string | null;
 };

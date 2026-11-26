@@ -51,7 +51,11 @@ const envConfigShape = z.object({
     }),
     passwordReset: z.object({
         /** Lifetime of the e-mailed reset link, in seconds. */
-        tokenExpiration: z.coerce.number().int().positive().default(30 * 60),
+        tokenExpiration: z.coerce
+            .number()
+            .int()
+            .positive()
+            .default(30 * 60),
         /** Base URL of the web app; the reset link points to `${webAppUrl}/auth/reset-password`. */
         webAppUrl: z.string().url().default('http://localhost:5000'),
     }),

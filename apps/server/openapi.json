@@ -129,6 +129,76 @@
         ]
       }
     },
+    "/api/v1/auth/password-reset/request": {
+      "post": {
+        "operationId": "requestPasswordReset",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RequestPasswordResetDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Request accepted. The answer is the same whether or not the e-mail is registered."
+          },
+          "default": {
+            "description": "Request failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Sends a password reset link to the e-mail, if it belongs to an account",
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/api/v1/auth/password-reset/confirm": {
+      "post": {
+        "operationId": "resetPassword",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResetPasswordDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Password changed"
+          },
+          "default": {
+            "description": "Request failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Sets a new password using the link sent by e-mail",
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
     "/api/v1/clinics": {
       "post": {
         "operationId": "createClinic",
@@ -483,6 +553,48 @@
           }
         },
         "summary": "Invites a new member into the current actor's clinic",
+        "tags": [
+          "ClinicMember"
+        ]
+      }
+    },
+    "/api/v1/clinic-members/accounts": {
+      "post": {
+        "operationId": "createClinicMemberAccount",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateClinicMemberAccountDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Member created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClinicMember"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Request failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Creates a login for a new team member and adds it to the current actor's clinic",
         "tags": [
           "ClinicMember"
         ]
@@ -1160,7 +1272,7 @@
             }
           }
         },
-        "summary": "Signs up a new user",
+        "summary": "Signs up a new user (gated by SIGN_UP_MODE; closed by default in production)",
         "tags": [
           "User"
         ]
@@ -9930,6 +10042,36 @@
           "password"
         ]
       },
+      "RequestPasswordResetDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "example": "john.doe@example.com"
+          }
+        },
+        "required": [
+          "email"
+        ]
+      },
+      "ResetPasswordDto": {
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 4096
+          },
+          "newPassword": {
+            "type": "string",
+            "example": "J0hn@d03"
+          }
+        },
+        "required": [
+          "token",
+          "newPassword"
+        ]
+      },
       "CreateClinicDto": {
         "type": "object",
         "properties": {
@@ -10456,6 +10598,61 @@
           "roles"
         ]
       },
+      "CreateClinicMemberAccountDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "example": "Maria Silva"
+          },
+          "username": {
+            "type": "string",
+            "example": "john_doe"
+          },
+          "email": {
+            "type": "string",
+            "example": "john.doe@example.com"
+          },
+          "password": {
+            "type": "string",
+            "example": "J0hn@d03"
+          },
+          "roles": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "OWNER",
+                "ADMIN",
+                "PROFESSIONAL",
+                "SECRETARY",
+                "VIEWER"
+              ]
+            },
+            "minItems": 1
+          },
+          "displayName": {
+            "type": "string",
+            "nullable": true
+          },
+          "color": {
+            "type": "string",
+            "nullable": true
+          },
+          "acceptExtraCharge": {
+            "type": "boolean",
+            "default": false
+          }
+        },
+        "required": [
+          "name",
+          "username",
+          "email",
+          "password",
+          "roles"
+        ]
+      },
       "ClinicMemberPermissions": {
         "type": "object",
         "properties": {
@@ -10928,6 +11125,11 @@
           "password": {
             "type": "string",
             "example": "J0hn@d03"
+          },
+          "inviteCode": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 256
           }
         },
         "required": [
