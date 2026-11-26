@@ -1,4 +1,4 @@
-import {Injectable} from '@nestjs/common';
+import {Inject, Injectable} from '@nestjs/common';
 import {InvalidInputException, ResourceNotFoundException} from '@domain/@shared/exceptions';
 import type {ClinicId} from '@domain/clinic/entities';
 import type {PatientCallIdentity} from '@domain/patient-call/patient-call.repository';
@@ -18,7 +18,7 @@ function luminance(hex: string): number {
 
 @Injectable()
 export class PatientCallPanelService {
-    constructor(private readonly repository: PatientCallRepository) {}
+    constructor(@Inject(PatientCallRepository) private readonly repository: PatientCallRepository) {}
 
     async getAvailability(clinicId: ClinicId) {
         const {enabled, publicToken} = await this.repository.getPanel(clinicId);

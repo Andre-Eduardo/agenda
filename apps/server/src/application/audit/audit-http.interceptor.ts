@@ -1,4 +1,4 @@
-import {CallHandler, ExecutionContext, HttpException, Injectable, NestInterceptor} from '@nestjs/common';
+import {CallHandler, ExecutionContext, HttpException, Inject, Injectable, NestInterceptor} from '@nestjs/common';
 import {Request, Response} from 'express';
 import {catchError, from, mergeMap, Observable, throwError} from 'rxjs';
 import {ZodError} from 'zod';
@@ -16,7 +16,8 @@ import {AuditLogRepository, NewAuditLogEntry} from '@domain/audit/audit-log.repo
 /** Records an authenticated operation before its HTTP response is sent. */
 @Injectable()
 export class AuditHttpInterceptor implements NestInterceptor {
-    constructor(private readonly auditLogRepository: AuditLogRepository) {}
+    // AuditLogRepository is an interface + Symbol token: tsc emits `Object` as metadata, so inject explicitly.
+    constructor(@Inject(AuditLogRepository) private readonly auditLogRepository: AuditLogRepository) {}
 
     intercept(context: ExecutionContext, next: CallHandler): Observable<unknown> {
         const request = context.switchToHttp().getRequest<Request>();

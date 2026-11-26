@@ -10,7 +10,6 @@ pipeline {
 
     environment {
         HOME = '.'
-        npm_config_cache = 'npm-cache'
         CI = 'true'
         BUILD_TAG = getNormalizedBuildTag()
         POSTGRES_CONTAINER = "postgres-${BUILD_TAG}"
@@ -26,16 +25,8 @@ pipeline {
 
         stage('Install Dependencies') {
             steps {
-                withCredentials([string(credentialsId: 'devops-nexus', variable: 'TOKEN')]) {
-                    sh '''
-                        echo "@ecxus:registry=http://ecxus.ddns.net:8081/repository/npm-private/" >> ~/.npmrc
-                        echo "//ecxus.ddns.net:8081/repository/npm-private/:_auth=$TOKEN" >> ~/.npmrc
-
-                        pnpm install
-
-                        rm -rf ~/.npmrc
-                    '''
-                }
+                // All dependencies are public (npmjs.org); no private registry credentials are needed.
+                sh label: 'Install', script: 'pnpm install --frozen-lockfile'
             }
         }
 
@@ -44,7 +35,7 @@ pipeline {
             parallel {
                 stage('Type check') {
                     steps {
-                        sh label: 'Type check', script: 'pnpm -F @automo/server typecheck'
+                        sh label: 'Type check', script: 'pnpm run typecheck'
                     }
                 }
 
@@ -56,7 +47,8 @@ pipeline {
 
                 stage('Unit tests') {
                     steps {
-                        sh label: 'Unit tests', script: 'pnpm -F @automo/server test'
+                        sh label: 'Unit tests', script: 'pnpm -F @agenda-app/server test'
+                        sh label: 'Backup scripts tests', script: 'node --test ops/backup/agenda-backup.test.mjs ops/backup/scheduler.test.mjs'
                     }
                 }
 
@@ -67,12 +59,12 @@ pipeline {
                                 docker run -d --name $POSTGRES_CONTAINER \\
                                     -e POSTGRES_PASSWORD=postgres \\
                                     --network=jenkins \\
-                                    postgres:16-alpine \\
+                                    pgvector/pgvector:pg16 \\
                                     -c fsync=off -c synchronous_commit=off -c full_page_writes=off
                             """
                         }
                         withEnv(["DATABASE_HOST=${env.POSTGRES_CONTAINER}"]) {
-                            sh label: 'Integration tests', script: 'pnpm -F @automo/server test:integration'
+                            sh label: 'Integration tests', script: 'pnpm -F @agenda-app/server test:integration'
                         }
                     }
                 }
@@ -82,6 +74,17 @@ pipeline {
         stage('Build') {
             steps {
                 sh label: 'Build', script: 'pnpm run build'
+            }
+        }
+
+        stage('Docker images') {
+            when {
+                branch 'master'
+            }
+            steps {
+                sh label: 'Server image', script: 'docker build -f apps/server/Dockerfile -t agenda/server:${GIT_COMMIT} .'
+                sh label: 'Web image', script: 'docker build -f apps/web/Dockerfile -t agenda/web:${GIT_COMMIT} .'
+                sh label: 'Backup image', script: 'docker build -f ops/backup/Dockerfile -t agenda/backup:${GIT_COMMIT} .'
             }
         }
     }

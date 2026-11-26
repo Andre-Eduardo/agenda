@@ -25,6 +25,7 @@ import {DocumentPermissionModule} from '@application/document-permission/documen
 import {EventModule} from '@application/event/event.module';
 import {FinancialReportModule} from '@application/financial-report/financial-report.module';
 import {FormTemplateModule} from '@application/form-template/form-template.module';
+import {HealthModule} from '@application/health/health.module';
 import {ImportedDocumentModule} from '@application/imported-document/imported-document.module';
 import {InsuranceClaimModule} from '@application/insurance-claim/insurance-claim.module';
 import {KnowledgeBaseModule} from '@application/knowledge-base/knowledge-base.module';
@@ -126,6 +127,7 @@ const guards: Provider[] = [
 @Module({
     imports: [
         InfrastructureModule,
+        HealthModule,
         AuditModule,
         EventModule,
         AuthModule,

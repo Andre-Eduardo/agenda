@@ -7,6 +7,7 @@
     "agenda-app",
     "typescript"
   ],
+  "packageManager": "pnpm@11.29.0",
   "engines": {
     "node": ">=24",
     "pnpm": ">=11"
