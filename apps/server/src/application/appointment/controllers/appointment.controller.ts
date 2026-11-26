@@ -7,6 +7,7 @@ import {entityIdParam} from '@application/@shared/openapi/params';
 import {ValidatedParam, ZodValidationPipe} from '@application/@shared/validation';
 import {
     AppointmentDto,
+    CheckinAppointmentResultDto,
     AppointmentFollowUpDto,
     followUpRecordIdSchema,
     AppointmentStatusTransitionDto,
@@ -193,19 +194,19 @@ export class AppointmentController {
     @ApiOperation({
         summary: 'Checks in a patient at the reception (SCHEDULED/CONFIRMED → ARRIVED)',
         parameters: [entityIdParam('Appointment ID')],
-        responses: [{status: 200, description: 'Patient checked in', type: AppointmentDto}],
+        responses: [{status: 200, description: 'Patient checked in', type: CheckinAppointmentResultDto}],
     })
     @Authorize(AppointmentPermission.CHECKIN)
     @Patch(':id/checkin')
     checkinAppointment(
         @RequestActor() actor: Actor,
         @ValidatedParam('id', checkinAppointmentSchema.shape.id) id: AppointmentId
-    ): Promise<AppointmentDto> {
+    ): Promise<CheckinAppointmentResultDto> {
         return this.checkinAppointmentService.execute({actor, payload: {id}});
     }
 
     @ApiOperation({
-        summary: 'Calls the patient to the room (ARRIVED → IN_PROGRESS)',
+        summary: 'Starts an appointment using the legacy reception flow (ARRIVED → IN_PROGRESS)',
         parameters: [entityIdParam('Appointment ID')],
         responses: [{status: 200, description: 'Patient called', type: AppointmentDto}],
     })
@@ -216,6 +217,20 @@ export class AppointmentController {
         @ValidatedParam('id', callAppointmentSchema.shape.id) id: AppointmentId
     ): Promise<AppointmentDto> {
         return this.callAppointmentService.execute({actor, payload: {id}});
+    }
+
+    @ApiOperation({
+        summary: 'Starts care for a checked-in appointment (ARRIVED → IN_PROGRESS)',
+        parameters: [entityIdParam('Appointment ID')],
+        responses: [{status: 200, description: 'Care started', type: AppointmentDto}],
+    })
+    @Authorize(AppointmentPermission.START)
+    @Patch(':id/start')
+    startAppointment(
+        @RequestActor() actor: Actor,
+        @ValidatedParam('id', callAppointmentSchema.shape.id) id: AppointmentId
+    ): Promise<AppointmentDto> {
+        return this.callAppointmentService.start({actor, payload: {id}});
     }
 
     @ApiOperation({

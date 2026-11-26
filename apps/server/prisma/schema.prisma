@@ -134,6 +134,7 @@ model Clinic {
   knowledgeChunks           KnowledgeChunk[]
   patientAddresses          PatientAddress[]
   insurancePlans            InsurancePlan[]
+  patientCallPanel          PatientCallPanel?
   reminderConfig            ClinicReminderConfig?
   reminders                 AppointmentReminder[]
   recordAmendments          RecordAmendment[]
@@ -784,6 +785,7 @@ model Appointment {
   reminders          AppointmentReminder[]
   clinicalDocuments  ClinicalDocument[]
   payment            AppointmentPayment?
+  patientCallEntry   PatientCallEntry?
 
   @@index([clinicId], name: "appointment_clinic_idx")
   @@index([attendedByMemberId], name: "appointment_attended_by_idx")
@@ -791,6 +793,63 @@ model Appointment {
   @@index([clinicId, procedureId])
   @@index([clinicId, followUpFromRecordId], map: "appointment_follow_up_source_idx")
   @@map("appointment")
+}
+
+/// A single public display and waiting queue per clinic.
+model PatientCallPanel {
+  clinicId           String   @id @map("clinic_id") @db.Uuid
+  clinic             Clinic   @relation(fields: [clinicId], references: [id], onDelete: Cascade)
+  publicToken        String?  @unique @map("public_token") @db.Char(64)
+  enabledAt          DateTime? @map("enabled_at")
+  title              String   @db.VarChar(80)
+  message            String   @db.VarChar(160)
+  foregroundColor    String   @map("foreground_color") @db.Char(7)
+  backgroundColor    String   @map("background_color") @db.Char(7)
+  useClinicLogo      Boolean  @map("use_clinic_logo")
+  soundEnabled       Boolean  @map("sound_enabled")
+  displaySeconds     Int      @map("display_seconds")
+  nextTicket         Int      @default(0) @map("next_ticket")
+  entries            PatientCallEntry[]
+  announcements      PatientCallAnnouncement[]
+
+  @@map("patient_call_panel")
+}
+
+model PatientCallEntry {
+  appointmentId      String   @id @map("appointment_id") @db.Uuid
+  appointment        Appointment @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
+  clinicId           String   @map("clinic_id") @db.Uuid
+  panel              PatientCallPanel @relation(fields: [clinicId], references: [clinicId], onDelete: Cascade)
+  ticket             Int
+  arrivedAt          DateTime @map("arrived_at")
+  callCount          Int      @default(0) @map("call_count")
+  destination        String?  @db.VarChar(80)
+  closedAt           DateTime? @map("closed_at")
+  removalReason      String?  @map("removal_reason") @db.VarChar(250)
+  removedByMemberId  String?  @map("removed_by_member_id") @db.Uuid
+  announcements      PatientCallAnnouncement[]
+
+  @@unique([clinicId, ticket])
+  @@index([clinicId, closedAt, arrivedAt, ticket])
+  @@map("patient_call_entry")
+}
+
+/// Immutable operational log. Actor ID is a snapshot to preserve the audit trail.
+model PatientCallAnnouncement {
+  id                 String   @id @db.Uuid
+  clinicId           String   @map("clinic_id") @db.Uuid
+  panel              PatientCallPanel @relation(fields: [clinicId], references: [clinicId], onDelete: Cascade)
+  appointmentId      String   @map("appointment_id") @db.Uuid
+  entry              PatientCallEntry @relation(fields: [appointmentId], references: [appointmentId], onDelete: Cascade)
+  actorMemberId      String   @map("actor_member_id") @db.Uuid
+  destination        String   @db.VarChar(80)
+  announcedAt        DateTime @map("announced_at")
+  visibleFrom        DateTime @map("visible_from")
+  expiresAt          DateTime @map("expires_at")
+
+  @@index([clinicId, visibleFrom])
+  @@index([appointmentId])
+  @@map("patient_call_announcement")
 }
 
 /// Operational history of status changes. IDs are snapshots so removing a

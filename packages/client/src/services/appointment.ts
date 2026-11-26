@@ -39,6 +39,7 @@ import type {
     Appointment,
     AppointmentFollowUp,
     AppointmentStatusTransition,
+    CheckinAppointmentResult,
     ClinicMember,
     PaginatedAppointments,
     PaginatedOperationalAppointments,
@@ -1556,7 +1557,7 @@ export const useCancelAppointment = <TError = ErrorType<ApiProblem>, TContext = 
  * @summary Checks in a patient at the reception (SCHEDULED/CONFIRMED → ARRIVED)
  */
 export const checkinAppointment = (id: string, options?: SecondParameter<typeof apiClient>) => {
-    return apiClient<Appointment>({url: `/api/v1/appointments/${id}/checkin`, method: 'PATCH'}, options);
+    return apiClient<CheckinAppointmentResult>({url: `/api/v1/appointments/${id}/checkin`, method: 'PATCH'}, options);
 };
 
 export const getCheckinAppointmentMutationOptions = <TError = ErrorType<ApiProblem>, TContext = unknown>(options?: {
@@ -1599,7 +1600,7 @@ export const useCheckinAppointment = <TError = ErrorType<ApiProblem>, TContext =
 };
 
 /**
- * @summary Calls the patient to the room (ARRIVED → IN_PROGRESS)
+ * @summary Starts an appointment using the legacy reception flow (ARRIVED → IN_PROGRESS)
  */
 export const callAppointment = (id: string, options?: SecondParameter<typeof apiClient>) => {
     return apiClient<Appointment>({url: `/api/v1/appointments/${id}/call`, method: 'PATCH'}, options);
@@ -1630,7 +1631,7 @@ export type CallAppointmentMutationResult = NonNullable<Awaited<ReturnType<typeo
 export type CallAppointmentMutationError = ErrorType<ApiProblem>;
 
 /**
- * @summary Calls the patient to the room (ARRIVED → IN_PROGRESS)
+ * @summary Starts an appointment using the legacy reception flow (ARRIVED → IN_PROGRESS)
  */
 export const useCallAppointment = <TError = ErrorType<ApiProblem>, TContext = unknown>(
     options?: {
@@ -1640,6 +1641,52 @@ export const useCallAppointment = <TError = ErrorType<ApiProblem>, TContext = un
     queryClient?: QueryClient
 ): UseMutationResult<Awaited<ReturnType<typeof callAppointment>>, TError, {id: string}, TContext> => {
     const mutationOptions = getCallAppointmentMutationOptions(options);
+
+    return useMutation(mutationOptions, queryClient);
+};
+
+/**
+ * @summary Starts care for a checked-in appointment (ARRIVED → IN_PROGRESS)
+ */
+export const startAppointment = (id: string, options?: SecondParameter<typeof apiClient>) => {
+    return apiClient<Appointment>({url: `/api/v1/appointments/${id}/start`, method: 'PATCH'}, options);
+};
+
+export const getStartAppointmentMutationOptions = <TError = ErrorType<ApiProblem>, TContext = unknown>(options?: {
+    mutation?: UseMutationOptions<Awaited<ReturnType<typeof startAppointment>>, TError, {id: string}, TContext>;
+    request?: SecondParameter<typeof apiClient>;
+}): UseMutationOptions<Awaited<ReturnType<typeof startAppointment>>, TError, {id: string}, TContext> => {
+    const mutationKey = ['startAppointment'];
+    const {mutation: mutationOptions, request: requestOptions} = options
+        ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
+            ? options
+            : {...options, mutation: {...options.mutation, mutationKey}}
+        : {mutation: {mutationKey}, request: undefined};
+
+    const mutationFn: MutationFunction<Awaited<ReturnType<typeof startAppointment>>, {id: string}> = (props) => {
+        const {id} = props ?? {};
+
+        return startAppointment(id, requestOptions);
+    };
+
+    return {mutationFn, ...mutationOptions};
+};
+
+export type StartAppointmentMutationResult = NonNullable<Awaited<ReturnType<typeof startAppointment>>>;
+
+export type StartAppointmentMutationError = ErrorType<ApiProblem>;
+
+/**
+ * @summary Starts care for a checked-in appointment (ARRIVED → IN_PROGRESS)
+ */
+export const useStartAppointment = <TError = ErrorType<ApiProblem>, TContext = unknown>(
+    options?: {
+        mutation?: UseMutationOptions<Awaited<ReturnType<typeof startAppointment>>, TError, {id: string}, TContext>;
+        request?: SecondParameter<typeof apiClient>;
+    },
+    queryClient?: QueryClient
+): UseMutationResult<Awaited<ReturnType<typeof startAppointment>>, TError, {id: string}, TContext> => {
+    const mutationOptions = getStartAppointmentMutationOptions(options);
 
     return useMutation(mutationOptions, queryClient);
 };
@@ -2837,7 +2884,9 @@ export const getCancelAppointmentResponseMockDefault = (overrideResponse: Partia
     ...overrideResponse,
 });
 
-export const getCheckinAppointmentResponseMock = (overrideResponse: Partial<Appointment> = {}): Appointment => ({
+export const getCheckinAppointmentResponseMock = (
+    overrideResponse: Partial<CheckinAppointmentResult> = {}
+): CheckinAppointmentResult => ({
     id: faker.string.uuid(),
     createdAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
     updatedAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
@@ -2909,10 +2958,13 @@ export const getCheckinAppointmentResponseMock = (overrideResponse: Partial<Appo
         },
     },
     roomId: faker.helpers.arrayElement([faker.string.uuid(), null]),
+    patientCallCode: faker.helpers.arrayElement([faker.string.alpha({length: {min: 10, max: 20}}), null]),
     ...overrideResponse,
 });
 
-export const getCheckinAppointmentResponseMock200 = (overrideResponse: Partial<Appointment> = {}): Appointment => ({
+export const getCheckinAppointmentResponseMock200 = (
+    overrideResponse: Partial<CheckinAppointmentResult> = {}
+): CheckinAppointmentResult => ({
     id: faker.string.uuid(),
     createdAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
     updatedAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
@@ -2984,6 +3036,7 @@ export const getCheckinAppointmentResponseMock200 = (overrideResponse: Partial<A
         },
     },
     roomId: faker.helpers.arrayElement([faker.string.uuid(), null]),
+    patientCallCode: faker.helpers.arrayElement([faker.string.alpha({length: {min: 10, max: 20}}), null]),
     ...overrideResponse,
 });
 
@@ -3150,6 +3203,168 @@ export const getCallAppointmentResponseMock200 = (overrideResponse: Partial<Appo
 });
 
 export const getCallAppointmentResponseMockDefault = (overrideResponse: Partial<ApiProblem> = {}): ApiProblem => ({
+    title: faker.string.alpha({length: {min: 10, max: 20}}),
+    type: faker.internet.url(),
+    detail: faker.string.alpha({length: {min: 10, max: 20}}),
+    status: faker.helpers.arrayElement([
+        400, 401, 402, 403, 404, 405, 406, 407, 408, 409, 410, 411, 412, 413, 414, 415, 416, 417, 418, 421, 422, 423,
+        424, 428, 429, 456, 500, 501, 502, 503, 504, 505, 507, 508,
+    ] as const),
+    instance: faker.string.alpha({length: {min: 10, max: 20}}),
+    ...overrideResponse,
+});
+
+export const getStartAppointmentResponseMock = (overrideResponse: Partial<Appointment> = {}): Appointment => ({
+    id: faker.string.uuid(),
+    createdAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
+    updatedAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
+    clinicId: faker.string.uuid(),
+    patientId: faker.string.uuid(),
+    attendedByMemberId: faker.string.uuid(),
+    createdByMemberId: faker.string.uuid(),
+    startAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
+    endAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
+    durationMinutes: faker.number.float({min: undefined, max: undefined, fractionDigits: 2}),
+    procedure: {
+        ...{
+            id: faker.string.uuid(),
+            name: faker.string.alpha({length: {min: 10, max: 20}}),
+            color: faker.helpers.arrayElement(Object.values(ProcedureColor)),
+            priceInCents: faker.number.float({min: undefined, max: undefined, fractionDigits: 2}),
+            modality: faker.helpers.arrayElement(Object.values(ProcedureModality)),
+        },
+    },
+    type: faker.helpers.arrayElement(['FIRST_VISIT', 'RETURN', 'WALK_IN', 'TELEMEDICINE', 'PROCEDURE'] as const),
+    status: faker.helpers.arrayElement([
+        'SCHEDULED',
+        'CONFIRMED',
+        'CANCELLED',
+        'COMPLETED',
+        'NO_SHOW',
+        'ARRIVED',
+        'IN_PROGRESS',
+    ] as const),
+    canceledAt: faker.helpers.arrayElement([`${faker.date.past().toISOString().split('.')[0]}Z`, null]),
+    canceledReason: {},
+    note: {},
+    arrivedAt: faker.helpers.arrayElement([`${faker.date.past().toISOString().split('.')[0]}Z`, null]),
+    calledAt: faker.helpers.arrayElement([`${faker.date.past().toISOString().split('.')[0]}Z`, null]),
+    paymentStatus: faker.helpers.arrayElement(Object.values(AppointmentPaymentStatus)),
+    revenue: {
+        ...{
+            expectedBrl: faker.number.float({min: undefined, max: undefined, fractionDigits: 2}),
+            receivedBrl: faker.number.float({min: undefined, max: undefined, fractionDigits: 2}),
+            pendingBrl: faker.number.float({min: undefined, max: undefined, fractionDigits: 2}),
+            paymentMethod: faker.helpers.arrayElement([
+                faker.helpers.arrayElement([
+                    'CASH',
+                    'PIX',
+                    'CREDIT_CARD',
+                    'DEBIT_CARD',
+                    'BANK_TRANSFER',
+                    'INSURANCE',
+                    'COURTESY',
+                    'PACKAGE',
+                    'SUBSCRIPTION',
+                ] as const),
+                null,
+            ]),
+            status: faker.helpers.arrayElement(Object.values(AppointmentPaymentStatus)),
+            paidAt: faker.helpers.arrayElement([`${faker.date.past().toISOString().split('.')[0]}Z`, null]),
+            insuranceClaimStatus: faker.helpers.arrayElement([
+                faker.helpers.arrayElement([
+                    'DRAFT',
+                    'SUBMITTED',
+                    'PAID',
+                    'PARTIALLY_PAID',
+                    'DENIED',
+                    'APPEALED',
+                    'CANCELLED',
+                ] as const),
+                null,
+            ]),
+        },
+    },
+    roomId: faker.helpers.arrayElement([faker.string.uuid(), null]),
+    ...overrideResponse,
+});
+
+export const getStartAppointmentResponseMock200 = (overrideResponse: Partial<Appointment> = {}): Appointment => ({
+    id: faker.string.uuid(),
+    createdAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
+    updatedAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
+    clinicId: faker.string.uuid(),
+    patientId: faker.string.uuid(),
+    attendedByMemberId: faker.string.uuid(),
+    createdByMemberId: faker.string.uuid(),
+    startAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
+    endAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
+    durationMinutes: faker.number.float({min: undefined, max: undefined, fractionDigits: 2}),
+    procedure: {
+        ...{
+            id: faker.string.uuid(),
+            name: faker.string.alpha({length: {min: 10, max: 20}}),
+            color: faker.helpers.arrayElement(Object.values(ProcedureColor)),
+            priceInCents: faker.number.float({min: undefined, max: undefined, fractionDigits: 2}),
+            modality: faker.helpers.arrayElement(Object.values(ProcedureModality)),
+        },
+    },
+    type: faker.helpers.arrayElement(['FIRST_VISIT', 'RETURN', 'WALK_IN', 'TELEMEDICINE', 'PROCEDURE'] as const),
+    status: faker.helpers.arrayElement([
+        'SCHEDULED',
+        'CONFIRMED',
+        'CANCELLED',
+        'COMPLETED',
+        'NO_SHOW',
+        'ARRIVED',
+        'IN_PROGRESS',
+    ] as const),
+    canceledAt: faker.helpers.arrayElement([`${faker.date.past().toISOString().split('.')[0]}Z`, null]),
+    canceledReason: {},
+    note: {},
+    arrivedAt: faker.helpers.arrayElement([`${faker.date.past().toISOString().split('.')[0]}Z`, null]),
+    calledAt: faker.helpers.arrayElement([`${faker.date.past().toISOString().split('.')[0]}Z`, null]),
+    paymentStatus: faker.helpers.arrayElement(Object.values(AppointmentPaymentStatus)),
+    revenue: {
+        ...{
+            expectedBrl: faker.number.float({min: undefined, max: undefined, fractionDigits: 2}),
+            receivedBrl: faker.number.float({min: undefined, max: undefined, fractionDigits: 2}),
+            pendingBrl: faker.number.float({min: undefined, max: undefined, fractionDigits: 2}),
+            paymentMethod: faker.helpers.arrayElement([
+                faker.helpers.arrayElement([
+                    'CASH',
+                    'PIX',
+                    'CREDIT_CARD',
+                    'DEBIT_CARD',
+                    'BANK_TRANSFER',
+                    'INSURANCE',
+                    'COURTESY',
+                    'PACKAGE',
+                    'SUBSCRIPTION',
+                ] as const),
+                null,
+            ]),
+            status: faker.helpers.arrayElement(Object.values(AppointmentPaymentStatus)),
+            paidAt: faker.helpers.arrayElement([`${faker.date.past().toISOString().split('.')[0]}Z`, null]),
+            insuranceClaimStatus: faker.helpers.arrayElement([
+                faker.helpers.arrayElement([
+                    'DRAFT',
+                    'SUBMITTED',
+                    'PAID',
+                    'PARTIALLY_PAID',
+                    'DENIED',
+                    'APPEALED',
+                    'CANCELLED',
+                ] as const),
+                null,
+            ]),
+        },
+    },
+    roomId: faker.helpers.arrayElement([faker.string.uuid(), null]),
+    ...overrideResponse,
+});
+
+export const getStartAppointmentResponseMockDefault = (overrideResponse: Partial<ApiProblem> = {}): ApiProblem => ({
     title: faker.string.alpha({length: {min: 10, max: 20}}),
     type: faker.internet.url(),
     detail: faker.string.alpha({length: {min: 10, max: 20}}),
@@ -4373,8 +4588,10 @@ export const getCancelAppointmentMockHandlerDefault = (
 
 export const getCheckinAppointmentMockHandler = (
     overrideResponse?:
-        | Appointment
-        | ((info: Parameters<Parameters<typeof http.patch>[1]>[0]) => Promise<Appointment> | Appointment),
+        | CheckinAppointmentResult
+        | ((
+              info: Parameters<Parameters<typeof http.patch>[1]>[0]
+          ) => Promise<CheckinAppointmentResult> | CheckinAppointmentResult),
     options?: RequestHandlerOptions
 ) => {
     return http.patch(
@@ -4397,8 +4614,10 @@ export const getCheckinAppointmentMockHandler = (
 
 export const getCheckinAppointmentMockHandler200 = (
     overrideResponse?:
-        | Appointment
-        | ((info: Parameters<Parameters<typeof http.patch>[1]>[0]) => Promise<Appointment> | Appointment),
+        | CheckinAppointmentResult
+        | ((
+              info: Parameters<Parameters<typeof http.patch>[1]>[0]
+          ) => Promise<CheckinAppointmentResult> | CheckinAppointmentResult),
     options?: RequestHandlerOptions
 ) => {
     return http.patch(
@@ -4507,6 +4726,78 @@ export const getCallAppointmentMockHandlerDefault = (
                             ? await overrideResponse(info)
                             : overrideResponse
                         : getCallAppointmentResponseMockDefault()
+                ),
+                {status: 200, headers: {'Content-Type': 'application/json'}}
+            );
+        },
+        options
+    );
+};
+
+export const getStartAppointmentMockHandler = (
+    overrideResponse?:
+        | Appointment
+        | ((info: Parameters<Parameters<typeof http.patch>[1]>[0]) => Promise<Appointment> | Appointment),
+    options?: RequestHandlerOptions
+) => {
+    return http.patch(
+        '*/api/v1/appointments/:id/start',
+        async (info) => {
+            return new HttpResponse(
+                JSON.stringify(
+                    overrideResponse !== undefined
+                        ? typeof overrideResponse === 'function'
+                            ? await overrideResponse(info)
+                            : overrideResponse
+                        : getStartAppointmentResponseMock()
+                ),
+                {status: 200, headers: {'Content-Type': 'application/json'}}
+            );
+        },
+        options
+    );
+};
+
+export const getStartAppointmentMockHandler200 = (
+    overrideResponse?:
+        | Appointment
+        | ((info: Parameters<Parameters<typeof http.patch>[1]>[0]) => Promise<Appointment> | Appointment),
+    options?: RequestHandlerOptions
+) => {
+    return http.patch(
+        '*/api/v1/appointments/:id/start',
+        async (info) => {
+            return new HttpResponse(
+                JSON.stringify(
+                    overrideResponse !== undefined
+                        ? typeof overrideResponse === 'function'
+                            ? await overrideResponse(info)
+                            : overrideResponse
+                        : getStartAppointmentResponseMock200()
+                ),
+                {status: 200, headers: {'Content-Type': 'application/json'}}
+            );
+        },
+        options
+    );
+};
+
+export const getStartAppointmentMockHandlerDefault = (
+    overrideResponse?:
+        | ApiProblem
+        | ((info: Parameters<Parameters<typeof http.patch>[1]>[0]) => Promise<ApiProblem> | ApiProblem),
+    options?: RequestHandlerOptions
+) => {
+    return http.patch(
+        '*/api/v1/appointments/:id/start',
+        async (info) => {
+            return new HttpResponse(
+                JSON.stringify(
+                    overrideResponse !== undefined
+                        ? typeof overrideResponse === 'function'
+                            ? await overrideResponse(info)
+                            : overrideResponse
+                        : getStartAppointmentResponseMockDefault()
                 ),
                 {status: 200, headers: {'Content-Type': 'application/json'}}
             );
@@ -4744,6 +5035,7 @@ export const getAppointmentMock = () => [
     getCancelAppointmentMockHandler(),
     getCheckinAppointmentMockHandler(),
     getCallAppointmentMockHandler(),
+    getStartAppointmentMockHandler(),
     getConfirmAppointmentMockHandler(),
     getCompleteAppointmentMockHandler(),
     getMarkNoShowAppointmentMockHandler(),

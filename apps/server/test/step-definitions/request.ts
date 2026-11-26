@@ -44,7 +44,7 @@ function getResponse(): Response {
  *   Given I set the header "Accept-Language" to "en-US"
  */
 Given('I set the header {string} to {string}', function (this: Context, header: string, value: string) {
-    requestContext.headers[header] = value;
+    requestContext.headers[header] = resolveReferences(this, value);
 });
 
 /**
