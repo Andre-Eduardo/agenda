@@ -655,4 +655,3 @@ export const skeletonH4W64 = css({h: '4', w: '64'});
 export const skeletonH8W48 = css({h: '8', w: '48'});
 
 export const spin = css({animation: 'spin'});
-

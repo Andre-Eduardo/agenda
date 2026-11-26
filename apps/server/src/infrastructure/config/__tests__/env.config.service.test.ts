@@ -52,18 +52,18 @@ describe('An environment configuration service', () => {
         expect(envConfigService.auth).toBe(authConfig.auth);
     });
 
-    it('should get the company configuration', () => {
-        const companyConfig: Partial<EnvConfig> = {
-            company: {
-                cookieName: 'current.company',
+    it('should get the clinic member configuration', () => {
+        const clinicMemberConfig: Partial<EnvConfig> = {
+            clinicMember: {
+                cookieName: 'current.clinic_member',
             },
         };
 
-        const configService = new ConfigService(companyConfig);
+        const configService = new ConfigService(clinicMemberConfig);
 
         const envConfigService = new EnvConfigService(configService);
 
-        expect(envConfigService.company).toBe(companyConfig.company);
+        expect(envConfigService.clinicMember).toBe(clinicMemberConfig.clinicMember);
     });
 
     it('should check if the environment is production', () => {
@@ -91,6 +91,10 @@ describe('An environment configuration service', () => {
 
 describe('An environment configuration loader', () => {
     const originalEnv = process.env;
+    const productionSecrets = {
+        COOKIE_SECRET: 'a-random-cookie-secret-with-at-least-32-chars',
+        AUTH_TOKEN_SECRET: 'a-random-token-secret-with-at-least-32-chars',
+    };
 
     beforeEach(() => {
         jest.resetModules();
@@ -112,6 +116,7 @@ describe('An environment configuration loader', () => {
             NODE_ENV: 'production',
             PORT: '8080',
             DATABASE_URL: 'postgresql://automo@192.168.1.10:5433',
+            ...productionSecrets,
         },
     ])('should load the environment configuration', async (env) => {
         process.env = env;
@@ -132,11 +137,18 @@ describe('An environment configuration loader', () => {
             NODE_ENV: 'production',
             PORT: 'foo',
             DATABASE_URL: 'postgresql://postgres@localhost:5432/automo?schema=public',
+            ...productionSecrets,
         },
         {
             NODE_ENV: 'production',
             PORT: '8080',
             DATABASE_URL: 'foo',
+            ...productionSecrets,
+        },
+        {
+            NODE_ENV: 'production',
+            PORT: '8080',
+            DATABASE_URL: 'postgresql://postgres@localhost:5432/automo?schema=public',
         },
     ])('should throw an error when the environment configuration is invalid', async (env) => {
         process.env = env;

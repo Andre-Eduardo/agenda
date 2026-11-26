@@ -3,7 +3,12 @@ import * as PrismaClient from '@prisma/client';
 import {toEnum} from '@domain/@shared/utils';
 import {AppointmentPaymentId} from '@domain/appointment-payment/entities';
 import {ClinicId} from '@domain/clinic/entities';
-import {InsuranceAuthorizationStatus, InsuranceClaim, InsuranceClaimId, InsuranceClaimStatus} from '@domain/insurance-claim/entities';
+import {
+    InsuranceAuthorizationStatus,
+    InsuranceClaim,
+    InsuranceClaimId,
+    InsuranceClaimStatus,
+} from '@domain/insurance-claim/entities';
 import {InsurancePlanId} from '@domain/insurance-plan/entities';
 import {PatientInsuranceEnrollmentId} from '@domain/patient-insurance-enrollment/entities';
 import {MapperWithoutDto} from '@infrastructure/mappers/mapper';

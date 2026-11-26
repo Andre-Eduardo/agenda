@@ -38,7 +38,7 @@ export function Transactional(propagation?: Propagation): MethodDecorator {
 
         const originalMethod = descriptor.value as (...args: unknown[]) => Promise<unknown>;
 
-        // eslint-disable-next-line no-param-reassign -- Needed for the decorator
+        // eslint-disable-next-line no-param-reassign, func-name-matching -- Needed for the decorator; `atomic` names the wrapper in stack traces
         descriptor.value = function atomic(...args: unknown[]) {
             const {atomicExecutor} = this as {atomicExecutor: AtomicExecutor};
 

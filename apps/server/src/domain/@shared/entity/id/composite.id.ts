@@ -2,6 +2,10 @@ import isEqualWith from 'lodash.isequalwith';
 import {Identifier} from '@domain/@shared/entity/id/identifier.base';
 import {isEquatable} from '@domain/@shared/equatable';
 
+function equalityCustomizer(id1: unknown, id2: unknown): boolean | undefined {
+    return isEquatable(id1) ? id1.equals(id2) : undefined;
+}
+
 export abstract class CompositeId<I1, I2> extends Identifier<'CompositeId'> {
     protected readonly ids: [I1, I2];
 
@@ -11,10 +15,6 @@ export abstract class CompositeId<I1, I2> extends Identifier<'CompositeId'> {
     }
 
     equals(other: unknown): other is this {
-        function equalityCustomizer(id1: unknown, id2: unknown): boolean | undefined {
-            return isEquatable(id1) ? id1.equals(id2) : undefined;
-        }
-
         return (
             other != null &&
             Object.is(Object.getPrototypeOf(this), Object.getPrototypeOf(other)) &&

@@ -9,9 +9,10 @@ import {PatientInsuranceEnrollmentRepository} from '@domain/patient-insurance-en
 import {PatientRepository} from '@domain/patient/patient.repository';
 
 @Injectable()
-export class ListPatientInsuranceEnrollmentsService
-    implements ApplicationService<ListPatientInsuranceEnrollmentsDto, PatientInsuranceEnrollmentDto[]>
-{
+export class ListPatientInsuranceEnrollmentsService implements ApplicationService<
+    ListPatientInsuranceEnrollmentsDto,
+    PatientInsuranceEnrollmentDto[]
+> {
     constructor(
         private readonly enrollmentRepository: PatientInsuranceEnrollmentRepository,
         private readonly patientRepository: PatientRepository

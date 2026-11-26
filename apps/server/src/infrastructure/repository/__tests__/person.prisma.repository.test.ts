@@ -1,88 +1,72 @@
 import {mockDeep} from 'jest-mock-extended';
-import {DocumentId, Phone} from '../../../domain/@shared/value-objects';
-import {CompanyId} from '../../../domain/company/entities';
-import type {Person} from '../../../domain/person/entities';
-import {Gender, PersonProfile, PersonType} from '../../../domain/person/entities';
-import {fakePerson} from '../../../domain/person/entities/__tests__/fake-person';
-import type {PersonModel} from '../index';
-import {PersonPrismaRepository} from '../index';
-import type {PrismaService} from '../prisma';
+import type {Pagination} from '@domain/@shared/repository';
+import {Phone} from '@domain/@shared/value-objects';
+import {Gender, Person, PersonId, PersonType} from '@domain/person/entities';
+import type {PersonSortOptions} from '@domain/person/person.repository';
+import {PersonMapper} from '@infrastructure/mappers/person.mapper';
+import type {PersonModel} from '@infrastructure/repository/person.prisma.repository';
+import {PersonPrismaRepository} from '@infrastructure/repository/person.prisma.repository';
+import {PrismaProvider} from '@infrastructure/repository/prisma/prisma.provider';
+import {PrismaService} from '@infrastructure/repository/prisma/prisma.service';
 
 describe('A person repository backed by Prisma ORM', () => {
     const prisma = mockDeep<PrismaService>();
-    const repository = new PersonPrismaRepository(prisma);
-    const companyId = CompanyId.generate();
+    const prismaProvider = mockDeep<PrismaProvider>();
+
+    Object.defineProperty(prismaProvider, 'client', {get: () => prisma});
+
+    const repository = new PersonPrismaRepository(prismaProvider, new PersonMapper());
+
     const domainPersons: Person[] = [
-        fakePerson({
+        new Person({
+            id: PersonId.generate(),
             name: 'My name 1',
-            profiles: new Set([PersonProfile.CUSTOMER]),
+            documentId: null,
             personType: PersonType.NATURAL,
-            documentId: DocumentId.create('12345678901'),
-            gender: undefined,
-            phone: Phone.create('12345678901'),
+            gender: null,
+            phone: Phone.create('5511999999999'),
+            createdAt: new Date(1000),
+            updatedAt: new Date(1000),
+            deletedAt: null,
         }),
-        fakePerson({
+        new Person({
+            id: PersonId.generate(),
             name: 'My name 2',
-            documentId: DocumentId.create('12345678923'),
-            profiles: new Set([PersonProfile.CUSTOMER]),
-            companyName: null,
+            documentId: null,
             personType: PersonType.LEGAL,
-            companyId,
+            gender: null,
             phone: null,
+            createdAt: new Date(2000),
+            updatedAt: new Date(2000),
+            deletedAt: null,
         }),
-        fakePerson({
+        new Person({
+            id: PersonId.generate(),
             name: 'My name 3',
-            documentId: DocumentId.create('12345678999'),
-            profiles: new Set([PersonProfile.CUSTOMER]),
+            documentId: null,
             personType: PersonType.NATURAL,
-            companyId,
             gender: Gender.MALE,
-            phone: Phone.create('12345678911'),
+            phone: Phone.create('5511988888888'),
+            createdAt: new Date(3000),
+            updatedAt: new Date(3000),
+            deletedAt: null,
         }),
     ];
 
-    const databasePersons: PersonModel[] = [
-        {
-            id: domainPersons[0].id.toString(),
-            name: domainPersons[0].name,
-            documentId: domainPersons[0].documentId.toString(),
-            companyId: domainPersons[0].companyId.toString(),
-            companyName: domainPersons[0].companyName ?? null,
-            phone: domainPersons[0].phone === null ? null : domainPersons[0].phone.toString(),
-            personType: domainPersons[0].personType,
-            profiles: [...domainPersons[0].profiles],
-            gender: domainPersons[0].gender ?? null,
-            createdAt: domainPersons[0].createdAt,
-            updatedAt: domainPersons[0].updatedAt,
-        },
-        {
-            id: domainPersons[1].id.toString(),
-            name: domainPersons[1].name,
-            documentId: domainPersons[1].documentId.toString(),
-            companyId: domainPersons[1].companyId.toString(),
-            companyName: domainPersons[1].companyName ?? null,
-            profiles: [...domainPersons[1].profiles],
-            personType: domainPersons[1].personType,
-            gender: domainPersons[1].gender ?? null,
-            phone: domainPersons[1].phone === null ? null : domainPersons[1].phone.toString(),
+    const databasePersons: PersonModel[] = domainPersons.map((person) => ({
+        id: person.id.toString(),
+        name: person.name,
+        phone: person.phone?.toString() ?? null,
+        gender: person.gender,
+        personType: person.personType,
+        createdAt: person.createdAt,
+        updatedAt: person.updatedAt,
+        deletedAt: null,
+    }));
 
-            createdAt: domainPersons[1].createdAt,
-            updatedAt: domainPersons[1].updatedAt,
-        },
-        {
-            id: domainPersons[2].id.toString(),
-            name: domainPersons[2].name,
-            documentId: domainPersons[2].documentId.toString(),
-            companyId: domainPersons[2].companyId.toString(),
-            phone: domainPersons[2].phone === null ? null : domainPersons[2].phone.toString(),
-            companyName: domainPersons[2].companyName ?? null,
-            profiles: [...domainPersons[2].profiles],
-            personType: domainPersons[2].personType,
-            gender: domainPersons[2].gender ?? null,
-            createdAt: domainPersons[2].createdAt,
-            updatedAt: domainPersons[2].updatedAt,
-        },
-    ];
+    afterEach(() => {
+        jest.clearAllMocks();
+    });
 
     it.each([
         [null, null],
@@ -90,7 +74,7 @@ describe('A person repository backed by Prisma ORM', () => {
         [databasePersons[1], domainPersons[1]],
         [databasePersons[2], domainPersons[2]],
     ])('should find a person by ID', async (databasePerson, domainPerson) => {
-        jest.spyOn(prisma.person, 'findUnique').mockResolvedValueOnce(databasePerson);
+        prisma.person.findUnique.mockResolvedValueOnce(databasePerson);
 
         const result = await repository.findById(domainPersons[0].id);
 
@@ -99,20 +83,65 @@ describe('A person repository backed by Prisma ORM', () => {
         expect(prisma.person.findUnique).toHaveBeenCalledWith({
             where: {
                 id: domainPersons[0].id.toString(),
+                deletedAt: null,
             },
         });
     });
 
-    it('should delete an person by ID', async () => {
-        jest.spyOn(prisma.person, 'delete');
+    it('should soft-delete a person by ID', async () => {
+        const now = new Date('2024-01-01T00:00:00Z');
+
+        jest.useFakeTimers({now});
 
         await repository.delete(domainPersons[0].id);
 
-        expect(prisma.person.delete).toHaveBeenCalledTimes(1);
-        expect(prisma.person.delete).toHaveBeenCalledWith({
-            where: {
-                id: domainPersons[0].id.toString(),
-            },
+        jest.useRealTimers();
+
+        expect(prisma.person.updateMany).toHaveBeenCalledTimes(1);
+        expect(prisma.person.updateMany).toHaveBeenCalledWith({
+            where: {id: domainPersons[0].id.toString(), deletedAt: null},
+            data: {deletedAt: now, updatedAt: now},
+        });
+    });
+
+    it('should search persons', async () => {
+        const pagination: Pagination<PersonSortOptions> = {
+            limit: 10,
+            page: 2,
+            sort: [{key: 'name', direction: 'asc'}],
+        };
+
+        prisma.person.findMany.mockResolvedValueOnce(databasePersons);
+        prisma.person.count.mockResolvedValueOnce(databasePersons.length);
+
+        const result = await repository.search(pagination, {name: 'My name', gender: Gender.MALE});
+
+        expect(result).toEqual({data: domainPersons, totalCount: databasePersons.length});
+
+        const where = {
+            id: undefined,
+            name: {contains: 'My name', mode: 'insensitive'},
+            phone: undefined,
+            gender: Gender.MALE,
+            deletedAt: null,
+        };
+
+        expect(prisma.person.findMany).toHaveBeenCalledWith({
+            where,
+            skip: 10,
+            take: 10,
+            orderBy: [{name: 'asc'}, {createdAt: 'desc'}],
+        });
+        expect(prisma.person.count).toHaveBeenCalledWith({where});
+    });
+
+    it('should save a person', async () => {
+        await repository.save(domainPersons[0]);
+
+        expect(prisma.person.upsert).toHaveBeenCalledWith({
+            where: {id: databasePersons[0].id},
+            create: databasePersons[0],
+            update: databasePersons[0],
         });
     });
 });

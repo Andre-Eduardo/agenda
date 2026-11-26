@@ -2,7 +2,8 @@ import {mock} from 'jest-mock-extended';
 import type {Actor, UnauthenticatedActor} from '../../../../domain/@shared/actor';
 import {Email} from '../../../../domain/@shared/value-objects';
 import {GlobalRole} from '../../../../domain/auth';
-import {CompanyId} from '../../../../domain/company/entities';
+import {ClinicMemberId} from '../../../../domain/clinic-member/entities';
+import {ClinicId} from '../../../../domain/clinic/entities';
 import {User, UserId} from '../../../../domain/user/entities';
 import {fakeUser} from '../../../../domain/user/entities/__tests__/fake-user';
 import {ObfuscatedPassword, Username} from '../../../../domain/user/value-objects';
@@ -32,6 +33,8 @@ describe('A user controller', () => {
 
     const actor: Actor = {
         userId: UserId.generate(),
+        clinicId: ClinicId.generate(),
+        clinicMemberId: ClinicMemberId.generate(),
         ip: '127.0.0.1',
     };
 
@@ -39,12 +42,13 @@ describe('A user controller', () => {
         it('should repass the responsibility to the right service', async () => {
             const unauthenticatedActor: UnauthenticatedActor = {
                 userId: null,
+                clinicId: null,
+                clinicMemberId: null,
                 ip: '127.0.0.1',
             };
 
             const payload = {
-                firstName: 'John',
-                lastName: 'Doe',
+                name: 'John Doe',
                 email: Email.create('john.doe@example.com'),
                 username: Username.create('johndoe'),
                 password: '@SecurePassword123',
@@ -67,13 +71,12 @@ describe('A user controller', () => {
         it('should repass the responsibility to the right service', async () => {
             const existingUser = fakeUser({
                 id: UserId.generate(),
-                firstName: 'John',
-                lastName: 'Doe',
+                name: 'John Doe',
                 email: Email.create('john.doe@example.com'),
                 username: Username.create('johndoe'),
                 password: await ObfuscatedPassword.obfuscate('@SecurePassword123'),
                 globalRole: GlobalRole.NONE,
-                companies: [CompanyId.generate()],
+                clinicMembers: [ClinicMemberId.generate()],
                 createdAt: new Date(1000),
                 updatedAt: new Date(1000),
             });
@@ -95,13 +98,12 @@ describe('A user controller', () => {
         it('should repass the responsibility to the right service', async () => {
             const existingUser = fakeUser({
                 id: actor.userId,
-                firstName: 'John',
-                lastName: 'Doe',
+                name: 'John Doe',
                 email: null,
                 username: Username.create('johndoe'),
                 password: await ObfuscatedPassword.obfuscate('@SecurePassword123'),
                 globalRole: GlobalRole.NONE,
-                companies: [CompanyId.generate()],
+                clinicMembers: [ClinicMemberId.generate()],
                 createdAt: new Date(1000),
                 updatedAt: new Date(1000),
             });
@@ -123,19 +125,17 @@ describe('A user controller', () => {
         it('should repass the responsibility to the right service', async () => {
             const existingUser = fakeUser({
                 id: UserId.generate(),
-                firstName: 'John',
-                lastName: 'Doe',
+                name: 'John Doe',
                 email: Email.create('john.doe@example.com'),
                 username: Username.create('johndoe'),
                 password: await ObfuscatedPassword.obfuscate('@SecurePassword123'),
                 globalRole: GlobalRole.NONE,
-                companies: [CompanyId.generate()],
+                clinicMembers: [ClinicMemberId.generate()],
                 createdAt: new Date(1000),
                 updatedAt: new Date(1000),
             });
             const payload = {
-                firstName: 'Jorge',
-                lastName: null,
+                name: 'Jorge',
                 email: Email.create('john.doe@example.com'),
                 username: Username.create('johndoe'),
                 currentPassword: '@SecurePassword123',

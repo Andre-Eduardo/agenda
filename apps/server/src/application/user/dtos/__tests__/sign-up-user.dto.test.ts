@@ -5,17 +5,24 @@ import {SignUpUserDto} from '../index';
 describe('A SignUpUserDto', () => {
     it.each<Record<string, unknown>>([
         {
-            firstName: 'John',
-            lastName: 'Doe',
+            name: 'John Doe',
             email: 'john.doe@example.com',
             username: 'johndoe',
             password: '@SecurePassword123',
         },
         {
-            firstName: 'John',
+            name: 'John',
             email: 'john.doe@ecxus.com',
             username: 'john_doe',
             password: '@Pa$$word123',
+            inviteCode: 'invite-code',
+        },
+        {
+            name: 'John',
+            email: 'john.doe@ecxus.com',
+            username: 'john_doe',
+            password: '@Pa$$word123',
+            inviteCode: null,
         },
     ])('should accept valid payloads', (payload) => {
         expect(SignUpUserDto.schema.safeParse(payload)).toEqual(
@@ -28,33 +35,30 @@ describe('A SignUpUserDto', () => {
     it.each<[Record<string, unknown>, ExpectedIssue]>([
         [
             {
-                firstName: '',
+                name: '',
                 email: 'john.doe@example.com',
                 username: 'johndoe',
                 password: '@SecurePassword123',
             },
             {
                 code: ZodIssueCode.too_small,
-                path: ['firstName'],
+                path: ['name'],
             },
         ],
         [
             {
-                firstName: 'John',
-                lastName: '',
                 email: 'john.doe@example.com',
                 username: 'johndoe',
                 password: '@SecurePassword123',
             },
             {
-                code: ZodIssueCode.too_small,
-                path: ['lastName'],
+                code: ZodIssueCode.invalid_type,
+                path: ['name'],
             },
         ],
         [
             {
-                firstName: 'John',
-                lastName: 'Doe',
+                name: 'John Doe',
                 email: 'john.doe@',
                 username: 'johndoe',
                 password: '@SecurePassword123',
@@ -66,7 +70,7 @@ describe('A SignUpUserDto', () => {
         ],
         [
             {
-                firstName: 'John',
+                name: 'John',
                 email: 'john.doe@ecxus.com',
                 username: 'john..doe',
                 password: '@Pa$$word123',
@@ -78,7 +82,7 @@ describe('A SignUpUserDto', () => {
         ],
         [
             {
-                firstName: 'John',
+                name: 'John',
                 email: 'john.doe@ecxus.com',
                 username: 'john_doe',
                 password: '123',
@@ -86,6 +90,19 @@ describe('A SignUpUserDto', () => {
             {
                 code: ZodIssueCode.custom,
                 path: ['password'],
+            },
+        ],
+        [
+            {
+                name: 'John',
+                email: 'john.doe@ecxus.com',
+                username: 'john_doe',
+                password: '@Pa$$word123',
+                inviteCode: 'x'.repeat(257),
+            },
+            {
+                code: ZodIssueCode.too_big,
+                path: ['inviteCode'],
             },
         ],
     ])('should reject invalid payloads', (payload, expected) => {

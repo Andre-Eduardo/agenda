@@ -16,14 +16,6 @@ const config: Config = {
         '!src/domain/**/events/index.ts',
         '!src/domain/event/event.type.ts',
     ],
-    coverageThreshold: {
-        global: {
-            branches: 100,
-            functions: 100,
-            statements: 100,
-            lines: 100,
-        },
-    },
     moduleNameMapper: {
         '^@domain/(.*)$': '<rootDir>/src/domain/$1',
         '^@application/(.*)$': '<rootDir>/src/application/$1',

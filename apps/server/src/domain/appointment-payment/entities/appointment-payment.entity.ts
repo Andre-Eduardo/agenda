@@ -11,9 +11,9 @@ import type {AppointmentId} from '@domain/appointment/entities';
 import type {ClinicMemberId} from '@domain/clinic-member/entities';
 import type {ClinicId} from '@domain/clinic/entities';
 import type {InsurancePlanId} from '@domain/insurance-plan/entities';
-import type {PatientId} from '@domain/patient/entities';
 import type {PatientPackageId} from '@domain/patient-package/entities';
 import type {PatientSubscriptionId} from '@domain/patient-subscription/entities';
+import type {PatientId} from '@domain/patient/entities';
 
 export enum PaymentMethod {
     CASH = 'CASH',

@@ -1,4 +1,3 @@
-import {Injectable} from '@nestjs/common';
 import * as PrismaClient from '@prisma/client';
 import {toEnumArray} from '@domain/@shared/utils';
 import {ClinicMember, ClinicMemberId, ClinicMemberRole} from '@domain/clinic-member/entities';

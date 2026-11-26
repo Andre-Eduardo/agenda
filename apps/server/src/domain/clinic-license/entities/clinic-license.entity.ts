@@ -108,7 +108,7 @@ export class ClinicLicense extends AggregateRoot<ClinicLicenseId> {
         this.includedProfessionals = configuration.includedProfessionals;
         this.maxProfessionals = configuration.maxProfessionals;
 
-        for (const type of [...this.modules.keys()]) {
+        for (const type of this.modules.keys()) {
             if (!configuration.modules.has(type)) this.removeModule(type);
         }
 

@@ -1,13 +1,13 @@
 import type {CookieOptions, Response} from 'express';
 import {mock} from 'jest-mock-extended';
-import {CompanyId} from '../../../domain/company/entities';
-import type {Token} from '../../../domain/user/token';
+import {ClinicMemberId} from '@domain/clinic-member/entities';
+import type {Token} from '@domain/user/token';
 import {ExpressContextActions} from '../express-context-actions';
 
 describe('Express context actions', () => {
     const response = mock<Response>();
     const authCookie = 'authCookieName';
-    const companyCookie = 'companyCookieName';
+    const clinicMemberCookie = 'clinicMemberCookieName';
     const cookieOptions: CookieOptions = {
         domain: 'example.com',
         httpOnly: true,
@@ -16,7 +16,7 @@ describe('Express context actions', () => {
         signed: true,
     };
 
-    const expressContextActions = new ExpressContextActions(response, authCookie, companyCookie, cookieOptions);
+    const expressContextActions = new ExpressContextActions(response, authCookie, clinicMemberCookie, cookieOptions);
 
     it('should store the token in the cookies', () => {
         const token = {} as Token;
@@ -40,12 +40,12 @@ describe('Express context actions', () => {
         });
     });
 
-    it('should store the current company in the cookies', () => {
-        const companyId = CompanyId.generate();
+    it('should store the current clinic member in the cookies', () => {
+        const clinicMemberId = ClinicMemberId.generate();
 
-        expressContextActions.setCompany(companyId);
+        expressContextActions.setClinicMember(clinicMemberId);
 
-        expect(response.cookie).toHaveBeenCalledWith(companyCookie, companyId.toString(), {
+        expect(response.cookie).toHaveBeenCalledWith(clinicMemberCookie, clinicMemberId.toString(), {
             ...cookieOptions,
             maxAge: 7 * 24 * 3600 * 1000,
         });
@@ -53,10 +53,10 @@ describe('Express context actions', () => {
         expect(response.clearCookie).not.toHaveBeenCalled();
     });
 
-    it('should clear the current company from the cookies', () => {
-        expressContextActions.setCompany(null);
+    it('should clear the current clinic member from the cookies', () => {
+        expressContextActions.setClinicMember(null);
 
-        expect(response.clearCookie).toHaveBeenCalledWith(companyCookie, {
+        expect(response.clearCookie).toHaveBeenCalledWith(clinicMemberCookie, {
             ...cookieOptions,
             maxAge: undefined,
         });

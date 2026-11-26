@@ -2,9 +2,9 @@ import {Injectable} from '@nestjs/common';
 import {ApplicationService, Command} from '@application/@shared/application.service';
 import {ClinicMemberDto} from '@application/clinic-member/dtos';
 import {ResourceNotFoundException} from '@domain/@shared/exceptions';
+import {ClinicMemberRepository} from '@domain/clinic-member/clinic-member.repository';
 import type {ClinicMember} from '@domain/clinic-member/entities';
 import {ClinicMemberRole} from '@domain/clinic-member/entities';
-import {ClinicMemberRepository} from '@domain/clinic-member/clinic-member.repository';
 import {ProfessionalAgendaAccessRepository} from '@domain/professional-agenda-access/professional-agenda-access.repository';
 
 /**

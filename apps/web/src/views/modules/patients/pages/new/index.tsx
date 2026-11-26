@@ -219,7 +219,13 @@ const tabIcon = css({display: {base: 'none', sm: 'block'}, w: '[14px]', h: '[14p
 
 const sectionRoot = css({p: '7'});
 
-const sectionHead = css({mb: '[18px]', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '4'});
+const sectionHead = css({
+    mb: '[18px]',
+    display: 'flex',
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+    gap: '4',
+});
 
 const sectionNum = css({
     display: 'inline-flex',
@@ -390,7 +396,13 @@ const footerStep = css({
     color: 'text.secondary',
 });
 
-const footerActions = css({display: 'flex', alignItems: 'center', gap: '2', flexWrap: 'wrap', justifyContent: 'flex-end'});
+const footerActions = css({
+    display: 'flex',
+    alignItems: 'center',
+    gap: '2',
+    flexWrap: 'wrap',
+    justifyContent: 'flex-end',
+});
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -599,7 +611,13 @@ export function NewPatientPage() {
 
                                 return (
                                     <TabsTrigger key={t.key} value={t.key}>
-                                        <span className={cx(tabNum, tab === t.key && tabNumActive, filled && tabNumFilled)}>
+                                        <span
+                                            className={cx(
+                                                tabNum,
+                                                tab === t.key && tabNumActive,
+                                                filled && tabNumFilled
+                                            )}
+                                        >
                                             {filled ? <Check className={icon11} strokeWidth={2.5} /> : t.num}
                                         </span>
                                         <TabIcon className={tabIcon} strokeWidth={1.5} />
@@ -783,15 +801,15 @@ export function NewPatientPage() {
                                             appearance="mono"
                                             trailIcon={
                                                 zipLoading ? (
-                                                        <svg
-                                                            className={cx(icon14, 'animate-spin')}
-                                                            viewBox="0 0 24 24"
-                                                            fill="none"
-                                                            stroke="currentColor"
-                                                            strokeWidth="1.5"
-                                                        >
-                                                            <path d="M21 12a9 9 0 1 1-6.219-8.56" />
-                                                        </svg>
+                                                    <svg
+                                                        className={cx(icon14, 'animate-spin')}
+                                                        viewBox="0 0 24 24"
+                                                        fill="none"
+                                                        stroke="currentColor"
+                                                        strokeWidth="1.5"
+                                                    >
+                                                        <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+                                                    </svg>
                                                 ) : undefined
                                             }
                                         />
@@ -900,60 +918,60 @@ export function NewPatientPage() {
 
                     {/* Sticky footer */}
                     <div className={footerRoot}>
-                    <div className={footerMeta}>
-                        <Lock className={icon3} strokeWidth={1.5} />
-                        <span>Dados criptografados em repouso · LGPD</span>
-                        <span className={footerStep}>
-                            Etapa {tabIdx + 1} de {TABS.length}
-                        </span>
-                    </div>
+                        <div className={footerMeta}>
+                            <Lock className={icon3} strokeWidth={1.5} />
+                            <span>Dados criptografados em repouso · LGPD</span>
+                            <span className={footerStep}>
+                                Etapa {tabIdx + 1} de {TABS.length}
+                            </span>
+                        </div>
 
-                    <div className={footerActions}>
-                        <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            onClick={() => navigate({to: '/patients'})}
-                        >
-                            Cancelar
-                        </Button>
+                        <div className={footerActions}>
+                            <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                onClick={() => navigate({to: '/patients'})}
+                            >
+                                Cancelar
+                            </Button>
 
-                        {!isFirst && (
-                            <Button type="button" variant="outline" size="sm" onClick={goPrev}>
-                                <ChevronLeft className={icon4} strokeWidth={1.5} />
-                                Voltar
-                            </Button>
-                        )}
+                            {!isFirst && (
+                                <Button type="button" variant="outline" size="sm" onClick={goPrev}>
+                                    <ChevronLeft className={icon4} strokeWidth={1.5} />
+                                    Voltar
+                                </Button>
+                            )}
 
-                        {!isLast ? (
-                            <Button type="button" size="sm" onClick={goNext}>
-                                Avançar
-                                <ChevronRight className={icon4} strokeWidth={1.5} />
-                            </Button>
-                        ) : (
-                            <Button type="submit" form="patient-form" size="sm" disabled={createPatient.isPending}>
-                                {createPatient.isPending ? (
-                                    <>
-                                        <svg
-                                            className={cx(icon4, 'animate-spin')}
-                                            viewBox="0 0 24 24"
-                                            fill="none"
-                                            stroke="currentColor"
-                                            strokeWidth="1.5"
-                                        >
-                                            <path d="M21 12a9 9 0 1 1-6.219-8.56" />
-                                        </svg>
-                                        Salvando…
-                                    </>
-                                ) : (
-                                    <>
-                                        <User className={icon4} strokeWidth={1.5} />
-                                        Salvar paciente
-                                    </>
-                                )}
-                            </Button>
-                        )}
-                    </div>
+                            {!isLast ? (
+                                <Button type="button" size="sm" onClick={goNext}>
+                                    Avançar
+                                    <ChevronRight className={icon4} strokeWidth={1.5} />
+                                </Button>
+                            ) : (
+                                <Button type="submit" form="patient-form" size="sm" disabled={createPatient.isPending}>
+                                    {createPatient.isPending ? (
+                                        <>
+                                            <svg
+                                                className={cx(icon4, 'animate-spin')}
+                                                viewBox="0 0 24 24"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                strokeWidth="1.5"
+                                            >
+                                                <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+                                            </svg>
+                                            Salvando…
+                                        </>
+                                    ) : (
+                                        <>
+                                            <User className={icon4} strokeWidth={1.5} />
+                                            Salvar paciente
+                                        </>
+                                    )}
+                                </Button>
+                            )}
+                        </div>
                     </div>
                 </UISectionCard>
             </form>

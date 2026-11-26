@@ -22,6 +22,7 @@ function member(clinicId: ClinicId, roles: ClinicMemberRole[], isActive = true):
     return ClinicMember.create({clinicId, userId: UserId.generate(), roles, isActive});
 }
 
+// oxlint-disable-next-line typescript/no-redundant-type-constituents -- false positive: test files sit outside tsconfig, so the type-aware linter cannot resolve ClinicLicense
 function setup(license: ClinicLicense | null = null) {
     const clinic = Clinic.create({name: 'Clinic', createdByUserId: UserId.generate()});
     const actor: Actor = {
@@ -167,6 +168,7 @@ describe('Clinic license services', () => {
                     })
                 ).rejects.toThrow(InvalidInputException);
             }
+
             expect(licenseRepository.save).not.toHaveBeenCalled();
         });
 

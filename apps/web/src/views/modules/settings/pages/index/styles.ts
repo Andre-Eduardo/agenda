@@ -687,7 +687,12 @@ export const summaryCard = css({
     borderColor: 'border',
     bg: 'bg.surface',
 });
-export const summaryRow = css({display: 'flex', justifyContent: 'space-between', fontSize: 'xs', color: 'text.secondary'});
+export const summaryRow = css({
+    display: 'flex',
+    justifyContent: 'space-between',
+    fontSize: 'xs',
+    color: 'text.secondary',
+});
 export const summaryTotalRow = css({
     display: 'flex',
     justifyContent: 'space-between',
@@ -701,4 +706,10 @@ export const summaryTotalRow = css({
 });
 export const noteText = css({fontSize: '2xs', color: 'text.tertiary', lineHeight: 'relaxed'});
 export const qtyStepper = css({display: 'flex', alignItems: 'center', gap: '3'});
-export const qtyValue = css({fontSize: 'sm', fontWeight: 'medium', color: 'text.primary', minW: '4', textAlign: 'center'});
+export const qtyValue = css({
+    fontSize: 'sm',
+    fontWeight: 'medium',
+    color: 'text.primary',
+    minW: '4',
+    textAlign: 'center',
+});

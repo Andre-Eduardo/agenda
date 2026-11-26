@@ -1,15 +1,18 @@
 import {Prisma} from '@prisma/client';
 import {mockDeep} from 'jest-mock-extended';
-import {Email} from '../../../domain/@shared/value-objects';
-import {GlobalRole} from '../../../domain/auth';
-import {PersonId} from '../../../domain/person/entities';
-import type {User} from '../../../domain/user/entities';
-import {fakeUser} from '../../../domain/user/entities/__tests__/fake-user';
-import {DuplicateEmailException, DuplicateUsernameException} from '../../../domain/user/user.exceptions';
-import {ObfuscatedPassword, Username} from '../../../domain/user/value-objects';
-import type {UserModel} from '../index';
-import {UserPrismaRepository} from '../index';
-import type {PrismaService} from '../prisma';
+import type {Pagination} from '@domain/@shared/repository';
+import {Email} from '@domain/@shared/value-objects';
+import {GlobalRole} from '@domain/auth';
+import {ClinicMemberId} from '@domain/clinic-member/entities';
+import {ClinicId} from '@domain/clinic/entities';
+import {User, UserId} from '@domain/user/entities';
+import {DuplicateEmailException, DuplicateUsernameException} from '@domain/user/user.exceptions';
+import type {UserSortOptions} from '@domain/user/user.repository';
+import {ObfuscatedPassword, Username} from '@domain/user/value-objects';
+import {PrismaProvider} from '@infrastructure/repository/prisma/prisma.provider';
+import {PrismaService} from '@infrastructure/repository/prisma/prisma.service';
+import type {UserModel} from '@infrastructure/repository/user.prisma.repository';
+import {UserPrismaRepository} from '@infrastructure/repository/user.prisma.repository';
 
 // Pa$$w0rd
 const encodedPassword =
@@ -17,76 +20,85 @@ const encodedPassword =
 
 describe('A user repository backed by Prisma ORM', () => {
     const prisma = mockDeep<PrismaService>();
-    const repository = new UserPrismaRepository(prisma);
+    const prismaProvider = mockDeep<PrismaProvider>();
+
+    Object.defineProperty(prismaProvider, 'client', {get: () => prisma});
+
+    const repository = new UserPrismaRepository(prismaProvider);
 
     const domainUsers: User[] = [
-        fakeUser({
+        new User({
+            id: UserId.generate(),
             username: Username.create('john_doe'),
             email: Email.create('john_doe@example.com'),
             password: ObfuscatedPassword.decode(encodedPassword),
-            firstName: 'John',
-            lastName: 'Doe',
+            name: 'John Doe',
             globalRole: GlobalRole.NONE,
+            clinicMembers: [ClinicMemberId.generate()],
+            createdAt: new Date(1000),
+            updatedAt: new Date(1000),
+            deletedAt: null,
         }),
-        fakeUser({
-            username: Username.create('john_doe'),
+        new User({
+            id: UserId.generate(),
+            username: Username.create('jakob_nunez'),
             email: null,
             password: ObfuscatedPassword.decode(encodedPassword),
-            firstName: 'Jakob',
-            lastName: 'Nunez',
-            globalRole: GlobalRole.NONE,
+            name: 'Jakob Nunez',
+            globalRole: GlobalRole.OWNER,
+            clinicMembers: [],
+            createdAt: new Date(2000),
+            updatedAt: new Date(2000),
+            deletedAt: null,
         }),
     ];
 
-    const databaseUsers: UserModel[] = [
-        {
-            id: domainUsers[0].id.toString(),
-            username: domainUsers[0].username.toString(),
-            email: domainUsers[0].email?.toString() ?? null,
-            password: encodedPassword,
-            firstName: domainUsers[0].firstName,
-            lastName: domainUsers[0].lastName,
-            globalRole: domainUsers[0].globalRole,
-            companies: domainUsers[0].companies.map((companyId) => ({
-                companyId: companyId.toString(),
-                userId: domainUsers[0].id.toString(),
-            })),
-            createdAt: domainUsers[0].createdAt,
-            updatedAt: domainUsers[0].updatedAt,
-        },
-        {
-            id: domainUsers[1].id.toString(),
-            username: domainUsers[1].username.toString(),
-            email: domainUsers[1].email?.toString() ?? null,
-            password: encodedPassword,
-            firstName: domainUsers[1].firstName,
-            lastName: domainUsers[1].lastName,
-            globalRole: domainUsers[1].globalRole,
-            companies: domainUsers[1].companies.map((companyId) => ({
-                companyId: companyId.toString(),
-                userId: domainUsers[1].id.toString(),
-            })),
-            createdAt: domainUsers[1].createdAt,
-            updatedAt: domainUsers[1].updatedAt,
-        },
-    ];
+    const toUserModel = (user: User): UserModel => ({
+        id: user.id.toString(),
+        username: user.username.toString(),
+        email: user.email?.toString() ?? null,
+        password: encodedPassword,
+        name: user.name,
+        phone: null,
+        globalRole: user.globalRole,
+        createdAt: user.createdAt,
+        updatedAt: user.updatedAt,
+        deletedAt: null,
+        members: user.clinicMembers.map((clinicMemberId) => ({
+            id: clinicMemberId.toString(),
+            clinicId: ClinicId.generate().toString(),
+            userId: user.id.toString(),
+            roles: [],
+            displayName: null,
+            color: null,
+            isActive: true,
+            invitedByMemberId: null,
+            createdAt: user.createdAt,
+            updatedAt: user.updatedAt,
+            deletedAt: null,
+        })),
+    });
+
+    const databaseUsers: UserModel[] = domainUsers.map(toUserModel);
+
+    const include = {members: {where: {deletedAt: null}}};
+
+    afterEach(() => {
+        jest.useRealTimers();
+    });
 
     it.each([
         [null, null],
         [databaseUsers[0], domainUsers[0]],
     ])('should find a user by ID', async (databaseUser, domainUser) => {
-        jest.spyOn(prisma.user, 'findUnique').mockResolvedValueOnce(databaseUser);
+        prisma.user.findUnique.mockResolvedValueOnce(databaseUser);
 
         await expect(repository.findById(domainUsers[0].id)).resolves.toEqual(domainUser);
 
         expect(prisma.user.findUnique).toHaveBeenCalledTimes(1);
         expect(prisma.user.findUnique).toHaveBeenCalledWith({
-            where: {
-                id: domainUsers[0].id.toString(),
-            },
-            include: {
-                companies: true,
-            },
+            where: {id: domainUsers[0].id.toString(), deletedAt: null},
+            include,
         });
     });
 
@@ -94,18 +106,14 @@ describe('A user repository backed by Prisma ORM', () => {
         [null, null],
         [databaseUsers[0], domainUsers[0]],
     ])('should find a user by username', async (databaseUser, domainUser) => {
-        jest.spyOn(prisma.user, 'findUnique').mockResolvedValueOnce(databaseUser);
+        prisma.user.findUnique.mockResolvedValueOnce(databaseUser);
 
         await expect(repository.findByUsername(domainUsers[0].username)).resolves.toEqual(domainUser);
 
         expect(prisma.user.findUnique).toHaveBeenCalledTimes(1);
         expect(prisma.user.findUnique).toHaveBeenCalledWith({
-            where: {
-                username: domainUsers[0].username.toString(),
-            },
-            include: {
-                companies: true,
-            },
+            where: {username: domainUsers[0].username.toString(), deletedAt: null},
+            include,
         });
     });
 
@@ -113,43 +121,16 @@ describe('A user repository backed by Prisma ORM', () => {
         [null, null],
         [databaseUsers[0], domainUsers[0]],
     ])('should find a user by email', async (databaseUser, domainUser) => {
-        jest.spyOn(prisma.user, 'findUnique').mockResolvedValueOnce(databaseUser);
+        const email = Email.create('john_doe@example.com');
 
-        await expect(repository.findByEmail(domainUsers[0].email)).resolves.toEqual(domainUser);
+        prisma.user.findUnique.mockResolvedValueOnce(databaseUser);
+
+        await expect(repository.findByEmail(email)).resolves.toEqual(domainUser);
 
         expect(prisma.user.findUnique).toHaveBeenCalledTimes(1);
         expect(prisma.user.findUnique).toHaveBeenCalledWith({
-            where: {
-                email: domainUsers[0].email!.toString(),
-            },
-            include: {
-                companies: true,
-            },
-        });
-    });
-
-    it.each([
-        [null, null],
-        [databaseUsers[1], domainUsers[1]],
-    ])('should find a user by the employee ID', async (databaseUser, domainUser) => {
-        const employeeId = PersonId.generate();
-
-        jest.spyOn(prisma.user, 'findFirst').mockResolvedValueOnce(databaseUser);
-
-        await expect(repository.findByEmployeeId(employeeId)).resolves.toEqual(domainUser);
-
-        expect(prisma.user.findFirst).toHaveBeenCalledTimes(1);
-        expect(prisma.user.findFirst).toHaveBeenCalledWith({
-            where: {
-                employees: {
-                    some: {
-                        id: employeeId.toString(),
-                    },
-                },
-            },
-            include: {
-                companies: true,
-            },
+            where: {email: email.toString(), deletedAt: null},
+            include,
         });
     });
 
@@ -157,50 +138,24 @@ describe('A user repository backed by Prisma ORM', () => {
         [databaseUsers[0], domainUsers[0]],
         [databaseUsers[1], domainUsers[1]],
     ])('should save a user', async (databaseUser, domainUser) => {
-        const {companies, ...userModel} = databaseUser;
-        const companyModels = companies.map((company) => ({companyId: company.companyId}));
-
-        jest.spyOn(prisma.user, 'upsert');
+        const {members: _members, ...userModel} = databaseUser;
 
         await repository.save(domainUser);
 
         expect(prisma.user.upsert).toHaveBeenCalledTimes(1);
         expect(prisma.user.upsert).toHaveBeenCalledWith({
-            where: {
-                id: domainUser.id.toString(),
-            },
-            create: {
-                ...userModel,
-                companies: {
-                    createMany: {
-                        data: companyModels,
-                    },
-                },
-            },
-            update: {
-                ...userModel,
-                companies: {
-                    deleteMany: {
-                        userId: userModel.id,
-                        NOT: companyModels,
-                    },
-                    createMany: {
-                        data: companyModels,
-                        skipDuplicates: true,
-                    },
-                },
-            },
+            where: {id: domainUser.id.toString()},
+            create: userModel,
+            update: userModel,
         });
     });
 
     it('should throw an exception when saving a user with a duplicate username', async () => {
-        jest.spyOn(prisma.user, 'upsert').mockRejectedValueOnce(
+        prisma.user.upsert.mockRejectedValueOnce(
             new Prisma.PrismaClientKnownRequestError('Unique constraint violation', {
                 clientVersion: '0.0.0',
                 code: 'P2002',
-                meta: {
-                    target: ['username'],
-                },
+                meta: {target: ['username']},
             })
         );
 
@@ -211,13 +166,11 @@ describe('A user repository backed by Prisma ORM', () => {
     });
 
     it('should throw an exception when saving a user with a duplicate email', async () => {
-        jest.spyOn(prisma.user, 'upsert').mockRejectedValueOnce(
+        prisma.user.upsert.mockRejectedValueOnce(
             new Prisma.PrismaClientKnownRequestError('Unique constraint violation', {
                 clientVersion: '0.0.0',
                 code: 'P2002',
-                meta: {
-                    target: ['email'],
-                },
+                meta: {target: ['email']},
             })
         );
 
@@ -230,21 +183,57 @@ describe('A user repository backed by Prisma ORM', () => {
     it('should rethrow an unknown error when saving a user', async () => {
         const error = new Error('Unknown error');
 
-        jest.spyOn(prisma.user, 'upsert').mockRejectedValueOnce(error);
+        prisma.user.upsert.mockRejectedValueOnce(error);
 
         await expect(repository.save(domainUsers[1])).rejects.toThrow(error);
     });
 
-    it('should delete a user by ID', async () => {
-        jest.spyOn(prisma.user, 'delete');
+    it.each([
+        [{}, {id: undefined, OR: undefined, deletedAt: null}],
+        [
+            {ids: [domainUsers[0].id], term: 'john'},
+            {
+                id: {in: [domainUsers[0].id.toString()]},
+                OR: [
+                    {name: {contains: 'john', mode: 'insensitive'}},
+                    {username: {contains: 'john', mode: 'insensitive'}},
+                    {email: {contains: 'john', mode: 'insensitive'}},
+                ],
+                deletedAt: null,
+            },
+        ],
+    ])('should search users', async (filter, where) => {
+        const pagination: Pagination<UserSortOptions> = {limit: 10};
+
+        prisma.user.findMany.mockResolvedValueOnce(databaseUsers);
+        prisma.user.count.mockResolvedValueOnce(databaseUsers.length);
+
+        await expect(repository.search(pagination, filter)).resolves.toEqual({
+            data: domainUsers,
+            totalCount: databaseUsers.length,
+        });
+
+        expect(prisma.user.findMany).toHaveBeenCalledWith({
+            where,
+            include,
+            skip: undefined,
+            take: 10,
+            orderBy: [{createdAt: 'desc'}],
+        });
+        expect(prisma.user.count).toHaveBeenCalledWith({where});
+    });
+
+    it('should soft-delete a user by ID', async () => {
+        const now = new Date('2024-01-01T00:00:00Z');
+
+        jest.useFakeTimers({now});
 
         await repository.delete(domainUsers[0].id);
 
-        expect(prisma.user.delete).toHaveBeenCalledTimes(1);
-        expect(prisma.user.delete).toHaveBeenCalledWith({
-            where: {
-                id: domainUsers[0].id.toString(),
-            },
+        expect(prisma.user.updateMany).toHaveBeenCalledTimes(1);
+        expect(prisma.user.updateMany).toHaveBeenCalledWith({
+            where: {id: domainUsers[0].id.toString(), deletedAt: null},
+            data: {deletedAt: now, updatedAt: now},
         });
     });
 });

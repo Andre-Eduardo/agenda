@@ -15,6 +15,45 @@ Feature: Procedure and service catalog
         Then the request should succeed with a 201 status code
         And I save the response field "id" as "patient" id for "procedure_patient"
 
+    Scenario: A deactivated catalog item with appointments is listed only in the catalog
+        Given the clinic member "dr_house" also has the role "OWNER"
+        When I send a "POST" request to "/api/v1/procedures" with:
+            | name            | Follow-up assessment |
+            | durationMinutes | 45                   |
+            | color           | GREEN                |
+            | priceInCents    | 15650                |
+            | modality        | REMOTE               |
+        Then the request should succeed with a 201 status code
+        And I save the response field "id" as "procedure" id for "assessment"
+        When I send a "POST" request to "/api/v1/appointments" with:
+            | patientId          | ${ref:id:patient:procedure_patient} |
+            | attendedByMemberId | ${ref:id:clinicMember:dr_house}     |
+            | startAt            | 2027-04-01T09:00:00.000Z            |
+            | type               | PROCEDURE                          |
+            | procedureId        | ${ref:id:procedure:assessment}     |
+            | retroactive        | true                               |
+        Then the request should succeed with a 201 status code
+        When I send a "PUT" request to "/api/v1/procedures/${ref:id:procedure:assessment}" with:
+            | name            | Updated assessment |
+            | durationMinutes | 60                 |
+            | color           | BLUE               |
+            | priceInCents    | 19500              |
+            | modality        | IN_PERSON          |
+            | active          | false              |
+        Then the request should succeed with a 200 status code
+        When I send a "GET" request to "/api/v1/procedures"
+        Then the request should succeed with a 200 status code
+        And the response should match:
+            """JSON
+            []
+            """
+        When I send a "GET" request to "/api/v1/procedures/catalog"
+        Then the request should succeed with a 200 status code
+        And the response should match:
+            """JSON
+            [{"id":"${ref:id:procedure:assessment}","name":"Updated assessment","durationMinutes":60,"color":"BLUE","priceInCents":19500,"modality":"IN_PERSON","active":false}]
+            """
+
     Scenario: An appointment keeps its procedure details when the catalog item changes
         Given the clinic member "dr_house" also has the role "OWNER"
         When I send a "POST" request to "/api/v1/procedures" with:
@@ -50,18 +89,6 @@ Feature: Procedure and service catalog
             | modality        | IN_PERSON          |
             | active          | false              |
         Then the request should succeed with a 200 status code
-        When I send a "GET" request to "/api/v1/procedures"
-        Then the request should succeed with a 200 status code
-        And the response should match:
-            """JSON
-            []
-            """
-        When I send a "GET" request to "/api/v1/procedures/catalog"
-        Then the request should succeed with a 200 status code
-        And the response should match:
-            """JSON
-            [{"id":"${ref:id:procedure:assessment}","name":"Updated assessment","durationMinutes":60,"color":"BLUE","priceInCents":19500,"modality":"IN_PERSON","active":false}]
-            """
         When I send a "PUT" request to "/api/v1/appointments/${ref:id:appointment:assessment}" with:
             | startAt | 2027-04-01T11:00:00.000Z |
         Then the request should succeed with a 200 status code
@@ -74,6 +101,25 @@ Feature: Procedure and service catalog
             | procedure.color        | GREEN                   |
             | procedure.priceInCents | 15650                   |
             | procedure.modality     | REMOTE                  |
+
+    Scenario: A deactivated catalog item cannot be used for a new appointment
+        Given the clinic member "dr_house" also has the role "OWNER"
+        When I send a "POST" request to "/api/v1/procedures" with:
+            | name            | Follow-up assessment |
+            | durationMinutes | 45                   |
+            | color           | GREEN                |
+            | priceInCents    | 15650                |
+            | modality        | REMOTE               |
+        Then the request should succeed with a 201 status code
+        And I save the response field "id" as "procedure" id for "assessment"
+        When I send a "PUT" request to "/api/v1/procedures/${ref:id:procedure:assessment}" with:
+            | name            | Updated assessment |
+            | durationMinutes | 60                 |
+            | color           | BLUE               |
+            | priceInCents    | 19500              |
+            | modality        | IN_PERSON          |
+            | active          | false              |
+        Then the request should succeed with a 200 status code
         When I send a "POST" request to "/api/v1/appointments" with:
             | patientId          | ${ref:id:patient:procedure_patient} |
             | attendedByMemberId | ${ref:id:clinicMember:dr_house}     |
@@ -148,7 +194,7 @@ Feature: Procedure and service catalog
             | retroactive        | true                               |
         Then the request should fail with a 400 status code
 
-    Scenario: An administrator cannot use a procedure owned by another clinic
+    Scenario: An administrator cannot see or update a procedure owned by another clinic
         Given the clinic member "dr_house" also has the role "OWNER"
         And I am signed in as "dr_adams"
         And a professional "dr_adams" exists with specialty "MEDICINA"
@@ -177,6 +223,22 @@ Feature: Procedure and service catalog
             | modality        | IN_PERSON          |
             | active          | false              |
         Then the request should fail with a 404 status code
+
+    Scenario: An administrator cannot use a procedure owned by another clinic
+        Given the clinic member "dr_house" also has the role "OWNER"
+        And I am signed in as "dr_adams"
+        And a professional "dr_adams" exists with specialty "MEDICINA"
+        And I am signed in as "dr_adams" with professional "${ref:id:professional:dr_adams}"
+        And the clinic member "dr_adams" also has the role "OWNER"
+        When I send a "POST" request to "/api/v1/procedures" with:
+            | name            | Another clinic's evaluation |
+            | durationMinutes | 40                          |
+            | color           | BLUE                        |
+            | priceInCents    | 15500                       |
+            | modality        | IN_PERSON                   |
+        Then the request should succeed with a 201 status code
+        And I save the response field "id" as "procedure" id for "foreign_item"
+        Given I am signed in as "dr_house" with professional "${ref:id:professional:dr_house}"
         When I send a "POST" request to "/api/v1/appointments" with:
             | patientId          | ${ref:id:patient:procedure_patient} |
             | attendedByMemberId | ${ref:id:clinicMember:dr_house}     |

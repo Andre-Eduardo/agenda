@@ -34,11 +34,23 @@ export const datePickerTrigger = css({
     _hover: {color: 'text.primary'},
     _focusVisible: {outline: '2px solid', outlineColor: 'primary', outlineOffset: '2px'},
 });
-export const nativeDateInput = css({position: 'absolute', right: '0', bottom: '0', w: '[1px]', h: '[1px]', opacity: '0', pointerEvents: 'none'});
+export const nativeDateInput = css({
+    position: 'absolute',
+    right: '0',
+    bottom: '0',
+    w: '[1px]',
+    h: '[1px]',
+    opacity: '0',
+    pointerEvents: 'none',
+});
 
 export const statGrid = css({
     display: 'grid',
-    gridTemplateColumns: {base: 'repeat(2, minmax(0, 1fr))', md: 'repeat(3, minmax(0, 1fr))', xl: 'repeat(4, minmax(0, 1fr))'},
+    gridTemplateColumns: {
+        base: 'repeat(2, minmax(0, 1fr))',
+        md: 'repeat(3, minmax(0, 1fr))',
+        xl: 'repeat(4, minmax(0, 1fr))',
+    },
     gap: '3',
 });
 

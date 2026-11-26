@@ -1,10 +1,10 @@
 import {ZodIssueCode} from 'zod';
-import {RoomPermission, ReservationPermission, ProductPermission} from '../../../../../domain/auth';
+import {AppointmentPermission, PatientPermission, RoomPermission} from '../../../../../domain/auth';
 import type {ExpectedIssue} from '../../../__tests__/zod.utils';
 import {permission, permissions} from '../index';
 
 describe('A permission schema', () => {
-    it.each([RoomPermission.VIEW, 'room:view', 'product:delete', 'room-category:delete'])(
+    it.each([RoomPermission.VIEW, 'room:view', 'patient:delete', 'clinic-member:create'])(
         'should accept valid payloads',
         (payload) => {
             expect(permission.safeParse(payload)).toEqual(
@@ -48,9 +48,9 @@ describe('A permission schema', () => {
 describe('A permissions schema', () => {
     it.each([
         [[RoomPermission.VIEW]],
-        [[RoomPermission.DELETE, ReservationPermission.CANCEL]],
-        [[ProductPermission.VIEW, 'room-category:delete']],
-        [['room:view', 'product:delete']],
+        [[RoomPermission.DELETE, AppointmentPermission.CANCEL]],
+        [[PatientPermission.VIEW, 'clinic-member:create']],
+        [['room:view', 'patient:delete']],
     ])('should accept valid payloads', (payload) => {
         expect(permissions.safeParse(payload)).toEqual(
             expect.objectContaining({
@@ -68,7 +68,7 @@ describe('A permissions schema', () => {
             },
         ],
         [
-            ['bar', ReservationPermission.VIEW],
+            ['bar', AppointmentPermission.VIEW],
             {
                 code: ZodIssueCode.custom,
                 path: [0],

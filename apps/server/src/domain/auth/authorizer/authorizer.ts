@@ -11,12 +11,12 @@ export abstract class Authorizer {
     }
 
     /** Por que nenhuma das permissões foi concedida. */
-    async denialReason(
+    denialReason(
         _clinicMemberId: ClinicMemberId | null,
         _userId: UserId,
         _permissions: readonly Permission[]
     ): Promise<AccessDeniedReason> {
-        return AccessDeniedReason.INSUFFICIENT_PERMISSIONS;
+        return Promise.resolve(AccessDeniedReason.INSUFFICIENT_PERMISSIONS);
     }
 
     abstract getPermissions(clinicMemberId: ClinicMemberId | null, userId: UserId): Promise<Set<Permission>>;

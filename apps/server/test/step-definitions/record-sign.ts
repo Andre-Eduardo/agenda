@@ -12,6 +12,6 @@ Then(
             this.agent.post(`/api/v1/records/${id}/reopen`).send(body),
         ]);
 
-        chai.expect(results.map((response) => response.status).toSorted()).to.deep.equal([200, 409]);
+        chai.expect(results.map((response) => response.status).toSorted((a, b) => a - b)).to.deep.equal([200, 409]);
     }
 );

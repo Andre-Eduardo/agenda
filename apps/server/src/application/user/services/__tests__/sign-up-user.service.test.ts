@@ -8,6 +8,8 @@ import {UserSignedUpEvent} from '../../../../domain/user/events';
 import {DuplicateEmailException, DuplicateUsernameException} from '../../../../domain/user/user.exceptions';
 import type {UserRepository} from '../../../../domain/user/user.repository';
 import {Username} from '../../../../domain/user/value-objects';
+import type {EnvConfigService} from '../../../../infrastructure/config';
+import {SignUpMode} from '../../../../infrastructure/config';
 import type {SignUpUserDto} from '../../dtos';
 import {UserDto} from '../../dtos';
 import {SignUpUserService} from '../index';
@@ -15,10 +17,13 @@ import {SignUpUserService} from '../index';
 describe('A sign-up-user service', () => {
     const userRepository = mock<UserRepository>();
     const eventDispatcher = mock<EventDispatcher>();
-    const createUserService = new SignUpUserService(userRepository, eventDispatcher);
+    const config = mock<EnvConfigService>();
+    const createUserService = new SignUpUserService(userRepository, eventDispatcher, config);
 
     const actor: UnauthenticatedActor = {
         userId: null,
+        clinicId: null,
+        clinicMemberId: null,
         ip: '127.0.0.1',
     };
 
@@ -26,6 +31,10 @@ describe('A sign-up-user service', () => {
 
     beforeEach(() => {
         jest.useFakeTimers({now});
+        Object.defineProperty(config, 'signUp', {
+            get: () => ({mode: SignUpMode.OPEN, inviteCode: undefined}),
+            configurable: true,
+        });
     });
 
     afterEach(() => {
@@ -34,8 +43,7 @@ describe('A sign-up-user service', () => {
 
     it('should create a user', async () => {
         const payload: SignUpUserDto = {
-            firstName: 'John',
-            lastName: 'Doe',
+            name: 'John Doe',
             email: Email.create('john.doe@example.com'),
             username: Username.create('johndoe'),
             password: '@SecurePassword123',
@@ -71,7 +79,7 @@ describe('A sign-up-user service', () => {
 
     it('should throw an error if the username is already in use', async () => {
         const payload: SignUpUserDto = {
-            firstName: 'John',
+            name: 'John',
             email: Email.create('john.doe@example.com'),
             username: Username.create('johndoe'),
             password: '@SecurePassword123',
@@ -92,7 +100,7 @@ describe('A sign-up-user service', () => {
 
     it('should throw an error if the email is already in use', async () => {
         const payload: SignUpUserDto = {
-            firstName: 'John',
+            name: 'John',
             email: Email.create('john.doe@example.com'),
             username: Username.create('johndoe'),
             password: '@SecurePassword123',
@@ -113,7 +121,7 @@ describe('A sign-up-user service', () => {
 
     it('should throw an error when failing to save the user', async () => {
         const payload: SignUpUserDto = {
-            firstName: 'John',
+            name: 'John',
             email: Email.create('john.doe@example.com'),
             username: Username.create('johndoe'),
             password: '@SecurePassword123',

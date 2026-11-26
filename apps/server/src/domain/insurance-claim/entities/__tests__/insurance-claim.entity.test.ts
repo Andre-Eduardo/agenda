@@ -5,18 +5,18 @@ import {InsuranceAuthorizationStatus, InsuranceClaim, InsuranceClaimStatus} from
 import {InsurancePlanId} from '@domain/insurance-plan/entities';
 import {PatientInsuranceEnrollmentId} from '@domain/patient-insurance-enrollment/entities';
 
-describe('InsuranceClaim', () => {
-    function createClaim(authorizationCode: string | null = null): InsuranceClaim {
-        return InsuranceClaim.create({
-            clinicId: ClinicId.generate(),
-            appointmentPaymentId: AppointmentPaymentId.generate(),
-            patientInsuranceEnrollmentId: PatientInsuranceEnrollmentId.generate(),
-            insurancePlanId: InsurancePlanId.generate(),
-            authorizationCode,
-            submittedAmountBrl: 200,
-        });
-    }
+function createClaim(authorizationCode: string | null = null): InsuranceClaim {
+    return InsuranceClaim.create({
+        clinicId: ClinicId.generate(),
+        appointmentPaymentId: AppointmentPaymentId.generate(),
+        patientInsuranceEnrollmentId: PatientInsuranceEnrollmentId.generate(),
+        insurancePlanId: InsurancePlanId.generate(),
+        authorizationCode,
+        submittedAmountBrl: 200,
+    });
+}
 
+describe('InsuranceClaim', () => {
     it('should start as DRAFT with NOT_REQUIRED authorization when no code is given', () => {
         const claim = createClaim();
 

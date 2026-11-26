@@ -78,7 +78,7 @@ Feature: Record sign and reopen (POST)
         When I send a "POST" request to "/api/v1/records/01900000-0000-7000-8000-000000000000/sign"
         Then the request should fail with a 401 status code
 
-    Scenario: A signed note can be corrected only through a traced reopening
+    Scenario: A signed note records who signed it and rejects direct edits
         Given the clinic member "dr_house" also has the role "OWNER"
         When I send a "POST" request to "/api/v1/records" with:
             | patientId                  | ${ref:id:patient:sign_patient}   |
@@ -96,6 +96,22 @@ Feature: Record sign and reopen (POST)
         Then the request should fail with a 403 status code
         When I send a "DELETE" request to "/api/v1/records/${ref:id:record:signed_correction}"
         Then the request should fail with a 403 status code
+
+    Scenario: A signed note rejects a blank reopening justification and stays unchanged
+        Given the clinic member "dr_house" also has the role "OWNER"
+        When I send a "POST" request to "/api/v1/records" with:
+            | patientId                  | ${ref:id:patient:sign_patient}   |
+            | responsibleProfessionalId | ${ref:id:professional:dr_house} |
+            | subjective                 | Original signed content          |
+        Then the request should succeed with a 201 status code
+        And I save the response field "id" as "record" id for "signed_correction"
+        When I send a "POST" request to "/api/v1/records/${ref:id:record:signed_correction}/sign"
+        Then the request should succeed with a 200 status code
+        When I send a "PUT" request to "/api/v1/records/${ref:id:record:signed_correction}" with:
+            | subjective | This edit should be rejected |
+        Then the request should fail with a 403 status code
+        When I send a "DELETE" request to "/api/v1/records/${ref:id:record:signed_correction}"
+        Then the request should fail with a 403 status code
         When I send a "POST" request to "/api/v1/records/${ref:id:record:signed_correction}/reopen" with body:
             """JSON
             {"justification":"   "}
@@ -106,6 +122,17 @@ Feature: Record sign and reopen (POST)
         And the response should contain:
             | isLocked   | true                    |
             | subjective | Original signed content |
+
+    Scenario: A reopened note is unlocked but still cannot be deleted
+        Given the clinic member "dr_house" also has the role "OWNER"
+        When I send a "POST" request to "/api/v1/records" with:
+            | patientId                  | ${ref:id:patient:sign_patient}   |
+            | responsibleProfessionalId | ${ref:id:professional:dr_house} |
+            | subjective                 | Original signed content          |
+        Then the request should succeed with a 201 status code
+        And I save the response field "id" as "record" id for "signed_correction"
+        When I send a "POST" request to "/api/v1/records/${ref:id:record:signed_correction}/sign"
+        Then the request should succeed with a 200 status code
         When I send a "POST" request to "/api/v1/records/${ref:id:record:signed_correction}/reopen" with:
             | justification | Correct recording error |
         Then the request should succeed with a 200 status code
@@ -113,6 +140,20 @@ Feature: Record sign and reopen (POST)
             | isLocked | false |
         When I send a "DELETE" request to "/api/v1/records/${ref:id:record:signed_correction}"
         Then the request should fail with a 403 status code
+
+    Scenario: A corrected note is locked again when signed
+        Given the clinic member "dr_house" also has the role "OWNER"
+        When I send a "POST" request to "/api/v1/records" with:
+            | patientId                  | ${ref:id:patient:sign_patient}   |
+            | responsibleProfessionalId | ${ref:id:professional:dr_house} |
+            | subjective                 | Original signed content          |
+        Then the request should succeed with a 201 status code
+        And I save the response field "id" as "record" id for "signed_correction"
+        When I send a "POST" request to "/api/v1/records/${ref:id:record:signed_correction}/sign"
+        Then the request should succeed with a 200 status code
+        When I send a "POST" request to "/api/v1/records/${ref:id:record:signed_correction}/reopen" with:
+            | justification | Correct recording error |
+        Then the request should succeed with a 200 status code
         When I send a "PUT" request to "/api/v1/records/${ref:id:record:signed_correction}" with:
             | subjective | Corrected clinical text |
         Then the request should succeed with a 200 status code
@@ -121,6 +162,25 @@ Feature: Record sign and reopen (POST)
         And the response should contain:
             | isLocked   | true                   |
             | subjective | Corrected clinical text |
+
+    Scenario: A signed note can be corrected only through a traced reopening
+        Given the clinic member "dr_house" also has the role "OWNER"
+        When I send a "POST" request to "/api/v1/records" with:
+            | patientId                  | ${ref:id:patient:sign_patient}   |
+            | responsibleProfessionalId | ${ref:id:professional:dr_house} |
+            | subjective                 | Original signed content          |
+        Then the request should succeed with a 201 status code
+        And I save the response field "id" as "record" id for "signed_correction"
+        When I send a "POST" request to "/api/v1/records/${ref:id:record:signed_correction}/sign"
+        Then the request should succeed with a 200 status code
+        When I send a "POST" request to "/api/v1/records/${ref:id:record:signed_correction}/reopen" with:
+            | justification | Correct recording error |
+        Then the request should succeed with a 200 status code
+        When I send a "PUT" request to "/api/v1/records/${ref:id:record:signed_correction}" with:
+            | subjective | Corrected clinical text |
+        Then the request should succeed with a 200 status code
+        When I send a "POST" request to "/api/v1/records/${ref:id:record:signed_correction}/sign"
+        Then the request should succeed with a 200 status code
         When I send a "GET" request to "/api/v1/records/${ref:id:record:signed_correction}/amendments"
         Then the request should succeed with a 200 status code
         And the response should match:

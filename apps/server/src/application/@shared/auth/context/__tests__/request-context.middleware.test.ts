@@ -14,7 +14,7 @@ describe('A request context middleware', () => {
         secure: true,
         signed: true,
     };
-    const middleware = new RequestContextMiddleware('authCookie', 'companyCookie', cookieOptions);
+    const middleware = new RequestContextMiddleware('authCookie', 'clinicMemberCookie', cookieOptions);
 
     it.each([
         [undefined, '0.0.0.0'],
@@ -24,7 +24,7 @@ describe('A request context middleware', () => {
             ip: requestIp,
             hostname: 'example.com',
             signedCookies: {
-                companyCookie: 'company-id',
+                clinicMemberCookie: 'clinic-member-id',
             },
         });
 
@@ -36,16 +36,18 @@ describe('A request context middleware', () => {
 
         expect(request.actor).toEqual({
             userId: null,
+            clinicId: null,
+            clinicMemberId: null,
             ip: actorIp,
         });
 
         expect(next).toHaveBeenCalledTimes(1);
     });
 
-    it('should define the company ID on the request query params', () => {
+    it('should define the clinic member ID on the request query params', () => {
         const request = {
             signedCookies: {
-                companyCookie: 'company-id',
+                clinicMemberCookie: 'clinic-member-id',
             },
             method: 'GET',
             query: {
@@ -61,16 +63,16 @@ describe('A request context middleware', () => {
 
         expect(request.query).toEqual({
             foo: 'bar',
-            companyId: 'company-id',
+            clinicMemberId: 'clinic-member-id',
         });
 
         expect(next).toHaveBeenCalledTimes(1);
     });
 
-    it.each(['POST', 'PUT', 'PATCH', 'DELETE'])('should define the company ID on the request body', (method) => {
+    it.each(['POST', 'PUT', 'PATCH', 'DELETE'])('should define the clinic member ID on the request body', (method) => {
         const request = {
             signedCookies: {
-                companyCookie: 'company-id',
+                clinicMemberCookie: 'clinic-member-id',
             },
             method,
             body: {
@@ -86,7 +88,7 @@ describe('A request context middleware', () => {
 
         expect(request.body).toEqual({
             foo: 'bar',
-            companyId: 'company-id',
+            clinicMemberId: 'clinic-member-id',
         });
 
         expect(next).toHaveBeenCalledTimes(1);
@@ -106,7 +108,7 @@ describe('A request context middleware', () => {
         middleware.use(request, response, next);
 
         expect(response.actions).toBeInstanceOf(ExpressContextActions);
-        expect(ExpressContextActions).toHaveBeenCalledWith(response, 'authCookie', 'companyCookie', {
+        expect(ExpressContextActions).toHaveBeenCalledWith(response, 'authCookie', 'clinicMemberCookie', {
             ...cookieOptions,
             domain: 'example.com',
         });

@@ -9,9 +9,13 @@ interface QueryResult {
 }
 
 const permissionsQuery = vi.hoisted(() => vi.fn<(options: unknown) => QueryResult>());
+const modulesQuery = vi.hoisted(() =>
+    vi.fn<(options: unknown) => {data?: {modules: string[]}; isPending: boolean; isError: boolean}>()
+);
 
 vi.mock('@agenda-app/client', () => ({
     useGetCurrentClinicMemberPermissions: permissionsQuery,
+    useGetMyModules: modulesQuery,
 }));
 
 const loaded = (...permissions: string[]): QueryResult => ({data: {permissions}, isPending: false, isError: false});
@@ -21,6 +25,8 @@ const failed: QueryResult = {isPending: false, isError: true};
 describe('Can', () => {
     beforeEach(() => {
         permissionsQuery.mockReset();
+        modulesQuery.mockReset();
+        modulesQuery.mockReturnValue({isPending: false, isError: false});
     });
 
     describe('when the permission is granted', () => {
@@ -194,6 +200,35 @@ describe('Can', () => {
             );
 
             expect(html).toBe('no');
+        });
+    });
+    describe('with a module', () => {
+        beforeEach(() => {
+            permissionsQuery.mockReturnValue(loaded('patient:view'));
+        });
+
+        it('renders children when the member was released for the module', () => {
+            modulesQuery.mockReturnValue({data: {modules: ['AI_CHAT']}, isPending: false, isError: false});
+
+            const html = renderToStaticMarkup(
+                <Can has="patient:view" module="AI_CHAT">
+                    <span>chat</span>
+                </Can>
+            );
+
+            expect(html).toBe('<span>chat</span>');
+        });
+
+        it('hides children when the member was not released for the module', () => {
+            modulesQuery.mockReturnValue({data: {modules: []}, isPending: false, isError: false});
+
+            const html = renderToStaticMarkup(
+                <Can has="patient:view" module="AI_CHAT">
+                    <span>chat</span>
+                </Can>
+            );
+
+            expect(html).toBe('');
         });
     });
 });

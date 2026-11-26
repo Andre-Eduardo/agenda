@@ -17,7 +17,7 @@ export class ModuleAccess {
     async getClinicModules(clinicId: ClinicId): Promise<Set<ModuleType>> {
         const license = await this.clinicLicenseRepository.findByClinicId(clinicId);
 
-        return new Set(license?.modules.keys() ?? []);
+        return new Set(license?.modules.keys());
     }
 
     /** Pacotes contratados pela clínica do membro, liberados para ele ou não. */

@@ -434,18 +434,12 @@ export function RemindersSection() {
                         aria-live="polite"
                     >
                         <div className={previewLabel}>Pré-visualização (dados de exemplo)</div>
-                        {templateProblem(form.messageTemplate) !== null ? (
-                            <p className={fieldError}>Corrija o texto para ver a pré-visualização.</p>
-                        ) : preview.isError ? (
-                            <p className={fieldError}>
-                                {translateApiError(
-                                    apiErrorDetail(preview.error),
-                                    'Corrija o texto para ver a pré-visualização.'
-                                )}
-                            </p>
-                        ) : (
-                            <p className={previewText}>{preview.data?.message ?? '…'}</p>
-                        )}
+                        <PreviewMessage
+                            hasTemplateProblem={templateProblem(form.messageTemplate) !== null}
+                            isError={preview.isError}
+                            error={preview.error}
+                            message={preview.data?.message}
+                        />
                     </div>
                     {parsedLeadTimes.length > 0 && (
                         <p className={fieldHint}>
@@ -483,6 +477,29 @@ export function RemindersSection() {
             </FormCard>
         </div>
     );
+}
+
+type PreviewMessageProps = {
+    hasTemplateProblem: boolean;
+    isError: boolean;
+    error: unknown;
+    message: string | undefined;
+};
+
+function PreviewMessage({hasTemplateProblem, isError, error, message}: PreviewMessageProps) {
+    if (hasTemplateProblem) {
+        return <p className={fieldError}>Corrija o texto para ver a pré-visualização.</p>;
+    }
+
+    if (isError) {
+        return (
+            <p className={fieldError}>
+                {translateApiError(apiErrorDetail(error), 'Corrija o texto para ver a pré-visualização.')}
+            </p>
+        );
+    }
+
+    return <p className={previewText}>{message ?? '…'}</p>;
 }
 
 function Heading() {

@@ -11,9 +11,9 @@ import {AppointmentId} from '@domain/appointment/entities';
 import {ClinicMemberId} from '@domain/clinic-member/entities';
 import {ClinicId} from '@domain/clinic/entities';
 import {InsurancePlanId} from '@domain/insurance-plan/entities';
-import {PatientId} from '@domain/patient/entities';
 import {PatientPackageId} from '@domain/patient-package/entities';
 import {PatientSubscriptionId} from '@domain/patient-subscription/entities';
+import {PatientId} from '@domain/patient/entities';
 import {MapperWithoutDto} from '@infrastructure/mappers/mapper';
 
 export type AppointmentPaymentModel = PrismaClient.AppointmentPayment;

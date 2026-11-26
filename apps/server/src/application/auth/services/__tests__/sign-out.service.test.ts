@@ -3,7 +3,8 @@ import type {Actor} from '../../../../domain/@shared/actor';
 import {ResourceNotFoundException} from '../../../../domain/@shared/exceptions';
 import {Email} from '../../../../domain/@shared/value-objects';
 import {GlobalRole} from '../../../../domain/auth';
-import {CompanyId} from '../../../../domain/company/entities';
+import {ClinicMemberId} from '../../../../domain/clinic-member/entities';
+import {ClinicId} from '../../../../domain/clinic/entities';
 import type {EventDispatcher} from '../../../../domain/event';
 import {UserId} from '../../../../domain/user/entities';
 import {fakeUser} from '../../../../domain/user/entities/__tests__/fake-user';
@@ -19,6 +20,8 @@ describe('A sign-out service', () => {
 
     const actor: Actor = {
         userId: UserId.generate(),
+        clinicId: ClinicId.generate(),
+        clinicMemberId: ClinicMemberId.generate(),
         ip: '127.0.0.1',
     };
 
@@ -35,13 +38,12 @@ describe('A sign-out service', () => {
     it('should sign out a user', async () => {
         const existingUser = fakeUser({
             id: UserId.generate(),
-            firstName: 'John',
-            lastName: 'Doe',
+            name: 'John Doe',
             email: Email.create('john.doe@example.com'),
             username: Username.create('johndoe'),
             password: await ObfuscatedPassword.obfuscate('@SecurePassword123'),
             globalRole: GlobalRole.OWNER,
-            companies: [CompanyId.generate()],
+            clinicMembers: [ClinicMemberId.generate()],
             createdAt: new Date(1000),
             updatedAt: new Date(1000),
         });

@@ -7,7 +7,6 @@ import {GlobalRole} from '@domain/auth';
 import {ClinicMemberRepository} from '@domain/clinic-member/clinic-member.repository';
 import {ClinicMemberId} from '@domain/clinic-member/entities';
 import {EventDispatcher} from '@domain/event';
-import {User} from '@domain/user/entities';
 import {Token, TokenClinicMember, TokenProvider, TokenScope} from '@domain/user/token';
 import {UserRepository} from '@domain/user/user.repository';
 
@@ -62,7 +61,10 @@ export class SignInService implements ApplicationService<SignInDto, SignInRespon
             }
         }
 
-        const selectedMemberId = this.getAccessClinicMember(user, payload.clinicMemberId);
+        const selectedMemberId = this.getAccessClinicMember(
+            clinicMembers.map(({clinicMemberId}) => clinicMemberId),
+            payload.clinicMemberId
+        );
 
         const token = await this.tokenProvider.issue(user.id, {
             scope: [TokenScope.AUTH],
@@ -81,14 +83,19 @@ export class SignInService implements ApplicationService<SignInDto, SignInRespon
     /**
      * Picks which ClinicMember the new session is scoped to.
      *
+     * Only memberships that still exist (the ones placed in the token) can be selected,
+     * otherwise the session cookie would point at a member the token does not contain.
      * If the caller asked for a specific membership and the user has access to it,
      * use that one. Otherwise fall back to the first membership the user has.
      */
-    private getAccessClinicMember(user: User, clinicMemberId?: ClinicMemberId | null): ClinicMemberId | undefined {
-        if (clinicMemberId != null && user.clinicMembers.some((id) => id.equals(clinicMemberId))) {
+    private getAccessClinicMember(
+        availableMemberIds: ClinicMemberId[],
+        clinicMemberId?: ClinicMemberId | null
+    ): ClinicMemberId | undefined {
+        if (clinicMemberId != null && availableMemberIds.some((id) => id.equals(clinicMemberId))) {
             return clinicMemberId;
         }
 
-        return user.clinicMembers.at(0);
+        return availableMemberIds.at(0);
     }
 }

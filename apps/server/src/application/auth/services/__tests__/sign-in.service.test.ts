@@ -1,14 +1,15 @@
 import {mock} from 'jest-mock-extended';
 import type {UnauthenticatedActor} from '../../../../domain/@shared/actor';
 import {AccessDeniedException, AccessDeniedReason} from '../../../../domain/@shared/exceptions';
-import {Email} from '../../../../domain/@shared/value-objects';
 import {GlobalRole} from '../../../../domain/auth';
-import {CompanyId} from '../../../../domain/company/entities';
+import type {ClinicMemberRepository} from '../../../../domain/clinic-member/clinic-member.repository';
+import {ClinicMember, ClinicMemberId, ClinicMemberRole} from '../../../../domain/clinic-member/entities';
+import {ClinicId} from '../../../../domain/clinic/entities';
 import type {EventDispatcher} from '../../../../domain/event';
-import {UserId} from '../../../../domain/user/entities';
+import type {User} from '../../../../domain/user/entities';
 import {fakeUser} from '../../../../domain/user/entities/__tests__/fake-user';
 import {UserSignedInEvent} from '../../../../domain/user/events';
-import type {TokenProvider} from '../../../../domain/user/token';
+import type {TokenClinicMember, TokenProvider} from '../../../../domain/user/token';
 import {TokenScope} from '../../../../domain/user/token';
 import type {UserRepository} from '../../../../domain/user/user.repository';
 import {ObfuscatedPassword, Username} from '../../../../domain/user/value-objects';
@@ -16,14 +17,42 @@ import {JsonWebToken} from '../../../../infrastructure/auth/jwt';
 import type {SignInDto} from '../../dtos';
 import {SignInService} from '../index';
 
+function memberOf(user: User, id: ClinicMemberId): ClinicMember {
+    return new ClinicMember({
+        id,
+        clinicId: ClinicId.generate(),
+        userId: user.id,
+        roles: [ClinicMemberRole.OWNER],
+        displayName: null,
+        color: null,
+        isActive: true,
+        invitedByMemberId: null,
+        createdAt: new Date(1000),
+        updatedAt: new Date(1000),
+        deletedAt: null,
+    });
+}
+
+async function existingUserWith(clinicMembers: ClinicMemberId[], globalRole = GlobalRole.NONE): Promise<User> {
+    return fakeUser({
+        username: Username.create('johndoe'),
+        password: await ObfuscatedPassword.obfuscate('@SecurePassword123'),
+        globalRole,
+        clinicMembers,
+    });
+}
+
 describe('A sign-in service', () => {
     const userRepository = mock<UserRepository>();
+    const clinicMemberRepository = mock<ClinicMemberRepository>();
     const eventDispatcher = mock<EventDispatcher>();
     const tokenProvider = mock<TokenProvider>();
-    const signInService = new SignInService(userRepository, tokenProvider, eventDispatcher);
+    const signInService = new SignInService(userRepository, clinicMemberRepository, tokenProvider, eventDispatcher);
 
     const actor: UnauthenticatedActor = {
         userId: null,
+        clinicId: null,
+        clinicMemberId: null,
         ip: '127.0.0.1',
     };
 
@@ -37,251 +66,228 @@ describe('A sign-in service', () => {
         jest.useRealTimers();
     });
 
+    function tokenFor(user: User, clinicMembers: TokenClinicMember[]): JsonWebToken {
+        return JsonWebToken.signed(
+            {
+                userId: user.id,
+                clinicMemberId: null,
+                clinicMembers,
+                scope: [TokenScope.AUTH],
+                issueTime: now,
+                expirationTime: new Date(now.getTime() + 3600 * 1000),
+            },
+            'secret'
+        );
+    }
+
+    function expectSignedIn(user: User, payload: SignInDto): void {
+        expect(user.signIn).toHaveBeenCalledWith(payload.password);
+
+        expect(user.events).toHaveLength(1);
+        expect(user.events[0]).toBeInstanceOf(UserSignedInEvent);
+        expect(user.events).toEqual([
+            {
+                type: UserSignedInEvent.type,
+                timestamp: now,
+                userId: user.id,
+            },
+        ]);
+
+        expect(eventDispatcher.dispatch).toHaveBeenCalledWith({...actor, userId: user.id}, user);
+    }
+
     it('should sign in to a user', async () => {
-        const existingUser = fakeUser({
-            id: UserId.generate(),
-            firstName: 'John',
-            lastName: 'Doe',
-            email: Email.create('john.doe@example.com'),
-            username: Username.create('johndoe'),
-            password: await ObfuscatedPassword.obfuscate('@SecurePassword123'),
-            globalRole: GlobalRole.OWNER,
-            companies: [CompanyId.generate()],
-            createdAt: new Date(1000),
-            updatedAt: new Date(1000),
-        });
+        const memberId = ClinicMemberId.generate();
+        const existingUser = await existingUserWith([memberId], GlobalRole.OWNER);
+        const member = memberOf(existingUser, memberId);
 
         const payload: SignInDto = {
             username: Username.create('johndoe'),
             password: '@SecurePassword123',
         };
 
-        const token = JsonWebToken.signed(
-            {
-                userId: existingUser.id,
-                companies: existingUser.companies,
-                scope: [TokenScope.AUTH],
-                issueTime: now,
-                expirationTime: new Date(now.getTime() + 3600 * 1000),
-            },
-            'secret'
-        );
+        const clinicMembers = [{clinicMemberId: member.id, clinicId: member.clinicId}];
+        const token = tokenFor(existingUser, clinicMembers);
 
         jest.spyOn(existingUser, 'signIn');
-        jest.spyOn(userRepository, 'findByUsername').mockResolvedValueOnce(existingUser);
-        jest.spyOn(tokenProvider, 'issue').mockReturnValue(token);
+        userRepository.findByUsername.mockResolvedValueOnce(existingUser);
+        clinicMemberRepository.findById.mockResolvedValueOnce(member);
+        tokenProvider.issue.mockReturnValue(token);
 
         await expect(signInService.execute({actor, payload})).resolves.toEqual({
             token,
-            companyId: existingUser.companies[0],
+            clinicMemberId: memberId,
         });
 
-        expect(existingUser.signIn).toHaveBeenCalledWith(payload.password);
+        expect(userRepository.findByUsername).toHaveBeenCalledWith(payload.username);
+        expect(clinicMemberRepository.findById).toHaveBeenCalledWith(memberId);
+        expect(tokenProvider.issue).toHaveBeenCalledWith(existingUser.id, {
+            scope: [TokenScope.AUTH],
+            clinicMembers,
+            clinicMemberId: memberId,
+        });
 
-        expect(existingUser.events).toHaveLength(1);
-        expect(existingUser.events[0]).toBeInstanceOf(UserSignedInEvent);
-        expect(existingUser.events).toEqual([
-            {
-                type: UserSignedInEvent.type,
-                timestamp: now,
-                userId: existingUser.id,
-            },
-        ]);
-
-        expect(eventDispatcher.dispatch).toHaveBeenCalledWith(
-            {
-                ...actor,
-                userId: existingUser.id,
-            },
-            existingUser
-        );
+        expectSignedIn(existingUser, payload);
     });
 
-    it('should select the company the user is requesting for sign-in', async () => {
-        const companyId = CompanyId.generate();
-        const existingUser = fakeUser({
-            id: UserId.generate(),
-            firstName: 'John',
-            lastName: 'Doe',
-            email: Email.create('john.doe@example.com'),
-            username: Username.create('johndoe'),
-            password: await ObfuscatedPassword.obfuscate('@SecurePassword123'),
-            globalRole: GlobalRole.NONE,
-            companies: [companyId],
-            createdAt: new Date(1000),
-            updatedAt: new Date(1000),
-        });
+    it('should select the clinic member the user is requesting for sign-in', async () => {
+        const firstMemberId = ClinicMemberId.generate();
+        const requestedMemberId = ClinicMemberId.generate();
+        const existingUser = await existingUserWith([firstMemberId, requestedMemberId]);
+        const firstMember = memberOf(existingUser, firstMemberId);
+        const requestedMember = memberOf(existingUser, requestedMemberId);
 
         const payload: SignInDto = {
-            companyId,
+            clinicMemberId: requestedMemberId,
             username: Username.create('johndoe'),
             password: '@SecurePassword123',
         };
 
-        const token = JsonWebToken.signed(
-            {
-                userId: existingUser.id,
-                companies: existingUser.companies,
-                scope: [TokenScope.AUTH],
-                issueTime: now,
-                expirationTime: new Date(now.getTime() + 3600 * 1000),
-            },
-            'secret'
-        );
+        const token = tokenFor(existingUser, []);
 
         jest.spyOn(existingUser, 'signIn');
-        jest.spyOn(userRepository, 'findByUsername').mockResolvedValueOnce(existingUser);
-        jest.spyOn(tokenProvider, 'issue').mockReturnValue(token);
+        userRepository.findByUsername.mockResolvedValueOnce(existingUser);
+        clinicMemberRepository.findById.mockResolvedValueOnce(firstMember).mockResolvedValueOnce(requestedMember);
+        tokenProvider.issue.mockReturnValue(token);
 
         await expect(signInService.execute({actor, payload})).resolves.toEqual({
             token,
-            companyId,
+            clinicMemberId: requestedMemberId,
         });
 
-        expect(existingUser.signIn).toHaveBeenCalledWith(payload.password);
+        expect(tokenProvider.issue).toHaveBeenCalledWith(existingUser.id, {
+            scope: [TokenScope.AUTH],
+            clinicMembers: [
+                {clinicMemberId: firstMemberId, clinicId: firstMember.clinicId},
+                {clinicMemberId: requestedMemberId, clinicId: requestedMember.clinicId},
+            ],
+            clinicMemberId: requestedMemberId,
+        });
 
-        expect(existingUser.events).toHaveLength(1);
-        expect(existingUser.events[0]).toBeInstanceOf(UserSignedInEvent);
-        expect(existingUser.events).toEqual([
-            {
-                type: UserSignedInEvent.type,
-                timestamp: now,
-                userId: existingUser.id,
-            },
-        ]);
-
-        expect(eventDispatcher.dispatch).toHaveBeenCalledWith(
-            {
-                ...actor,
-                userId: existingUser.id,
-            },
-            existingUser
-        );
+        expectSignedIn(existingUser, payload);
     });
 
-    it('should select no company for owners with no companies', async () => {
-        const existingUser = fakeUser({
-            id: UserId.generate(),
-            firstName: 'John',
-            lastName: 'Doe',
-            email: Email.create('john.doe@example.com'),
-            username: Username.create('johndoe'),
-            password: await ObfuscatedPassword.obfuscate('@SecurePassword123'),
-            globalRole: GlobalRole.OWNER,
-            companies: [],
-            createdAt: new Date(1000),
-            updatedAt: new Date(1000),
-        });
+    it('should select no clinic member for owners with no clinic members', async () => {
+        const existingUser = await existingUserWith([], GlobalRole.OWNER);
 
         const payload: SignInDto = {
             username: Username.create('johndoe'),
             password: '@SecurePassword123',
         };
 
-        const token = JsonWebToken.signed(
-            {
-                userId: existingUser.id,
-                companies: existingUser.companies,
-                scope: [TokenScope.AUTH],
-                issueTime: now,
-                expirationTime: new Date(now.getTime() + 3600 * 1000),
-            },
-            'secret'
-        );
+        const token = tokenFor(existingUser, []);
 
         jest.spyOn(existingUser, 'signIn');
-        jest.spyOn(userRepository, 'findByUsername').mockResolvedValueOnce(existingUser);
-        jest.spyOn(tokenProvider, 'issue').mockReturnValue(token);
+        userRepository.findByUsername.mockResolvedValueOnce(existingUser);
+        tokenProvider.issue.mockReturnValue(token);
 
         await expect(signInService.execute({actor, payload})).resolves.toEqual({
             token,
-            companyId: undefined,
+            clinicMemberId: undefined,
         });
 
-        expect(existingUser.signIn).toHaveBeenCalledWith(payload.password);
+        expect(clinicMemberRepository.findById).not.toHaveBeenCalled();
+        expect(tokenProvider.issue).toHaveBeenCalledWith(existingUser.id, {
+            scope: [TokenScope.AUTH],
+            clinicMembers: [],
+            clinicMemberId: undefined,
+        });
 
-        expect(existingUser.events).toHaveLength(1);
-        expect(existingUser.events[0]).toBeInstanceOf(UserSignedInEvent);
-        expect(existingUser.events).toEqual([
-            {
-                type: UserSignedInEvent.type,
-                timestamp: now,
-                userId: existingUser.id,
-            },
-        ]);
-
-        expect(eventDispatcher.dispatch).toHaveBeenCalledWith(
-            {
-                ...actor,
-                userId: existingUser.id,
-            },
-            existingUser
-        );
+        expectSignedIn(existingUser, payload);
     });
 
-    it.each([CompanyId.generate(), undefined])(
-        'should select the first company the user has access to',
-        async (companyId) => {
-            const existingUser = fakeUser({
-                id: UserId.generate(),
-                firstName: 'John',
-                lastName: 'Doe',
-                email: Email.create('john.doe@example.com'),
-                username: Username.create('johndoe'),
-                password: await ObfuscatedPassword.obfuscate('@SecurePassword123'),
-                globalRole: GlobalRole.NONE,
-                companies: [CompanyId.generate(), CompanyId.generate()],
-                createdAt: new Date(1000),
-                updatedAt: new Date(1000),
-            });
+    it.each([ClinicMemberId.generate(), null, undefined])(
+        'should select the first clinic member the user has access to (requested: %s)',
+        async (clinicMemberId) => {
+            const memberIds = [ClinicMemberId.generate(), ClinicMemberId.generate()];
+            const existingUser = await existingUserWith(memberIds);
 
             const payload: SignInDto = {
-                companyId,
+                clinicMemberId,
                 username: Username.create('johndoe'),
                 password: '@SecurePassword123',
             };
 
-            const token = JsonWebToken.signed(
-                {
-                    userId: existingUser.id,
-                    companies: existingUser.companies,
-                    scope: [TokenScope.AUTH],
-                    issueTime: now,
-                    expirationTime: new Date(now.getTime() + 3600 * 1000),
-                },
-                'secret'
-            );
+            const token = tokenFor(existingUser, []);
 
             jest.spyOn(existingUser, 'signIn');
-            jest.spyOn(userRepository, 'findByUsername').mockResolvedValueOnce(existingUser);
-            jest.spyOn(tokenProvider, 'issue').mockReturnValue(token);
+            userRepository.findByUsername.mockResolvedValueOnce(existingUser);
+            clinicMemberRepository.findById.mockImplementation((id) => Promise.resolve(memberOf(existingUser, id)));
+            tokenProvider.issue.mockReturnValue(token);
 
             await expect(signInService.execute({actor, payload})).resolves.toEqual({
                 token,
-                companyId: existingUser.companies[0],
+                clinicMemberId: memberIds[0],
             });
 
-            expect(existingUser.signIn).toHaveBeenCalledWith(payload.password);
-
-            expect(existingUser.events).toHaveLength(1);
-            expect(existingUser.events[0]).toBeInstanceOf(UserSignedInEvent);
-            expect(existingUser.events).toEqual([
-                {
-                    type: UserSignedInEvent.type,
-                    timestamp: now,
-                    userId: existingUser.id,
-                },
-            ]);
-
-            expect(eventDispatcher.dispatch).toHaveBeenCalledWith(
-                {
-                    ...actor,
-                    userId: existingUser.id,
-                },
-                existingUser
-            );
+            expectSignedIn(existingUser, payload);
         }
     );
+
+    it('should drop clinic members that no longer exist and select an existing one', async () => {
+        const deletedMemberId = ClinicMemberId.generate();
+        const memberId = ClinicMemberId.generate();
+        const existingUser = await existingUserWith([deletedMemberId, memberId]);
+        const member = memberOf(existingUser, memberId);
+
+        const payload: SignInDto = {
+            username: Username.create('johndoe'),
+            password: '@SecurePassword123',
+        };
+
+        const token = tokenFor(existingUser, []);
+
+        jest.spyOn(existingUser, 'signIn');
+        userRepository.findByUsername.mockResolvedValueOnce(existingUser);
+        clinicMemberRepository.findById.mockResolvedValueOnce(null).mockResolvedValueOnce(member);
+        tokenProvider.issue.mockReturnValue(token);
+
+        await expect(signInService.execute({actor, payload})).resolves.toEqual({
+            token,
+            clinicMemberId: memberId,
+        });
+
+        expect(tokenProvider.issue).toHaveBeenCalledWith(existingUser.id, {
+            scope: [TokenScope.AUTH],
+            clinicMembers: [{clinicMemberId: memberId, clinicId: member.clinicId}],
+            clinicMemberId: memberId,
+        });
+
+        expectSignedIn(existingUser, payload);
+    });
+
+    it('should not select a requested clinic member that no longer exists', async () => {
+        const deletedMemberId = ClinicMemberId.generate();
+        const memberId = ClinicMemberId.generate();
+        const existingUser = await existingUserWith([deletedMemberId, memberId]);
+        const member = memberOf(existingUser, memberId);
+
+        const payload: SignInDto = {
+            username: Username.create('johndoe'),
+            password: '@SecurePassword123',
+            clinicMemberId: deletedMemberId,
+        };
+
+        const token = tokenFor(existingUser, []);
+
+        jest.spyOn(existingUser, 'signIn');
+        userRepository.findByUsername.mockResolvedValueOnce(existingUser);
+        clinicMemberRepository.findById.mockResolvedValueOnce(null).mockResolvedValueOnce(member);
+        tokenProvider.issue.mockReturnValue(token);
+
+        await expect(signInService.execute({actor, payload})).resolves.toEqual({
+            token,
+            clinicMemberId: memberId,
+        });
+
+        expect(tokenProvider.issue).toHaveBeenCalledWith(existingUser.id, {
+            scope: [TokenScope.AUTH],
+            clinicMembers: [{clinicMemberId: memberId, clinicId: member.clinicId}],
+            clinicMemberId: memberId,
+        });
+
+        expectSignedIn(existingUser, payload);
+    });
 
     it('should fail to sign in an unknown user', async () => {
         const payload: SignInDto = {
@@ -289,7 +295,7 @@ describe('A sign-in service', () => {
             password: '@SecurePassword123',
         };
 
-        jest.spyOn(userRepository, 'findByUsername').mockResolvedValueOnce(null);
+        userRepository.findByUsername.mockResolvedValueOnce(null);
 
         // eslint-disable-next-line jest/valid-expect -- To allow multiple assertions
         const expectation = expect(signInService.execute({actor, payload}));
@@ -303,26 +309,15 @@ describe('A sign-in service', () => {
         expect(eventDispatcher.dispatch).not.toHaveBeenCalled();
     });
 
-    it('should fail to sign in a regular user without access to any company', async () => {
-        const existingUser = fakeUser({
-            id: UserId.generate(),
-            firstName: 'John',
-            lastName: 'Doe',
-            email: Email.create('john.doe@example.com'),
-            username: Username.create('johndoe'),
-            password: await ObfuscatedPassword.obfuscate('@SecurePassword123'),
-            globalRole: GlobalRole.NONE,
-            companies: [],
-            createdAt: new Date(1000),
-            updatedAt: new Date(1000),
-        });
+    it('should fail to sign in a regular user without access to any clinic member', async () => {
+        const existingUser = await existingUserWith([]);
 
         const payload: SignInDto = {
             username: Username.create('johndoe'),
             password: '@SecurePassword123',
         };
 
-        jest.spyOn(userRepository, 'findByUsername').mockResolvedValueOnce(existingUser);
+        userRepository.findByUsername.mockResolvedValueOnce(existingUser);
 
         // eslint-disable-next-line jest/valid-expect -- To allow multiple assertions
         const expectation = expect(signInService.execute({actor, payload}));
@@ -333,6 +328,26 @@ describe('A sign-in service', () => {
         );
         await expectation.rejects.toContainEntry(['reason', AccessDeniedReason.NOT_ALLOWED]);
 
+        expect(eventDispatcher.dispatch).not.toHaveBeenCalled();
+    });
+
+    it('should fail to sign in with an incorrect password', async () => {
+        const existingUser = await existingUserWith([ClinicMemberId.generate()]);
+
+        const payload: SignInDto = {
+            username: Username.create('johndoe'),
+            password: 'wrong-password',
+        };
+
+        userRepository.findByUsername.mockResolvedValueOnce(existingUser);
+
+        // eslint-disable-next-line jest/valid-expect -- To allow multiple assertions
+        const expectation = expect(signInService.execute({actor, payload}));
+
+        await expectation.rejects.toThrowWithMessage(AccessDeniedException, 'Incorrect password.');
+        await expectation.rejects.toContainEntry(['reason', AccessDeniedReason.BAD_CREDENTIALS]);
+
+        expect(tokenProvider.issue).not.toHaveBeenCalled();
         expect(eventDispatcher.dispatch).not.toHaveBeenCalled();
     });
 });
