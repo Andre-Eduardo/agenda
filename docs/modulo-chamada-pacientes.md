@@ -4,6 +4,12 @@ Proposta de MVP para o [cartão #50](https://trello.com/c/U2fo2Yvc). O módulo t
 
 O fluxo atual de **Chamar paciente** na recepção já move a consulta para `IN_PROGRESS`. O MVP propõe uma ação própria para o anúncio e mantém a [máquina de estados do agendamento](./appointment-status-machine.md) como referência para iniciar e concluir o atendimento. [Painel de recepção atual](./reception-operations.md)
 
+## Configuração implementada
+
+O gestor publica o primeiro link em **Recepção → Configurar painel de chamada** para habilitar a fila da clínica. Os códigos sequenciais têm o formato **A-001** e são informados pela equipe no check-in. Cada anúncio usa uma sala ou um guichê numerado e ocupa entre 8 e 60 segundos na TV, com padrão de 15 segundos. A identidade usa o logotipo da clínica, quando disponível, e exige contraste mínimo de 4,5:1 entre texto e fundo. [Uso na recepção](./reception-operations.md)
+
+O link leva a `/patient-call#<token>`. A TV consulta `GET /api/v1/patient-call/display` com o token no cabeçalho `X-Patient-Call-Token`. O fragmento evita colocar o token no caminho HTTP. O painel responde com identidade, código, destino e expiração da chamada. As operações autenticadas e o formato completo estão no [contrato OpenAPI](../apps/server/openapi.json).
+
 ## Fluxo da chegada ao atendimento
 
 1. **Registrar chegada.** O check-in mantém o agendamento em `ARRIVED` e cria uma entrada na fila da clínica. O paciente recebe um código curto para acompanhar a chamada.

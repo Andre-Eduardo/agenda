@@ -1,0 +1,46 @@
+@reference '../../../../../app/globals.css';
+
+.display {
+    @apply flex min-h-full flex-col justify-between gap-6 overflow-hidden bg-(--color-bg-card) p-[clamp(1.25rem,5vw,5rem)] text-(--color-text-primary);
+    container-type: inline-size;
+}
+
+.header {
+    @apply flex flex-wrap items-center gap-x-5 gap-y-3;
+}
+
+.logo {
+    @apply max-h-16 max-w-40 shrink-0 object-contain;
+}
+
+.title {
+    @apply grow text-[clamp(1.25rem,4cqw,3rem)] leading-tight font-semibold;
+}
+
+.sound {
+    @apply rounded-md border border-current px-3 py-2 text-sm font-medium;
+}
+
+.sound:focus-visible {
+    @apply outline-2 outline-offset-4 outline-current;
+}
+
+.board {
+    @apply grid min-h-[50%] flex-1 content-center justify-items-center gap-2 text-center;
+}
+
+.label {
+    @apply text-[clamp(1rem,3cqw,2rem)] font-medium;
+}
+
+.code {
+    @apply font-mono text-[clamp(3rem,14cqw,14rem)] leading-none font-semibold tabular-nums;
+}
+
+.destination {
+    @apply text-[clamp(1.3rem,6cqw,5rem)] leading-tight font-semibold;
+}
+
+.instructions {
+    @apply text-center text-[clamp(1rem,3cqw,2rem)];
+}

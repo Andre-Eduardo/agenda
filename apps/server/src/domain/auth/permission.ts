@@ -29,6 +29,12 @@ export enum AppointmentPermission {
     DELETE = 'appointment:delete',
     CHECKIN = 'appointment:checkin',
     CALL = 'appointment:call',
+    START = 'appointment:start',
+}
+
+export enum PatientCallPermission {
+    OPERATE = 'patient-call:operate',
+    CONFIGURE = 'patient-call:configure',
 }
 
 export enum ProcedurePermission {
@@ -264,6 +270,7 @@ const PERMISSIONS = [
     ...Object.values(ProfessionalPermission),
     ...Object.values(PatientPermission),
     ...Object.values(AppointmentPermission),
+    ...Object.values(PatientCallPermission),
     ...Object.values(ProcedurePermission),
     ...Object.values(RecordPermission),
     ...Object.values(ImportedDocumentPermission),

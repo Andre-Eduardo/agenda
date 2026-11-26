@@ -1888,6 +1888,287 @@
         ]
       }
     },
+    "/api/v1/patient-call/availability": {
+      "get": {
+        "operationId": "getPatientCallAvailability",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PatientCallAvailability"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Patient Call"
+        ]
+      }
+    },
+    "/api/v1/patient-call/settings": {
+      "get": {
+        "operationId": "getPatientCallSettings",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PatientCallPanelSettings"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Patient Call"
+        ]
+      },
+      "put": {
+        "operationId": "savePatientCallSettings",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SavePatientCallPanelDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PatientCallPanelSettings"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Patient Call"
+        ]
+      }
+    },
+    "/api/v1/patient-call/link": {
+      "put": {
+        "operationId": "publishPatientCallLink",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PatientCallPanelSettings"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Patient Call"
+        ]
+      },
+      "delete": {
+        "operationId": "revokePatientCallLink",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PatientCallPanelSettings"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Patient Call"
+        ]
+      }
+    },
+    "/api/v1/patient-call/display": {
+      "get": {
+        "operationId": "getPatientCallDisplay",
+        "parameters": [
+          {
+            "name": "x-patient-call-token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicPatientCallPanel"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Patient Call"
+        ]
+      }
+    },
+    "/api/v1/patient-call/queue": {
+      "get": {
+        "operationId": "listPatientCallQueue",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PatientCallQueueItem"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Patient Call"
+        ]
+      }
+    },
+    "/api/v1/patient-call/queue/{id}/announcements": {
+      "post": {
+        "operationId": "announcePatientCall",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AnnouncePatientCallDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PatientCallQueueEntry"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Patient Call"
+        ]
+      }
+    },
+    "/api/v1/patient-call/queue/{id}/recalls": {
+      "post": {
+        "operationId": "recallPatientCall",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RecallPatientCallDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PatientCallQueueEntry"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Patient Call"
+        ]
+      }
+    },
+    "/api/v1/patient-call/queue/{id}/removals": {
+      "post": {
+        "operationId": "removePatientCall",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RemovePatientCallDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Patient Call"
+        ]
+      }
+    },
     "/api/v1/appointments": {
       "post": {
         "operationId": "createAppointment",
@@ -2484,7 +2765,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Appointment"
+                  "$ref": "#/components/schemas/CheckinAppointmentResult"
                 }
               }
             }
@@ -2543,7 +2824,50 @@
             }
           }
         },
-        "summary": "Calls the patient to the room (ARRIVED → IN_PROGRESS)",
+        "summary": "Starts an appointment using the legacy reception flow (ARRIVED → IN_PROGRESS)",
+        "tags": [
+          "Appointment"
+        ]
+      }
+    },
+    "/api/v1/appointments/{id}/start": {
+      "patch": {
+        "operationId": "startAppointment",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Appointment ID",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Care started",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Appointment"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Request failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Starts care for a checked-in appointment (ARRIVED → IN_PROGRESS)",
         "tags": [
           "Appointment"
         ]
@@ -11028,6 +11352,285 @@
           "insuranceValidUntil"
         ]
       },
+      "PatientCallAvailability": {
+        "type": "object",
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          },
+          "published": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "enabled",
+          "published"
+        ]
+      },
+      "PatientCallPanelSettings": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          },
+          "foregroundColor": {
+            "type": "string"
+          },
+          "backgroundColor": {
+            "type": "string"
+          },
+          "soundEnabled": {
+            "type": "boolean"
+          },
+          "enabled": {
+            "type": "boolean"
+          },
+          "publicToken": {
+            "type": "string",
+            "nullable": true
+          },
+          "clinicLogoUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "useClinicLogo": {
+            "type": "boolean"
+          },
+          "displaySeconds": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "title",
+          "message",
+          "foregroundColor",
+          "backgroundColor",
+          "soundEnabled",
+          "enabled",
+          "publicToken",
+          "clinicLogoUrl",
+          "useClinicLogo",
+          "displaySeconds"
+        ]
+      },
+      "SavePatientCallPanelDto": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80
+          },
+          "message": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 160
+          },
+          "foregroundColor": {
+            "type": "string",
+            "pattern": "^#[0-9a-fA-F]{6}$"
+          },
+          "backgroundColor": {
+            "type": "string",
+            "pattern": "^#[0-9a-fA-F]{6}$"
+          },
+          "useClinicLogo": {
+            "type": "boolean"
+          },
+          "soundEnabled": {
+            "type": "boolean"
+          },
+          "displaySeconds": {
+            "type": "integer",
+            "minimum": 8,
+            "maximum": 60
+          }
+        },
+        "required": [
+          "title",
+          "message",
+          "foregroundColor",
+          "backgroundColor",
+          "useClinicLogo",
+          "soundEnabled",
+          "displaySeconds"
+        ]
+      },
+      "PublicPatientCall": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "destination": {
+            "type": "string"
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "code",
+          "destination",
+          "expiresAt"
+        ]
+      },
+      "PublicPatientCallPanel": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          },
+          "foregroundColor": {
+            "type": "string"
+          },
+          "backgroundColor": {
+            "type": "string"
+          },
+          "soundEnabled": {
+            "type": "boolean"
+          },
+          "logoUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "call": {
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PublicPatientCall"
+              }
+            ]
+          }
+        },
+        "required": [
+          "title",
+          "message",
+          "foregroundColor",
+          "backgroundColor",
+          "soundEnabled",
+          "logoUrl",
+          "call"
+        ]
+      },
+      "PatientCallQueueItem": {
+        "type": "object",
+        "properties": {
+          "appointmentId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "code": {
+            "type": "string"
+          },
+          "arrivedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "callCount": {
+            "type": "number"
+          },
+          "destination": {
+            "type": "string",
+            "nullable": true
+          },
+          "patientName": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "appointmentId",
+          "code",
+          "arrivedAt",
+          "callCount",
+          "destination",
+          "patientName"
+        ]
+      },
+      "AnnouncePatientCallDto": {
+        "type": "object",
+        "properties": {
+          "place": {
+            "type": "string",
+            "enum": [
+              "ROOM",
+              "DESK"
+            ]
+          },
+          "number": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9999
+          }
+        },
+        "required": [
+          "place",
+          "number"
+        ]
+      },
+      "PatientCallQueueEntry": {
+        "type": "object",
+        "properties": {
+          "appointmentId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "code": {
+            "type": "string"
+          },
+          "arrivedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "callCount": {
+            "type": "number"
+          },
+          "destination": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "appointmentId",
+          "code",
+          "arrivedAt",
+          "callCount",
+          "destination"
+        ]
+      },
+      "RecallPatientCallDto": {
+        "type": "object",
+        "properties": {
+          "callCount": {
+            "type": "integer",
+            "minimum": 0,
+            "exclusiveMinimum": true
+          }
+        },
+        "required": [
+          "callCount"
+        ]
+      },
+      "RemovePatientCallDto": {
+        "type": "object",
+        "properties": {
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 250
+          }
+        },
+        "required": [
+          "reason"
+        ]
+      },
       "CreateAppointmentDto": {
         "type": "object",
         "properties": {
@@ -11849,6 +12452,171 @@
         },
         "required": [
           "reason"
+        ]
+      },
+      "CheckinAppointmentResult": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "The unique identifier of the entity"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "The date and time the entity was created"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "The date and time the entity was last updated"
+          },
+          "clinicId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "The clinic this appointment belongs to"
+          },
+          "patientId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "The patient ID"
+          },
+          "attendedByMemberId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "ClinicMember scheduled to attend"
+          },
+          "createdByMemberId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "ClinicMember who created/scheduled the appointment"
+          },
+          "startAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "The appointment start time"
+          },
+          "endAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "The appointment end time"
+          },
+          "durationMinutes": {
+            "type": "number",
+            "description": "Duration in minutes"
+          },
+          "procedure": {
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ScheduledProcedure"
+              }
+            ]
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "FIRST_VISIT",
+              "RETURN",
+              "WALK_IN",
+              "TELEMEDICINE",
+              "PROCEDURE"
+            ],
+            "description": "The appointment type"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "SCHEDULED",
+              "CONFIRMED",
+              "CANCELLED",
+              "COMPLETED",
+              "NO_SHOW",
+              "ARRIVED",
+              "IN_PROGRESS"
+            ],
+            "description": "The appointment status"
+          },
+          "canceledAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "description": "When the appointment was canceled"
+          },
+          "canceledReason": {
+            "type": "object",
+            "nullable": true,
+            "description": "The reason for cancellation"
+          },
+          "note": {
+            "type": "object",
+            "nullable": true,
+            "description": "Notes about the appointment"
+          },
+          "arrivedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "description": "When the patient arrived at the reception"
+          },
+          "calledAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "description": "When the patient was called to the room"
+          },
+          "paymentStatus": {
+            "nullable": true,
+            "description": "Financial status of the appointment payment, null if no payment registered",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AppointmentPaymentStatus"
+              }
+            ]
+          },
+          "revenue": {
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AppointmentRevenue"
+              }
+            ]
+          },
+          "roomId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true,
+            "description": "Room where the appointment takes place, when room management is enabled"
+          },
+          "patientCallCode": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "createdAt",
+          "updatedAt",
+          "clinicId",
+          "patientId",
+          "attendedByMemberId",
+          "createdByMemberId",
+          "startAt",
+          "endAt",
+          "durationMinutes",
+          "procedure",
+          "type",
+          "status",
+          "canceledAt",
+          "canceledReason",
+          "note",
+          "arrivedAt",
+          "calledAt",
+          "paymentStatus",
+          "revenue",
+          "roomId",
+          "patientCallCode"
         ]
       },
       "Procedure": {

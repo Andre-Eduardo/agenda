@@ -1,0 +1,4 @@
+.screen {
+    display: grid;
+    min-height: 100dvh;
+}

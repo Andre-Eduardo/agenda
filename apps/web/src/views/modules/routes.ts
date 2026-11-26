@@ -12,10 +12,12 @@ import {index, layout, rootRoute, route} from '@tanstack/virtual-file-routes';
  */
 export const routes = rootRoute('../root.tsx', [
     layout('auth', '../layouts/AuthLayout/index.tsx', [route('/auth/login', filePath('auth', 'login'))]),
+    route('/patient-call', filePath('patient-call', 'display')),
     layout('stackedLayout', '../layouts/StackedLayout/index.tsx', [
         index(filePath('welcome', 'index')),
         route('/dashboard', filePath('dashboard', 'index')),
         route('/reception', filePath('reception', 'index')),
+        route('/reception/panel-settings', filePath('patient-call', 'settings')),
         route('/appointments', filePath('appointments', 'index')),
         route('/patients', filePath('patients', 'index')),
         route('/patients/new', filePath('patients', 'new')),

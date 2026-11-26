@@ -31,6 +31,7 @@ import {KnowledgeBaseModule} from '@application/knowledge-base/knowledge-base.mo
 import {MemberBlockModule} from '@application/member-block/member-block.module';
 import {PackagePlanModule} from '@application/package-plan/package-plan.module';
 import {PatientAlertModule} from '@application/patient-alert/patient-alert.module';
+import {PatientCallModule} from '@application/patient-call/patient-call.module';
 import {PatientFormModule} from '@application/patient-form/patient-form.module';
 import {PatientInsuranceEnrollmentModule} from '@application/patient-insurance-enrollment/patient-insurance-enrollment.module';
 import {PatientPackageModule} from '@application/patient-package/patient-package.module';
@@ -135,6 +136,7 @@ const guards: Provider[] = [
         UserModule,
         ProfessionalModule,
         PatientModule,
+        PatientCallModule,
         AppointmentModule,
         ProcedureModule,
         AppointmentReminderModule,

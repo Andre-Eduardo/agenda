@@ -43,7 +43,7 @@ verificações de clínica e paciente às ações críticas.
 | audit-log | view | view | — | — | — |
 | appointment-payment | register, update, view | register, update, view | view | register, update, view | — |
 | appointment-reminder | dispatch, view | dispatch, view | — | — | — |
-| appointment | call, cancel, checkin, create, delete, update, view | call, cancel, checkin, create, delete, update, view | call, cancel, checkin, create, update, view | call, cancel, checkin, create, update, view | view |
+| appointment | call, cancel, checkin, create, delete, start, update, view | call, cancel, checkin, create, delete, start, update, view | call, cancel, checkin, create, start, update, view | call, cancel, checkin, create, start, update, view | view |
 | billing | view-clinic, view-member | view-clinic, view-member | — | — | — |
 | clinic-license | — | — | — | — | — |
 | clinic-member | create | create | — | — | — |
@@ -65,6 +65,7 @@ verificações de clínica e paciente às ações críticas.
 | member-block | create, delete, list | create, delete, list | create, delete, list | create, delete, list | — |
 | package-plan | create, update, view | create, update, view | view | view | — |
 | patient-alert | create, delete, update, view | create, delete, update, view | create, update, view | view | view |
+| patient-call | configure, operate | configure, operate | operate | operate | — |
 | patient-form | create, delete, update, view | create, delete, update, view | create, update, view | create, view | view |
 | patient-insurance-enrollment | create, update, view | create, update, view | view | create, update, view | — |
 | patient-package | sell, view | sell, view | view | sell, view | — |

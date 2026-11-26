@@ -139,6 +139,19 @@ export class AppointmentPrismaRepository extends PrismaRepository implements App
                 throw new PreconditionException('Appointment status changed. Reload and try again.');
             }
 
+            const closesQueue =
+                fromStatus === AppointmentStatus.ARRIVED ||
+                [AppointmentStatus.CANCELLED, AppointmentStatus.NO_SHOW, AppointmentStatus.COMPLETED].includes(
+                    appointment.status
+                );
+
+            if (closesQueue) {
+                await this.prisma.patientCallEntry.updateMany({
+                    where: {clinicId: actor.clinicId.toString(), appointmentId: data.id, closedAt: null},
+                    data: {closedAt: data.updatedAt},
+                });
+            }
+
             await this.prisma.appointmentStatusTransition.create({
                 data: {
                     id: randomUUID(),
