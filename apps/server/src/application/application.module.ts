@@ -4,6 +4,7 @@ import {AuthGuard} from '@application/@shared/auth';
 import {RequestContextMiddleware} from '@application/@shared/auth/context';
 import {ApiExceptionFilter, HttpExceptionFilter, ZodExceptionFilter} from '@application/@shared/exception/filter';
 import {ExceptionLoggerInterceptor, RequestLoggerMiddleware} from '@application/@shared/logger/handlers';
+import {RateLimitGuard} from '@application/@shared/rate-limit';
 import {ZodValidationPipe} from '@application/@shared/validation';
 import {AgentModule} from '@application/agent/agent.module';
 import {AppointmentPaymentModule} from '@application/appointment-payment/appointment-payment.module';
@@ -93,6 +94,13 @@ const interceptors: Provider[] = [
 ];
 
 const guards: Provider[] = [
+    // Must stay first: throttles brute force on public auth routes before any other work.
+    {
+        provide: APP_GUARD,
+        useFactory: (configService: EnvConfigService) =>
+            new RateLimitGuard(new Reflector(), configService.http.rateLimitEnabled),
+        inject: [EnvConfigService],
+    },
     {
         provide: APP_GUARD,
         useFactory: (

@@ -11,7 +11,11 @@ import {index, layout, rootRoute, route} from '@tanstack/virtual-file-routes';
  * register their routes here. See docs/frontend/02-routing.md.
  */
 export const routes = rootRoute('../root.tsx', [
-    layout('auth', '../layouts/AuthLayout/index.tsx', [route('/auth/login', filePath('auth', 'login'))]),
+    layout('auth', '../layouts/AuthLayout/index.tsx', [
+        route('/auth/login', filePath('auth', 'login')),
+        route('/auth/forgot-password', filePath('auth', 'forgot-password')),
+        route('/auth/reset-password', filePath('auth', 'reset-password')),
+    ]),
     route('/patient-call', filePath('patient-call', 'display')),
     layout('stackedLayout', '../layouts/StackedLayout/index.tsx', [
         index(filePath('welcome', 'index')),

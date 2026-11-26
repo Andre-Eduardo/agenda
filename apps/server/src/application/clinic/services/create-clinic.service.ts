@@ -1,19 +1,33 @@
 import {Injectable} from '@nestjs/common';
 import {ApplicationService, Command} from '@application/@shared/application.service';
 import {ClinicDto, CreateClinicDto} from '@application/clinic/dtos';
+import {AccessDeniedException, AccessDeniedReason} from '@domain/@shared/exceptions';
 import {DocumentId, Email, Phone} from '@domain/@shared/value-objects';
+import {GlobalRole} from '@domain/auth';
 import {ClinicRepository} from '@domain/clinic/clinic.repository';
 import {Clinic} from '@domain/clinic/entities';
 import {EventDispatcher} from '@domain/event';
+import {UserRepository} from '@domain/user/user.repository';
+
+export const CLINIC_CREATION_NOT_ALLOWED = 'Only clinic owners can create a clinic.';
 
 @Injectable()
 export class CreateClinicService implements ApplicationService<CreateClinicDto, ClinicDto> {
     constructor(
         private readonly clinicRepository: ClinicRepository,
-        private readonly eventDispatcher: EventDispatcher
+        private readonly eventDispatcher: EventDispatcher,
+        private readonly userRepository: UserRepository
     ) {}
 
     async execute({actor, payload}: Command<CreateClinicDto>): Promise<ClinicDto> {
+        // Accounts created for team members (GlobalRole.NONE) must not spin up clinics of their own;
+        // only self-registered owners (sign-up is gated by SIGN_UP_MODE) and super admins can.
+        const user = await this.userRepository.findById(actor.userId);
+
+        if (user === null || user.globalRole === GlobalRole.NONE) {
+            throw new AccessDeniedException(CLINIC_CREATION_NOT_ALLOWED, AccessDeniedReason.NOT_ALLOWED);
+        }
+
         const clinic = Clinic.create({
             name: payload.name,
             createdByUserId: actor.userId,

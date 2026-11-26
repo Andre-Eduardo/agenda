@@ -2,7 +2,7 @@ import {useState, useMemo} from 'react';
 import {useSignIn} from '@agenda-app/client';
 import {zodResolver} from '@hookform/resolvers/zod';
 import {useQueryClient} from '@tanstack/react-query';
-import {createFileRoute, useNavigate, useRouter} from '@tanstack/react-router';
+import {Link, createFileRoute, useNavigate, useRouter} from '@tanstack/react-router';
 import {Eye, EyeOff, FileText, Lock, Mail, ShieldCheck, Stethoscope} from 'lucide-react';
 import {useForm} from 'react-hook-form';
 import {useTranslation} from 'react-i18next';
@@ -343,6 +343,12 @@ export function LoginPage() {
                 await navigate({to: redirectTo ?? '/', replace: true});
             },
             onError: (error: {status?: number}) => {
+                if (error.status === 429) {
+                    setError('username', {message: t('auth.login.validation.rateLimited')});
+
+                    return;
+                }
+
                 if (error.status === 400 || error.status === 401 || error.status === 403) {
                     setError('username', {
                         message: t('auth.login.validation.credentials.invalid'),
@@ -392,9 +398,9 @@ export function LoginPage() {
                         <div>
                             <div className={fieldPasswordHeader}>
                                 <label className={fieldLabelInline}>{t('auth.login.form.password')}</label>
-                                <button type="button" className={fieldForgotBtn}>
+                                <Link to="/auth/forgot-password" className={fieldForgotBtn}>
                                     {t('auth.login.form.forgotPassword')}
-                                </button>
+                                </Link>
                             </div>
                             <div className={fieldInputWrap}>
                                 <Lock size={13} className={fieldIcon} />

@@ -11,20 +11,57 @@ export enum Env {
     TEST = 'test',
 }
 
-const envConfig = z.object({
+/** Placeholder used only outside production so local setups boot without configuration. */
+export const DEV_FALLBACK_SECRET = 'super-secret';
+const MIN_PRODUCTION_SECRET_LENGTH = 32;
+
+export enum SignUpMode {
+    /** Anyone can call POST /user/sign-up (development and tests). */
+    OPEN = 'open',
+    /** Sign-up requires the invite code in SIGN_UP_INVITE_CODE. */
+    INVITE = 'invite',
+    /** Public sign-up is off; accounts are created by clinic managers or support. */
+    CLOSED = 'closed',
+}
+
+const booleanFlag = z.preprocess(
+    (value) => (typeof value === 'string' ? ['1', 'true', 'yes', 'on'].includes(value.trim().toLowerCase()) : value),
+    z.boolean()
+);
+
+const envConfigShape = z.object({
     env: z.nativeEnum(Env).default(Env.DEVELOPMENT),
     port: z.coerce.number().default(3000),
     databaseUrl: z
         .string()
         .regex(/^postgresql:\/\/.*$/)
         .default('postgresql://postgres:postgres@localhost:5432/automo?schema=public'),
-    cookieSecret: z.string().default('super-secret'),
+    cookieSecret: z.string().min(1).optional(),
     auth: z.object({
         cookieName: z.string().default('session.token'),
         token: z.object({
             expiration: z.coerce.number().default(24 * 3600), // 1 day in seconds
-            secret: z.string().default('super-secret'),
+            secret: z.string().min(1).optional(),
         }),
+    }),
+    signUp: z.object({
+        /** Defaults to OPEN outside production and CLOSED in production (see envConfig below). */
+        mode: z.nativeEnum(SignUpMode).optional(),
+        inviteCode: z.string().min(1).optional(),
+    }),
+    passwordReset: z.object({
+        /** Lifetime of the e-mailed reset link, in seconds. */
+        tokenExpiration: z.coerce.number().int().positive().default(30 * 60),
+        /** Base URL of the web app; the reset link points to `${webAppUrl}/auth/reset-password`. */
+        webAppUrl: z.string().url().default('http://localhost:5000'),
+    }),
+    http: z.object({
+        /** Express `trust proxy` setting, so rate limits see the client IP behind a load balancer. */
+        trustProxy: z.string().optional(),
+        /** Serves Swagger UI at /api/docs. Defaults to off in production. */
+        swaggerEnabled: booleanFlag.optional(),
+        /** Rate limits on the public auth routes. Defaults to on, except in the test env. */
+        rateLimitEnabled: booleanFlag.optional(),
     }),
     clinicMember: z.object({
         cookieName: z.string().default('current.clinic_member'),
@@ -79,9 +116,62 @@ const envConfig = z.object({
         .default({timeoutMs: 10_000}),
 });
 
-export type EnvConfig = z.infer<typeof envConfig>;
+/**
+ * Production must never run on the development fallbacks: a known session secret lets
+ * anyone forge a token. The check runs at load time, so the app fails at startup.
+ */
+const envConfig = envConfigShape
+    .superRefine((config, ctx) => {
+        if (config.env !== Env.PRODUCTION) return;
 
-type EnvParse<T extends Record<string, unknown> = EnvConfig> = {
+        const secrets = [
+            {name: 'COOKIE_SECRET', value: config.cookieSecret, path: ['cookieSecret']},
+            {name: 'AUTH_TOKEN_SECRET', value: config.auth.token.secret, path: ['auth', 'token', 'secret']},
+        ];
+
+        for (const {name, value, path} of secrets) {
+            if (value === undefined || value === DEV_FALLBACK_SECRET || value.length < MIN_PRODUCTION_SECRET_LENGTH) {
+                ctx.addIssue({
+                    code: z.ZodIssueCode.custom,
+                    path,
+                    message: `${name} must be set to a random value of at least ${MIN_PRODUCTION_SECRET_LENGTH} characters in production.`,
+                });
+            }
+        }
+
+        if (config.signUp.mode === SignUpMode.INVITE && config.signUp.inviteCode === undefined) {
+            ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                path: ['signUp', 'inviteCode'],
+                message: 'SIGN_UP_INVITE_CODE must be set when SIGN_UP_MODE is "invite".',
+            });
+        }
+    })
+    .transform((config) => {
+        const isProd = config.env === Env.PRODUCTION;
+
+        return {
+            ...config,
+            cookieSecret: config.cookieSecret ?? DEV_FALLBACK_SECRET,
+            auth: {
+                ...config.auth,
+                token: {...config.auth.token, secret: config.auth.token.secret ?? DEV_FALLBACK_SECRET},
+            },
+            signUp: {
+                ...config.signUp,
+                mode: config.signUp.mode ?? (isProd ? SignUpMode.CLOSED : SignUpMode.OPEN),
+            },
+            http: {
+                ...config.http,
+                swaggerEnabled: config.http.swaggerEnabled ?? !isProd,
+                rateLimitEnabled: config.http.rateLimitEnabled ?? config.env !== Env.TEST,
+            },
+        };
+    });
+
+export type EnvConfig = z.output<typeof envConfig>;
+
+type EnvParse<T extends Record<string, unknown> = z.infer<typeof envConfigShape>> = {
     [K in keyof T]: T[K] extends Record<string, unknown> ? EnvParse<T[K]> : string | undefined;
 };
 
@@ -103,6 +193,18 @@ export class EnvConfigService {
 
     get auth(): EnvConfig['auth'] {
         return this.configService.getOrThrow('auth', {infer: true});
+    }
+
+    get signUp(): EnvConfig['signUp'] {
+        return this.configService.getOrThrow('signUp', {infer: true});
+    }
+
+    get passwordReset(): EnvConfig['passwordReset'] {
+        return this.configService.getOrThrow('passwordReset', {infer: true});
+    }
+
+    get http(): EnvConfig['http'] {
+        return this.configService.getOrThrow('http', {infer: true});
     }
 
     get clinicMember(): EnvConfig['clinicMember'] {
@@ -153,6 +255,19 @@ export class EnvConfigService {
                     expiration: process.env.AUTH_TOKEN_EXPIRATION,
                     secret: process.env.AUTH_TOKEN_SECRET,
                 },
+            },
+            signUp: {
+                mode: process.env.SIGN_UP_MODE,
+                inviteCode: process.env.SIGN_UP_INVITE_CODE,
+            },
+            passwordReset: {
+                tokenExpiration: process.env.PASSWORD_RESET_TOKEN_EXPIRATION,
+                webAppUrl: process.env.WEB_APP_URL,
+            },
+            http: {
+                trustProxy: process.env.TRUST_PROXY,
+                swaggerEnabled: process.env.SWAGGER_ENABLED,
+                rateLimitEnabled: process.env.RATE_LIMIT_ENABLED,
             },
             clinicMember: {
                 cookieName: process.env.CLINIC_MEMBER_COOKIE_NAME ?? process.env.COMPANY_COOKIE_NAME,

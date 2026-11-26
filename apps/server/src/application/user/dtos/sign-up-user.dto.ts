@@ -7,6 +7,8 @@ export const signUpUserSchema = z.object({
     username,
     email,
     password,
+    /** Required when the server runs with SIGN_UP_MODE=invite. */
+    inviteCode: z.string().max(256).nullish(),
 });
 
 export class SignUpUserDto extends createZodDto(signUpUserSchema) {}

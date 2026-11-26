@@ -418,7 +418,8 @@
         },
         "credentials": {
           "invalid": "Invalid email or password"
-        }
+        },
+        "rateLimited": "Too many attempts. Wait a few minutes and try again."
       },
       "panel": {
         "title": "Appointments and clinical records",
@@ -434,6 +435,31 @@
       },
       "footer": {
         "security": "Professional access"
+      }
+    },
+    "forgotPassword": {
+      "title": "Forgot your password?",
+      "subtitle": "Enter your account e-mail. If it is registered, we will send you a link to create a new password.",
+      "email": "E-mail",
+      "submit": "Send link",
+      "sent": "If the e-mail is registered, you will receive a link in a few minutes. Check your spam folder too.",
+      "back": "Back to sign in",
+      "validation": {
+        "email": "Enter a valid e-mail"
+      }
+    },
+    "resetPassword": {
+      "title": "Create a new password",
+      "subtitle": "Choose a password with at least 8 characters, upper and lower case letters, a number and a symbol.",
+      "password": "New password",
+      "confirm": "Confirm new password",
+      "submit": "Save new password",
+      "success": "Password changed. Sign in with your new password.",
+      "invalidLink": "This link is invalid or has expired. Request a new one.",
+      "requestNew": "Request a new link",
+      "validation": {
+        "password": "The password needs 8 characters with upper and lower case, a number and a symbol",
+        "mismatch": "Passwords do not match"
       }
     }
   }

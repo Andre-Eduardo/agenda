@@ -108,6 +108,15 @@ export class ObfuscatedPassword {
     }
 
     /**
+     * A short, one-way digest of this exact salt+hash pair. A new password always gets a new
+     * salt, so the fingerprint changes on every password change; password-reset links carry it
+     * to become single-use without storing anything server-side.
+     */
+    fingerprint(): string {
+        return crypto.createHash('sha256').update(this.salt).update(this.hash).digest('base64url').slice(0, 22);
+    }
+
+    /**
      * Never exposes the hash or the salt to `JSON.stringify`, so a password that ends up in an event payload, a log
      * line or a response by mistake is redacted instead of leaked. Use `encode()` to persist it.
      */
