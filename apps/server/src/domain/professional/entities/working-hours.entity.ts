@@ -1,5 +1,6 @@
 import {type AllEntityProps, type EntityProps, type CreateEntity, Entity} from '@domain/@shared/entity';
 import {EntityId} from '@domain/@shared/entity/id';
+import {DEFAULT_CLINIC_TIME_ZONE, toZonedParts} from '@domain/@shared/utils';
 import type {ClinicMemberId} from '@domain/clinic-member/entities';
 import type {ClinicId} from '@domain/clinic/entities';
 
@@ -65,21 +66,23 @@ export class WorkingHours extends Entity<WorkingHoursId> {
         return time >= this.startTime && time <= this.endTime;
     }
 
-    coversInterval(startAt: Date, endAt: Date): boolean {
+    /**
+     * Indica se o intervalo [startAt, endAt] cabe nesta janela de atendimento.
+     *
+     * `startTime`/`endTime` são hora de parede da clínica, então os instantes (UTC) são
+     * convertidos para o fuso da clínica antes da comparação. Comparar em UTC fazia uma
+     * consulta às 16h (19h UTC) cair "fora do horário" de uma janela 08:00–18:00.
+     */
+    coversInterval(startAt: Date, endAt: Date, timeZone: string = DEFAULT_CLINIC_TIME_ZONE): boolean {
+        const start = toZonedParts(startAt, timeZone);
+        const end = toZonedParts(endAt, timeZone);
+
         // A single day's working-hours window can never cover an interval that spans
-        // into a different UTC calendar day — comparing HH:mm strings across midnight
+        // into a different local calendar day — comparing HH:mm strings across midnight
         // would otherwise produce false positives (e.g. 23:00–00:00 "covered" by 08:00–09:00).
-        const sameDay =
-            startAt.getUTCFullYear() === endAt.getUTCFullYear() &&
-            startAt.getUTCMonth() === endAt.getUTCMonth() &&
-            startAt.getUTCDate() === endAt.getUTCDate();
+        if (start.date !== end.date) return false;
 
-        if (!sameDay) return false;
-
-        const start = toTimeString(startAt);
-        const end = toTimeString(endAt);
-
-        return start >= this.startTime && end <= this.endTime;
+        return start.time >= this.startTime && end.time <= this.endTime;
     }
 }
 
@@ -91,11 +94,4 @@ export class WorkingHoursId extends EntityId<'WorkingHoursId'> {
     static generate(): WorkingHoursId {
         return new WorkingHoursId();
     }
-}
-
-function toTimeString(date: Date): string {
-    const h = date.getUTCHours().toString().padStart(2, '0');
-    const m = date.getUTCMinutes().toString().padStart(2, '0');
-
-    return `${h}:${m}`;
 }
