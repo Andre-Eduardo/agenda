@@ -1,14 +1,28 @@
 import {Prisma} from '@prisma/client';
-import type {Sort} from '../../../domain/@shared/repository';
-import type {FOREIGN_KEY_CONSTRAINT_VIOLATION, PrismaViolation, UNIQUE_CONSTRAINT_VIOLATION} from '../prisma';
-import {PrismaRepository} from '../prisma.repository';
+import {mockDeep} from 'jest-mock-extended';
+import type {Pagination, Sort} from '@domain/@shared/repository';
+import type {OrderBy} from '@infrastructure/repository/prisma.repository';
+import {PrismaRepository} from '@infrastructure/repository/prisma.repository';
+import type {PrismaProvider} from '@infrastructure/repository/prisma/prisma.provider';
+import type {
+    FOREIGN_KEY_CONSTRAINT_VIOLATION,
+    PrismaViolation,
+    UNIQUE_CONSTRAINT_VIOLATION,
+} from '@infrastructure/repository/prisma/prisma.violations';
+
+type SortKeys = ['foo', 'bar', 'nested.baz'];
 
 class PrismaRepositoryTest extends PrismaRepository {
-    normalizeSort<T extends Sort<string[]>, E extends Record<string, Prisma.SortOrder>>(
-        sort?: T,
-        extraSort?: E
-    ): Array<T | E> {
-        return super.normalizeSort(sort, extraSort);
+    buildOrderBy<E extends Record<string, Prisma.SortOrder>>(sort?: Array<Sort<SortKeys>>, extraSort?: E): OrderBy[] {
+        return this.normalizeSort(sort, extraSort);
+    }
+
+    paginate<E extends Record<string, Prisma.SortOrder>>(pagination: Pagination<SortKeys>, extraSort?: E) {
+        return this.normalizePagination(pagination, extraSort);
+    }
+
+    softDeleteData(): {deletedAt: Date; updatedAt: Date} {
+        return super.softDeleteData();
     }
 
     isPrismaViolation(error: unknown): error is Prisma.PrismaClientKnownRequestError {
@@ -27,39 +41,66 @@ class PrismaRepositoryTest extends PrismaRepository {
         return super.checkUniqueViolation(error, ...target);
     }
 
-    checkForeignKeyViolation(error: unknown, ...target: string[]): boolean {
-        return super.checkForeignKeyViolation(error, ...target);
+    checkForeignKeyViolation(error: unknown, target?: string): boolean {
+        return super.checkForeignKeyViolation(error, target);
     }
 }
 
 describe('A Prisma repository', () => {
-    const repository = new PrismaRepositoryTest();
+    const repository = new PrismaRepositoryTest(mockDeep<PrismaProvider>());
+
+    afterEach(() => {
+        jest.useRealTimers();
+    });
 
     it('should normalize sort', () => {
         expect(
-            repository.normalizeSort({
-                foo: 'asc',
-                bar: 'asc',
-            })
-        ).toEqual([{foo: 'asc'}, {bar: 'asc'}]);
+            repository.buildOrderBy([
+                {key: 'foo', direction: 'asc'},
+                {key: 'bar', direction: 'desc'},
+            ])
+        ).toEqual([{foo: 'asc'}, {bar: 'desc'}]);
+    });
+
+    it('should normalize nested sort keys', () => {
+        expect(repository.buildOrderBy([{key: 'nested.baz', direction: 'asc'}])).toEqual([{nested: {baz: 'asc'}}]);
     });
 
     it('should normalize sort and add extra sort', () => {
-        expect(
-            repository.normalizeSort(
-                {
-                    foo: 'asc',
-                    bar: 'asc',
-                },
-                {
-                    baz: 'desc',
-                }
-            )
-        ).toEqual([{foo: 'asc'}, {bar: 'asc'}, {baz: 'desc'}]);
+        expect(repository.buildOrderBy([{key: 'foo', direction: 'asc'}], {id: 'desc'})).toEqual([
+            {foo: 'asc'},
+            {id: 'desc'},
+        ]);
     });
 
     it('should normalize empty sort options', () => {
-        expect(repository.normalizeSort()).toEqual([]);
+        expect(repository.buildOrderBy()).toEqual([]);
+    });
+
+    it.each([
+        [{limit: 10}, {skip: undefined, take: 10, orderBy: []}],
+        [
+            {limit: 10, page: 1},
+            {skip: undefined, take: 10, orderBy: []},
+        ],
+        [
+            {limit: 10, page: 3},
+            {skip: 20, take: 10, orderBy: []},
+        ],
+        [
+            {limit: 5, page: 2, sort: [{key: 'foo' as const, direction: 'asc' as const}]},
+            {skip: 5, take: 5, orderBy: [{foo: 'asc'}]},
+        ],
+    ])('should normalize pagination', (pagination, expected) => {
+        expect(repository.paginate(pagination)).toEqual(expected);
+    });
+
+    it('should provide the soft-delete data', () => {
+        const now = new Date('2024-01-01T00:00:00Z');
+
+        jest.useFakeTimers({now});
+
+        expect(repository.softDeleteData()).toEqual({deletedAt: now, updatedAt: now});
     });
 
     it('should check if the error is a Prisma violation', () => {
@@ -69,6 +110,7 @@ describe('A Prisma repository', () => {
         });
 
         expect(repository.isPrismaViolation(error)).toBe(true);
+        expect(repository.isPrismaViolation(new Error('message'))).toBe(false);
     });
 
     it('should check if the error is a unique constraint violation', () => {
@@ -90,48 +132,11 @@ describe('A Prisma repository', () => {
     });
 
     it.each([
-        [
-            {
-                code: 'P2002',
-                meta: {
-                    target: ['target'],
-                },
-            },
-            true,
-        ],
-        [
-            {
-                code: 'P2002',
-                meta: {
-                    target: ['other-target'],
-                },
-            },
-            false,
-        ],
-        [
-            {
-                code: 'P2002',
-                meta: {
-                    target: 'target',
-                },
-            },
-            false,
-        ],
-        [
-            {
-                code: 'P2003',
-                meta: {
-                    target: ['target'],
-                },
-            },
-            false,
-        ],
-        [
-            {
-                code: 'P2003',
-            },
-            false,
-        ],
+        [{code: 'P2002', meta: {target: ['target']}}, true],
+        [{code: 'P2002', meta: {target: ['other-target']}}, false],
+        [{code: 'P2002', meta: {target: 'target'}}, false],
+        [{code: 'P2003', meta: {target: ['target']}}, false],
+        [{code: 'P2003'}, false],
     ])('should check if the error is a unique constraint violation for a specific target', (errorParams, expected) => {
         const error = new Prisma.PrismaClientKnownRequestError('message', {
             ...errorParams,
@@ -142,42 +147,21 @@ describe('A Prisma repository', () => {
     });
 
     it.each([
-        [
-            {
-                code: 'P2003',
-                meta: {
-                    field_name: 'target (index)',
-                },
-            },
-            true,
-        ],
-        [
-            {
-                code: 'P2003',
-                meta: {
-                    target: ['target'],
-                },
-            },
-            false,
-        ],
-        [
-            {
-                code: 'P2002',
-                meta: {
-                    field_name: 'target (index)',
-                },
-            },
-            false,
-        ],
+        [{code: 'P2003', meta: {constraint: 'target'}}, 'target', true],
+        [{code: 'P2003', meta: {constraint: 'other-target'}}, 'target', false],
+        [{code: 'P2003', meta: {constraint: 'other-target'}}, undefined, true],
+        [{code: 'P2003', meta: {field_name: 'target (index)'}}, 'target', false],
+        [{code: 'P2003'}, undefined, false],
+        [{code: 'P2002', meta: {constraint: 'target'}}, 'target', false],
     ])(
         'should check if the error is a foreign key constraint violation for a specific target',
-        (errorParams, expected) => {
+        (errorParams, target, expected) => {
             const error = new Prisma.PrismaClientKnownRequestError('message', {
                 ...errorParams,
                 clientVersion: '0.0.0',
             });
 
-            expect(repository.checkForeignKeyViolation(error, 'target')).toBe(expected);
+            expect(repository.checkForeignKeyViolation(error, target)).toBe(expected);
         }
     );
 });

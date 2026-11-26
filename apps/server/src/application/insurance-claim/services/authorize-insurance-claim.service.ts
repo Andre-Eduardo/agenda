@@ -6,13 +6,19 @@ import {EventDispatcher} from '@domain/event';
 import {InsuranceClaimRepository} from '@domain/insurance-claim/insurance-claim.repository';
 
 @Injectable()
-export class AuthorizeInsuranceClaimService implements ApplicationService<AuthorizeInsuranceClaimDto, InsuranceClaimDto> {
+export class AuthorizeInsuranceClaimService implements ApplicationService<
+    AuthorizeInsuranceClaimDto,
+    InsuranceClaimDto
+> {
     constructor(
         private readonly claimRepository: InsuranceClaimRepository,
         private readonly eventDispatcher: EventDispatcher
     ) {}
 
-    async execute({actor, payload: {id, authorizationCode}}: Command<AuthorizeInsuranceClaimDto>): Promise<InsuranceClaimDto> {
+    async execute({
+        actor,
+        payload: {id, authorizationCode},
+    }: Command<AuthorizeInsuranceClaimDto>): Promise<InsuranceClaimDto> {
         const claim = await this.claimRepository.findById(id);
 
         if (claim === null) {

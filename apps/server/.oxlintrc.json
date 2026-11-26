@@ -23,7 +23,12 @@
   },
   "rules": {
     "no-null": "off",
-    "prefer-top-level-await": "off"
+    "prefer-top-level-await": "off",
+    /**
+     * Phantom/brand type parameters (Identifier<T>, BaseMapper<..., WriteModel>, createTransactionProxy<T>) are
+     * intentional public generic APIs; removing them would weaken type safety for callers.
+     */
+    "@typescript-eslint/no-unnecessary-type-parameters": "off"
   },
   "ignorePatterns": [
     "dist",
@@ -70,6 +75,13 @@
       ],
       "rules": {
         "no-console": "off"
+      }
+    },
+    {
+      // Cucumber binds the World to `this`, so step definitions and hooks must be regular functions.
+      "files": ["test/step-definitions/**/*.ts", "test/support/**/*.ts"],
+      "rules": {
+        "prefer-arrow-callback": "off"
       }
     }
   ]

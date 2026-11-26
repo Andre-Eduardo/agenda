@@ -1,32 +1,28 @@
 import {mock} from 'jest-mock-extended';
-import type {Actor} from '../../../../../domain/@shared/actor';
-import {PreconditionException, ResourceNotFoundException} from '../../../../../domain/@shared/exceptions';
-import {ClinicMemberId} from '../../../../../domain/clinic-member/entities';
-import {ClinicId} from '../../../../../domain/clinic/entities';
-import type {DraftEvolutionRepository} from '../../../../../domain/draft-evolution/draft-evolution.repository';
+import {ApproveDraftService} from '@application/imported-document/services/approve-draft.service';
+import type {SubscriptionService} from '@application/subscription/subscription.service';
+import type {Actor} from '@domain/@shared/actor';
+import {PreconditionException, ResourceNotFoundException} from '@domain/@shared/exceptions';
+import {ClinicMemberId} from '@domain/clinic-member/entities';
+import {ClinicId} from '@domain/clinic/entities';
+import type {DraftEvolutionRepository} from '@domain/draft-evolution/draft-evolution.repository';
 import {
     DraftEvolution,
     DraftEvolutionId,
     DraftEvolutionStatus,
-} from '../../../../../domain/draft-evolution/entities/draft-evolution.entity';
-import {DraftApprovedEvent} from '../../../../../domain/draft-evolution/events/draft-approved.event';
-import type {EventDispatcher} from '../../../../../domain/event';
-import {PersonId} from '../../../../../domain/person/entities/person.entity';
-import {ProfessionalId} from '../../../../../domain/professional/entities';
-import type {Professional} from '../../../../../domain/professional/entities';
-import type {ProfessionalRepository} from '../../../../../domain/professional/professional.repository';
-import {FileId} from '../../../../../domain/record/entities/file.entity';
-import {
-    ImportedDocument,
-    ImportedDocumentId,
-    ImportStatus,
-} from '../../../../../domain/record/entities/imported-document.entity';
-import {Record, RecordSource} from '../../../../../domain/record/entities/record.entity';
-import type {ImportedDocumentRepository} from '../../../../../domain/record/imported-document.repository';
-import type {RecordRepository} from '../../../../../domain/record/record.repository';
-import {UserId} from '../../../../../domain/user/entities';
-import type {SubscriptionService} from '../../../../subscription/subscription.service';
-import {ApproveDraftService} from '../approve-draft.service';
+} from '@domain/draft-evolution/entities/draft-evolution.entity';
+import {DraftApprovedEvent} from '@domain/draft-evolution/events/draft-approved.event';
+import type {EventDispatcher} from '@domain/event';
+import {PersonId} from '@domain/person/entities/person.entity';
+import {ProfessionalId} from '@domain/professional/entities';
+import type {Professional} from '@domain/professional/entities';
+import type {ProfessionalRepository} from '@domain/professional/professional.repository';
+import {FileId} from '@domain/record/entities/file.entity';
+import {ImportedDocument, ImportedDocumentId, ImportStatus} from '@domain/record/entities/imported-document.entity';
+import {Record, RecordSource} from '@domain/record/entities/record.entity';
+import type {ImportedDocumentRepository} from '@domain/record/imported-document.repository';
+import type {RecordRepository} from '@domain/record/record.repository';
+import {UserId} from '@domain/user/entities';
 
 function fakeProfessional(clinicMemberId: ClinicMemberId): Pick<Professional, 'id' | 'clinicMemberId'> {
     return {id: ProfessionalId.generate(), clinicMemberId} as Pick<Professional, 'id' | 'clinicMemberId'>;

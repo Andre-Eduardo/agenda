@@ -421,7 +421,13 @@ export const miniTodayBtn = css({
 });
 
 // Week/Day grid
-export const weekScrollHint = css({display: {base: 'block', sm: 'none'}, px: '4', py: '2', fontSize: 'xs', color: 'text.secondary'});
+export const weekScrollHint = css({
+    display: {base: 'block', sm: 'none'},
+    px: '4',
+    py: '2',
+    fontSize: 'xs',
+    color: 'text.secondary',
+});
 export const weekHeaderMin = css({minWidth: '[560px]'});
 export const gridWeekHead = css({
     display: 'flex',

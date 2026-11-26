@@ -65,7 +65,12 @@ interface PatientPage {
 
 // ── Styles ────────────────────────────────────────────────────────────────────
 
-const statsGrid = css({mb: '6', display: 'grid', gridTemplateColumns: {base: 'repeat(2, minmax(0, 1fr))', sm: '2fr 1fr'}, gap: '3'});
+const statsGrid = css({
+    mb: '6',
+    display: 'grid',
+    gridTemplateColumns: {base: 'repeat(2, minmax(0, 1fr))', sm: '2fr 1fr'},
+    gap: '3',
+});
 
 const toolbarRoot = css({mb: '3.5', display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '2.5'});
 
@@ -882,7 +887,11 @@ export function PatientsPage() {
             {/* Stats */}
             <div className={statsGrid}>
                 <StatTile label="Total de pacientes" value={totalAll} loading={statsQuery.isLoading} />
-                <StatTile label="Total de consultas" value={totalAppointments ?? 0} loading={appointmentsQuery.isLoading} />
+                <StatTile
+                    label="Total de consultas"
+                    value={totalAppointments ?? 0}
+                    loading={appointmentsQuery.isLoading}
+                />
             </div>
 
             {/* Toolbar */}

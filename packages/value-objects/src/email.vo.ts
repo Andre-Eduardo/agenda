@@ -1,4 +1,4 @@
-import validator from 'validator';
+import validator from "validator";
 
 export class Email {
   private readonly value: string;
@@ -23,10 +23,7 @@ export class Email {
   }
 
   equals(other: unknown): other is this {
-    return (
-      other instanceof Email &&
-      this.value.toLowerCase() === other.value.toLowerCase()
-    );
+    return other instanceof Email && this.value.toLowerCase() === other.value.toLowerCase();
   }
 
   toString(): string {

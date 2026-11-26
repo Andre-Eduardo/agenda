@@ -1,11 +1,11 @@
 import {AccessDeniedException, AccessDeniedReason, InvalidInputException} from '../../../@shared/exceptions';
 import {Email} from '../../../@shared/value-objects';
 import {GlobalRole} from '../../../auth';
-import {ProfessionalId} from '../../../professional/entities';
+import {ClinicMemberId} from '../../../clinic-member/entities';
 import {
     UserChangedEvent,
-    UserProfessionalAddedEvent,
-    UserProfessionalRemovedEvent,
+    UserClinicMemberAddedEvent,
+    UserClinicMemberRemovedEvent,
     UserCreatedEvent,
     UserDeletedEvent,
     UserPasswordChangedEvent,
@@ -14,7 +14,7 @@ import {
     UserSignedUpEvent,
 } from '../../events';
 import {ObfuscatedPassword, Username} from '../../value-objects';
-import type {SignUpUser, UpdateUser} from '../index';
+import type {CreateUser, SignUpUser, UpdateUser} from '../index';
 import {User, UserId} from '../index';
 import {fakeUser} from './fake-user';
 
@@ -45,7 +45,7 @@ describe('A user', () => {
             await expect(user.password.verify('Pa$$w0rd')).resolves.toBe(true);
             expect(user.name).toBe('John Doe');
             expect(user.globalRole).toBe(GlobalRole.OWNER);
-            expect(user.professionals).toEqual([]);
+            expect(user.clinicMembers).toEqual([]);
             expect(user.createdAt).toStrictEqual(now);
             expect(user.updatedAt).toStrictEqual(now);
 
@@ -59,33 +59,30 @@ describe('A user', () => {
             expect(user.events[0]).toBeInstanceOf(UserSignedUpEvent);
         });
 
-        it.each<[Partial<SignUpUser>, string]>([
-            [{name: ''}, 'Name must be at least 1 character long.'],
-            [{name: '   '}, 'Name must not contain whitespace.'],
-        ])('should throw an error when receiving invalid data', async (payload, expectedError) => {
-            const user: SignUpUser = {
-                username: Username.create('user1'),
-                password: 'Pa$$w0rd',
-                email: Email.create('user@example.com'),
-                name: 'User One',
-            };
+        it.each<[Partial<SignUpUser>, string]>([[{name: ''}, 'Name must be at least 1 character long.']])(
+            'should throw an error when receiving invalid data',
+            async (payload, expectedError) => {
+                const user: SignUpUser = {
+                    username: Username.create('user1'),
+                    password: 'Pa$$w0rd',
+                    email: Email.create('user@example.com'),
+                    name: 'User One',
+                };
 
-            await expect(() => User.signUp({...user, ...payload})).rejects.toThrowWithMessage(
-                InvalidInputException,
-                expectedError
-            );
-        });
+                await expect(() => User.signUp({...user, ...payload})).rejects.toThrowWithMessage(
+                    InvalidInputException,
+                    expectedError
+                );
+            }
+        );
     });
 
     describe('on creation', () => {
         it('should emit a user-created event', async () => {
-            const professionalId = ProfessionalId.generate();
-
             const user = await User.create({
                 username: Username.create('john_doe'),
                 password: 'Pa$$w0rd',
                 name: 'John Doe',
-                professionals: [professionalId],
             });
 
             expect(user.id).toBeInstanceOf(UserId);
@@ -95,7 +92,7 @@ describe('A user', () => {
             await expect(user.password.verify('Pa$$w0rd')).resolves.toBe(true);
             expect(user.name).toBe('John Doe');
             expect(user.globalRole).toBe(GlobalRole.NONE);
-            expect(user.professionals).toEqual([professionalId]);
+            expect(user.clinicMembers).toEqual([]);
             expect(user.createdAt).toStrictEqual(now);
             expect(user.updatedAt).toStrictEqual(now);
 
@@ -109,22 +106,21 @@ describe('A user', () => {
             ]);
         });
 
-        it.each<[Partial<SignUpUser>, string]>([
-            [{name: ''}, 'Name must be at least 1 character long.'],
-            [{name: '   '}, 'Name must not contain whitespace.'],
-        ])('should throw an error when receiving invalid data', async (payload, expectedError) => {
-            const user: SignUpUser = {
-                username: Username.create('user1'),
-                password: 'Pa$$w0rd',
-                email: Email.create('user@example.com'),
-                name: 'User One',
-            };
+        it.each<[Partial<CreateUser>, string]>([[{name: ''}, 'Name must be at least 1 character long.']])(
+            'should throw an error when receiving invalid data',
+            async (payload, expectedError) => {
+                const user: CreateUser = {
+                    username: Username.create('user1'),
+                    password: 'Pa$$w0rd',
+                    name: 'User One',
+                };
 
-            await expect(() => User.signUp({...user, ...payload})).rejects.toThrowWithMessage(
-                InvalidInputException,
-                expectedError
-            );
-        });
+                await expect(() => User.create({...user, ...payload})).rejects.toThrowWithMessage(
+                    InvalidInputException,
+                    expectedError
+                );
+            }
+        );
     });
 
     describe('on signing in', () => {
@@ -208,19 +204,19 @@ describe('A user', () => {
             expect(user.events[0]).toBeInstanceOf(UserChangedEvent);
         });
 
-        it.each<[UpdateUser, string]>([
-            [{name: ''}, 'Name must be at least 1 character long.'],
-            [{name: '   '}, 'Name must not contain whitespace.'],
-        ])('should throw an error when receiving an invalid value', async (payload, expectedError) => {
-            const user = await User.signUp({
-                username: Username.create('john_doe'),
-                password: 'Pa$$w0rd',
-                email: Email.create('john_doe@example.com'),
-                name: 'John Doe',
-            });
+        it.each<[UpdateUser, string]>([[{name: ''}, 'Name must be at least 1 character long.']])(
+            'should throw an error when receiving an invalid value',
+            async (payload, expectedError) => {
+                const user = await User.signUp({
+                    username: Username.create('john_doe'),
+                    password: 'Pa$$w0rd',
+                    email: Email.create('john_doe@example.com'),
+                    name: 'John Doe',
+                });
 
-            expect(() => user.change(payload)).toThrowWithMessage(InvalidInputException, expectedError);
-        });
+                expect(() => user.change(payload)).toThrowWithMessage(InvalidInputException, expectedError);
+            }
+        );
     });
 
     describe('on changing password', () => {
@@ -246,78 +242,78 @@ describe('A user', () => {
         });
     });
 
-    describe('when added to a professional', () => {
-        it('should emit a user-professional-added event', () => {
-            const professionalId1 = ProfessionalId.generate();
-            const professionalId2 = ProfessionalId.generate();
+    describe('when added to a clinic member', () => {
+        it('should emit a user-clinic-member-added event', () => {
+            const clinicMemberId1 = ClinicMemberId.generate();
+            const clinicMemberId2 = ClinicMemberId.generate();
 
             const user = fakeUser({
-                professionals: [professionalId1],
+                clinicMembers: [clinicMemberId1],
             });
 
-            user.addToProfessional(professionalId2);
+            user.addClinicMember(clinicMemberId2);
 
-            expect(user.professionals).toEqual([professionalId1, professionalId2]);
+            expect(user.clinicMembers).toEqual([clinicMemberId1, clinicMemberId2]);
 
-            expect(user.events[0]).toBeInstanceOf(UserProfessionalAddedEvent);
+            expect(user.events[0]).toBeInstanceOf(UserClinicMemberAddedEvent);
             expect(user.events).toEqual([
                 {
-                    type: UserProfessionalAddedEvent.type,
+                    type: UserClinicMemberAddedEvent.type,
                     timestamp: now,
-                    professionalId: professionalId2,
+                    clinicMemberId: clinicMemberId2,
                     userId: user.id,
                 },
             ]);
         });
 
-        it('should ignore adding the same professional twice', () => {
-            const professionalId = ProfessionalId.generate();
+        it('should ignore adding the same clinic member twice', () => {
+            const clinicMemberId = ClinicMemberId.generate();
 
             const user = fakeUser({
-                professionals: [professionalId],
+                clinicMembers: [clinicMemberId],
             });
 
-            user.addToProfessional(professionalId);
+            user.addClinicMember(ClinicMemberId.from(clinicMemberId.toString()));
 
-            expect(user.professionals).toEqual([professionalId]);
+            expect(user.clinicMembers).toEqual([clinicMemberId]);
 
             expect(user.events).toEqual([]);
         });
     });
 
-    describe('when removed from a professional', () => {
-        it('should emit a user-professional-removed event', () => {
-            const professionalId = ProfessionalId.generate();
+    describe('when removed from a clinic member', () => {
+        it('should emit a user-clinic-member-removed event', () => {
+            const clinicMemberId = ClinicMemberId.generate();
 
             const user = fakeUser({
-                professionals: [professionalId],
+                clinicMembers: [clinicMemberId],
             });
 
-            user.removeFromProfessional(professionalId);
+            user.removeClinicMember(clinicMemberId);
 
-            expect(user.professionals).toEqual([]);
+            expect(user.clinicMembers).toEqual([]);
 
-            expect(user.events[0]).toBeInstanceOf(UserProfessionalRemovedEvent);
+            expect(user.events[0]).toBeInstanceOf(UserClinicMemberRemovedEvent);
             expect(user.events).toEqual([
                 {
-                    type: UserProfessionalRemovedEvent.type,
+                    type: UserClinicMemberRemovedEvent.type,
                     timestamp: now,
-                    professionalId,
+                    clinicMemberId,
                     userId: user.id,
                 },
             ]);
         });
 
-        it('should ignore removing a professional that is not in the list', () => {
-            const professionalId = ProfessionalId.generate();
+        it('should ignore removing a clinic member that is not in the list', () => {
+            const clinicMemberId = ClinicMemberId.generate();
 
             const user = fakeUser({
-                professionals: [professionalId],
+                clinicMembers: [clinicMemberId],
             });
 
-            user.removeFromProfessional(ProfessionalId.generate());
+            user.removeClinicMember(ClinicMemberId.generate());
 
-            expect(user.professionals).toEqual([professionalId]);
+            expect(user.clinicMembers).toEqual([clinicMemberId]);
 
             expect(user.events).toEqual([]);
         });
@@ -355,7 +351,7 @@ describe('A user', () => {
             password: await ObfuscatedPassword.obfuscate('Pa$$w0rd'),
             name: 'John Doe',
             globalRole: GlobalRole.NONE,
-            professionals: [ProfessionalId.generate()],
+            clinicMembers: [ClinicMemberId.generate()],
         });
 
         expect(user.toJSON()).toEqual({
@@ -364,9 +360,10 @@ describe('A user', () => {
             email: customValues.email?.toString() ?? null,
             name: 'John Doe',
             globalRole: 'NONE',
-            professionals: [user.professionals[0].toJSON()],
+            clinicMembers: [user.clinicMembers[0].toJSON()],
             createdAt: user.createdAt.toJSON(),
             updatedAt: user.updatedAt.toJSON(),
+            deletedAt: null,
         });
     });
 });

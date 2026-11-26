@@ -32,7 +32,7 @@ Feature: Appointment revenue reconciliation
         Then the request should succeed with a 201 status code
         And I save the response field "id" as "appointment" id for "evaluation"
 
-    Scenario: A scheduled procedure remains in the same report period after payment
+    Scenario: A scheduled procedure is pending in the agenda and the report before payment
         When I send a "GET" request to "/api/v1/appointments/${ref:id:appointment:evaluation}"
         Then the request should succeed with a 200 status code
         And the response should contain:
@@ -49,6 +49,8 @@ Feature: Appointment revenue reconciliation
             | summary.totalPending | 157.25 |
             | pagination.total     | 1      |
             | payments             | [{"appointmentId":"${ref:id:appointment:evaluation}","paymentId":null,"procedureName":"Evaluation","paymentMethod":null,"expectedBrl":157.25,"receivedBrl":0,"pendingBrl":157.25}] |
+
+    Scenario: Paying a scheduled procedure updates its revenue in the agenda
         When I send a "POST" request to "/api/v1/appointments/${ref:id:appointment:evaluation}/payment" with:
             | paymentMethod | PIX |
         Then the request should succeed with a 201 status code
@@ -66,6 +68,14 @@ Feature: Appointment revenue reconciliation
         Then the request should succeed with a 200 status code
         And the response should contain:
             | data | [{"id":"${ref:id:appointment:evaluation}","revenue":{"expectedBrl":157.25,"receivedBrl":157.25,"pendingBrl":0,"paymentMethod":"PIX"}}] |
+
+    Scenario: A scheduled procedure remains in the same report period after payment
+        When I send a "POST" request to "/api/v1/appointments/${ref:id:appointment:evaluation}/payment" with:
+            | paymentMethod | PIX |
+        Then the request should succeed with a 201 status code
+        And the response should contain:
+            | amountBrl | 157.25 |
+            | status    | PAID   |
         When I send a "GET" request to "/api/v1/clinics/${ref:id:clinic:dr_house}/financial/report?startDate=${ref:date:nextYear:01-01}&endDate=${ref:date:nextYear:01-31}&paymentMethod=PIX&status=PAID"
         Then the request should succeed with a 200 status code
         And the response should contain:
@@ -107,12 +117,7 @@ Feature: Appointment revenue reconciliation
             | paymentMethod | PIX                  |
         Then the request should succeed with a 201 status code
         And I save the response field "id" as "coverage" id for "prepaid"
-        When I send a "PATCH" request to "/api/v1/appointments/${ref:id:appointment:evaluation}/checkin"
-        Then the request should succeed with a 200 status code
-        When I send a "PATCH" request to "/api/v1/appointments/${ref:id:appointment:evaluation}/call"
-        Then the request should succeed with a 200 status code
-        When I send a "PATCH" request to "/api/v1/appointments/${ref:id:appointment:evaluation}/complete"
-        Then the request should succeed with a 200 status code
+        And the appointment "evaluation" is checked in, called and completed
         When I send a "POST" request to "/api/v1/appointments/${ref:id:appointment:evaluation}/payment" with:
             | paymentMethod | <method>                    |
             | <coverageKey> | ${ref:id:coverage:prepaid}  |
@@ -126,6 +131,29 @@ Feature: Appointment revenue reconciliation
             | revenue.receivedBrl   | 0        |
             | revenue.pendingBrl    | 0        |
             | revenue.paymentMethod | <method> |
+
+        Examples:
+            | method       | plans                      | quota                   | patientCoverage | planKey            | coverageKey           |
+            | PACKAGE      | package-plans              | totalCredits            | packages        | packagePlanId      | patientPackageId      |
+            | SUBSCRIPTION | patient-subscription-plans | monthlyAppointmentQuota | subscriptions   | subscriptionPlanId | patientSubscriptionId |
+
+    Scenario Outline: A prepaid appointment appears in the report without revenue
+        When I send a "POST" request to "/api/v1/<plans>" with:
+            | name    | Prepaid assessment |
+            | <quota> | 4                  |
+            | priceBrl | 500               |
+        Then the request should succeed with a 201 status code
+        And I save the response field "id" as "plan" id for "coverage"
+        When I send a "POST" request to "/api/v1/patients/${ref:id:patient:revenue_patient}/<patientCoverage>" with:
+            | <planKey>    | ${ref:id:plan:coverage} |
+            | paymentMethod | PIX                  |
+        Then the request should succeed with a 201 status code
+        And I save the response field "id" as "coverage" id for "prepaid"
+        And the appointment "evaluation" is checked in, called and completed
+        When I send a "POST" request to "/api/v1/appointments/${ref:id:appointment:evaluation}/payment" with:
+            | paymentMethod | <method>                    |
+            | <coverageKey> | ${ref:id:coverage:prepaid}  |
+        Then the request should succeed with a 201 status code
         When I send a "GET" request to "/api/v1/clinics/${ref:id:clinic:dr_house}/financial/report?startDate=${ref:date:nextYear:01-01}&endDate=${ref:date:nextYear:01-31}&paymentMethod=<method>"
         Then the request should succeed with a 200 status code
         And the response should contain:
@@ -140,14 +168,8 @@ Feature: Appointment revenue reconciliation
             | PACKAGE      | package-plans              | totalCredits            | packages        | packagePlanId      | patientPackageId      |
             | SUBSCRIPTION | patient-subscription-plans | monthlyAppointmentQuota | subscriptions   | subscriptionPlanId | patientSubscriptionId |
 
-    Scenario: An insurance claim updates received revenue on both surfaces
-        When I send a "POST" request to "/api/v1/clinics/${ref:id:clinic:dr_house}/insurance-plans" with:
-            | name | Test insurance |
-        Then the request should succeed with a 201 status code
-        And I save the response field "id" as "insurancePlan" id for "test"
-        When I send a "POST" request to "/api/v1/patients/${ref:id:patient:revenue_patient}/insurance-enrollments" with:
-            | insurancePlanId | ${ref:id:insurancePlan:test} |
-        Then the request should succeed with a 201 status code
+    Scenario: An insurance payment keeps the revenue pending until the claim is paid
+        Given the patient "revenue_patient" is enrolled in a new insurance plan "test" named "Test insurance" of clinic "dr_house"
         When I send a "POST" request to "/api/v1/appointments/${ref:id:appointment:evaluation}/payment" with:
             | paymentMethod   | INSURANCE                    |
             | insurancePlanId | ${ref:id:insurancePlan:test} |
@@ -155,8 +177,6 @@ Feature: Appointment revenue reconciliation
         And the response should contain:
             | amountBrl | 157.25  |
             | status    | PENDING |
-        And I save the response field "id" as "appointmentPayment" id for "insurance"
-        And I save the claim for payment "insurance" as "evaluation"
         When I send a "GET" request to "/api/v1/appointments/${ref:id:appointment:evaluation}"
         Then the request should succeed with a 200 status code
         And the response should contain:
@@ -164,6 +184,15 @@ Feature: Appointment revenue reconciliation
             | revenue.receivedBrl   | 0         |
             | revenue.pendingBrl    | 157.25    |
             | revenue.paymentMethod | INSURANCE |
+
+    Scenario: An insurance claim updates received revenue on both surfaces
+        Given the patient "revenue_patient" is enrolled in a new insurance plan "test" named "Test insurance" of clinic "dr_house"
+        When I send a "POST" request to "/api/v1/appointments/${ref:id:appointment:evaluation}/payment" with:
+            | paymentMethod   | INSURANCE                    |
+            | insurancePlanId | ${ref:id:insurancePlan:test} |
+        Then the request should succeed with a 201 status code
+        And I save the response field "id" as "appointmentPayment" id for "insurance"
+        And I save the claim for payment "insurance" as "evaluation"
         When I send a "PATCH" request to "/api/v1/insurance-claims/${ref:id:insuranceClaim:evaluation}/submit"
         Then the request should succeed with a 200 status code
         When I send a "PATCH" request to "/api/v1/insurance-claims/${ref:id:insuranceClaim:evaluation}/paid" with:

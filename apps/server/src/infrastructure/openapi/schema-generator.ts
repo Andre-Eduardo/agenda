@@ -31,9 +31,11 @@ export function generateOpenApiSchema(zodDto: AnyZodObject, hideDefinitions?: st
     const generator = new OpenApiGeneratorV3(registry.definitions);
 
     const schema = generator.generateComponents().components?.schemas?.[refId];
+
     if (!isSchemaObject(schema)) {
         throw new Error(`Expected SchemaObject for key '${refId}'`);
     }
+
     return schema;
 }
 
@@ -53,6 +55,7 @@ export function generateNestSwaggerSchema(zodDto: AnyZodObject, hideDefinitions?
     const allSchemas = generator.generateComponents().components?.schemas ?? {};
 
     const generatedSchema = allSchemas[refId];
+
     if (!isSchemaObject(generatedSchema)) {
         throw new Error(`Expected SchemaObject for key '${refId}'`);
     }
@@ -77,11 +80,7 @@ export function generateNestSwaggerSchema(zodDto: AnyZodObject, hideDefinitions?
  *
  * Based on: https://github.com/anatine/zod-plugins/blob/main/packages/zod-nestjs/src/lib/create-zod-dto.ts
  */
-function convertSchemaObject(
-    schemaObject: OpenApiSchema,
-    allSchemas: OpenApiSchemas = {},
-    required?: boolean
-): void {
+function convertSchemaObject(schemaObject: OpenApiSchema, allSchemas: OpenApiSchemas = {}, required?: boolean): void {
     if ('$ref' in schemaObject) {
         return;
     }

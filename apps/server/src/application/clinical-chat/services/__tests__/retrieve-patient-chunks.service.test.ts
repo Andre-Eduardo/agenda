@@ -1,31 +1,28 @@
 import {mock} from 'jest-mock-extended';
-import {PreconditionException} from '../../../../domain/@shared/exceptions';
-import {
-    ContextChunkSourceType,
-    PatientContextChunk,
-    PatientContextChunkId,
-} from '../../../../domain/clinical-chat/entities';
-import type {
-    PatientContextChunkRepository,
-    RankedChunk,
-} from '../../../../domain/clinical-chat/patient-context-chunk.repository';
-import type {PatientContextSnapshotRepository} from '../../../../domain/clinical-chat/patient-context-snapshot.repository';
-import type {AiProviderRegistry} from '../../../../domain/clinical-chat/ports/ai-provider-registry.port';
-import type {EmbeddingProvider} from '../../../../domain/clinical-chat/ports/embedding.provider';
-import {PatientId} from '../../../../domain/patient/entities';
-import {ContextPolicyService} from '../context-policy.service';
-import {RetrievePatientChunksService} from '../retrieve-patient-chunks.service';
+import {ContextPolicyService} from '@application/clinical-chat/services/context-policy.service';
+import {RetrievePatientChunksService} from '@application/clinical-chat/services/retrieve-patient-chunks.service';
+import {PreconditionException} from '@domain/@shared/exceptions';
+import {ClinicId} from '@domain/clinic/entities';
+import {ContextChunkSourceType, PatientContextChunk, PatientContextChunkId} from '@domain/clinical-chat/entities';
+import type {PatientContextChunkRepository, RankedChunk} from '@domain/clinical-chat/patient-context-chunk.repository';
+import type {PatientContextSnapshotRepository} from '@domain/clinical-chat/patient-context-snapshot.repository';
+import type {AiProviderRegistry} from '@domain/clinical-chat/ports/ai-provider-registry.port';
+import type {EmbeddingProvider} from '@domain/clinical-chat/ports/embedding.provider';
+import {PatientId} from '@domain/patient/entities';
 
+const CLINIC_ID = ClinicId.from('01900000-0000-7000-8000-000000000002');
 const PATIENT_ID = PatientId.from('01900000-0000-7000-8000-000000000001');
 const FAKE_EMBEDDING = Array.from({length: 1536}, (_, i) => i * 0.001);
 
 function makeRankedChunk(content: string, score: number, sourceType = ContextChunkSourceType.RECORD): RankedChunk {
     return {
         chunk: PatientContextChunk.create({
+            clinicId: CLINIC_ID,
             patientId: PATIENT_ID,
             sourceType,
             sourceId: PatientContextChunkId.generate().toString(),
             content,
+            chunkIndex: 0,
             contentHash: `hash_${content.slice(0, 8).replaceAll(/\s/g, '_')}`,
         }),
         score,
@@ -43,9 +40,19 @@ function makeService(overrides?: {
     const aiProviderRegistry = mock<AiProviderRegistry>();
 
     aiProviderRegistry.getEmbeddingProvider.mockReturnValue(embeddingProvider);
-    embeddingProvider.generateEmbedding.mockResolvedValue(FAKE_EMBEDDING);
-    chunkRepository.searchSimilar.mockResolvedValue([]);
-    snapshotRepository.findByPatient.mockResolvedValue(null);
+
+    // Defaults only for the dependencies the test did not provide, so overrides keep their own behavior.
+    if (!overrides?.embeddingProvider) {
+        embeddingProvider.generateEmbedding.mockResolvedValue(FAKE_EMBEDDING);
+    }
+
+    if (!overrides?.chunkRepository) {
+        chunkRepository.searchSimilar.mockResolvedValue([]);
+    }
+
+    if (!overrides?.snapshotRepository) {
+        snapshotRepository.findByPatient.mockResolvedValue(null);
+    }
 
     const service = new RetrievePatientChunksService(
         chunkRepository,
@@ -54,7 +61,7 @@ function makeService(overrides?: {
         new ContextPolicyService()
     );
 
-    return {service, chunkRepository, snapshotRepository, embeddingProvider};
+    return {service, chunkRepository, snapshotRepository, embeddingProvider, aiProviderRegistry};
 }
 
 describe('RetrievePatientChunksService — edge cases', () => {
@@ -63,6 +70,7 @@ describe('RetrievePatientChunksService — edge cases', () => {
 
         await expect(
             service.execute({
+                clinicId: CLINIC_ID,
                 patientId: null as unknown as PatientId,
                 query: 'any query',
             })
@@ -70,9 +78,10 @@ describe('RetrievePatientChunksService — edge cases', () => {
     });
 
     it('returns empty result when patient has no indexed chunks', async () => {
-        const {service} = makeService();
+        const {service, aiProviderRegistry, chunkRepository, embeddingProvider} = makeService();
 
         const result = await service.execute({
+            clinicId: CLINIC_ID,
             patientId: PATIENT_ID,
             query: 'any query',
         });
@@ -80,12 +89,22 @@ describe('RetrievePatientChunksService — edge cases', () => {
         expect(result.chunks).toHaveLength(0);
         expect(result.snapshot).toBeNull();
         expect(result.totalChunks).toBe(0);
+        expect(aiProviderRegistry.getEmbeddingProvider).toHaveBeenCalledWith(CLINIC_ID);
+        expect(chunkRepository.searchSimilar).toHaveBeenCalledWith({
+            patientId: PATIENT_ID,
+            sourceTypes: undefined,
+            limit: 5,
+            minScore: 0,
+            queryEmbedding: FAKE_EMBEDDING,
+        });
+        expect(embeddingProvider.generateEmbedding).toHaveBeenCalledWith('any query');
     });
 
     it('calls searchSimilar with limit 0 when topK is 0', async () => {
         const {service, chunkRepository} = makeService();
 
         await service.execute({
+            clinicId: CLINIC_ID,
             patientId: PATIENT_ID,
             query: 'some query',
             topK: 0,
@@ -103,6 +122,7 @@ describe('RetrievePatientChunksService — edge cases', () => {
         ]);
 
         const result = await service.execute({
+            clinicId: CLINIC_ID,
             patientId: PATIENT_ID,
             query: 'high blood sugar',
             minScore: 1,
@@ -122,6 +142,7 @@ describe('RetrievePatientChunksService — edge cases', () => {
         ]);
 
         const result = await service.execute({
+            clinicId: CLINIC_ID,
             patientId: PATIENT_ID,
             query: 'patient clinical history',
         });
@@ -145,6 +166,7 @@ describe('RetrievePatientChunksService — edge cases', () => {
 
         await expect(
             service.execute({
+                clinicId: CLINIC_ID,
                 patientId: PATIENT_ID,
                 query: 'test query',
             })
@@ -160,6 +182,7 @@ describe('RetrievePatientChunksService — edge cases', () => {
 
         await expect(
             service.execute({
+                clinicId: CLINIC_ID,
                 patientId: PATIENT_ID,
                 query: 'test query',
             })

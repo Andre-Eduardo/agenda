@@ -44,19 +44,23 @@ describe('Module access', () => {
     it('answers what the clinic contracted', async () => {
         const {clinicId, access} = setup();
 
-        expect(await access.getClinicModules(clinicId)).toEqual(new Set([ModuleType.AI_CHAT, ModuleType.AI_FORMS]));
-        expect(await access.isClinicModuleEnabled(clinicId, ModuleType.AI_AGENT, ModuleType.AI_CHAT)).toBe(true);
-        expect(await access.isClinicModuleEnabled(clinicId, ModuleType.AI_AGENT)).toBe(false);
+        await expect(access.getClinicModules(clinicId)).resolves.toEqual(
+            new Set([ModuleType.AI_CHAT, ModuleType.AI_FORMS])
+        );
+        await expect(access.isClinicModuleEnabled(clinicId, ModuleType.AI_AGENT, ModuleType.AI_CHAT)).resolves.toBe(
+            true
+        );
+        await expect(access.isClinicModuleEnabled(clinicId, ModuleType.AI_AGENT)).resolves.toBe(false);
     });
 
     it('answers what the member was assigned to', async () => {
         const {memberId, access} = setup();
 
-        expect(await access.getClinicModulesOfMember(memberId)).toEqual(
+        await expect(access.getClinicModulesOfMember(memberId)).resolves.toEqual(
             new Set([ModuleType.AI_CHAT, ModuleType.AI_FORMS])
         );
-        expect(await access.isMemberModuleEnabled(memberId, ModuleType.AI_FORMS)).toBe(true);
-        expect(await access.isMemberModuleEnabled(memberId, ModuleType.AI_CHAT)).toBe(false);
+        await expect(access.isMemberModuleEnabled(memberId, ModuleType.AI_FORMS)).resolves.toBe(true);
+        await expect(access.isMemberModuleEnabled(memberId, ModuleType.AI_CHAT)).resolves.toBe(false);
 
         const permissions = await access.getAllowedPermissions(memberId);
 
@@ -67,14 +71,14 @@ describe('Module access', () => {
     it('grants nothing to a clinic without license', async () => {
         const {clinicId, memberId, access} = setup({withLicense: false});
 
-        expect(await access.getClinicModules(clinicId)).toEqual(new Set());
-        expect(await access.getMemberModules(memberId)).toEqual(new Set());
+        await expect(access.getClinicModules(clinicId)).resolves.toEqual(new Set());
+        await expect(access.getMemberModules(memberId)).resolves.toEqual(new Set());
     });
 
     it('grants nothing to an inactive or unknown member', async () => {
         const inactive = setup({isActive: false});
 
-        expect(await inactive.access.getMemberModules(inactive.memberId)).toEqual(new Set());
+        await expect(inactive.access.getMemberModules(inactive.memberId)).resolves.toEqual(new Set());
 
         const clinicLicenseRepository = mock<ClinicLicenseRepository>();
         const clinicMemberRepository = mock<ClinicMemberRepository>();
@@ -83,7 +87,7 @@ describe('Module access', () => {
 
         const access = new ModuleAccess(clinicLicenseRepository, clinicMemberRepository);
 
-        expect(await access.getMemberModules(ClinicMemberId.generate())).toEqual(new Set());
-        expect(await access.getClinicModulesOfMember(ClinicMemberId.generate())).toEqual(new Set());
+        await expect(access.getMemberModules(ClinicMemberId.generate())).resolves.toEqual(new Set());
+        await expect(access.getClinicModulesOfMember(ClinicMemberId.generate())).resolves.toEqual(new Set());
     });
 });

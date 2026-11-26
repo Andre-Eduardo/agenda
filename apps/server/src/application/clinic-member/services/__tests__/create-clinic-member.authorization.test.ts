@@ -51,6 +51,15 @@ function managerOf(clinic: Clinic, actor: Actor, others: ClinicMember[] = []) {
     return {manager, members: [manager, ...others]};
 }
 
+function professionalPayload(clinic: Clinic, acceptExtraCharge = false) {
+    return {
+        clinicId: clinic.id.toString(),
+        userId: UserId.generate().toString(),
+        roles: [ClinicMemberRole.PROFESSIONAL],
+        acceptExtraCharge,
+    };
+}
+
 describe('clinic member creation authorization', () => {
     it('allows only the clinic creator to claim the first membership for themselves', async () => {
         const {actor, clinic, memberRepository, service} = setup();
@@ -101,6 +110,7 @@ describe('clinic member creation authorization', () => {
     });
 
     describe('professional seats', () => {
+        // oxlint-disable-next-line typescript/no-redundant-type-constituents -- false positive: test files sit outside tsconfig, so the type-aware linter cannot resolve ClinicLicense
         function setupWithManager(license: ClinicLicense | null) {
             const context = setup();
             const {manager, members} = managerOf(context.clinic, context.actor);
@@ -110,15 +120,6 @@ describe('clinic member creation authorization', () => {
             context.licenseRepository.findByClinicId.mockResolvedValue(license);
 
             return context;
-        }
-
-        function professionalPayload(clinic: Clinic, acceptExtraCharge = false) {
-            return {
-                clinicId: clinic.id.toString(),
-                userId: UserId.generate().toString(),
-                roles: [ClinicMemberRole.PROFESSIONAL],
-                acceptExtraCharge,
-            };
         }
 
         it('does not count staff that does not attend patients', async () => {

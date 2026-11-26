@@ -35,7 +35,8 @@
     ".jest",
     "**/.tanstack",
     "src/routeTree.gen.ts",
-    "src/components/ui/**"
+    "src/components/ui/**",
+    "src/styled-system/**"
   ],
   "rules": {
     // ── Allow void operator as statement (used to silence no-floating-promises on fire-and-forget calls) ──

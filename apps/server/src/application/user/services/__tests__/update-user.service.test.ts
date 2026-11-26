@@ -6,6 +6,8 @@ import {
     ResourceNotFoundException,
 } from '../../../../domain/@shared/exceptions';
 import {Email} from '../../../../domain/@shared/value-objects';
+import {ClinicMemberId} from '../../../../domain/clinic-member/entities';
+import {ClinicId} from '../../../../domain/clinic/entities';
 import type {EventDispatcher} from '../../../../domain/event';
 import {UserId} from '../../../../domain/user/entities';
 import {fakeUser} from '../../../../domain/user/entities/__tests__/fake-user';
@@ -24,6 +26,8 @@ describe('An update-user service', () => {
 
     const actor: Actor = {
         userId: UserId.generate(),
+        clinicId: ClinicId.generate(),
+        clinicMemberId: ClinicMemberId.generate(),
         ip: '127.0.0.1',
     };
 
@@ -46,8 +50,7 @@ describe('An update-user service', () => {
 
         const payload: UpdateUserDto = {
             id: existingUser.id,
-            firstName: 'Jorge',
-            lastName: null,
+            name: 'Jorge',
             email: Email.create('john.doe@example.com'),
             username: Username.create('johndoe'),
             currentPassword: '@SecurePassword123',
@@ -63,8 +66,7 @@ describe('An update-user service', () => {
 
         await expect(updateUserService.execute({actor, payload})).resolves.toEqual(new UserDto(updatedUser));
 
-        expect(existingUser.firstName).toBe(payload.firstName);
-        expect(existingUser.lastName).toBe(payload.lastName);
+        expect(existingUser.name).toBe(payload.name);
         expect(existingUser.email).toBe(payload.email);
         expect(existingUser.username).toBe(payload.username);
         expect(existingUser.updatedAt).toEqual(now);
@@ -87,7 +89,7 @@ describe('An update-user service', () => {
     it('should throw an error when the user does not exist', async () => {
         const payload: UpdateUserDto = {
             id: UserId.generate(),
-            firstName: 'Jorge',
+            name: 'Jorge',
             currentPassword: '@SecurePassword123',
         };
 
@@ -107,7 +109,7 @@ describe('An update-user service', () => {
 
         const payload: UpdateUserDto = {
             id: UserId.generate(),
-            firstName: 'Jorge',
+            name: 'Jorge',
             currentPassword: 'wrong-password',
         };
 

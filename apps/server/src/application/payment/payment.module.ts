@@ -1,12 +1,15 @@
 import {Module} from '@nestjs/common';
 import {PaymentController} from '@application/payment/payment.controller';
 import {PaymentService} from '@application/payment/payment.service';
+import {
+    PAYMENT_PROVIDER_FACTORY_PROVIDERS,
+    paymentProviderFactory,
+} from '@application/payment/providers/payment-provider.factory';
 import {IPaymentProvider} from '@application/payment/providers/payment-provider.interface';
-import {PAYMENT_PROVIDER_FACTORY_PROVIDERS, paymentProviderFactory} from '@application/payment/providers/payment-provider.factory';
 import {AsaasWebhookController} from '@application/payment/webhooks/asaas-webhook.controller';
 import {AsaasWebhookService} from '@application/payment/webhooks/asaas-webhook.service';
-import {InfrastructureModule} from '@infrastructure/infrastructure.module';
 import {EnvConfigService} from '@infrastructure/config';
+import {InfrastructureModule} from '@infrastructure/infrastructure.module';
 
 @Module({
     imports: [InfrastructureModule],

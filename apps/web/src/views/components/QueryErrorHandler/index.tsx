@@ -1,5 +1,5 @@
 import {useEffect} from 'react';
-import {type ApiProblem} from '@agenda-app/client';
+import type {ApiProblem} from '@agenda-app/client';
 import {useQueryClient} from '@tanstack/react-query';
 import {AxiosError} from 'axios';
 import {useTranslation} from 'react-i18next';

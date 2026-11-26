@@ -1,6 +1,7 @@
 import {InvalidInputException} from '../../../@shared/exceptions';
 import {DocumentId, Phone} from '../../../@shared/value-objects';
-import {Gender, PersonId, PersonProfile, PersonType} from '../person.entity';
+import {PersonDeletedEvent} from '../../events';
+import {Gender, Person, PersonId, PersonType} from '../person.entity';
 import {fakePerson} from './fake-person';
 
 describe('A person', () => {
@@ -16,64 +17,71 @@ describe('A person', () => {
 
     describe('on create', () => {
         it.each([
-            [{name: '', profiles: new Set([PersonProfile.CUSTOMER])}, 'Person name must be at least 1 character long.'],
-            [{name: '', profiles: new Set([PersonProfile.EMPLOYEE])}, 'Person name must be at least 1 character long.'],
-            [{companyName: 'company', personType: PersonType.NATURAL}, 'Only legal persons can have a company name.'],
-            [{gender: Gender.MALE, personType: PersonType.LEGAL}, 'Only natural persons can have a gender.'],
+            [{name: ''}, 'Person name must be at least 1 character long.'],
+            [{gender: 'UNKNOWN' as Gender}, 'Invalid gender.'],
         ])('should throw an error when receiving invalid data', (payload, expectedError) => {
-            const data = {
-                ...payload,
-            };
+            expect(() => fakePerson(payload)).toThrowWithMessage(InvalidInputException, expectedError);
+        });
 
-            expect(() => fakePerson(data)).toThrowWithMessage(InvalidInputException, expectedError);
+        it('should apply defaults for optional values', () => {
+            const person = new Person({
+                id: PersonId.generate(),
+                name: 'John Doe',
+                documentId: null,
+                phone: null,
+                gender: null,
+                personType: PersonType.NATURAL,
+                createdAt: now,
+                updatedAt: now,
+            });
+
+            expect(person.documentId).toBeNull();
+            expect(person.phone).toBeNull();
+            expect(person.gender).toBeNull();
+            expect(person.personType).toBe(PersonType.NATURAL);
+            expect(person.deletedAt).toBeNull();
+        });
+    });
+
+    describe('on deletion', () => {
+        it('should emit a person-deleted event', () => {
+            const person = fakePerson();
+
+            person.delete();
+
+            expect(person.deletedAt).toStrictEqual(now);
+            expect(person.events).toEqual([
+                {
+                    type: PersonDeletedEvent.type,
+                    person,
+                    timestamp: now,
+                },
+            ]);
+            expect(person.events[0]).toBeInstanceOf(PersonDeletedEvent);
         });
     });
 
     it.each([
-        [
-            {
-                personType: PersonType.LEGAL,
-                phone: Phone.create('12345678'),
-                companyName: 'company',
-            },
-            '12345678',
-        ],
-        [
-            {
-                personType: PersonType.NATURAL,
-                phone: Phone.create('12345678'),
-                gender: Gender.MALE,
-            },
-            '12345678',
-        ],
-        [
-            {
-                personType: PersonType.NATURAL,
-                phone: null,
-                gender: Gender.MALE,
-            },
-            null,
-        ],
+        [{personType: PersonType.LEGAL, phone: Phone.create('12345678'), gender: null}, '12345678'],
+        [{personType: PersonType.NATURAL, phone: Phone.create('12345678'), gender: Gender.MALE}, '12345678'],
+        [{personType: PersonType.NATURAL, phone: null, gender: Gender.FEMALE}, null],
     ])('should be serializable', (values, expectedPhone) => {
         const person = fakePerson({
             ...values,
             name: 'john',
-            profiles: new Set([PersonProfile.CUSTOMER]),
             documentId: DocumentId.create('12345678901'),
         });
 
         expect(person.toJSON()).toEqual({
             id: person.id.toJSON(),
             name: 'john',
-            companyName: person.companyName,
-            companyId: person.companyId.toJSON(),
-            profiles: ['CUSTOMER'],
             personType: person.personType,
             documentId: '12345678901',
             phone: expectedPhone,
             gender: person.gender,
             createdAt: person.createdAt.toJSON(),
             updatedAt: person.updatedAt.toJSON(),
+            deletedAt: null,
         });
     });
 });

@@ -126,7 +126,7 @@ describe('ApiPaginatedOperation', () => {
         const apiParams = Reflect.getMetadata(DECORATORS.API_PARAMETERS, Test.test);
         const apiResponses = Reflect.getMetadata(DECORATORS.API_RESPONSE, Test.test);
 
-        expect(apiExtraModels).toEqual([PaginatedDto, ApiProblem]);
+        expect(apiExtraModels).toEqual([PaginatedDto, TestDto, ApiProblem]);
         expect(apiOperation).toEqual({
             summary: 'Search',
         });

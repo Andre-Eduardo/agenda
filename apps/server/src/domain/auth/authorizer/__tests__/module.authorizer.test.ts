@@ -27,7 +27,7 @@ describe('A module authorizer', () => {
     it('keeps every permission outside a clinic context', async () => {
         const {authorizer} = setup();
 
-        expect(await authorizer.getPermissions(null, userId)).toEqual(Permission.all());
+        await expect(authorizer.getPermissions(null, userId)).resolves.toEqual(Permission.all());
     });
 
     it('drops the permissions of modules the member does not have', async () => {
@@ -42,7 +42,7 @@ describe('A module authorizer', () => {
     it('explains a denial caused by a module the clinic did not contract', async () => {
         const {authorizer} = setup();
 
-        expect(await authorizer.denialReason(memberId, userId, [AgentPermission.ASK])).toBe(
+        await expect(authorizer.denialReason(memberId, userId, [AgentPermission.ASK])).resolves.toBe(
             AccessDeniedReason.MODULE_NOT_ENABLED
         );
     });
@@ -50,7 +50,7 @@ describe('A module authorizer', () => {
     it('explains a denial caused by a member not assigned to the module', async () => {
         const {authorizer} = setup({clinicModules: [ModuleType.AI_AGENT]});
 
-        expect(await authorizer.denialReason(memberId, userId, [AgentPermission.ASK])).toBe(
+        await expect(authorizer.denialReason(memberId, userId, [AgentPermission.ASK])).resolves.toBe(
             AccessDeniedReason.MODULE_NOT_ASSIGNED
         );
     });
@@ -60,10 +60,10 @@ describe('A module authorizer', () => {
 
         inner.getPermissions.mockResolvedValue(new Set());
 
-        expect(await authorizer.denialReason(memberId, userId, [AgentPermission.ASK])).toBe(
+        await expect(authorizer.denialReason(memberId, userId, [AgentPermission.ASK])).resolves.toBe(
             AccessDeniedReason.INSUFFICIENT_PERMISSIONS
         );
-        expect(await authorizer.denialReason(null, userId, [AgentPermission.ASK])).toBe(
+        await expect(authorizer.denialReason(null, userId, [AgentPermission.ASK])).resolves.toBe(
             AccessDeniedReason.INSUFFICIENT_PERMISSIONS
         );
     });

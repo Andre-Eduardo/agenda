@@ -7,6 +7,7 @@ import {clinicMemberRolePermissionsMap} from '../clinic-member-role.authorizer';
 describe('the versioned clinic RBAC matrix', () => {
     it('documents every domain permission and the exact decision for every clinic role', () => {
         const document = readFileSync(resolve(__dirname, '../../../../../../../docs/rbac-matrix.md'), 'utf8');
+
         expect(document).toMatch(/^# Matriz RBAC da clínica — v\d+\.\d+\.\d+/);
 
         const rows = document
@@ -22,6 +23,7 @@ describe('the versioned clinic RBAC matrix', () => {
                 .split('|')
                 .slice(1, -1)
                 .map((cell) => cell.trim());
+
             expect(resource).toBeTruthy();
             expect(resources.has(resource)).toBe(false);
             expect(roleCells).toHaveLength(Object.values(ClinicMemberRole).length);
@@ -29,11 +31,14 @@ describe('the versioned clinic RBAC matrix', () => {
 
             for (const [index, role] of Object.values(ClinicMemberRole).entries()) {
                 const cell = roleCells[index];
+
                 expect(cell).toBeTruthy();
+
                 if (cell === '—') continue;
 
                 for (const action of cell.split(', ')) {
                     const permission = Permission.of(`${resource}:${action}`);
+
                     expect(documented.get(role)?.has(permission)).toBe(false);
                     documented.get(role)?.add(permission);
                 }
@@ -41,6 +46,7 @@ describe('the versioned clinic RBAC matrix', () => {
         }
 
         expect(resources).toEqual(new Set([...Permission.all()].map((permission) => permission.split(':')[0])));
+
         for (const role of Object.values(ClinicMemberRole)) {
             expect(documented.get(role)).toEqual(new Set(clinicMemberRolePermissionsMap[role]));
         }

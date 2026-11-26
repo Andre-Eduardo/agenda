@@ -32,7 +32,13 @@ export enum InsuranceClaimStatus {
 export type InsuranceClaimProps = EntityProps<InsuranceClaim>;
 export type CreateInsuranceClaim = Omit<
     CreateEntity<InsuranceClaim>,
-    'authorizationStatus' | 'claimStatus' | 'approvedAmountBrl' | 'glosaReason' | 'glosaAmountBrl' | 'submittedAt' | 'resolvedAt'
+    | 'authorizationStatus'
+    | 'claimStatus'
+    | 'approvedAmountBrl'
+    | 'glosaReason'
+    | 'glosaAmountBrl'
+    | 'submittedAt'
+    | 'resolvedAt'
 >;
 
 export class InsuranceClaim extends AggregateRoot<InsuranceClaimId> {
@@ -75,7 +81,9 @@ export class InsuranceClaim extends AggregateRoot<InsuranceClaimId> {
             ...props,
             id: InsuranceClaimId.generate(),
             authorizationCode: props.authorizationCode ?? null,
-            authorizationStatus: hasAuthCode ? InsuranceAuthorizationStatus.AUTHORIZED : InsuranceAuthorizationStatus.NOT_REQUIRED,
+            authorizationStatus: hasAuthCode
+                ? InsuranceAuthorizationStatus.AUTHORIZED
+                : InsuranceAuthorizationStatus.NOT_REQUIRED,
             claimStatus: InsuranceClaimStatus.DRAFT,
             approvedAmountBrl: null,
             glosaReason: null,
@@ -134,7 +142,10 @@ export class InsuranceClaim extends AggregateRoot<InsuranceClaimId> {
     }
 
     appeal(): void {
-        if (this.claimStatus !== InsuranceClaimStatus.DENIED && this.claimStatus !== InsuranceClaimStatus.PARTIALLY_PAID) {
+        if (
+            this.claimStatus !== InsuranceClaimStatus.DENIED &&
+            this.claimStatus !== InsuranceClaimStatus.PARTIALLY_PAID
+        ) {
             throw new PreconditionException('insurance_claim.cannot_appeal');
         }
 

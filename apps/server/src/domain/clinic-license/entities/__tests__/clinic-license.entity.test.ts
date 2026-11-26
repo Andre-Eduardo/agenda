@@ -72,7 +72,9 @@ describe('A clinic license', () => {
 
         expect(license.assign(ModuleType.AI_CHAT, first, decline)).toBe(SeatDecision.INCLUDED);
         expect(license.assign(ModuleType.AI_CHAT, first, decline)).toBe(SeatDecision.INCLUDED);
-        expect(() => license.assign(ModuleType.AI_CHAT, second, decline)).toThrow(/clinic_license\.extra_seat_confirmation_required/);
+        expect(() => license.assign(ModuleType.AI_CHAT, second, decline)).toThrow(
+            /clinic_license\.extra_seat_confirmation_required/
+        );
         expect(license.assign(ModuleType.AI_CHAT, second, accept)).toBe(SeatDecision.EXTRA_CHARGE);
         expect(license.modules.get(ModuleType.AI_CHAT)?.extraSeats).toBe(1);
         expect(() => license.assign(ModuleType.AI_CHAT, ClinicMemberId.generate(), accept)).toThrow(

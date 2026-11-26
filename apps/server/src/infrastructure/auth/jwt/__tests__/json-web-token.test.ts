@@ -1,16 +1,19 @@
 import type {JwtPayload} from 'jsonwebtoken';
 import * as jwt from 'jsonwebtoken';
 import {ZodError} from 'zod';
-import {CompanyId} from '../../../../domain/company/entities';
-import {UserId} from '../../../../domain/user/entities';
-import type {TokenData} from '../../../../domain/user/token';
-import {TokenScope} from '../../../../domain/user/token';
+import {ClinicMemberId} from '@domain/clinic-member/entities';
+import {ClinicId} from '@domain/clinic/entities';
+import {UserId} from '@domain/user/entities';
+import type {TokenData} from '@domain/user/token';
+import {TokenScope} from '@domain/user/token';
 import {JsonWebToken} from '../json-web-token';
 
 describe('A JSON Web Token', () => {
+    const clinicMemberId = ClinicMemberId.generate();
     const tokenData: TokenData = {
         userId: UserId.generate(),
-        companies: [CompanyId.generate()],
+        clinicMemberId,
+        clinicMembers: [{clinicMemberId, clinicId: ClinicId.generate()}],
         issueTime: new Date(1000),
         expirationTime: new Date(2000),
         scope: [TokenScope.AUTH],
@@ -52,7 +55,11 @@ describe('A JSON Web Token', () => {
             aud: JsonWebToken.AUDIENCE,
             scope: tokenData.scope,
             sub: tokenData.userId.toString(),
-            companies: tokenData.companies.map((companyId) => companyId.toString()),
+            clinicMemberId: clinicMemberId.toString(),
+            clinicMembers: tokenData.clinicMembers.map((member) => ({
+                clinicMemberId: member.clinicMemberId.toString(),
+                clinicId: member.clinicId.toString(),
+            })),
             metadata: tokenData.metadata,
         });
     });
@@ -62,6 +69,8 @@ describe('A JSON Web Token', () => {
         const parsedToken = JsonWebToken.parse(token.toString());
 
         expect(parsedToken.userId).toEqual(tokenData.userId);
+        expect(parsedToken.clinicMemberId).toEqual(tokenData.clinicMemberId);
+        expect(parsedToken.clinicMembers).toEqual(tokenData.clinicMembers);
         expect(parsedToken.issueTime).toEqual(tokenData.issueTime);
         expect(parsedToken.expirationTime).toEqual(tokenData.expirationTime);
         expect(parsedToken.scope).toEqual(tokenData.scope);
@@ -77,9 +86,11 @@ describe('A JSON Web Token', () => {
         {...jwtPayload, aud: 'foo'},
         {...jwtPayload, scope: ['SCOPE']},
         {...jwtPayload, sub: '123'},
+        {...jwtPayload, clinicMemberId: '123'},
+        {...jwtPayload, clinicMembers: [{clinicMemberId: '123', clinicId: '456'}]},
         {...jwtPayload, metadata: 'bar'},
-    ])('should fail to parse a token with invalid claims', () => {
-        const invalidToken = jwt.sign({}, null, {algorithm: 'none'});
+    ])('should fail to parse a token with invalid claims', (claims) => {
+        const invalidToken = jwt.sign(claims, null, {algorithm: 'none'});
 
         expect(() => JsonWebToken.parse(invalidToken)).toThrow(ZodError);
     });

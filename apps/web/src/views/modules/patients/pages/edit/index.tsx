@@ -159,7 +159,13 @@ const tabIcon = css({display: {base: 'none', sm: 'block'}, w: '[14px]', h: '[14p
 
 const sectionRoot = css({p: '7'});
 
-const sectionHead = css({mb: '[18px]', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '4'});
+const sectionHead = css({
+    mb: '[18px]',
+    display: 'flex',
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+    gap: '4',
+});
 
 const sectionNum = css({
     display: 'inline-flex',
@@ -271,7 +277,13 @@ const footerStep = css({
     color: 'text.secondary',
 });
 
-const footerActions = css({display: 'flex', alignItems: 'center', gap: '2', flexWrap: 'wrap', justifyContent: 'flex-end'});
+const footerActions = css({
+    display: 'flex',
+    alignItems: 'center',
+    gap: '2',
+    flexWrap: 'wrap',
+    justifyContent: 'flex-end',
+});
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -495,16 +507,21 @@ function EditPatientForm({patient}: {patient: Patient}) {
             {/* Form card */}
             <form id="edit-patient-form" onSubmit={handleSubmit(onSubmit)}>
                 <UISectionCard>
-                <Tabs value={tab} onValueChange={(v) => setTab(v as TabKey)} className={flexCol}>
-                    <TabsList>
-
+                    <Tabs value={tab} onValueChange={(v) => setTab(v as TabKey)} className={flexCol}>
+                        <TabsList>
                             {TABS.map((t) => {
                                 const filled = tab !== t.key && tabHasValues(t.key, values);
                                 const TabIcon = t.icon;
 
                                 return (
                                     <TabsTrigger key={t.key} value={t.key}>
-                                        <span className={cx(tabNum, tab === t.key && tabNumActive, filled && tabNumFilled)}>
+                                        <span
+                                            className={cx(
+                                                tabNum,
+                                                tab === t.key && tabNumActive,
+                                                filled && tabNumFilled
+                                            )}
+                                        >
                                             {filled ? <Check className={icon11} strokeWidth={2.5} /> : t.num}
                                         </span>
                                         <TabIcon className={tabIcon} strokeWidth={1.5} />
@@ -528,18 +545,17 @@ function EditPatientForm({patient}: {patient: Patient}) {
                                     label="Documento (CPF / RG / Prontuário)"
                                     cols={12}
                                     hint="O documento não pode ser alterado após o cadastro."
-                                className={mb4}
-                            >
-                                <div
-                                    className={cx(
-                                        inputVariants({appearance: 'mono'}),
-                                        css({cursor: 'not-allowed', bg: 'bg.surface', color: 'text.secondary'})
-                                    )}
+                                    className={mb4}
                                 >
-                                    {patient.documentId}
-                                </div>
-                            </Field>
-
+                                    <div
+                                        className={cx(
+                                            inputVariants({appearance: 'mono'}),
+                                            css({cursor: 'not-allowed', bg: 'bg.surface', color: 'text.secondary'})
+                                        )}
+                                    >
+                                        {patient.documentId}
+                                    </div>
+                                </Field>
 
                                 <FormGrid>
                                     <Field label="Nome completo" required cols={8} error={errors.name?.message}>
@@ -751,9 +767,9 @@ function EditPatientForm({patient}: {patient: Patient}) {
 
                     {/* Sticky footer */}
                     <div className={footerRoot}>
-                    <div className={footerMeta}>
-                        <Lock className={icon3} strokeWidth={1.5} />
-                        <span>Dados criptografados em repouso · LGPD</span>
+                        <div className={footerMeta}>
+                            <Lock className={icon3} strokeWidth={1.5} />
+                            <span>Dados criptografados em repouso · LGPD</span>
 
                             <span className={footerStep}>
                                 Etapa {tabIdx + 1} de {TABS.length}

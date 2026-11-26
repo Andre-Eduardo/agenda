@@ -6,16 +6,16 @@ import {
 } from '@domain/patient-insurance-enrollment/entities';
 import {PatientId} from '@domain/patient/entities';
 
-describe('PatientInsuranceEnrollment', () => {
-    function createEnrollment() {
-        return PatientInsuranceEnrollment.create({
-            clinicId: ClinicId.generate(),
-            patientId: PatientId.generate(),
-            insurancePlanId: InsurancePlanId.generate(),
-            isPrimary: true,
-        });
-    }
+function createEnrollment() {
+    return PatientInsuranceEnrollment.create({
+        clinicId: ClinicId.generate(),
+        patientId: PatientId.generate(),
+        insurancePlanId: InsurancePlanId.generate(),
+        isPrimary: true,
+    });
+}
 
+describe('PatientInsuranceEnrollment', () => {
     it('should expire an active enrollment and clear its primary flag', () => {
         const enrollment = createEnrollment();
 
@@ -27,6 +27,7 @@ describe('PatientInsuranceEnrollment', () => {
 
     it('should keep a cancelled enrollment unchanged when expiration runs', () => {
         const enrollment = createEnrollment();
+
         enrollment.cancel();
 
         enrollment.expire();

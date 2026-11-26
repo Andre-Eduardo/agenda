@@ -108,7 +108,9 @@ function ProfessionalsPage() {
                                               professional.specialtyNormalized)
                                             : (professional?.specialty ?? <span className={mutedText}>—</span>)}
                                     </TableCell>
-                                    <TableCell>{professional?.registrationNumber ?? <span className={mutedText}>—</span>}</TableCell>
+                                    <TableCell>
+                                        {professional?.registrationNumber ?? <span className={mutedText}>—</span>}
+                                    </TableCell>
                                     <TableCell>
                                         {professional ? (
                                             <Badge variant="success">Completo</Badge>
@@ -121,9 +123,7 @@ function ProfessionalsPage() {
                                             <Button
                                                 variant="ghost"
                                                 size="sm"
-                                                aria-label={
-                                                    professional ? 'Editar profissional' : 'Completar cadastro'
-                                                }
+                                                aria-label={professional ? 'Editar profissional' : 'Completar cadastro'}
                                                 onClick={() => setEditingMember(member)}
                                             >
                                                 <Pencil size={14} />

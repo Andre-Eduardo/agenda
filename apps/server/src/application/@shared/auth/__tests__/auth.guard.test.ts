@@ -8,22 +8,71 @@ import {
     AccessDeniedReason,
     UnauthenticatedException,
 } from '../../../../domain/@shared/exceptions';
+import type {AuditLogRepository} from '../../../../domain/audit/audit-log.repository';
 import {RoomPermission} from '../../../../domain/auth';
 import type {Authorizer} from '../../../../domain/auth/authorizer';
-import {CompanyId} from '../../../../domain/company/entities';
+import type {ClinicMemberRepository} from '../../../../domain/clinic-member/clinic-member.repository';
+import {ClinicMember, ClinicMemberId, ClinicMemberRole} from '../../../../domain/clinic-member/entities';
+import {ClinicId} from '../../../../domain/clinic/entities';
 import {UserId} from '../../../../domain/user/entities';
 import {TokenScope} from '../../../../domain/user/token';
+import type {TokenClinicMember} from '../../../../domain/user/token';
 import {JsonWebToken, JsonWebTokenProvider} from '../../../../infrastructure/auth/jwt';
 import {AuthGuard} from '../auth.guard';
 
+class RoomController {
+    remove(): void {}
+}
+
+function fakeMembership(): TokenClinicMember {
+    return {clinicMemberId: ClinicMemberId.generate(), clinicId: ClinicId.generate()};
+}
+
+function memberFor(userId: UserId, membership: TokenClinicMember, isActive = true): ClinicMember {
+    return new ClinicMember({
+        id: membership.clinicMemberId,
+        clinicId: membership.clinicId,
+        userId,
+        roles: [ClinicMemberRole.OWNER],
+        displayName: null,
+        color: null,
+        isActive,
+        invitedByMemberId: null,
+        createdAt: new Date(1000),
+        updatedAt: new Date(1000),
+        deletedAt: null,
+    });
+}
+
+function setup(signedCookies: Record<string, string | null> | undefined, params: Record<string, string> = {}) {
+    const context = mock<ExecutionContext>();
+    const request = mock<Request>({signedCookies, params, method: 'DELETE'});
+    const httpArgumentsHost = mockDeep<HttpArgumentsHost>();
+
+    httpArgumentsHost.getRequest.mockReturnValueOnce(request);
+    context.switchToHttp.mockReturnValueOnce(httpArgumentsHost);
+
+    return {context, request};
+}
+
 describe('An auth guard', () => {
     const authCookie = 'authCookie';
-    const companyCookie = 'companyCookie';
+    const clinicMemberCookie = 'clinicMemberCookie';
     const secret = 'secret';
     const tokenProvider = new JsonWebTokenProvider(60, secret);
     const authorizer = mock<Authorizer>();
     const reflector = mock<Reflector>();
-    const guard = new AuthGuard(authCookie, companyCookie, tokenProvider, authorizer, reflector);
+    const clinicMemberRepository = mock<ClinicMemberRepository>();
+    const auditLogRepository = mock<AuditLogRepository>();
+    const guard = new AuthGuard(
+        authCookie,
+        clinicMemberCookie,
+        tokenProvider,
+        authorizer,
+        reflector,
+        clinicMemberRepository,
+        auditLogRepository
+    );
 
     it('should allow access to public routes', async () => {
         const context = mock<ExecutionContext>();
@@ -34,24 +83,16 @@ describe('An auth guard', () => {
     });
 
     it('should allow access to valid tokens', async () => {
-        const context = mock<ExecutionContext>();
-        const companyId = CompanyId.generate();
-        const token = tokenProvider.issue(UserId.generate(), {
-            scope: [TokenScope.AUTH],
-            companies: [companyId],
+        const membership = fakeMembership();
+        const userId = UserId.generate();
+        const token = tokenProvider.issue(userId, {scope: [TokenScope.AUTH], clinicMembers: [membership]});
+        const {context, request} = setup({
+            [authCookie]: token.toString(),
+            [clinicMemberCookie]: membership.clinicMemberId.toString(),
         });
-        const request = mock<Request>({
-            signedCookies: {
-                [authCookie]: token.toString(),
-                [companyCookie]: companyId.toString(),
-            },
-        });
-        const httpArgumentsHost = mockDeep<HttpArgumentsHost>();
 
-        httpArgumentsHost.getRequest.mockReturnValueOnce(request);
-
-        reflector.getAllAndOverride.mockReturnValueOnce(false);
-        context.switchToHttp.mockReturnValueOnce(httpArgumentsHost);
+        reflector.getAllAndOverride.mockReturnValueOnce(false).mockReturnValueOnce(false);
+        clinicMemberRepository.findById.mockResolvedValueOnce(memberFor(userId, membership));
 
         jest.spyOn(tokenProvider, 'validate');
 
@@ -59,87 +100,68 @@ describe('An auth guard', () => {
 
         expect(tokenProvider.validate).toHaveBeenCalledTimes(1);
         expect(tokenProvider.validate).toHaveBeenCalledWith(token);
+        expect(clinicMemberRepository.findById).toHaveBeenCalledWith(membership.clinicMemberId);
 
-        expect(request.actor).toMatchObject({userId: token.userId});
+        expect(request.actor).toMatchObject({
+            userId: token.userId,
+            clinicId: membership.clinicId,
+            clinicMemberId: membership.clinicMemberId,
+        });
     });
 
     it('should allow access to authorized routes', async () => {
-        const context = mock<ExecutionContext>();
-        const companyId = CompanyId.generate();
-        const token = tokenProvider.issue(UserId.generate(), {
-            scope: [TokenScope.AUTH],
-            companies: [companyId],
+        const membership = fakeMembership();
+        const userId = UserId.generate();
+        const token = tokenProvider.issue(userId, {scope: [TokenScope.AUTH], clinicMembers: [membership]});
+        const {context, request} = setup({
+            [authCookie]: token.toString(),
+            [clinicMemberCookie]: membership.clinicMemberId.toString(),
         });
-        const request = mock<Request>({
-            signedCookies: {
-                [authCookie]: token.toString(),
-                [companyCookie]: companyId.toString(),
-            },
-        });
-        const httpArgumentsHost = mockDeep<HttpArgumentsHost>();
 
-        httpArgumentsHost.getRequest.mockReturnValueOnce(request);
-
-        reflector.getAllAndOverride.mockReturnValueOnce(false);
+        reflector.getAllAndOverride.mockReturnValueOnce(false).mockReturnValueOnce(false);
         reflector.get.mockReturnValueOnce([RoomPermission.DELETE]);
+        clinicMemberRepository.findById.mockResolvedValueOnce(memberFor(userId, membership));
         authorizer.validate.mockResolvedValueOnce(true);
-        context.switchToHttp.mockReturnValueOnce(httpArgumentsHost);
-
-        jest.spyOn(tokenProvider, 'validate');
 
         await expect(guard.canActivate(context)).resolves.toBe(true);
-
-        expect(tokenProvider.validate).toHaveBeenCalledTimes(1);
-        expect(tokenProvider.validate).toHaveBeenCalledWith(token);
 
         expect(request.actor).toMatchObject({userId: token.userId});
 
         expect(authorizer.validate).toHaveBeenCalledTimes(1);
-        expect(authorizer.validate).toHaveBeenCalledWith(companyId, token.userId, RoomPermission.DELETE);
+        expect(authorizer.validate).toHaveBeenCalledWith(
+            membership.clinicMemberId,
+            token.userId,
+            RoomPermission.DELETE
+        );
     });
 
-    it('should bypass the company validation', async () => {
-        const context = mock<ExecutionContext>();
-        const token = tokenProvider.issue(UserId.generate(), {
-            scope: [TokenScope.AUTH],
-            companies: [],
-        });
-        const request = mock<Request>({
-            signedCookies: {
-                [authCookie]: token.toString(),
-                [companyCookie]: null,
-            },
-        });
-        const httpArgumentsHost = mockDeep<HttpArgumentsHost>();
-
-        httpArgumentsHost.getRequest.mockReturnValueOnce(request);
+    it('should bypass the clinic member validation', async () => {
+        const token = tokenProvider.issue(UserId.generate(), {scope: [TokenScope.AUTH]});
+        const {context, request} = setup({[authCookie]: token.toString(), [clinicMemberCookie]: null});
 
         reflector.getAllAndOverride.mockReturnValueOnce(false).mockReturnValueOnce(true);
-        context.switchToHttp.mockReturnValueOnce(httpArgumentsHost);
-
-        jest.spyOn(tokenProvider, 'validate');
 
         await expect(guard.canActivate(context)).resolves.toBe(true);
 
-        expect(tokenProvider.validate).toHaveBeenCalledTimes(1);
-        expect(tokenProvider.validate).toHaveBeenCalledWith(token);
+        expect(clinicMemberRepository.findById).not.toHaveBeenCalled();
+        expect(request.actor).toMatchObject({userId: token.userId, clinicId: null, clinicMemberId: null});
+    });
 
-        expect(request.actor).toMatchObject({userId: token.userId});
+    it('should ignore malformed clinic member cookies when bypassing the clinic member validation', async () => {
+        const token = tokenProvider.issue(UserId.generate(), {scope: [TokenScope.AUTH]});
+        const {context, request} = setup({[authCookie]: token.toString(), [clinicMemberCookie]: 'invalid'});
+
+        reflector.getAllAndOverride.mockReturnValueOnce(false).mockReturnValueOnce(true);
+
+        await expect(guard.canActivate(context)).resolves.toBe(true);
+
+        expect(request.actor).toMatchObject({userId: token.userId, clinicMemberId: null});
     });
 
     it('should deny access when no token is present', async () => {
-        const context = mock<ExecutionContext>();
-        const request = mock<Request>({
-            signedCookies: {
-                [authCookie]: null,
-            },
-        });
-        const httpArgumentsHost = mockDeep<HttpArgumentsHost>();
-
-        httpArgumentsHost.getRequest.mockReturnValueOnce(request);
+        const {context} = setup({[authCookie]: null});
 
         reflector.getAllAndOverride.mockReturnValueOnce(false);
-        context.switchToHttp.mockReturnValueOnce(httpArgumentsHost);
 
         jest.spyOn(tokenProvider, 'validate');
 
@@ -151,17 +173,21 @@ describe('An auth guard', () => {
         expect(tokenProvider.validate).not.toHaveBeenCalled();
     });
 
-    it('should deny access to malformed tokens', async () => {
-        const context = mock<ExecutionContext>();
-        const request = mock<Request>({
-            signedCookies: {[authCookie]: 'invalid'},
-        });
-        const httpArgumentsHost = mockDeep<HttpArgumentsHost>();
-
-        httpArgumentsHost.getRequest.mockReturnValueOnce(request);
+    it('should deny access when the request has no signed cookies', async () => {
+        const {context} = setup(undefined);
 
         reflector.getAllAndOverride.mockReturnValueOnce(false);
-        context.switchToHttp.mockReturnValueOnce(httpArgumentsHost);
+
+        await expect(guard.canActivate(context)).rejects.toThrowWithMessage(
+            UnauthenticatedException,
+            'Token not found or malformed.'
+        );
+    });
+
+    it('should deny access to malformed tokens', async () => {
+        const {context} = setup({[authCookie]: 'invalid'});
+
+        reflector.getAllAndOverride.mockReturnValueOnce(false);
 
         jest.spyOn(tokenProvider, 'validate');
 
@@ -174,26 +200,20 @@ describe('An auth guard', () => {
     });
 
     it('should deny access to expired tokens', async () => {
-        const context = mock<ExecutionContext>();
         const token = JsonWebToken.signed(
             {
                 userId: UserId.generate(),
-                companies: [CompanyId.generate()],
+                clinicMemberId: null,
+                clinicMembers: [fakeMembership()],
                 issueTime: new Date(2000),
                 expirationTime: new Date(1000),
                 scope: [TokenScope.AUTH],
             },
             secret
         );
-        const request = mock<Request>({
-            signedCookies: {[authCookie]: token.toString()},
-        });
-        const httpArgumentsHost = mockDeep<HttpArgumentsHost>();
-
-        httpArgumentsHost.getRequest.mockReturnValueOnce(request);
+        const {context} = setup({[authCookie]: token.toString()});
 
         reflector.getAllAndOverride.mockReturnValueOnce(false);
-        context.switchToHttp.mockReturnValueOnce(httpArgumentsHost);
 
         jest.spyOn(tokenProvider, 'validate');
 
@@ -204,26 +224,20 @@ describe('An auth guard', () => {
     });
 
     it('should deny access to tokens with invalid signatures', async () => {
-        const context = mock<ExecutionContext>();
         const token = JsonWebToken.signed(
             {
                 userId: UserId.generate(),
-                companies: [CompanyId.generate()],
+                clinicMemberId: null,
+                clinicMembers: [fakeMembership()],
                 issueTime: new Date(2000),
                 expirationTime: new Date(Date.now() + 10_000),
                 scope: [TokenScope.AUTH],
             },
             'invalid-secret'
         );
-        const request = mock<Request>({
-            signedCookies: {[authCookie]: token.toString()},
-        });
-        const httpArgumentsHost = mockDeep<HttpArgumentsHost>();
-
-        httpArgumentsHost.getRequest.mockReturnValueOnce(request);
+        const {context} = setup({[authCookie]: token.toString()});
 
         reflector.getAllAndOverride.mockReturnValueOnce(false);
-        context.switchToHttp.mockReturnValueOnce(httpArgumentsHost);
 
         jest.spyOn(tokenProvider, 'validate');
 
@@ -234,19 +248,10 @@ describe('An auth guard', () => {
     });
 
     it('should deny access to tokens with invalid scopes', async () => {
-        const context = mock<ExecutionContext>();
-        const token = tokenProvider.issue(UserId.generate(), {
-            scope: [TokenScope.EMAIL_VERIFICATION],
-        });
-        const request = mock<Request>({
-            signedCookies: {[authCookie]: token.toString()},
-        });
-        const httpArgumentsHost = mockDeep<HttpArgumentsHost>();
-
-        httpArgumentsHost.getRequest.mockReturnValueOnce(request);
+        const token = tokenProvider.issue(UserId.generate(), {scope: [TokenScope.EMAIL_VERIFICATION]});
+        const {context} = setup({[authCookie]: token.toString()});
 
         reflector.getAllAndOverride.mockReturnValueOnce(false);
-        context.switchToHttp.mockReturnValueOnce(httpArgumentsHost);
 
         jest.spyOn(tokenProvider, 'validate');
 
@@ -258,99 +263,99 @@ describe('An auth guard', () => {
         expect(tokenProvider.validate).not.toHaveBeenCalled();
     });
 
-    it('should deny access when no company is present', async () => {
-        const context = mock<ExecutionContext>();
-        const companyId = CompanyId.generate();
+    it('should deny access when no clinic member is present', async () => {
         const token = tokenProvider.issue(UserId.generate(), {
             scope: [TokenScope.AUTH],
-            companies: [companyId],
+            clinicMembers: [fakeMembership()],
         });
-        const request = mock<Request>({
-            signedCookies: {
-                [authCookie]: token.toString(),
-                [companyCookie]: null,
-            },
-        });
-        const httpArgumentsHost = mockDeep<HttpArgumentsHost>();
+        const {context} = setup({[authCookie]: token.toString(), [clinicMemberCookie]: null});
 
-        httpArgumentsHost.getRequest.mockReturnValueOnce(request);
-
-        reflector.getAllAndOverride.mockReturnValueOnce(false);
-        context.switchToHttp.mockReturnValueOnce(httpArgumentsHost);
-
-        jest.spyOn(tokenProvider, 'validate');
+        reflector.getAllAndOverride.mockReturnValueOnce(false).mockReturnValueOnce(false);
 
         // eslint-disable-next-line jest/valid-expect -- To allow multiple assertions
         const expectation = expect(guard.canActivate(context));
 
         await expectation.rejects.toThrowWithMessage(
             AccessDeniedException,
-            'Token does not have access to the requested company.'
+            'Token does not have access to the requested clinic member.'
         );
         await expectation.rejects.toContainEntry(['reason', AccessDeniedReason.NOT_ALLOWED]);
-
-        expect(tokenProvider.validate).toHaveBeenCalledTimes(1);
-        expect(tokenProvider.validate).toHaveBeenCalledWith(token);
     });
 
-    it('should deny access when the token does not have access to the requested company', async () => {
-        const context = mock<ExecutionContext>();
-        const companyId = CompanyId.generate();
+    it('should deny access when the token does not have access to the requested clinic member', async () => {
         const token = tokenProvider.issue(UserId.generate(), {
             scope: [TokenScope.AUTH],
-            companies: [companyId],
+            clinicMembers: [fakeMembership()],
         });
-        const request = mock<Request>({
-            signedCookies: {
-                [authCookie]: token.toString(),
-                [companyCookie]: CompanyId.generate().toString(),
-            },
+        const {context} = setup({
+            [authCookie]: token.toString(),
+            [clinicMemberCookie]: ClinicMemberId.generate().toString(),
         });
-        const httpArgumentsHost = mockDeep<HttpArgumentsHost>();
 
-        httpArgumentsHost.getRequest.mockReturnValueOnce(request);
-
-        reflector.getAllAndOverride.mockReturnValueOnce(false);
-        context.switchToHttp.mockReturnValueOnce(httpArgumentsHost);
-
-        jest.spyOn(tokenProvider, 'validate');
+        reflector.getAllAndOverride.mockReturnValueOnce(false).mockReturnValueOnce(false);
 
         // eslint-disable-next-line jest/valid-expect -- To allow multiple assertions
         const expectation = expect(guard.canActivate(context));
 
         await expectation.rejects.toThrowWithMessage(
             AccessDeniedException,
-            'Token does not have access to the requested company.'
+            'Token does not have access to the requested clinic member.'
         );
         await expectation.rejects.toContainEntry(['reason', AccessDeniedReason.NOT_ALLOWED]);
 
-        expect(tokenProvider.validate).toHaveBeenCalledTimes(1);
-        expect(tokenProvider.validate).toHaveBeenCalledWith(token);
+        expect(clinicMemberRepository.findById).not.toHaveBeenCalled();
     });
 
-    it('should deny access to unauthorized routes', async () => {
-        const context = mock<ExecutionContext>();
-        const companyId = CompanyId.generate();
-        const token = tokenProvider.issue(UserId.generate(), {
-            scope: [TokenScope.AUTH],
-            companies: [companyId],
+    it.each([
+        ['does not exist', () => null],
+        ['is inactive', (userId: UserId, membership: TokenClinicMember) => memberFor(userId, membership, false)],
+        [
+            'belongs to another user',
+            (_: UserId, membership: TokenClinicMember) => memberFor(UserId.generate(), membership),
+        ],
+        [
+            'belongs to another clinic',
+            (userId: UserId, membership: TokenClinicMember) =>
+                memberFor(userId, {clinicMemberId: membership.clinicMemberId, clinicId: ClinicId.generate()}),
+        ],
+    ])('should deny access when the clinic member %s', async (_, member) => {
+        const membership = fakeMembership();
+        const userId = UserId.generate();
+        const token = tokenProvider.issue(userId, {scope: [TokenScope.AUTH], clinicMembers: [membership]});
+        const {context} = setup({
+            [authCookie]: token.toString(),
+            [clinicMemberCookie]: membership.clinicMemberId.toString(),
         });
-        const request = mock<Request>({
-            signedCookies: {
+
+        reflector.getAllAndOverride.mockReturnValueOnce(false).mockReturnValueOnce(false);
+        clinicMemberRepository.findById.mockResolvedValueOnce(member(userId, membership));
+
+        // eslint-disable-next-line jest/valid-expect -- To allow multiple assertions
+        const expectation = expect(guard.canActivate(context));
+
+        await expectation.rejects.toThrowWithMessage(AccessDeniedException, 'Clinic membership is no longer active.');
+        await expectation.rejects.toContainEntry(['reason', AccessDeniedReason.NOT_ALLOWED]);
+    });
+
+    it('should deny access to unauthorized routes and audit the denial', async () => {
+        const membership = fakeMembership();
+        const userId = UserId.generate();
+        const token = tokenProvider.issue(userId, {scope: [TokenScope.AUTH], clinicMembers: [membership]});
+        const {context} = setup(
+            {
                 [authCookie]: token.toString(),
-                [companyCookie]: companyId.toString(),
+                [clinicMemberCookie]: membership.clinicMemberId.toString(),
             },
-        });
-        const httpArgumentsHost = mockDeep<HttpArgumentsHost>();
+            {id: 'room-1'}
+        );
 
-        httpArgumentsHost.getRequest.mockReturnValueOnce(request);
-
-        reflector.getAllAndOverride.mockReturnValueOnce(false);
+        reflector.getAllAndOverride.mockReturnValueOnce(false).mockReturnValueOnce(false);
         reflector.get.mockReturnValueOnce([RoomPermission.DELETE]);
+        clinicMemberRepository.findById.mockResolvedValueOnce(memberFor(userId, membership));
         authorizer.validate.mockResolvedValueOnce(false);
-        context.switchToHttp.mockReturnValueOnce(httpArgumentsHost);
-
-        jest.spyOn(tokenProvider, 'validate');
+        authorizer.denialReason.mockResolvedValueOnce(AccessDeniedReason.INSUFFICIENT_PERMISSIONS);
+        context.getClass.mockReturnValue(RoomController);
+        context.getHandler.mockReturnValue(RoomController.prototype.remove);
 
         // eslint-disable-next-line jest/valid-expect -- To allow multiple assertions
         const expectation = expect(guard.canActivate(context));
@@ -361,10 +366,45 @@ describe('An auth guard', () => {
         );
         await expectation.rejects.toContainEntry(['reason', AccessDeniedReason.INSUFFICIENT_PERMISSIONS]);
 
-        expect(tokenProvider.validate).toHaveBeenCalledTimes(1);
-        expect(tokenProvider.validate).toHaveBeenCalledWith(token);
-
         expect(authorizer.validate).toHaveBeenCalledTimes(1);
-        expect(authorizer.validate).toHaveBeenCalledWith(companyId, token.userId, RoomPermission.DELETE);
+        expect(authorizer.validate).toHaveBeenCalledWith(
+            membership.clinicMemberId,
+            token.userId,
+            RoomPermission.DELETE
+        );
+        expect(authorizer.denialReason).toHaveBeenCalledWith(membership.clinicMemberId, token.userId, [
+            RoomPermission.DELETE,
+        ]);
+        expect(auditLogRepository.append).toHaveBeenCalledWith(
+            expect.objectContaining({
+                clinicId: membership.clinicId.toString(),
+                actorUserId: userId.toString(),
+                actorMemberId: membership.clinicMemberId.toString(),
+                resource: 'RoomController',
+                resourceId: 'room-1',
+                action: 'DELETE:remove',
+                result: 'DENIED',
+                statusCode: 403,
+            })
+        );
+    });
+
+    it('should deny access to unauthorized routes without auditing when there is no clinic member', async () => {
+        const token = tokenProvider.issue(UserId.generate(), {scope: [TokenScope.AUTH]});
+        const {context} = setup({[authCookie]: token.toString()});
+
+        reflector.getAllAndOverride.mockReturnValueOnce(false).mockReturnValueOnce(true);
+        reflector.get.mockReturnValueOnce([RoomPermission.DELETE]);
+        authorizer.validate.mockResolvedValueOnce(false);
+        authorizer.denialReason.mockResolvedValueOnce(AccessDeniedReason.NOT_ALLOWED);
+
+        // eslint-disable-next-line jest/valid-expect -- To allow multiple assertions
+        const expectation = expect(guard.canActivate(context));
+
+        await expectation.rejects.toThrow(AccessDeniedException);
+        await expectation.rejects.toContainEntry(['reason', AccessDeniedReason.NOT_ALLOWED]);
+
+        expect(authorizer.validate).toHaveBeenCalledWith(null, token.userId, RoomPermission.DELETE);
+        expect(auditLogRepository.append).not.toHaveBeenCalled();
     });
 });

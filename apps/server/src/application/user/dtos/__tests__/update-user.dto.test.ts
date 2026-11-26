@@ -5,7 +5,7 @@ import {UpdateUserInputDto} from '../index';
 describe('An UpdateUserInput', () => {
     it.each([
         {
-            firstName: 'John',
+            name: 'John Doe',
             email: 'john.doe@example.com',
             username: 'johndoe',
             currentPassword: '@Pa$$word123',
@@ -15,7 +15,7 @@ describe('An UpdateUserInput', () => {
             currentPassword: '@Pa$$word123',
         },
         {
-            lastName: null,
+            name: 'John',
             currentPassword: '@Pa$$word123',
         },
         {
@@ -33,22 +33,22 @@ describe('An UpdateUserInput', () => {
     it.each<[Record<string, unknown>, ExpectedIssue]>([
         [
             {
-                firstName: '',
+                name: '',
                 currentPassword: '@SecurePassword123',
             },
             {
                 code: ZodIssueCode.too_small,
-                path: ['firstName'],
+                path: ['name'],
             },
         ],
         [
             {
-                lastName: '',
+                name: null,
                 currentPassword: '@SecurePassword123',
             },
             {
-                code: ZodIssueCode.too_small,
-                path: ['lastName'],
+                code: ZodIssueCode.invalid_type,
+                path: ['name'],
             },
         ],
         [
