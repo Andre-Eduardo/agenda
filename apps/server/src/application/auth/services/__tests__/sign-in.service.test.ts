@@ -224,7 +224,7 @@ describe('A sign-in service', () => {
         }
     );
 
-    it('should drop clinic members that no longer exist from the token', async () => {
+    it('should drop clinic members that no longer exist and select an existing one', async () => {
         const deletedMemberId = ClinicMemberId.generate();
         const memberId = ClinicMemberId.generate();
         const existingUser = await existingUserWith([deletedMemberId, memberId]);
@@ -244,13 +244,46 @@ describe('A sign-in service', () => {
 
         await expect(signInService.execute({actor, payload})).resolves.toEqual({
             token,
-            clinicMemberId: deletedMemberId,
+            clinicMemberId: memberId,
         });
 
         expect(tokenProvider.issue).toHaveBeenCalledWith(existingUser.id, {
             scope: [TokenScope.AUTH],
             clinicMembers: [{clinicMemberId: memberId, clinicId: member.clinicId}],
+            clinicMemberId: memberId,
+        });
+
+        expectSignedIn(existingUser, payload);
+    });
+
+    it('should not select a requested clinic member that no longer exists', async () => {
+        const deletedMemberId = ClinicMemberId.generate();
+        const memberId = ClinicMemberId.generate();
+        const existingUser = await existingUserWith([deletedMemberId, memberId]);
+        const member = memberOf(existingUser, memberId);
+
+        const payload: SignInDto = {
+            username: Username.create('johndoe'),
+            password: '@SecurePassword123',
             clinicMemberId: deletedMemberId,
+        };
+
+        const token = tokenFor(existingUser, []);
+
+        jest.spyOn(existingUser, 'signIn');
+        userRepository.findByUsername.mockResolvedValueOnce(existingUser);
+        clinicMemberRepository.findById.mockResolvedValueOnce(null).mockResolvedValueOnce(member);
+        tokenProvider.issue.mockReturnValue(token);
+
+        await expect(signInService.execute({actor, payload})).resolves.toEqual({
+            token,
+            clinicMemberId: memberId,
+        });
+
+        expect(tokenProvider.issue).toHaveBeenCalledWith(existingUser.id, {
+            scope: [TokenScope.AUTH],
+            clinicMembers: [{clinicMemberId: memberId, clinicId: member.clinicId}],
+            clinicMemberId: memberId,
         });
 
         expectSignedIn(existingUser, payload);
