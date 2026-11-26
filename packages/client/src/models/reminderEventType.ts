@@ -17,4 +17,5 @@ export const ReminderEventType = {
     DELIVERY_FAILED: 'DELIVERY_FAILED',
     COMPLAINED: 'COMPLAINED',
     REPLIED: 'REPLIED',
+    OPTED_OUT: 'OPTED_OUT',
 } as const;

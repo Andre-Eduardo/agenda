@@ -19,9 +19,10 @@ import {PatientRepository} from '@domain/patient/patient.repository';
  * even when the value is the same, because each request of the patient is evidence (LGPD).
  */
 @Injectable()
-export class UpdatePatientCommunicationPreferenceService
-    implements ApplicationService<UpdatePatientCommunicationPreferenceDto, PatientCommunicationPreferencesDto>
-{
+export class UpdatePatientCommunicationPreferenceService implements ApplicationService<
+    UpdatePatientCommunicationPreferenceDto,
+    PatientCommunicationPreferencesDto
+> {
     constructor(
         private readonly patientRepository: PatientRepository,
         private readonly preferenceRepository: PatientCommunicationPreferenceRepository,

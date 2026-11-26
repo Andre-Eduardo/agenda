@@ -77,11 +77,7 @@ export class PatientCommunicationPreferencesDto {
     @ApiProperty({type: [PatientCommunicationPreferenceChangeDto], description: 'Change history, newest first'})
     history: PatientCommunicationPreferenceChangeDto[];
 
-    constructor(
-        patientId: string,
-        preferences: ChannelPreference[],
-        history: PatientCommunicationPreferenceChange[]
-    ) {
+    constructor(patientId: string, preferences: ChannelPreference[], history: PatientCommunicationPreferenceChange[]) {
         this.patientId = patientId;
         this.channels = preferences.map((preference) => new PatientChannelPreferenceDto(preference));
         this.history = history.map((change) => new PatientCommunicationPreferenceChangeDto(change));

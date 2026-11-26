@@ -1,8 +1,8 @@
 import {UnauthorizedException} from '@nestjs/common';
 import {mock} from 'jest-mock-extended';
 import type {Metrics} from '@application/@shared/telemetry';
-import type {RecordPatientOptOutService} from '@application/patient-communication-preference/services/record-patient-opt-out.service';
 import type {TrackReminderDeliveryService} from '@application/appointment-reminder/services/track-reminder-delivery.service';
+import type {RecordPatientOptOutService} from '@application/patient-communication-preference/services/record-patient-opt-out.service';
 import type {AppointmentReminderRepository} from '@domain/appointment-reminder/appointment-reminder.repository';
 import {
     AppointmentReminder,

@@ -1,8 +1,8 @@
 import {UnauthorizedException} from '@nestjs/common';
 import {mock} from 'jest-mock-extended';
 import type {Metrics} from '@application/@shared/telemetry';
-import type {RecordPatientOptOutService} from '@application/patient-communication-preference/services/record-patient-opt-out.service';
 import type {TrackReminderDeliveryService} from '@application/appointment-reminder/services/track-reminder-delivery.service';
+import type {RecordPatientOptOutService} from '@application/patient-communication-preference/services/record-patient-opt-out.service';
 import type {AppointmentReminderRepository} from '@domain/appointment-reminder/appointment-reminder.repository';
 import {
     AppointmentReminder,
@@ -17,6 +17,16 @@ import {PatientId} from '@domain/patient/entities';
 import type {EnvConfigService} from '@infrastructure/config';
 import {signEvolutionWebhookToken} from '@infrastructure/whatsapp/evolution-webhook-token';
 import {ReceiveEvolutionWebhookService} from '../receive-evolution-webhook.service';
+
+function replyWith(text: string, id = 'in-9') {
+    return {
+        event: 'messages.upsert',
+        data: {
+            key: {id, remoteJid: '5511987654321@s.whatsapp.net', fromMe: false},
+            message: {extendedTextMessage: {text, contextInfo: {stanzaId: 'msg-1'}}},
+        },
+    };
+}
 
 describe('A receive-Evolution-webhook service', () => {
     const clinicId = ClinicId.generate();
@@ -167,16 +177,6 @@ describe('A receive-Evolution-webhook service', () => {
             result: 'duplicate',
         });
     });
-
-    function replyWith(text: string, id = 'in-9') {
-        return {
-            event: 'messages.upsert',
-            data: {
-                key: {id, remoteJid: '5511987654321@s.whatsapp.net', fromMe: false},
-                message: {extendedTextMessage: {text, contextInfo: {stanzaId: 'msg-1'}}},
-            },
-        };
-    }
 
     it('should opt the patient out of WhatsApp reminders when they reply SAIR', async () => {
         reminderRepository.findByProviderMessageId.mockResolvedValue(reminder);

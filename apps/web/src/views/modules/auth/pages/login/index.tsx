@@ -452,19 +452,24 @@ export function LoginPage() {
                 <div className={rightPanelOverlay}>
                     <div className={previewFrame} aria-hidden="true">
                         <div className={previewTopBar}>
-                            <span className={previewBrandIcon}><Stethoscope size={14} strokeWidth={1.5} /></span>
+                            <span className={previewBrandIcon}>
+                                <Stethoscope size={14} strokeWidth={1.5} />
+                            </span>
                             <span>Agenda Saúde</span>
                             <span className={previewDate}>{t('auth.login.preview.today')}</span>
                         </div>
                         <div className={previewContent}>
                             <div className={previewHeading}>{t('auth.login.preview.agenda')}</div>
                             <div className={previewTimeline}>
-                                <span className={previewTime}>09:00</span><span className={previewSlot} />
+                                <span className={previewTime}>09:00</span>
+                                <span className={previewSlot} />
                                 <span className={previewTime}>10:00</span>
                                 <span className={previewAppointment}>
-                                    <span className={previewDot} />{t('auth.login.preview.appointment')}
+                                    <span className={previewDot} />
+                                    {t('auth.login.preview.appointment')}
                                 </span>
-                                <span className={previewTime}>11:00</span><span className={previewSlot} />
+                                <span className={previewTime}>11:00</span>
+                                <span className={previewSlot} />
                             </div>
                             <div className={previewRecord}>
                                 <FileText size={16} strokeWidth={1.5} />

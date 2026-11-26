@@ -215,7 +215,9 @@ export class DispatchRemindersService {
                 to,
                 subject: REMINDER_SUBJECT,
                 message:
-                    reminder.channel === ReminderChannel.WHATSAPP ? `${message}\n\n${WHATSAPP_OPT_OUT_FOOTER}` : message,
+                    reminder.channel === ReminderChannel.WHATSAPP
+                        ? `${message}\n\n${WHATSAPP_OPT_OUT_FOOTER}`
+                        : message,
                 metadata: {
                     reminderId: reminder.id.toString(),
                     appointmentId: reminder.appointmentId.toString(),

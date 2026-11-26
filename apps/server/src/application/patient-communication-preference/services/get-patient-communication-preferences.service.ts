@@ -11,9 +11,10 @@ import {PatientCommunicationPreferenceRepository} from '@domain/patient-communic
 import {PatientRepository} from '@domain/patient/patient.repository';
 
 @Injectable()
-export class GetPatientCommunicationPreferencesService
-    implements ApplicationService<GetPatientCommunicationPreferencesDto, PatientCommunicationPreferencesDto>
-{
+export class GetPatientCommunicationPreferencesService implements ApplicationService<
+    GetPatientCommunicationPreferencesDto,
+    PatientCommunicationPreferencesDto
+> {
     constructor(
         private readonly patientRepository: PatientRepository,
         private readonly preferenceRepository: PatientCommunicationPreferenceRepository,

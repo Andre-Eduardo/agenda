@@ -187,9 +187,14 @@ export function CommunicationPreferencesSection({patientId}: {patientId: string}
             {history.length > 0 && (
                 <div>
                     <Button variant="link" size="sm" onClick={() => setShowHistory((value) => !value)}>
-                        {t(showHistory ? 'communicationPreferences.hideHistory' : 'communicationPreferences.showHistory', {
-                            count: history.length,
-                        })}
+                        {t(
+                            showHistory
+                                ? 'communicationPreferences.hideHistory'
+                                : 'communicationPreferences.showHistory',
+                            {
+                                count: history.length,
+                            }
+                        )}
                     </Button>
                     {showHistory && (
                         <ul className={historyList}>
