@@ -1,0 +1,141 @@
+# Production stack, independent of hosting provider.
+#
+#   cd deploy
+#   cp .env.example .env && cp server.env.example server.env   # fill in the secrets
+#   mkdir -p secrets backups && openssl rand -hex 32 > secrets/backup.key && chmod 600 secrets/backup.key
+#   docker compose -f docker-compose.prod.yml up -d --build
+#
+# Optional HTTPS with automatic certificates (Caddy): add `--profile tls` and set DOMAIN in .env.
+# See docs/deploy-producao.md.
+
+name: agenda
+
+x-database-url: &database-url "postgresql://${POSTGRES_USER:?set POSTGRES_USER in .env}:${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}@postgres:5432/${POSTGRES_DB:-agenda}?schema=public"
+
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB:-agenda}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U \"$$POSTGRES_USER\" -d \"$$POSTGRES_DB\""]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks: [backend]
+
+  server:
+    image: ${IMAGE_REGISTRY:-agenda}/server:${IMAGE_TAG:-latest}
+    build:
+      context: ..
+      dockerfile: apps/server/Dockerfile
+    restart: unless-stopped
+    env_file: server.env
+    environment:
+      NODE_ENV: production
+      PORT: "3000"
+      DATABASE_URL: *database-url
+      # Migrations run on container start (prisma migrate deploy). Set to "false" to run them by hand.
+      RUN_MIGRATIONS: ${RUN_MIGRATIONS:-true}
+      STORAGE_TYPE: ${STORAGE_TYPE:-LOCAL}
+      LOCAL_UPLOAD_DIR: /data/uploads
+    volumes:
+      # Persistent uploads when STORAGE_TYPE=LOCAL. Survives container re-creation.
+      - uploads:/data/uploads
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:3000/api/health"]
+      interval: 30s
+      timeout: 5s
+      start_period: 90s
+      retries: 3
+    networks: [backend, frontend]
+
+  web:
+    image: ${IMAGE_REGISTRY:-agenda}/web:${IMAGE_TAG:-latest}
+    build:
+      context: ..
+      dockerfile: apps/web/Dockerfile
+      args:
+        VITE_API_URL: ${VITE_API_URL:-}
+    restart: unless-stopped
+    environment:
+      API_UPSTREAM: http://server:3000
+      CLIENT_MAX_BODY_SIZE: ${CLIENT_MAX_BODY_SIZE:-25m}
+    ports:
+      # Behind your own load balancer / TLS proxy: keep the default (localhost only) or set WEB_PUBLISH=0.0.0.0:80.
+      - "${WEB_PUBLISH:-127.0.0.1:8080}:8080"
+    depends_on:
+      server:
+        condition: service_healthy
+    networks: [frontend]
+
+  backup:
+    image: ${IMAGE_REGISTRY:-agenda}/backup:${IMAGE_TAG:-latest}
+    build:
+      context: ..
+      dockerfile: ops/backup/Dockerfile
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: *database-url
+      STORAGE_TYPE: ${STORAGE_TYPE:-LOCAL}
+      LOCAL_UPLOAD_DIR: /data/uploads
+      BACKUP_DIR: /backups
+      BACKUP_KEY_FILE: /run/secrets/backup_key
+      BACKUP_SCHEDULE_UTC: ${BACKUP_SCHEDULE_UTC:-05:00}
+      BACKUP_CHECK_INTERVAL_MINUTES: ${BACKUP_CHECK_INTERVAL_MINUTES:-60}
+      BACKUP_RUN_ON_START: ${BACKUP_RUN_ON_START:-true}
+      BACKUP_MAX_AGE_HOURS: ${BACKUP_MAX_AGE_HOURS:-26}
+      BACKUP_RETENTION_DAYS: ${BACKUP_RETENTION_DAYS:-}
+      BACKUP_ALERT_URL: ${BACKUP_ALERT_URL:-}
+    volumes:
+      - uploads:/data/uploads:ro
+      # Point BACKUP_HOST_DIR to a disk/mount outside the main host (NFS, block volume, rclone mount...).
+      - ${BACKUP_HOST_DIR:-./backups}:/backups
+    secrets:
+      - backup_key
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks: [backend]
+
+  caddy:
+    profiles: [tls]
+    image: caddy:2.8-alpine
+    restart: unless-stopped
+    environment:
+      DOMAIN: ${DOMAIN:-}
+      ACME_EMAIL: ${ACME_EMAIL:-}
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    depends_on:
+      web:
+        condition: service_healthy
+    networks: [frontend]
+
+secrets:
+  backup_key:
+    file: ${BACKUP_KEY_HOST_FILE:-./secrets/backup.key}
+
+volumes:
+  postgres-data:
+  uploads:
+  caddy-data:
+  caddy-config:
+
+networks:
+  backend:
+  frontend:

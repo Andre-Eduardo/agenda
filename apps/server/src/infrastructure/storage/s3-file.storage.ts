@@ -21,6 +21,8 @@ export class S3FileStorage implements FileStorage {
         this.bucket = s3.bucket ?? '';
         this.client = new S3Client({
             region: s3.region,
+            endpoint: s3.endpoint,
+            forcePathStyle: s3.forcePathStyle,
             credentials:
                 s3.accessKeyId && s3.secretAccessKey
                     ? {accessKeyId: s3.accessKeyId, secretAccessKey: s3.secretAccessKey}
@@ -78,8 +80,27 @@ export class S3FileStorage implements FileStorage {
                 ContentType: mimeType,
             })
         );
-        const region = this.config.storage.s3.region ?? 'us-east-1';
 
-        return `https://${this.bucket}.s3.${region}.amazonaws.com/${filePath}`;
+        return this.objectUrl(filePath);
+    }
+
+    private objectUrl(filePath: string): string {
+        const {endpoint, forcePathStyle, region} = this.config.storage.s3;
+
+        if (endpoint !== undefined) {
+            const base = endpoint.replace(/\/+$/, '');
+
+            if (forcePathStyle) {
+                return `${base}/${this.bucket}/${filePath}`;
+            }
+
+            const url = new URL(base);
+
+            url.hostname = `${this.bucket}.${url.hostname}`;
+
+            return `${url.toString().replace(/\/+$/, '')}/${filePath}`;
+        }
+
+        return `https://${this.bucket}.s3.${region ?? 'us-east-1'}.amazonaws.com/${filePath}`;
     }
 }

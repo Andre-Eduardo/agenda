@@ -26,6 +26,7 @@ import {DocumentPermissionModule} from '@application/document-permission/documen
 import {EventModule} from '@application/event/event.module';
 import {FinancialReportModule} from '@application/financial-report/financial-report.module';
 import {FormTemplateModule} from '@application/form-template/form-template.module';
+import {HealthModule} from '@application/health/health.module';
 import {ImportedDocumentModule} from '@application/imported-document/imported-document.module';
 import {InsuranceClaimModule} from '@application/insurance-claim/insurance-claim.module';
 import {KnowledgeBaseModule} from '@application/knowledge-base/knowledge-base.module';
@@ -34,6 +35,7 @@ import {NotificationWebhookModule} from '@application/notification-webhook/notif
 import {PackagePlanModule} from '@application/package-plan/package-plan.module';
 import {PatientAlertModule} from '@application/patient-alert/patient-alert.module';
 import {PatientCallModule} from '@application/patient-call/patient-call.module';
+import {PatientCommunicationPreferenceModule} from '@application/patient-communication-preference/patient-communication-preference.module';
 import {PatientFormModule} from '@application/patient-form/patient-form.module';
 import {PatientInsuranceEnrollmentModule} from '@application/patient-insurance-enrollment/patient-insurance-enrollment.module';
 import {PatientPackageModule} from '@application/patient-package/patient-package.module';
@@ -134,6 +136,7 @@ const guards: Provider[] = [
 @Module({
     imports: [
         InfrastructureModule,
+        HealthModule,
         AuditModule,
         EventModule,
         AuthModule,
@@ -155,6 +158,7 @@ const guards: Provider[] = [
         RecordModule,
         ClinicalProfileModule,
         PatientAlertModule,
+        PatientCommunicationPreferenceModule,
         UploadModule,
         FormTemplateModule,
         PatientFormModule,

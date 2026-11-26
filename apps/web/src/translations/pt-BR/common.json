@@ -462,5 +462,42 @@
         "mismatch": "As senhas não conferem"
       }
     }
+  },
+  "communicationPreferences": {
+    "title": "Comunicação e LGPD",
+    "intro": "Canais em que o paciente aceita receber lembretes. Toda alteração fica registrada com data, autor e motivo.",
+    "channel": {
+      "WHATSAPP": "WhatsApp",
+      "SMS": "SMS",
+      "EMAIL": "E-mail"
+    },
+    "allowed": "Permitido",
+    "optedOut": "Recusado",
+    "optOut": "Registrar recusa",
+    "optIn": "Reativar",
+    "optOutTitle": "Registrar recusa de {{channel}}",
+    "optInTitle": "Reativar {{channel}}",
+    "optOutDescription": "O paciente deixará de receber lembretes por este canal, inclusive os já agendados.",
+    "optInDescription": "Reative somente se o próprio paciente pediu para voltar a receber lembretes por este canal.",
+    "reason": "Motivo ou forma do pedido",
+    "reasonPlaceholder": "Ex.: paciente pediu por telefone em 26/11",
+    "changedAt": "Alterado em {{date}} ({{source}})",
+    "source": {
+      "STAFF": "pela clínica",
+      "WHATSAPP_REPLY": "resposta no WhatsApp",
+      "EMAIL_COMPLAINT": "e-mail marcado como spam"
+    },
+    "showHistory": "Ver histórico ({{count}})",
+    "hideHistory": "Ocultar histórico",
+    "loadError": "Não foi possível carregar as preferências de comunicação.",
+    "saveError": "Não foi possível salvar a preferência."
+  },
+  "legal": {
+    "navLabel": "Documentos legais",
+    "backToApp": "Voltar ao Agenda Saúde",
+    "privacy": "Política de Privacidade",
+    "terms": "Termos de Uso",
+    "draftNotice": "Rascunho pendente de revisão do encarregado de dados (DPO). Os trechos entre colchetes ainda serão preenchidos.",
+    "versionInfo": "Versão {{version}} · atualizado em {{date}}"
   }
 }

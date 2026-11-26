@@ -2,7 +2,7 @@ import {useState, useMemo} from 'react';
 import {useSignIn} from '@agenda-app/client';
 import {zodResolver} from '@hookform/resolvers/zod';
 import {useQueryClient} from '@tanstack/react-query';
-import {Link, createFileRoute, useNavigate, useRouter} from '@tanstack/react-router';
+import {createFileRoute, Link, useNavigate, useRouter} from '@tanstack/react-router';
 import {Eye, EyeOff, FileText, Lock, Mail, ShieldCheck, Stethoscope} from 'lucide-react';
 import {useForm} from 'react-hook-form';
 import {useTranslation} from 'react-i18next';
@@ -444,6 +444,11 @@ export function LoginPage() {
                         <ShieldCheck size={11} />
                         <span>{t('auth.login.footer.security')}</span>
                     </div>
+                    <nav className={leftPanelFooterLeft} aria-label={t('legal.navLabel')}>
+                        <Link to="/legal/privacy">{t('legal.privacy')}</Link>
+                        <span aria-hidden="true">·</span>
+                        <Link to="/legal/terms">{t('legal.terms')}</Link>
+                    </nav>
                     <span className={leftPanelVersion}>v1.0.0</span>
                 </div>
             </div>
@@ -453,19 +458,24 @@ export function LoginPage() {
                 <div className={rightPanelOverlay}>
                     <div className={previewFrame} aria-hidden="true">
                         <div className={previewTopBar}>
-                            <span className={previewBrandIcon}><Stethoscope size={14} strokeWidth={1.5} /></span>
+                            <span className={previewBrandIcon}>
+                                <Stethoscope size={14} strokeWidth={1.5} />
+                            </span>
                             <span>Agenda Saúde</span>
                             <span className={previewDate}>{t('auth.login.preview.today')}</span>
                         </div>
                         <div className={previewContent}>
                             <div className={previewHeading}>{t('auth.login.preview.agenda')}</div>
                             <div className={previewTimeline}>
-                                <span className={previewTime}>09:00</span><span className={previewSlot} />
+                                <span className={previewTime}>09:00</span>
+                                <span className={previewSlot} />
                                 <span className={previewTime}>10:00</span>
                                 <span className={previewAppointment}>
-                                    <span className={previewDot} />{t('auth.login.preview.appointment')}
+                                    <span className={previewDot} />
+                                    {t('auth.login.preview.appointment')}
                                 </span>
-                                <span className={previewTime}>11:00</span><span className={previewSlot} />
+                                <span className={previewTime}>11:00</span>
+                                <span className={previewSlot} />
                             </div>
                             <div className={previewRecord}>
                                 <FileText size={16} strokeWidth={1.5} />

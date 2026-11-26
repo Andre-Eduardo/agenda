@@ -1,4 +1,4 @@
-import {Injectable} from '@nestjs/common';
+import {Inject, Injectable} from '@nestjs/common';
 import {PatientAccessChecker} from '@application/clinic-patient-access/services/patient-access-checker.service';
 import type {Actor} from '@domain/@shared/actor';
 import {PreconditionException, ResourceNotFoundException} from '@domain/@shared/exceptions';
@@ -13,7 +13,7 @@ type QueueAction = {kind: 'announce'; destination: string} | {kind: 'recall'; ca
 @Injectable()
 export class PatientCallQueueService {
     constructor(
-        private readonly repository: PatientCallRepository,
+        @Inject(PatientCallRepository) private readonly repository: PatientCallRepository,
         private readonly appointments: AppointmentRepository,
         private readonly patientAccess: PatientAccessChecker,
         private readonly atomic: AtomicExecutor

@@ -3562,6 +3562,100 @@
         ]
       }
     },
+    "/api/v1/patients/{patientId}/communication-preferences": {
+      "get": {
+        "operationId": "getPatientCommunicationPreferences",
+        "parameters": [
+          {
+            "name": "patientId",
+            "required": true,
+            "in": "path",
+            "description": "Patient ID",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Communication preferences",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PatientCommunicationPreferences"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Request failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Gets the patient's communication preferences (opt-out per channel) and their history",
+        "tags": [
+          "PatientCommunicationPreference"
+        ]
+      },
+      "put": {
+        "operationId": "updatePatientCommunicationPreference",
+        "parameters": [
+          {
+            "name": "patientId",
+            "required": true,
+            "in": "path",
+            "description": "Patient ID",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdatePatientCommunicationPreferenceInputDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Updated preferences",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PatientCommunicationPreferences"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Request failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Records the patient's choice for one channel (opt-out or opt-in)",
+        "tags": [
+          "PatientCommunicationPreference"
+        ]
+      }
+    },
     "/api/v1/records": {
       "post": {
         "operationId": "createRecord",
@@ -13230,7 +13324,8 @@
           "READ",
           "DELIVERY_FAILED",
           "COMPLAINED",
-          "REPLIED"
+          "REPLIED",
+          "OPTED_OUT"
         ]
       },
       "ReminderEventSource": {
@@ -13644,6 +13739,164 @@
           "subject",
           "message",
           "variables"
+        ]
+      },
+      "ReminderChannel": {
+        "type": "string",
+        "enum": [
+          "WHATSAPP",
+          "SMS",
+          "EMAIL"
+        ]
+      },
+      "CommunicationPreferenceSource": {
+        "type": "string",
+        "enum": [
+          "STAFF",
+          "WHATSAPP_REPLY",
+          "EMAIL_COMPLAINT"
+        ]
+      },
+      "PatientChannelPreference": {
+        "type": "object",
+        "properties": {
+          "channel": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ReminderChannel"
+              }
+            ]
+          },
+          "optedOut": {
+            "type": "boolean",
+            "description": "Whether the patient refused this channel (opt-out)"
+          },
+          "changedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "description": "Last change, if any"
+          },
+          "source": {
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CommunicationPreferenceSource"
+              }
+            ]
+          }
+        },
+        "required": [
+          "channel",
+          "optedOut",
+          "changedAt",
+          "source"
+        ]
+      },
+      "PatientCommunicationPreferenceChange": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "channel": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ReminderChannel"
+              }
+            ]
+          },
+          "optedOut": {
+            "type": "boolean",
+            "description": "Whether the patient refused this channel from this change on"
+          },
+          "source": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CommunicationPreferenceSource"
+              }
+            ]
+          },
+          "changedByMemberId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true,
+            "description": "Clinic member who recorded it"
+          },
+          "reason": {
+            "type": "string",
+            "nullable": true,
+            "description": "Reason given by the clinic, or the text of the patient reply"
+          },
+          "occurredAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "channel",
+          "optedOut",
+          "source",
+          "changedByMemberId",
+          "reason",
+          "occurredAt"
+        ]
+      },
+      "PatientCommunicationPreferences": {
+        "type": "object",
+        "properties": {
+          "patientId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "channels": {
+            "description": "Current preference of every channel",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PatientChannelPreference"
+            }
+          },
+          "history": {
+            "description": "Change history, newest first",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PatientCommunicationPreferenceChange"
+            }
+          }
+        },
+        "required": [
+          "patientId",
+          "channels",
+          "history"
+        ]
+      },
+      "UpdatePatientCommunicationPreferenceInputDto": {
+        "type": "object",
+        "properties": {
+          "channel": {
+            "type": "string",
+            "enum": [
+              "WHATSAPP",
+              "SMS",
+              "EMAIL"
+            ]
+          },
+          "optedOut": {
+            "type": "boolean",
+            "description": "true = the patient refuses this channel"
+          },
+          "reason": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 500,
+            "example": "Paciente pediu por telefone para não receber lembretes por WhatsApp"
+          }
+        },
+        "required": [
+          "channel",
+          "optedOut"
         ]
       },
       "CreateRecordDto": {

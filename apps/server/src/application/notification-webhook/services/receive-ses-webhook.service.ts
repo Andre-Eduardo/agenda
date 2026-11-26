@@ -5,8 +5,10 @@ import {
     type ReminderDeliveryUpdate,
 } from '@application/appointment-reminder/services/track-reminder-delivery.service';
 import {parseSesEvent, type SesDeliveryEvent} from '@application/notification-webhook/parsers/ses-event.parser';
+import {RecordPatientOptOutService} from '@application/patient-communication-preference/services/record-patient-opt-out.service';
 import {AppointmentReminderRepository} from '@domain/appointment-reminder/appointment-reminder.repository';
 import {ReminderChannel, ReminderEventSource, ReminderEventType} from '@domain/appointment-reminder/entities';
+import {CommunicationPreferenceSource} from '@domain/patient-communication-preference/entities';
 import {SnsMessageVerifier, snsMessageSchema, type SnsMessage} from '@infrastructure/aws/sns-message-verifier';
 import {EnvConfigService} from '@infrastructure/config';
 
@@ -30,7 +32,8 @@ export class ReceiveSesWebhookService {
         private readonly verifier: SnsMessageVerifier,
         private readonly reminderRepository: AppointmentReminderRepository,
         private readonly tracker: TrackReminderDeliveryService,
-        private readonly metrics: Metrics
+        private readonly metrics: Metrics,
+        private readonly optOut: RecordPatientOptOutService
     ) {}
 
     async receive(body: unknown, now: Date = new Date()): Promise<void> {
@@ -78,6 +81,17 @@ export class ReceiveSesWebhookService {
             occurredAt: event.occurredAt,
             detail: event.detail,
         });
+
+        // A spam complaint is the patient refusing e-mail reminders (L3-04).
+        if (event.type === 'COMPLAINED') {
+            await this.optOut.record({
+                reminder,
+                source: CommunicationPreferenceSource.EMAIL_COMPLAINT,
+                externalId: message.MessageId,
+                occurredAt: event.occurredAt,
+                reason: event.detail,
+            });
+        }
 
         this.count(result);
     }

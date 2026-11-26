@@ -12,6 +12,8 @@ import { Route as rootRouteImport } from './views/root'
 import { Route as patientCallPagesDisplayIndexRouteImport } from './views/modules/patient-call/pages/display/index'
 import { Route as DotDotLayoutsStackedLayoutIndexRouteImport } from './views/layouts/StackedLayout/index'
 import { Route as DotDotLayoutsAuthLayoutIndexRouteImport } from './views/layouts/AuthLayout/index'
+import { Route as legalPagesTermsIndexRouteImport } from './views/modules/legal/pages/terms/index'
+import { Route as legalPagesPrivacyIndexRouteImport } from './views/modules/legal/pages/privacy/index'
 import { Route as teamPagesIndexIndexRouteImport } from './views/modules/team/pages/index/index'
 import { Route as settingsPagesIndexIndexRouteImport } from './views/modules/settings/pages/index/index'
 import { Route as receptionPagesIndexIndexRouteImport } from './views/modules/reception/pages/index/index'
@@ -26,9 +28,7 @@ import { Route as patientCallPagesSettingsIndexRouteImport } from './views/modul
 import { Route as patientsPagesNewIndexRouteImport } from './views/modules/patients/pages/new/index'
 import { Route as patientsPagesDetailIndexRouteImport } from './views/modules/patients/pages/detail/index'
 import { Route as adminPagesIndexIndexRouteImport } from './views/modules/admin/pages/index/index'
-import { Route as authPagesResetPasswordIndexRouteImport } from './views/modules/auth/pages/reset-password/index'
 import { Route as authPagesLoginIndexRouteImport } from './views/modules/auth/pages/login/index'
-import { Route as authPagesForgotPasswordIndexRouteImport } from './views/modules/auth/pages/forgot-password/index'
 import { Route as patientsPagesEditIndexRouteImport } from './views/modules/patients/pages/edit/index'
 import { Route as adminPagesDetailIndexRouteImport } from './views/modules/admin/pages/detail/index'
 import { Route as patientsPagesRecordsNewIndexRouteImport } from './views/modules/patients/pages/records/new/index'
@@ -50,6 +50,16 @@ const DotDotLayoutsAuthLayoutIndexRoute =
     id: '/_auth',
     getParentRoute: () => rootRouteImport,
   } as any)
+const legalPagesTermsIndexRoute = legalPagesTermsIndexRouteImport.update({
+  id: '/legal/terms',
+  path: '/legal/terms',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const legalPagesPrivacyIndexRoute = legalPagesPrivacyIndexRouteImport.update({
+  id: '/legal/privacy',
+  path: '/legal/privacy',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const teamPagesIndexIndexRoute = teamPagesIndexIndexRouteImport.update({
   id: '/team',
   path: '/team',
@@ -127,23 +137,11 @@ const adminPagesIndexIndexRoute = adminPagesIndexIndexRouteImport.update({
   path: '/admin/clinics',
   getParentRoute: () => DotDotLayoutsStackedLayoutIndexRoute,
 } as any)
-const authPagesResetPasswordIndexRoute =
-  authPagesResetPasswordIndexRouteImport.update({
-    id: '/auth/reset-password',
-    path: '/auth/reset-password',
-    getParentRoute: () => DotDotLayoutsAuthLayoutIndexRoute,
-  } as any)
 const authPagesLoginIndexRoute = authPagesLoginIndexRouteImport.update({
   id: '/auth/login',
   path: '/auth/login',
   getParentRoute: () => DotDotLayoutsAuthLayoutIndexRoute,
 } as any)
-const authPagesForgotPasswordIndexRoute =
-  authPagesForgotPasswordIndexRouteImport.update({
-    id: '/auth/forgot-password',
-    path: '/auth/forgot-password',
-    getParentRoute: () => DotDotLayoutsAuthLayoutIndexRoute,
-  } as any)
 const patientsPagesEditIndexRoute = patientsPagesEditIndexRouteImport.update({
   id: '/patients/$patientId/edit',
   path: '/patients/$patientId/edit',
@@ -178,9 +176,9 @@ export interface FileRoutesByFullPath {
   '/reception': typeof receptionPagesIndexIndexRoute
   '/settings': typeof settingsPagesIndexIndexRoute
   '/team': typeof teamPagesIndexIndexRoute
-  '/auth/forgot-password': typeof authPagesForgotPasswordIndexRoute
+  '/legal/privacy': typeof legalPagesPrivacyIndexRoute
+  '/legal/terms': typeof legalPagesTermsIndexRoute
   '/auth/login': typeof authPagesLoginIndexRoute
-  '/auth/reset-password': typeof authPagesResetPasswordIndexRoute
   '/admin/clinics': typeof adminPagesIndexIndexRoute
   '/patients/$patientId': typeof patientsPagesDetailIndexRoute
   '/patients/new': typeof patientsPagesNewIndexRoute
@@ -202,9 +200,9 @@ export interface FileRoutesByTo {
   '/reception': typeof receptionPagesIndexIndexRoute
   '/settings': typeof settingsPagesIndexIndexRoute
   '/team': typeof teamPagesIndexIndexRoute
-  '/auth/forgot-password': typeof authPagesForgotPasswordIndexRoute
+  '/legal/privacy': typeof legalPagesPrivacyIndexRoute
+  '/legal/terms': typeof legalPagesTermsIndexRoute
   '/auth/login': typeof authPagesLoginIndexRoute
-  '/auth/reset-password': typeof authPagesResetPasswordIndexRoute
   '/admin/clinics': typeof adminPagesIndexIndexRoute
   '/patients/$patientId': typeof patientsPagesDetailIndexRoute
   '/patients/new': typeof patientsPagesNewIndexRoute
@@ -229,9 +227,9 @@ export interface FileRoutesById {
   '/_stackedLayout/reception': typeof receptionPagesIndexIndexRoute
   '/_stackedLayout/settings': typeof settingsPagesIndexIndexRoute
   '/_stackedLayout/team': typeof teamPagesIndexIndexRoute
-  '/_auth/auth/forgot-password': typeof authPagesForgotPasswordIndexRoute
+  '/legal/privacy': typeof legalPagesPrivacyIndexRoute
+  '/legal/terms': typeof legalPagesTermsIndexRoute
   '/_auth/auth/login': typeof authPagesLoginIndexRoute
-  '/_auth/auth/reset-password': typeof authPagesResetPasswordIndexRoute
   '/_stackedLayout/admin/clinics': typeof adminPagesIndexIndexRoute
   '/_stackedLayout/patients/$patientId': typeof patientsPagesDetailIndexRoute
   '/_stackedLayout/patients/new': typeof patientsPagesNewIndexRoute
@@ -255,9 +253,9 @@ export interface FileRouteTypes {
     | '/reception'
     | '/settings'
     | '/team'
-    | '/auth/forgot-password'
+    | '/legal/privacy'
+    | '/legal/terms'
     | '/auth/login'
-    | '/auth/reset-password'
     | '/admin/clinics'
     | '/patients/$patientId'
     | '/patients/new'
@@ -279,9 +277,9 @@ export interface FileRouteTypes {
     | '/reception'
     | '/settings'
     | '/team'
-    | '/auth/forgot-password'
+    | '/legal/privacy'
+    | '/legal/terms'
     | '/auth/login'
-    | '/auth/reset-password'
     | '/admin/clinics'
     | '/patients/$patientId'
     | '/patients/new'
@@ -305,9 +303,9 @@ export interface FileRouteTypes {
     | '/_stackedLayout/reception'
     | '/_stackedLayout/settings'
     | '/_stackedLayout/team'
-    | '/_auth/auth/forgot-password'
+    | '/legal/privacy'
+    | '/legal/terms'
     | '/_auth/auth/login'
-    | '/_auth/auth/reset-password'
     | '/_stackedLayout/admin/clinics'
     | '/_stackedLayout/patients/$patientId'
     | '/_stackedLayout/patients/new'
@@ -323,6 +321,8 @@ export interface RootRouteChildren {
   DotDotLayoutsAuthLayoutIndexRoute: typeof DotDotLayoutsAuthLayoutIndexRouteWithChildren
   DotDotLayoutsStackedLayoutIndexRoute: typeof DotDotLayoutsStackedLayoutIndexRouteWithChildren
   patientCallPagesDisplayIndexRoute: typeof patientCallPagesDisplayIndexRoute
+  legalPagesPrivacyIndexRoute: typeof legalPagesPrivacyIndexRoute
+  legalPagesTermsIndexRoute: typeof legalPagesTermsIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -346,6 +346,20 @@ declare module '@tanstack/react-router' {
       path: ''
       fullPath: '/'
       preLoaderRoute: typeof DotDotLayoutsAuthLayoutIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/legal/terms': {
+      id: '/legal/terms'
+      path: '/legal/terms'
+      fullPath: '/legal/terms'
+      preLoaderRoute: typeof legalPagesTermsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/legal/privacy': {
+      id: '/legal/privacy'
+      path: '/legal/privacy'
+      fullPath: '/legal/privacy'
+      preLoaderRoute: typeof legalPagesPrivacyIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_stackedLayout/team': {
@@ -446,25 +460,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof adminPagesIndexIndexRouteImport
       parentRoute: typeof DotDotLayoutsStackedLayoutIndexRoute
     }
-    '/_auth/auth/reset-password': {
-      id: '/_auth/auth/reset-password'
-      path: '/auth/reset-password'
-      fullPath: '/auth/reset-password'
-      preLoaderRoute: typeof authPagesResetPasswordIndexRouteImport
-      parentRoute: typeof DotDotLayoutsAuthLayoutIndexRoute
-    }
     '/_auth/auth/login': {
       id: '/_auth/auth/login'
       path: '/auth/login'
       fullPath: '/auth/login'
       preLoaderRoute: typeof authPagesLoginIndexRouteImport
-      parentRoute: typeof DotDotLayoutsAuthLayoutIndexRoute
-    }
-    '/_auth/auth/forgot-password': {
-      id: '/_auth/auth/forgot-password'
-      path: '/auth/forgot-password'
-      fullPath: '/auth/forgot-password'
-      preLoaderRoute: typeof authPagesForgotPasswordIndexRouteImport
       parentRoute: typeof DotDotLayoutsAuthLayoutIndexRoute
     }
     '/_stackedLayout/patients/$patientId/edit': {
@@ -499,16 +499,12 @@ declare module '@tanstack/react-router' {
 }
 
 interface DotDotLayoutsAuthLayoutIndexRouteChildren {
-  authPagesForgotPasswordIndexRoute: typeof authPagesForgotPasswordIndexRoute
   authPagesLoginIndexRoute: typeof authPagesLoginIndexRoute
-  authPagesResetPasswordIndexRoute: typeof authPagesResetPasswordIndexRoute
 }
 
 const DotDotLayoutsAuthLayoutIndexRouteChildren: DotDotLayoutsAuthLayoutIndexRouteChildren =
   {
-    authPagesForgotPasswordIndexRoute: authPagesForgotPasswordIndexRoute,
     authPagesLoginIndexRoute: authPagesLoginIndexRoute,
-    authPagesResetPasswordIndexRoute: authPagesResetPasswordIndexRoute,
   }
 
 const DotDotLayoutsAuthLayoutIndexRouteWithChildren =
@@ -570,6 +566,8 @@ const rootRouteChildren: RootRouteChildren = {
   DotDotLayoutsStackedLayoutIndexRoute:
     DotDotLayoutsStackedLayoutIndexRouteWithChildren,
   patientCallPagesDisplayIndexRoute: patientCallPagesDisplayIndexRoute,
+  legalPagesPrivacyIndexRoute: legalPagesPrivacyIndexRoute,
+  legalPagesTermsIndexRoute: legalPagesTermsIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

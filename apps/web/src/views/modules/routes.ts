@@ -17,6 +17,9 @@ export const routes = rootRoute('../root.tsx', [
         route('/auth/reset-password', filePath('auth', 'reset-password')),
     ]),
     route('/patient-call', filePath('patient-call', 'display')),
+    // Public legal pages (LGPD): reachable without login.
+    route('/legal/privacy', filePath('legal', 'privacy')),
+    route('/legal/terms', filePath('legal', 'terms')),
     layout('stackedLayout', '../layouts/StackedLayout/index.tsx', [
         index(filePath('welcome', 'index')),
         route('/dashboard', filePath('dashboard', 'index')),

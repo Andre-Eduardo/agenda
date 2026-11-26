@@ -10,9 +10,12 @@ import {
     parseEvolutionWebhook,
     whatsAppNumberVariants,
 } from '@application/notification-webhook/parsers/evolution-webhook.parser';
+import {RecordPatientOptOutService} from '@application/patient-communication-preference/services/record-patient-opt-out.service';
 import {AppointmentReminderRepository} from '@domain/appointment-reminder/appointment-reminder.repository';
 import {ReminderChannel, ReminderEventSource, ReminderEventType} from '@domain/appointment-reminder/entities';
 import type {ClinicId} from '@domain/clinic/entities';
+import {CommunicationPreferenceSource} from '@domain/patient-communication-preference/entities';
+import {isOptOutReply} from '@domain/patient-communication-preference/opt-out-keywords';
 import {EnvConfigService} from '@infrastructure/config';
 import {verifyEvolutionWebhookToken} from '@infrastructure/whatsapp/evolution-webhook-token';
 
@@ -40,7 +43,8 @@ export class ReceiveEvolutionWebhookService {
         private readonly config: EnvConfigService,
         private readonly reminderRepository: AppointmentReminderRepository,
         private readonly tracker: TrackReminderDeliveryService,
-        private readonly metrics: Metrics
+        private readonly metrics: Metrics,
+        private readonly optOut: RecordPatientOptOutService
     ) {}
 
     async receive({clinicId, token, body}: ReceiveEvolutionWebhook, now: Date = new Date()): Promise<void> {
@@ -113,13 +117,27 @@ export class ReceiveEvolutionWebhookService {
             return 'unmatched';
         }
 
-        return this.tracker.apply(reminder, {
+        const result = await this.tracker.apply(reminder, {
             type: ReminderEventType.REPLIED,
             source: ReminderEventSource.EVOLUTION,
             externalId: reply.messageId,
             occurredAt: reply.occurredAt,
             detail: reply.text,
         });
+
+        // "SAIR" and similar replies stop further WhatsApp reminders (L3-04). The opt-out has its
+        // own idempotency key, so it is recorded even if the reply event was already stored.
+        if (isOptOutReply(reply.text)) {
+            await this.optOut.record({
+                reminder,
+                source: CommunicationPreferenceSource.WHATSAPP_REPLY,
+                externalId: reply.messageId,
+                occurredAt: reply.occurredAt,
+                reason: reply.text,
+            });
+        }
+
+        return result;
     }
 
     private count(result: WebhookResult): void {

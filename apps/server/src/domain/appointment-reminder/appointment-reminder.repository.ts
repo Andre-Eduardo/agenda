@@ -8,6 +8,13 @@ export interface AppointmentReminderRepository {
     saveMany(reminders: AppointmentReminder[]): Promise<void>;
     findPendingByAppointmentId(appointmentId: AppointmentId): Promise<AppointmentReminder[]>;
     findDueForDispatch(clinicId: ClinicId, withinMinutes: number): Promise<AppointmentReminder[]>;
+    /**
+     * Reivindica atomicamente o envio de um lembrete pendente por `leaseMs`.
+     * Retorna `true` só para a primeira instância que conseguir; as demais recebem `false`
+     * e não devem enviar. Se a instância cair antes de gravar o resultado, o lease expira
+     * e o lembrete volta a ser elegível (entrega "pelo menos uma vez").
+     */
+    claimForDispatch(id: AppointmentReminderId, leaseMs: number): Promise<boolean>;
     cancelAllPending(appointmentId: AppointmentId): Promise<void>;
     findByAppointmentId(appointmentId: AppointmentId): Promise<AppointmentReminder[]>;
     /** Pending reminders, across clinics, whose time is before `scheduledBefore`. */

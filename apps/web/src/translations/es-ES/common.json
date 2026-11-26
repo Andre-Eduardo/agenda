@@ -462,5 +462,42 @@
         "mismatch": "Las contraseñas no coinciden"
       }
     }
+  },
+  "communicationPreferences": {
+    "title": "Comunicación y privacidad",
+    "intro": "Canales en los que el paciente acepta recibir recordatorios. Cada cambio queda registrado con fecha, autor y motivo.",
+    "channel": {
+      "WHATSAPP": "WhatsApp",
+      "SMS": "SMS",
+      "EMAIL": "Correo electrónico"
+    },
+    "allowed": "Permitido",
+    "optedOut": "Rechazado",
+    "optOut": "Registrar rechazo",
+    "optIn": "Reactivar",
+    "optOutTitle": "Registrar rechazo de {{channel}}",
+    "optInTitle": "Reactivar {{channel}}",
+    "optOutDescription": "El paciente dejará de recibir recordatorios por este canal, incluidos los ya programados.",
+    "optInDescription": "Reactívelo solo si el propio paciente pidió volver a recibir recordatorios por este canal.",
+    "reason": "Motivo o forma de la solicitud",
+    "reasonPlaceholder": "Ej.: el paciente lo pidió por teléfono el 26/11",
+    "changedAt": "Modificado el {{date}} ({{source}})",
+    "source": {
+      "STAFF": "por la clínica",
+      "WHATSAPP_REPLY": "respuesta en WhatsApp",
+      "EMAIL_COMPLAINT": "correo marcado como spam"
+    },
+    "showHistory": "Ver historial ({{count}})",
+    "hideHistory": "Ocultar historial",
+    "loadError": "No se pudieron cargar las preferencias de comunicación.",
+    "saveError": "No se pudo guardar la preferencia."
+  },
+  "legal": {
+    "navLabel": "Documentos legales",
+    "backToApp": "Volver a Agenda Saúde",
+    "privacy": "Política de Privacidad",
+    "terms": "Términos de Uso",
+    "draftNotice": "Borrador pendiente de revisión del delegado de protección de datos (DPO). El texto entre corchetes aún se completará. El documento está en portugués.",
+    "versionInfo": "Versión {{version}} · actualizado el {{date}}"
   }
 }

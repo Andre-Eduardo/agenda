@@ -18,6 +18,8 @@ export enum ReminderEventType {
     /** The patient marked the e-mail as spam. */
     COMPLAINED = 'COMPLAINED',
     REPLIED = 'REPLIED',
+    /** Not sent: the patient refused this channel (opt-out, L3-04). */
+    OPTED_OUT = 'OPTED_OUT',
 }
 
 /** Who reported the event. Webhook sources carry an `externalId` that makes them idempotent. */

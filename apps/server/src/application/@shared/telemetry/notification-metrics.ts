@@ -4,7 +4,7 @@
  * `notification_reminder_attempt_total`); `infra/grafana` queries those names.
  */
 export const NotificationMetric = {
-    /** Counter. Attributes: `channel`, `outcome` (`sent` | `failed` | `retry`). */
+    /** Counter. Attributes: `channel`, `outcome` (`sent` | `failed` | `retry` | `opted_out`). */
     ATTEMPT: 'notification.reminder.attempt',
     /** Histogram, milliseconds. Attributes: `channel`, `outcome`. */
     SEND_DURATION: 'notification.provider.send.duration_ms',

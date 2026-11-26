@@ -462,5 +462,42 @@
         "mismatch": "Passwords do not match"
       }
     }
+  },
+  "communicationPreferences": {
+    "title": "Communication and privacy",
+    "intro": "Channels on which the patient accepts reminders. Every change is recorded with date, author and reason.",
+    "channel": {
+      "WHATSAPP": "WhatsApp",
+      "SMS": "SMS",
+      "EMAIL": "E-mail"
+    },
+    "allowed": "Allowed",
+    "optedOut": "Refused",
+    "optOut": "Record refusal",
+    "optIn": "Re-enable",
+    "optOutTitle": "Record refusal of {{channel}}",
+    "optInTitle": "Re-enable {{channel}}",
+    "optOutDescription": "The patient will stop receiving reminders on this channel, including those already scheduled.",
+    "optInDescription": "Only re-enable it if the patient asked to receive reminders on this channel again.",
+    "reason": "Reason or how it was requested",
+    "reasonPlaceholder": "E.g.: patient asked by phone on 11/26",
+    "changedAt": "Changed on {{date}} ({{source}})",
+    "source": {
+      "STAFF": "by the clinic",
+      "WHATSAPP_REPLY": "WhatsApp reply",
+      "EMAIL_COMPLAINT": "e-mail marked as spam"
+    },
+    "showHistory": "Show history ({{count}})",
+    "hideHistory": "Hide history",
+    "loadError": "Could not load the communication preferences.",
+    "saveError": "Could not save the preference."
+  },
+  "legal": {
+    "navLabel": "Legal documents",
+    "backToApp": "Back to Agenda Saúde",
+    "privacy": "Privacy Policy",
+    "terms": "Terms of Use",
+    "draftNotice": "Draft pending review by the data protection officer (DPO). Text in brackets is still to be filled in. The document is in Portuguese.",
+    "versionInfo": "Version {{version}} · updated on {{date}}"
   }
 }

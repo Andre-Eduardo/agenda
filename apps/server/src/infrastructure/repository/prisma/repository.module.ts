@@ -33,6 +33,7 @@ import {KnowledgeChunkRepository} from '@domain/knowledge-base/knowledge-chunk.r
 import {PackagePlanRepository} from '@domain/package-plan/package-plan.repository';
 import {PatientAlertRepository} from '@domain/patient-alert/patient-alert.repository';
 import {PatientCallRepository} from '@domain/patient-call/patient-call.repository';
+import {PatientCommunicationPreferenceRepository} from '@domain/patient-communication-preference/patient-communication-preference.repository';
 import {PatientFormRepository} from '@domain/patient-form/patient-form.repository';
 import {PatientInsuranceEnrollmentRepository} from '@domain/patient-insurance-enrollment/patient-insurance-enrollment.repository';
 import {PatientPackageCreditRepository} from '@domain/patient-package/patient-package-credit.repository';
@@ -85,6 +86,7 @@ import {PatientAlertPrismaRepository} from '@infrastructure/repository/patient-a
 import {PatientCallPrismaRepository} from '@infrastructure/repository/patient-call.prisma.repository';
 import {PatientChatMessagePrismaRepository} from '@infrastructure/repository/patient-chat-message.prisma.repository';
 import {PatientChatSessionPrismaRepository} from '@infrastructure/repository/patient-chat-session.prisma.repository';
+import {PatientCommunicationPreferencePrismaRepository} from '@infrastructure/repository/patient-communication-preference.prisma.repository';
 import {PatientContextChunkPrismaRepository} from '@infrastructure/repository/patient-context-chunk.prisma.repository';
 import {PatientContextSnapshotPrismaRepository} from '@infrastructure/repository/patient-context-snapshot.prisma.repository';
 import {PatientFormPrismaRepository} from '@infrastructure/repository/patient-form.prisma.repository';
@@ -139,6 +141,10 @@ const repositories: Provider[] = [
     {provide: AppointmentPaymentRepository, useClass: AppointmentPaymentPrismaRepository},
     {provide: AppointmentReminderRepository, useClass: AppointmentReminderPrismaRepository},
     {provide: AppointmentReminderEventRepository, useClass: AppointmentReminderEventPrismaRepository},
+    {
+        provide: PatientCommunicationPreferenceRepository,
+        useClass: PatientCommunicationPreferencePrismaRepository,
+    },
     {provide: ClinicReminderConfigRepository, useClass: ClinicReminderConfigPrismaRepository},
     {provide: WorkingHoursRepository, useClass: WorkingHoursPrismaRepository},
     {provide: MemberBlockRepository, useClass: MemberBlockPrismaRepository},

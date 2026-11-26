@@ -1,4 +1,4 @@
-import {Injectable} from '@nestjs/common';
+import {Inject, Injectable} from '@nestjs/common';
 import type {Actor} from '@domain/@shared/actor';
 import {
     AccessDeniedException,
@@ -27,7 +27,7 @@ type ExistingSchedule = {
 @Injectable()
 export class ResolveScheduledProcedureService {
     constructor(
-        private readonly procedures: ProcedureRepository,
+        @Inject(ProcedureRepository) private readonly procedures: ProcedureRepository,
         private readonly authorizer: Authorizer
     ) {}
 

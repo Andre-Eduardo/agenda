@@ -81,6 +81,12 @@ const envConfigShape = z.object({
                 region: z.string().optional(),
                 accessKeyId: z.string().optional(),
                 secretAccessKey: z.string().optional(),
+                // S3-compatible providers (MinIO, Cloudflare R2, DigitalOcean Spaces, Backblaze B2...).
+                endpoint: z.string().url().optional(),
+                forcePathStyle: z
+                    .enum(['true', 'false'])
+                    .optional()
+                    .transform((value) => value === 'true'),
             })
             .default({}),
     }),
@@ -287,6 +293,8 @@ export class EnvConfigService {
                     region: process.env.STORAGE_S3_REGION,
                     accessKeyId: process.env.STORAGE_S3_ACCESS_KEY_ID,
                     secretAccessKey: process.env.STORAGE_S3_SECRET_ACCESS_KEY,
+                    endpoint: process.env.STORAGE_S3_ENDPOINT || undefined,
+                    forcePathStyle: process.env.STORAGE_S3_FORCE_PATH_STYLE,
                 },
             },
             mqtt: {
