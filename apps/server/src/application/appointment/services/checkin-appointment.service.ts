@@ -1,4 +1,4 @@
-import {Injectable} from '@nestjs/common';
+import {Inject, Injectable} from '@nestjs/common';
 import {ApplicationService, Command} from '@application/@shared/application.service';
 import {assertEntityBelongsToClinic} from '@application/@shared/validators/cross-tenant.validator';
 import {CheckinAppointmentDto, CheckinAppointmentResultDto} from '@application/appointment/dtos';
@@ -18,7 +18,7 @@ export class CheckinAppointmentService implements ApplicationService<
     constructor(
         private readonly patientAccessChecker: PatientAccessChecker,
         private readonly appointmentRepository: AppointmentRepository,
-        private readonly queue: PatientCallRepository,
+        @Inject(PatientCallRepository) private readonly queue: PatientCallRepository,
         private readonly atomic: AtomicExecutor,
         private readonly eventDispatcher: EventDispatcher
     ) {}

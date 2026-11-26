@@ -1771,6 +1771,9 @@ model AppointmentReminder {
   failedAt     DateTime?       @map("failed_at")
   attempts     Int             @default(0)
   errorMessage String?         @map("error_message") @db.Text
+  /// Lease de envio: enquanto no futuro, uma instância da API já reivindicou o lembrete
+  /// e as demais não podem enviá-lo. Evita envio duplicado com múltiplas réplicas.
+  claimedUntil DateTime?       @map("claimed_until")
 
   /// L2-04: endereço usado no último envio (e-mail ou número no formato do provider) e id da
   /// mensagem devolvido pelo provider. Usados para casar os webhooks de status e resposta.

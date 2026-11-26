@@ -68,8 +68,12 @@ de conexão ao PostgreSQL via variáveis `PG*`, evitando senha na linha de coman
 
 ## Execução e monitoramento
 
-Instalar a automação no executor de backup, com um arquivo de ambiente privado
-fornecido pelo gerenciador de segredos, e agendar:
+Na stack Docker de produção, o serviço `backup` de
+[`deploy/docker-compose.prod.yml`](../deploy/docker-compose.prod.yml) já faz esse
+agendamento com [`scheduler.mjs`](../ops/backup/scheduler.mjs) (ver
+[deploy-producao.md](deploy-producao.md#backup-em-produção)). Fora dela, instalar a
+automação no executor de backup, com um arquivo de ambiente privado fornecido
+pelo gerenciador de segredos, e agendar:
 
 ```sh
 node /opt/agenda/ops/backup/agenda-backup.mjs backup  # diariamente às 02:00 UTC

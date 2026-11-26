@@ -1,0 +1,11 @@
+# Used only with `docker compose --profile tls`. Caddy obtains and renews the
+# TLS certificate for $DOMAIN automatically (ports 80 and 443 must be reachable).
+{
+	email {$ACME_EMAIL}
+}
+
+{$DOMAIN} {
+	encode zstd gzip
+	header Strict-Transport-Security "max-age=31536000; includeSubDomains"
+	reverse_proxy web:8080
+}

@@ -1,4 +1,4 @@
-import {Injectable} from '@nestjs/common';
+import {Inject, Injectable} from '@nestjs/common';
 import type {Command} from '@application/@shared/application.service';
 import {CreateProcedureDto, ProcedureDto, UpdateProcedureDto} from '@application/procedure/dtos';
 import {ResourceNotFoundException} from '@domain/@shared/exceptions';
@@ -7,7 +7,7 @@ import {ProcedureRepository} from '@domain/procedure/procedure.repository';
 
 @Injectable()
 export class ProcedureCatalogService {
-    constructor(private readonly procedures: ProcedureRepository) {}
+    constructor(@Inject(ProcedureRepository) private readonly procedures: ProcedureRepository) {}
 
     async list({actor, payload: includeInactive}: Command<boolean>): Promise<ProcedureDto[]> {
         const entries = await this.procedures.list(actor.clinicId, includeInactive);

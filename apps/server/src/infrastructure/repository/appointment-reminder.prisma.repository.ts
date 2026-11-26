@@ -37,7 +37,9 @@ export class AppointmentReminderPrismaRepository extends PrismaRepository implem
         await this.prisma.appointmentReminder.upsert({
             where: {id: data.id},
             create: data,
-            update: data,
+            // Gravar o resultado do envio libera o lease de `claimForDispatch`, para que um
+            // retry agendado (status volta a PENDING) não fique preso até o lease expirar.
+            update: {...data, claimedUntil: null},
         });
     }
 
@@ -70,6 +72,22 @@ export class AppointmentReminderPrismaRepository extends PrismaRepository implem
         });
 
         return records.map((r) => this.mapper.toDomain(r));
+    }
+
+    async claimForDispatch(id: AppointmentReminderId, leaseMs: number): Promise<boolean> {
+        const now = new Date();
+        // UPDATE condicional: no Postgres a linha fica travada durante o UPDATE e o WHERE é
+        // reavaliado após a trava, então só uma transação concorrente consegue o lease.
+        const {count} = await this.prisma.appointmentReminder.updateMany({
+            where: {
+                id: id.toString(),
+                status: ReminderStatus.PENDING,
+                OR: [{claimedUntil: null}, {claimedUntil: {lt: now}}],
+            },
+            data: {claimedUntil: new Date(now.getTime() + leaseMs)},
+        });
+
+        return count === 1;
     }
 
     async cancelAllPending(appointmentId: AppointmentId): Promise<void> {

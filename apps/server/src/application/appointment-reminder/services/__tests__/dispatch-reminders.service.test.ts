@@ -24,7 +24,7 @@ import {
 import {PatientCommunicationPreferenceRepository} from '@domain/patient-communication-preference/patient-communication-preference.repository';
 import {PatientId, type Patient} from '@domain/patient/entities';
 import {PatientRepository} from '@domain/patient/patient.repository';
-import {DispatchRemindersService} from '../dispatch-reminders.service';
+import {DispatchRemindersService, REMINDER_DISPATCH_LEASE_MS} from '../dispatch-reminders.service';
 
 describe('A dispatch-reminders service', () => {
     const clinicId = ClinicId.generate();
@@ -84,6 +84,7 @@ describe('A dispatch-reminders service', () => {
         jest.useFakeTimers({now: new Date('2026-11-30T13:30:00Z'), doNotFake: ['nextTick', 'setImmediate']});
         eventRepository.recordIfAbsent.mockResolvedValue(true);
         preferenceRepository.findHistory.mockResolvedValue([]);
+        reminderRepository.claimForDispatch.mockResolvedValue(true);
         appointmentRepository.findById.mockResolvedValue(appointment);
         patientRepository.findById.mockResolvedValue(patient);
         messageRenderer.render.mockResolvedValue('Olá, Maria! Sua consulta é em 01/12/2026 às 10:30.');
@@ -91,6 +92,51 @@ describe('A dispatch-reminders service', () => {
 
     afterEach(() => {
         jest.useRealTimers();
+    });
+
+    it('should claim each due reminder before sending it', async () => {
+        const due = reminder(ReminderChannel.WHATSAPP);
+
+        reminderRepository.findDueForDispatch.mockResolvedValue([due]);
+        whatsApp.send.mockResolvedValue({success: true});
+
+        await service.dispatchDue(clinicId);
+
+        expect(reminderRepository.claimForDispatch).toHaveBeenCalledWith(due.id, REMINDER_DISPATCH_LEASE_MS);
+        expect(whatsApp.send).toHaveBeenCalledTimes(1);
+    });
+
+    it('should skip a reminder already claimed by another instance', async () => {
+        const due = reminder(ReminderChannel.WHATSAPP);
+
+        reminderRepository.findDueForDispatch.mockResolvedValue([due]);
+        reminderRepository.claimForDispatch.mockResolvedValue(false);
+
+        await service.dispatchDue(clinicId);
+
+        expect(whatsApp.send).not.toHaveBeenCalled();
+        expect(reminderRepository.save).not.toHaveBeenCalled();
+        expect(eventRepository.recordIfAbsent).not.toHaveBeenCalled();
+        expect(due.status).toBe(ReminderStatus.PENDING);
+    });
+
+    it('should send a reminder only once when two instances race for the same batch', async () => {
+        const due = reminder(ReminderChannel.WHATSAPP);
+        let claimed = false;
+
+        reminderRepository.findDueForDispatch.mockResolvedValue([due]);
+        reminderRepository.claimForDispatch.mockImplementation(() => {
+            if (claimed) return Promise.resolve(false);
+
+            claimed = true;
+
+            return Promise.resolve(true);
+        });
+        whatsApp.send.mockResolvedValue({success: true});
+
+        await Promise.all([service.dispatchDue(clinicId), service.dispatchDue(clinicId)]);
+
+        expect(whatsApp.send).toHaveBeenCalledTimes(1);
     });
 
     it('should send a WhatsApp reminder to the patient phone and mark it as sent', async () => {

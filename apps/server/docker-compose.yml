@@ -1,16 +1,24 @@
 services:
+  # Local smoke test of the production image. For the full production stack see deploy/docker-compose.prod.yml.
   app:
-    build: .
-    command: ["bash", "-c", "npx prisma migrate deploy && npm run start:prod"]
+    profiles: [app]
+    build:
+      context: ../..
+      dockerfile: apps/server/Dockerfile
     ports:
       - "3000:3000"
     depends_on:
       - postgres
     environment:
-      DATABASE_URL: "postgresql://postgres:postgres@postgres:5432/postgres?schema=public"
+      DATABASE_URL: "postgresql://${DATABASE_USER}:${DATABASE_PASSWORD}@postgres:5432/${DATABASE_NAME}?schema=public"
       OTEL_ENABLED: "${OTEL_ENABLED:-false}"
       OTEL_SERVICE_NAME: "${OTEL_SERVICE_NAME:-agenda-server}"
       OTEL_EXPORTER_OTLP_ENDPOINT: "${OTEL_EXPORTER_OTLP_ENDPOINT:-http://lgtm:4318}"
+    env_file:
+      - path: .env
+        required: false
+    volumes:
+      - uploads:/data/uploads
 
   # Grafana (UI) + Tempo (traces) + Loki (logs) + Prometheus (métricas) + OTel Collector,
   # mesma imagem do plexter. Grafana em http://localhost:3001 (admin/admin).
@@ -39,4 +47,5 @@ services:
 
 volumes:
   postgres:
+  uploads:
   lgtm:
