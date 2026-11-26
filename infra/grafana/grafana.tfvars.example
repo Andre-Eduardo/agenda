@@ -1,0 +1,10 @@
+# Copie para grafana.tfvars (ignorado pelo git) e ajuste.
+
+# Grafana Cloud
+grafana_url = "https://<slug>.grafana.net"
+alert_email = "alertas@suaclinica.com.br"
+
+# Grafana local (docker compose, serviço lgtm) — descomente e rode com GRAFANA_AUTH=admin:admin
+# grafana_url               = "http://localhost:3001"
+# prometheus_datasource_uid = "prometheus"
+# loki_datasource_uid       = "loki"

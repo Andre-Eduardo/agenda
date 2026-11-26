@@ -55,7 +55,7 @@ código não define nada, o documento diz "não definida" e registra a lacuna na
 | INT-03 | Asaas                               | ATIVO (opcional)       | Cobrança das assinaturas de profissionais    | `ASAAS_API_KEY` definida (padrão: mock)         |
 | INT-04 | AWS S3                              | ATIVO (opcional)       | Armazenar arquivos enviados e PDFs gerados   | `STORAGE_TYPE=S3` (padrão: `LOCAL`)             |
 | INT-05 | Broker MQTT                         | INFRA                  | Mensageria (sem fluxo de negócio hoje)       | `MQTT_BROKER_URL`                               |
-| INT-06 | WhatsApp / SMS / e-mail             | STUB                   | Lembretes de consulta                        | Sempre stub                                     |
+| INT-06 | WhatsApp (Evolution API) / e-mail (Amazon SES) / SMS | ATIVO (opcional); SMS stub | Lembretes de consulta | `EVOLUTION_SERVER_URL` + API key; `MAIL_FROM_ADDRESS` (padrão: stub) |
 | INT-07 | Google Fonts (frontend)             | ATIVO (sempre)         | Carregar tipografia e ícones                 | `apps/web/index.html`                           |
 | INT-08 | Analytics, telemetria, monitoramento de erros | Nenhum       | —                                            | —                                               |
 | INT-09 | Hospedagem e banco                  | Não definido no repo   | Executar API, web e PostgreSQL               | —                                               |
@@ -144,16 +144,29 @@ código não define nada, o documento diz "não definida" e registra a lacuna na
 
 ### INT-06 — WhatsApp, SMS e e-mail (lembretes)
 
-- **Estado:** `StubWhatsAppProvider`, `StubSmsProvider` e `StubEmailProvider` só registram em log.
-  A escolha dos provedores reais é o card L2-01; a implementação, o L2-02.
-- **Dados que passarão a ser enviados:** telefone ou e-mail do paciente e a mensagem
-  `Olá, {nome}! Lembramos que você tem uma consulta agendada para {data} às {hora}.`,
-  mais os ids do lembrete, do agendamento e do paciente em `metadata`
-  (`DispatchRemindersService`).
-- **Alerta:** os stubs gravam destinatário e mensagem no log do processo
-  (`[STUB] WhatsApp → {to}: {message}`), ou seja, nome, contato e data de consulta em texto claro
-  (ver F-02).
-- **Retenção:** a definir na escolha do provedor.
+- **Estado:** `EvolutionWhatsAppProvider` (Evolution API) e `SesEmailProvider` (Amazon SES v2)
+  são ativados por variável de ambiente; sem elas ficam os stubs. SMS continua stub. A decisão
+  e os pontos em aberto estão em [`notification-providers.md`](notification-providers.md).
+- **Dados enviados:** telefone ou e-mail do paciente e a mensagem
+  `Olá, {nome}! Lembramos que você tem uma consulta agendada para {data} às {hora}.`
+  Os ids em `metadata` **não** saem do servidor (nenhum adapter os envia).
+- **Suboperadores:** AWS (SES, região padrão `sa-east-1`). A Evolution API roda em servidor
+  próprio (Baileys), então mensagens e sessões ficam na nossa infra até chegarem ao WhatsApp; não
+  há contrato com a Meta (risco aceito, ver documento de providers).
+- **Logs:** stubs e adapters registram só o destino mascarado (`55*******4321`,
+  `ma***@dominio`) e o tamanho da mensagem; o texto não vai mais para o log (corrige F-02 para
+  este fluxo).
+- **Retenção:** SES não guarda o conteúdo após a entrega (só métricas e eventos, se configurados).
+  A retenção na Evolution API depende do banco da instância auto-hospedada: a definir.
+- **Rastreio de entrega (L2-04):** os webhooks da Evolution e do SES (via SNS) gravam em
+  `AppointmentReminderEvent` a linha do tempo de cada lembrete. Ficam no banco o número/e-mail
+  usado no envio (`AppointmentReminder.destination`, para casar respostas), o id da mensagem no
+  provider e, para respostas no WhatsApp, **o texto que o paciente escreveu** (até 500
+  caracteres, em `detail`). O diagnóstico de bounce do SES pode conter o e-mail do paciente.
+  Nada disso vai para log nem para métricas. Retenção: a definir junto com a dos lembretes.
+- **Observabilidade:** com `OTEL_ENABLED=true` traces, métricas e logs vão para o Grafana
+  (local ou Grafana Cloud, suboperador). Métricas só têm canal/resultado (nunca paciente ou
+  clínica); logs seguem a regra de destino mascarado acima.
 
 ### INT-07 — Google Fonts (frontend)
 
@@ -238,7 +251,7 @@ Severidade é sugestão de engenharia para priorização; o DPO valida.
 | ID   | Achado                                                                                                                                              | Sev. sugerida | Encaminhamento                     |
 | ---- | --------------------------------------------------------------------------------------------------------------------------------------------------- | ------------- | ---------------------------------- |
 | F-01 | Nenhuma retenção definida: dados clínicos, chats, chunks e payloads de pagamento não expiram, e não há job de expurgo ou anonimização.              | Alta          | DPO define prazos; L3-03 e L3-05   |
-| F-02 | Stubs de notificação registram telefone, e-mail, nome e horário da consulta em log de console.                                                       | Média         | Corrigir antes do L2-02            |
+| F-02 | Stubs de notificação registram telefone, e-mail, nome e horário da consulta em log de console.                                                       | Média         | Corrigido no L2-02 (destino mascarado) |
 | F-03 | Texto integral de prontuário sai para a OpenAI (embeddings) e para o OpenRouter (chat) quando os provedores reais são ativados; DPAs e retenção não verificados. | Alta | DPO/Jurídico antes de ativar em produção |
 | F-04 | Google Fonts expõe IP e user-agent de todo visitante ao Google.                                                                                      | Baixa         | Hospedar as fontes localmente      |
 | F-05 | `PaymentEvent.rawPayload` guarda o payload integral do gateway, sem minimização.                                                                     | Baixa         | Avaliar campos necessários         |

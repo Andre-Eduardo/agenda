@@ -29,6 +29,7 @@ import {ImportedDocumentModule} from '@application/imported-document/imported-do
 import {InsuranceClaimModule} from '@application/insurance-claim/insurance-claim.module';
 import {KnowledgeBaseModule} from '@application/knowledge-base/knowledge-base.module';
 import {MemberBlockModule} from '@application/member-block/member-block.module';
+import {NotificationWebhookModule} from '@application/notification-webhook/notification-webhook.module';
 import {PackagePlanModule} from '@application/package-plan/package-plan.module';
 import {PatientAlertModule} from '@application/patient-alert/patient-alert.module';
 import {PatientCallModule} from '@application/patient-call/patient-call.module';
@@ -47,6 +48,7 @@ import {RoomModule} from '@application/room/room.module';
 import {SubscriptionModule} from '@application/subscription/subscription.module';
 import {UploadModule} from '@application/upload/upload.module';
 import {UserModule} from '@application/user/user.module';
+import {WhatsAppConfigModule} from '@application/whatsapp-config/whatsapp-config.module';
 import {WorkingHoursModule} from '@application/working-hours/working-hours.module';
 import {AuditLogRepository} from '@domain/audit/audit-log.repository';
 import {createAuthorizer} from '@domain/auth/authorizer';
@@ -140,6 +142,7 @@ const guards: Provider[] = [
         AppointmentModule,
         ProcedureModule,
         AppointmentReminderModule,
+        NotificationWebhookModule,
         ClinicReminderConfigModule,
         RecordModule,
         ClinicalProfileModule,
@@ -166,6 +169,7 @@ const guards: Provider[] = [
         WorkingHoursModule,
         MemberBlockModule,
         RoomModule,
+        WhatsAppConfigModule,
     ],
     providers: [...exceptionFilters, ...pipes, ...interceptors, ...guards],
 })

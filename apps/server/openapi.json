@@ -3165,6 +3165,62 @@
         ]
       }
     },
+    "/api/v1/clinics/{clinicId}/appointments/{appointmentId}/reminders": {
+      "get": {
+        "operationId": "getAppointmentReminderTimeline",
+        "parameters": [
+          {
+            "name": "clinicId",
+            "required": true,
+            "in": "path",
+            "description": "Clinic ID",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "appointmentId",
+            "required": true,
+            "in": "path",
+            "description": "Appointment ID",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Reminders with timeline",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AppointmentReminderTimeline"
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Request failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Lists an appointment's reminders with their delivery timeline (attempts, delivery, errors, retries, replies)",
+        "tags": [
+          "Appointment Reminder"
+        ]
+      }
+    },
     "/api/v1/clinics/{clinicId}/reminders/pending": {
       "get": {
         "operationId": "listPendingReminders",
@@ -3284,7 +3340,7 @@
             }
           }
         },
-        "summary": "Get reminder configuration for a clinic",
+        "summary": "Get the clinic's reminder settings (inactive defaults when never saved)",
         "tags": [
           "Clinic Reminder Config"
         ]
@@ -3336,6 +3392,59 @@
           }
         },
         "summary": "Create or update reminder configuration for a clinic",
+        "tags": [
+          "Clinic Reminder Config"
+        ]
+      }
+    },
+    "/api/v1/clinics/{clinicId}/reminder-config/preview": {
+      "post": {
+        "operationId": "previewReminderMessage",
+        "parameters": [
+          {
+            "name": "clinicId",
+            "required": true,
+            "in": "path",
+            "description": "Clinic ID",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PreviewReminderMessageDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Rendered reminder",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReminderMessagePreview"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Request failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Preview a reminder text filled with sample data (nothing is sent or saved)",
         "tags": [
           "Clinic Reminder Config"
         ]
@@ -9481,6 +9590,161 @@
           "Room"
         ]
       }
+    },
+    "/api/v1/whatsapp-config": {
+      "get": {
+        "operationId": "getWhatsAppConfig",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "WhatsApp instances",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/WhatsAppConfig"
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Request failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Gets the WhatsApp instance of the current clinic (empty list when none or disabled)",
+        "tags": [
+          "WhatsApp"
+        ]
+      },
+      "post": {
+        "operationId": "createWhatsAppConfig",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateWhatsAppConfigDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "WhatsApp instance created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WhatsAppConfig"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Request failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Creates the WhatsApp instance of the current clinic and returns the pairing QR code",
+        "tags": [
+          "WhatsApp"
+        ]
+      },
+      "delete": {
+        "operationId": "deleteWhatsAppConfig",
+        "parameters": [],
+        "responses": {
+          "204": {
+            "description": "WhatsApp instance deleted"
+          },
+          "default": {
+            "description": "Request failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Deletes the WhatsApp instance of the current clinic",
+        "tags": [
+          "WhatsApp"
+        ]
+      }
+    },
+    "/api/v1/whatsapp-config/qrcode": {
+      "get": {
+        "operationId": "getWhatsAppQrcode",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "WhatsApp QR code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WhatsAppQrCode"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Request failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Gets a fresh QR code to pair the WhatsApp instance of the current clinic",
+        "tags": [
+          "WhatsApp"
+        ]
+      }
+    },
+    "/api/v1/whatsapp-config/logout": {
+      "post": {
+        "operationId": "logoutWhatsAppConfig",
+        "parameters": [],
+        "responses": {
+          "204": {
+            "description": "WhatsApp disconnected"
+          },
+          "default": {
+            "description": "Request failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Disconnects the phone paired with the WhatsApp instance of the current clinic",
+        "tags": [
+          "WhatsApp"
+        ]
+      }
     }
   },
   "info": {
@@ -12754,6 +13018,186 @@
           "active"
         ]
       },
+      "ReminderEventType": {
+        "type": "string",
+        "enum": [
+          "SENT",
+          "SEND_FAILED",
+          "RETRY_SCHEDULED",
+          "DELIVERED",
+          "READ",
+          "DELIVERY_FAILED",
+          "COMPLAINED",
+          "REPLIED"
+        ]
+      },
+      "ReminderEventSource": {
+        "type": "string",
+        "enum": [
+          "SYSTEM",
+          "EVOLUTION",
+          "SES"
+        ]
+      },
+      "AppointmentReminderEvent": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "type": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ReminderEventType"
+              }
+            ]
+          },
+          "source": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ReminderEventSource"
+              }
+            ]
+          },
+          "attempt": {
+            "type": "integer",
+            "nullable": true,
+            "description": "Attempt number the event refers to"
+          },
+          "detail": {
+            "type": "string",
+            "nullable": true,
+            "description": "Error message (SEND_FAILED, DELIVERY_FAILED), next attempt time in ISO 8601 (RETRY_SCHEDULED) or the patient reply (REPLIED), truncated to 500 characters"
+          },
+          "occurredAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "type",
+          "source",
+          "attempt",
+          "detail",
+          "occurredAt"
+        ]
+      },
+      "AppointmentReminderTimeline": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "The unique identifier of the entity"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "The date and time the entity was created"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "The date and time the entity was last updated"
+          },
+          "clinicId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "appointmentId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "patientId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "channel": {
+            "type": "string",
+            "enum": [
+              "WHATSAPP",
+              "SMS",
+              "EMAIL"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "PENDING",
+              "SENT",
+              "DELIVERED",
+              "READ",
+              "REPLIED",
+              "FAILED",
+              "CANCELLED"
+            ]
+          },
+          "scheduledAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "sentAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "failedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "attempts": {
+            "type": "number"
+          },
+          "errorMessage": {
+            "type": "object",
+            "nullable": true
+          },
+          "deliveredAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "readAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "repliedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "events": {
+            "description": "Oldest first",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AppointmentReminderEvent"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "createdAt",
+          "updatedAt",
+          "clinicId",
+          "appointmentId",
+          "patientId",
+          "channel",
+          "status",
+          "scheduledAt",
+          "sentAt",
+          "failedAt",
+          "attempts",
+          "errorMessage",
+          "deliveredAt",
+          "readAt",
+          "repliedAt",
+          "events"
+        ]
+      },
       "AppointmentReminder": {
         "type": "object",
         "properties": {
@@ -12797,6 +13241,9 @@
             "enum": [
               "PENDING",
               "SENT",
+              "DELIVERED",
+              "READ",
+              "REPLIED",
               "FAILED",
               "CANCELLED"
             ]
@@ -12873,13 +13320,30 @@
             }
           },
           "hoursBeforeList": {
+            "description": "Hours before the appointment, largest first",
             "type": "array",
             "items": {
               "type": "number"
             }
           },
+          "messageTemplate": {
+            "type": "string",
+            "description": "Reminder text in use (the default text when the clinic has not customized it)"
+          },
+          "usesDefaultTemplate": {
+            "type": "boolean",
+            "description": "Whether the clinic is using the default text"
+          },
+          "defaultMessageTemplate": {
+            "type": "string",
+            "description": "Default reminder text, used when the clinic saves no custom text"
+          },
           "isActive": {
             "type": "boolean"
+          },
+          "configured": {
+            "type": "boolean",
+            "description": "False while the clinic has never saved its reminder settings"
           }
         },
         "required": [
@@ -12889,7 +13353,11 @@
           "clinicId",
           "enabledChannels",
           "hoursBeforeList",
-          "isActive"
+          "messageTemplate",
+          "usesDefaultTemplate",
+          "defaultMessageTemplate",
+          "isActive",
+          "configured"
         ]
       },
       "UpsertReminderConfigDto": {
@@ -12911,10 +13379,16 @@
             "type": "array",
             "items": {
               "type": "integer",
-              "minimum": 0,
-              "exclusiveMinimum": true
+              "minimum": 1,
+              "maximum": 168
             },
-            "minItems": 1
+            "minItems": 1,
+            "maxItems": 3
+          },
+          "messageTemplate": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 1000
           },
           "isActive": {
             "type": "boolean"
@@ -12923,6 +13397,51 @@
         "required": [
           "enabledChannels",
           "hoursBeforeList"
+        ]
+      },
+      "PreviewReminderMessageDto": {
+        "type": "object",
+        "properties": {
+          "messageTemplate": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 1000
+          }
+        },
+        "required": [
+          "messageTemplate"
+        ]
+      },
+      "ReminderMessagePreview": {
+        "type": "object",
+        "properties": {
+          "subject": {
+            "type": "string",
+            "description": "E-mail subject"
+          },
+          "message": {
+            "type": "string",
+            "description": "Message as the patient would receive it, filled with sample data"
+          },
+          "variables": {
+            "type": "array",
+            "description": "Variables the text can use",
+            "items": {
+              "type": "string",
+              "enum": [
+                "paciente",
+                "data",
+                "hora",
+                "profissional",
+                "clinica"
+              ]
+            }
+          }
+        },
+        "required": [
+          "subject",
+          "message",
+          "variables"
         ]
       },
       "CreateRecordDto": {
@@ -18064,6 +18583,72 @@
         "required": [
           "name",
           "active"
+        ]
+      },
+      "WhatsAppConnectionStatus": {
+        "type": "string",
+        "enum": [
+          "open",
+          "connecting",
+          "close"
+        ],
+        "description": "Current connection status of the WhatsApp instance"
+      },
+      "WhatsAppQrCode": {
+        "type": "object",
+        "properties": {
+          "base64": {
+            "type": "string",
+            "description": "QR code image as a data URL (data:image/png;base64,...)"
+          },
+          "pairingCode": {
+            "type": "string",
+            "nullable": true,
+            "description": "Pairing code to type in WhatsApp instead of scanning"
+          }
+        }
+      },
+      "WhatsAppConfig": {
+        "type": "object",
+        "properties": {
+          "clinicId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Clinic that owns the WhatsApp instance"
+          },
+          "status": {
+            "description": "Current connection status of the WhatsApp instance",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/WhatsAppConnectionStatus"
+              }
+            ]
+          },
+          "phoneNumber": {
+            "type": "string",
+            "description": "Phone number paired with the instance",
+            "nullable": true
+          },
+          "qrcode": {
+            "$ref": "#/components/schemas/WhatsAppQrCode"
+          }
+        },
+        "required": [
+          "clinicId",
+          "status",
+          "phoneNumber"
+        ]
+      },
+      "CreateWhatsAppConfigDto": {
+        "type": "object",
+        "properties": {
+          "number": {
+            "type": "string",
+            "example": "(12) 94567-8912"
+          }
+        },
+        "required": [
+          "number"
         ]
       }
     }

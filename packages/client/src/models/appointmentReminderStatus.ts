@@ -11,6 +11,9 @@ export type AppointmentReminderStatus = (typeof AppointmentReminderStatus)[keyof
 export const AppointmentReminderStatus = {
     PENDING: 'PENDING',
     SENT: 'SENT',
+    DELIVERED: 'DELIVERED',
+    READ: 'READ',
+    REPLIED: 'REPLIED',
     FAILED: 'FAILED',
     CANCELLED: 'CANCELLED',
 } as const;

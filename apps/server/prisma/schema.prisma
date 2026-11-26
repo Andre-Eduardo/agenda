@@ -686,6 +686,9 @@ enum ReminderChannel {
 enum ReminderStatus {
   PENDING
   SENT
+  DELIVERED
+  READ
+  REPLIED
   FAILED
   CANCELLED
 
@@ -1768,24 +1771,81 @@ model AppointmentReminder {
   attempts     Int             @default(0)
   errorMessage String?         @map("error_message") @db.Text
 
+  /// L2-04: endereço usado no último envio (e-mail ou número no formato do provider) e id da
+  /// mensagem devolvido pelo provider. Usados para casar os webhooks de status e resposta.
+  destination       String?   @map("destination")
+  providerMessageId String?   @map("provider_message_id")
+  deliveredAt       DateTime? @map("delivered_at")
+  readAt            DateTime? @map("read_at")
+  repliedAt         DateTime? @map("replied_at")
+
   createdAt DateTime @map("created_at")
   updatedAt DateTime @map("updated_at")
+
+  events AppointmentReminderEvent[]
 
   @@index([clinicId], name: "appointment_reminder_clinic_idx")
   @@index([appointmentId], name: "appointment_reminder_appointment_idx")
   @@index([scheduledAt, status], name: "appointment_reminder_scheduled_status_idx")
+  @@index([providerMessageId], name: "appointment_reminder_provider_message_idx")
+  @@index([clinicId, channel, destination], name: "appointment_reminder_destination_idx")
   @@map("appointment_reminder")
+}
+
+enum ReminderEventType {
+  SENT
+  SEND_FAILED
+  RETRY_SCHEDULED
+  DELIVERED
+  READ
+  DELIVERY_FAILED
+  COMPLAINED
+  REPLIED
+
+  @@map("reminder_event_type")
+}
+
+enum ReminderEventSource {
+  SYSTEM
+  EVOLUTION
+  SES
+
+  @@map("reminder_event_source")
+}
+
+/// L2-04: linha do tempo de um lembrete (tentativas, entrega, erro, reenvio e resposta).
+/// Só cresce. externalId é a chave de idempotência do webhook (único por source);
+/// eventos gerados pelo próprio sistema ficam com externalId nulo.
+model AppointmentReminderEvent {
+  id         String              @id(map: "appointment_reminder_event_pk") @db.Uuid
+  clinicId   String              @map("clinic_id") @db.Uuid
+  reminderId String              @map("reminder_id") @db.Uuid
+  reminder   AppointmentReminder @relation(fields: [reminderId], references: [id], onDelete: Cascade)
+  type       ReminderEventType   @map("type")
+  source     ReminderEventSource @map("source")
+  externalId String?             @map("external_id")
+  attempt    Int?                @map("attempt")
+  detail     String?             @map("detail") @db.Text
+  occurredAt DateTime            @map("occurred_at")
+  createdAt  DateTime            @map("created_at")
+
+  @@unique([source, externalId], map: "appointment_reminder_event_external_unique")
+  @@index([reminderId, occurredAt], name: "appointment_reminder_event_reminder_idx")
+  @@map("appointment_reminder_event")
 }
 
 /// Configuração de lembretes automáticos por clínica.
 /// hoursBeforeList: lista de horas antes do agendamento para gerar lembretes (ex: [24, 2]).
 /// enabledChannels: canais habilitados para envio.
+/// messageTemplate: texto do lembrete com variáveis {{paciente}}, {{data}}, {{hora}},
+/// {{profissional}} e {{clinica}}; null usa o texto padrão do domínio.
 model ClinicReminderConfig {
   id              String            @id(map: "clinic_reminder_config_pk") @db.Uuid
   clinicId        String            @unique @map("clinic_id") @db.Uuid
   clinic          Clinic            @relation(fields: [clinicId], references: [id])
   enabledChannels ReminderChannel[] @map("enabled_channels")
   hoursBeforeList Int[]             @map("hours_before_list")
+  messageTemplate String?           @map("message_template") @db.Text
   isActive        Boolean           @default(true) @map("is_active")
   createdAt       DateTime          @map("created_at")
   updatedAt       DateTime          @map("updated_at")

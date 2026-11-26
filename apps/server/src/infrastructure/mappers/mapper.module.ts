@@ -2,6 +2,7 @@ import {Global, Module} from '@nestjs/common';
 import {AgentProposalMapper} from '@infrastructure/mappers/agent-proposal.mapper';
 import {AiAgentProfileMapper} from '@infrastructure/mappers/ai-agent-profile.mapper';
 import {AppointmentPaymentMapper} from '@infrastructure/mappers/appointment-payment.mapper';
+import {AppointmentReminderEventMapper} from '@infrastructure/mappers/appointment-reminder-event.mapper';
 import {AppointmentReminderMapper} from '@infrastructure/mappers/appointment-reminder.mapper';
 import {AppointmentMapper} from '@infrastructure/mappers/appointment.mapper';
 import {ClinicLicenseMapper} from '@infrastructure/mappers/clinic-license.mapper';
@@ -70,6 +71,7 @@ const mappers = [
     AppointmentMapper,
     AppointmentPaymentMapper,
     AppointmentReminderMapper,
+    AppointmentReminderEventMapper,
     ClinicReminderConfigMapper,
     WorkingHoursMapper,
     MemberBlockMapper,

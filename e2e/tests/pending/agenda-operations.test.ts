@@ -73,21 +73,7 @@ test.describe('Check-in / status de chegada na recepção', () => {
 });
 
 test.describe('Confirmação e lembretes automáticos', () => {
-    // Feature not implemented in the frontend: ClinicReminderConfig (enabledChannels,
-    // hoursBeforeList) has endpoints and ScheduleRemindersService creates PENDING
-    // AppointmentReminder rows automatically on booking, but there is no settings screen to
-    // configure reminder channels/timing, and no UI surface showing which reminders were sent
-    // for a given appointment.
-    //
-    // test('should let an OWNER configure reminder channels and hours-before list', async ({
-    //     createAuthenticatedProfessional,
-    //     page,
-    // }) => {
-    //     await createAuthenticatedProfessional({user: {globalRole: 'OWNER'}});
-    //     await page.goto('/settings/reminders');
-    //     await page.getByLabel(/whatsapp/i).check();
-    //     await page.getByLabel(/horas antes/i).fill('24, 2');
-    //     await page.getByRole('button', {name: /salvar/i}).click();
-    //     await expect(page.getByText(/configuração de lembretes salva/i)).toBeVisible();
-    // });
+    // Reminder settings (channels, lead times, text) are covered by tests/settings/reminders.test.ts.
+    // Still missing in the frontend: a surface showing which reminders were sent for a given
+    // appointment (L2-04).
 });

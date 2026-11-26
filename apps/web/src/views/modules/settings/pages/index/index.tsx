@@ -57,6 +57,8 @@ import {
     Laptop,
     Lock,
     LogOut,
+    MessageCircle,
+    BellRing,
     MonitorSmartphone,
     Plus,
     ShieldCheck,
@@ -82,6 +84,8 @@ import {MODULE_ICONS, MODULE_LABELS} from '@/utils/ai-modules';
 import {translateApiError} from '@/utils/translate-api-error';
 import {AgendaScheduleEditor} from '@/views/components/AgendaScheduleEditor';
 import {ConfirmDialog} from '@/views/components/ConfirmDialog';
+import {RemindersSection} from '@/views/modules/settings/components/RemindersSection';
+import {WhatsAppSection} from '@/views/modules/settings/components/WhatsAppSection';
 import {ProcedureCatalog} from '../../components/ProcedureCatalog';
 import {
     FooterBar,
@@ -233,13 +237,15 @@ const PROFILE_TABS = [
 ] as const;
 
 type TabKey = 'identity' | 'pro' | 'office' | 'security';
-type Section = 'perfil' | 'agenda' | 'assinatura' | 'salas' | 'ia' | 'geral' | 'procedures';
+type Section = 'perfil' | 'agenda' | 'assinatura' | 'salas' | 'whatsapp' | 'lembretes' | 'ia' | 'geral' | 'procedures';
 
 const SECTION_LABELS: Record<Exclude<Section, 'procedures'>, string> = {
     perfil: 'Perfil',
     agenda: 'Agenda',
     assinatura: 'Assinatura',
     salas: 'Salas',
+    whatsapp: 'WhatsApp',
+    lembretes: 'Lembretes',
     ia: 'Módulos de IA',
     geral: 'Geral',
 };
@@ -251,6 +257,8 @@ export function SettingsPage() {
     const [section, setSection] = useState<Section>('perfil');
     const canManageProcedures = useCan({has: 'procedure:manage'});
     const canViewAiModules = useCan({has: 'clinic-module:view'});
+    const canViewWhatsApp = useCan({has: 'whatsapp:view'});
+    const canViewReminders = useCan({has: 'clinic-reminder-config:view'});
 
     return (
         <PageShell>
@@ -309,6 +317,26 @@ export function SettingsPage() {
                             <span>{t('procedure.title')}</span>
                         </button>
                     )}
+                    {canViewWhatsApp && (
+                        <button
+                            type="button"
+                            className={sideNavItem({active: section === 'whatsapp'})}
+                            onClick={() => setSection('whatsapp')}
+                        >
+                            <MessageCircle size={15} />
+                            <span>WhatsApp</span>
+                        </button>
+                    )}
+                    {canViewReminders && (
+                        <button
+                            type="button"
+                            className={sideNavItem({active: section === 'lembretes'})}
+                            onClick={() => setSection('lembretes')}
+                        >
+                            <BellRing size={15} />
+                            <span>Lembretes</span>
+                        </button>
+                    )}
                     {canViewAiModules && (
                         <button
                             type="button"
@@ -336,6 +364,8 @@ export function SettingsPage() {
                     {section === 'assinatura' && <SubscriptionSection />}
                     {section === 'salas' && <RoomsSection />}
                     {section === 'procedures' && canManageProcedures && <ProcedureCatalog />}
+                    {section === 'whatsapp' && canViewWhatsApp && <WhatsAppSection />}
+                    {section === 'lembretes' && canViewReminders && <RemindersSection />}
                     {section === 'ia' && canViewAiModules && <AiModulesSection />}
                     {section === 'geral' && <GeneralSection />}
                 </div>

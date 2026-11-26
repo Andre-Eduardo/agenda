@@ -35,9 +35,9 @@ hoje. Os stubs comentados correspondentes estão em `e2e/tests/pending/`.
 - **Check-in / status de chegada na recepção** — os status `ARRIVED`/`IN_PROGRESS` aparecem em
   `STATUS_LABELS`, mas o painel de detalhes do agendamento só oferece "Editar" e "Cancelar
   consulta" — não há botão para registrar chegada ou chamar o paciente.
-- **Confirmação e lembretes automáticos** — `ClinicReminderConfig` e o agendamento automático
-  de lembretes funcionam no backend, mas não há tela para configurar canais/horários nem para
-  visualizar os lembretes de um agendamento.
+- **Confirmação e lembretes automáticos** — a configuração por clínica (canais, antecedência,
+  texto e ativação) está em Configurações > Lembretes (L2-03), mas ainda não há tela para
+  visualizar os lembretes enviados de um agendamento.
 
 ## Prontuário & Evolução
 

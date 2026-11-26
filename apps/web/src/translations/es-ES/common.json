@@ -233,6 +233,14 @@
     "clinic_license": {
       "seat_limit_reached": "Se alcanzó el límite de cupos del plan.",
       "extra_seat_confirmation_required": "Este cupo agrega un cargo mensual extra. Confirme para continuar."
+    },
+    "whatsapp_config": {
+      "disabled": "El servidor de WhatsApp no está configurado. Contacta al soporte.",
+      "create_failed": "No fue posible registrar el WhatsApp. Verifica el número e inténtalo de nuevo.",
+      "connect_failed": "No fue posible generar el código QR. Inténtalo de nuevo.",
+      "delete_failed": "No fue posible eliminar el WhatsApp.",
+      "fetch_failed": "WhatsApp no está disponible en este momento. Inténtalo de nuevo en breve.",
+      "logout_failed": "No fue posible desconectar WhatsApp."
     }
   },
   "confirm": {

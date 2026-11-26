@@ -18,6 +18,7 @@ export class SettingsPage extends BasePage {
     // Side-nav sections
     readonly agendaSectionButton: Locator;
     readonly salasSectionButton: Locator;
+    readonly lembretesSectionButton: Locator;
 
     // Salas section
     readonly roomManagementToggleOn: Locator;
@@ -42,6 +43,7 @@ export class SettingsPage extends BasePage {
 
         this.agendaSectionButton = page.getByRole('button', {name: /^agenda$/i});
         this.salasSectionButton = page.getByRole('button', {name: /^salas$/i});
+        this.lembretesSectionButton = page.getByRole('button', {name: /^lembretes$/i});
 
         this.roomManagementToggleOn = page.getByRole('radio', {name: /^ativado$/i});
         this.roomManagementToggleOff = page.getByRole('radio', {name: /^desativado$/i});
@@ -55,6 +57,39 @@ export class SettingsPage extends BasePage {
 
     async goToSalasSection() {
         await this.salasSectionButton.click();
+    }
+
+    async goToLembretesSection() {
+        await this.lembretesSectionButton.click();
+    }
+
+    get reminderTemplate(): Locator {
+        return this.page.getByLabel('Texto do lembrete');
+    }
+
+    get reminderPreview(): Locator {
+        return this.page.getByRole('region', {name: 'Pré-visualização do lembrete'});
+    }
+
+    async configureReminders(options: {channels: string[]; leadTimes: string[]; template: string}) {
+        await this.page.getByRole('radio', {name: /^ativado$/i}).click();
+
+        for (const channel of ['WhatsApp', 'E-mail']) {
+            await this.page.getByRole('checkbox', {name: channel}).setChecked(options.channels.includes(channel));
+        }
+
+        await this.page.getByLabel('Antecedência 1, em horas').fill(options.leadTimes[0] ?? '24');
+
+        for (const [index, value] of options.leadTimes.slice(1).entries()) {
+            await this.page.getByRole('button', {name: /adicionar antecedência/i}).click();
+            await this.page.getByLabel(`Antecedência ${index + 2}, em horas`).fill(value);
+        }
+
+        await this.reminderTemplate.fill(options.template);
+    }
+
+    async saveReminders() {
+        await this.page.getByRole('button', {name: /salvar lembretes/i}).click();
     }
 
     async enableRoomManagement() {

@@ -3,33 +3,39 @@ import {AppointmentReminderController} from '@application/appointment-reminder/c
 import {AppointmentReminderListener} from '@application/appointment-reminder/listeners/appointment-reminder.listener';
 import {CancelRemindersService} from '@application/appointment-reminder/services/cancel-reminders.service';
 import {DispatchRemindersService} from '@application/appointment-reminder/services/dispatch-reminders.service';
+import {GetReminderTimelineService} from '@application/appointment-reminder/services/get-reminder-timeline.service';
 import {ListPendingRemindersService} from '@application/appointment-reminder/services/list-pending-reminders.service';
 import {ScheduleRemindersService} from '@application/appointment-reminder/services/schedule-reminders.service';
+import {TrackReminderDeliveryService} from '@application/appointment-reminder/services/track-reminder-delivery.service';
 import {ReminderDispatchTask} from '@application/appointment-reminder/tasks/reminder-dispatch.task';
+import {ClinicReminderConfigModule} from '@application/clinic-reminder-config/clinic-reminder-config.module';
+import {EnvConfigService} from '@infrastructure/config';
 import {InfrastructureModule} from '@infrastructure/infrastructure.module';
 import {NOTIFICATION_PROVIDERS} from '@infrastructure/notification/notification-provider.token';
-import {StubEmailProvider} from '@infrastructure/notification/stub-email.provider';
-import {StubSmsProvider} from '@infrastructure/notification/stub-sms.provider';
-import {StubWhatsAppProvider} from '@infrastructure/notification/stub-whatsapp.provider';
+import {
+    NOTIFICATION_PROVIDER_FACTORY_PROVIDERS,
+    notificationProvidersFactory,
+} from '@infrastructure/notification/notification-providers.factory';
 
 @Module({
-    imports: [InfrastructureModule],
+    imports: [InfrastructureModule, ClinicReminderConfigModule],
     controllers: [AppointmentReminderController],
     providers: [
         ScheduleRemindersService,
         CancelRemindersService,
         ListPendingRemindersService,
         DispatchRemindersService,
+        TrackReminderDeliveryService,
+        GetReminderTimelineService,
         AppointmentReminderListener,
         ReminderDispatchTask,
-        StubWhatsAppProvider,
-        StubSmsProvider,
-        StubEmailProvider,
+        ...NOTIFICATION_PROVIDER_FACTORY_PROVIDERS,
         {
             provide: NOTIFICATION_PROVIDERS,
-            useFactory: (wa: StubWhatsAppProvider, sms: StubSmsProvider, email: StubEmailProvider) => [wa, sms, email],
-            inject: [StubWhatsAppProvider, StubSmsProvider, StubEmailProvider],
+            useFactory: notificationProvidersFactory,
+            inject: [EnvConfigService, ...NOTIFICATION_PROVIDER_FACTORY_PROVIDERS],
         },
     ],
+    exports: [TrackReminderDeliveryService],
 })
 export class AppointmentReminderModule {}
