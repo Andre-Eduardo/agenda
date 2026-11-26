@@ -79,7 +79,7 @@ export class TrackReminderDeliveryService {
             return reminder.markDeliveryFailed(occurredAt, update.detail ?? 'Delivery failed');
         }
 
-        // COMPLAINED is only recorded on the timeline; opt-out handling is card L3-04.
+        // COMPLAINED is only recorded on the timeline; the SES webhook records the e-mail opt-out (L3-04).
         return false;
     }
 }

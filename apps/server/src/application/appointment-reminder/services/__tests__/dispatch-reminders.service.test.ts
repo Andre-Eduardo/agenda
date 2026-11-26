@@ -17,6 +17,11 @@ import {AppointmentId, type Appointment} from '@domain/appointment/entities';
 import {ClinicMemberId} from '@domain/clinic-member/entities';
 import {ClinicId} from '@domain/clinic/entities';
 import {NotificationProvider} from '@domain/notification/ports/notification-provider.port';
+import {
+    CommunicationPreferenceSource,
+    PatientCommunicationPreferenceChange,
+} from '@domain/patient-communication-preference/entities';
+import {PatientCommunicationPreferenceRepository} from '@domain/patient-communication-preference/patient-communication-preference.repository';
 import {PatientId, type Patient} from '@domain/patient/entities';
 import {PatientRepository} from '@domain/patient/patient.repository';
 import {DispatchRemindersService, REMINDER_DISPATCH_LEASE_MS} from '../dispatch-reminders.service';
@@ -29,6 +34,7 @@ describe('A dispatch-reminders service', () => {
     const messageRenderer = mock<ReminderMessageRenderer>();
     const eventRepository = mock<AppointmentReminderEventRepository>();
     const metrics = mock<Metrics>();
+    const preferenceRepository = mock<PatientCommunicationPreferenceRepository>();
     const whatsApp = mock<NotificationProvider>({channel: ReminderChannel.WHATSAPP});
     const email = mock<NotificationProvider>({channel: ReminderChannel.EMAIL});
 
@@ -50,7 +56,8 @@ describe('A dispatch-reminders service', () => {
         messageRenderer,
         [whatsApp, email],
         eventRepository,
-        metrics
+        metrics,
+        preferenceRepository
     );
 
     function recordedEvents(): Array<Pick<AppointmentReminderEvent, 'type' | 'attempt' | 'detail' | 'source'>> {
@@ -76,6 +83,7 @@ describe('A dispatch-reminders service', () => {
         jest.resetAllMocks();
         jest.useFakeTimers({now: new Date('2026-11-30T13:30:00Z'), doNotFake: ['nextTick', 'setImmediate']});
         eventRepository.recordIfAbsent.mockResolvedValue(true);
+        preferenceRepository.findHistory.mockResolvedValue([]);
         reminderRepository.claimForDispatch.mockResolvedValue(true);
         appointmentRepository.findById.mockResolvedValue(appointment);
         patientRepository.findById.mockResolvedValue(patient);
@@ -143,7 +151,9 @@ describe('A dispatch-reminders service', () => {
             clinicId,
             to: '11987654321',
             subject: 'Lembrete de consulta',
-            message: 'Olá, Maria! Sua consulta é em 01/12/2026 às 10:30.',
+            message:
+                'Olá, Maria! Sua consulta é em 01/12/2026 às 10:30.\n\n' +
+                'Para não receber mais lembretes por WhatsApp, responda SAIR.',
             metadata: {
                 reminderId: due.id.toString(),
                 appointmentId: due.appointmentId.toString(),
@@ -178,6 +188,63 @@ describe('A dispatch-reminders service', () => {
             channel: ReminderChannel.WHATSAPP,
             outcome: 'sent',
         });
+    });
+
+    it('should not send to a patient who opted out of the channel and record why on the timeline', async () => {
+        const due = reminder(ReminderChannel.WHATSAPP);
+
+        reminderRepository.findDueForDispatch.mockResolvedValue([due]);
+        preferenceRepository.findHistory.mockResolvedValue([
+            PatientCommunicationPreferenceChange.record({
+                clinicId,
+                patientId: due.patientId,
+                channel: ReminderChannel.WHATSAPP,
+                optedOut: true,
+                source: CommunicationPreferenceSource.WHATSAPP_REPLY,
+                occurredAt: new Date('2026-11-29T10:00:00Z'),
+            }),
+        ]);
+
+        await service.dispatchDue(clinicId);
+
+        expect(preferenceRepository.findHistory).toHaveBeenCalledWith(clinicId, due.patientId);
+        expect(whatsApp.send).not.toHaveBeenCalled();
+        expect(due.status).toBe(ReminderStatus.CANCELLED);
+        expect(reminderRepository.save).toHaveBeenCalledWith(due);
+        expect(recordedEvents()).toEqual([
+            {
+                type: ReminderEventType.OPTED_OUT,
+                attempt: 0,
+                detail: 'Patient opted out of this channel',
+                source: ReminderEventSource.SYSTEM,
+            },
+        ]);
+        expect(metrics.count).toHaveBeenCalledWith('notification.reminder.attempt', 1, {
+            channel: ReminderChannel.WHATSAPP,
+            outcome: 'opted_out',
+        });
+    });
+
+    it('should still send on a channel the patient did not refuse', async () => {
+        const due = reminder(ReminderChannel.EMAIL);
+
+        reminderRepository.findDueForDispatch.mockResolvedValue([due]);
+        preferenceRepository.findHistory.mockResolvedValue([
+            PatientCommunicationPreferenceChange.record({
+                clinicId,
+                patientId: due.patientId,
+                channel: ReminderChannel.WHATSAPP,
+                optedOut: true,
+                source: CommunicationPreferenceSource.STAFF,
+                occurredAt: new Date('2026-11-29T10:00:00Z'),
+            }),
+        ]);
+        email.send.mockResolvedValue({success: true, providerId: 'ses-1'});
+
+        await service.dispatchDue(clinicId);
+
+        expect(email.send).toHaveBeenCalled();
+        expect(due.status).toBe(ReminderStatus.SENT);
     });
 
     it('should send an e-mail reminder to the patient e-mail', async () => {

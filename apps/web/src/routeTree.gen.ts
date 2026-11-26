@@ -12,6 +12,8 @@ import { Route as rootRouteImport } from './views/root'
 import { Route as patientCallPagesDisplayIndexRouteImport } from './views/modules/patient-call/pages/display/index'
 import { Route as DotDotLayoutsStackedLayoutIndexRouteImport } from './views/layouts/StackedLayout/index'
 import { Route as DotDotLayoutsAuthLayoutIndexRouteImport } from './views/layouts/AuthLayout/index'
+import { Route as legalPagesTermsIndexRouteImport } from './views/modules/legal/pages/terms/index'
+import { Route as legalPagesPrivacyIndexRouteImport } from './views/modules/legal/pages/privacy/index'
 import { Route as teamPagesIndexIndexRouteImport } from './views/modules/team/pages/index/index'
 import { Route as settingsPagesIndexIndexRouteImport } from './views/modules/settings/pages/index/index'
 import { Route as receptionPagesIndexIndexRouteImport } from './views/modules/reception/pages/index/index'
@@ -48,6 +50,16 @@ const DotDotLayoutsAuthLayoutIndexRoute =
     id: '/_auth',
     getParentRoute: () => rootRouteImport,
   } as any)
+const legalPagesTermsIndexRoute = legalPagesTermsIndexRouteImport.update({
+  id: '/legal/terms',
+  path: '/legal/terms',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const legalPagesPrivacyIndexRoute = legalPagesPrivacyIndexRouteImport.update({
+  id: '/legal/privacy',
+  path: '/legal/privacy',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const teamPagesIndexIndexRoute = teamPagesIndexIndexRouteImport.update({
   id: '/team',
   path: '/team',
@@ -164,6 +176,8 @@ export interface FileRoutesByFullPath {
   '/reception': typeof receptionPagesIndexIndexRoute
   '/settings': typeof settingsPagesIndexIndexRoute
   '/team': typeof teamPagesIndexIndexRoute
+  '/legal/privacy': typeof legalPagesPrivacyIndexRoute
+  '/legal/terms': typeof legalPagesTermsIndexRoute
   '/auth/login': typeof authPagesLoginIndexRoute
   '/admin/clinics': typeof adminPagesIndexIndexRoute
   '/patients/$patientId': typeof patientsPagesDetailIndexRoute
@@ -186,6 +200,8 @@ export interface FileRoutesByTo {
   '/reception': typeof receptionPagesIndexIndexRoute
   '/settings': typeof settingsPagesIndexIndexRoute
   '/team': typeof teamPagesIndexIndexRoute
+  '/legal/privacy': typeof legalPagesPrivacyIndexRoute
+  '/legal/terms': typeof legalPagesTermsIndexRoute
   '/auth/login': typeof authPagesLoginIndexRoute
   '/admin/clinics': typeof adminPagesIndexIndexRoute
   '/patients/$patientId': typeof patientsPagesDetailIndexRoute
@@ -211,6 +227,8 @@ export interface FileRoutesById {
   '/_stackedLayout/reception': typeof receptionPagesIndexIndexRoute
   '/_stackedLayout/settings': typeof settingsPagesIndexIndexRoute
   '/_stackedLayout/team': typeof teamPagesIndexIndexRoute
+  '/legal/privacy': typeof legalPagesPrivacyIndexRoute
+  '/legal/terms': typeof legalPagesTermsIndexRoute
   '/_auth/auth/login': typeof authPagesLoginIndexRoute
   '/_stackedLayout/admin/clinics': typeof adminPagesIndexIndexRoute
   '/_stackedLayout/patients/$patientId': typeof patientsPagesDetailIndexRoute
@@ -235,6 +253,8 @@ export interface FileRouteTypes {
     | '/reception'
     | '/settings'
     | '/team'
+    | '/legal/privacy'
+    | '/legal/terms'
     | '/auth/login'
     | '/admin/clinics'
     | '/patients/$patientId'
@@ -257,6 +277,8 @@ export interface FileRouteTypes {
     | '/reception'
     | '/settings'
     | '/team'
+    | '/legal/privacy'
+    | '/legal/terms'
     | '/auth/login'
     | '/admin/clinics'
     | '/patients/$patientId'
@@ -281,6 +303,8 @@ export interface FileRouteTypes {
     | '/_stackedLayout/reception'
     | '/_stackedLayout/settings'
     | '/_stackedLayout/team'
+    | '/legal/privacy'
+    | '/legal/terms'
     | '/_auth/auth/login'
     | '/_stackedLayout/admin/clinics'
     | '/_stackedLayout/patients/$patientId'
@@ -297,6 +321,8 @@ export interface RootRouteChildren {
   DotDotLayoutsAuthLayoutIndexRoute: typeof DotDotLayoutsAuthLayoutIndexRouteWithChildren
   DotDotLayoutsStackedLayoutIndexRoute: typeof DotDotLayoutsStackedLayoutIndexRouteWithChildren
   patientCallPagesDisplayIndexRoute: typeof patientCallPagesDisplayIndexRoute
+  legalPagesPrivacyIndexRoute: typeof legalPagesPrivacyIndexRoute
+  legalPagesTermsIndexRoute: typeof legalPagesTermsIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -320,6 +346,20 @@ declare module '@tanstack/react-router' {
       path: ''
       fullPath: '/'
       preLoaderRoute: typeof DotDotLayoutsAuthLayoutIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/legal/terms': {
+      id: '/legal/terms'
+      path: '/legal/terms'
+      fullPath: '/legal/terms'
+      preLoaderRoute: typeof legalPagesTermsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/legal/privacy': {
+      id: '/legal/privacy'
+      path: '/legal/privacy'
+      fullPath: '/legal/privacy'
+      preLoaderRoute: typeof legalPagesPrivacyIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_stackedLayout/team': {
@@ -526,6 +566,8 @@ const rootRouteChildren: RootRouteChildren = {
   DotDotLayoutsStackedLayoutIndexRoute:
     DotDotLayoutsStackedLayoutIndexRouteWithChildren,
   patientCallPagesDisplayIndexRoute: patientCallPagesDisplayIndexRoute,
+  legalPagesPrivacyIndexRoute: legalPagesPrivacyIndexRoute,
+  legalPagesTermsIndexRoute: legalPagesTermsIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

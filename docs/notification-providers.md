@@ -191,3 +191,29 @@ muda nada.
 
 O fluxo é instrumentado com OpenTelemetry (`notification.*`); dashboards e alertas no Grafana
 estão em [`observability.md`](observability.md).
+
+## 8. Preferências de comunicação e opt-out (L3-04)
+
+O paciente pode recusar cada canal (WhatsApp, SMS, e-mail) separadamente. A recusa vale para
+lembretes novos e também para os que já estavam agendados.
+
+- **Evidência:** cada alteração é uma linha append-only em `patient_communication_preference_change`
+  (canal, recusado ou não, origem, membro que registrou, motivo/texto da resposta, data). A preferência
+  atual de um canal é a alteração mais recente; sem registro, o canal é permitido.
+- **Origens:** `STAFF` (a clínica registra na ficha do paciente, seção "Comunicação e LGPD"),
+  `WHATSAPP_REPLY` (o paciente responde a um lembrete só com `SAIR`, `PARAR`, `PARE`, `STOP`,
+  `DESCADASTRAR` ou `NÃO QUERO RECEBER`) e `EMAIL_COMPLAINT` (complaint do SES, e-mail marcado como spam).
+  `CANCELAR` não conta, porque o paciente usa para cancelar a consulta.
+- **Agendamento:** `ScheduleRemindersService` não cria lembretes para canais recusados.
+- **Envio:** `DispatchRemindersService` consulta a preferência no momento do envio. Se o canal foi
+  recusado, o lembrete vira `CANCELLED`, a linha do tempo ganha o evento `OPTED_OUT` e a métrica
+  `notification.reminder.attempt` conta `outcome=opted_out`.
+- **Aviso no WhatsApp:** todo lembrete por WhatsApp termina com
+  "Para não receber mais lembretes por WhatsApp, responda SAIR.".
+- **API:** `GET` e `PUT /patients/:patientId/communication-preferences` (permissões `patient:view` e
+  `patient:update`). Cada `PUT` grava uma nova linha, mesmo que o valor não mude, porque cada pedido do
+  paciente é evidência.
+- **Idempotência:** opt-outs vindos de webhook usam `(source, external_id)` único, como os eventos de lembrete.
+
+Política de privacidade e termos de uso (rascunho para o DPO) ficam em `/legal/privacy` e `/legal/terms`
+no frontend, sem login; o texto está em `apps/web/src/views/modules/legal/content.ts`.

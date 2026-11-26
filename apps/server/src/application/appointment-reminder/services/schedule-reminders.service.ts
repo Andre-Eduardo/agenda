@@ -4,13 +4,16 @@ import {AppointmentReminder, ReminderStatus} from '@domain/appointment-reminder/
 import {AppointmentRepository} from '@domain/appointment/appointment.repository';
 import type {AppointmentId} from '@domain/appointment/entities';
 import {ClinicReminderConfigRepository} from '@domain/clinic-reminder-config/clinic-reminder-config.repository';
+import {optedOutChannels} from '@domain/patient-communication-preference/communication-preferences';
+import {PatientCommunicationPreferenceRepository} from '@domain/patient-communication-preference/patient-communication-preference.repository';
 
 @Injectable()
 export class ScheduleRemindersService {
     constructor(
         private readonly appointmentRepository: AppointmentRepository,
         private readonly reminderRepository: AppointmentReminderRepository,
-        private readonly configRepository: ClinicReminderConfigRepository
+        private readonly configRepository: ClinicReminderConfigRepository,
+        private readonly preferenceRepository: PatientCommunicationPreferenceRepository
     ) {}
 
     async scheduleRemindersForAppointment(appointmentId: AppointmentId): Promise<void> {
@@ -22,12 +25,17 @@ export class ScheduleRemindersService {
 
         if (config === null || !config.isActive) return;
 
+        // Channels the patient refused are not scheduled at all (L3-04).
+        const refused = optedOutChannels(
+            await this.preferenceRepository.findHistory(appointment.clinicId, appointment.patientId)
+        );
+        const channels = config.enabledChannels.filter((channel) => !refused.has(channel));
         const reminders: AppointmentReminder[] = [];
 
         for (const hoursBefore of config.hoursBeforeList) {
             const scheduledAt = new Date(appointment.startAt.getTime() - hoursBefore * 60 * 60 * 1000);
 
-            for (const channel of config.enabledChannels) {
+            for (const channel of channels) {
                 reminders.push(
                     AppointmentReminder.create({
                         clinicId: appointment.clinicId,

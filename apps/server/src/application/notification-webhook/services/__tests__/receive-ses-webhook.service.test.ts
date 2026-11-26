@@ -2,6 +2,7 @@ import {UnauthorizedException} from '@nestjs/common';
 import {mock} from 'jest-mock-extended';
 import type {Metrics} from '@application/@shared/telemetry';
 import type {TrackReminderDeliveryService} from '@application/appointment-reminder/services/track-reminder-delivery.service';
+import type {RecordPatientOptOutService} from '@application/patient-communication-preference/services/record-patient-opt-out.service';
 import type {AppointmentReminderRepository} from '@domain/appointment-reminder/appointment-reminder.repository';
 import {
     AppointmentReminder,
@@ -11,6 +12,7 @@ import {
 } from '@domain/appointment-reminder/entities';
 import {AppointmentId} from '@domain/appointment/entities';
 import {ClinicId} from '@domain/clinic/entities';
+import {CommunicationPreferenceSource} from '@domain/patient-communication-preference/entities';
 import {PatientId} from '@domain/patient/entities';
 import type {SnsMessageVerifier} from '@infrastructure/aws/sns-message-verifier';
 import type {EnvConfigService} from '@infrastructure/config';
@@ -23,7 +25,8 @@ describe('A receive-SES-webhook service', () => {
     const verifier = mock<SnsMessageVerifier>();
     const metrics = mock<Metrics>();
     const config = mock<EnvConfigService>({mail: {region: 'sa-east-1', eventsTopicArn: topicArn}});
-    const service = new ReceiveSesWebhookService(config, verifier, reminderRepository, tracker, metrics);
+    const optOut = mock<RecordPatientOptOutService>();
+    const service = new ReceiveSesWebhookService(config, verifier, reminderRepository, tracker, metrics, optOut);
 
     const reminder = AppointmentReminder.create({
         clinicId: ClinicId.generate(),
@@ -89,7 +92,8 @@ describe('A receive-SES-webhook service', () => {
             verifier,
             reminderRepository,
             tracker,
-            metrics
+            metrics,
+            optOut
         );
 
         await expect(disabled.receive(notification)).rejects.toThrow(UnauthorizedException);
@@ -118,5 +122,34 @@ describe('A receive-SES-webhook service', () => {
             source: 'ses',
             result: 'unmatched',
         });
+    });
+
+    it('should opt the patient out of e-mail reminders on a spam complaint', async () => {
+        reminderRepository.findByProviderMessageId.mockResolvedValue(reminder);
+
+        await service.receive({
+            ...notification,
+            Message: JSON.stringify({
+                eventType: 'Complaint',
+                mail: {messageId: 'ses-1'},
+                complaint: {timestamp: '2026-11-30T14:00:00.000Z'},
+            }),
+        });
+
+        expect(optOut.record).toHaveBeenCalledWith(
+            expect.objectContaining({
+                reminder,
+                source: CommunicationPreferenceSource.EMAIL_COMPLAINT,
+                externalId: 'sns-1',
+            })
+        );
+    });
+
+    it('should not opt the patient out on a delivery', async () => {
+        reminderRepository.findByProviderMessageId.mockResolvedValue(reminder);
+
+        await service.receive(notification);
+
+        expect(optOut.record).not.toHaveBeenCalled();
     });
 });
