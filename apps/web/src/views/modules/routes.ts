@@ -13,6 +13,9 @@ import {index, layout, rootRoute, route} from '@tanstack/virtual-file-routes';
 export const routes = rootRoute('../root.tsx', [
     layout('auth', '../layouts/AuthLayout/index.tsx', [route('/auth/login', filePath('auth', 'login'))]),
     route('/patient-call', filePath('patient-call', 'display')),
+    // Public legal pages (LGPD): reachable without login.
+    route('/legal/privacy', filePath('legal', 'privacy')),
+    route('/legal/terms', filePath('legal', 'terms')),
     layout('stackedLayout', '../layouts/StackedLayout/index.tsx', [
         index(filePath('welcome', 'index')),
         route('/dashboard', filePath('dashboard', 'index')),

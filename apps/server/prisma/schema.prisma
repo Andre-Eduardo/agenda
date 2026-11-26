@@ -480,6 +480,7 @@ model Patient {
   contextChunks        PatientContextChunk[]
   address              PatientAddress?
   reminders            AppointmentReminder[]
+  communicationPreferenceChanges PatientCommunicationPreferenceChange[]
   draftEvolutions      DraftEvolution[]
   clinicalDocuments    ClinicalDocument[]
   appointmentPayments  AppointmentPayment[]
@@ -1801,6 +1802,8 @@ enum ReminderEventType {
   DELIVERY_FAILED
   COMPLAINED
   REPLIED
+  /// Não enviado: o paciente recusou o canal (opt-out, L3-04).
+  OPTED_OUT
 
   @@map("reminder_event_type")
 }
@@ -1832,6 +1835,42 @@ model AppointmentReminderEvent {
   @@unique([source, externalId], map: "appointment_reminder_event_external_unique")
   @@index([reminderId, occurredAt], name: "appointment_reminder_event_reminder_idx")
   @@map("appointment_reminder_event")
+}
+
+/// Origem de uma alteração de preferência de comunicação.
+enum CommunicationPreferenceSource {
+  /// Registrada por um membro da clínica (a pedido do paciente).
+  STAFF
+  /// O paciente respondeu a um lembrete no WhatsApp com uma palavra de opt-out.
+  WHATSAPP_REPLY
+  /// O paciente marcou um lembrete por e-mail como spam (complaint do SES).
+  EMAIL_COMPLAINT
+
+  @@map("communication_preference_source")
+}
+
+/// L3-04 (LGPD): histórico append-only das preferências de comunicação do paciente.
+/// A preferência atual de cada canal é a alteração mais recente; sem registro, o canal é permitido.
+/// Cada linha é a evidência da alteração: quem, quando, por qual meio e o motivo informado.
+model PatientCommunicationPreferenceChange {
+  id                String                        @id(map: "patient_communication_preference_change_pk") @db.Uuid
+  clinicId          String                        @map("clinic_id") @db.Uuid
+  patientId         String                        @map("patient_id") @db.Uuid
+  patient           Patient                       @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  channel           ReminderChannel               @map("channel")
+  optedOut          Boolean                       @map("opted_out")
+  source            CommunicationPreferenceSource @map("source")
+  changedByMemberId String?                       @map("changed_by_member_id") @db.Uuid
+  /// Motivo informado pela clínica ou texto da resposta do paciente.
+  reason            String?                       @map("reason") @db.Text
+  /// Id externo (ex.: id da mensagem no WhatsApp) que torna o webhook idempotente.
+  externalId        String?                       @map("external_id")
+  occurredAt        DateTime                      @map("occurred_at")
+  createdAt         DateTime                      @map("created_at")
+
+  @@unique([source, externalId], map: "patient_communication_preference_change_external_unique")
+  @@index([clinicId, patientId, channel, occurredAt], name: "patient_communication_preference_change_patient_idx")
+  @@map("patient_communication_preference_change")
 }
 
 /// Configuração de lembretes automáticos por clínica.

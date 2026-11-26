@@ -75,6 +75,7 @@ import {css, cx} from '@/styled-system/css';
 import {ClinicalProfileDialog} from '@/views/modules/patients/components/ClinicalData/ClinicalProfileDialog';
 import {PatientAlertsSection} from '@/views/modules/patients/components/ClinicalData/PatientAlertsSection';
 import {PROFILE_FIELDS} from '@/views/modules/patients/components/ClinicalData/PatientClinicalPreview';
+import {CommunicationPreferencesSection} from '@/views/modules/patients/components/CommunicationPreferencesSection';
 import {PatientPlansSection} from '@/views/modules/patients/components/PatientPlansSection';
 import {
     emptySectionPy,
@@ -1095,6 +1096,10 @@ function PatientProfile({patient}: {patient: Patient}) {
                     <PatientAlertsSection key={patient.id} patientId={patient.id} canWrite={canWriteClinicalData} />
                 </SectionCard>
             )}
+
+            <SectionCard title={t('communicationPreferences.title')}>
+                <CommunicationPreferencesSection key={patient.id} patientId={patient.id} />
+            </SectionCard>
 
             {/* Planos do paciente */}
             <SectionCard title="Planos do paciente">

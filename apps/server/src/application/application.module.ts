@@ -32,6 +32,7 @@ import {MemberBlockModule} from '@application/member-block/member-block.module';
 import {NotificationWebhookModule} from '@application/notification-webhook/notification-webhook.module';
 import {PackagePlanModule} from '@application/package-plan/package-plan.module';
 import {PatientAlertModule} from '@application/patient-alert/patient-alert.module';
+import {PatientCommunicationPreferenceModule} from '@application/patient-communication-preference/patient-communication-preference.module';
 import {PatientCallModule} from '@application/patient-call/patient-call.module';
 import {PatientFormModule} from '@application/patient-form/patient-form.module';
 import {PatientInsuranceEnrollmentModule} from '@application/patient-insurance-enrollment/patient-insurance-enrollment.module';
@@ -147,6 +148,7 @@ const guards: Provider[] = [
         RecordModule,
         ClinicalProfileModule,
         PatientAlertModule,
+        PatientCommunicationPreferenceModule,
         UploadModule,
         FormTemplateModule,
         PatientFormModule,

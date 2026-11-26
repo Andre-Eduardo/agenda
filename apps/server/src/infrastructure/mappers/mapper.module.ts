@@ -29,6 +29,7 @@ import {PackagePlanMapper} from '@infrastructure/mappers/package-plan.mapper';
 import {PatientAlertMapper} from '@infrastructure/mappers/patient-alert.mapper';
 import {PatientChatMessageMapper} from '@infrastructure/mappers/patient-chat-message.mapper';
 import {PatientChatSessionMapper} from '@infrastructure/mappers/patient-chat-session.mapper';
+import {PatientCommunicationPreferenceChangeMapper} from '@infrastructure/mappers/patient-communication-preference-change.mapper';
 import {PatientContextChunkMapper} from '@infrastructure/mappers/patient-context-chunk.mapper';
 import {PatientContextSnapshotMapper} from '@infrastructure/mappers/patient-context-snapshot.mapper';
 import {PatientFormMapper} from '@infrastructure/mappers/patient-form.mapper';
@@ -72,6 +73,7 @@ const mappers = [
     AppointmentPaymentMapper,
     AppointmentReminderMapper,
     AppointmentReminderEventMapper,
+    PatientCommunicationPreferenceChangeMapper,
     ClinicReminderConfigMapper,
     WorkingHoursMapper,
     MemberBlockMapper,

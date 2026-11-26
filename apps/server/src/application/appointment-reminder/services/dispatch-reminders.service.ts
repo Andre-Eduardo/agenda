@@ -19,6 +19,9 @@ import {
     type NotificationPayload,
     type NotificationResult,
 } from '@domain/notification/ports/notification-provider.port';
+import {optedOutChannels} from '@domain/patient-communication-preference/communication-preferences';
+import {WHATSAPP_OPT_OUT_FOOTER} from '@domain/patient-communication-preference/opt-out-keywords';
+import {PatientCommunicationPreferenceRepository} from '@domain/patient-communication-preference/patient-communication-preference.repository';
 import {PatientRepository} from '@domain/patient/patient.repository';
 import {NOTIFICATION_PROVIDERS} from '@infrastructure/notification/notification-provider.token';
 
@@ -38,7 +41,8 @@ export class DispatchRemindersService {
         private readonly messageRenderer: ReminderMessageRenderer,
         @Inject(NOTIFICATION_PROVIDERS) private readonly providers: NotificationProvider[],
         private readonly eventRepository: AppointmentReminderEventRepository,
-        private readonly metrics: Metrics
+        private readonly metrics: Metrics,
+        private readonly preferenceRepository: PatientCommunicationPreferenceRepository
     ) {}
 
     async dispatchDue(clinicId: ClinicId): Promise<void> {
@@ -58,6 +62,12 @@ export class DispatchRemindersService {
         const provider = this.providers.find((p) => p.channel === reminder.channel);
 
         if (!provider) return;
+
+        if (await this.patientOptedOut(reminder)) {
+            await this.skipOptedOut(reminder, new Date());
+
+            return;
+        }
 
         let prepared: PreparedReminder;
 
@@ -96,6 +106,20 @@ export class DispatchRemindersService {
         const retryAt = nextReminderRetryAt(reminder.attempts + 1, now, prepared.appointmentStartAt);
 
         await this.recordFailure(reminder, now, result.error ?? 'Unknown error', retryAt);
+    }
+
+    /** Read at send time, so an opt-out recorded after scheduling still stops the reminder (L3-04). */
+    private async patientOptedOut(reminder: AppointmentReminder): Promise<boolean> {
+        const history = await this.preferenceRepository.findHistory(reminder.clinicId, reminder.patientId);
+
+        return optedOutChannels(history).has(reminder.channel);
+    }
+
+    private async skipOptedOut(reminder: AppointmentReminder, now: Date): Promise<void> {
+        reminder.cancel();
+        await this.reminderRepository.save(reminder);
+        await this.recordEvent(reminder, ReminderEventType.OPTED_OUT, now, 'Patient opted out of this channel');
+        this.metrics.count(NotificationMetric.ATTEMPT, 1, {channel: reminder.channel, outcome: 'opted_out'});
     }
 
     private async recordFailure(
@@ -190,7 +214,8 @@ export class DispatchRemindersService {
                 clinicId: reminder.clinicId,
                 to,
                 subject: REMINDER_SUBJECT,
-                message,
+                message:
+                    reminder.channel === ReminderChannel.WHATSAPP ? `${message}\n\n${WHATSAPP_OPT_OUT_FOOTER}` : message,
                 metadata: {
                     reminderId: reminder.id.toString(),
                     appointmentId: reminder.appointmentId.toString(),
