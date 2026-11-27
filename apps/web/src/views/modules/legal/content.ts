@@ -112,8 +112,8 @@ export const privacyPolicy: LegalDocumentContent = {
 
 export const termsOfUse: LegalDocumentContent = {
     title: 'Termos de Uso',
-    version: '0.1 (rascunho)',
-    updatedAt: '26/11/2026',
+    version: '0.2 (rascunho)',
+    updatedAt: '27/11/2026',
     intro:
         'Estes Termos regulam o uso do Agenda Saúde pelas clínicas e por seus usuários. Ao acessar o sistema, ' +
         'o usuário declara que leu e concorda com estes Termos e com a Política de Privacidade.',
@@ -140,6 +140,18 @@ export const termsOfUse: LegalDocumentContent = {
                 'Registrar no sistema os pedidos de opt-out dos pacientes que chegarem por outros meios.',
                 'Garantir que o uso do prontuário siga as normas do respectivo conselho profissional.',
                 'Revisar os conteúdos gerados por inteligência artificial antes de usá-los no atendimento.',
+            ],
+        },
+        {
+            title: '3A. Profissional autônomo (conta individual)',
+            paragraphs: [
+                'Na conta de profissional autônomo, o próprio profissional é o controlador dos dados dos seus ' +
+                    'pacientes e assume as responsabilidades da clínica descritas acima. O Agenda Saúde atua como ' +
+                    'operador, tratando os dados apenas para prestar o serviço.',
+                'Ao passar a conta para clínica com equipe, o profissional decide quem da equipe passa a ter ' +
+                    'acesso aos pacientes; a mudança fica registrada na trilha de auditoria.',
+                'Ao encerrar a conta, o profissional pode exportar seus dados. O prontuário é guardado pelo prazo ' +
+                    'exigido pelo respectivo conselho profissional e não é apagado com o cancelamento da assinatura.',
             ],
         },
         {

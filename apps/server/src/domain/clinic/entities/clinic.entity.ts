@@ -32,6 +32,9 @@ export class Clinic extends AggregateRoot<ClinicId> {
     accountType: ClinicAccountType;
     /** Recepção e painel de chamada. Ligado em CLINIC; opcional no SOLO. */
     receptionEnabled: boolean;
+    /** Aceite dos termos de uso no cadastro self-service (LGPD). */
+    termsAcceptedAt: Date | null;
+    termsVersion: string | null;
     street: string | null;
     number: string | null;
     complement: string | null;
@@ -54,6 +57,8 @@ export class Clinic extends AggregateRoot<ClinicId> {
         this.email = props.email ?? null;
         this.accountType = props.accountType;
         this.receptionEnabled = props.receptionEnabled;
+        this.termsAcceptedAt = props.termsAcceptedAt ?? null;
+        this.termsVersion = props.termsVersion ?? null;
         this.street = props.street ?? null;
         this.number = props.number ?? null;
         this.complement = props.complement ?? null;
@@ -82,6 +87,8 @@ export class Clinic extends AggregateRoot<ClinicId> {
             email: props.email ?? null,
             accountType,
             receptionEnabled: props.receptionEnabled ?? accountType === ClinicAccountType.CLINIC,
+            termsAcceptedAt: props.termsAcceptedAt ?? null,
+            termsVersion: props.termsVersion ?? null,
             street: props.street ?? null,
             number: props.number ?? null,
             complement: props.complement ?? null,
@@ -167,6 +174,8 @@ export class Clinic extends AggregateRoot<ClinicId> {
             email: this.email?.toJSON() ?? null,
             accountType: this.accountType,
             receptionEnabled: this.receptionEnabled,
+            termsAcceptedAt: this.termsAcceptedAt?.toJSON() ?? null,
+            termsVersion: this.termsVersion,
             street: this.street,
             number: this.number,
             complement: this.complement,

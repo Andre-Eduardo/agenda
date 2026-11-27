@@ -414,7 +414,9 @@
         "password": "Password",
         "forgotPassword": "Forgot?",
         "rememberMe": "Keep me signed in on this device",
-        "submit": "Sign in"
+        "submit": "Sign in",
+        "signUpPrompt": "Working on your own?",
+        "signUpLink": "Create an independent account"
       },
       "validation": {
         "username": {
@@ -467,6 +469,32 @@
       "validation": {
         "password": "The password needs 8 characters with upper and lower case, a number and a symbol",
         "mismatch": "Passwords do not match"
+      }
+    },
+    "signUp": {
+      "title": "Create an independent account",
+      "subtitle": "For professionals who work on their own. Your account is ready right away; if you ever work with a team, it becomes a clinic account without losing anything.",
+      "name": "Full name",
+      "email": "Email",
+      "username": "Username",
+      "password": "Password",
+      "registrationNumber": "Professional registration (optional)",
+      "specialty": "Specialty (optional)",
+      "acceptTermsPrefix": "I have read and accept the",
+      "acceptTermsAnd": "and the",
+      "submit": "Create account",
+      "back": "I already have an account",
+      "validation": {
+        "name": "Enter your name",
+        "email": "Enter a valid email",
+        "username": "Use at least 3 characters: letters, numbers, dot, hyphen or underscore",
+        "password": "The password needs 8 characters, with upper and lower case, a number and a symbol",
+        "terms": "You must accept the terms to create the account"
+      },
+      "errors": {
+        "closed": "Sign-up is closed right now. Contact support.",
+        "taken": "Username or email already in use.",
+        "generic": "Could not create the account. Try again."
       }
     }
   },

@@ -9,6 +9,8 @@ export function fakeClinic(payload: Partial<Clinic> = {}): Clinic {
         email: null,
         accountType: ClinicAccountType.CLINIC,
         receptionEnabled: true,
+        termsAcceptedAt: null,
+        termsVersion: null,
         createdAt: new Date(1000),
         updatedAt: new Date(1000),
         ...payload,

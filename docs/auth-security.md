@@ -41,6 +41,14 @@ controlado por `SIGN_UP_MODE`:
 - `invite`: exige `inviteCode` igual a `SIGN_UP_INVITE_CODE`;
 - `closed`: recusado com 403 (padrão em produção).
 
+### Cadastro do autônomo
+
+`POST /onboarding/solo` cria numa transação o usuário (`GlobalRole.OWNER`), a conta `SOLO`, o membro
+OWNER + PROFESSIONAL, o registro profissional e a assinatura inicial (`STARTER`). Exige
+`acceptTerms: true` e grava `Clinic.termsAcceptedAt` e `termsVersion`. Mesmo rate limit do sign-up
+(10/h por IP). O acesso segue `SIGN_UP_SOLO_MODE` (mesmos valores; omitido, vale `SIGN_UP_MODE`), o que
+permite abrir só o autônomo em produção. Tela: `/auth/sign-up`.
+
 Membros da equipe são criados por um gestor da clínica em `POST /clinic-members/accounts`, que cria
 o usuário com `GlobalRole.NONE` e o vínculo na mesma transação. `POST /clinics` recusa usuários
 `GlobalRole.NONE`, então um membro não consegue abrir uma clínica própria.

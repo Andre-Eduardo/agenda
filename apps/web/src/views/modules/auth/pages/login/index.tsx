@@ -436,6 +436,13 @@ export function LoginPage() {
                             {isPending ? t('states.loading') : t('auth.login.form.submit')}
                         </Button>
                     </form>
+
+                    <p className={fieldRememberText}>
+                        {t('auth.login.form.signUpPrompt')}{' '}
+                        <Link to="/auth/sign-up" className={fieldForgotBtn}>
+                            {t('auth.login.form.signUpLink')}
+                        </Link>
+                    </p>
                 </div>
 
                 {/* Footer */}

@@ -38,6 +38,14 @@ Numa conta SOLO o pacote contratado vale direto para o único membro, sem a tela
 - `Clinic` expõe `accountType` e `receptionEnabled`. `isPersonalClinic` continua na resposta
   e na criação como alias obsoleto (`true` = SOLO).
 
+## Cadastro e cobrança
+
+- `POST /onboarding/solo` (tela `/auth/sign-up`): usuário, conta SOLO, membro OWNER + PROFESSIONAL,
+  registro profissional e assinatura `STARTER` numa transação. Aceite dos termos obrigatório
+  (`Clinic.termsAcceptedAt`, `termsVersion`). Controlado por `SIGN_UP_SOLO_MODE`.
+- Planos de autônomo: `STARTER` e `CONSULTORIO`. A assinatura nasce sem IDs do Asaas; a cobrança é
+  ativada pelo fluxo de pagamento que já existe.
+
 ## Migração
 
 `20261127010000_clinic_account_type`: clínicas com `is_personal_clinic = true` e no máximo um

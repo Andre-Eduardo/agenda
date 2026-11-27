@@ -103,6 +103,10 @@ model Clinic {
   accountType           ClinicAccountType  @default(CLINIC) @map("account_type")
   /// Módulo de recepção e painel de chamada. Ligado em CLINIC; opcional no SOLO.
   receptionEnabled      Boolean            @default(true) @map("reception_enabled")
+  /// Aceite dos termos de uso no cadastro self-service (LGPD). Null para clínicas criadas pela equipe.
+  termsAcceptedAt       DateTime?          @map("terms_accepted_at")
+  /// Versão dos termos aceitos (ex.: "0.2-2026-11-27", ver /legal/terms).
+  termsVersion          String?            @map("terms_version")
   /// Endereço da clínica
   street                String?
   number                String?

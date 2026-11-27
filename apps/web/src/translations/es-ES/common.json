@@ -414,7 +414,9 @@
         "password": "Contraseña",
         "forgotPassword": "¿Olvidaste?",
         "rememberMe": "Mantenerme conectado en este dispositivo",
-        "submit": "Entrar"
+        "submit": "Entrar",
+        "signUpPrompt": "¿Atiende por su cuenta?",
+        "signUpLink": "Cree su cuenta de profesional independiente"
       },
       "validation": {
         "username": {
@@ -467,6 +469,32 @@
       "validation": {
         "password": "La contraseña necesita 8 caracteres, con mayúscula, minúscula, número y símbolo",
         "mismatch": "Las contraseñas no coinciden"
+      }
+    },
+    "signUp": {
+      "title": "Crear cuenta de profesional independiente",
+      "subtitle": "Para profesionales que atienden solos. Su cuenta queda lista al instante; si algún día trabaja con equipo, se convierte en cuenta de clínica sin perder nada.",
+      "name": "Nombre completo",
+      "email": "Correo electrónico",
+      "username": "Usuario",
+      "password": "Contraseña",
+      "registrationNumber": "Registro profesional (opcional)",
+      "specialty": "Especialidad (opcional)",
+      "acceptTermsPrefix": "He leído y acepto los",
+      "acceptTermsAnd": "y la",
+      "submit": "Crear cuenta",
+      "back": "Ya tengo cuenta",
+      "validation": {
+        "name": "Ingrese su nombre",
+        "email": "Ingrese un correo válido",
+        "username": "Use al menos 3 caracteres: letras, números, punto, guion o guion bajo",
+        "password": "La contraseña necesita 8 caracteres, con mayúscula, minúscula, número y símbolo",
+        "terms": "Debe aceptar los términos para crear la cuenta"
+      },
+      "errors": {
+        "closed": "El registro está cerrado en este momento. Contacte con soporte.",
+        "taken": "Usuario o correo ya en uso.",
+        "generic": "No se pudo crear la cuenta. Inténtelo de nuevo."
       }
     }
   },

@@ -13,6 +13,7 @@ import {index, layout, rootRoute, route} from '@tanstack/virtual-file-routes';
 export const routes = rootRoute('../root.tsx', [
     layout('auth', '../layouts/AuthLayout/index.tsx', [
         route('/auth/login', filePath('auth', 'login')),
+        route('/auth/sign-up', filePath('auth', 'sign-up')),
         route('/auth/forgot-password', filePath('auth', 'forgot-password')),
         route('/auth/reset-password', filePath('auth', 'reset-password')),
     ]),

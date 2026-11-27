@@ -414,7 +414,9 @@
         "password": "Senha",
         "forgotPassword": "Esqueceu?",
         "rememberMe": "Manter conectado neste dispositivo",
-        "submit": "Entrar"
+        "submit": "Entrar",
+        "signUpPrompt": "Atende sozinho?",
+        "signUpLink": "Crie sua conta de autônomo"
       },
       "validation": {
         "username": {
@@ -467,6 +469,32 @@
       "validation": {
         "password": "A senha precisa ter 8 caracteres, com maiúscula, minúscula, número e símbolo",
         "mismatch": "As senhas não conferem"
+      }
+    },
+    "signUp": {
+      "title": "Criar conta de autônomo",
+      "subtitle": "Para profissionais que atendem sozinhos. Sua conta fica pronta na hora; se um dia trabalhar com equipe, ela vira conta de clínica sem perder nada.",
+      "name": "Nome completo",
+      "email": "E-mail",
+      "username": "Usuário",
+      "password": "Senha",
+      "registrationNumber": "Registro no conselho (opcional)",
+      "specialty": "Especialidade (opcional)",
+      "acceptTermsPrefix": "Li e aceito os",
+      "acceptTermsAnd": "e a",
+      "submit": "Criar conta",
+      "back": "Já tenho conta",
+      "validation": {
+        "name": "Informe seu nome",
+        "email": "Informe um e-mail válido",
+        "username": "Use ao menos 3 caracteres: letras, números, ponto, hífen ou sublinhado",
+        "password": "A senha precisa de 8 caracteres, com maiúscula, minúscula, número e símbolo",
+        "terms": "É preciso aceitar os termos para criar a conta"
+      },
+      "errors": {
+        "closed": "O cadastro está fechado no momento. Fale com o suporte.",
+        "taken": "Usuário ou e-mail já em uso.",
+        "generic": "Não foi possível criar a conta. Tente de novo."
       }
     }
   },

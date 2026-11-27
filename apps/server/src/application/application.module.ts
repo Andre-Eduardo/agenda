@@ -32,6 +32,7 @@ import {InsuranceClaimModule} from '@application/insurance-claim/insurance-claim
 import {KnowledgeBaseModule} from '@application/knowledge-base/knowledge-base.module';
 import {MemberBlockModule} from '@application/member-block/member-block.module';
 import {NotificationWebhookModule} from '@application/notification-webhook/notification-webhook.module';
+import {OnboardingModule} from '@application/onboarding/onboarding.module';
 import {PackagePlanModule} from '@application/package-plan/package-plan.module';
 import {PatientAlertModule} from '@application/patient-alert/patient-alert.module';
 import {PatientCallModule} from '@application/patient-call/patient-call.module';
@@ -153,6 +154,7 @@ const guards: Provider[] = [
         ProfessionalAgendaAccessModule,
         DocumentPermissionModule,
         UserModule,
+        OnboardingModule,
         ProfessionalModule,
         PatientModule,
         PatientCallModule,
