@@ -1,4 +1,5 @@
 import {Inject, Injectable} from '@nestjs/common';
+import {AttendanceScope} from '@application/attendance/services/attendance-scope.service';
 import {PatientAccessChecker} from '@application/clinic-patient-access/services/patient-access-checker.service';
 import type {Actor} from '@domain/@shared/actor';
 import {PreconditionException, ResourceNotFoundException} from '@domain/@shared/exceptions';
@@ -16,7 +17,8 @@ export class PatientCallQueueService {
         @Inject(PatientCallRepository) private readonly repository: PatientCallRepository,
         private readonly appointments: AppointmentRepository,
         private readonly patientAccess: PatientAccessChecker,
-        private readonly atomic: AtomicExecutor
+        private readonly atomic: AtomicExecutor,
+        private readonly attendanceScope: AttendanceScope
     ) {}
 
     async list(actor: Actor) {
@@ -44,7 +46,9 @@ export class PatientCallQueueService {
 
     private recordAnnouncement(actor: Actor, id: AppointmentId, action: QueueAction) {
         return this.atomic.runAtomically(async () => {
-            const entry = await this.requireActiveEntry(actor, id);
+            const {entry, appointment} = await this.requireActiveEntryWithAppointment(actor, id);
+
+            await this.attendanceScope.assertCanCall(actor, appointment);
             const destination = action.kind === 'announce' ? action.destination : entry.destination;
             const expectedCount = action.kind === 'announce' ? 0 : action.callCount;
 
@@ -57,6 +61,10 @@ export class PatientCallQueueService {
     }
 
     private async requireActiveEntry(actor: Actor, id: AppointmentId) {
+        return (await this.requireActiveEntryWithAppointment(actor, id)).entry;
+    }
+
+    private async requireActiveEntryWithAppointment(actor: Actor, id: AppointmentId) {
         await this.repository.lockAppointment(actor.clinicId, id);
         const appointment = await this.appointments.findById(id);
 
@@ -72,6 +80,6 @@ export class PatientCallQueueService {
             throw new PreconditionException('Patient is no longer waiting in the call queue.');
         }
 
-        return entry;
+        return {entry, appointment};
     }
 }

@@ -112,6 +112,7 @@ const SECRETARY_PERMISSIONS: readonly Permission[] = [
     AppointmentPermission.CHECKIN,
     AppointmentPermission.CALL,
     AppointmentPermission.START,
+    AppointmentPermission.TRIAGE,
     PatientCallPermission.OPERATE,
     RecordPermission.VIEW,
     ClinicalProfilePermission.VIEW,

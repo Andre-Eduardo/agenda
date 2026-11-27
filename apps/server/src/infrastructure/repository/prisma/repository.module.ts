@@ -5,6 +5,7 @@ import {AppointmentPaymentRepository} from '@domain/appointment-payment/appointm
 import {AppointmentReminderEventRepository} from '@domain/appointment-reminder/appointment-reminder-event.repository';
 import {AppointmentReminderRepository} from '@domain/appointment-reminder/appointment-reminder.repository';
 import {AppointmentRepository} from '@domain/appointment/appointment.repository';
+import {AttendanceRepository} from '@domain/attendance/attendance.repository';
 import {AuditLogRepository} from '@domain/audit/audit-log.repository';
 import {ClinicLicenseRepository} from '@domain/clinic-license/clinic-license.repository';
 import {ClinicMemberRepository} from '@domain/clinic-member/clinic-member.repository';
@@ -60,6 +61,7 @@ import {AppointmentPaymentPrismaRepository} from '@infrastructure/repository/app
 import {AppointmentReminderEventPrismaRepository} from '@infrastructure/repository/appointment-reminder-event.prisma.repository';
 import {AppointmentReminderPrismaRepository} from '@infrastructure/repository/appointment-reminder.prisma.repository';
 import {AppointmentPrismaRepository} from '@infrastructure/repository/appointment.prisma.repository';
+import {AttendancePrismaRepository} from '@infrastructure/repository/attendance.prisma.repository';
 import {AuditLogPrismaRepository} from '@infrastructure/repository/audit-log.prisma.repository';
 import {ClinicLicensePrismaRepository} from '@infrastructure/repository/clinic-license.prisma.repository';
 import {ClinicMemberPrismaRepository} from '@infrastructure/repository/clinic-member.prisma.repository';
@@ -137,6 +139,7 @@ const repositories: Provider[] = [
     // Schedule
     {provide: AppointmentRepository, useClass: AppointmentPrismaRepository},
     {provide: PatientCallRepository, useClass: PatientCallPrismaRepository},
+    {provide: AttendanceRepository, useClass: AttendancePrismaRepository},
     {provide: ProcedureRepository, useClass: ProcedurePrismaRepository},
     {provide: AppointmentPaymentRepository, useClass: AppointmentPaymentPrismaRepository},
     {provide: AppointmentReminderRepository, useClass: AppointmentReminderPrismaRepository},

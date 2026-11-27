@@ -1,5 +1,6 @@
 import {mock} from 'jest-mock-extended';
 import {MarkNoShowAppointmentService} from '@application/appointment/services/mark-no-show-appointment.service';
+import {AttendanceScope} from '@application/attendance/services/attendance-scope.service';
 import {PatientAccessChecker} from '@application/clinic-patient-access/services/patient-access-checker.service';
 import type {Actor} from '@domain/@shared/actor';
 import {PreconditionException, ResourceNotFoundException} from '@domain/@shared/exceptions';
@@ -42,7 +43,8 @@ describe('MarkNoShowAppointmentService', () => {
         service = new MarkNoShowAppointmentService(
             mock<PatientAccessChecker>(),
             appointmentRepository,
-            eventDispatcher
+            eventDispatcher,
+            mock<AttendanceScope>()
         );
     });
 

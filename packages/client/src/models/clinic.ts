@@ -101,4 +101,6 @@ export type Clinic = {
     clinicSpecialties: ClinicClinicSpecialtiesItem[];
     /** Enables physical room management and room conflict checks on scheduling */
     roomManagementEnabled: boolean;
+    /** When enabled, a patient can only be called after the reception releases the triage */
+    triageRequired: boolean;
 };

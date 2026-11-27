@@ -55,6 +55,8 @@ export class Clinic extends AggregateRoot<ClinicId> {
     clinicSpecialties: AiSpecialtyGroup[];
     /** Ativa o conceito de salas físicas e a checagem de conflito de sala no agendamento. */
     roomManagementEnabled: boolean;
+    /** Quando ligado, o paciente só pode ser chamado depois de liberado na triagem. */
+    triageRequired: boolean;
 
     constructor(props: AllEntityProps<Clinic>) {
         super(props);
@@ -78,6 +80,7 @@ export class Clinic extends AggregateRoot<ClinicId> {
         this.logoUrl = props.logoUrl ?? null;
         this.clinicSpecialties = props.clinicSpecialties ?? [];
         this.roomManagementEnabled = props.roomManagementEnabled ?? false;
+        this.triageRequired = props.triageRequired ?? false;
         this.validate();
     }
 
@@ -108,6 +111,7 @@ export class Clinic extends AggregateRoot<ClinicId> {
             logoUrl: props.logoUrl ?? null,
             clinicSpecialties: props.clinicSpecialties ?? [],
             roomManagementEnabled: props.roomManagementEnabled ?? false,
+            triageRequired: props.triageRequired ?? false,
             createdAt: now,
             updatedAt: now,
             deletedAt: null,
@@ -152,6 +156,8 @@ export class Clinic extends AggregateRoot<ClinicId> {
         if (props.roomManagementEnabled !== undefined) this.roomManagementEnabled = props.roomManagementEnabled;
 
         if (props.receptionEnabled !== undefined) this.receptionEnabled = props.receptionEnabled;
+
+        if (props.triageRequired !== undefined) this.triageRequired = props.triageRequired;
 
         this.validate();
         this.addEvent(new ClinicChangedEvent({oldState, newState: this}));
@@ -216,6 +222,7 @@ export class Clinic extends AggregateRoot<ClinicId> {
             logoUrl: this.logoUrl,
             clinicSpecialties: this.clinicSpecialties,
             roomManagementEnabled: this.roomManagementEnabled,
+            triageRequired: this.triageRequired,
             createdAt: this.createdAt.toJSON(),
             updatedAt: this.updatedAt.toJSON(),
             deletedAt: this.deletedAt?.toJSON() ?? null,

@@ -16,6 +16,7 @@ import {
     UpdateAppointmentService,
 } from '@application/appointment/services';
 import {ResolveScheduledProcedureService} from '@application/appointment/services/resolve-scheduled-procedure.service';
+import {AttendanceModule} from '@application/attendance/attendance.module';
 import {ClinicPatientAccessModule} from '@application/clinic-patient-access/clinic-patient-access.module';
 import {ProfessionalAgendaAccessModule} from '@application/professional-agenda-access/professional-agenda-access.module';
 import {GetRecordService} from '@application/record/services';
@@ -27,7 +28,7 @@ import {UserRepository} from '@domain/user/user.repository';
 import {InfrastructureModule} from '@infrastructure/infrastructure.module';
 
 @Module({
-    imports: [InfrastructureModule, ProfessionalAgendaAccessModule, ClinicPatientAccessModule],
+    imports: [InfrastructureModule, AttendanceModule, ProfessionalAgendaAccessModule, ClinicPatientAccessModule],
     controllers: [AppointmentController],
     providers: [
         AppointmentFollowUpService,

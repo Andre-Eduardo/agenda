@@ -19,6 +19,8 @@ export const updateClinicSchema = z.object({
     roomManagementEnabled: z.boolean().optional(),
     /** Liga a recepção e o painel de chamada (opcional no SOLO). */
     receptionEnabled: z.boolean().optional(),
+    /** Exige triagem liberada antes de o paciente poder ser chamado. */
+    triageRequired: z.boolean().optional(),
 });
 
 export class UpdateClinicDto extends createZodDto(updateClinicSchema) {}

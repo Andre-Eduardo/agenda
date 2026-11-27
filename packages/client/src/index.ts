@@ -50,3 +50,4 @@ export * from './services/whats-app';
 export * from './services/patient-communication-preference';
 export * from './services/support-access';
 export * from './services/onboarding';
+export * from './services/attendance';

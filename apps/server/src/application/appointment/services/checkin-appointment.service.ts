@@ -2,6 +2,7 @@ import {Inject, Injectable} from '@nestjs/common';
 import {ApplicationService, Command} from '@application/@shared/application.service';
 import {assertEntityBelongsToClinic} from '@application/@shared/validators/cross-tenant.validator';
 import {CheckinAppointmentDto, CheckinAppointmentResultDto} from '@application/appointment/dtos';
+import {AttendanceScope} from '@application/attendance/services/attendance-scope.service';
 import {PatientAccessChecker} from '@application/clinic-patient-access/services/patient-access-checker.service';
 import {ResourceNotFoundException} from '@domain/@shared/exceptions';
 import {AtomicExecutor} from '@domain/@shared/repository';
@@ -20,7 +21,8 @@ export class CheckinAppointmentService implements ApplicationService<
         private readonly appointmentRepository: AppointmentRepository,
         @Inject(PatientCallRepository) private readonly queue: PatientCallRepository,
         private readonly atomic: AtomicExecutor,
-        private readonly eventDispatcher: EventDispatcher
+        private readonly eventDispatcher: EventDispatcher,
+        private readonly attendanceScope: AttendanceScope
     ) {}
 
     execute({actor, payload: {id}}: Command<CheckinAppointmentDto>): Promise<CheckinAppointmentResultDto> {
@@ -33,7 +35,10 @@ export class CheckinAppointmentService implements ApplicationService<
             }
 
             assertEntityBelongsToClinic(appointment.clinicId, actor.clinicId);
-            await this.patientAccessChecker.assertCanAccess(actor, appointment.patientId, 'appointment');
+            // Quem opera a agenda registra a chegada mesmo sem acesso ao cadastro do paciente.
+            if (!(await this.attendanceScope.canOperate(actor, appointment.attendedByMemberId))) {
+                await this.patientAccessChecker.assertCanAccess(actor, appointment.patientId, 'appointment');
+            }
 
             const fromStatus = appointment.status;
 

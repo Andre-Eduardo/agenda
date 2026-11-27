@@ -145,9 +145,18 @@ export class AppointmentListItemDto extends AppointmentDto {
     @ApiProperty({type: String, nullable: true, description: 'Display name of the scheduled clinic member'})
     attendedByName: string | null;
 
-    constructor(appointment: Appointment, revenue: AppointmentRevenue | null, attendedByName: string | null) {
+    @ApiProperty({type: String, nullable: true, description: 'Patient name, for the reception day list'})
+    patientName: string | null;
+
+    constructor(
+        appointment: Appointment,
+        revenue: AppointmentRevenue | null,
+        attendedByName: string | null,
+        patientName: string | null = null
+    ) {
         super(appointment, revenue);
         this.attendedByName = attendedByName;
+        this.patientName = patientName;
     }
 }
 

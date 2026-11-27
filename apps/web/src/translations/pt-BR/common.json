@@ -268,7 +268,7 @@
     "mySettings": "Meu perfil e consultório"
   },
   "patientCall": {
-    "settings": "Configurar painel de chamada",
+    "settings": "Painel de chamada",
     "panelTitle": "Painel de chamada",
     "identity": "Identidade visual",
     "titleField": "Título do painel",
@@ -328,7 +328,8 @@
     "exampleRecentDestination": "Guichê 2",
     "addToQueue": "Adicionar à fila",
     "addedToQueue": "Paciente incluído na fila de chamadas.",
-    "entryUnavailable": "Esta entrada na fila já foi encerrada."
+    "entryUnavailable": "Esta entrada na fila já foi encerrada.",
+    "settingsDescription": "Identidade visual e link da TV da sala de espera."
   },
   "reception": {
     "title": "Recepção",
@@ -586,6 +587,67 @@
         "CLINIC": "Não foi possível passar a conta para clínica.",
         "SOLO": "Não foi possível voltar para autônomo. Desative os outros membros da equipe antes."
       }
+    },
+    "triage": {
+      "title": "Triagem antes da chamada",
+      "description": "Quando ativada, o profissional só pode chamar o paciente depois que a recepção concluir a triagem. Os dados da triagem são opcionais.",
+      "enabled": "Triagem obrigatória ativada.",
+      "disabled": "Triagem obrigatória desativada.",
+      "error": "Erro ao atualizar a triagem."
     }
+  },
+  "attendance": {
+    "dashboardTitle": "Pacientes que chegaram",
+    "dashboardSub": "Chame o próximo paciente e finalize o atendimento.",
+    "receptionTitle": "Fila de atendimento",
+    "receptionSub": "Pacientes que chegaram, de todas as agendas que você acessa.",
+    "empty": "Nenhum paciente aguardando agora.",
+    "loadError": "Não foi possível carregar a fila.",
+    "retry": "Tentar novamente",
+    "arrivedAt": "Chegou às {{time}}",
+    "scheduledAt": "Consulta às {{time}}",
+    "professional": "Com {{name}}",
+    "status": {
+      "waitingTriage": "Aguardando triagem",
+      "released": "Triagem concluída",
+      "waiting": "Aguardando chamada",
+      "inProgress": "Em atendimento"
+    },
+    "call": "Chamar",
+    "recall": "Chamar novamente",
+    "finish": "Finalizar",
+    "triage": "Triagem",
+    "callTitle": "Chamar paciente",
+    "recallTitle": "Chamar novamente",
+    "callDescription": "{{name}} será chamado para o local abaixo.",
+    "destination": "Sala ou local",
+    "destinationHint": "Aparece no painel da TV, quando publicado.",
+    "destinationRequired": "Informe a sala ou o local.",
+    "called": "Paciente chamado para {{destination}}.",
+    "calledNoPanel": "Paciente chamado para {{destination}}. O painel da TV não está publicado.",
+    "finished": "Atendimento finalizado.",
+    "finishTitle": "Finalizar atendimento",
+    "finishConfirmation": "Confirme o fim do atendimento de {{name}}.",
+    "actionError": "Não foi possível concluir a ação. A fila foi atualizada.",
+    "triageBlocked": "A triagem precisa liberar o paciente antes da chamada.",
+    "triageTitle": "Triagem",
+    "triageDescription": "Todos os campos são opcionais. Ao concluir, o paciente fica liberado para ser chamado.",
+    "triageReadOnly": "Dados registrados na triagem.",
+    "weightKg": "Peso (kg)",
+    "heightCm": "Altura (cm)",
+    "systolicPressure": "Pressão sistólica (mmHg)",
+    "diastolicPressure": "Pressão diastólica (mmHg)",
+    "heartRate": "Frequência cardíaca (bpm)",
+    "temperatureCelsius": "Temperatura (°C)",
+    "oxygenSaturation": "Saturação de O₂ (%)",
+    "notes": "Observações",
+    "save": "Salvar",
+    "release": "Concluir e liberar",
+    "saved": "Triagem salva.",
+    "releasedToast": "Paciente liberado para chamada.",
+    "alreadyReleased": "Paciente já liberado para chamada.",
+    "invalidFields": "Confira os valores informados.",
+    "close": "Fechar",
+    "viewTriage": "Ver triagem"
   }
 }

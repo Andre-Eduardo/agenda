@@ -1,23 +1,76 @@
-# Painel operacional de recepção
+# Fluxo de atendimento: chegada, triagem, chamada e finalização
 
-A rota `/reception` apresenta os agendamentos do dia local em quatro etapas: aguardando chegada, na recepção, em atendimento e finalizados. A tela atualiza os dados a cada minuto, ao voltar para a aba e pelo botão **Atualizar**. O dia muda em até um minuto após a meia-noite local.
+O atendimento segue quatro passos. O paciente chega e avisa a recepção; a recepção registra a
+chegada; quando a clínica exige, a recepção faz a triagem e libera o paciente; o profissional (ou a
+recepção) chama o paciente para a sala e, no fim, finaliza o atendimento.
 
-Cada linha mostra horário, paciente, profissional responsável, tipo da consulta, estado e as ações válidas para aquele estado. **Registrar chegada** leva `SCHEDULED` ou `CONFIRMED` a `ARRIVED`. **Chamar paciente** leva `ARRIVED` a `IN_PROGRESS` nas clínicas que ainda não publicaram o painel. **Marcar falta** leva `SCHEDULED` ou `CONFIRMED` a `NO_SHOW` após confirmação. **Abrir paciente** navega para o perfil do paciente.
+## Recepção (`/reception`)
 
-**Concluir atendimento** está disponível na recepção e nos detalhes do agendamento para quem tem `appointment:update` e acesso ao atendimento. A ação leva `IN_PROGRESS` a `COMPLETED`, move a consulta para **Finalizados** na recepção e grava o responsável e horário na trilha de estados. O fluxo atual permite encerrar uma consulta mesmo quando a assinatura da evolução ou o pagamento estão pendentes. A evolução e o pagamento seguem seus fluxos próprios.
+No topo fica a **Fila de atendimento**, com os pacientes que chegaram e os que estão em atendimento,
+de todas as agendas que o membro pode operar. Abaixo, os agendamentos do dia em quatro etapas
+(aguardando chegada, na recepção, em atendimento e finalizados). **Registrar chegada** leva
+`SCHEDULED` ou `CONFIRMED` a `ARRIVED`. **Marcar falta** leva `SCHEDULED` ou `CONFIRMED` a
+`NO_SHOW` após confirmação. A lista do dia mostra as consultas dos pacientes a que o membro tem
+acesso (`ClinicPatientAccess`) e também as das agendas que ele opera (veja a tabela abaixo), com o
+nome do paciente. Registrar chegada e marcar falta valem para essas consultas.
 
-## Fila de chamadas e TV
+As configurações do painel da TV não ficam mais na recepção: estão em
+**Configurações → Painel de chamada**.
 
-Em **Recepção → Configurar painel de chamada**, um gestor pode ajustar título, mensagem, cores, uso do logotipo da clínica, som e duração. A prévia usa nomes fictícios. O primeiro **Publicar painel** habilita a fila. Abra na TV o link copiado na configuração. Ao gerar um novo link ou revogar o atual, as TVs que usavam o endereço anterior perdem acesso. A fila continua disponível na recepção.
+## Dashboard do profissional (`/dashboard`)
 
-Em clínicas com a fila habilitada, **Registrar chegada** inclui o paciente na fila pelo nome cadastrado. **Adicionar à fila** permite incluir uma chegada registrada antes da ativação do painel. A equipe pode chamar em ordem de chegada, informar o número da sala ou do guichê, repetir a chamada para o mesmo destino ou retirar o paciente com motivo. **Iniciar atendimento** confirma a entrada efetiva em atendimento e fecha a entrada na fila. O cancelamento também fecha entradas pendentes. A conclusão segue o fluxo da agenda.
+Quem tem o papel `PROFESSIONAL` vê **Pacientes que chegaram**, só da própria agenda. Cada linha
+mostra a hora de chegada, a hora da consulta e o estado (aguardando triagem, triagem concluída,
+aguardando chamada ou em atendimento).
 
-O painel exibe uma chamada de cada vez, pelo tempo configurado, na ordem em que o servidor registrou os anúncios. A TV consulta o servidor a cada dois segundos e retira a chamada principal quando o tempo termina. Ative **Mostrar últimas chamadas** para manter na TV até cinco chamadas exibidas nos últimos 30 minutos, com nome e destino. A opção vem desativada. Quando o som estiver habilitado na configuração, selecione **Ativar som** na TV. Para manter o painel na tela, use a opção de tela cheia do navegador.
+- **Chamar** abre a sala ou o local já preenchido: primeiro a sala da consulta, depois a sala padrão
+  do profissional (`Professional.defaultRoomId`, com o controle de salas ligado) e, por último, o
+  último local digitado neste navegador. A chamada leva `ARRIVED` a `IN_PROGRESS` e, com o painel
+  publicado, mostra o nome e o local na TV.
+- **Chamar novamente** repete a chamada na TV para quem já está em atendimento.
+- **Finalizar** leva `IN_PROGRESS` a `COMPLETED`.
 
-A operação da fila exige `patient-call:operate`. A configuração exige `patient-call:configure` e o início do atendimento com a fila habilitada exige `appointment:start`. O check-in continua exigindo `appointment:checkin`. [Matriz de permissões](./rbac-matrix.md)
+A recepção tem as mesmas ações na Fila de atendimento.
 
-## Consultas e permissões da agenda
+## Quem pode operar cada paciente
 
-A recepção usa os endpoints gerados de agendamento, paciente e fila. A navegação e a consulta exigem `appointment:view`; cada ação é exibida apenas com sua permissão (`appointment:checkin`, `appointment:call` ou `appointment:update`), e o acesso ao perfil exige `patient:view`. O servidor continua validando a clínica, o acesso ao paciente e a [máquina de estados](./appointment-status-machine.md).
+Regra do servidor (`AttendanceScope`), aplicada à fila, à chamada, à triagem e à finalização, e
+também aos endpoints antigos `PATCH /appointments/:id/call`, `/start` e aos anúncios da fila do
+painel:
 
-A busca usa o intervalo entre 00:00 e 23:59:59,999 no fuso local do navegador e retorna até 500 consultas. Se houver mais, a tela avisa que a lista está limitada. Falhas de consulta mostram uma opção de tentar novamente; falhas nas ações mostram uma mensagem e recarregam os estados.
+| Papel | Agendas |
+| --- | --- |
+| `OWNER`, `ADMIN` | Todas as agendas da clínica |
+| `SECRETARY` | As agendas concedidas em `ProfessionalAgendaAccess` (e a própria, se também atende) |
+| `PROFESSIONAL` | Só a própria agenda. O profissional chama apenas os seus pacientes. |
+
+Fora do escopo a resposta é `403`.
+
+## Triagem antes da chamada
+
+Em **Configurações → Geral**, **Triagem antes da chamada** (`Clinic.triageRequired`, desligada por
+padrão). Ligada, o paciente só pode ser chamado depois que a recepção conclui a triagem; a tentativa
+de chamar antes responde `409`.
+
+A triagem (`AppointmentTriage`) tem peso, altura, pressão, frequência cardíaca, temperatura,
+saturação e observações, todos opcionais. **Salvar** guarda os dados; **Concluir e liberar** guarda e
+libera o paciente para chamada. A liberação não se desfaz. Preencher exige `appointment:triage`
+(recepção, `OWNER` e `ADMIN`); o profissional vê os dados em **Ver triagem**.
+
+## API
+
+| Método | Rota | Permissão |
+| --- | --- | --- |
+| `GET` | `/attendance?scope=mine\|all&dateFrom&dateTo` | `appointment:view` |
+| `POST` | `/attendance/:id/calls` `{destination}` | `appointment:call` |
+| `POST` | `/attendance/:id/finish` | `appointment:update` |
+| `GET` | `/attendance/:id/triage` | `appointment:view` |
+| `PUT` | `/attendance/:id/triage` | `appointment:triage` |
+
+## Painel da TV
+
+A configuração (título, mensagem, cores, logotipo, som, duração, últimas chamadas, link) fica em
+**Configurações → Painel de chamada**, com `patient-call:configure` e o módulo de recepção ligado.
+Com o link publicado, cada chamada aparece na TV pelo tempo configurado. Os endpoints
+`/patient-call/queue/*` continuam disponíveis, mas a tela usa o fluxo de atendimento acima.
+[Matriz de permissões](./rbac-matrix.md)

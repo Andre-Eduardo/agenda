@@ -1,46 +1,28 @@
 import {useEffect, useState} from 'react';
 import {
     getGetPatientQueryOptions,
-    getListPatientCallQueueQueryKey,
-    useCallAppointment,
+    getListAttendanceQueryKey,
     useCheckinAppointment,
-    useCompleteAppointment,
-    useGetPatientCallAvailability,
-    useListPatientCallQueue,
     useMarkNoShowAppointment,
     useSearchAppointments,
-    useStartAppointment,
     type AppointmentListItem,
     type AppointmentStatus,
 } from '@agenda-app/client';
 import {useQueries, useQueryClient} from '@tanstack/react-query';
 import {createFileRoute, Link} from '@tanstack/react-router';
-import {ArrowRight, CalendarDays, CheckCheck, PhoneCall, RefreshCw, UserCheck, UserX} from 'lucide-react';
+import {ArrowRight, CalendarDays, RefreshCw, UserCheck, UserX} from 'lucide-react';
 import {useTranslation} from 'react-i18next';
 import {toast} from 'sonner';
 import {Badge} from '@/components/ui/componentes/badge';
 import {Button} from '@/components/ui/componentes/button';
-import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
-} from '@/components/ui/componentes/dialog';
 import {EmptyStateCard} from '@/components/ui/componentes/empty-state';
 import {Skeleton} from '@/components/ui/componentes/skeleton';
 import {useCan, useCanState} from '@/hooks/useCan';
-import {css} from '@/styled-system/css';
 import {invalidateAppointmentRevenue} from '@/utils/appointment-revenue';
 import {ClinicModuleGate} from '@/views/components/ClinicModuleGate';
 import {ConfirmDialog} from '@/views/components/ConfirmDialog';
 import {Page} from '@/views/components/Page';
-import {PatientCallQueue} from '@/views/modules/patient-call/components/Queue';
-import {
-    PatientClinicalPreviewContent,
-    usePatientClinicalPreview,
-} from '@/views/modules/patients/components/ClinicalData/PatientClinicalPreview';
+import {AttendanceQueue} from '@/views/modules/attendance/components/AttendanceQueue';
 import styles from './styles.module.css';
 
 function GatedReceptionPage() {
@@ -55,7 +37,7 @@ export const Route = createFileRoute('/_stackedLayout/reception')({
     component: GatedReceptionPage,
 });
 
-type Transition = 'checkin' | 'enqueue' | 'call' | 'start' | 'complete' | 'noShow';
+type Transition = 'checkin' | 'noShow';
 type Group = 'waiting' | 'arrived' | 'inProgress' | 'finished';
 
 const PAGE_LIMIT = 500;
@@ -81,30 +63,8 @@ function ReceptionPage() {
     const [day, setDay] = useState(() => localDayKey(new Date()));
     const [busyId, setBusyId] = useState<string | null>(null);
     const [noShowId, setNoShowId] = useState<string | null>(null);
-    const [startId, setStartId] = useState<string | null>(null);
-    const [reviewId, setReviewId] = useState<string | null>(null);
-    const mayViewClinical = useCan({hasAny: ['clinical-profile:view', 'patient-alert:view']});
     const appointmentAccess = useCanState({has: 'appointment:view'});
     const canCheckin = useCan({has: 'appointment:checkin'});
-    const canCall = useCan({has: 'appointment:call'});
-    const canStart = useCan({has: 'appointment:start'});
-    const canOperateQueue = useCan({has: 'patient-call:operate'});
-    const canConfigurePanel = useCan({has: 'patient-call:configure'});
-    const availability = useGetPatientCallAvailability({
-        query: {enabled: appointmentAccess.allowed, refetchInterval: 15_000, refetchOnWindowFocus: true},
-    });
-    const queueEnabled = availability.data?.enabled === true;
-    const queuePublished = availability.data?.published === true;
-    const queueQuery = useListPatientCallQueue({
-        query: {
-            enabled: appointmentAccess.allowed && queueEnabled && canOperateQueue,
-            refetchInterval: 5000,
-            refetchOnWindowFocus: true,
-        },
-    });
-    const queuedIds = new Set(queueQuery.data?.map((entry) => entry.appointmentId));
-    const canBegin = availability.isSuccess && (queueEnabled ? canStart : canCall);
-    const beginLabel = queueEnabled ? t('patientCall.start') : t('reception.call');
     const canUpdateAppointment = useCan({has: 'appointment:update'});
     const canOpenPatient = useCan({has: 'patient:view'});
 
@@ -131,18 +91,22 @@ function ReceptionPage() {
         queries: patientIds.map((id) => getGetPatientQueryOptions(id, {query: {staleTime: 5 * 60_000}})),
     });
     const patientsById = new Map(patientIds.map((id, index) => [id, patientQueries[index]]));
-    const patientNames = new Map(patientIds.map((id) => [id, patientsById.get(id)?.data?.name]));
+    // The list carries the patient name, so reception sees it through agenda access alone.
+    const patientNames = new Map<string, string | undefined>(
+        patientIds.map((id) => [
+            id,
+            patientsById.get(id)?.data?.name ??
+                appointments.find((appointment) => appointment.patientId === id)?.patientName ??
+                undefined,
+        ])
+    );
     const grouped = Object.fromEntries(
         GROUPS.map((group) => [group, appointments.filter((appointment) => STATUS_GROUP[appointment.status] === group)])
     ) as Record<Group, AppointmentListItem[]>;
     const dateLabel = new Intl.DateTimeFormat(i18n.language, {dateStyle: 'full'}).format(new Date(`${day}T12:00:00`));
 
     const checkin = useCheckinAppointment();
-    const call = useCallAppointment();
-    const start = useStartAppointment();
-    const complete = useCompleteAppointment();
     const noShow = useMarkNoShowAppointment();
-    const transitions = {call, start, complete, noShow};
 
     async function transition(id: string, kind: Transition) {
         if (busyId !== null) return;
@@ -150,54 +114,28 @@ function ReceptionPage() {
         setBusyId(id);
 
         try {
-            if (kind === 'checkin' || kind === 'enqueue') {
-                const {inPatientCallQueue} = await checkin.mutateAsync({id});
+            if (kind === 'checkin') {
+                await checkin.mutateAsync({id});
+                toast.success(t('reception.success.checkin'));
+            } else {
+                const appointment = await noShow.mutateAsync({id});
 
-                if (kind === 'checkin') toast.success(t('reception.success.checkin'));
-                else if (inPatientCallQueue) toast.success(t('patientCall.addedToQueue'));
-                else toast.info(t('patientCall.entryUnavailable'));
-
-                return;
-            }
-
-            const appointment = await transitions[kind].mutateAsync({id});
-
-            if (kind === 'complete' || kind === 'noShow') {
                 invalidateAppointmentRevenue(queryClient, appointment.clinicId);
+                toast.success(t('reception.success.noShow'));
             }
-
-            toast.success(kind === 'start' ? t('patientCall.started') : t(`reception.success.${kind}`));
         } catch {
             toast.error(t('reception.actionError'));
         } finally {
             await Promise.all([
                 appointmentsQuery.refetch(),
-                queryClient.invalidateQueries({queryKey: getListPatientCallQueueQueryKey()}),
+                queryClient.invalidateQueries({queryKey: getListAttendanceQueryKey()}),
             ]);
             setBusyId(null);
             setNoShowId(null);
-            setReviewId(null);
-            setStartId(null);
         }
     }
 
-    const reviewAppointment = appointments.find(
-        (appointment) => appointment.id === reviewId && appointment.status === 'ARRIVED'
-    );
-    const reviewPatient = reviewAppointment && patientsById.get(reviewAppointment.patientId);
     const selectedNoShow = appointments.find((appointment) => appointment.id === noShowId);
-
-    function requestStart(appointment: AppointmentListItem) {
-        const patient = patientsById.get(appointment.patientId);
-
-        if (mayViewClinical && !patient?.isError && patient?.data?.canReadClinicalData) {
-            setReviewId(appointment.id);
-        } else if (queueEnabled) {
-            setStartId(appointment.id);
-        } else {
-            void transition(appointment.id, 'call');
-        }
-    }
 
     return (
         <Page
@@ -205,28 +143,20 @@ function ReceptionPage() {
             subtitle={dateLabel}
             responsiveActions
             actions={
-                <>
-                    {canConfigurePanel && (
-                        <Button asChild size="sm" variant="outline">
-                            <Link to="/reception/panel-settings">{t('patientCall.settings')}</Link>
-                        </Button>
-                    )}
-                    <Button
-                        type="button"
-                        size="sm"
-                        variant="outline"
-                        onClick={() =>
-                            void Promise.all([
-                                appointmentsQuery.refetch(),
-                                availability.refetch(),
-                                queryClient.invalidateQueries({queryKey: getListPatientCallQueueQueryKey()}),
-                            ])
-                        }
-                    >
-                        <RefreshCw size={16} aria-hidden />
-                        {t('reception.refresh')}
-                    </Button>
-                </>
+                <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    onClick={() =>
+                        void Promise.all([
+                            appointmentsQuery.refetch(),
+                            queryClient.invalidateQueries({queryKey: getListAttendanceQueryKey()}),
+                        ])
+                    }
+                >
+                    <RefreshCw size={16} aria-hidden />
+                    {t('reception.refresh')}
+                </Button>
             }
         >
             <div className={styles.root}>
@@ -240,23 +170,7 @@ function ReceptionPage() {
                     />
                 )}
 
-                {appointmentAccess.allowed && availability.isError && (
-                    <div role="alert" className={styles.notice}>
-                        {t('patientCall.availabilityError')}{' '}
-                        <Button type="button" variant="outline" size="sm" onClick={() => void availability.refetch()}>
-                            {t('reception.retry')}
-                        </Button>
-                    </div>
-                )}
-                {appointmentAccess.allowed && queueEnabled && canOperateQueue && (
-                    <PatientCallQueue
-                        queue={queueQuery}
-                        published={queuePublished}
-                        isStarting={busyId !== null}
-                        shownAppointmentIds={new Set(grouped.arrived.map((appointment) => appointment.id))}
-                        onStart={canStart ? setStartId : undefined}
-                    />
-                )}
+                {appointmentAccess.allowed && <AttendanceQueue scope="all" />}
 
                 {appointmentAccess.allowed && appointmentsQuery.isLoading && <ReceptionSkeleton />}
 
@@ -378,50 +292,6 @@ function ReceptionPage() {
                                                                 {t('reception.checkin')}
                                                             </Button>
                                                         )}
-                                                    {appointment.status === 'ARRIVED' &&
-                                                        queueEnabled &&
-                                                        canCheckin &&
-                                                        (!canOperateQueue ||
-                                                            (queueQuery.isSuccess &&
-                                                                !queuedIds.has(appointment.id))) && (
-                                                            <Button
-                                                                type="button"
-                                                                variant="outline"
-                                                                size="sm"
-                                                                disabled={busyId !== null}
-                                                                onClick={() =>
-                                                                    void transition(appointment.id, 'enqueue')
-                                                                }
-                                                            >
-                                                                {t('patientCall.addToQueue')}
-                                                            </Button>
-                                                        )}
-                                                    {appointment.status === 'ARRIVED' && canBegin && (
-                                                        <Button
-                                                            type="button"
-                                                            size="sm"
-                                                            disabled={
-                                                                busyId !== null ||
-                                                                (mayViewClinical &&
-                                                                    patientsById.get(appointment.patientId)?.isLoading)
-                                                            }
-                                                            onClick={() => requestStart(appointment)}
-                                                        >
-                                                            <PhoneCall size={14} aria-hidden />
-                                                            {beginLabel}
-                                                        </Button>
-                                                    )}
-                                                    {appointment.status === 'IN_PROGRESS' && canUpdateAppointment && (
-                                                        <Button
-                                                            type="button"
-                                                            size="sm"
-                                                            disabled={busyId !== null}
-                                                            onClick={() => void transition(appointment.id, 'complete')}
-                                                        >
-                                                            <CheckCheck size={14} aria-hidden />
-                                                            {t('reception.complete')}
-                                                        </Button>
-                                                    )}
                                                     {(appointment.status === 'SCHEDULED' ||
                                                         appointment.status === 'CONFIRMED') &&
                                                         canUpdateAppointment && (
@@ -447,32 +317,6 @@ function ReceptionPage() {
                 )}
             </div>
 
-            {reviewAppointment &&
-                mayViewClinical &&
-                !reviewPatient?.isError &&
-                reviewPatient?.data?.canReadClinicalData && (
-                    <ReceptionClinicalReview
-                        key={reviewAppointment.id}
-                        patientId={reviewAppointment.patientId}
-                        patientName={reviewPatient.data.name}
-                        isCalling={busyId !== null}
-                        onCancel={() => setReviewId(null)}
-                        beginLabel={beginLabel}
-                        onCall={() => void transition(reviewAppointment.id, queueEnabled ? 'start' : 'call')}
-                    />
-                )}
-
-            <ConfirmDialog
-                opened={startId !== null}
-                title={t('patientCall.start')}
-                message={t('patientCall.startConfirmation')}
-                confirmLabel={t('patientCall.start')}
-                isLoading={busyId !== null}
-                onConfirm={() => {
-                    if (startId) void transition(startId, 'start');
-                }}
-                onCancel={() => setStartId(null)}
-            />
             <ConfirmDialog
                 opened={selectedNoShow !== undefined}
                 title={t('reception.confirmNoShowTitle')}
@@ -489,46 +333,6 @@ function ReceptionPage() {
                 onCancel={() => setNoShowId(null)}
             />
         </Page>
-    );
-}
-
-function ReceptionClinicalReview({
-    patientId,
-    patientName,
-    isCalling,
-    beginLabel,
-    onCancel,
-    onCall,
-}: {
-    patientId: string;
-    patientName: string;
-    isCalling: boolean;
-    beginLabel: string;
-    onCancel: () => void;
-    onCall: () => void;
-}) {
-    const {t} = useTranslation();
-    const [page, setPage] = useState(1);
-    const clinical = usePatientClinicalPreview(patientId, true, page);
-
-    return (
-        <Dialog open onOpenChange={(open) => !open && !isCalling && onCancel()}>
-            <DialogContent className={css({maxH: '90dvh', overflowY: 'auto'})}>
-                <DialogHeader>
-                    <DialogTitle>{t('clinicalData.beforeVisit')}</DialogTitle>
-                    <DialogDescription>{t('clinicalData.reviewPatient', {name: patientName})}</DialogDescription>
-                </DialogHeader>
-                <PatientClinicalPreviewContent clinical={clinical} page={page} onPage={setPage} showEmpty />
-                <DialogFooter>
-                    <Button type="button" variant="outline" disabled={isCalling} onClick={onCancel}>
-                        {t('actions.cancel')}
-                    </Button>
-                    <Button type="button" disabled={isCalling || clinical.isLoading} onClick={onCall}>
-                        {beginLabel}
-                    </Button>
-                </DialogFooter>
-            </DialogContent>
-        </Dialog>
     );
 }
 

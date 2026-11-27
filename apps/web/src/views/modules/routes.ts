@@ -25,7 +25,6 @@ export const routes = rootRoute('../root.tsx', [
         index(filePath('welcome', 'index')),
         route('/dashboard', filePath('dashboard', 'index')),
         route('/reception', filePath('reception', 'index')),
-        route('/reception/panel-settings', filePath('patient-call', 'settings')),
         route('/appointments', filePath('appointments', 'index')),
         route('/patients', filePath('patients', 'index')),
         route('/patients/new', filePath('patients', 'new')),

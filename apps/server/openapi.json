@@ -3025,6 +3025,204 @@
         ]
       }
     },
+    "/api/v1/attendance": {
+      "get": {
+        "operationId": "listAttendance",
+        "parameters": [
+          {
+            "name": "scope",
+            "required": false,
+            "in": "query",
+            "description": "mine = only the actor own agenda; all = every agenda the actor can operate",
+            "schema": {
+              "default": "all",
+              "type": "string",
+              "enum": [
+                "mine",
+                "all"
+              ]
+            }
+          },
+          {
+            "name": "dateFrom",
+            "required": true,
+            "in": "query",
+            "description": "Earliest appointment start to include",
+            "schema": {
+              "nullable": true,
+              "type": "string"
+            }
+          },
+          {
+            "name": "dateTo",
+            "required": true,
+            "in": "query",
+            "description": "Latest appointment start to include",
+            "schema": {
+              "nullable": true,
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AttendanceQueue"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Attendance"
+        ]
+      }
+    },
+    "/api/v1/attendance/{id}/calls": {
+      "post": {
+        "operationId": "callAttendance",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CallAttendanceDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AttendanceCallResult"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Attendance"
+        ]
+      }
+    },
+    "/api/v1/attendance/{id}/finish": {
+      "post": {
+        "operationId": "finishAttendance",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Appointment"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Attendance"
+        ]
+      }
+    },
+    "/api/v1/attendance/{id}/triage": {
+      "get": {
+        "operationId": "getAttendanceTriage",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AppointmentTriage"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Attendance"
+        ]
+      },
+      "put": {
+        "operationId": "saveAttendanceTriage",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SaveTriageDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AppointmentTriage"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Attendance"
+        ]
+      }
+    },
     "/api/v1/appointments": {
       "post": {
         "operationId": "createAppointment",
@@ -10593,6 +10791,10 @@
           "roomManagementEnabled": {
             "type": "boolean",
             "description": "Enables physical room management and room conflict checks on scheduling"
+          },
+          "triageRequired": {
+            "type": "boolean",
+            "description": "When enabled, a patient can only be called after the reception releases the triage"
           }
         },
         "required": [
@@ -10616,7 +10818,8 @@
           "country",
           "logoUrl",
           "clinicSpecialties",
-          "roomManagementEnabled"
+          "roomManagementEnabled",
+          "triageRequired"
         ]
       },
       "CreateClinicDto": {
@@ -10781,6 +10984,9 @@
           },
           "receptionEnabled": {
             "type": "boolean"
+          },
+          "triageRequired": {
+            "type": "boolean"
           }
         },
         "required": [
@@ -10798,7 +11004,8 @@
           "logoUrl",
           "clinicSpecialties",
           "roomManagementEnabled",
-          "receptionEnabled"
+          "receptionEnabled",
+          "triageRequired"
         ]
       },
       "InsurancePlan": {
@@ -13239,100 +13446,170 @@
           "reason"
         ]
       },
-      "CreateAppointmentDto": {
+      "AttendanceStatus": {
+        "type": "string",
+        "enum": [
+          "ARRIVED",
+          "IN_PROGRESS"
+        ]
+      },
+      "AttendanceItem": {
         "type": "object",
         "properties": {
+          "appointmentId": {
+            "type": "string",
+            "format": "uuid"
+          },
           "patientId": {
             "type": "string",
-            "format": "uuid",
-            "example": "dc5782d4-ce8e-4f95-bb0b-d1a4e130aee8"
+            "format": "uuid"
+          },
+          "patientName": {
+            "type": "string"
           },
           "attendedByMemberId": {
             "type": "string",
-            "format": "uuid",
-            "example": "dc5782d4-ce8e-4f95-bb0b-d1a4e130aee8"
+            "format": "uuid"
+          },
+          "attendedByName": {
+            "type": "string",
+            "nullable": true
           },
           "startAt": {
             "type": "string",
-            "format": "date-time",
-            "description": "A datetime in ISO 8601 format."
+            "format": "date-time"
           },
-          "endAt": {
+          "arrivedAt": {
             "type": "string",
             "format": "date-time",
-            "description": "A datetime in ISO 8601 format."
+            "nullable": true
           },
-          "procedureId": {
+          "calledAt": {
             "type": "string",
-            "format": "uuid",
-            "example": "dc5782d4-ce8e-4f95-bb0b-d1a4e130aee8"
+            "format": "date-time",
+            "nullable": true
           },
-          "procedureOverrides": {
-            "type": "object",
-            "properties": {
-              "color": {
-                "type": "string",
-                "enum": [
-                  "BLUE",
-                  "GREEN",
-                  "AMBER",
-                  "RED"
-                ]
-              },
-              "priceInCents": {
-                "type": "integer",
-                "minimum": 0,
-                "maximum": 2147483647
-              },
-              "modality": {
-                "type": "string",
-                "enum": [
-                  "IN_PERSON",
-                  "REMOTE"
-                ]
+          "status": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AttendanceStatus"
               }
-            }
-          },
-          "type": {
-            "type": "string",
-            "enum": [
-              "FIRST_VISIT",
-              "RETURN",
-              "WALK_IN",
-              "TELEMEDICINE",
-              "PROCEDURE"
             ]
           },
-          "followUpFromRecordId": {
-            "type": "string",
-            "format": "uuid",
-            "description": "Clinical record that originated this follow-up",
-            "example": "dc5782d4-ce8e-4f95-bb0b-d1a4e130aee8"
-          },
-          "note": {
+          "destination": {
             "type": "string",
             "nullable": true,
-            "example": "Patient has allergy to penicillin"
+            "description": "Last destination announced"
           },
-          "retroactive": {
-            "type": "boolean"
+          "callCount": {
+            "type": "number"
           },
-          "roomId": {
-            "type": "string",
-            "nullable": true,
-            "format": "uuid",
-            "example": "dc5782d4-ce8e-4f95-bb0b-d1a4e130aee8"
-          },
-          "confirmOutsideAvailability": {
+          "triageStarted": {
             "type": "boolean",
-            "default": false
+            "description": "Triage data was saved at least once"
+          },
+          "triageReleased": {
+            "type": "boolean",
+            "description": "Patient was released by the triage"
+          },
+          "callable": {
+            "type": "boolean",
+            "description": "Patient can be called now (released or triage not required)"
+          },
+          "suggestedDestination": {
+            "type": "string",
+            "nullable": true,
+            "description": "Appointment room or the professional default room"
+          },
+          "mine": {
+            "type": "boolean",
+            "description": "Appointment belongs to the actor own agenda"
           }
         },
         "required": [
+          "appointmentId",
           "patientId",
+          "patientName",
           "attendedByMemberId",
+          "attendedByName",
           "startAt",
-          "type"
+          "arrivedAt",
+          "calledAt",
+          "status",
+          "destination",
+          "callCount",
+          "triageStarted",
+          "triageReleased",
+          "callable",
+          "suggestedDestination",
+          "mine"
+        ]
+      },
+      "AttendanceQueue": {
+        "type": "object",
+        "properties": {
+          "triageRequired": {
+            "type": "boolean",
+            "description": "Clinic setting: triage must release the patient before the call"
+          },
+          "panelPublished": {
+            "type": "boolean",
+            "description": "Calls are shown on the public TV panel"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AttendanceItem"
+            }
+          }
+        },
+        "required": [
+          "triageRequired",
+          "panelPublished",
+          "items"
+        ]
+      },
+      "CallAttendanceDto": {
+        "type": "object",
+        "properties": {
+          "destination": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80,
+            "description": "Where the patient must go, shown on the call panel (e.g. \"Sala 3\")"
+          }
+        },
+        "required": [
+          "destination"
+        ]
+      },
+      "AttendanceCallResult": {
+        "type": "object",
+        "properties": {
+          "appointmentId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "status": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AttendanceStatus"
+              }
+            ]
+          },
+          "destination": {
+            "type": "string"
+          },
+          "announced": {
+            "type": "boolean",
+            "description": "The call was shown on the public TV panel"
+          }
+        },
+        "required": [
+          "appointmentId",
+          "status",
+          "destination",
+          "announced"
         ]
       },
       "ProcedureColor": {
@@ -13621,6 +13898,229 @@
           "roomId"
         ]
       },
+      "AppointmentTriage": {
+        "type": "object",
+        "properties": {
+          "appointmentId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "weightKg": {
+            "type": "number",
+            "nullable": true
+          },
+          "heightCm": {
+            "type": "number",
+            "nullable": true
+          },
+          "systolicPressure": {
+            "type": "number",
+            "nullable": true
+          },
+          "diastolicPressure": {
+            "type": "number",
+            "nullable": true
+          },
+          "heartRate": {
+            "type": "number",
+            "nullable": true
+          },
+          "temperatureCelsius": {
+            "type": "number",
+            "nullable": true
+          },
+          "oxygenSaturation": {
+            "type": "number",
+            "nullable": true
+          },
+          "notes": {
+            "type": "string",
+            "nullable": true
+          },
+          "released": {
+            "type": "boolean"
+          },
+          "releasedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          }
+        },
+        "required": [
+          "appointmentId",
+          "weightKg",
+          "heightCm",
+          "systolicPressure",
+          "diastolicPressure",
+          "heartRate",
+          "temperatureCelsius",
+          "oxygenSaturation",
+          "notes",
+          "released",
+          "releasedAt",
+          "updatedAt"
+        ]
+      },
+      "SaveTriageDto": {
+        "type": "object",
+        "properties": {
+          "weightKg": {
+            "type": "number",
+            "nullable": true,
+            "minimum": 0.5,
+            "maximum": 500
+          },
+          "heightCm": {
+            "type": "integer",
+            "nullable": true,
+            "minimum": 20,
+            "maximum": 260
+          },
+          "systolicPressure": {
+            "type": "integer",
+            "nullable": true,
+            "minimum": 40,
+            "maximum": 300
+          },
+          "diastolicPressure": {
+            "type": "integer",
+            "nullable": true,
+            "minimum": 20,
+            "maximum": 200
+          },
+          "heartRate": {
+            "type": "integer",
+            "nullable": true,
+            "minimum": 20,
+            "maximum": 300
+          },
+          "temperatureCelsius": {
+            "type": "number",
+            "nullable": true,
+            "minimum": 30,
+            "maximum": 45
+          },
+          "oxygenSaturation": {
+            "type": "integer",
+            "nullable": true,
+            "minimum": 50,
+            "maximum": 100
+          },
+          "notes": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 1000
+          },
+          "release": {
+            "type": "boolean",
+            "description": "true releases the patient to be called. A release cannot be undone."
+          }
+        },
+        "required": [
+          "release"
+        ]
+      },
+      "CreateAppointmentDto": {
+        "type": "object",
+        "properties": {
+          "patientId": {
+            "type": "string",
+            "format": "uuid",
+            "example": "dc5782d4-ce8e-4f95-bb0b-d1a4e130aee8"
+          },
+          "attendedByMemberId": {
+            "type": "string",
+            "format": "uuid",
+            "example": "dc5782d4-ce8e-4f95-bb0b-d1a4e130aee8"
+          },
+          "startAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "A datetime in ISO 8601 format."
+          },
+          "endAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "A datetime in ISO 8601 format."
+          },
+          "procedureId": {
+            "type": "string",
+            "format": "uuid",
+            "example": "dc5782d4-ce8e-4f95-bb0b-d1a4e130aee8"
+          },
+          "procedureOverrides": {
+            "type": "object",
+            "properties": {
+              "color": {
+                "type": "string",
+                "enum": [
+                  "BLUE",
+                  "GREEN",
+                  "AMBER",
+                  "RED"
+                ]
+              },
+              "priceInCents": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 2147483647
+              },
+              "modality": {
+                "type": "string",
+                "enum": [
+                  "IN_PERSON",
+                  "REMOTE"
+                ]
+              }
+            }
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "FIRST_VISIT",
+              "RETURN",
+              "WALK_IN",
+              "TELEMEDICINE",
+              "PROCEDURE"
+            ]
+          },
+          "followUpFromRecordId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Clinical record that originated this follow-up",
+            "example": "dc5782d4-ce8e-4f95-bb0b-d1a4e130aee8"
+          },
+          "note": {
+            "type": "string",
+            "nullable": true,
+            "example": "Patient has allergy to penicillin"
+          },
+          "retroactive": {
+            "type": "boolean"
+          },
+          "roomId": {
+            "type": "string",
+            "nullable": true,
+            "format": "uuid",
+            "example": "dc5782d4-ce8e-4f95-bb0b-d1a4e130aee8"
+          },
+          "confirmOutsideAvailability": {
+            "type": "boolean",
+            "default": false
+          }
+        },
+        "required": [
+          "patientId",
+          "attendedByMemberId",
+          "startAt",
+          "type"
+        ]
+      },
       "AppointmentListItem": {
         "type": "object",
         "properties": {
@@ -13760,6 +14260,11 @@
             "type": "string",
             "nullable": true,
             "description": "Display name of the scheduled clinic member"
+          },
+          "patientName": {
+            "type": "string",
+            "nullable": true,
+            "description": "Patient name, for the reception day list"
           }
         },
         "required": [
@@ -13784,7 +14289,8 @@
           "paymentStatus",
           "revenue",
           "roomId",
-          "attendedByName"
+          "attendedByName",
+          "patientName"
         ]
       },
       "PaginatedAppointments": {

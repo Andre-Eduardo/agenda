@@ -268,7 +268,7 @@
     "mySettings": "My profile and office"
   },
   "patientCall": {
-    "settings": "Call display settings",
+    "settings": "Call panel",
     "panelTitle": "Patient call display",
     "identity": "Display appearance",
     "titleField": "Display title",
@@ -328,7 +328,8 @@
     "exampleRecentDestination": "Desk 2",
     "addToQueue": "Add to queue",
     "addedToQueue": "Patient added to the call queue.",
-    "entryUnavailable": "This queue entry has already been closed."
+    "entryUnavailable": "This queue entry has already been closed.",
+    "settingsDescription": "Visual identity and waiting room TV link."
   },
   "reception": {
     "title": "Reception",
@@ -586,6 +587,67 @@
         "CLINIC": "Could not switch the account to a clinic.",
         "SOLO": "Could not switch back to independent. Deactivate the other team members first."
       }
+    },
+    "triage": {
+      "title": "Triage before the call",
+      "description": "When on, the professional can only call the patient after the reception finishes the triage. Triage data is optional.",
+      "enabled": "Required triage turned on.",
+      "disabled": "Required triage turned off.",
+      "error": "Could not update the triage setting."
     }
+  },
+  "attendance": {
+    "dashboardTitle": "Patients who arrived",
+    "dashboardSub": "Call the next patient and finish the visit.",
+    "receptionTitle": "Attendance queue",
+    "receptionSub": "Arrived patients from every agenda you can access.",
+    "empty": "No patients waiting right now.",
+    "loadError": "Could not load the queue.",
+    "retry": "Try again",
+    "arrivedAt": "Arrived at {{time}}",
+    "scheduledAt": "Appointment at {{time}}",
+    "professional": "With {{name}}",
+    "status": {
+      "waitingTriage": "Waiting for triage",
+      "released": "Triage done",
+      "waiting": "Waiting to be called",
+      "inProgress": "In attendance"
+    },
+    "call": "Call",
+    "recall": "Call again",
+    "finish": "Finish",
+    "triage": "Triage",
+    "callTitle": "Call patient",
+    "recallTitle": "Call again",
+    "callDescription": "{{name}} will be called to the place below.",
+    "destination": "Room or place",
+    "destinationHint": "Shown on the TV panel when it is published.",
+    "destinationRequired": "Enter the room or place.",
+    "called": "Patient called to {{destination}}.",
+    "calledNoPanel": "Patient called to {{destination}}. The TV panel is not published.",
+    "finished": "Visit finished.",
+    "finishTitle": "Finish visit",
+    "finishConfirmation": "Confirm the end of the visit for {{name}}.",
+    "actionError": "The action could not be completed. The queue was reloaded.",
+    "triageBlocked": "The triage must release the patient before the call.",
+    "triageTitle": "Triage",
+    "triageDescription": "Every field is optional. When you finish, the patient can be called.",
+    "triageReadOnly": "Data recorded in the triage.",
+    "weightKg": "Weight (kg)",
+    "heightCm": "Height (cm)",
+    "systolicPressure": "Systolic pressure (mmHg)",
+    "diastolicPressure": "Diastolic pressure (mmHg)",
+    "heartRate": "Heart rate (bpm)",
+    "temperatureCelsius": "Temperature (°C)",
+    "oxygenSaturation": "O₂ saturation (%)",
+    "notes": "Notes",
+    "save": "Save",
+    "release": "Finish and release",
+    "saved": "Triage saved.",
+    "releasedToast": "Patient released to be called.",
+    "alreadyReleased": "Patient already released to be called.",
+    "invalidFields": "Check the values entered.",
+    "close": "Close",
+    "viewTriage": "View triage"
   }
 }

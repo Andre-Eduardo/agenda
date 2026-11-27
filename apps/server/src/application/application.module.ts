@@ -10,6 +10,7 @@ import {AgentModule} from '@application/agent/agent.module';
 import {AppointmentPaymentModule} from '@application/appointment-payment/appointment-payment.module';
 import {AppointmentReminderModule} from '@application/appointment-reminder/appointment-reminder.module';
 import {AppointmentModule} from '@application/appointment/appointment.module';
+import {AttendanceModule} from '@application/attendance/attendance.module';
 import {AuditHttpInterceptor} from '@application/audit/audit-http.interceptor';
 import {AuditModule} from '@application/audit/audit.module';
 import {AuthModule} from '@application/auth/auth.module';
@@ -158,6 +159,7 @@ const guards: Provider[] = [
         ProfessionalModule,
         PatientModule,
         PatientCallModule,
+        AttendanceModule,
         AppointmentModule,
         ProcedureModule,
         AppointmentReminderModule,

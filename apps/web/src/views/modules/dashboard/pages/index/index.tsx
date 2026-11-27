@@ -1,4 +1,5 @@
 import {
+    useGetCurrentClinicMember,
     useSearchOperationalAppointments,
     useSearchRecords,
     getGetPatientQueryOptions,
@@ -18,6 +19,7 @@ import {Skeleton} from '@/components/ui/componentes/skeleton';
 import {useCan} from '@/hooks/useCan';
 import {css, cva} from '@/styled-system/css';
 import {Page} from '@/views/components/Page';
+import {AttendanceQueue} from '@/views/modules/attendance/components/AttendanceQueue';
 import {flex1, minW0, mt1, skeletonH3W20, skeletonH9W12} from './styles';
 
 // ── Styles ────────────────────────────────────────────────────────────────────
@@ -610,6 +612,9 @@ export function DashboardPage() {
     const canCreateRecord = useCan({hasAll: ['record:create', 'record:view', 'patient:view']});
     const canCreatePatient = useCan({has: 'patient:create'});
     const canViewPatients = useCan({has: 'patient:view'});
+    const memberQuery = useGetCurrentClinicMember();
+    // Quem atende vê os próprios pacientes que chegaram, para chamar e finalizar.
+    const attendsPatients = memberQuery.data?.roles.includes('PROFESSIONAL') === true;
 
     const today = todayStr();
     const todayStart = new Date();
@@ -695,6 +700,8 @@ export function DashboardPage() {
                 <div className={cols}>
                     {/* Left column */}
                     <div className={colMain}>
+                        {canViewAppointments && attendsPatients && <AttendanceQueue scope="mine" />}
+
                         {/* Today's appointments */}
                         {canViewAppointments && (
                             <section className={sectionCard}>

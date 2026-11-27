@@ -8,6 +8,7 @@ import {
     SearchAppointmentsDto,
     SearchOperationalAppointmentsDto,
 } from '@application/appointment/dtos';
+import {AttendanceScope} from '@application/attendance/services/attendance-scope.service';
 import {PatientAccessChecker} from '@application/clinic-patient-access/services/patient-access-checker.service';
 import {AppointmentPaymentRepository} from '@domain/appointment-payment/appointment-payment.repository';
 import {projectAppointmentRevenue, type RevenuePayment} from '@domain/appointment-payment/appointment-revenue';
@@ -15,6 +16,7 @@ import {AppointmentRepository} from '@domain/appointment/appointment.repository'
 import {AppointmentPaymentPermission} from '@domain/auth';
 import {Authorizer} from '@domain/auth/authorizer';
 import {ClinicMemberRepository} from '@domain/clinic-member/clinic-member.repository';
+import {PatientRepository} from '@domain/patient/patient.repository';
 
 @Injectable()
 export class SearchAppointmentsService implements ApplicationService<SearchAppointmentsDto, PaginatedAppointmentsDto> {
@@ -23,7 +25,9 @@ export class SearchAppointmentsService implements ApplicationService<SearchAppoi
         private readonly patientAccessChecker: PatientAccessChecker,
         private readonly appointmentPaymentRepository: AppointmentPaymentRepository,
         private readonly authorizer: Authorizer,
-        private readonly clinicMemberRepository: ClinicMemberRepository
+        private readonly clinicMemberRepository: ClinicMemberRepository,
+        private readonly attendanceScope: AttendanceScope,
+        private readonly patientRepository: PatientRepository
     ) {}
 
     async execute({actor, payload}: Command<SearchAppointmentsDto>): Promise<PaginatedAppointmentsDto> {
@@ -39,7 +43,7 @@ export class SearchAppointmentsService implements ApplicationService<SearchAppoi
         const attendees = new Map(
             result.data.map(({attendedByMemberId}) => [attendedByMemberId.toString(), attendedByMemberId])
         );
-        const [payments, attendeeNames] = await Promise.all([
+        const [payments, attendeeNames, patientNames] = await Promise.all([
             canViewPayment
                 ? this.appointmentPaymentRepository.findRevenuePayments(
                       actor.clinicId,
@@ -47,6 +51,9 @@ export class SearchAppointmentsService implements ApplicationService<SearchAppoi
                   )
                 : new Map<string, RevenuePayment>(),
             this.clinicMemberRepository.findDisplayNamesByIds(actor.clinicId, [...attendees.values()]),
+            this.patientRepository.findNamesByIds(actor.clinicId, [
+                ...new Map(result.data.map(({patientId}) => [patientId.toString(), patientId])).values(),
+            ]),
         ]);
 
         return {
@@ -62,7 +69,8 @@ export class SearchAppointmentsService implements ApplicationService<SearchAppoi
                 return new AppointmentListItemDto(
                     appointment,
                     revenue,
-                    attendeeNames.get(appointment.attendedByMemberId.toString()) ?? null
+                    attendeeNames.get(appointment.attendedByMemberId.toString()) ?? null,
+                    patientNames.get(appointment.patientId.toString()) ?? null
                 );
             }),
             totalCount: result.totalCount,
@@ -83,14 +91,27 @@ export class SearchAppointmentsService implements ApplicationService<SearchAppoi
     private async findVisibleAppointments({actor, payload}: Command<SearchAppointmentsDto>) {
         const {term, sort, dateFrom, dateTo, ...pagination} = payload;
         const patientIds = await this.patientAccessChecker.patientIdsForAction(actor, 'appointment');
+        // A recepção e o profissional também veem as consultas das agendas que operam.
+        const agendas = patientIds === null ? null : await this.attendanceScope.operableAgendas(actor);
 
-        if (patientIds !== null && patientIds.length === 0) return {data: [], totalCount: 0};
+        if (agendas === null && patientIds !== null) {
+            // Todas as agendas: sem filtro de paciente.
+            return this.appointmentRepository.search(
+                {...pagination, sort: sort ?? undefined},
+                {clinicId: actor.clinicId, term: term ?? undefined, dateFrom, dateTo}
+            );
+        }
+
+        if (patientIds !== null && patientIds.length === 0 && (agendas ?? []).length === 0) {
+            return {data: [], totalCount: 0};
+        }
 
         return this.appointmentRepository.search(
             {...pagination, sort: sort ?? undefined},
             {
                 clinicId: actor.clinicId,
                 patientIds: patientIds ?? undefined,
+                orAttendedByMemberIds: agendas !== null && agendas.length > 0 ? agendas : undefined,
                 term: term ?? undefined,
                 dateFrom,
                 dateTo,

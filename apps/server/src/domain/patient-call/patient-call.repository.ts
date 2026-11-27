@@ -67,6 +67,8 @@ export interface PatientCallRepository {
     lockAppointment(clinicId: ClinicId, appointmentId: AppointmentId): Promise<void>;
     joinQueue(clinicId: ClinicId, appointmentId: AppointmentId, arrivedAt: Date): Promise<boolean>;
     findEntry(clinicId: ClinicId, appointmentId: AppointmentId): Promise<PatientCallEntry | null>;
+    /** Entrada existe e não foi retirada da fila (pode estar fechada por já estar em atendimento). */
+    isAnnounceable(clinicId: ClinicId, appointmentId: AppointmentId): Promise<boolean>;
     announce(
         clinicId: ClinicId,
         appointmentId: AppointmentId,

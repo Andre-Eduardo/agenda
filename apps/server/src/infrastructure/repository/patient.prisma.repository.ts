@@ -25,6 +25,17 @@ export class PatientPrismaRepository extends PrismaRepository implements Patient
         super(prismaProvider);
     }
 
+    async findNamesByIds(clinicId: ClinicId, ids: PatientId[]): Promise<Map<string, string>> {
+        if (ids.length === 0) return new Map();
+
+        const rows = await this.prisma.patient.findMany({
+            where: {clinicId: clinicId.toString(), id: {in: ids.map((id) => id.toString())}, deletedAt: null},
+            select: {id: true, person: {select: {name: true}}},
+        });
+
+        return new Map(rows.map((row) => [row.id, row.person.name]));
+    }
+
     async findById(id: PatientId, clinicId?: ClinicId): Promise<Patient | null> {
         const patient = await this.prisma.patient.findFirst({
             where: {

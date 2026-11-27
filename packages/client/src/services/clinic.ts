@@ -749,6 +749,7 @@ export const getChangeAccountTypeResponseMock = (overrideResponse: Partial<Clini
         'OUTROS',
     ] as const),
     roomManagementEnabled: faker.datatype.boolean(),
+    triageRequired: faker.datatype.boolean(),
     ...overrideResponse,
 });
 
@@ -782,6 +783,7 @@ export const getChangeAccountTypeResponseMock200 = (overrideResponse: Partial<Cl
         'OUTROS',
     ] as const),
     roomManagementEnabled: faker.datatype.boolean(),
+    triageRequired: faker.datatype.boolean(),
     ...overrideResponse,
 });
 
@@ -827,6 +829,7 @@ export const getCreateClinicResponseMock = (overrideResponse: Partial<Clinic> = 
         'OUTROS',
     ] as const),
     roomManagementEnabled: faker.datatype.boolean(),
+    triageRequired: faker.datatype.boolean(),
     ...overrideResponse,
 });
 
@@ -860,6 +863,7 @@ export const getCreateClinicResponseMock201 = (overrideResponse: Partial<Clinic>
         'OUTROS',
     ] as const),
     roomManagementEnabled: faker.datatype.boolean(),
+    triageRequired: faker.datatype.boolean(),
     ...overrideResponse,
 });
 
@@ -905,6 +909,7 @@ export const getGetClinicResponseMock = (overrideResponse: Partial<Clinic> = {})
         'OUTROS',
     ] as const),
     roomManagementEnabled: faker.datatype.boolean(),
+    triageRequired: faker.datatype.boolean(),
     ...overrideResponse,
 });
 
@@ -938,6 +943,7 @@ export const getGetClinicResponseMock200 = (overrideResponse: Partial<Clinic> = 
         'OUTROS',
     ] as const),
     roomManagementEnabled: faker.datatype.boolean(),
+    triageRequired: faker.datatype.boolean(),
     ...overrideResponse,
 });
 
@@ -983,6 +989,7 @@ export const getUpdateClinicResponseMock = (overrideResponse: Partial<Clinic> = 
         'OUTROS',
     ] as const),
     roomManagementEnabled: faker.datatype.boolean(),
+    triageRequired: faker.datatype.boolean(),
     ...overrideResponse,
 });
 
@@ -1016,6 +1023,7 @@ export const getUpdateClinicResponseMock200 = (overrideResponse: Partial<Clinic>
         'OUTROS',
     ] as const),
     roomManagementEnabled: faker.datatype.boolean(),
+    triageRequired: faker.datatype.boolean(),
     ...overrideResponse,
 });
 

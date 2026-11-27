@@ -2,6 +2,7 @@ import {Injectable} from '@nestjs/common';
 import {ApplicationService, Command} from '@application/@shared/application.service';
 import {assertEntityBelongsToClinic} from '@application/@shared/validators/cross-tenant.validator';
 import {AppointmentDto, NoShowAppointmentDto} from '@application/appointment/dtos';
+import {AttendanceScope} from '@application/attendance/services/attendance-scope.service';
 import {PatientAccessChecker} from '@application/clinic-patient-access/services/patient-access-checker.service';
 import {ResourceNotFoundException} from '@domain/@shared/exceptions';
 import {AppointmentRepository} from '@domain/appointment/appointment.repository';
@@ -13,7 +14,8 @@ export class MarkNoShowAppointmentService implements ApplicationService<NoShowAp
     constructor(
         private readonly patientAccessChecker: PatientAccessChecker,
         private readonly appointmentRepository: AppointmentRepository,
-        private readonly eventDispatcher: EventDispatcher
+        private readonly eventDispatcher: EventDispatcher,
+        private readonly attendanceScope: AttendanceScope
     ) {}
 
     async execute({actor, payload: {id}}: Command<NoShowAppointmentDto>): Promise<AppointmentDto> {
@@ -24,11 +26,13 @@ export class MarkNoShowAppointmentService implements ApplicationService<NoShowAp
         }
 
         assertEntityBelongsToClinic(appointment.clinicId, actor.clinicId);
-        await this.patientAccessChecker.assertCanAccess(
-            actor,
-            PatientId.from(appointment.patientId.toString()),
-            'appointment'
-        );
+        if (!(await this.attendanceScope.canOperate(actor, appointment.attendedByMemberId))) {
+            await this.patientAccessChecker.assertCanAccess(
+                actor,
+                PatientId.from(appointment.patientId.toString()),
+                'appointment'
+            );
+        }
 
         const fromStatus = appointment.status;
 
