@@ -263,7 +263,9 @@
     "admin": "Administration",
     "clinics": "Clinics",
     "logout": "Sign out",
-    "supportUsers": "Support users"
+    "supportUsers": "Support users",
+    "myFinancial": "My finances",
+    "mySettings": "My profile and office"
   },
   "patientCall": {
     "settings": "Call display settings",
@@ -508,5 +510,28 @@
   "support": {
     "banner": "You are in {{clinic}} as support: read-only, no clinical data. This session is recorded in the clinic audit log.",
     "leave": "Leave clinic"
+  },
+  "account": {
+    "tagline": {
+      "SOLO": "Private practice",
+      "CLINIC": "Clinic management"
+    },
+    "moduleOff": {
+      "TEAM": {
+        "title": "Team is a clinic feature",
+        "message": "Your account is for an independent professional. To work with a team, a secretary or other professionals, switch the account to Clinic in Settings."
+      },
+      "RECEPTION": {
+        "title": "Reception is off",
+        "message": "Turn on reception and the patient call panel in Settings to use this screen."
+      }
+    },
+    "reception": {
+      "title": "Reception and call panel",
+      "description": "Arrival queue, calling patients by name and a TV panel for the waiting room.",
+      "enabled": "Reception turned on",
+      "disabled": "Reception turned off",
+      "error": "Could not update reception."
+    }
   }
 }

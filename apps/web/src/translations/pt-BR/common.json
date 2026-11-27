@@ -263,7 +263,9 @@
     "admin": "Administração",
     "clinics": "Empresas",
     "logout": "Sair",
-    "supportUsers": "Usuários de suporte"
+    "supportUsers": "Usuários de suporte",
+    "myFinancial": "Meu financeiro",
+    "mySettings": "Meu perfil e consultório"
   },
   "patientCall": {
     "settings": "Configurar painel de chamada",
@@ -508,5 +510,28 @@
   "support": {
     "banner": "Você está em {{clinic}} como suporte: só leitura, sem dados clínicos. Esta sessão fica no log de auditoria da clínica.",
     "leave": "Sair da clínica"
+  },
+  "account": {
+    "tagline": {
+      "SOLO": "Consultório",
+      "CLINIC": "Gestão Clínica"
+    },
+    "moduleOff": {
+      "TEAM": {
+        "title": "Equipe é um recurso de clínica",
+        "message": "Sua conta é de profissional autônomo. Para trabalhar com equipe, secretária ou outros profissionais, passe a conta para Clínica em Configurações."
+      },
+      "RECEPTION": {
+        "title": "Recepção desligada",
+        "message": "Ligue a recepção e o painel de chamada em Configurações para usar esta tela."
+      }
+    },
+    "reception": {
+      "title": "Recepção e painel de chamada",
+      "description": "Fila de chegada, chamada de pacientes por nome e painel para TV da sala de espera.",
+      "enabled": "Recepção ativada",
+      "disabled": "Recepção desativada",
+      "error": "Erro ao atualizar a recepção."
+    }
   }
 }

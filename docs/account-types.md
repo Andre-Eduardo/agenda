@@ -43,3 +43,15 @@ Numa conta SOLO o pacote contratado vale direto para o único membro, sem a tela
 `20261127010000_clinic_account_type`: clínicas com `is_personal_clinic = true` e no máximo um
 membro de verdade viram `SOLO` sem recepção; todas as outras viram `CLINIC` com recepção ligada,
 para nenhuma clínica perder tela.
+
+## Web
+
+- `useAccount()` (`apps/web/src/hooks/useAccount.ts`): `accountType`, `isSolo` e
+  `hasClinicModule(module)`. Telas perguntam pelo módulo; o tipo de conta só muda textos.
+- Menu (`StackedLayout`): itens com `clinicModule` somem quando o módulo está desligado
+  (Recepção, Profissionais, Equipe). No SOLO, Financeiro vira "Meu financeiro" e
+  Configurações vira "Meu perfil e consultório".
+- Rotas de clínica (`/team`, `/team/$memberId`, `/professionals`, `/reception`,
+  `/reception/panel-settings`) ficam atrás de `ClinicModuleGate`, que explica o que falta
+  em vez de mostrar erros 403.
+- Configurações → Geral liga e desliga a recepção (`receptionEnabled`).

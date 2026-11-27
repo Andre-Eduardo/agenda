@@ -190,7 +190,7 @@ export function AdminClinicDetailPage() {
                         <div>
                             <div className={infoLabel}>Tipo</div>
                             <div className={infoValue}>
-                                {clinic.isPersonalClinic ? 'Consultório individual' : 'Clínica com equipe'}
+                                {clinic.accountType === 'SOLO' ? 'Autônomo (conta individual)' : 'Clínica com equipe'}
                             </div>
                         </div>
                     </div>

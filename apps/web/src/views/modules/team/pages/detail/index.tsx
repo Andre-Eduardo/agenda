@@ -15,11 +15,20 @@ import {Button} from '@/components/ui/componentes/button';
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@/components/ui/componentes/select';
 import {Skeleton} from '@/components/ui/componentes/skeleton';
 import {AgendaScheduleEditor} from '@/views/components/AgendaScheduleEditor';
+import {ClinicModuleGate} from '@/views/components/ClinicModuleGate';
 import {Page} from '@/views/components/Page';
 import {Card, backLink, cardSub, cardTitle, grantForm, grantList, grantRow, grantSelect, headerRow} from './styles';
 
+function GatedTeamMemberDetailPage() {
+    return (
+        <ClinicModuleGate module="TEAM">
+            <TeamMemberDetailPage />
+        </ClinicModuleGate>
+    );
+}
+
 export const Route = createFileRoute('/_stackedLayout/team/$memberId')({
-    component: TeamMemberDetailPage,
+    component: GatedTeamMemberDetailPage,
 });
 
 const ROLE_LABELS: Record<ClinicMemberRolesItem, string> = {

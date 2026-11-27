@@ -15,12 +15,21 @@ import {Button} from '@/components/ui/componentes/button';
 import {EmptyStateCard} from '@/components/ui/componentes/empty-state';
 import {Skeleton} from '@/components/ui/componentes/skeleton';
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from '@/components/ui/componentes/table';
+import {ClinicModuleGate} from '@/views/components/ClinicModuleGate';
 import {Page} from '@/views/components/Page';
 import {ProfessionalDetailsDialog} from '../../components/ProfessionalDetailsDialog';
 import {actionCell, memberCell, memberName, mutedText, skeletonRow} from './styles';
 
+function GatedProfessionalsPage() {
+    return (
+        <ClinicModuleGate module="TEAM">
+            <ProfessionalsPage />
+        </ClinicModuleGate>
+    );
+}
+
 export const Route = createFileRoute('/_stackedLayout/professionals')({
-    component: ProfessionalsPage,
+    component: GatedProfessionalsPage,
 });
 
 interface PaginatedPage<T> {

@@ -33,6 +33,7 @@ import {Skeleton} from '@/components/ui/componentes/skeleton';
 import {useCan, useCanState} from '@/hooks/useCan';
 import {css} from '@/styled-system/css';
 import {invalidateAppointmentRevenue} from '@/utils/appointment-revenue';
+import {ClinicModuleGate} from '@/views/components/ClinicModuleGate';
 import {ConfirmDialog} from '@/views/components/ConfirmDialog';
 import {Page} from '@/views/components/Page';
 import {PatientCallQueue} from '@/views/modules/patient-call/components/Queue';
@@ -42,8 +43,16 @@ import {
 } from '@/views/modules/patients/components/ClinicalData/PatientClinicalPreview';
 import styles from './styles.module.css';
 
+function GatedReceptionPage() {
+    return (
+        <ClinicModuleGate module="RECEPTION">
+            <ReceptionPage />
+        </ClinicModuleGate>
+    );
+}
+
 export const Route = createFileRoute('/_stackedLayout/reception')({
-    component: ReceptionPage,
+    component: GatedReceptionPage,
 });
 
 type Transition = 'checkin' | 'enqueue' | 'call' | 'start' | 'complete' | 'noShow';
