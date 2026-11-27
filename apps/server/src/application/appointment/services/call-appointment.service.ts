@@ -2,6 +2,7 @@ import {Inject, Injectable} from '@nestjs/common';
 import {ApplicationService, Command} from '@application/@shared/application.service';
 import {assertEntityBelongsToClinic} from '@application/@shared/validators/cross-tenant.validator';
 import {AppointmentDto, CallAppointmentDto} from '@application/appointment/dtos';
+import {AttendanceScope} from '@application/attendance/services/attendance-scope.service';
 import {PatientAccessChecker} from '@application/clinic-patient-access/services/patient-access-checker.service';
 import {PreconditionException, ResourceNotFoundException} from '@domain/@shared/exceptions';
 import {AppointmentRepository} from '@domain/appointment/appointment.repository';
@@ -14,7 +15,8 @@ export class CallAppointmentService implements ApplicationService<CallAppointmen
         private readonly patientAccessChecker: PatientAccessChecker,
         private readonly appointmentRepository: AppointmentRepository,
         @Inject(PatientCallRepository) private readonly queue: PatientCallRepository,
-        private readonly eventDispatcher: EventDispatcher
+        private readonly eventDispatcher: EventDispatcher,
+        private readonly attendanceScope: AttendanceScope
     ) {}
 
     execute(command: Command<CallAppointmentDto>): Promise<AppointmentDto> {
@@ -37,6 +39,7 @@ export class CallAppointmentService implements ApplicationService<CallAppointmen
 
         assertEntityBelongsToClinic(appointment.clinicId, actor.clinicId);
         await this.patientAccessChecker.assertCanAccess(actor, appointment.patientId, 'appointment');
+        await this.attendanceScope.assertCanCall(actor, appointment);
 
         if (usesQueue !== (await this.queue.isEnabled(actor.clinicId))) {
             throw new PreconditionException('Appointment start flow changed. Reload and try again.');

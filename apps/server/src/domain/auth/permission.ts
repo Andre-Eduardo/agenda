@@ -30,6 +30,8 @@ export enum AppointmentPermission {
     CHECKIN = 'appointment:checkin',
     CALL = 'appointment:call',
     START = 'appointment:start',
+    /** Preencher e liberar a triagem antes da chamada (recepção). */
+    TRIAGE = 'appointment:triage',
 }
 
 export enum PatientCallPermission {

@@ -69,6 +69,7 @@ export class OnboardSoloService implements ApplicationService<OnboardSoloDto, So
             accountType: ClinicAccountType.SOLO,
             receptionEnabled: false,
             roomManagementEnabled: false,
+            triageRequired: false,
             clinicSpecialties: payload.specialtyNormalized ? [payload.specialtyNormalized] : [],
             termsAcceptedAt: now,
             termsVersion: SOLO_TERMS_VERSION,

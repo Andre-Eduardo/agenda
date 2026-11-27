@@ -67,6 +67,9 @@ export class ClinicDto extends EntityDto {
     @ApiProperty({description: 'Enables physical room management and room conflict checks on scheduling'})
     roomManagementEnabled: boolean;
 
+    @ApiProperty({description: 'When enabled, a patient can only be called after the reception releases the triage'})
+    triageRequired: boolean;
+
     constructor(clinic: Clinic) {
         super(clinic);
         this.name = clinic.name;
@@ -87,5 +90,6 @@ export class ClinicDto extends EntityDto {
         this.logoUrl = clinic.logoUrl;
         this.clinicSpecialties = clinic.clinicSpecialties;
         this.roomManagementEnabled = clinic.roomManagementEnabled;
+        this.triageRequired = clinic.triageRequired;
     }
 }

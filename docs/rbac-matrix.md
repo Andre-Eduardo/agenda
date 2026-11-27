@@ -43,7 +43,7 @@ verificações de clínica e paciente às ações críticas.
 | audit-log | view | view | — | — | — |
 | appointment-payment | register, update, view | register, update, view | view | register, update, view | — |
 | appointment-reminder | dispatch, view | dispatch, view | — | — | — |
-| appointment | call, cancel, checkin, create, delete, start, update, view | call, cancel, checkin, create, delete, start, update, view | call, cancel, checkin, create, start, update, view | call, cancel, checkin, create, start, update, view | view |
+| appointment | call, cancel, checkin, create, delete, start, triage, update, view | call, cancel, checkin, create, delete, start, triage, update, view | call, cancel, checkin, create, start, update, view | call, cancel, checkin, create, start, triage, update, view | view |
 | billing | view-clinic, view-member | view-clinic, view-member | — | — | — |
 | clinic-license | — | — | — | — | — |
 | clinic-member | create | create | — | — | — |

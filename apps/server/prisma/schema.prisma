@@ -123,6 +123,8 @@ model Clinic {
   /// Ativa o conceito de salas/consultórios físicos e a checagem de conflito de
   /// sala no agendamento. Desligado por padrão — nem toda clínica usa esse controle.
   roomManagementEnabled Boolean            @default(false) @map("room_management_enabled")
+  /// Exige que a recepção libere a triagem antes de o paciente poder ser chamado.
+  triageRequired        Boolean            @default(false) @map("triage_required")
   createdAt             DateTime           @map("created_at")
   updatedAt             DateTime           @map("updated_at")
   deletedAt             DateTime?          @map("deleted_at")
@@ -152,6 +154,7 @@ model Clinic {
   patientAddresses          PatientAddress[]
   insurancePlans            InsurancePlan[]
   patientCallPanel          PatientCallPanel?
+  appointmentTriages        AppointmentTriage[]
   reminderConfig            ClinicReminderConfig?
   reminders                 AppointmentReminder[]
   recordAmendments          RecordAmendment[]
@@ -487,27 +490,27 @@ model Patient {
   updatedAt             DateTime       @map("updated_at")
   deletedAt             DateTime?      @map("deleted_at")
 
-  accesses             ClinicPatientAccess[]
-  appointments         Appointment[]
-  records              Record[]
-  clinicalProfile      ClinicalProfile?
-  alerts               PatientAlert[]
-  patientFiles         File[]
-  importedDocuments    ImportedDocument[]
-  patientForms         PatientForm[]
-  chatSessions         PatientChatSession[]
-  contextSnapshots     PatientContextSnapshot[]
-  contextChunks        PatientContextChunk[]
-  address              PatientAddress?
-  reminders            AppointmentReminder[]
+  accesses                       ClinicPatientAccess[]
+  appointments                   Appointment[]
+  records                        Record[]
+  clinicalProfile                ClinicalProfile?
+  alerts                         PatientAlert[]
+  patientFiles                   File[]
+  importedDocuments              ImportedDocument[]
+  patientForms                   PatientForm[]
+  chatSessions                   PatientChatSession[]
+  contextSnapshots               PatientContextSnapshot[]
+  contextChunks                  PatientContextChunk[]
+  address                        PatientAddress?
+  reminders                      AppointmentReminder[]
   communicationPreferenceChanges PatientCommunicationPreferenceChange[]
-  draftEvolutions      DraftEvolution[]
-  clinicalDocuments    ClinicalDocument[]
-  appointmentPayments  AppointmentPayment[]
-  agentProposals       AgentProposal[]              @relation("AgentProposalPatient")
-  patientPackages      PatientPackage[]
-  insuranceEnrollments PatientInsuranceEnrollment[]
-  subscriptions        PatientSubscription[]
+  draftEvolutions                DraftEvolution[]
+  clinicalDocuments              ClinicalDocument[]
+  appointmentPayments            AppointmentPayment[]
+  agentProposals                 AgentProposal[]                        @relation("AgentProposalPatient")
+  patientPackages                PatientPackage[]
+  insuranceEnrollments           PatientInsuranceEnrollment[]
+  subscriptions                  PatientSubscription[]
 
   @@unique([documentId, clinicId], name: "patient_document_clinic_unique")
   @@index([clinicId], name: "patient_clinic_idx")
@@ -768,48 +771,49 @@ model Procedure {
 /// - professionalId substituído por attendedByMemberId (membro que atende)
 ///   + createdByMemberId (membro que agendou — pode ser secretária)
 model Appointment {
-  id                 String                @id(map: "appointment_pk") @db.Uuid
-  clinicId           String                @map("clinic_id") @db.Uuid
-  clinic             Clinic                @relation(fields: [clinicId], references: [id])
+  id                    String                @id(map: "appointment_pk") @db.Uuid
+  clinicId              String                @map("clinic_id") @db.Uuid
+  clinic                Clinic                @relation(fields: [clinicId], references: [id])
   /// Membro que atende (deve ter role PROFESSIONAL)
-  attendedByMemberId String                @map("attended_by_member_id") @db.Uuid
-  attendedBy         ClinicMember          @relation("AppointmentAttendedBy", fields: [attendedByMemberId], references: [id])
+  attendedByMemberId    String                @map("attended_by_member_id") @db.Uuid
+  attendedBy            ClinicMember          @relation("AppointmentAttendedBy", fields: [attendedByMemberId], references: [id])
   /// Membro que registrou o agendamento (pode ser secretária ou o próprio profissional)
-  createdByMemberId  String                @map("created_by_member_id") @db.Uuid
-  createdBy          ClinicMember          @relation("AppointmentCreatedBy", fields: [createdByMemberId], references: [id])
-  patientId          String                @map("patient_id") @db.Uuid
-  patient            Patient               @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  createdByMemberId     String                @map("created_by_member_id") @db.Uuid
+  createdBy             ClinicMember          @relation("AppointmentCreatedBy", fields: [createdByMemberId], references: [id])
+  patientId             String                @map("patient_id") @db.Uuid
+  patient               Patient               @relation(fields: [patientId], references: [id], onDelete: Cascade)
   /// Sala do atendimento. Só usado quando Clinic.roomManagementEnabled está ativo.
-  roomId             String?               @map("room_id") @db.Uuid
-  room               Room?                 @relation(fields: [roomId], references: [id], onDelete: SetNull)
-  startAt            DateTime              @map("start_at")
-  endAt              DateTime              @map("end_at")
-  durationMinutes    Int                   @map("duration_minutes")
-  procedureId        String?               @map("procedure_id") @db.Uuid
-  procedure          Procedure?            @relation(fields: [clinicId, procedureId], references: [clinicId, id], onDelete: Restrict)
-  procedureName      String?               @map("procedure_name") @db.VarChar(120)
-  procedureColor     ProcedureColor?       @map("procedure_color")
-  procedurePriceInCents Int?               @map("procedure_price_in_cents")
-  procedureModality  ProcedureModality?    @map("procedure_modality")
-  type               AppointmentType       @map("type")
-  status             AppointmentStatus     @map("status")
-  canceledAt         DateTime?             @map("canceled_at")
-  canceledReason     String?               @map("canceled_reason")
-  note               String?
+  roomId                String?               @map("room_id") @db.Uuid
+  room                  Room?                 @relation(fields: [roomId], references: [id], onDelete: SetNull)
+  startAt               DateTime              @map("start_at")
+  endAt                 DateTime              @map("end_at")
+  durationMinutes       Int                   @map("duration_minutes")
+  procedureId           String?               @map("procedure_id") @db.Uuid
+  procedure             Procedure?            @relation(fields: [clinicId, procedureId], references: [clinicId, id], onDelete: Restrict)
+  procedureName         String?               @map("procedure_name") @db.VarChar(120)
+  procedureColor        ProcedureColor?       @map("procedure_color")
+  procedurePriceInCents Int?                  @map("procedure_price_in_cents")
+  procedureModality     ProcedureModality?    @map("procedure_modality")
+  type                  AppointmentType       @map("type")
+  status                AppointmentStatus     @map("status")
+  canceledAt            DateTime?             @map("canceled_at")
+  canceledReason        String?               @map("canceled_reason")
+  note                  String?
   /// Momento em que o paciente deu entrada na recepção (status ARRIVED)
-  arrivedAt          DateTime?             @map("arrived_at")
+  arrivedAt             DateTime?             @map("arrived_at")
   /// Momento em que o paciente foi chamado para a sala (status IN_PROGRESS)
-  calledAt           DateTime?             @map("called_at")
-  createdAt          DateTime              @map("created_at")
-  updatedAt          DateTime              @map("updated_at")
-  deletedAt          DateTime?             @map("deleted_at")
-  records            Record[]              @relation("AppointmentRecords")
-  followUpFromRecordId String?              @map("follow_up_from_record_id") @db.Uuid
-  followUpFromRecord  Record?               @relation("AppointmentFollowUpSource", fields: [followUpFromRecordId], references: [id], onDelete: SetNull)
-  reminders          AppointmentReminder[]
-  clinicalDocuments  ClinicalDocument[]
-  payment            AppointmentPayment?
-  patientCallEntry   PatientCallEntry?
+  calledAt              DateTime?             @map("called_at")
+  createdAt             DateTime              @map("created_at")
+  updatedAt             DateTime              @map("updated_at")
+  deletedAt             DateTime?             @map("deleted_at")
+  records               Record[]              @relation("AppointmentRecords")
+  followUpFromRecordId  String?               @map("follow_up_from_record_id") @db.Uuid
+  followUpFromRecord    Record?               @relation("AppointmentFollowUpSource", fields: [followUpFromRecordId], references: [id], onDelete: SetNull)
+  reminders             AppointmentReminder[]
+  clinicalDocuments     ClinicalDocument[]
+  payment               AppointmentPayment?
+  patientCallEntry      PatientCallEntry?
+  triage                AppointmentTriage?
 
   @@index([clinicId], name: "appointment_clinic_idx")
   @@index([attendedByMemberId], name: "appointment_attended_by_idx")
@@ -819,38 +823,63 @@ model Appointment {
   @@map("appointment")
 }
 
+/// Triagem feita na recepção antes da chamada. Todos os campos clínicos são opcionais:
+/// a recepção pode só liberar o paciente. `releasedAt` preenchido = liberado para chamada.
+model AppointmentTriage {
+  appointmentId      String      @id @map("appointment_id") @db.Uuid
+  appointment        Appointment @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
+  clinicId           String      @map("clinic_id") @db.Uuid
+  clinic             Clinic      @relation(fields: [clinicId], references: [id], onDelete: Cascade)
+  weightKg           Decimal?    @map("weight_kg") @db.Decimal(5, 2)
+  heightCm           Int?        @map("height_cm")
+  systolicPressure   Int?        @map("systolic_pressure")
+  diastolicPressure  Int?        @map("diastolic_pressure")
+  heartRate          Int?        @map("heart_rate")
+  temperatureCelsius Decimal?    @map("temperature_celsius") @db.Decimal(4, 1)
+  oxygenSaturation   Int?        @map("oxygen_saturation")
+  notes              String?     @db.VarChar(1000)
+  releasedAt         DateTime?   @map("released_at")
+  releasedByMemberId String?     @map("released_by_member_id") @db.Uuid
+  updatedByMemberId  String      @map("updated_by_member_id") @db.Uuid
+  createdAt          DateTime    @map("created_at")
+  updatedAt          DateTime    @map("updated_at")
+
+  @@index([clinicId])
+  @@map("appointment_triage")
+}
+
 /// A single public display and waiting queue per clinic.
 model PatientCallPanel {
-  clinicId           String   @id @map("clinic_id") @db.Uuid
-  clinic             Clinic   @relation(fields: [clinicId], references: [id], onDelete: Cascade)
-  publicToken        String?  @unique @map("public_token") @db.Char(64)
-  enabledAt          DateTime? @map("enabled_at")
-  title              String   @db.VarChar(80)
-  message            String   @db.VarChar(160)
-  foregroundColor    String   @map("foreground_color") @db.Char(7)
-  backgroundColor    String   @map("background_color") @db.Char(7)
-  useClinicLogo      Boolean  @map("use_clinic_logo")
-  soundEnabled       Boolean  @map("sound_enabled")
-  displaySeconds     Int      @map("display_seconds")
-  showRecentCalls    Boolean  @default(false) @map("show_recent_calls")
-  entries            PatientCallEntry[]
-  announcements      PatientCallAnnouncement[]
+  clinicId        String                    @id @map("clinic_id") @db.Uuid
+  clinic          Clinic                    @relation(fields: [clinicId], references: [id], onDelete: Cascade)
+  publicToken     String?                   @unique @map("public_token") @db.Char(64)
+  enabledAt       DateTime?                 @map("enabled_at")
+  title           String                    @db.VarChar(80)
+  message         String                    @db.VarChar(160)
+  foregroundColor String                    @map("foreground_color") @db.Char(7)
+  backgroundColor String                    @map("background_color") @db.Char(7)
+  useClinicLogo   Boolean                   @map("use_clinic_logo")
+  soundEnabled    Boolean                   @map("sound_enabled")
+  displaySeconds  Int                       @map("display_seconds")
+  showRecentCalls Boolean                   @default(false) @map("show_recent_calls")
+  entries         PatientCallEntry[]
+  announcements   PatientCallAnnouncement[]
 
   @@map("patient_call_panel")
 }
 
 model PatientCallEntry {
-  appointmentId      String   @id @map("appointment_id") @db.Uuid
-  appointment        Appointment @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
-  clinicId           String   @map("clinic_id") @db.Uuid
-  panel              PatientCallPanel @relation(fields: [clinicId], references: [clinicId], onDelete: Cascade)
-  arrivedAt          DateTime @map("arrived_at")
-  callCount          Int      @default(0) @map("call_count")
-  destination        String?  @db.VarChar(80)
-  closedAt           DateTime? @map("closed_at")
-  removalReason      String?  @map("removal_reason") @db.VarChar(250)
-  removedByMemberId  String?  @map("removed_by_member_id") @db.Uuid
-  announcements      PatientCallAnnouncement[]
+  appointmentId     String                    @id @map("appointment_id") @db.Uuid
+  appointment       Appointment               @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
+  clinicId          String                    @map("clinic_id") @db.Uuid
+  panel             PatientCallPanel          @relation(fields: [clinicId], references: [clinicId], onDelete: Cascade)
+  arrivedAt         DateTime                  @map("arrived_at")
+  callCount         Int                       @default(0) @map("call_count")
+  destination       String?                   @db.VarChar(80)
+  closedAt          DateTime?                 @map("closed_at")
+  removalReason     String?                   @map("removal_reason") @db.VarChar(250)
+  removedByMemberId String?                   @map("removed_by_member_id") @db.Uuid
+  announcements     PatientCallAnnouncement[]
 
   @@index([clinicId, closedAt, arrivedAt, appointmentId])
   @@map("patient_call_entry")
@@ -858,16 +887,16 @@ model PatientCallEntry {
 
 /// Immutable operational log. Actor ID is a snapshot to preserve the audit trail.
 model PatientCallAnnouncement {
-  id                 String   @id @db.Uuid
-  clinicId           String   @map("clinic_id") @db.Uuid
-  panel              PatientCallPanel @relation(fields: [clinicId], references: [clinicId], onDelete: Cascade)
-  appointmentId      String   @map("appointment_id") @db.Uuid
-  entry              PatientCallEntry @relation(fields: [appointmentId], references: [appointmentId], onDelete: Cascade)
-  actorMemberId      String   @map("actor_member_id") @db.Uuid
-  destination        String   @db.VarChar(80)
-  announcedAt        DateTime @map("announced_at")
-  visibleFrom        DateTime @map("visible_from")
-  expiresAt          DateTime @map("expires_at")
+  id            String           @id @db.Uuid
+  clinicId      String           @map("clinic_id") @db.Uuid
+  panel         PatientCallPanel @relation(fields: [clinicId], references: [clinicId], onDelete: Cascade)
+  appointmentId String           @map("appointment_id") @db.Uuid
+  entry         PatientCallEntry @relation(fields: [appointmentId], references: [appointmentId], onDelete: Cascade)
+  actorMemberId String           @map("actor_member_id") @db.Uuid
+  destination   String           @db.VarChar(80)
+  announcedAt   DateTime         @map("announced_at")
+  visibleFrom   DateTime         @map("visible_from")
+  expiresAt     DateTime         @map("expires_at")
 
   @@index([clinicId, visibleFrom])
   @@index([appointmentId])

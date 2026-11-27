@@ -33,6 +33,7 @@ import {KnowledgeChunkRepository} from '@domain/knowledge-base/knowledge-chunk.r
 import {PackagePlanRepository} from '@domain/package-plan/package-plan.repository';
 import {PatientAlertRepository} from '@domain/patient-alert/patient-alert.repository';
 import {PatientCallRepository} from '@domain/patient-call/patient-call.repository';
+import {AttendanceRepository} from '@domain/attendance/attendance.repository';
 import {PatientCommunicationPreferenceRepository} from '@domain/patient-communication-preference/patient-communication-preference.repository';
 import {PatientFormRepository} from '@domain/patient-form/patient-form.repository';
 import {PatientInsuranceEnrollmentRepository} from '@domain/patient-insurance-enrollment/patient-insurance-enrollment.repository';
@@ -84,6 +85,7 @@ import {MemberBlockPrismaRepository} from '@infrastructure/repository/member-blo
 import {PackagePlanPrismaRepository} from '@infrastructure/repository/package-plan.prisma.repository';
 import {PatientAlertPrismaRepository} from '@infrastructure/repository/patient-alert.prisma.repository';
 import {PatientCallPrismaRepository} from '@infrastructure/repository/patient-call.prisma.repository';
+import {AttendancePrismaRepository} from '@infrastructure/repository/attendance.prisma.repository';
 import {PatientChatMessagePrismaRepository} from '@infrastructure/repository/patient-chat-message.prisma.repository';
 import {PatientChatSessionPrismaRepository} from '@infrastructure/repository/patient-chat-session.prisma.repository';
 import {PatientCommunicationPreferencePrismaRepository} from '@infrastructure/repository/patient-communication-preference.prisma.repository';
@@ -137,6 +139,7 @@ const repositories: Provider[] = [
     // Schedule
     {provide: AppointmentRepository, useClass: AppointmentPrismaRepository},
     {provide: PatientCallRepository, useClass: PatientCallPrismaRepository},
+    {provide: AttendanceRepository, useClass: AttendancePrismaRepository},
     {provide: ProcedureRepository, useClass: ProcedurePrismaRepository},
     {provide: AppointmentPaymentRepository, useClass: AppointmentPaymentPrismaRepository},
     {provide: AppointmentReminderRepository, useClass: AppointmentReminderPrismaRepository},

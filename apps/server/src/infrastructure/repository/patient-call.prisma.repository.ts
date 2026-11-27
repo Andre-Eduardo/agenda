@@ -245,6 +245,15 @@ export class PatientCallPrismaRepository extends PrismaRepository implements Pat
         return row === null ? null : toEntry(row);
     }
 
+    async isAnnounceable(clinicId: ClinicId, appointmentId: AppointmentId): Promise<boolean> {
+        const row = await this.prisma.patientCallEntry.findFirst({
+            where: {clinicId: clinicId.toString(), appointmentId: appointmentId.toString(), removalReason: null},
+            select: {appointmentId: true},
+        });
+
+        return row !== null;
+    }
+
     async announce(
         clinicId: ClinicId,
         appointmentId: AppointmentId,

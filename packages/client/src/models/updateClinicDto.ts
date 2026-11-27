@@ -37,4 +37,5 @@ export type UpdateClinicDto = {
     clinicSpecialties: UpdateClinicDtoClinicSpecialtiesItem[];
     roomManagementEnabled: boolean;
     receptionEnabled: boolean;
+    triageRequired: boolean;
 };

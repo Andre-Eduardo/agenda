@@ -36,6 +36,7 @@ import {OnboardingModule} from '@application/onboarding/onboarding.module';
 import {PackagePlanModule} from '@application/package-plan/package-plan.module';
 import {PatientAlertModule} from '@application/patient-alert/patient-alert.module';
 import {PatientCallModule} from '@application/patient-call/patient-call.module';
+import {AttendanceModule} from '@application/attendance/attendance.module';
 import {PatientCommunicationPreferenceModule} from '@application/patient-communication-preference/patient-communication-preference.module';
 import {PatientFormModule} from '@application/patient-form/patient-form.module';
 import {PatientInsuranceEnrollmentModule} from '@application/patient-insurance-enrollment/patient-insurance-enrollment.module';
@@ -158,6 +159,7 @@ const guards: Provider[] = [
         ProfessionalModule,
         PatientModule,
         PatientCallModule,
+        AttendanceModule,
         AppointmentModule,
         ProcedureModule,
         AppointmentReminderModule,

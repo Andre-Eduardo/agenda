@@ -50,6 +50,7 @@ export class CreateClinicService implements ApplicationService<CreateClinicDto, 
             logoUrl: payload.logoUrl ?? null,
             clinicSpecialties: payload.clinicSpecialties ?? [],
             roomManagementEnabled: false,
+            triageRequired: false,
             termsAcceptedAt: null,
             termsVersion: null,
         });

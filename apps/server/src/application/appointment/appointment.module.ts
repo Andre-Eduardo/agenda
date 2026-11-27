@@ -1,4 +1,5 @@
 import {Module} from '@nestjs/common';
+import {AttendanceModule} from '@application/attendance/attendance.module';
 import {AppointmentController} from '@application/appointment/controllers/appointment.controller';
 import {
     AppointmentFollowUpService,
@@ -27,7 +28,7 @@ import {UserRepository} from '@domain/user/user.repository';
 import {InfrastructureModule} from '@infrastructure/infrastructure.module';
 
 @Module({
-    imports: [InfrastructureModule, ProfessionalAgendaAccessModule, ClinicPatientAccessModule],
+    imports: [InfrastructureModule, AttendanceModule, ProfessionalAgendaAccessModule, ClinicPatientAccessModule],
     controllers: [AppointmentController],
     providers: [
         AppointmentFollowUpService,
