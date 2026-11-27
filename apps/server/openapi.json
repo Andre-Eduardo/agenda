@@ -866,7 +866,7 @@
             }
           }
         },
-        "summary": "Lists the AI modules the current member can use",
+        "summary": "Lists the AI modules, clinic modules and account type of the current member",
         "tags": [
           "ClinicLicense"
         ]
@@ -10367,9 +10367,15 @@
             "nullable": true,
             "format": "email"
           },
+          "accountType": {
+            "type": "string",
+            "enum": [
+              "SOLO",
+              "CLINIC"
+            ]
+          },
           "isPersonalClinic": {
-            "type": "boolean",
-            "default": false
+            "type": "boolean"
           },
           "street": {
             "type": "string",
@@ -10428,6 +10434,14 @@
           "name"
         ]
       },
+      "ClinicAccountType": {
+        "type": "string",
+        "enum": [
+          "SOLO",
+          "CLINIC"
+        ],
+        "description": "SOLO = autônomo (conta de uma pessoa, sem equipe); CLINIC = clínica com equipe"
+      },
       "Clinic": {
         "type": "object",
         "properties": {
@@ -10467,9 +10481,22 @@
             "nullable": true,
             "description": "Email"
           },
+          "accountType": {
+            "description": "SOLO = autônomo (conta de uma pessoa, sem equipe); CLINIC = clínica com equipe",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ClinicAccountType"
+              }
+            ]
+          },
+          "receptionEnabled": {
+            "type": "boolean",
+            "description": "Reception and patient call panel module. Always available on CLINIC; optional on SOLO"
+          },
           "isPersonalClinic": {
             "type": "boolean",
-            "description": "true = autônomo (sem equipe). Front esconde menus de membros."
+            "deprecated": true,
+            "description": "Use accountType. true when accountType = SOLO."
           },
           "street": {
             "type": "object",
@@ -10546,6 +10573,8 @@
           "documentId",
           "phone",
           "email",
+          "accountType",
+          "receptionEnabled",
           "isPersonalClinic",
           "street",
           "number",
@@ -10631,6 +10660,9 @@
           },
           "roomManagementEnabled": {
             "type": "boolean"
+          },
+          "receptionEnabled": {
+            "type": "boolean"
           }
         },
         "required": [
@@ -10647,7 +10679,8 @@
           "country",
           "logoUrl",
           "clinicSpecialties",
-          "roomManagementEnabled"
+          "roomManagementEnabled",
+          "receptionEnabled"
         ]
       },
       "InsurancePlan": {
@@ -11065,18 +11098,45 @@
           "clinicMemberIds"
         ]
       },
+      "OperationalModuleType": {
+        "type": "string",
+        "enum": [
+          "TEAM",
+          "RECEPTION"
+        ],
+        "description": "Clinic modules (team, reception) enabled for the account"
+      },
       "MemberModules": {
         "type": "object",
         "properties": {
           "modules": {
             "type": "array",
+            "description": "AI modules",
             "items": {
               "$ref": "#/components/schemas/ModuleType"
             }
+          },
+          "operationalModules": {
+            "type": "array",
+            "description": "Clinic modules (team, reception) enabled for the account",
+            "items": {
+              "$ref": "#/components/schemas/OperationalModuleType"
+            }
+          },
+          "accountType": {
+            "nullable": true,
+            "description": "SOLO = autônomo; CLINIC = clínica com equipe. Null outside a clinic.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ClinicAccountType"
+              }
+            ]
           }
         },
         "required": [
-          "modules"
+          "modules",
+          "operationalModules",
+          "accountType"
         ]
       },
       "ConfigureClinicLicenseInputDto": {

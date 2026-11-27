@@ -1,4 +1,4 @@
-import {Clinic, ClinicId} from '../clinic.entity';
+import {Clinic, ClinicAccountType, ClinicId} from '../clinic.entity';
 
 export function fakeClinic(payload: Partial<Clinic> = {}): Clinic {
     return new Clinic({
@@ -7,7 +7,8 @@ export function fakeClinic(payload: Partial<Clinic> = {}): Clinic {
         documentId: null,
         phone: null,
         email: null,
-        isPersonalClinic: false,
+        accountType: ClinicAccountType.CLINIC,
+        receptionEnabled: true,
         createdAt: new Date(1000),
         updatedAt: new Date(1000),
         ...payload,

@@ -58,6 +58,7 @@ import {AuditLogRepository} from '@domain/audit/audit-log.repository';
 import {createAuthorizer} from '@domain/auth/authorizer';
 import {ClinicLicenseRepository} from '@domain/clinic-license/clinic-license.repository';
 import {ClinicMemberRepository} from '@domain/clinic-member/clinic-member.repository';
+import {ClinicRepository} from '@domain/clinic/clinic.repository';
 import {TokenProvider} from '@domain/user/token';
 import {UserRepository} from '@domain/user/user.repository';
 import {EnvConfigService} from '@infrastructure/config';
@@ -112,13 +113,14 @@ const guards: Provider[] = [
             userRepository: UserRepository,
             clinicMemberRepository: ClinicMemberRepository,
             auditLogRepository: AuditLogRepository,
-            clinicLicenseRepository: ClinicLicenseRepository
+            clinicLicenseRepository: ClinicLicenseRepository,
+            clinicRepository: ClinicRepository
         ) =>
             new AuthGuard(
                 configService.auth.cookieName,
                 configService.clinicMember.cookieName,
                 tokenProvider,
-                createAuthorizer(userRepository, clinicMemberRepository, clinicLicenseRepository),
+                createAuthorizer(userRepository, clinicMemberRepository, clinicLicenseRepository, clinicRepository),
                 new Reflector(),
                 clinicMemberRepository,
                 auditLogRepository,
@@ -131,6 +133,7 @@ const guards: Provider[] = [
             ClinicMemberRepository,
             AuditLogRepository,
             ClinicLicenseRepository,
+            ClinicRepository,
         ],
     },
 ];

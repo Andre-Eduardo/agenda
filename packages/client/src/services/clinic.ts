@@ -27,6 +27,7 @@ import type {RequestHandlerOptions} from 'msw';
 import {apiClient} from '../api-client';
 import type {ErrorType} from '../api-client';
 import type {CreateClinicDto, CreateInsurancePlanDto, UpdateClinicDto} from '../models';
+import {ClinicAccountType} from '../models';
 import type {ApiProblem, Clinic, InsurancePlan} from '../models';
 
 type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
@@ -645,6 +646,8 @@ export const getCreateClinicResponseMock = (overrideResponse: Partial<Clinic> = 
     documentId: {},
     phone: {},
     email: {},
+    accountType: faker.helpers.arrayElement(Object.values(ClinicAccountType)),
+    receptionEnabled: faker.datatype.boolean(),
     isPersonalClinic: faker.datatype.boolean(),
     street: {},
     number: {},
@@ -676,6 +679,8 @@ export const getCreateClinicResponseMock201 = (overrideResponse: Partial<Clinic>
     documentId: {},
     phone: {},
     email: {},
+    accountType: faker.helpers.arrayElement(Object.values(ClinicAccountType)),
+    receptionEnabled: faker.datatype.boolean(),
     isPersonalClinic: faker.datatype.boolean(),
     street: {},
     number: {},
@@ -719,6 +724,8 @@ export const getGetClinicResponseMock = (overrideResponse: Partial<Clinic> = {})
     documentId: {},
     phone: {},
     email: {},
+    accountType: faker.helpers.arrayElement(Object.values(ClinicAccountType)),
+    receptionEnabled: faker.datatype.boolean(),
     isPersonalClinic: faker.datatype.boolean(),
     street: {},
     number: {},
@@ -750,6 +757,8 @@ export const getGetClinicResponseMock200 = (overrideResponse: Partial<Clinic> = 
     documentId: {},
     phone: {},
     email: {},
+    accountType: faker.helpers.arrayElement(Object.values(ClinicAccountType)),
+    receptionEnabled: faker.datatype.boolean(),
     isPersonalClinic: faker.datatype.boolean(),
     street: {},
     number: {},
@@ -793,6 +802,8 @@ export const getUpdateClinicResponseMock = (overrideResponse: Partial<Clinic> = 
     documentId: {},
     phone: {},
     email: {},
+    accountType: faker.helpers.arrayElement(Object.values(ClinicAccountType)),
+    receptionEnabled: faker.datatype.boolean(),
     isPersonalClinic: faker.datatype.boolean(),
     street: {},
     number: {},
@@ -824,6 +835,8 @@ export const getUpdateClinicResponseMock200 = (overrideResponse: Partial<Clinic>
     documentId: {},
     phone: {},
     email: {},
+    accountType: faker.helpers.arrayElement(Object.values(ClinicAccountType)),
+    receptionEnabled: faker.datatype.boolean(),
     isPersonalClinic: faker.datatype.boolean(),
     street: {},
     number: {},

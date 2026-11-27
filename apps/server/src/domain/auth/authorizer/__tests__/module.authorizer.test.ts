@@ -2,19 +2,31 @@ import {mock} from 'jest-mock-extended';
 import {AccessDeniedReason} from '@domain/@shared/exceptions';
 import type {Authorizer} from '@domain/auth/authorizer';
 import {ModuleAuthorizer} from '@domain/auth/authorizer';
-import {AgentPermission, ClinicalChatPermission, Permission, RecordPermission} from '@domain/auth/permission';
-import {ModuleType, permissionsFor} from '@domain/clinic-license/models';
+import {
+    AgentPermission,
+    ClinicalChatPermission,
+    PatientCallPermission,
+    Permission,
+    ProfessionalAgendaAccessPermission,
+    RecordPermission,
+} from '@domain/auth/permission';
+import {ModuleType, OperationalModuleType, permissionsFor} from '@domain/clinic-license/models';
 import type {ModuleAccess} from '@domain/clinic-license/services';
 import {ClinicMemberId} from '@domain/clinic-member/entities';
 import {UserId} from '@domain/user/entities';
 
-function setup({memberModules = [] as ModuleType[], clinicModules = [] as ModuleType[]} = {}) {
+function setup({
+    memberModules = [] as ModuleType[],
+    clinicModules = [] as ModuleType[],
+    operationalModules = [OperationalModuleType.TEAM, OperationalModuleType.RECEPTION],
+} = {}) {
     const inner = mock<Authorizer>();
     const moduleAccess = mock<ModuleAccess>();
 
     inner.getPermissions.mockResolvedValue(Permission.all());
     inner.denialReason.mockResolvedValue(AccessDeniedReason.INSUFFICIENT_PERMISSIONS);
-    moduleAccess.getAllowedPermissions.mockResolvedValue(permissionsFor(memberModules));
+    moduleAccess.getAllowedPermissions.mockResolvedValue(permissionsFor(memberModules, operationalModules));
+    moduleAccess.getOperationalModulesOfMember.mockResolvedValue(new Set(operationalModules));
     moduleAccess.getClinicModulesOfMember.mockResolvedValue(new Set(clinicModules));
 
     return {inner, authorizer: new ModuleAuthorizer(moduleAccess, inner)};
@@ -53,6 +65,22 @@ describe('A module authorizer', () => {
         await expect(authorizer.denialReason(memberId, userId, [AgentPermission.ASK])).resolves.toBe(
             AccessDeniedReason.MODULE_NOT_ASSIGNED
         );
+    });
+
+    it('drops the clinic module permissions a solo account does not have', async () => {
+        const {authorizer} = setup({operationalModules: [OperationalModuleType.RECEPTION]});
+        const permissions = await authorizer.getPermissions(memberId, userId);
+
+        expect(permissions.has(PatientCallPermission.OPERATE)).toBe(true);
+        expect(permissions.has(ProfessionalAgendaAccessPermission.GRANT)).toBe(false);
+    });
+
+    it('explains a denial caused by a clinic module the account does not have', async () => {
+        const {authorizer} = setup({operationalModules: []});
+
+        await expect(
+            authorizer.denialReason(memberId, userId, [ProfessionalAgendaAccessPermission.GRANT])
+        ).resolves.toBe(AccessDeniedReason.MODULE_NOT_ENABLED);
     });
 
     it('falls back to the role decision otherwise', async () => {

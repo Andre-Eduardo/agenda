@@ -80,9 +80,18 @@ model Person {
 // 2. CLÍNICA — TENANT RAIZ
 // ─────────────────────────────────────────────────────────────────────────────
 
+/// SOLO = profissional autônomo, conta de uma pessoa só (sem equipe).
+/// CLINIC = clínica com equipe (recepção, funcionários, agenda delegada).
+enum ClinicAccountType {
+  SOLO
+  CLINIC
+
+  @@map("clinic_account_type")
+}
+
 /// Toda entidade de dado clínico pertence a uma Clinic. Boundary de isolamento:
-/// nenhum dado vaza entre clínicas. Para profissional autônomo, uma Clinic é criada
-/// automaticamente com isPersonalClinic = true (front esconde menus de equipe).
+/// nenhum dado vaza entre clínicas. O profissional autônomo também tem uma Clinic,
+/// com accountType = SOLO: os módulos de clínica (equipe, recepção) ficam desligados.
 model Clinic {
   id                    String             @id(map: "clinic_pk") @db.Uuid
   name                  String
@@ -90,8 +99,10 @@ model Clinic {
   documentId            String?            @map("document_id")
   phone                 String?
   email                 String?            @db.Citext()
-  /// true = autônomo usando o sistema sem clínica real. Front simplifica UI.
-  isPersonalClinic      Boolean            @default(false) @map("is_personal_clinic")
+  /// Tipo de conta: decide quais módulos de clínica existem (ver docs/account-types.md).
+  accountType           ClinicAccountType  @default(CLINIC) @map("account_type")
+  /// Módulo de recepção e painel de chamada. Ligado em CLINIC; opcional no SOLO.
+  receptionEnabled      Boolean            @default(true) @map("reception_enabled")
   /// Endereço da clínica
   street                String?
   number                String?
@@ -174,7 +185,7 @@ model Clinic {
 /// Roles definem o TETO de capacidade. As permissões granulares por paciente
 /// e por documento vivem em ClinicPatientAccess e DocumentPermission.
 enum ClinicMemberRole {
-  /// Acesso total. Gerencia membros e permissões. Único membro inicial em isPersonalClinic.
+  /// Acesso total. Gerencia membros e permissões. Único membro de uma conta SOLO.
   OWNER
   /// Gerencia membros (exceto OWNER) e permissões. Não pode se auto-promover a OWNER.
   ADMIN

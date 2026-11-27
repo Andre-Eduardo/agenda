@@ -1,0 +1,45 @@
+# Tipos de conta: autônomo (SOLO) e clínica (CLINIC)
+
+Um só sistema e um só tenant (`Clinic`). O tipo de conta (`Clinic.accountType`) decide
+quais **módulos de clínica** existem. Todo o resto (pacientes, agenda, prontuário,
+documentos, pagamentos do paciente, lembretes, IA, auditoria) é igual nos dois.
+
+| Tipo | Para quem | Membros |
+| --- | --- | --- |
+| `SOLO` | Profissional autônomo que usa o sistema sozinho | 1 (OWNER + PROFESSIONAL). Vínculos de suporte não contam. |
+| `CLINIC` | Clínica com equipe | Vários, limitados pela licença |
+
+## Módulos de clínica
+
+Fonte da verdade: `apps/server/src/domain/clinic-license/models/operational-module.ts`.
+
+| Módulo | Permissões | Ligado quando |
+| --- | --- | --- |
+| `TEAM` | `professional-agenda-access:*`, `clinic-patient-access:*`, `document-permission:*` | `accountType = CLINIC` |
+| `RECEPTION` | `patient-call:*` | `Clinic.receptionEnabled = true` (padrão em CLINIC; opcional no SOLO, em Configurações) |
+
+- Ao contrário dos pacotes de IA, valem para a clínica inteira: não há vaga nem liberação por membro.
+- O papel continua sendo o teto; o `ModuleAuthorizer` filtra as permissões do módulo desligado e
+  nega com `403 MODULE_NOT_ENABLED`.
+- `clinic-member:create` fica fora do módulo porque a mesma permissão lista os membros.
+  O bloqueio do segundo membro numa conta SOLO fica em `CreateClinicMemberService`
+  (vale para `POST /clinic-members`, `/invite` e `/accounts`).
+- Salas continuam no liga/desliga que já existia (`roomManagementEnabled`), nos dois tipos.
+
+## Pacotes de IA no SOLO
+
+Numa conta SOLO o pacote contratado vale direto para o único membro, sem a tela de liberação
+(`ModuleAccess.getMemberModules`).
+
+## API
+
+- `GET /clinic-members/me/modules` devolve `modules` (IA), `operationalModules` e `accountType`.
+  O web usa isso para montar menu e rotas (`useAccount`).
+- `Clinic` expõe `accountType` e `receptionEnabled`. `isPersonalClinic` continua na resposta
+  e na criação como alias obsoleto (`true` = SOLO).
+
+## Migração
+
+`20261127010000_clinic_account_type`: clínicas com `is_personal_clinic = true` e no máximo um
+membro de verdade viram `SOLO` sem recepção; todas as outras viram `CLINIC` com recepção ligada,
+para nenhuma clínica perder tela.

@@ -10,7 +10,9 @@ import {ClinicLicense} from '@domain/clinic-license/entities';
 import {ModuleType} from '@domain/clinic-license/models';
 import type {ClinicMemberRepository} from '@domain/clinic-member/clinic-member.repository';
 import {ClinicMember, ClinicMemberId, ClinicMemberRole} from '@domain/clinic-member/entities';
+import type {ClinicRepository} from '@domain/clinic/clinic.repository';
 import {ClinicId} from '@domain/clinic/entities';
+import {fakeClinic} from '@domain/clinic/entities/__tests__/fake-clinic';
 import {UserId} from '@domain/user/entities';
 import {fakeUser} from '@domain/user/entities/__tests__/fake-user';
 import type {UserRepository} from '@domain/user/user.repository';
@@ -58,7 +60,15 @@ function setup(roles: ClinicMemberRole[], isActive = true, withModules = true) {
     clinicLicenseRepository.findByClinicId.mockResolvedValue(
         withModules ? licenseWithEveryModule(actor.clinicId, actor.clinicMemberId) : null
     );
-    const authorizer = createAuthorizer(userRepository, clinicMemberRepository, clinicLicenseRepository);
+    const clinicRepository = mock<ClinicRepository>();
+
+    clinicRepository.findById.mockResolvedValue(fakeClinic({id: actor.clinicId}));
+    const authorizer = createAuthorizer(
+        userRepository,
+        clinicMemberRepository,
+        clinicLicenseRepository,
+        clinicRepository
+    );
     const service = new GetCurrentClinicMemberPermissionsService(clinicMemberRepository, authorizer);
 
     return {actor, member, service, clinicMemberRepository, userRepository};

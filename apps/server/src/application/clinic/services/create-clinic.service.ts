@@ -5,7 +5,7 @@ import {AccessDeniedException, AccessDeniedReason} from '@domain/@shared/excepti
 import {DocumentId, Email, Phone} from '@domain/@shared/value-objects';
 import {GlobalRole} from '@domain/auth';
 import {ClinicRepository} from '@domain/clinic/clinic.repository';
-import {Clinic} from '@domain/clinic/entities';
+import {Clinic, ClinicAccountType} from '@domain/clinic/entities';
 import {EventDispatcher} from '@domain/event';
 import {UserRepository} from '@domain/user/user.repository';
 
@@ -28,13 +28,17 @@ export class CreateClinicService implements ApplicationService<CreateClinicDto, 
             throw new AccessDeniedException(CLINIC_CREATION_NOT_ALLOWED, AccessDeniedReason.NOT_ALLOWED);
         }
 
+        const accountType =
+            payload.accountType ??
+            (payload.isPersonalClinic === true ? ClinicAccountType.SOLO : ClinicAccountType.CLINIC);
         const clinic = Clinic.create({
             name: payload.name,
             createdByUserId: actor.userId,
             documentId: payload.documentId ? DocumentId.create(payload.documentId) : null,
             phone: payload.phone ? Phone.create(payload.phone) : null,
             email: payload.email ? Email.create(payload.email) : null,
-            isPersonalClinic: payload.isPersonalClinic ?? false,
+            accountType,
+            receptionEnabled: accountType === ClinicAccountType.CLINIC,
             street: payload.street ?? null,
             number: payload.number ?? null,
             complement: payload.complement ?? null,

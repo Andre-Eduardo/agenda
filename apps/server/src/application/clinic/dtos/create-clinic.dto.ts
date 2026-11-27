@@ -1,5 +1,6 @@
 import {z} from 'zod';
 import {createZodDto} from '@application/@shared/validation/dto';
+import {ClinicAccountType} from '@domain/clinic/entities';
 import {AiSpecialtyGroup} from '@domain/form-template/entities';
 
 export const createClinicSchema = z.object({
@@ -7,7 +8,9 @@ export const createClinicSchema = z.object({
     documentId: z.string().nullish(),
     phone: z.string().nullish(),
     email: z.string().email().nullish(),
-    isPersonalClinic: z.boolean().default(false),
+    accountType: z.nativeEnum(ClinicAccountType).optional(),
+    // Obsoleto: use accountType. `true` equivale a SOLO.
+    isPersonalClinic: z.boolean().optional(),
     street: z.string().nullish(),
     number: z.string().nullish(),
     complement: z.string().nullish(),

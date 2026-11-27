@@ -23,7 +23,7 @@ Clinic
   ├── members: ClinicMember[]
   ├── patients: Patient[]
   ├── appointments, records, clinicalProfiles, ...
-  └── isPersonalClinic: boolean   // autônomo → 1 owner, sem equipe
+  └── accountType: SOLO | CLINIC  // SOLO = autônomo, 1 membro, sem equipe
 ```
 
 Toda entidade clínica (Patient, Appointment, Record, ClinicalProfile, PatientAlert, PatientForm, FormTemplate?, ChatSession, ContextSnapshot/Chunk, InteractionLog, AgentProposal, KnowledgeChunk?) tem `clinicId` como **boundary de tenant**.
@@ -168,7 +168,7 @@ Polimórfico: aplica-se a Record, File, ImportedDocument, PatientForm, ClinicalP
 
 ### Profissional autônomo (sem equipe)
 
-Cria-se uma `Clinic` com `isPersonalClinic = true`. Apenas um `ClinicMember` (OWNER) liga o User à clínica. O frontend esconde menus de gestão de equipe.
+Cria-se uma `Clinic` com `accountType = SOLO`. Apenas um `ClinicMember` (OWNER + PROFESSIONAL) liga o User à clínica; o cadastro de um segundo membro é recusado com `MODULE_NOT_ENABLED`. Os módulos de clínica (equipe, recepção) ficam desligados. Detalhes em [`account-types.md`](account-types.md).
 
 ### Clínica com equipe
 

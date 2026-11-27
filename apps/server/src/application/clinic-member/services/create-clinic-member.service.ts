@@ -14,6 +14,9 @@ import {ClinicId} from '@domain/clinic/entities';
 import {EventDispatcher} from '@domain/event';
 import {UserId} from '@domain/user/entities';
 
+export const SOLO_ACCOUNT_HAS_NO_TEAM =
+    'A solo account has a single member. Switch it to a clinic account to add a team.';
+
 @Injectable()
 export class CreateClinicMemberService implements ApplicationService<CreateClinicMemberDto, ClinicMemberDto> {
     constructor(
@@ -31,6 +34,11 @@ export class CreateClinicMemberService implements ApplicationService<CreateClini
         if (clinic === null) throw new ResourceNotFoundException('clinic.not_found', payload.clinicId);
 
         const members = await this.clinicMemberRepository.findByClinicId(clinicId);
+
+        // Conta SOLO é de uma pessoa só: equipe exige passar a conta para CLINIC.
+        if (clinic.isSolo() && members.some((member) => !member.supportAccess && member.deletedAt === null)) {
+            throw new AccessDeniedException(SOLO_ACCOUNT_HAS_NO_TEAM, AccessDeniedReason.MODULE_NOT_ENABLED);
+        }
 
         if (members.length === 0) {
             if (

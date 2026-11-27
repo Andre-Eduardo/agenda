@@ -12,6 +12,12 @@ import {ClinicCreatedEvent, ClinicChangedEvent, ClinicDeletedEvent} from '@domai
 import type {AiSpecialtyGroup} from '@domain/form-template/entities';
 import type {UserId} from '@domain/user/entities';
 
+/** SOLO = profissional autônomo (conta de uma pessoa); CLINIC = clínica com equipe. */
+export enum ClinicAccountType {
+    SOLO = 'SOLO',
+    CLINIC = 'CLINIC',
+}
+
 export type ClinicProps = EntityProps<Clinic>;
 export type CreateClinic = CreateEntity<Clinic>;
 export type UpdateClinic = Partial<ClinicProps>;
@@ -22,8 +28,10 @@ export class Clinic extends AggregateRoot<ClinicId> {
     documentId: DocumentId | null;
     phone: Phone | null;
     email: Email | null;
-    /** true = autônomo usando o sistema sem clínica real. Front simplifica UI. */
-    isPersonalClinic: boolean;
+    /** Decide quais módulos de clínica existem: SOLO não tem equipe. */
+    accountType: ClinicAccountType;
+    /** Recepção e painel de chamada. Ligado em CLINIC; opcional no SOLO. */
+    receptionEnabled: boolean;
     street: string | null;
     number: string | null;
     complement: string | null;
@@ -44,7 +52,8 @@ export class Clinic extends AggregateRoot<ClinicId> {
         this.documentId = props.documentId ?? null;
         this.phone = props.phone ?? null;
         this.email = props.email ?? null;
-        this.isPersonalClinic = props.isPersonalClinic;
+        this.accountType = props.accountType;
+        this.receptionEnabled = props.receptionEnabled;
         this.street = props.street ?? null;
         this.number = props.number ?? null;
         this.complement = props.complement ?? null;
@@ -61,6 +70,7 @@ export class Clinic extends AggregateRoot<ClinicId> {
 
     static create(props: CreateClinic): Clinic {
         const now = new Date();
+        const accountType = props.accountType ?? ClinicAccountType.CLINIC;
 
         const clinic = new Clinic({
             ...props,
@@ -70,7 +80,8 @@ export class Clinic extends AggregateRoot<ClinicId> {
             documentId: props.documentId ?? null,
             phone: props.phone ?? null,
             email: props.email ?? null,
-            isPersonalClinic: props.isPersonalClinic ?? false,
+            accountType,
+            receptionEnabled: props.receptionEnabled ?? accountType === ClinicAccountType.CLINIC,
             street: props.street ?? null,
             number: props.number ?? null,
             complement: props.complement ?? null,
@@ -125,8 +136,14 @@ export class Clinic extends AggregateRoot<ClinicId> {
 
         if (props.roomManagementEnabled !== undefined) this.roomManagementEnabled = props.roomManagementEnabled;
 
+        if (props.receptionEnabled !== undefined) this.receptionEnabled = props.receptionEnabled;
+
         this.validate();
         this.addEvent(new ClinicChangedEvent({oldState, newState: this}));
+    }
+
+    isSolo(): boolean {
+        return this.accountType === ClinicAccountType.SOLO;
     }
 
     delete(): void {
@@ -148,7 +165,8 @@ export class Clinic extends AggregateRoot<ClinicId> {
             documentId: this.documentId?.toJSON() ?? null,
             phone: this.phone?.toJSON() ?? null,
             email: this.email?.toJSON() ?? null,
-            isPersonalClinic: this.isPersonalClinic,
+            accountType: this.accountType,
+            receptionEnabled: this.receptionEnabled,
             street: this.street,
             number: this.number,
             complement: this.complement,

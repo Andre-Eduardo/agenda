@@ -1,15 +1,35 @@
 import {mock} from 'jest-mock-extended';
-import {AiFormPermission, ClinicalChatPermission} from '@domain/auth/permission';
+import {
+    AiFormPermission,
+    ClinicalChatPermission,
+    PatientCallPermission,
+    ProfessionalAgendaAccessPermission,
+} from '@domain/auth/permission';
 import type {ClinicLicenseRepository} from '@domain/clinic-license/clinic-license.repository';
 import {ClinicLicense} from '@domain/clinic-license/entities';
-import {ModuleType} from '@domain/clinic-license/models';
+import {ModuleType, OperationalModuleType} from '@domain/clinic-license/models';
 import {ModuleAccess} from '@domain/clinic-license/services';
 import type {ClinicMemberRepository} from '@domain/clinic-member/clinic-member.repository';
 import {ClinicMember, ClinicMemberId, ClinicMemberRole} from '@domain/clinic-member/entities';
-import {ClinicId} from '@domain/clinic/entities';
+import type {ClinicRepository} from '@domain/clinic/clinic.repository';
+import {ClinicAccountType, ClinicId} from '@domain/clinic/entities';
+import {fakeClinic} from '@domain/clinic/entities/__tests__/fake-clinic';
 import {UserId} from '@domain/user/entities';
 
-function setup({isActive = true, withLicense = true} = {}) {
+function clinicRepositoryWith(accountType = ClinicAccountType.CLINIC, receptionEnabled = true) {
+    const clinicRepository = mock<ClinicRepository>();
+
+    clinicRepository.findById.mockResolvedValue(fakeClinic({accountType, receptionEnabled}));
+
+    return clinicRepository;
+}
+
+function setup({
+    isActive = true,
+    withLicense = true,
+    accountType = ClinicAccountType.CLINIC,
+    receptionEnabled = true,
+} = {}) {
     const clinicId = ClinicId.generate();
     const memberId = ClinicMemberId.generate();
     const member = new ClinicMember({
@@ -37,7 +57,15 @@ function setup({isActive = true, withLicense = true} = {}) {
     clinicLicenseRepository.findByClinicId.mockResolvedValue(withLicense ? license : null);
     clinicMemberRepository.findById.mockResolvedValue(member);
 
-    return {clinicId, memberId, access: new ModuleAccess(clinicLicenseRepository, clinicMemberRepository)};
+    return {
+        clinicId,
+        memberId,
+        access: new ModuleAccess(
+            clinicLicenseRepository,
+            clinicMemberRepository,
+            clinicRepositoryWith(accountType, receptionEnabled)
+        ),
+    };
 }
 
 describe('Module access', () => {
@@ -81,7 +109,7 @@ describe('Module access', () => {
         clinicLicenseRepository.findByClinicId.mockResolvedValue(license);
         clinicMemberRepository.findById.mockResolvedValue(support);
 
-        const access = new ModuleAccess(clinicLicenseRepository, clinicMemberRepository);
+        const access = new ModuleAccess(clinicLicenseRepository, clinicMemberRepository, clinicRepositoryWith());
 
         await expect(access.getMemberModules(support.id)).resolves.toEqual(new Set([ModuleType.AI_CHAT]));
         expect(license.membersOf(ModuleType.AI_CHAT)).toEqual([]);
@@ -104,9 +132,60 @@ describe('Module access', () => {
 
         clinicMemberRepository.findById.mockResolvedValue(null);
 
-        const access = new ModuleAccess(clinicLicenseRepository, clinicMemberRepository);
+        const access = new ModuleAccess(clinicLicenseRepository, clinicMemberRepository, clinicRepositoryWith());
 
         await expect(access.getMemberModules(ClinicMemberId.generate())).resolves.toEqual(new Set());
         await expect(access.getClinicModulesOfMember(ClinicMemberId.generate())).resolves.toEqual(new Set());
+    });
+
+    it('turns on the team and reception for a clinic account', async () => {
+        const {clinicId, memberId, access} = setup();
+
+        await expect(access.getOperationalModules(clinicId)).resolves.toEqual(
+            new Set([OperationalModuleType.TEAM, OperationalModuleType.RECEPTION])
+        );
+
+        const permissions = await access.getAllowedPermissions(memberId);
+
+        expect(permissions.has(ProfessionalAgendaAccessPermission.GRANT)).toBe(true);
+        expect(permissions.has(PatientCallPermission.OPERATE)).toBe(true);
+    });
+
+    it('keeps a solo account without team, and with reception only when it turned it on', async () => {
+        const solo = setup({accountType: ClinicAccountType.SOLO, receptionEnabled: false});
+
+        await expect(solo.access.getOperationalModules(solo.clinicId)).resolves.toEqual(new Set());
+
+        const permissions = await solo.access.getAllowedPermissions(solo.memberId);
+
+        expect(permissions.has(ProfessionalAgendaAccessPermission.GRANT)).toBe(false);
+        expect(permissions.has(PatientCallPermission.OPERATE)).toBe(false);
+
+        const withReception = setup({accountType: ClinicAccountType.SOLO, receptionEnabled: true});
+
+        await expect(withReception.access.getOperationalModulesOfMember(withReception.memberId)).resolves.toEqual(
+            new Set([OperationalModuleType.RECEPTION])
+        );
+    });
+
+    it('gives a solo member every contracted AI module without assignment', async () => {
+        const {memberId, access} = setup({accountType: ClinicAccountType.SOLO});
+
+        await expect(access.getMemberModules(memberId)).resolves.toEqual(
+            new Set([ModuleType.AI_CHAT, ModuleType.AI_FORMS])
+        );
+    });
+
+    it('has no clinic modules for an unknown clinic or inactive member', async () => {
+        const clinicRepository = mock<ClinicRepository>();
+        const clinicMemberRepository = mock<ClinicMemberRepository>();
+
+        clinicRepository.findById.mockResolvedValue(null);
+        clinicMemberRepository.findById.mockResolvedValue(null);
+
+        const access = new ModuleAccess(mock<ClinicLicenseRepository>(), clinicMemberRepository, clinicRepository);
+
+        await expect(access.getOperationalModules(ClinicId.generate())).resolves.toEqual(new Set());
+        await expect(access.getOperationalModulesOfMember(ClinicMemberId.generate())).resolves.toEqual(new Set());
     });
 });
