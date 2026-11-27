@@ -199,6 +199,49 @@
         ]
       }
     },
+    "/api/v1/clinics/me/account-type": {
+      "put": {
+        "description": "SOLO → CLINIC opens the team and reception and requires confirmTeamAccess. CLINIC → SOLO requires a single active member (support access does not count).",
+        "operationId": "changeAccountType",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChangeClinicAccountTypeDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Clinic with its new account type",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Clinic"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Request failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Switches the current account between solo (autônomo) and clinic (owner only)",
+        "tags": [
+          "Clinic"
+        ]
+      }
+    },
     "/api/v1/clinics": {
       "post": {
         "operationId": "createClinic",
@@ -725,6 +768,19 @@
             "description": "Search term to filter by clinic name",
             "schema": {
               "type": "string"
+            }
+          },
+          {
+            "name": "accountType",
+            "required": true,
+            "in": "query",
+            "description": "Only solo or only clinic accounts",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "SOLO",
+                "CLINIC"
+              ]
             }
           }
         ],
@@ -10389,27 +10445,9 @@
           "newPassword"
         ]
       },
-      "CreateClinicDto": {
+      "ChangeClinicAccountTypeDto": {
         "type": "object",
         "properties": {
-          "name": {
-            "type": "string",
-            "minLength": 1,
-            "maxLength": 255
-          },
-          "documentId": {
-            "type": "string",
-            "nullable": true
-          },
-          "phone": {
-            "type": "string",
-            "nullable": true
-          },
-          "email": {
-            "type": "string",
-            "nullable": true,
-            "format": "email"
-          },
           "accountType": {
             "type": "string",
             "enum": [
@@ -10417,64 +10455,13 @@
               "CLINIC"
             ]
           },
-          "isPersonalClinic": {
-            "type": "boolean"
-          },
-          "street": {
-            "type": "string",
-            "nullable": true
-          },
-          "number": {
-            "type": "string",
-            "nullable": true
-          },
-          "complement": {
-            "type": "string",
-            "nullable": true
-          },
-          "neighborhood": {
-            "type": "string",
-            "nullable": true
-          },
-          "city": {
-            "type": "string",
-            "nullable": true
-          },
-          "state": {
-            "type": "string",
-            "nullable": true
-          },
-          "zipCode": {
-            "type": "string",
-            "nullable": true
-          },
-          "country": {
-            "type": "string",
-            "nullable": true
-          },
-          "logoUrl": {
-            "type": "string",
-            "nullable": true,
-            "format": "uri"
-          },
-          "clinicSpecialties": {
-            "type": "array",
-            "items": {
-              "type": "string",
-              "enum": [
-                "SAUDE_MENTAL",
-                "REABILITACAO",
-                "MEDICINA_GERAL",
-                "MEDICINA_ESPECIALIZADA",
-                "NUTRICAO_DIETETICA",
-                "ENFERMAGEM",
-                "OUTROS"
-              ]
-            }
+          "confirmTeamAccess": {
+            "type": "boolean",
+            "default": false
           }
         },
         "required": [
-          "name"
+          "accountType"
         ]
       },
       "ClinicAccountType": {
@@ -10630,6 +10617,94 @@
           "logoUrl",
           "clinicSpecialties",
           "roomManagementEnabled"
+        ]
+      },
+      "CreateClinicDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 255
+          },
+          "documentId": {
+            "type": "string",
+            "nullable": true
+          },
+          "phone": {
+            "type": "string",
+            "nullable": true
+          },
+          "email": {
+            "type": "string",
+            "nullable": true,
+            "format": "email"
+          },
+          "accountType": {
+            "type": "string",
+            "enum": [
+              "SOLO",
+              "CLINIC"
+            ]
+          },
+          "isPersonalClinic": {
+            "type": "boolean"
+          },
+          "street": {
+            "type": "string",
+            "nullable": true
+          },
+          "number": {
+            "type": "string",
+            "nullable": true
+          },
+          "complement": {
+            "type": "string",
+            "nullable": true
+          },
+          "neighborhood": {
+            "type": "string",
+            "nullable": true
+          },
+          "city": {
+            "type": "string",
+            "nullable": true
+          },
+          "state": {
+            "type": "string",
+            "nullable": true
+          },
+          "zipCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "country": {
+            "type": "string",
+            "nullable": true
+          },
+          "logoUrl": {
+            "type": "string",
+            "nullable": true,
+            "format": "uri"
+          },
+          "clinicSpecialties": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "SAUDE_MENTAL",
+                "REABILITACAO",
+                "MEDICINA_GERAL",
+                "MEDICINA_ESPECIALIZADA",
+                "NUTRICAO_DIETETICA",
+                "ENFERMAGEM",
+                "OUTROS"
+              ]
+            }
+          }
+        },
+        "required": [
+          "name"
         ]
       },
       "UpdateClinicDto": {

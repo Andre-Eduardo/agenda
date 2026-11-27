@@ -37,6 +37,13 @@ Numa conta SOLO o pacote contratado vale direto para o único membro, sem a tela
   O web usa isso para montar menu e rotas (`useAccount`).
 - `Clinic` expõe `accountType` e `receptionEnabled`. `isPersonalClinic` continua na resposta
   e na criação como alias obsoleto (`true` = SOLO).
+- `PUT /clinics/me/account-type` (`ChangeClinicAccountTypeService`): só o OWNER (sem acesso de
+  suporte) troca o tipo. SOLO → CLINIC exige `confirmTeamAccess: true` e liga a recepção.
+  CLINIC → SOLO exige no máximo um membro ativo (fora acesso de suporte). Falha de pré-condição
+  responde 409. Emite `CLINIC_ACCOUNT_TYPE_CHANGED` e grava no audit log
+  (`CLINIC_ACCOUNT_TYPE:CHANGE:<tipo>`). No web fica em Configurações > Geral.
+- `GET /admin/clinics?accountType=SOLO|CLINIC` filtra a lista do admin (filtro e selo na tela
+  `/admin`).
 
 ## Cadastro e cobrança
 

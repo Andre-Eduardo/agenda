@@ -1,6 +1,7 @@
 import {Module} from '@nestjs/common';
 import {ClinicController} from '@application/clinic/controllers/clinic.controller';
 import {
+    ChangeClinicAccountTypeService,
     CreateClinicService,
     CreateInsurancePlanService,
     GetClinicService,
@@ -20,6 +21,7 @@ import {InfrastructureModule} from '@infrastructure/infrastructure.module';
         ListInsurancePlansService,
         SearchClinicsService,
         UpdateClinicService,
+        ChangeClinicAccountTypeService,
     ],
     exports: [SearchClinicsService],
 })

@@ -50,3 +50,25 @@ Feature: Solo account (autônomo)
             """
         When I send a "GET" request to "/api/v1/patient-call/settings"
         Then the request should succeed with a 200 status code
+
+    Scenario: The owner turns the solo account into a clinic and adds a team
+        When I send a "PUT" request to "/api/v1/clinics/me/account-type" with:
+            | accountType | CLINIC |
+        Then the request should fail with a 409 status code
+        When I send a "PUT" request to "/api/v1/clinics/me/account-type" with:
+            | accountType       | CLINIC |
+            | confirmTeamAccess | true   |
+        Then the request should succeed with a 200 status code
+        And the response should contain:
+            | accountType      | CLINIC |
+            | receptionEnabled | true   |
+        When I send a "POST" request to "/api/v1/clinic-members/accounts" with:
+            | name     | Maria Secretária                  |
+            | username | maria_${ref:var:contextId}        |
+            | email    | maria_${ref:var:contextId}@ex.com |
+            | password | M4ria.Sec!                        |
+            | roles    | ["SECRETARY"]                     |
+        Then the request should succeed with a 201 status code
+        When I send a "PUT" request to "/api/v1/clinics/me/account-type" with:
+            | accountType | SOLO |
+        Then the request should fail with a 409 status code

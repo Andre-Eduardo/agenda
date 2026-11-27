@@ -1,5 +1,12 @@
 import {useEffect, useState} from 'react';
-import {useEnterClinic, useGetClinicLicense, useSearchClinics, type Clinic} from '@agenda-app/client';
+import {
+    useEnterClinic,
+    useGetClinicLicense,
+    useSearchClinics,
+    type Clinic,
+    type ClinicAccountType,
+    type SearchClinicsParams,
+} from '@agenda-app/client';
 import {useQueryClient, type UseQueryResult} from '@tanstack/react-query';
 import {createFileRoute, Link, useNavigate} from '@tanstack/react-router';
 import {Building2, ChevronRight, LogIn, Search} from 'lucide-react';
@@ -8,6 +15,7 @@ import {Badge} from '@/components/ui/componentes/badge';
 import {Button} from '@/components/ui/componentes/button';
 import {EmptyStateCard} from '@/components/ui/componentes/empty-state';
 import {Input} from '@/components/ui/componentes/input';
+import {SegmentedControl, SegmentedControlItem} from '@/components/ui/componentes/segmented-control';
 import {Skeleton} from '@/components/ui/componentes/skeleton';
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from '@/components/ui/componentes/table';
 import {useCan} from '@/hooks/useCan';
@@ -102,6 +110,7 @@ export function AdminClinicsPage() {
     const canEnter = useCan({has: 'support-access:enter'});
     const [search, setSearch] = useState('');
     const [debouncedSearch, setDebouncedSearch] = useState('');
+    const [accountType, setAccountType] = useState<ClinicAccountType | 'ALL'>('ALL');
 
     useEffect(() => {
         const timeout = setTimeout(() => setDebouncedSearch(search), 300);
@@ -113,10 +122,12 @@ export function AdminClinicsPage() {
     // codegen issue worked around for useSearchProfessionals/useSearchPatients elsewhere.
     const query = useSearchClinics({
         term: debouncedSearch,
+        ...(accountType === 'ALL' ? {} : {accountType}),
         limit: SEARCH_LIMIT,
         cursor: null,
         sort: null,
-    }) as unknown as UseQueryResult<{data: Clinic[]; totalCount: number}>;
+        // The generated params mark the optional accountType filter as required; omit it for "all".
+    } as SearchClinicsParams) as unknown as UseQueryResult<{data: Clinic[]; totalCount: number}>;
 
     const clinics = query.data?.data ?? [];
     const totalCount = query.data?.totalCount ?? 0;
@@ -131,6 +142,14 @@ export function AdminClinicsPage() {
                     placeholder="Buscar por nome…"
                     aria-label="Buscar clínicas"
                 />
+                <SegmentedControl
+                    value={accountType}
+                    onValueChange={(value) => setAccountType(value === 'SOLO' || value === 'CLINIC' ? value : 'ALL')}
+                >
+                    <SegmentedControlItem value="ALL">Todas</SegmentedControlItem>
+                    <SegmentedControlItem value="CLINIC">Clínicas</SegmentedControlItem>
+                    <SegmentedControlItem value="SOLO">Autônomos</SegmentedControlItem>
+                </SegmentedControl>
             </div>
 
             {query.isLoading && (
@@ -162,7 +181,12 @@ export function AdminClinicsPage() {
                         {clinics.map((clinic) => (
                             <TableRow key={clinic.id}>
                                 <TableCell>
-                                    <div className={clinicName}>{clinic.name}</div>
+                                    <div className={clinicName}>
+                                        {clinic.name}{' '}
+                                        <Badge variant="outline">
+                                            {clinic.accountType === 'SOLO' ? 'Autônomo' : 'Clínica'}
+                                        </Badge>
+                                    </div>
                                     <div className={clinicSub}>
                                         {[clinic.city, clinic.state].filter(Boolean).join(' - ') || '—'}
                                     </div>

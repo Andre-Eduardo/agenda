@@ -6,9 +6,14 @@ import {
     type EntityProps,
 } from '@domain/@shared/entity';
 import {EntityId} from '@domain/@shared/entity/id';
-import {InvalidInputException} from '@domain/@shared/exceptions';
+import {InvalidInputException, PreconditionException} from '@domain/@shared/exceptions';
 import type {DocumentId, Email, Phone} from '@domain/@shared/value-objects';
-import {ClinicCreatedEvent, ClinicChangedEvent, ClinicDeletedEvent} from '@domain/clinic/events';
+import {
+    ClinicAccountTypeChangedEvent,
+    ClinicChangedEvent,
+    ClinicCreatedEvent,
+    ClinicDeletedEvent,
+} from '@domain/clinic/events';
 import type {AiSpecialtyGroup} from '@domain/form-template/entities';
 import type {UserId} from '@domain/user/entities';
 
@@ -17,6 +22,9 @@ export enum ClinicAccountType {
     SOLO = 'SOLO',
     CLINIC = 'CLINIC',
 }
+
+export const SOLO_ACCOUNT_REQUIRES_SINGLE_MEMBER =
+    'A solo account has a single member. Deactivate the other members before switching back to solo.';
 
 export type ClinicProps = EntityProps<Clinic>;
 export type CreateClinic = CreateEntity<Clinic>;
@@ -147,6 +155,27 @@ export class Clinic extends AggregateRoot<ClinicId> {
 
         this.validate();
         this.addEvent(new ClinicChangedEvent({oldState, newState: this}));
+    }
+
+    /**
+     * Passa a conta de autônomo para clínica (abre a equipe e liga a recepção) ou de volta
+     * para autônomo, o que só vale com um único membro de verdade (vínculos de suporte não contam).
+     */
+    changeAccountType(accountType: ClinicAccountType, activeMembers: number): void {
+        if (accountType === this.accountType) return;
+
+        if (accountType === ClinicAccountType.SOLO && activeMembers > 1) {
+            throw new PreconditionException(SOLO_ACCOUNT_REQUIRES_SINGLE_MEMBER);
+        }
+
+        const from = this.accountType;
+
+        this.accountType = accountType;
+
+        if (accountType === ClinicAccountType.CLINIC) this.receptionEnabled = true;
+
+        this.update();
+        this.addEvent(new ClinicAccountTypeChangedEvent({clinic: this, from, to: accountType}));
     }
 
     isSolo(): boolean {

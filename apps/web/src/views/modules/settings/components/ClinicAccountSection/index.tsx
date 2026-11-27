@@ -1,7 +1,10 @@
+import {useState} from 'react';
 import {
+    getGetClinicQueryKey,
     getGetCurrentClinicMemberPermissionsQueryKey,
     getGetMyModulesQueryKey,
     useGetClinic,
+    useChangeAccountType,
     useGetCurrentClinicMember,
     useUpdateClinic,
     type UpdateClinicDto,
@@ -9,9 +12,11 @@ import {
 import {useQueryClient} from '@tanstack/react-query';
 import {useTranslation} from 'react-i18next';
 import {toast} from 'sonner';
+import {Button} from '@/components/ui/componentes/button';
 import {SegmentedControl, SegmentedControlItem} from '@/components/ui/componentes/segmented-control';
 import {Skeleton} from '@/components/ui/componentes/skeleton';
 import {useCan} from '@/hooks/useCan';
+import {ConfirmDialog} from '@/views/components/ConfirmDialog';
 import {
     FormCard,
     FormSection,
@@ -33,6 +38,38 @@ export function ClinicAccountSection() {
     const updateClinic = useUpdateClinic();
     const canUpdateClinic = useCan({has: 'clinic:update'});
     const receptionEnabled = clinicQuery.data?.receptionEnabled ?? false;
+    const accountType = clinicQuery.data?.accountType;
+    const isOwner = memberQuery.data?.roles.includes('OWNER') === true && !memberQuery.data.supportAccess;
+    const changeAccountType = useChangeAccountType();
+    const [confirming, setConfirming] = useState(false);
+
+    function refreshAccount() {
+        void clinicQuery.refetch();
+
+        if (clinicId) void queryClient.invalidateQueries({queryKey: getGetClinicQueryKey(clinicId)});
+
+        void queryClient.invalidateQueries({queryKey: getGetMyModulesQueryKey()});
+        void queryClient.invalidateQueries({queryKey: getGetCurrentClinicMemberPermissionsQueryKey()});
+    }
+
+    function handleChangeAccountType() {
+        const next = accountType === 'SOLO' ? 'CLINIC' : 'SOLO';
+
+        changeAccountType.mutate(
+            {data: {accountType: next, confirmTeamAccess: next === 'CLINIC'}},
+            {
+                onSuccess: () => {
+                    setConfirming(false);
+                    toast.success(t(`account.type.changed.${next}`));
+                    refreshAccount();
+                },
+                onError: () => {
+                    setConfirming(false);
+                    toast.error(t(`account.type.error.${next}`));
+                },
+            }
+        );
+    }
 
     function handleToggleReception(enabled: boolean) {
         if (!clinicId) return;
@@ -90,6 +127,35 @@ export function ClinicAccountSection() {
                     </FormSection>
                 )}
             </FormCard>
+
+            {isOwner && accountType && (
+                <FormCard>
+                    <FormSection>
+                        <div className="sec-head">
+                            <span className="sec-num">2</span>
+                            <div>
+                                <div className={sectionTitle}>{t(`account.type.title.${accountType}`)}</div>
+                                <div className={sectionSub}>{t(`account.type.description.${accountType}`)}</div>
+                            </div>
+                        </div>
+                        <Button type="button" variant="outline" onClick={() => setConfirming(true)}>
+                            {t(`account.type.action.${accountType}`)}
+                        </Button>
+                    </FormSection>
+                </FormCard>
+            )}
+
+            {accountType && (
+                <ConfirmDialog
+                    opened={confirming}
+                    title={t(`account.type.action.${accountType}`)}
+                    message={t(`account.type.confirm.${accountType}`)}
+                    confirmLabel={t(`account.type.action.${accountType}`)}
+                    onConfirm={handleChangeAccountType}
+                    onCancel={() => setConfirming(false)}
+                    isLoading={changeAccountType.isPending}
+                />
+            )}
         </div>
     );
 }

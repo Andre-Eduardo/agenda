@@ -560,6 +560,32 @@
       "enabled": "Recepção ativada",
       "disabled": "Recepção desativada",
       "error": "Erro ao atualizar a recepção."
+    },
+    "type": {
+      "title": {
+        "SOLO": "Conta de autônomo",
+        "CLINIC": "Conta de clínica"
+      },
+      "description": {
+        "SOLO": "Você usa o sistema sozinho. Se passar a trabalhar com secretária ou outros profissionais, transforme a conta em clínica: nada muda de lugar, só a equipe e a recepção são ligadas.",
+        "CLINIC": "Conta com equipe. Se voltou a atender sozinho, desative os outros membros e volte para conta de autônomo."
+      },
+      "action": {
+        "SOLO": "Passar para conta de clínica",
+        "CLINIC": "Voltar para conta de autônomo"
+      },
+      "confirm": {
+        "SOLO": "Ao passar para clínica, você poderá cadastrar equipe e dar a ela acesso aos seus pacientes. Você continua decidindo quem vê cada paciente, e a mudança fica registrada na auditoria. Confirma?",
+        "CLINIC": "A conta volta a ser só sua: equipe e agenda compartilhada são desligadas. Só é possível com um único membro ativo. Confirma?"
+      },
+      "changed": {
+        "CLINIC": "Agora sua conta é de clínica.",
+        "SOLO": "Agora sua conta é de autônomo."
+      },
+      "error": {
+        "CLINIC": "Não foi possível passar a conta para clínica.",
+        "SOLO": "Não foi possível voltar para autônomo. Desative os outros membros da equipe antes."
+      }
     }
   }
 }

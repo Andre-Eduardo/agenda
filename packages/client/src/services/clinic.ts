@@ -26,11 +26,92 @@ import {HttpResponse, http} from 'msw';
 import type {RequestHandlerOptions} from 'msw';
 import {apiClient} from '../api-client';
 import type {ErrorType} from '../api-client';
-import type {CreateClinicDto, CreateInsurancePlanDto, UpdateClinicDto} from '../models';
+import type {ChangeClinicAccountTypeDto, CreateClinicDto, CreateInsurancePlanDto, UpdateClinicDto} from '../models';
 import {ClinicAccountType} from '../models';
 import type {ApiProblem, Clinic, InsurancePlan} from '../models';
 
 type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
+
+/**
+ * SOLO → CLINIC opens the team and reception and requires confirmTeamAccess. CLINIC → SOLO requires a single active member (support access does not count).
+ * @summary Switches the current account between solo (autônomo) and clinic (owner only)
+ */
+export const changeAccountType = (
+    changeClinicAccountTypeDto: ChangeClinicAccountTypeDto,
+    options?: SecondParameter<typeof apiClient>
+) => {
+    return apiClient<Clinic>(
+        {
+            url: `/api/v1/clinics/me/account-type`,
+            method: 'PUT',
+            headers: {'Content-Type': 'application/json'},
+            data: changeClinicAccountTypeDto,
+        },
+        options
+    );
+};
+
+export const getChangeAccountTypeMutationOptions = <TError = ErrorType<ApiProblem>, TContext = unknown>(options?: {
+    mutation?: UseMutationOptions<
+        Awaited<ReturnType<typeof changeAccountType>>,
+        TError,
+        {data: ChangeClinicAccountTypeDto},
+        TContext
+    >;
+    request?: SecondParameter<typeof apiClient>;
+}): UseMutationOptions<
+    Awaited<ReturnType<typeof changeAccountType>>,
+    TError,
+    {data: ChangeClinicAccountTypeDto},
+    TContext
+> => {
+    const mutationKey = ['changeAccountType'];
+    const {mutation: mutationOptions, request: requestOptions} = options
+        ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
+            ? options
+            : {...options, mutation: {...options.mutation, mutationKey}}
+        : {mutation: {mutationKey}, request: undefined};
+
+    const mutationFn: MutationFunction<
+        Awaited<ReturnType<typeof changeAccountType>>,
+        {data: ChangeClinicAccountTypeDto}
+    > = (props) => {
+        const {data} = props ?? {};
+
+        return changeAccountType(data, requestOptions);
+    };
+
+    return {mutationFn, ...mutationOptions};
+};
+
+export type ChangeAccountTypeMutationResult = NonNullable<Awaited<ReturnType<typeof changeAccountType>>>;
+export type ChangeAccountTypeMutationBody = ChangeClinicAccountTypeDto;
+export type ChangeAccountTypeMutationError = ErrorType<ApiProblem>;
+
+/**
+ * @summary Switches the current account between solo (autônomo) and clinic (owner only)
+ */
+export const useChangeAccountType = <TError = ErrorType<ApiProblem>, TContext = unknown>(
+    options?: {
+        mutation?: UseMutationOptions<
+            Awaited<ReturnType<typeof changeAccountType>>,
+            TError,
+            {data: ChangeClinicAccountTypeDto},
+            TContext
+        >;
+        request?: SecondParameter<typeof apiClient>;
+    },
+    queryClient?: QueryClient
+): UseMutationResult<
+    Awaited<ReturnType<typeof changeAccountType>>,
+    TError,
+    {data: ChangeClinicAccountTypeDto},
+    TContext
+> => {
+    const mutationOptions = getChangeAccountTypeMutationOptions(options);
+
+    return useMutation(mutationOptions, queryClient);
+};
 
 /**
  * @summary Creates a new clinic
@@ -638,6 +719,84 @@ export const useCreateInsurancePlan = <TError = ErrorType<ApiProblem>, TContext 
     return useMutation(mutationOptions, queryClient);
 };
 
+export const getChangeAccountTypeResponseMock = (overrideResponse: Partial<Clinic> = {}): Clinic => ({
+    id: faker.string.uuid(),
+    createdAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
+    updatedAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
+    name: faker.string.alpha({length: {min: 10, max: 20}}),
+    documentId: {},
+    phone: {},
+    email: {},
+    accountType: faker.helpers.arrayElement(Object.values(ClinicAccountType)),
+    receptionEnabled: faker.datatype.boolean(),
+    isPersonalClinic: faker.datatype.boolean(),
+    street: {},
+    number: {},
+    complement: {},
+    neighborhood: {},
+    city: {},
+    state: {},
+    zipCode: {},
+    country: {},
+    logoUrl: {},
+    clinicSpecialties: faker.helpers.arrayElements([
+        'SAUDE_MENTAL',
+        'REABILITACAO',
+        'MEDICINA_GERAL',
+        'MEDICINA_ESPECIALIZADA',
+        'NUTRICAO_DIETETICA',
+        'ENFERMAGEM',
+        'OUTROS',
+    ] as const),
+    roomManagementEnabled: faker.datatype.boolean(),
+    ...overrideResponse,
+});
+
+export const getChangeAccountTypeResponseMock200 = (overrideResponse: Partial<Clinic> = {}): Clinic => ({
+    id: faker.string.uuid(),
+    createdAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
+    updatedAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
+    name: faker.string.alpha({length: {min: 10, max: 20}}),
+    documentId: {},
+    phone: {},
+    email: {},
+    accountType: faker.helpers.arrayElement(Object.values(ClinicAccountType)),
+    receptionEnabled: faker.datatype.boolean(),
+    isPersonalClinic: faker.datatype.boolean(),
+    street: {},
+    number: {},
+    complement: {},
+    neighborhood: {},
+    city: {},
+    state: {},
+    zipCode: {},
+    country: {},
+    logoUrl: {},
+    clinicSpecialties: faker.helpers.arrayElements([
+        'SAUDE_MENTAL',
+        'REABILITACAO',
+        'MEDICINA_GERAL',
+        'MEDICINA_ESPECIALIZADA',
+        'NUTRICAO_DIETETICA',
+        'ENFERMAGEM',
+        'OUTROS',
+    ] as const),
+    roomManagementEnabled: faker.datatype.boolean(),
+    ...overrideResponse,
+});
+
+export const getChangeAccountTypeResponseMockDefault = (overrideResponse: Partial<ApiProblem> = {}): ApiProblem => ({
+    title: faker.string.alpha({length: {min: 10, max: 20}}),
+    type: faker.internet.url(),
+    detail: faker.string.alpha({length: {min: 10, max: 20}}),
+    status: faker.helpers.arrayElement([
+        400, 401, 402, 403, 404, 405, 406, 407, 408, 409, 410, 411, 412, 413, 414, 415, 416, 417, 418, 421, 422, 423,
+        424, 428, 429, 456, 500, 501, 502, 503, 504, 505, 507, 508,
+    ] as const),
+    instance: faker.string.alpha({length: {min: 10, max: 20}}),
+    ...overrideResponse,
+});
+
 export const getCreateClinicResponseMock = (overrideResponse: Partial<Clinic> = {}): Clinic => ({
     id: faker.string.uuid(),
     createdAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
@@ -941,6 +1100,74 @@ export const getCreateInsurancePlanResponseMockDefault = (overrideResponse: Part
     instance: faker.string.alpha({length: {min: 10, max: 20}}),
     ...overrideResponse,
 });
+
+export const getChangeAccountTypeMockHandler = (
+    overrideResponse?: Clinic | ((info: Parameters<Parameters<typeof http.put>[1]>[0]) => Promise<Clinic> | Clinic),
+    options?: RequestHandlerOptions
+) => {
+    return http.put(
+        '*/api/v1/clinics/me/account-type',
+        async (info) => {
+            return new HttpResponse(
+                JSON.stringify(
+                    overrideResponse !== undefined
+                        ? typeof overrideResponse === 'function'
+                            ? await overrideResponse(info)
+                            : overrideResponse
+                        : getChangeAccountTypeResponseMock()
+                ),
+                {status: 200, headers: {'Content-Type': 'application/json'}}
+            );
+        },
+        options
+    );
+};
+
+export const getChangeAccountTypeMockHandler200 = (
+    overrideResponse?: Clinic | ((info: Parameters<Parameters<typeof http.put>[1]>[0]) => Promise<Clinic> | Clinic),
+    options?: RequestHandlerOptions
+) => {
+    return http.put(
+        '*/api/v1/clinics/me/account-type',
+        async (info) => {
+            return new HttpResponse(
+                JSON.stringify(
+                    overrideResponse !== undefined
+                        ? typeof overrideResponse === 'function'
+                            ? await overrideResponse(info)
+                            : overrideResponse
+                        : getChangeAccountTypeResponseMock200()
+                ),
+                {status: 200, headers: {'Content-Type': 'application/json'}}
+            );
+        },
+        options
+    );
+};
+
+export const getChangeAccountTypeMockHandlerDefault = (
+    overrideResponse?:
+        | ApiProblem
+        | ((info: Parameters<Parameters<typeof http.put>[1]>[0]) => Promise<ApiProblem> | ApiProblem),
+    options?: RequestHandlerOptions
+) => {
+    return http.put(
+        '*/api/v1/clinics/me/account-type',
+        async (info) => {
+            return new HttpResponse(
+                JSON.stringify(
+                    overrideResponse !== undefined
+                        ? typeof overrideResponse === 'function'
+                            ? await overrideResponse(info)
+                            : overrideResponse
+                        : getChangeAccountTypeResponseMockDefault()
+                ),
+                {status: 200, headers: {'Content-Type': 'application/json'}}
+            );
+        },
+        options
+    );
+};
 
 export const getCreateClinicMockHandler = (
     overrideResponse?: Clinic | ((info: Parameters<Parameters<typeof http.post>[1]>[0]) => Promise<Clinic> | Clinic),
@@ -1291,6 +1518,7 @@ export const getCreateInsurancePlanMockHandlerDefault = (
 };
 
 export const getClinicMock = () => [
+    getChangeAccountTypeMockHandler(),
     getCreateClinicMockHandler(),
     getGetClinicMockHandler(),
     getUpdateClinicMockHandler(),

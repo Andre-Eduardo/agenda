@@ -560,6 +560,32 @@
       "enabled": "Recepción activada",
       "disabled": "Recepción desactivada",
       "error": "Error al actualizar la recepción."
+    },
+    "type": {
+      "title": {
+        "SOLO": "Cuenta de profesional independiente",
+        "CLINIC": "Cuenta de clínica"
+      },
+      "description": {
+        "SOLO": "Usa el sistema por su cuenta. Si empieza a trabajar con secretaria u otros profesionales, convierta la cuenta en clínica: nada cambia de lugar, solo se activan el equipo y la recepción.",
+        "CLINIC": "Cuenta con equipo. Si vuelve a atender solo, desactive a los demás miembros y vuelva a la cuenta independiente."
+      },
+      "action": {
+        "SOLO": "Cambiar a cuenta de clínica",
+        "CLINIC": "Volver a cuenta independiente"
+      },
+      "confirm": {
+        "SOLO": "Como clínica podrá registrar equipo y darle acceso a sus pacientes. Usted sigue decidiendo quién ve cada paciente y el cambio queda en la auditoría. ¿Confirma?",
+        "CLINIC": "La cuenta vuelve a ser solo suya: el equipo y la agenda compartida se desactivan. Solo es posible con un único miembro activo. ¿Confirma?"
+      },
+      "changed": {
+        "CLINIC": "Ahora su cuenta es de clínica.",
+        "SOLO": "Ahora su cuenta es independiente."
+      },
+      "error": {
+        "CLINIC": "No se pudo cambiar la cuenta a clínica.",
+        "SOLO": "No se pudo volver a independiente. Desactive antes a los demás miembros del equipo."
+      }
     }
   }
 }
