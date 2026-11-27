@@ -73,7 +73,16 @@ export class AppointmentPrismaRepository extends PrismaRepository implements App
             clinicId: filter.clinicId ? filter.clinicId.toString() : undefined,
             attendedByMemberId: filter.attendedByMemberId ? filter.attendedByMemberId.toString() : undefined,
             createdByMemberId: filter.createdByMemberId ? filter.createdByMemberId.toString() : undefined,
-            patientId: filter.patientId?.toString() ?? (patientIds ? {in: patientIds} : undefined),
+            patientId:
+                filter.patientId?.toString() ??
+                (patientIds && !filter.orAttendedByMemberIds ? {in: patientIds} : undefined),
+            OR:
+                patientIds && filter.orAttendedByMemberIds
+                    ? [
+                          {patientId: {in: patientIds}},
+                          {attendedByMemberId: {in: filter.orAttendedByMemberIds.map((id) => id.toString())}},
+                      ]
+                    : undefined,
             status: filter.status ? {in: filter.status} : undefined,
             startAt: filter.dateFrom || filter.dateTo ? {gte: filter.dateFrom, lte: filter.dateTo} : undefined,
             note: filter.term ? {contains: filter.term, mode: 'insensitive'} : undefined,

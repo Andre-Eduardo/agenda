@@ -13,6 +13,8 @@ export type PatientSortOptions = ['createdAt', 'updatedAt'];
 
 export interface PatientRepository {
     findById(id: PersonId, clinicId?: ClinicId): Promise<Patient | null>;
+    /** Nome de cada paciente (id → nome), sem carregar o cadastro. */
+    findNamesByIds(clinicId: ClinicId, ids: PatientId[]): Promise<Map<string, string>>;
 
     delete(id: PersonId): Promise<void>;
 

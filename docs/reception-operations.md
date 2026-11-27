@@ -10,8 +10,9 @@ No topo fica a **Fila de atendimento**, com os pacientes que chegaram e os que e
 de todas as agendas que o membro pode operar. Abaixo, os agendamentos do dia em quatro etapas
 (aguardando chegada, na recepção, em atendimento e finalizados). **Registrar chegada** leva
 `SCHEDULED` ou `CONFIRMED` a `ARRIVED`. **Marcar falta** leva `SCHEDULED` ou `CONFIRMED` a
-`NO_SHOW` após confirmação. A lista do dia continua filtrada pelo acesso ao paciente
-(`ClinicPatientAccess`), como antes.
+`NO_SHOW` após confirmação. A lista do dia mostra as consultas dos pacientes a que o membro tem
+acesso (`ClinicPatientAccess`) e também as das agendas que ele opera (veja a tabela abaixo), com o
+nome do paciente. Registrar chegada e marcar falta valem para essas consultas.
 
 As configurações do painel da TV não ficam mais na recepção: estão em
 **Configurações → Painel de chamada**.

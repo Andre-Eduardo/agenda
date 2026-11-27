@@ -91,7 +91,15 @@ function ReceptionPage() {
         queries: patientIds.map((id) => getGetPatientQueryOptions(id, {query: {staleTime: 5 * 60_000}})),
     });
     const patientsById = new Map(patientIds.map((id, index) => [id, patientQueries[index]]));
-    const patientNames = new Map(patientIds.map((id) => [id, patientsById.get(id)?.data?.name]));
+    // The list carries the patient name, so reception sees it through agenda access alone.
+    const patientNames = new Map<string, string | undefined>(
+        patientIds.map((id) => [
+            id,
+            patientsById.get(id)?.data?.name ??
+                appointments.find((appointment) => appointment.patientId === id)?.patientName ??
+                undefined,
+        ])
+    );
     const grouped = Object.fromEntries(
         GROUPS.map((group) => [group, appointments.filter((appointment) => STATUS_GROUP[appointment.status] === group)])
     ) as Record<Group, AppointmentListItem[]>;

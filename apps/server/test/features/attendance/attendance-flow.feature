@@ -73,3 +73,14 @@ Feature: Attendance flow — arrival, triage, call and finish
         And calling appointment "waiting" to "Sala 3" responds 200
         And the last call was "shown" on the TV
         And appointment "waiting" has 2 recorded announcements
+
+    Scenario: Agenda access lets the reception see the day list and register arrivals
+        Given patient "booked" is booked with "dr_house"
+        And I am signed in as "recep" with clinic member "${ref:id:clinicMember:recep}"
+        Then the day list "hides" appointment "booked"
+        And checking in appointment "booked" responds 403
+        Given I am signed in as "dr_house" with clinic member "${ref:id:clinicMember:dr_house}"
+        And the agenda of "dr_house" is granted to "recep"
+        And I am signed in as "recep" with clinic member "${ref:id:clinicMember:recep}"
+        Then the day list "shows" appointment "booked"
+        And checking in appointment "booked" responds 200

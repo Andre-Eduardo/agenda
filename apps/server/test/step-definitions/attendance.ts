@@ -15,6 +15,54 @@ function queueUrl(scope: string) {
  * Example:
  *   Given patient "waiting" has arrived for an appointment with "dr_house"
  */
+async function book(context: Context, key: string, memberKey: string): Promise<string> {
+    const patient = await context.agent
+        .post('/api/v1/patients')
+        .send({name: `Attendance ${key}`, documentId: '555.666.777-88'});
+
+    chai.expect(patient.status, JSON.stringify(patient.body)).to.equal(201);
+    const appointment = await context.agent.post('/api/v1/appointments').send({
+        patientId: patient.body.id,
+        attendedByMemberId: context.getVariableId('clinicMember', memberKey),
+        startAt: `${day()}T11:00:00.000Z`,
+        endAt: `${day()}T12:00:00.000Z`,
+        type: 'FIRST_VISIT',
+    });
+
+    chai.expect(appointment.status, JSON.stringify(appointment.body)).to.equal(201);
+    context.setVariableId('appointment', key, appointment.body.id as string);
+
+    return appointment.body.id as string;
+}
+
+Given('patient {string} is booked with {string}', async function (this: Context, key: string, memberKey: string) {
+    await book(this, key, memberKey);
+});
+
+Then('the day list {string} appointment {string}', async function (this: Context, expectation: string, key: string) {
+    const response = await this.agent
+        .get('/api/v1/appointments')
+        .query({dateFrom: `${day()}T00:00:00.000Z`, dateTo: `${day()}T23:59:59.999Z`, limit: 100});
+
+    chai.expect(response.status, JSON.stringify(response.body)).to.equal(200);
+    const item = (response.body.data as Array<Record<string, unknown>>).find(
+        (entry) => entry.id === this.getVariableId('appointment', key)
+    );
+
+    if (expectation === 'hides') {
+        chai.expect(item).to.equal(undefined);
+    } else {
+        chai.expect(item, 'appointment missing from the day list').to.not.equal(undefined);
+        chai.expect(item?.patientName).to.equal(`Attendance ${key}`);
+    }
+});
+
+Then('checking in appointment {string} responds {int}', async function (this: Context, key: string, status: number) {
+    const response = await this.agent.patch(`/api/v1/appointments/${this.getVariableId('appointment', key)}/checkin`);
+
+    chai.expect(response.status, JSON.stringify(response.body)).to.equal(status);
+});
+
 Given(
     'patient {string} has arrived for an appointment with {string}',
     async function (this: Context, key: string, memberKey: string) {

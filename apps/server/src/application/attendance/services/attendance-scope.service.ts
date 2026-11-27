@@ -50,6 +50,12 @@ export class AttendanceScope {
         ];
     }
 
+    async canOperate(actor: Actor, attendedByMemberId: ClinicMemberId): Promise<boolean> {
+        const agendas = await this.operableAgendas(actor);
+
+        return agendas === null || agendas.some((memberId) => memberId.equals(attendedByMemberId));
+    }
+
     async assertCanOperate(actor: Actor, attendedByMemberId: ClinicMemberId): Promise<void> {
         const agendas = await this.operableAgendas(actor);
 

@@ -81,4 +81,9 @@ export type AppointmentListItem = {
      * @nullable
      */
     attendedByName: string | null;
+    /**
+     * Patient name, for the reception day list
+     * @nullable
+     */
+    patientName: string | null;
 };

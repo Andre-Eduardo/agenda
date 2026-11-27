@@ -16,6 +16,8 @@ export type AppointmentSearchFilter = {
     createdByMemberId?: ClinicMemberId;
     patientId?: PatientId;
     patientIds?: PatientId[];
+    /** Ou visível pelo acesso à agenda: amplia `patientIds` com as consultas destes profissionais. */
+    orAttendedByMemberIds?: ClinicMemberId[];
     status?: AppointmentStatus[];
     dateFrom?: Date;
     dateTo?: Date;
