@@ -52,9 +52,7 @@ export class AttendanceItemDto {
     @ApiProperty({type: String, format: 'date-time', nullable: true}) arrivedAt: string | null;
     @ApiProperty({type: String, format: 'date-time', nullable: true}) calledAt: string | null;
     @ApiProperty({enum: ['ARRIVED', 'IN_PROGRESS'], enumName: 'AttendanceStatus'}) status: 'ARRIVED' | 'IN_PROGRESS';
-    @ApiProperty({type: String, nullable: true, description: 'Last destination announced'}) destination:
-        | string
-        | null;
+    @ApiProperty({type: String, nullable: true, description: 'Last destination announced'}) destination: string | null;
     @ApiProperty({type: Number}) callCount: number;
     @ApiProperty({type: Boolean, description: 'Triage data was saved at least once'}) triageStarted: boolean;
     @ApiProperty({type: Boolean, description: 'Patient was released by the triage'}) triageReleased: boolean;

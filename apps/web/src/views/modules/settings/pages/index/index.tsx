@@ -66,6 +66,7 @@ import {
     Stethoscope,
     Smartphone,
     Sparkles,
+    MonitorSpeaker,
     Trash2,
     UserRound,
 } from 'lucide-react';
@@ -78,12 +79,14 @@ import {Label} from '@/components/ui/componentes/label';
 import {SegmentedControl, SegmentedControlItem} from '@/components/ui/componentes/segmented-control';
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@/components/ui/componentes/select';
 import {Skeleton} from '@/components/ui/componentes/skeleton';
+import {useAccount} from '@/hooks/useAccount';
 import {useCan} from '@/hooks/useCan';
 import {formatBRL} from '@/lib/utils';
 import {MODULE_ICONS, MODULE_LABELS} from '@/utils/ai-modules';
 import {translateApiError} from '@/utils/translate-api-error';
 import {AgendaScheduleEditor} from '@/views/components/AgendaScheduleEditor';
 import {ConfirmDialog} from '@/views/components/ConfirmDialog';
+import {PatientCallPanelSettings} from '@/views/modules/patient-call/components/PanelSettings';
 import {ClinicAccountSection} from '@/views/modules/settings/components/ClinicAccountSection';
 import {RemindersSection} from '@/views/modules/settings/components/RemindersSection';
 import {WhatsAppSection} from '@/views/modules/settings/components/WhatsAppSection';
@@ -238,13 +241,24 @@ const PROFILE_TABS = [
 ] as const;
 
 type TabKey = 'identity' | 'pro' | 'office' | 'security';
-type Section = 'perfil' | 'agenda' | 'assinatura' | 'salas' | 'whatsapp' | 'lembretes' | 'ia' | 'geral' | 'procedures';
+type Section =
+    | 'perfil'
+    | 'agenda'
+    | 'assinatura'
+    | 'salas'
+    | 'painel'
+    | 'whatsapp'
+    | 'lembretes'
+    | 'ia'
+    | 'geral'
+    | 'procedures';
 
 const SECTION_LABELS: Record<Exclude<Section, 'procedures'>, string> = {
     perfil: 'Perfil',
     agenda: 'Agenda',
     assinatura: 'Assinatura',
     salas: 'Salas',
+    painel: 'Painel de chamada',
     whatsapp: 'WhatsApp',
     lembretes: 'Lembretes',
     ia: 'Módulos de IA',
@@ -260,6 +274,8 @@ export function SettingsPage() {
     const canViewAiModules = useCan({has: 'clinic-module:view'});
     const canViewWhatsApp = useCan({has: 'whatsapp:view'});
     const canViewReminders = useCan({has: 'clinic-reminder-config:view'});
+    const {hasClinicModule} = useAccount();
+    const canConfigurePanel = useCan({has: 'patient-call:configure'}) && hasClinicModule('RECEPTION');
 
     return (
         <PageShell>
@@ -308,6 +324,16 @@ export function SettingsPage() {
                         <DoorOpen size={15} />
                         <span>Salas</span>
                     </button>
+                    {canConfigurePanel && (
+                        <button
+                            type="button"
+                            className={sideNavItem({active: section === 'painel'})}
+                            onClick={() => setSection('painel')}
+                        >
+                            <MonitorSpeaker size={15} />
+                            <span>{t('patientCall.settings')}</span>
+                        </button>
+                    )}
                     {canManageProcedures && (
                         <button
                             type="button"
@@ -364,6 +390,7 @@ export function SettingsPage() {
                     {section === 'agenda' && <AgendaSection />}
                     {section === 'assinatura' && <SubscriptionSection />}
                     {section === 'salas' && <RoomsSection />}
+                    {section === 'painel' && canConfigurePanel && <PatientCallPanelSettings />}
                     {section === 'procedures' && canManageProcedures && <ProcedureCatalog />}
                     {section === 'whatsapp' && canViewWhatsApp && <WhatsAppSection />}
                     {section === 'lembretes' && canViewReminders && <RemindersSection />}

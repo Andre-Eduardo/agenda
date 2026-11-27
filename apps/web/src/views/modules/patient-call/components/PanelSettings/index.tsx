@@ -2,7 +2,7 @@ import {useState} from 'react';
 import {
     getGetPatientCallAvailabilityQueryKey,
     getGetPatientCallSettingsQueryKey,
-    type PatientCallPanelSettings,
+    type PatientCallPanelSettings as PanelSettingsData,
     type SavePatientCallPanelDto,
     useGetPatientCallSettings,
     usePublishPatientCallLink,
@@ -11,7 +11,6 @@ import {
 } from '@agenda-app/client';
 import {zodResolver} from '@hookform/resolvers/zod';
 import {useQueryClient} from '@tanstack/react-query';
-import {createFileRoute, Link} from '@tanstack/react-router';
 import {useForm, useWatch} from 'react-hook-form';
 import {useTranslation} from 'react-i18next';
 import {toast} from 'sonner';
@@ -19,24 +18,11 @@ import {z} from 'zod';
 import {Button} from '@/components/ui/componentes/button';
 import {Input} from '@/components/ui/componentes/input';
 import {useCanState} from '@/hooks/useCan';
-import {ClinicModuleGate} from '@/views/components/ClinicModuleGate';
 import {ConfirmDialog} from '@/views/components/ConfirmDialog';
-import {Page} from '@/views/components/Page';
 import {isApiError} from '@/views/components/QueryErrorHandler';
-import {PatientCallDisplay} from '../../components/Display';
+import {PatientCallDisplay} from '@/views/modules/patient-call/components/Display';
+import {PageHeading} from '@/views/modules/settings/pages/index/styles';
 import styles from './styles.module.css';
-
-function GatedPatientCallSettingsPage() {
-    return (
-        <ClinicModuleGate module="RECEPTION">
-            <PatientCallSettingsPage />
-        </ClinicModuleGate>
-    );
-}
-
-export const Route = createFileRoute('/_stackedLayout/reception/panel-settings')({
-    component: GatedPatientCallSettingsPage,
-});
 
 const themeSchema = z.string().regex(/^#[a-f\d]{6}$/i);
 const formSchema = z.object({
@@ -50,20 +36,18 @@ const formSchema = z.object({
     displaySeconds: z.number().int().min(8).max(60),
 });
 
-function PatientCallSettingsPage() {
+/** Configuração do painel de chamada (TV). Fica em Configurações, não na recepção. */
+export function PatientCallPanelSettings() {
     const {t} = useTranslation();
     const access = useCanState({has: 'patient-call:configure'});
     const settings = useGetPatientCallSettings({query: {enabled: access.allowed}});
 
     return (
-        <Page
-            title={t('patientCall.settings')}
-            actions={
-                <Button asChild variant="outline" size="sm">
-                    <Link to="/reception">{t('reception.title')}</Link>
-                </Button>
-            }
-        >
+        <div>
+            <PageHeading>
+                <h1 className="title">{t('patientCall.settings')}</h1>
+                <p className="sub">{t('patientCall.settingsDescription')}</p>
+            </PageHeading>
             {access.isLoading || (access.allowed && settings.isPending) ? <p>{t('patientCall.connecting')}</p> : null}
             {!access.isLoading && !access.allowed && <p role="alert">{t('reception.accessDenied')}</p>}
             {access.allowed && settings.isError && (
@@ -72,11 +56,11 @@ function PatientCallSettingsPage() {
                 </Button>
             )}
             {access.allowed && settings.data && <SettingsForm settings={settings.data} />}
-        </Page>
+        </div>
     );
 }
 
-function SettingsForm({settings}: {settings: PatientCallPanelSettings}) {
+function SettingsForm({settings}: {settings: PanelSettingsData}) {
     const {t} = useTranslation();
     const client = useQueryClient();
     const [confirm, setConfirm] = useState<'rotate' | 'revoke' | null>(null);
@@ -94,7 +78,7 @@ function SettingsForm({settings}: {settings: PatientCallPanelSettings}) {
         : null;
     const busy = save.isPending || publish.isPending || revoke.isPending;
 
-    function sync(result: PatientCallPanelSettings) {
+    function sync(result: PanelSettingsData) {
         client.setQueryData(getGetPatientCallSettingsQueryKey(), result);
         client.setQueryData(getGetPatientCallAvailabilityQueryKey(), {
             enabled: result.enabled,
@@ -275,7 +259,7 @@ function SettingsForm({settings}: {settings: PatientCallPanelSettings}) {
     );
 }
 
-function formValues(settings: PatientCallPanelSettings): SavePatientCallPanelDto {
+function formValues(settings: PanelSettingsData): SavePatientCallPanelDto {
     return {
         title: settings.title,
         message: settings.message,

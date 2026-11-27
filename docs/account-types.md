@@ -66,7 +66,8 @@ para nenhuma clínica perder tela.
 - Menu (`StackedLayout`): itens com `clinicModule` somem quando o módulo está desligado
   (Recepção, Profissionais, Equipe). No SOLO, Financeiro vira "Meu financeiro" e
   Configurações vira "Meu perfil e consultório".
-- Rotas de clínica (`/team`, `/team/$memberId`, `/professionals`, `/reception`,
-  `/reception/panel-settings`) ficam atrás de `ClinicModuleGate`, que explica o que falta
+- Rotas de clínica (`/team`, `/team/$memberId`, `/professionals`, `/reception`) ficam atrás de
+  `ClinicModuleGate`, que explica o que falta
   em vez de mostrar erros 403.
-- Configurações → Geral liga e desliga a recepção (`receptionEnabled`).
+- Configurações → Geral liga e desliga a recepção (`receptionEnabled`) e a triagem obrigatória
+  (`triageRequired`). Configurações → Painel de chamada configura a TV (só com o módulo RECEPTION).

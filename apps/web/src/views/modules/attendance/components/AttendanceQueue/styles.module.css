@@ -12,6 +12,10 @@
     @apply text-base font-medium text-(--color-text-primary);
 }
 
+.sub {
+    @apply text-xs text-(--color-text-secondary);
+}
+
 .rows {
     @apply divide-y divide-(--color-border);
 }
@@ -21,31 +25,41 @@
 }
 
 .identity {
-    @apply flex grow basis-32 flex-col gap-0.5 text-sm text-(--color-text-primary);
+    @apply flex grow basis-40 flex-col gap-0.5 text-sm text-(--color-text-primary);
 }
 
-.identity time,
-.empty {
-    @apply text-sm text-(--color-text-secondary);
+.meta {
+    @apply text-xs text-(--color-text-secondary);
 }
 
 .empty {
-    @apply px-4 py-5;
+    @apply px-4 py-5 text-sm text-(--color-text-secondary);
 }
 
 .actions {
     @apply flex flex-wrap gap-2;
 }
 
-.form,
-.field {
+.form {
     @apply flex flex-col gap-3;
 }
 
 .field {
-    @apply gap-1.5 text-sm font-medium;
+    @apply flex flex-col gap-1.5 text-sm font-medium text-(--color-text-primary);
 }
 
-.select {
-    @apply h-9 rounded-md border border-(--color-border) bg-(--color-bg-card) px-3 text-sm;
+.hint {
+    @apply text-xs font-normal text-(--color-text-secondary);
+}
+
+.grid {
+    @apply grid grid-cols-1 gap-3 sm:grid-cols-2;
+}
+
+.warning {
+    @apply text-sm text-(--color-warning);
+}
+
+.vitals {
+    @apply font-mono tabular-nums;
 }

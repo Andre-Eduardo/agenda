@@ -1,4 +1,5 @@
 import {Inject, Injectable} from '@nestjs/common';
+import {AppointmentDto} from '@application/appointment/dtos';
 import {
     AppointmentTriageDto,
     AttendanceCallResultDto,
@@ -8,7 +9,6 @@ import {
     type SaveTriageDto,
 } from '@application/attendance/dtos';
 import {AttendanceScope} from '@application/attendance/services/attendance-scope.service';
-import {AppointmentDto} from '@application/appointment/dtos';
 import type {Actor} from '@domain/@shared/actor';
 import {PreconditionException, ResourceNotFoundException} from '@domain/@shared/exceptions';
 import {AtomicExecutor} from '@domain/@shared/repository';
@@ -42,13 +42,7 @@ export class AttendanceService {
 
     async list(actor: Actor, {scope, dateFrom, dateTo}: ListAttendanceDto): Promise<AttendanceQueueDto> {
         const operable = await this.scope.operableAgendas(actor);
-        const mineOnly = [actor.clinicMemberId];
-        const attendedByMemberIds =
-            scope === 'mine'
-                ? operable === null || operable.some((id) => id.equals(actor.clinicMemberId))
-                    ? mineOnly
-                    : []
-                : operable;
+        const attendedByMemberIds = scope === 'mine' ? this.ownAgenda(actor, operable) : operable;
         const [items, triageRequired, panel] = await Promise.all([
             attendedByMemberIds !== null && attendedByMemberIds.length === 0
                 ? Promise.resolve([])
@@ -57,7 +51,9 @@ export class AttendanceService {
             this.patientCall.getPanel(actor.clinicId),
         ]);
         const names = await this.members.findDisplayNamesByIds(actor.clinicId, [
-            ...new Map(items.map((item) => [item.attendedByMemberId, ClinicMemberId.from(item.attendedByMemberId)])).values(),
+            ...new Map(
+                items.map((item) => [item.attendedByMemberId, ClinicMemberId.from(item.attendedByMemberId)])
+            ).values(),
         ]);
 
         return new AttendanceQueueDto(
@@ -95,7 +91,11 @@ export class AttendanceService {
             }
 
             if (appointment.status === AppointmentStatus.IN_PROGRESS) {
-                return new AttendanceCallResultDto(id.toString(), destination, await this.announce(actor, id, destination));
+                return new AttendanceCallResultDto(
+                    id.toString(),
+                    destination,
+                    await this.announce(actor, id, destination)
+                );
             }
 
             throw new PreconditionException(PATIENT_NOT_WAITING);
@@ -146,13 +146,19 @@ export class AttendanceService {
                     heartRate: fields.heartRate ?? null,
                     temperatureCelsius: fields.temperatureCelsius ?? null,
                     oxygenSaturation: fields.oxygenSaturation ?? null,
-                    notes: fields.notes ? fields.notes : null,
+                    notes: fields.notes || null,
                 },
                 release
             );
 
             return new AppointmentTriageDto(id.toString(), triage);
         });
+    }
+
+    private ownAgenda(actor: Actor, operable: ClinicMemberId[] | null): ClinicMemberId[] {
+        const canOperateOwn = operable === null || operable.some((id) => id.equals(actor.clinicMemberId));
+
+        return canOperateOwn ? [actor.clinicMemberId] : [];
     }
 
     private async announce(actor: Actor, id: AppointmentId, destination: string): Promise<boolean> {

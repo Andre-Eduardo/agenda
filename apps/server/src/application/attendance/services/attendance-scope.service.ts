@@ -42,7 +42,10 @@ export class AttendanceScope {
         return [
             ...own,
             ...grants
-                .filter((grant) => grant.clinicId.equals(actor.clinicId) && grant.granteeMemberId.equals(actor.clinicMemberId))
+                .filter(
+                    (grant) =>
+                        grant.clinicId.equals(actor.clinicId) && grant.granteeMemberId.equals(actor.clinicMemberId)
+                )
                 .map((grant) => grant.professionalMemberId),
         ];
     }

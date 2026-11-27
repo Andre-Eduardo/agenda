@@ -3,6 +3,7 @@ import {
     getGetClinicQueryKey,
     getGetCurrentClinicMemberPermissionsQueryKey,
     getGetMyModulesQueryKey,
+    getListAttendanceQueryKey,
     useGetClinic,
     useChangeAccountType,
     useGetCurrentClinicMember,
@@ -38,6 +39,7 @@ export function ClinicAccountSection() {
     const updateClinic = useUpdateClinic();
     const canUpdateClinic = useCan({has: 'clinic:update'});
     const receptionEnabled = clinicQuery.data?.receptionEnabled ?? false;
+    const triageRequired = clinicQuery.data?.triageRequired ?? false;
     const accountType = clinicQuery.data?.accountType;
     const isOwner = memberQuery.data?.roles.includes('OWNER') === true && !memberQuery.data.supportAccess;
     const changeAccountType = useChangeAccountType();
@@ -90,6 +92,23 @@ export function ClinicAccountSection() {
         );
     }
 
+    function handleToggleTriage(enabled: boolean) {
+        if (!clinicId) return;
+
+        updateClinic.mutate(
+            // Orval marks every field of UpdateClinicDto as required even though the API accepts a partial update.
+            {clinicId, data: {triageRequired: enabled} as UpdateClinicDto},
+            {
+                onSuccess: () => {
+                    toast.success(enabled ? t('account.triage.enabled') : t('account.triage.disabled'));
+                    void clinicQuery.refetch();
+                    void queryClient.invalidateQueries({queryKey: getListAttendanceQueryKey()});
+                },
+                onError: () => toast.error(t('account.triage.error')),
+            }
+        );
+    }
+
     return (
         <div>
             <PageHeading>
@@ -128,11 +147,38 @@ export function ClinicAccountSection() {
                 )}
             </FormCard>
 
-            {isOwner && accountType && (
+            {receptionEnabled && !clinicQuery.isLoading && (
                 <FormCard>
                     <FormSection>
                         <div className="sec-head">
                             <span className="sec-num">2</span>
+                            <div>
+                                <div className={sectionTitle}>{t('account.triage.title')}</div>
+                                <div className={sectionSub}>{t('account.triage.description')}</div>
+                            </div>
+                        </div>
+                        {canUpdateClinic ? (
+                            <SegmentedControl
+                                value={triageRequired ? 'on' : 'off'}
+                                onValueChange={(value) => {
+                                    if (!updateClinic.isPending) handleToggleTriage(value === 'on');
+                                }}
+                            >
+                                <SegmentedControlItem value="on">Ativado</SegmentedControlItem>
+                                <SegmentedControlItem value="off">Desativado</SegmentedControlItem>
+                            </SegmentedControl>
+                        ) : (
+                            <p className={sectionSub}>{triageRequired ? 'Ativado' : 'Desativado'}</p>
+                        )}
+                    </FormSection>
+                </FormCard>
+            )}
+
+            {isOwner && accountType && (
+                <FormCard>
+                    <FormSection>
+                        <div className="sec-head">
+                            <span className="sec-num">{receptionEnabled ? 3 : 2}</span>
                             <div>
                                 <div className={sectionTitle}>{t(`account.type.title.${accountType}`)}</div>
                                 <div className={sectionSub}>{t(`account.type.description.${accountType}`)}</div>

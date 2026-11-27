@@ -268,7 +268,7 @@
     "mySettings": "Mi perfil y consultorio"
   },
   "patientCall": {
-    "settings": "Configurar panel de llamadas",
+    "settings": "Panel de llamada",
     "panelTitle": "Panel de llamadas",
     "identity": "Identidad visual",
     "titleField": "Título del panel",
@@ -328,7 +328,8 @@
     "exampleRecentDestination": "Ventanilla 2",
     "addToQueue": "Añadir a la cola",
     "addedToQueue": "Paciente añadido a la cola de llamadas.",
-    "entryUnavailable": "Esta entrada de la cola ya está cerrada."
+    "entryUnavailable": "Esta entrada de la cola ya está cerrada.",
+    "settingsDescription": "Identidad visual y enlace de la TV de la sala de espera."
   },
   "reception": {
     "title": "Recepción",
@@ -586,6 +587,67 @@
         "CLINIC": "No se pudo cambiar la cuenta a clínica.",
         "SOLO": "No se pudo volver a independiente. Desactive antes a los demás miembros del equipo."
       }
+    },
+    "triage": {
+      "title": "Triaje antes de la llamada",
+      "description": "Cuando está activo, el profesional solo puede llamar al paciente después de que la recepción concluya el triaje. Los datos del triaje son opcionales.",
+      "enabled": "Triaje obligatorio activado.",
+      "disabled": "Triaje obligatorio desactivado.",
+      "error": "Error al actualizar el triaje."
     }
+  },
+  "attendance": {
+    "dashboardTitle": "Pacientes que llegaron",
+    "dashboardSub": "Llama al siguiente paciente y finaliza la atención.",
+    "receptionTitle": "Cola de atención",
+    "receptionSub": "Pacientes que llegaron, de todas las agendas a las que accedes.",
+    "empty": "Ningún paciente esperando ahora.",
+    "loadError": "No se pudo cargar la cola.",
+    "retry": "Intentar de nuevo",
+    "arrivedAt": "Llegó a las {{time}}",
+    "scheduledAt": "Cita a las {{time}}",
+    "professional": "Con {{name}}",
+    "status": {
+      "waitingTriage": "Esperando triaje",
+      "released": "Triaje concluido",
+      "waiting": "Esperando llamada",
+      "inProgress": "En atención"
+    },
+    "call": "Llamar",
+    "recall": "Llamar de nuevo",
+    "finish": "Finalizar",
+    "triage": "Triaje",
+    "callTitle": "Llamar paciente",
+    "recallTitle": "Llamar de nuevo",
+    "callDescription": "{{name}} será llamado al lugar indicado.",
+    "destination": "Sala o lugar",
+    "destinationHint": "Aparece en el panel de la TV cuando está publicado.",
+    "destinationRequired": "Indica la sala o el lugar.",
+    "called": "Paciente llamado a {{destination}}.",
+    "calledNoPanel": "Paciente llamado a {{destination}}. El panel de la TV no está publicado.",
+    "finished": "Atención finalizada.",
+    "finishTitle": "Finalizar atención",
+    "finishConfirmation": "Confirma el fin de la atención de {{name}}.",
+    "actionError": "No se pudo completar la acción. La cola se actualizó.",
+    "triageBlocked": "El triaje debe liberar al paciente antes de la llamada.",
+    "triageTitle": "Triaje",
+    "triageDescription": "Todos los campos son opcionales. Al concluir, el paciente queda liberado para ser llamado.",
+    "triageReadOnly": "Datos registrados en el triaje.",
+    "weightKg": "Peso (kg)",
+    "heightCm": "Altura (cm)",
+    "systolicPressure": "Presión sistólica (mmHg)",
+    "diastolicPressure": "Presión diastólica (mmHg)",
+    "heartRate": "Frecuencia cardíaca (lpm)",
+    "temperatureCelsius": "Temperatura (°C)",
+    "oxygenSaturation": "Saturación de O₂ (%)",
+    "notes": "Observaciones",
+    "save": "Guardar",
+    "release": "Concluir y liberar",
+    "saved": "Triaje guardado.",
+    "releasedToast": "Paciente liberado para ser llamado.",
+    "alreadyReleased": "Paciente ya liberado para ser llamado.",
+    "invalidFields": "Revisa los valores informados.",
+    "close": "Cerrar",
+    "viewTriage": "Ver triaje"
   }
 }

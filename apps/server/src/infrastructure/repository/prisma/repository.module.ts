@@ -5,6 +5,7 @@ import {AppointmentPaymentRepository} from '@domain/appointment-payment/appointm
 import {AppointmentReminderEventRepository} from '@domain/appointment-reminder/appointment-reminder-event.repository';
 import {AppointmentReminderRepository} from '@domain/appointment-reminder/appointment-reminder.repository';
 import {AppointmentRepository} from '@domain/appointment/appointment.repository';
+import {AttendanceRepository} from '@domain/attendance/attendance.repository';
 import {AuditLogRepository} from '@domain/audit/audit-log.repository';
 import {ClinicLicenseRepository} from '@domain/clinic-license/clinic-license.repository';
 import {ClinicMemberRepository} from '@domain/clinic-member/clinic-member.repository';
@@ -33,7 +34,6 @@ import {KnowledgeChunkRepository} from '@domain/knowledge-base/knowledge-chunk.r
 import {PackagePlanRepository} from '@domain/package-plan/package-plan.repository';
 import {PatientAlertRepository} from '@domain/patient-alert/patient-alert.repository';
 import {PatientCallRepository} from '@domain/patient-call/patient-call.repository';
-import {AttendanceRepository} from '@domain/attendance/attendance.repository';
 import {PatientCommunicationPreferenceRepository} from '@domain/patient-communication-preference/patient-communication-preference.repository';
 import {PatientFormRepository} from '@domain/patient-form/patient-form.repository';
 import {PatientInsuranceEnrollmentRepository} from '@domain/patient-insurance-enrollment/patient-insurance-enrollment.repository';
@@ -61,6 +61,7 @@ import {AppointmentPaymentPrismaRepository} from '@infrastructure/repository/app
 import {AppointmentReminderEventPrismaRepository} from '@infrastructure/repository/appointment-reminder-event.prisma.repository';
 import {AppointmentReminderPrismaRepository} from '@infrastructure/repository/appointment-reminder.prisma.repository';
 import {AppointmentPrismaRepository} from '@infrastructure/repository/appointment.prisma.repository';
+import {AttendancePrismaRepository} from '@infrastructure/repository/attendance.prisma.repository';
 import {AuditLogPrismaRepository} from '@infrastructure/repository/audit-log.prisma.repository';
 import {ClinicLicensePrismaRepository} from '@infrastructure/repository/clinic-license.prisma.repository';
 import {ClinicMemberPrismaRepository} from '@infrastructure/repository/clinic-member.prisma.repository';
@@ -85,7 +86,6 @@ import {MemberBlockPrismaRepository} from '@infrastructure/repository/member-blo
 import {PackagePlanPrismaRepository} from '@infrastructure/repository/package-plan.prisma.repository';
 import {PatientAlertPrismaRepository} from '@infrastructure/repository/patient-alert.prisma.repository';
 import {PatientCallPrismaRepository} from '@infrastructure/repository/patient-call.prisma.repository';
-import {AttendancePrismaRepository} from '@infrastructure/repository/attendance.prisma.repository';
 import {PatientChatMessagePrismaRepository} from '@infrastructure/repository/patient-chat-message.prisma.repository';
 import {PatientChatSessionPrismaRepository} from '@infrastructure/repository/patient-chat-session.prisma.repository';
 import {PatientCommunicationPreferencePrismaRepository} from '@infrastructure/repository/patient-communication-preference.prisma.repository';
