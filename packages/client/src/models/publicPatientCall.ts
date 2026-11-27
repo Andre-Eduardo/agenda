@@ -6,7 +6,7 @@
  */
 
 export type PublicPatientCall = {
-    code: string;
+    patientName: string;
     destination: string;
     expiresAt: string;
 };

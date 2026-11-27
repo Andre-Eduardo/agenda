@@ -1,4 +1,4 @@
-import type {PublicPatientCallPanel, PublicPatientCall} from '@agenda-app/client';
+import type {PublicPatientCallPanel, PublicPatientCall, RecentPatientCall} from '@agenda-app/client';
 import {useTranslation} from 'react-i18next';
 import styles from './styles.module.css';
 
@@ -7,12 +7,14 @@ export function PatientCallDisplay({
     logoUrl,
     call,
     status,
+    recentCalls = [],
     onEnableSound,
 }: {
     identity?: Pick<PublicPatientCallPanel, 'foregroundColor' | 'backgroundColor' | 'title' | 'message'>;
     logoUrl?: string | null;
     call?: PublicPatientCall | null;
     status?: string;
+    recentCalls?: RecentPatientCall[];
     onEnableSound?: () => void;
 }) {
     const {t} = useTranslation();
@@ -41,8 +43,7 @@ export function PatientCallDisplay({
             <div className={styles.board} aria-live="polite" aria-atomic="true">
                 {call ? (
                     <>
-                        <p className={styles.label}>{t('patientCall.ticket')}</p>
-                        <p className={styles.code}>{call.code}</p>
+                        <p className={styles.name}>{call.patientName}</p>
                         <p className={styles.destination}>{call.destination}</p>
                     </>
                 ) : (
@@ -50,6 +51,19 @@ export function PatientCallDisplay({
                 )}
             </div>
             {call && identity && <p className={styles.instructions}>{identity.message}</p>}
+            {recentCalls.length > 0 && (
+                <section className={styles.recent}>
+                    <h2 className={styles.recentTitle}>{t('patientCall.recentCalls')}</h2>
+                    <ol className={styles.recentList}>
+                        {recentCalls.map(({patientName, destination}, index) => (
+                            <li className={styles.recentRow} key={`${patientName}-${destination}-${index}`}>
+                                <strong>{patientName}</strong>
+                                <span>{destination}</span>
+                            </li>
+                        ))}
+                    </ol>
+                </section>
+            )}
         </section>
     );
 }

@@ -27,14 +27,14 @@ Feature: Patient call queue and reception display
         Then the request should succeed with a 200 status code
         And I save the response field "publicToken" as "panel" id for "house"
 
-    Scenario: Concurrent check-ins reuse one ticket and concurrent calls reserve it once
+    Scenario: Concurrent check-ins share one queue entry and only one operator can call it
         When the check-in for appointment "waiting" is submitted twice concurrently
         Then the appointment "waiting" has a single arrival transition
         When I send a "GET" request to "/api/v1/patient-call/queue"
         Then the request should succeed with a 200 status code
         And the response should match:
             """JSON
-            [{"appointmentId":"${ref:id:appointment:waiting}","code":"A-001","callCount":0,"patientName":"Call Queue Patient","arrivedAt":"_.isString","destination":null}]
+            [{"appointmentId":"${ref:id:appointment:waiting}","callCount":0,"patientName":"Call Queue Patient","arrivedAt":"_.isString","destination":null}]
             """
         When operators concurrently call appointment "waiting" to room 3
         Then appointment "waiting" has 1 recorded announcement
@@ -61,12 +61,39 @@ Feature: Patient call queue and reception display
         Then the request should succeed with a 200 status code
         Given I sign out
         And I set the header "x-patient-call-token" to "${ref:id:panel:house}"
-        Then the public panel displays ticket "A-001" for "Guichê 5" without patient data
+        Then the public panel displays patient "Call Queue Patient" for "Guichê 5" with only display fields
         When the announcement for appointment "waiting" has expired
         And I send a "GET" request to "/api/v1/patient-call/display"
         Then the request should succeed with a 200 status code
         And the response should contain:
             | call | null |
+        And the public panel shows no recent calls
+
+    Scenario: The manager can retain recent names on the TV and hide them again
+        Given appointment "waiting" is checked in and announced to room 3
+        When I turn the public call history "on"
+        And the announcement for appointment "waiting" has expired
+        Given I set the header "x-patient-call-token" to "${ref:id:panel:house}"
+        When I send a "GET" request to "/api/v1/patient-call/display"
+        Then the request should succeed with a 200 status code
+        And the response should contain:
+            | call | null |
+        And the public panel lists "Call Queue Patient" for "Sala 3" as the only recent call
+        When I turn the public call history "off"
+        And I send a "GET" request to "/api/v1/patient-call/display"
+        Then the request should succeed with a 200 status code
+        And the public panel shows no recent calls
+
+    Scenario: The history excludes announcements older than thirty minutes
+        Given appointment "waiting" is checked in and announced to room 3
+        When I turn the public call history "on"
+        And the announcement for appointment "waiting" expired 31 minutes ago
+        Given I set the header "x-patient-call-token" to "${ref:id:panel:house}"
+        When I send a "GET" request to "/api/v1/patient-call/display"
+        Then the request should succeed with a 200 status code
+        And the response should contain:
+            | call | null |
+        And the public panel shows no recent calls
 
     Scenario: A professional cannot publish a clinic's TV link without a management role
         Given I am signed in as "dr_wilson"
@@ -137,8 +164,8 @@ Feature: Patient call queue and reception display
         When I send a "PATCH" request to "/api/v1/appointments/${ref:id:appointment:waiting}/checkin"
         Then the request should succeed with a 200 status code
         And the response should contain:
-            | status          | ARRIVED |
-            | patientCallCode | null    |
+            | status             | ARRIVED |
+            | inPatientCallQueue | false   |
 
     Scenario: Cancelling an arrived appointment closes its queue entry
         When I send a "PATCH" request to "/api/v1/appointments/${ref:id:appointment:waiting}/checkin"

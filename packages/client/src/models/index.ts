@@ -362,6 +362,7 @@ export * from './purchaseAddonDtoAddonCode';
 export * from './purchaseAddonDtoPaymentMethod';
 export type * from './rebuildContextDto';
 export type * from './recallPatientCallDto';
+export type * from './recentPatientCall';
 export type * from './record';
 export type * from './recordAmendment';
 export type * from './recordAssessment';

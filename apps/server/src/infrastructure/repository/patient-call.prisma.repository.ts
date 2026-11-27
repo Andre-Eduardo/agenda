@@ -17,7 +17,19 @@ import type {PatientId} from '@domain/patient/entities';
 import {PrismaRepository} from '@infrastructure/repository/prisma.repository';
 import {PrismaProvider} from '@infrastructure/repository/prisma/prisma.provider';
 
-const codeFor = (ticket: number) => `A-${String(ticket).padStart(3, '0')}`;
+const recentCallLimit = 5;
+const recentCallWindowMs = 30 * 60 * 1000;
+const patientNameSelect = {patient: {select: {person: {select: {name: true}}}}} satisfies Prisma.AppointmentSelect;
+const publicCallSelect = {
+    appointmentId: true,
+    destination: true,
+    expiresAt: true,
+    entry: {select: {appointment: {select: patientNameSelect}}},
+} satisfies Prisma.PatientCallAnnouncementSelect;
+
+function toPublicCall(call: Prisma.PatientCallAnnouncementGetPayload<{select: typeof publicCallSelect}>) {
+    return {patientName: call.entry.appointment.patient.person.name, destination: call.destination};
+}
 
 const eligibleAppointment = {
     status: 'ARRIVED',
@@ -28,7 +40,6 @@ const eligibleAppointment = {
 function toEntry(row: PrismaEntry): PatientCallEntry {
     return {
         appointmentId: row.appointmentId,
-        code: codeFor(row.ticket),
         arrivedAt: row.arrivedAt,
         callCount: row.callCount,
         destination: row.destination,
@@ -77,6 +88,7 @@ export class PatientCallPrismaRepository extends PrismaRepository implements Pat
             backgroundColor: identity.backgroundColor,
             useClinicLogo: identity.useClinicLogo,
             soundEnabled: identity.soundEnabled,
+            showRecentCalls: identity.showRecentCalls,
             displaySeconds: identity.displaySeconds,
             clinicLogoUrl: publicLogo(clinic?.logoUrl ?? null),
             enabled: panel !== null && panel.enabledAt !== null,
@@ -130,6 +142,7 @@ export class PatientCallPrismaRepository extends PrismaRepository implements Pat
                 backgroundColor: true,
                 useClinicLogo: true,
                 soundEnabled: true,
+                showRecentCalls: true,
                 clinic: {select: {logoUrl: true}},
             },
         });
@@ -137,23 +150,38 @@ export class PatientCallPrismaRepository extends PrismaRepository implements Pat
         if (panel === null) return null;
 
         const now = new Date();
-        const announcement = await this.prisma.patientCallAnnouncement.findFirst({
-            where: {
+        const visibleCalls: Prisma.PatientCallAnnouncementWhereInput = {
+            clinicId: panel.clinicId,
+            visibleFrom: {lte: now},
+            entry: {
                 clinicId: panel.clinicId,
-                visibleFrom: {lte: now},
-                expiresAt: {gt: now},
-                entry: {
-                    removalReason: null,
-                    appointment: {
-                        deletedAt: null,
-                        status: {notIn: ['CANCELLED', 'NO_SHOW']},
-                        patient: {deletedAt: null},
-                    },
+                removalReason: null,
+                appointment: {
+                    clinicId: panel.clinicId,
+                    deletedAt: null,
+                    status: {notIn: ['CANCELLED', 'NO_SHOW']},
+                    patient: {clinicId: panel.clinicId, deletedAt: null, person: {deletedAt: null}},
                 },
             },
+        };
+        const announcement = await this.prisma.patientCallAnnouncement.findFirst({
+            where: {...visibleCalls, expiresAt: {gt: now}},
             orderBy: {visibleFrom: 'desc'},
-            select: {destination: true, expiresAt: true, entry: {select: {ticket: true}}},
+            select: publicCallSelect,
         });
+        const recentCalls = panel.showRecentCalls
+            ? await this.prisma.patientCallAnnouncement.findMany({
+                  where: {
+                      ...visibleCalls,
+                      expiresAt: {lte: now, gt: new Date(now.getTime() - recentCallWindowMs)},
+                      appointmentId: announcement ? {not: announcement.appointmentId} : undefined,
+                  },
+                  orderBy: {visibleFrom: 'desc'},
+                  distinct: ['appointmentId'],
+                  take: recentCallLimit,
+                  select: publicCallSelect,
+              })
+            : [];
 
         return {
             title: panel.title,
@@ -163,10 +191,10 @@ export class PatientCallPrismaRepository extends PrismaRepository implements Pat
             soundEnabled: panel.soundEnabled,
             logoUrl: panel.useClinicLogo ? publicLogo(panel.clinic.logoUrl) : null,
             call: announcement && {
-                code: codeFor(announcement.entry.ticket),
-                destination: announcement.destination,
+                ...toPublicCall(announcement),
                 expiresAt: announcement.expiresAt,
             },
+            recentCalls: recentCalls.map(toPublicCall),
         };
     }
 
@@ -181,8 +209,8 @@ export class PatientCallPrismaRepository extends PrismaRepository implements Pat
                     patientId: patientIds === null ? undefined : {in: patientIds.map((id) => id.toString())},
                 },
             },
-            orderBy: [{arrivedAt: 'asc'}, {ticket: 'asc'}],
-            include: {appointment: {select: {patient: {select: {person: {select: {name: true}}}}}}},
+            orderBy: [{arrivedAt: 'asc'}, {appointmentId: 'asc'}],
+            include: {appointment: {select: patientNameSelect}},
         });
 
         return rows.map((row) => ({...toEntry(row), patientName: row.appointment.patient.person.name}));
@@ -196,29 +224,17 @@ export class PatientCallPrismaRepository extends PrismaRepository implements Pat
         `;
     }
 
-    async joinQueue(clinicId: ClinicId, appointmentId: AppointmentId, arrivedAt: Date): Promise<string | null> {
-        if (!(await this.isEnabled(clinicId))) return null;
+    async joinQueue(clinicId: ClinicId, appointmentId: AppointmentId, arrivedAt: Date): Promise<boolean> {
+        if (!(await this.isEnabled(clinicId))) return false;
 
-        const id = clinicId.toString();
-        const appointmentKey = appointmentId.toString();
-        const existing = await this.prisma.patientCallEntry.findFirst({
-            where: {clinicId: id, appointmentId: appointmentKey},
-            select: {ticket: true, closedAt: true},
+        const entry = await this.prisma.patientCallEntry.upsert({
+            where: {appointmentId: appointmentId.toString(), clinicId: clinicId.toString()},
+            create: {clinicId: clinicId.toString(), appointmentId: appointmentId.toString(), arrivedAt},
+            update: {},
+            select: {closedAt: true},
         });
 
-        if (existing !== null) return existing.closedAt === null ? codeFor(existing.ticket) : null;
-
-        const panel = await this.prisma.patientCallPanel.update({
-            where: {clinicId: id},
-            data: {nextTicket: {increment: 1}},
-            select: {nextTicket: true},
-        });
-
-        await this.prisma.patientCallEntry.create({
-            data: {clinicId: id, appointmentId: appointmentKey, arrivedAt, ticket: panel.nextTicket},
-        });
-
-        return codeFor(panel.nextTicket);
+        return entry.closedAt === null;
     }
 
     async findEntry(clinicId: ClinicId, appointmentId: AppointmentId): Promise<PatientCallEntry | null> {

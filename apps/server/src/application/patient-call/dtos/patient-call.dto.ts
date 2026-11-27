@@ -12,6 +12,7 @@ export class SavePatientCallPanelDto extends createZodDto(
         backgroundColor: hexColor,
         useClinicLogo: z.boolean(),
         soundEnabled: z.boolean(),
+        showRecentCalls: z.boolean(),
         displaySeconds: z.number().int().min(8).max(60),
     })
 ) {}
@@ -68,6 +69,9 @@ export class PatientCallPanelSettingsDto extends PatientCallDisplayIdentityDto {
     @ApiProperty({type: Boolean})
     useClinicLogo = true;
 
+    @ApiProperty({type: Boolean})
+    showRecentCalls = false;
+
     @ApiProperty({type: Number})
     displaySeconds = 15;
 }
@@ -76,9 +80,6 @@ export class PatientCallPanelSettingsDto extends PatientCallDisplayIdentityDto {
 export class PatientCallQueueEntryDto {
     @ApiProperty({type: String, format: 'uuid'})
     appointmentId = '';
-
-    @ApiProperty({type: String})
-    code = '';
 
     @ApiProperty({type: String, format: 'date-time'})
     arrivedAt: Date = new Date(0);
@@ -96,14 +97,17 @@ export class PatientCallQueueItemDto extends PatientCallQueueEntryDto {
     patientName = '';
 }
 
-@ApiSchema({name: 'PublicPatientCall'})
-export class PublicPatientCallDto {
+@ApiSchema({name: 'RecentPatientCall'})
+export class RecentPatientCallDto {
     @ApiProperty({type: String})
-    code = '';
+    patientName = '';
 
     @ApiProperty({type: String})
     destination = '';
+}
 
+@ApiSchema({name: 'PublicPatientCall'})
+export class PublicPatientCallDto extends RecentPatientCallDto {
     @ApiProperty({type: String, format: 'date-time'})
     expiresAt: Date = new Date(0);
 }
@@ -115,4 +119,7 @@ export class PublicPatientCallPanelDto extends PatientCallDisplayIdentityDto {
 
     @ApiProperty({type: PublicPatientCallDto, nullable: true})
     call: PublicPatientCallDto | null = null;
+
+    @ApiProperty({type: RecentPatientCallDto, isArray: true})
+    recentCalls: RecentPatientCallDto[] = [];
 }

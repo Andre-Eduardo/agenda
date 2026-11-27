@@ -14,11 +14,11 @@ export class CheckinAppointmentDto extends createZodDto(checkinAppointmentSchema
 
 @ApiSchema({name: 'CheckinAppointmentResult'})
 export class CheckinAppointmentResultDto extends AppointmentDto {
-    @ApiProperty({type: String, nullable: true})
-    patientCallCode: string | null;
+    @ApiProperty({type: Boolean})
+    inPatientCallQueue: boolean;
 
-    constructor(appointment: Appointment, patientCallCode: string | null) {
+    constructor(appointment: Appointment, inPatientCallQueue: boolean) {
         super(appointment);
-        this.patientCallCode = patientCallCode;
+        this.inPatientCallQueue = inPatientCallQueue;
     }
 }

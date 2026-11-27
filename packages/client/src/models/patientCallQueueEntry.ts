@@ -7,7 +7,6 @@
 
 export type PatientCallQueueEntry = {
     appointmentId: string;
-    code: string;
     arrivedAt: string;
     callCount: number;
     /** @nullable */

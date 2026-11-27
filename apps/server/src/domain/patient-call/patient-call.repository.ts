@@ -10,6 +10,7 @@ export type PatientCallIdentity = {
     backgroundColor: string;
     useClinicLogo: boolean;
     soundEnabled: boolean;
+    showRecentCalls: boolean;
     displaySeconds: number;
 };
 
@@ -20,6 +21,7 @@ export const defaultPatientCallIdentity: PatientCallIdentity = {
     backgroundColor: '#17324D',
     useClinicLogo: true,
     soundEnabled: false,
+    showRecentCalls: false,
     displaySeconds: 15,
 };
 
@@ -31,7 +33,6 @@ export type PatientCallPanel = PatientCallIdentity & {
 
 export type PatientCallEntry = {
     appointmentId: string;
-    code: string;
     arrivedAt: Date;
     callCount: number;
     destination: string | null;
@@ -39,15 +40,20 @@ export type PatientCallEntry = {
 
 export type PatientCallQueueItem = PatientCallEntry & {patientName: string};
 
-export type PublicPatientCall = {
-    code: string;
+export type RecentPatientCall = {
+    patientName: string;
     destination: string;
-    expiresAt: Date;
 };
 
-export type PublicPatientCallPanel = Omit<PatientCallIdentity, 'useClinicLogo' | 'displaySeconds'> & {
+export type PublicPatientCall = RecentPatientCall & {expiresAt: Date};
+
+export type PublicPatientCallPanel = Omit<
+    PatientCallIdentity,
+    'useClinicLogo' | 'displaySeconds' | 'showRecentCalls'
+> & {
     logoUrl: string | null;
     call: PublicPatientCall | null;
+    recentCalls: RecentPatientCall[];
 };
 
 export interface PatientCallRepository {
@@ -59,7 +65,7 @@ export interface PatientCallRepository {
     getPublicPanel(token: string): Promise<PublicPatientCallPanel | null>;
     listQueue(clinicId: ClinicId, patientIds: PatientId[] | null): Promise<PatientCallQueueItem[]>;
     lockAppointment(clinicId: ClinicId, appointmentId: AppointmentId): Promise<void>;
-    joinQueue(clinicId: ClinicId, appointmentId: AppointmentId, arrivedAt: Date): Promise<string | null>;
+    joinQueue(clinicId: ClinicId, appointmentId: AppointmentId, arrivedAt: Date): Promise<boolean>;
     findEntry(clinicId: ClinicId, appointmentId: AppointmentId): Promise<PatientCallEntry | null>;
     announce(
         clinicId: ClinicId,

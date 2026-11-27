@@ -38,18 +38,26 @@ export class CheckinAppointmentService implements ApplicationService<
             const fromStatus = appointment.status;
 
             if (fromStatus === AppointmentStatus.ARRIVED && (await this.queue.isEnabled(actor.clinicId))) {
-                const code = await this.queue.joinQueue(actor.clinicId, id, appointment.arrivedAt ?? new Date());
+                const inPatientCallQueue = await this.queue.joinQueue(
+                    actor.clinicId,
+                    id,
+                    appointment.arrivedAt ?? new Date()
+                );
 
-                return new CheckinAppointmentResultDto(appointment, code);
+                return new CheckinAppointmentResultDto(appointment, inPatientCallQueue);
             }
 
             appointment.checkin();
             await this.appointmentRepository.saveStatusTransition(appointment, fromStatus, actor, null);
-            const code = await this.queue.joinQueue(actor.clinicId, id, appointment.arrivedAt ?? new Date());
+            const inPatientCallQueue = await this.queue.joinQueue(
+                actor.clinicId,
+                id,
+                appointment.arrivedAt ?? new Date()
+            );
 
             this.atomic.defer(() => this.eventDispatcher.dispatch(actor, appointment));
 
-            return new CheckinAppointmentResultDto(appointment, code);
+            return new CheckinAppointmentResultDto(appointment, inPatientCallQueue);
         });
     }
 }

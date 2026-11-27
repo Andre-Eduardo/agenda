@@ -22,6 +22,7 @@ export type SavePatientCallPanelDto = {
     backgroundColor: string;
     useClinicLogo: boolean;
     soundEnabled: boolean;
+    showRecentCalls: boolean;
     /**
      * @minimum 8
      * @maximum 60
