@@ -1,6 +1,7 @@
 import {ApiProperty, ApiSchema} from '@nestjs/swagger';
 import type {ClinicLicense} from '@domain/clinic-license/entities';
-import {ModuleType} from '@domain/clinic-license/models';
+import {ModuleType, OperationalModuleType} from '@domain/clinic-license/models';
+import {ClinicAccountType} from '@domain/clinic/entities';
 
 @ApiSchema({name: 'ClinicLicenseProfessionals'})
 export class ClinicLicenseProfessionalsDto {
@@ -72,10 +73,32 @@ export class ClinicLicenseDto {
 
 @ApiSchema({name: 'MemberModules'})
 export class MemberModulesDto {
-    @ApiProperty({enum: ModuleType, enumName: 'ModuleType', isArray: true})
+    @ApiProperty({enum: ModuleType, enumName: 'ModuleType', isArray: true, description: 'AI modules'})
     modules: ModuleType[];
 
-    constructor(modules: Iterable<ModuleType>) {
+    @ApiProperty({
+        enum: OperationalModuleType,
+        enumName: 'OperationalModuleType',
+        isArray: true,
+        description: 'Clinic modules (team, reception) enabled for the account',
+    })
+    operationalModules: OperationalModuleType[];
+
+    @ApiProperty({
+        enum: ClinicAccountType,
+        enumName: 'ClinicAccountType',
+        nullable: true,
+        description: 'SOLO = autônomo; CLINIC = clínica com equipe. Null outside a clinic.',
+    })
+    accountType: ClinicAccountType | null;
+
+    constructor(
+        modules: Iterable<ModuleType>,
+        operationalModules: Iterable<OperationalModuleType> = [],
+        accountType: ClinicAccountType | null = null
+    ) {
         this.modules = [...modules];
+        this.operationalModules = [...operationalModules];
+        this.accountType = accountType;
     }
 }

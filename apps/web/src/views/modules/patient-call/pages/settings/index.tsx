@@ -19,14 +19,23 @@ import {z} from 'zod';
 import {Button} from '@/components/ui/componentes/button';
 import {Input} from '@/components/ui/componentes/input';
 import {useCanState} from '@/hooks/useCan';
+import {ClinicModuleGate} from '@/views/components/ClinicModuleGate';
 import {ConfirmDialog} from '@/views/components/ConfirmDialog';
 import {Page} from '@/views/components/Page';
 import {isApiError} from '@/views/components/QueryErrorHandler';
 import {PatientCallDisplay} from '../../components/Display';
 import styles from './styles.module.css';
 
+function GatedPatientCallSettingsPage() {
+    return (
+        <ClinicModuleGate module="RECEPTION">
+            <PatientCallSettingsPage />
+        </ClinicModuleGate>
+    );
+}
+
 export const Route = createFileRoute('/_stackedLayout/reception/panel-settings')({
-    component: PatientCallSettingsPage,
+    component: GatedPatientCallSettingsPage,
 });
 
 const themeSchema = z.string().regex(/^#[a-f\d]{6}$/i);

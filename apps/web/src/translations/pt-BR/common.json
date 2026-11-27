@@ -263,7 +263,9 @@
     "admin": "Administração",
     "clinics": "Empresas",
     "logout": "Sair",
-    "supportUsers": "Usuários de suporte"
+    "supportUsers": "Usuários de suporte",
+    "myFinancial": "Meu financeiro",
+    "mySettings": "Meu perfil e consultório"
   },
   "patientCall": {
     "settings": "Configurar painel de chamada",
@@ -412,7 +414,9 @@
         "password": "Senha",
         "forgotPassword": "Esqueceu?",
         "rememberMe": "Manter conectado neste dispositivo",
-        "submit": "Entrar"
+        "submit": "Entrar",
+        "signUpPrompt": "Atende sozinho?",
+        "signUpLink": "Crie sua conta de autônomo"
       },
       "validation": {
         "username": {
@@ -466,6 +470,32 @@
         "password": "A senha precisa ter 8 caracteres, com maiúscula, minúscula, número e símbolo",
         "mismatch": "As senhas não conferem"
       }
+    },
+    "signUp": {
+      "title": "Criar conta de autônomo",
+      "subtitle": "Para profissionais que atendem sozinhos. Sua conta fica pronta na hora; se um dia trabalhar com equipe, ela vira conta de clínica sem perder nada.",
+      "name": "Nome completo",
+      "email": "E-mail",
+      "username": "Usuário",
+      "password": "Senha",
+      "registrationNumber": "Registro no conselho (opcional)",
+      "specialty": "Especialidade (opcional)",
+      "acceptTermsPrefix": "Li e aceito os",
+      "acceptTermsAnd": "e a",
+      "submit": "Criar conta",
+      "back": "Já tenho conta",
+      "validation": {
+        "name": "Informe seu nome",
+        "email": "Informe um e-mail válido",
+        "username": "Use ao menos 3 caracteres: letras, números, ponto, hífen ou sublinhado",
+        "password": "A senha precisa de 8 caracteres, com maiúscula, minúscula, número e símbolo",
+        "terms": "É preciso aceitar os termos para criar a conta"
+      },
+      "errors": {
+        "closed": "O cadastro está fechado no momento. Fale com o suporte.",
+        "taken": "Usuário ou e-mail já em uso.",
+        "generic": "Não foi possível criar a conta. Tente de novo."
+      }
     }
   },
   "communicationPreferences": {
@@ -508,5 +538,54 @@
   "support": {
     "banner": "Você está em {{clinic}} como suporte: só leitura, sem dados clínicos. Esta sessão fica no log de auditoria da clínica.",
     "leave": "Sair da clínica"
+  },
+  "account": {
+    "tagline": {
+      "SOLO": "Consultório",
+      "CLINIC": "Gestão Clínica"
+    },
+    "moduleOff": {
+      "TEAM": {
+        "title": "Equipe é um recurso de clínica",
+        "message": "Sua conta é de profissional autônomo. Para trabalhar com equipe, secretária ou outros profissionais, passe a conta para Clínica em Configurações."
+      },
+      "RECEPTION": {
+        "title": "Recepção desligada",
+        "message": "Ligue a recepção e o painel de chamada em Configurações para usar esta tela."
+      }
+    },
+    "reception": {
+      "title": "Recepção e painel de chamada",
+      "description": "Fila de chegada, chamada de pacientes por nome e painel para TV da sala de espera.",
+      "enabled": "Recepção ativada",
+      "disabled": "Recepção desativada",
+      "error": "Erro ao atualizar a recepção."
+    },
+    "type": {
+      "title": {
+        "SOLO": "Conta de autônomo",
+        "CLINIC": "Conta de clínica"
+      },
+      "description": {
+        "SOLO": "Você usa o sistema sozinho. Se passar a trabalhar com secretária ou outros profissionais, transforme a conta em clínica: nada muda de lugar, só a equipe e a recepção são ligadas.",
+        "CLINIC": "Conta com equipe. Se voltou a atender sozinho, desative os outros membros e volte para conta de autônomo."
+      },
+      "action": {
+        "SOLO": "Passar para conta de clínica",
+        "CLINIC": "Voltar para conta de autônomo"
+      },
+      "confirm": {
+        "SOLO": "Ao passar para clínica, você poderá cadastrar equipe e dar a ela acesso aos seus pacientes. Você continua decidindo quem vê cada paciente, e a mudança fica registrada na auditoria. Confirma?",
+        "CLINIC": "A conta volta a ser só sua: equipe e agenda compartilhada são desligadas. Só é possível com um único membro ativo. Confirma?"
+      },
+      "changed": {
+        "CLINIC": "Agora sua conta é de clínica.",
+        "SOLO": "Agora sua conta é de autônomo."
+      },
+      "error": {
+        "CLINIC": "Não foi possível passar a conta para clínica.",
+        "SOLO": "Não foi possível voltar para autônomo. Desative os outros membros da equipe antes."
+      }
+    }
   }
 }

@@ -3,7 +3,7 @@
  * e por documento vivem em ClinicPatientAccess e DocumentPermission.
  */
 export enum ClinicMemberRole {
-    /** Acesso total. Gerencia membros e permissões. Único membro inicial em isPersonalClinic. */
+    /** Acesso total. Gerencia membros e permissões. Único membro de uma conta SOLO. */
     OWNER = 'OWNER',
     /** Gerencia membros (exceto OWNER) e permissões. Não pode se auto-promover a OWNER. */
     ADMIN = 'ADMIN',

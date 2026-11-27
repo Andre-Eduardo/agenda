@@ -26,6 +26,7 @@ describe('Environment configuration in production', () => {
             COOKIE_SECRET: strongSecret,
             AUTH_TOKEN_SECRET: `${strongSecret}y`,
             SIGN_UP_MODE: undefined,
+            SIGN_UP_SOLO_MODE: undefined,
             SIGN_UP_INVITE_CODE: undefined,
             SWAGGER_ENABLED: undefined,
             RATE_LIMIT_ENABLED: undefined,
@@ -60,7 +61,23 @@ describe('Environment configuration in production', () => {
 
         process.env.SIGN_UP_INVITE_CODE = 'code';
 
-        expect(EnvConfigService.load().signUp).toEqual({mode: SignUpMode.INVITE, inviteCode: 'code'});
+        expect(EnvConfigService.load().signUp).toEqual({
+            mode: SignUpMode.INVITE,
+            inviteCode: 'code',
+            soloMode: SignUpMode.INVITE,
+        });
+    });
+
+    it('can open only the solo sign-up while the owner sign-up stays closed', () => {
+        process.env.SIGN_UP_SOLO_MODE = 'open';
+
+        expect(EnvConfigService.load().signUp).toMatchObject({mode: SignUpMode.CLOSED, soloMode: SignUpMode.OPEN});
+    });
+
+    it('requires an invite code when only the solo sign-up is by invite', () => {
+        process.env.SIGN_UP_SOLO_MODE = 'invite';
+
+        expect(() => EnvConfigService.load()).toThrow('SIGN_UP_INVITE_CODE');
     });
 
     it('lets Swagger be turned on explicitly', () => {
@@ -79,6 +96,7 @@ describe('Environment configuration outside production', () => {
             COOKIE_SECRET: undefined,
             AUTH_TOKEN_SECRET: undefined,
             SIGN_UP_MODE: undefined,
+            SIGN_UP_SOLO_MODE: undefined,
             SWAGGER_ENABLED: undefined,
         });
 

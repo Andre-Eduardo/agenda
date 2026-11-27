@@ -199,6 +199,49 @@
         ]
       }
     },
+    "/api/v1/clinics/me/account-type": {
+      "put": {
+        "description": "SOLO → CLINIC opens the team and reception and requires confirmTeamAccess. CLINIC → SOLO requires a single active member (support access does not count).",
+        "operationId": "changeAccountType",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChangeClinicAccountTypeDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Clinic with its new account type",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Clinic"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Request failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Switches the current account between solo (autônomo) and clinic (owner only)",
+        "tags": [
+          "Clinic"
+        ]
+      }
+    },
     "/api/v1/clinics": {
       "post": {
         "operationId": "createClinic",
@@ -726,6 +769,19 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "accountType",
+            "required": true,
+            "in": "query",
+            "description": "Only solo or only clinic accounts",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "SOLO",
+                "CLINIC"
+              ]
+            }
           }
         ],
         "responses": {
@@ -866,7 +922,7 @@
             }
           }
         },
-        "summary": "Lists the AI modules the current member can use",
+        "summary": "Lists the AI modules, clinic modules and account type of the current member",
         "tags": [
           "ClinicLicense"
         ]
@@ -1660,6 +1716,514 @@
         "summary": "Changes the user password",
         "tags": [
           "User"
+        ]
+      }
+    },
+    "/api/v1/onboarding/solo": {
+      "post": {
+        "description": "Gated by SIGN_UP_SOLO_MODE (falls back to SIGN_UP_MODE; closed by default in production).",
+        "operationId": "onboardSolo",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OnboardSoloDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Solo account created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SoloOnboarding"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Request failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Self sign-up of an independent professional: user, solo account, member and professional record",
+        "tags": [
+          "Onboarding"
+        ]
+      }
+    },
+    "/api/v1/addons/catalog": {
+      "get": {
+        "operationId": "getAddonCatalog",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Catalog list",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AddonCatalogItem"
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Request failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          }
+        },
+        "summary": "List available add-on packages with prices and grants (public)",
+        "tags": [
+          "Subscription"
+        ]
+      }
+    },
+    "/api/v1/members/{memberId}/subscription": {
+      "get": {
+        "operationId": "getSubscription",
+        "parameters": [
+          {
+            "name": "memberId",
+            "required": true,
+            "in": "path",
+            "description": "Member ID",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Subscription found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProfessionalSubscription"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Subscription not found"
+          },
+          "default": {
+            "description": "Request failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Get active subscription for a professional member",
+        "tags": [
+          "Subscription"
+        ]
+      },
+      "patch": {
+        "operationId": "changePlan",
+        "parameters": [
+          {
+            "name": "memberId",
+            "required": true,
+            "in": "path",
+            "description": "Member ID",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChangePlanDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Plan updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProfessionalSubscription"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Not an admin or owner"
+          },
+          "404": {
+            "description": "Subscription not found"
+          },
+          "default": {
+            "description": "Request failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Change the plan for a professional member (admin/owner only)",
+        "tags": [
+          "Subscription"
+        ]
+      },
+      "delete": {
+        "operationId": "cancelSubscription",
+        "parameters": [
+          {
+            "name": "memberId",
+            "required": true,
+            "in": "path",
+            "description": "Member ID",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Subscription cancelled"
+          },
+          "403": {
+            "description": "Not authorized"
+          },
+          "404": {
+            "description": "Subscription not found"
+          },
+          "default": {
+            "description": "Request failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Cancel the Asaas subscription for a professional member",
+        "tags": [
+          "Payment"
+        ]
+      }
+    },
+    "/api/v1/members/{memberId}/usage": {
+      "get": {
+        "operationId": "getMemberUsage",
+        "parameters": [
+          {
+            "name": "memberId",
+            "required": true,
+            "in": "path",
+            "description": "Member ID",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Usage data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CurrentUsage"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Subscription not found"
+          },
+          "default": {
+            "description": "Request failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Get current period usage for a professional member",
+        "tags": [
+          "Subscription"
+        ]
+      }
+    },
+    "/api/v1/members/{memberId}/addons": {
+      "post": {
+        "operationId": "purchaseAddon",
+        "parameters": [
+          {
+            "name": "memberId",
+            "required": true,
+            "in": "path",
+            "description": "Member ID",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PurchaseAddonDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Add-on purchased; returns updated usage",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CurrentUsage"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid addon code or quantity"
+          },
+          "403": {
+            "description": "Not an admin or owner"
+          },
+          "404": {
+            "description": "Subscription not found"
+          },
+          "default": {
+            "description": "Request failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Purchase an add-on package for a professional member (admin/owner only)",
+        "tags": [
+          "Subscription"
+        ]
+      },
+      "get": {
+        "operationId": "getMemberAddons",
+        "parameters": [
+          {
+            "name": "memberId",
+            "required": true,
+            "in": "path",
+            "description": "Member ID",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Active add-ons",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ActiveAddonDto"
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Request failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          }
+        },
+        "summary": "List active add-ons for a professional member in the current month",
+        "tags": [
+          "Subscription"
+        ]
+      }
+    },
+    "/api/v1/clinics/{clinicId}/members/usage": {
+      "get": {
+        "operationId": "getClinicMembersUsage",
+        "parameters": [
+          {
+            "name": "clinicId",
+            "required": true,
+            "in": "path",
+            "description": "Clinic ID",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Clinic-wide usage breakdown",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClinicMembersUsageSummaryDto"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Request failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Get current usage for all professionals in a clinic with per-member details (admin/owner only)",
+        "tags": [
+          "Subscription"
+        ]
+      }
+    },
+    "/api/v1/clinics/{clinicId}/addons": {
+      "get": {
+        "operationId": "getClinicAddons",
+        "parameters": [
+          {
+            "name": "clinicId",
+            "required": true,
+            "in": "path",
+            "description": "Clinic ID",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Clinic-wide add-on breakdown",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/MemberActiveAddons"
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Request failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          }
+        },
+        "summary": "List active add-ons for all members in a clinic (admin/owner only)",
+        "tags": [
+          "Subscription"
+        ]
+      }
+    },
+    "/api/v1/clinics/{clinicId}/usage": {
+      "get": {
+        "operationId": "getClinicUsage",
+        "parameters": [
+          {
+            "name": "clinicId",
+            "required": true,
+            "in": "path",
+            "description": "Clinic ID",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Usage list",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/MemberUsageSummary"
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Request failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Get current usage for all professionals in a clinic (admin/owner only)",
+        "tags": [
+          "Subscription"
         ]
       }
     },
@@ -6659,471 +7223,6 @@
         ]
       }
     },
-    "/api/v1/addons/catalog": {
-      "get": {
-        "operationId": "getAddonCatalog",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "Catalog list",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/AddonCatalogItem"
-                  }
-                }
-              }
-            }
-          },
-          "default": {
-            "description": "Request failed",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiProblem"
-                }
-              }
-            }
-          }
-        },
-        "summary": "List available add-on packages with prices and grants (public)",
-        "tags": [
-          "Subscription"
-        ]
-      }
-    },
-    "/api/v1/members/{memberId}/subscription": {
-      "get": {
-        "operationId": "getSubscription",
-        "parameters": [
-          {
-            "name": "memberId",
-            "required": true,
-            "in": "path",
-            "description": "Member ID",
-            "schema": {
-              "format": "uuid",
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Subscription found",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProfessionalSubscription"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Subscription not found"
-          },
-          "default": {
-            "description": "Request failed",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiProblem"
-                }
-              }
-            }
-          }
-        },
-        "summary": "Get active subscription for a professional member",
-        "tags": [
-          "Subscription"
-        ]
-      },
-      "patch": {
-        "operationId": "changePlan",
-        "parameters": [
-          {
-            "name": "memberId",
-            "required": true,
-            "in": "path",
-            "description": "Member ID",
-            "schema": {
-              "format": "uuid",
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/ChangePlanDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Plan updated",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProfessionalSubscription"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Not an admin or owner"
-          },
-          "404": {
-            "description": "Subscription not found"
-          },
-          "default": {
-            "description": "Request failed",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiProblem"
-                }
-              }
-            }
-          }
-        },
-        "summary": "Change the plan for a professional member (admin/owner only)",
-        "tags": [
-          "Subscription"
-        ]
-      },
-      "delete": {
-        "operationId": "cancelSubscription",
-        "parameters": [
-          {
-            "name": "memberId",
-            "required": true,
-            "in": "path",
-            "description": "Member ID",
-            "schema": {
-              "format": "uuid",
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "204": {
-            "description": "Subscription cancelled"
-          },
-          "403": {
-            "description": "Not authorized"
-          },
-          "404": {
-            "description": "Subscription not found"
-          },
-          "default": {
-            "description": "Request failed",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiProblem"
-                }
-              }
-            }
-          }
-        },
-        "summary": "Cancel the Asaas subscription for a professional member",
-        "tags": [
-          "Payment"
-        ]
-      }
-    },
-    "/api/v1/members/{memberId}/usage": {
-      "get": {
-        "operationId": "getMemberUsage",
-        "parameters": [
-          {
-            "name": "memberId",
-            "required": true,
-            "in": "path",
-            "description": "Member ID",
-            "schema": {
-              "format": "uuid",
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Usage data",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/CurrentUsage"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Subscription not found"
-          },
-          "default": {
-            "description": "Request failed",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiProblem"
-                }
-              }
-            }
-          }
-        },
-        "summary": "Get current period usage for a professional member",
-        "tags": [
-          "Subscription"
-        ]
-      }
-    },
-    "/api/v1/members/{memberId}/addons": {
-      "post": {
-        "operationId": "purchaseAddon",
-        "parameters": [
-          {
-            "name": "memberId",
-            "required": true,
-            "in": "path",
-            "description": "Member ID",
-            "schema": {
-              "format": "uuid",
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/PurchaseAddonDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "Add-on purchased; returns updated usage",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/CurrentUsage"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Invalid addon code or quantity"
-          },
-          "403": {
-            "description": "Not an admin or owner"
-          },
-          "404": {
-            "description": "Subscription not found"
-          },
-          "default": {
-            "description": "Request failed",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiProblem"
-                }
-              }
-            }
-          }
-        },
-        "summary": "Purchase an add-on package for a professional member (admin/owner only)",
-        "tags": [
-          "Subscription"
-        ]
-      },
-      "get": {
-        "operationId": "getMemberAddons",
-        "parameters": [
-          {
-            "name": "memberId",
-            "required": true,
-            "in": "path",
-            "description": "Member ID",
-            "schema": {
-              "format": "uuid",
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Active add-ons",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/ActiveAddonDto"
-                  }
-                }
-              }
-            }
-          },
-          "default": {
-            "description": "Request failed",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiProblem"
-                }
-              }
-            }
-          }
-        },
-        "summary": "List active add-ons for a professional member in the current month",
-        "tags": [
-          "Subscription"
-        ]
-      }
-    },
-    "/api/v1/clinics/{clinicId}/members/usage": {
-      "get": {
-        "operationId": "getClinicMembersUsage",
-        "parameters": [
-          {
-            "name": "clinicId",
-            "required": true,
-            "in": "path",
-            "description": "Clinic ID",
-            "schema": {
-              "format": "uuid",
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Clinic-wide usage breakdown",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ClinicMembersUsageSummaryDto"
-                }
-              }
-            }
-          },
-          "default": {
-            "description": "Request failed",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiProblem"
-                }
-              }
-            }
-          }
-        },
-        "summary": "Get current usage for all professionals in a clinic with per-member details (admin/owner only)",
-        "tags": [
-          "Subscription"
-        ]
-      }
-    },
-    "/api/v1/clinics/{clinicId}/addons": {
-      "get": {
-        "operationId": "getClinicAddons",
-        "parameters": [
-          {
-            "name": "clinicId",
-            "required": true,
-            "in": "path",
-            "description": "Clinic ID",
-            "schema": {
-              "format": "uuid",
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Clinic-wide add-on breakdown",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/MemberActiveAddons"
-                  }
-                }
-              }
-            }
-          },
-          "default": {
-            "description": "Request failed",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiProblem"
-                }
-              }
-            }
-          }
-        },
-        "summary": "List active add-ons for all members in a clinic (admin/owner only)",
-        "tags": [
-          "Subscription"
-        ]
-      }
-    },
-    "/api/v1/clinics/{clinicId}/usage": {
-      "get": {
-        "operationId": "getClinicUsage",
-        "parameters": [
-          {
-            "name": "clinicId",
-            "required": true,
-            "in": "path",
-            "description": "Clinic ID",
-            "schema": {
-              "format": "uuid",
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Usage list",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/MemberUsageSummary"
-                  }
-                }
-              }
-            }
-          },
-          "default": {
-            "description": "Request failed",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiProblem"
-                }
-              }
-            }
-          }
-        },
-        "summary": "Get current usage for all professionals in a clinic (admin/owner only)",
-        "tags": [
-          "Subscription"
-        ]
-      }
-    },
     "/api/v1/imported-documents/{id}/draft": {
       "get": {
         "operationId": "getDraft",
@@ -10346,87 +10445,32 @@
           "newPassword"
         ]
       },
-      "CreateClinicDto": {
+      "ChangeClinicAccountTypeDto": {
         "type": "object",
         "properties": {
-          "name": {
+          "accountType": {
             "type": "string",
-            "minLength": 1,
-            "maxLength": 255
+            "enum": [
+              "SOLO",
+              "CLINIC"
+            ]
           },
-          "documentId": {
-            "type": "string",
-            "nullable": true
-          },
-          "phone": {
-            "type": "string",
-            "nullable": true
-          },
-          "email": {
-            "type": "string",
-            "nullable": true,
-            "format": "email"
-          },
-          "isPersonalClinic": {
+          "confirmTeamAccess": {
             "type": "boolean",
             "default": false
-          },
-          "street": {
-            "type": "string",
-            "nullable": true
-          },
-          "number": {
-            "type": "string",
-            "nullable": true
-          },
-          "complement": {
-            "type": "string",
-            "nullable": true
-          },
-          "neighborhood": {
-            "type": "string",
-            "nullable": true
-          },
-          "city": {
-            "type": "string",
-            "nullable": true
-          },
-          "state": {
-            "type": "string",
-            "nullable": true
-          },
-          "zipCode": {
-            "type": "string",
-            "nullable": true
-          },
-          "country": {
-            "type": "string",
-            "nullable": true
-          },
-          "logoUrl": {
-            "type": "string",
-            "nullable": true,
-            "format": "uri"
-          },
-          "clinicSpecialties": {
-            "type": "array",
-            "items": {
-              "type": "string",
-              "enum": [
-                "SAUDE_MENTAL",
-                "REABILITACAO",
-                "MEDICINA_GERAL",
-                "MEDICINA_ESPECIALIZADA",
-                "NUTRICAO_DIETETICA",
-                "ENFERMAGEM",
-                "OUTROS"
-              ]
-            }
           }
         },
         "required": [
-          "name"
+          "accountType"
         ]
+      },
+      "ClinicAccountType": {
+        "type": "string",
+        "enum": [
+          "SOLO",
+          "CLINIC"
+        ],
+        "description": "SOLO = autônomo (conta de uma pessoa, sem equipe); CLINIC = clínica com equipe"
       },
       "Clinic": {
         "type": "object",
@@ -10467,9 +10511,22 @@
             "nullable": true,
             "description": "Email"
           },
+          "accountType": {
+            "description": "SOLO = autônomo (conta de uma pessoa, sem equipe); CLINIC = clínica com equipe",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ClinicAccountType"
+              }
+            ]
+          },
+          "receptionEnabled": {
+            "type": "boolean",
+            "description": "Reception and patient call panel module. Always available on CLINIC; optional on SOLO"
+          },
           "isPersonalClinic": {
             "type": "boolean",
-            "description": "true = autônomo (sem equipe). Front esconde menus de membros."
+            "deprecated": true,
+            "description": "Use accountType. true when accountType = SOLO."
           },
           "street": {
             "type": "object",
@@ -10546,6 +10603,8 @@
           "documentId",
           "phone",
           "email",
+          "accountType",
+          "receptionEnabled",
           "isPersonalClinic",
           "street",
           "number",
@@ -10558,6 +10617,94 @@
           "logoUrl",
           "clinicSpecialties",
           "roomManagementEnabled"
+        ]
+      },
+      "CreateClinicDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 255
+          },
+          "documentId": {
+            "type": "string",
+            "nullable": true
+          },
+          "phone": {
+            "type": "string",
+            "nullable": true
+          },
+          "email": {
+            "type": "string",
+            "nullable": true,
+            "format": "email"
+          },
+          "accountType": {
+            "type": "string",
+            "enum": [
+              "SOLO",
+              "CLINIC"
+            ]
+          },
+          "isPersonalClinic": {
+            "type": "boolean"
+          },
+          "street": {
+            "type": "string",
+            "nullable": true
+          },
+          "number": {
+            "type": "string",
+            "nullable": true
+          },
+          "complement": {
+            "type": "string",
+            "nullable": true
+          },
+          "neighborhood": {
+            "type": "string",
+            "nullable": true
+          },
+          "city": {
+            "type": "string",
+            "nullable": true
+          },
+          "state": {
+            "type": "string",
+            "nullable": true
+          },
+          "zipCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "country": {
+            "type": "string",
+            "nullable": true
+          },
+          "logoUrl": {
+            "type": "string",
+            "nullable": true,
+            "format": "uri"
+          },
+          "clinicSpecialties": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "SAUDE_MENTAL",
+                "REABILITACAO",
+                "MEDICINA_GERAL",
+                "MEDICINA_ESPECIALIZADA",
+                "NUTRICAO_DIETETICA",
+                "ENFERMAGEM",
+                "OUTROS"
+              ]
+            }
+          }
+        },
+        "required": [
+          "name"
         ]
       },
       "UpdateClinicDto": {
@@ -10631,6 +10778,9 @@
           },
           "roomManagementEnabled": {
             "type": "boolean"
+          },
+          "receptionEnabled": {
+            "type": "boolean"
           }
         },
         "required": [
@@ -10647,7 +10797,8 @@
           "country",
           "logoUrl",
           "clinicSpecialties",
-          "roomManagementEnabled"
+          "roomManagementEnabled",
+          "receptionEnabled"
         ]
       },
       "InsurancePlan": {
@@ -11065,18 +11216,45 @@
           "clinicMemberIds"
         ]
       },
+      "OperationalModuleType": {
+        "type": "string",
+        "enum": [
+          "TEAM",
+          "RECEPTION"
+        ],
+        "description": "Clinic modules (team, reception) enabled for the account"
+      },
       "MemberModules": {
         "type": "object",
         "properties": {
           "modules": {
             "type": "array",
+            "description": "AI modules",
             "items": {
               "$ref": "#/components/schemas/ModuleType"
             }
+          },
+          "operationalModules": {
+            "type": "array",
+            "description": "Clinic modules (team, reception) enabled for the account",
+            "items": {
+              "$ref": "#/components/schemas/OperationalModuleType"
+            }
+          },
+          "accountType": {
+            "nullable": true,
+            "description": "SOLO = autônomo; CLINIC = clínica com equipe. Null outside a clinic.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ClinicAccountType"
+              }
+            ]
           }
         },
         "required": [
-          "modules"
+          "modules",
+          "operationalModules",
+          "accountType"
         ]
       },
       "ConfigureClinicLicenseInputDto": {
@@ -11583,6 +11761,598 @@
         },
         "required": [
           "password"
+        ]
+      },
+      "OnboardSoloDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 255,
+            "example": "Dra. Ana Souza"
+          },
+          "username": {
+            "type": "string",
+            "example": "john_doe"
+          },
+          "email": {
+            "type": "string",
+            "example": "john.doe@example.com"
+          },
+          "password": {
+            "type": "string",
+            "example": "J0hn@d03"
+          },
+          "clinicName": {
+            "type": "string",
+            "nullable": true,
+            "minLength": 1,
+            "maxLength": 255
+          },
+          "phone": {
+            "type": "string",
+            "nullable": true
+          },
+          "registrationNumber": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 64,
+            "example": "CRP 06/12345"
+          },
+          "specialty": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 255,
+            "example": "Psicologia"
+          },
+          "specialtyNormalized": {
+            "type": "string",
+            "nullable": true,
+            "enum": [
+              "SAUDE_MENTAL",
+              "REABILITACAO",
+              "MEDICINA_GERAL",
+              "MEDICINA_ESPECIALIZADA",
+              "NUTRICAO_DIETETICA",
+              "ENFERMAGEM",
+              "OUTROS"
+            ]
+          },
+          "acceptTerms": {
+            "type": "number",
+            "enum": [
+              true
+            ]
+          },
+          "inviteCode": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 256
+          }
+        },
+        "required": [
+          "name",
+          "username",
+          "email",
+          "password",
+          "acceptTerms"
+        ]
+      },
+      "SoloOnboarding": {
+        "type": "object",
+        "properties": {
+          "user": {
+            "$ref": "#/components/schemas/User"
+          },
+          "clinic": {
+            "description": "The solo account (accountType = SOLO)",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Clinic"
+              }
+            ]
+          },
+          "clinicMemberId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "The single member (OWNER + PROFESSIONAL) of the account"
+          },
+          "professionalId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "required": [
+          "user",
+          "clinic",
+          "clinicMemberId",
+          "professionalId"
+        ]
+      },
+      "AddonGrantsTotalsDto": {
+        "type": "object",
+        "properties": {
+          "docsPerMonth": {
+            "type": "number",
+            "nullable": true
+          },
+          "chatMessagesPerMonth": {
+            "type": "number",
+            "nullable": true
+          },
+          "clinicalImagesPerMonth": {
+            "type": "number",
+            "nullable": true
+          },
+          "storageHotGb": {
+            "type": "number",
+            "nullable": true
+          }
+        }
+      },
+      "AddonCatalogItem": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "priceMonthlyBrl": {
+            "type": "number"
+          },
+          "grants": {
+            "$ref": "#/components/schemas/AddonGrantsTotalsDto"
+          }
+        },
+        "required": [
+          "code",
+          "name",
+          "priceMonthlyBrl",
+          "grants"
+        ]
+      },
+      "ProfessionalSubscription": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "memberId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "clinicId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "planCode": {
+            "type": "string",
+            "enum": [
+              "STARTER",
+              "CONSULTORIO",
+              "CLINICA",
+              "ESPECIALISTA"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "ACTIVE",
+              "SUSPENDED",
+              "CANCELLED",
+              "TRIAL"
+            ]
+          },
+          "currentPeriodStart": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "currentPeriodEnd": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "previousPlanCode": {
+            "type": "string",
+            "enum": [
+              "STARTER",
+              "CONSULTORIO",
+              "CLINICA",
+              "ESPECIALISTA"
+            ],
+            "nullable": true
+          },
+          "planChangedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "memberId",
+          "clinicId",
+          "planCode",
+          "status",
+          "currentPeriodStart",
+          "currentPeriodEnd",
+          "previousPlanCode",
+          "planChangedAt",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "UsagePeriodDto": {
+        "type": "object",
+        "properties": {
+          "year": {
+            "type": "number"
+          },
+          "month": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "year",
+          "month"
+        ]
+      },
+      "UsageMetricDto": {
+        "type": "object",
+        "properties": {
+          "used": {
+            "type": "number"
+          },
+          "limit": {
+            "type": "object",
+            "nullable": true,
+            "description": "null = unlimited"
+          },
+          "percent": {
+            "type": "number",
+            "description": "Percentage of limit used (0–100). 0 when limit is null."
+          },
+          "remaining": {
+            "type": "object",
+            "nullable": true,
+            "description": "null = unlimited"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "OK",
+              "WARNING",
+              "EXCEEDED",
+              "NOT_INCLUDED"
+            ]
+          }
+        },
+        "required": [
+          "used",
+          "limit",
+          "percent",
+          "remaining",
+          "status"
+        ]
+      },
+      "UsageBreakdownDto": {
+        "type": "object",
+        "properties": {
+          "docs": {
+            "$ref": "#/components/schemas/UsageMetricDto"
+          },
+          "chat": {
+            "$ref": "#/components/schemas/UsageMetricDto"
+          },
+          "images": {
+            "$ref": "#/components/schemas/UsageMetricDto"
+          },
+          "storageHotGb": {
+            "$ref": "#/components/schemas/UsageMetricDto"
+          }
+        },
+        "required": [
+          "docs",
+          "chat",
+          "images",
+          "storageHotGb"
+        ]
+      },
+      "UsageAlertDto": {
+        "type": "object",
+        "properties": {
+          "metric": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "WARNING",
+              "EXCEEDED"
+            ]
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "metric",
+          "type",
+          "message"
+        ]
+      },
+      "ActiveAddonDto": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "quantity": {
+            "type": "number"
+          },
+          "grantsTotal": {
+            "$ref": "#/components/schemas/AddonGrantsTotalsDto"
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "code",
+          "name",
+          "quantity",
+          "grantsTotal",
+          "expiresAt"
+        ]
+      },
+      "SubscriptionInfoDto": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string"
+          },
+          "currentPeriodStart": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "currentPeriodEnd": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "status",
+          "currentPeriodStart",
+          "currentPeriodEnd"
+        ]
+      },
+      "CurrentUsage": {
+        "type": "object",
+        "properties": {
+          "planCode": {
+            "type": "string",
+            "enum": [
+              "STARTER",
+              "CONSULTORIO",
+              "CLINICA",
+              "ESPECIALISTA"
+            ]
+          },
+          "planName": {
+            "type": "string"
+          },
+          "period": {
+            "$ref": "#/components/schemas/UsagePeriodDto"
+          },
+          "resetAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "ISO timestamp of the next monthly reset"
+          },
+          "usage": {
+            "$ref": "#/components/schemas/UsageBreakdownDto"
+          },
+          "isAnyLimitReached": {
+            "type": "boolean"
+          },
+          "warningThreshold": {
+            "type": "number",
+            "description": "Percentage threshold at which warnings are shown (default: 80)"
+          },
+          "limitsReached": {
+            "description": "Metrics that have reached their limit",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "alerts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UsageAlertDto"
+            }
+          },
+          "addons": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ActiveAddonDto"
+            }
+          },
+          "subscription": {
+            "$ref": "#/components/schemas/SubscriptionInfoDto"
+          }
+        },
+        "required": [
+          "planCode",
+          "planName",
+          "period",
+          "resetAt",
+          "usage",
+          "isAnyLimitReached",
+          "warningThreshold",
+          "limitsReached",
+          "alerts",
+          "addons",
+          "subscription"
+        ]
+      },
+      "PurchaseAddonDto": {
+        "type": "object",
+        "properties": {
+          "addonCode": {
+            "type": "string",
+            "enum": [
+              "EXTRA_DOCS_300",
+              "EXTRA_CHAT_1000",
+              "EXTRA_IMAGES_30",
+              "EXTRA_STORAGE_10GB"
+            ]
+          },
+          "quantity": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "paymentMethod": {
+            "type": "string",
+            "enum": [
+              "CREDIT_CARD",
+              "PIX",
+              "BOLETO"
+            ]
+          }
+        },
+        "required": [
+          "addonCode",
+          "quantity",
+          "paymentMethod"
+        ]
+      },
+      "MemberUsageSummaryItemDto": {
+        "type": "object",
+        "properties": {
+          "memberId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "displayName": {
+            "type": "string"
+          },
+          "planCode": {
+            "type": "string",
+            "enum": [
+              "STARTER",
+              "CONSULTORIO",
+              "CLINICA",
+              "ESPECIALISTA"
+            ]
+          },
+          "usage": {
+            "$ref": "#/components/schemas/UsageBreakdownDto"
+          },
+          "hasAnyWarning": {
+            "type": "boolean"
+          },
+          "hasAnyExceeded": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "memberId",
+          "displayName",
+          "planCode",
+          "usage",
+          "hasAnyWarning",
+          "hasAnyExceeded"
+        ]
+      },
+      "ClinicMembersUsageSummaryDto": {
+        "type": "object",
+        "properties": {
+          "period": {
+            "$ref": "#/components/schemas/UsagePeriodDto"
+          },
+          "members": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MemberUsageSummaryItemDto"
+            }
+          },
+          "summary": {
+            "type": "object"
+          }
+        },
+        "required": [
+          "period",
+          "members",
+          "summary"
+        ]
+      },
+      "MemberActiveAddons": {
+        "type": "object",
+        "properties": {
+          "memberId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "addons": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ActiveAddonDto"
+            }
+          }
+        },
+        "required": [
+          "memberId",
+          "addons"
+        ]
+      },
+      "MemberUsageSummary": {
+        "type": "object",
+        "properties": {
+          "memberId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "usage": {
+            "$ref": "#/components/schemas/CurrentUsage"
+          }
+        },
+        "required": [
+          "memberId",
+          "usage"
+        ]
+      },
+      "ChangePlanDto": {
+        "type": "object",
+        "properties": {
+          "planCode": {
+            "type": "string",
+            "enum": [
+              "STARTER",
+              "CONSULTORIO",
+              "CLINICA",
+              "ESPECIALISTA"
+            ],
+            "example": "CONSULTORIO"
+          }
+        },
+        "required": [
+          "planCode"
         ]
       },
       "CreateProfessionalInputDto": {
@@ -16388,491 +17158,6 @@
         },
         "required": [
           "reason"
-        ]
-      },
-      "AddonGrantsTotalsDto": {
-        "type": "object",
-        "properties": {
-          "docsPerMonth": {
-            "type": "number",
-            "nullable": true
-          },
-          "chatMessagesPerMonth": {
-            "type": "number",
-            "nullable": true
-          },
-          "clinicalImagesPerMonth": {
-            "type": "number",
-            "nullable": true
-          },
-          "storageHotGb": {
-            "type": "number",
-            "nullable": true
-          }
-        }
-      },
-      "AddonCatalogItem": {
-        "type": "object",
-        "properties": {
-          "code": {
-            "type": "string"
-          },
-          "name": {
-            "type": "string"
-          },
-          "priceMonthlyBrl": {
-            "type": "number"
-          },
-          "grants": {
-            "$ref": "#/components/schemas/AddonGrantsTotalsDto"
-          }
-        },
-        "required": [
-          "code",
-          "name",
-          "priceMonthlyBrl",
-          "grants"
-        ]
-      },
-      "ProfessionalSubscription": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "memberId": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "clinicId": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "planCode": {
-            "type": "string",
-            "enum": [
-              "STARTER",
-              "CONSULTORIO",
-              "CLINICA",
-              "ESPECIALISTA"
-            ]
-          },
-          "status": {
-            "type": "string",
-            "enum": [
-              "ACTIVE",
-              "SUSPENDED",
-              "CANCELLED",
-              "TRIAL"
-            ]
-          },
-          "currentPeriodStart": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "currentPeriodEnd": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "previousPlanCode": {
-            "type": "string",
-            "enum": [
-              "STARTER",
-              "CONSULTORIO",
-              "CLINICA",
-              "ESPECIALISTA"
-            ],
-            "nullable": true
-          },
-          "planChangedAt": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
-          },
-          "createdAt": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "updatedAt": {
-            "type": "string",
-            "format": "date-time"
-          }
-        },
-        "required": [
-          "id",
-          "memberId",
-          "clinicId",
-          "planCode",
-          "status",
-          "currentPeriodStart",
-          "currentPeriodEnd",
-          "previousPlanCode",
-          "planChangedAt",
-          "createdAt",
-          "updatedAt"
-        ]
-      },
-      "UsagePeriodDto": {
-        "type": "object",
-        "properties": {
-          "year": {
-            "type": "number"
-          },
-          "month": {
-            "type": "number"
-          }
-        },
-        "required": [
-          "year",
-          "month"
-        ]
-      },
-      "UsageMetricDto": {
-        "type": "object",
-        "properties": {
-          "used": {
-            "type": "number"
-          },
-          "limit": {
-            "type": "object",
-            "nullable": true,
-            "description": "null = unlimited"
-          },
-          "percent": {
-            "type": "number",
-            "description": "Percentage of limit used (0–100). 0 when limit is null."
-          },
-          "remaining": {
-            "type": "object",
-            "nullable": true,
-            "description": "null = unlimited"
-          },
-          "status": {
-            "type": "string",
-            "enum": [
-              "OK",
-              "WARNING",
-              "EXCEEDED",
-              "NOT_INCLUDED"
-            ]
-          }
-        },
-        "required": [
-          "used",
-          "limit",
-          "percent",
-          "remaining",
-          "status"
-        ]
-      },
-      "UsageBreakdownDto": {
-        "type": "object",
-        "properties": {
-          "docs": {
-            "$ref": "#/components/schemas/UsageMetricDto"
-          },
-          "chat": {
-            "$ref": "#/components/schemas/UsageMetricDto"
-          },
-          "images": {
-            "$ref": "#/components/schemas/UsageMetricDto"
-          },
-          "storageHotGb": {
-            "$ref": "#/components/schemas/UsageMetricDto"
-          }
-        },
-        "required": [
-          "docs",
-          "chat",
-          "images",
-          "storageHotGb"
-        ]
-      },
-      "UsageAlertDto": {
-        "type": "object",
-        "properties": {
-          "metric": {
-            "type": "string"
-          },
-          "type": {
-            "type": "string",
-            "enum": [
-              "WARNING",
-              "EXCEEDED"
-            ]
-          },
-          "message": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "metric",
-          "type",
-          "message"
-        ]
-      },
-      "ActiveAddonDto": {
-        "type": "object",
-        "properties": {
-          "code": {
-            "type": "string"
-          },
-          "name": {
-            "type": "string"
-          },
-          "quantity": {
-            "type": "number"
-          },
-          "grantsTotal": {
-            "$ref": "#/components/schemas/AddonGrantsTotalsDto"
-          },
-          "expiresAt": {
-            "type": "string",
-            "format": "date-time"
-          }
-        },
-        "required": [
-          "code",
-          "name",
-          "quantity",
-          "grantsTotal",
-          "expiresAt"
-        ]
-      },
-      "SubscriptionInfoDto": {
-        "type": "object",
-        "properties": {
-          "status": {
-            "type": "string"
-          },
-          "currentPeriodStart": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "currentPeriodEnd": {
-            "type": "string",
-            "format": "date-time"
-          }
-        },
-        "required": [
-          "status",
-          "currentPeriodStart",
-          "currentPeriodEnd"
-        ]
-      },
-      "CurrentUsage": {
-        "type": "object",
-        "properties": {
-          "planCode": {
-            "type": "string",
-            "enum": [
-              "STARTER",
-              "CONSULTORIO",
-              "CLINICA",
-              "ESPECIALISTA"
-            ]
-          },
-          "planName": {
-            "type": "string"
-          },
-          "period": {
-            "$ref": "#/components/schemas/UsagePeriodDto"
-          },
-          "resetAt": {
-            "type": "string",
-            "format": "date-time",
-            "description": "ISO timestamp of the next monthly reset"
-          },
-          "usage": {
-            "$ref": "#/components/schemas/UsageBreakdownDto"
-          },
-          "isAnyLimitReached": {
-            "type": "boolean"
-          },
-          "warningThreshold": {
-            "type": "number",
-            "description": "Percentage threshold at which warnings are shown (default: 80)"
-          },
-          "limitsReached": {
-            "description": "Metrics that have reached their limit",
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "alerts": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/UsageAlertDto"
-            }
-          },
-          "addons": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/ActiveAddonDto"
-            }
-          },
-          "subscription": {
-            "$ref": "#/components/schemas/SubscriptionInfoDto"
-          }
-        },
-        "required": [
-          "planCode",
-          "planName",
-          "period",
-          "resetAt",
-          "usage",
-          "isAnyLimitReached",
-          "warningThreshold",
-          "limitsReached",
-          "alerts",
-          "addons",
-          "subscription"
-        ]
-      },
-      "PurchaseAddonDto": {
-        "type": "object",
-        "properties": {
-          "addonCode": {
-            "type": "string",
-            "enum": [
-              "EXTRA_DOCS_300",
-              "EXTRA_CHAT_1000",
-              "EXTRA_IMAGES_30",
-              "EXTRA_STORAGE_10GB"
-            ]
-          },
-          "quantity": {
-            "type": "integer",
-            "minimum": 1
-          },
-          "paymentMethod": {
-            "type": "string",
-            "enum": [
-              "CREDIT_CARD",
-              "PIX",
-              "BOLETO"
-            ]
-          }
-        },
-        "required": [
-          "addonCode",
-          "quantity",
-          "paymentMethod"
-        ]
-      },
-      "MemberUsageSummaryItemDto": {
-        "type": "object",
-        "properties": {
-          "memberId": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "displayName": {
-            "type": "string"
-          },
-          "planCode": {
-            "type": "string",
-            "enum": [
-              "STARTER",
-              "CONSULTORIO",
-              "CLINICA",
-              "ESPECIALISTA"
-            ]
-          },
-          "usage": {
-            "$ref": "#/components/schemas/UsageBreakdownDto"
-          },
-          "hasAnyWarning": {
-            "type": "boolean"
-          },
-          "hasAnyExceeded": {
-            "type": "boolean"
-          }
-        },
-        "required": [
-          "memberId",
-          "displayName",
-          "planCode",
-          "usage",
-          "hasAnyWarning",
-          "hasAnyExceeded"
-        ]
-      },
-      "ClinicMembersUsageSummaryDto": {
-        "type": "object",
-        "properties": {
-          "period": {
-            "$ref": "#/components/schemas/UsagePeriodDto"
-          },
-          "members": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/MemberUsageSummaryItemDto"
-            }
-          },
-          "summary": {
-            "type": "object"
-          }
-        },
-        "required": [
-          "period",
-          "members",
-          "summary"
-        ]
-      },
-      "MemberActiveAddons": {
-        "type": "object",
-        "properties": {
-          "memberId": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "addons": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/ActiveAddonDto"
-            }
-          }
-        },
-        "required": [
-          "memberId",
-          "addons"
-        ]
-      },
-      "MemberUsageSummary": {
-        "type": "object",
-        "properties": {
-          "memberId": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "usage": {
-            "$ref": "#/components/schemas/CurrentUsage"
-          }
-        },
-        "required": [
-          "memberId",
-          "usage"
-        ]
-      },
-      "ChangePlanDto": {
-        "type": "object",
-        "properties": {
-          "planCode": {
-            "type": "string",
-            "enum": [
-              "STARTER",
-              "CONSULTORIO",
-              "CLINICA",
-              "ESPECIALISTA"
-            ],
-            "example": "CONSULTORIO"
-          }
-        },
-        "required": [
-          "planCode"
         ]
       },
       "DraftEvolution": {

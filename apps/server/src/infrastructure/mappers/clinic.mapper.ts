@@ -1,8 +1,8 @@
 import {Injectable} from '@nestjs/common';
 import * as PrismaClient from '@prisma/client';
-import {toEnumArray} from '@domain/@shared/utils';
+import {toEnum, toEnumArray} from '@domain/@shared/utils';
 import {DocumentId, Email, Phone} from '@domain/@shared/value-objects';
-import {Clinic, ClinicId} from '@domain/clinic/entities';
+import {Clinic, ClinicAccountType, ClinicId} from '@domain/clinic/entities';
 import {AiSpecialtyGroup} from '@domain/form-template/entities';
 import {UserId} from '@domain/user/entities';
 import {MapperWithoutDto} from '@infrastructure/mappers/mapper';
@@ -19,7 +19,10 @@ export class ClinicMapper extends MapperWithoutDto<Clinic, ClinicModel> {
             documentId: model.documentId === null ? null : DocumentId.create(model.documentId),
             phone: model.phone === null ? null : Phone.create(model.phone),
             email: model.email === null ? null : Email.create(model.email),
-            isPersonalClinic: model.isPersonalClinic,
+            accountType: toEnum(ClinicAccountType, model.accountType),
+            receptionEnabled: model.receptionEnabled,
+            termsAcceptedAt: model.termsAcceptedAt ?? null,
+            termsVersion: model.termsVersion ?? null,
             street: model.street ?? null,
             number: model.number ?? null,
             complement: model.complement ?? null,
@@ -45,7 +48,10 @@ export class ClinicMapper extends MapperWithoutDto<Clinic, ClinicModel> {
             documentId: entity.documentId?.toString() ?? null,
             phone: entity.phone?.toString() ?? null,
             email: entity.email?.toString() ?? null,
-            isPersonalClinic: entity.isPersonalClinic,
+            accountType: entity.accountType,
+            receptionEnabled: entity.receptionEnabled,
+            termsAcceptedAt: entity.termsAcceptedAt,
+            termsVersion: entity.termsVersion,
             street: entity.street,
             number: entity.number,
             complement: entity.complement,

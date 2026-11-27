@@ -18,7 +18,7 @@ import {resolveReferences} from '../support/parser';
 Given('a clinic {string} exists', async function (this: Context, key: string) {
     const response = await this.agent.post('/api/v1/clinics').send({
         name: `Clínica ${key}`,
-        isPersonalClinic: false,
+        accountType: 'CLINIC',
     });
 
     chai.expect(response.status, `Clinic creation failed for "${key}": ${JSON.stringify(response.body)}`).to.equal(201);
@@ -100,7 +100,7 @@ Given(
         // 1. Clinic for this professional (auto-created personal clinic)
         const clinicResp = await this.agent.post('/api/v1/clinics').send({
             name: `Clínica de ${key}`,
-            isPersonalClinic: true,
+            accountType: 'CLINIC',
         });
 
         chai.expect(clinicResp.status, JSON.stringify(clinicResp.body)).to.equal(201);
@@ -181,3 +181,16 @@ Given(
         });
     }
 );
+
+/**
+ * Turns an existing clinic into a solo account (autônomo), without reception.
+ *
+ * Example:
+ *   Given the clinic "dr_house" is a solo account
+ */
+Given('the clinic {string} is a solo account', async function (this: Context, key: string) {
+    await this.prisma.clinic.update({
+        where: {id: this.getVariableId('clinic', key)},
+        data: {accountType: 'SOLO', receptionEnabled: false},
+    });
+});

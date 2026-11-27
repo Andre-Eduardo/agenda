@@ -1,5 +1,5 @@
 import {useState} from 'react';
-import type {ModuleType} from '@agenda-app/client';
+import type {ModuleType, OperationalModuleType} from '@agenda-app/client';
 import {Outlet, Link, useRouterState, useNavigate, createFileRoute, redirect} from '@tanstack/react-router';
 import {
     Building2,
@@ -22,6 +22,7 @@ import {useTranslation} from 'react-i18next';
 import {Avatar, AvatarFallback} from '@/components/ui/componentes/avatar';
 import {Button} from '@/components/ui/componentes/button';
 import {Sheet, SheetContent, SheetTitle, SheetTrigger} from '@/components/ui/componentes/sheet';
+import {useAccount} from '@/hooks/useAccount';
 import {useCan, type Permission} from '@/hooks/useCan';
 import {useHasModule} from '@/hooks/useHasModule';
 import {useAppStore} from '@/store/appStore';
@@ -38,6 +39,10 @@ interface NavItem {
     anyPermission?: Permission[];
     /** Also requires the current member to be released by the clinic for this AI module. */
     module?: ModuleType;
+    /** Clinic-only item (team, reception): hidden when the account does not have the module. */
+    clinicModule?: OperationalModuleType;
+    /** Label used on a solo account (autônomo), where the screen is about the professional alone. */
+    soloLabelKey?: string;
 }
 
 interface NavGroup {
@@ -50,18 +55,30 @@ const NAV_GROUPS: NavGroup[] = [
         labelKey: 'nav.menu',
         items: [
             {icon: Home, labelKey: 'nav.dashboard', path: '/dashboard'},
-            {icon: ClipboardList, labelKey: 'nav.reception', path: '/reception', permission: 'appointment:view'},
+            {
+                icon: ClipboardList,
+                labelKey: 'nav.reception',
+                path: '/reception',
+                permission: 'appointment:view',
+                clinicModule: 'RECEPTION',
+            },
             {icon: Calendar, labelKey: 'nav.appointments', path: '/appointments'},
             {icon: Users, labelKey: 'nav.patients', path: '/patients'},
-            {icon: Stethoscope, labelKey: 'nav.professionals', path: '/professionals'},
-            {icon: UserCog, labelKey: 'nav.team', path: '/team'},
+            {icon: Stethoscope, labelKey: 'nav.professionals', path: '/professionals', clinicModule: 'TEAM'},
+            {icon: UserCog, labelKey: 'nav.team', path: '/team', clinicModule: 'TEAM'},
         ],
     },
     {
         labelKey: 'nav.system',
         items: [
-            {icon: Wallet, labelKey: 'nav.financial', path: '/financial', permission: 'financial-report:view'},
-            {icon: Settings, labelKey: 'nav.settings', path: '/settings'},
+            {
+                icon: Wallet,
+                labelKey: 'nav.financial',
+                soloLabelKey: 'nav.myFinancial',
+                path: '/financial',
+                permission: 'financial-report:view',
+            },
+            {icon: Settings, labelKey: 'nav.settings', soloLabelKey: 'nav.mySettings', path: '/settings'},
         ],
     },
     {
@@ -116,15 +133,18 @@ function NavLink({item, currentPath, onClick}: NavLinkProps) {
         item.permission || item.anyPermission ? {has: item.permission, hasAny: item.anyPermission} : undefined
     );
     const hasModule = useHasModule(item.module);
+    const account = useAccount();
+    const hasClinicModule = item.clinicModule === undefined || account.hasClinicModule(item.clinicModule);
+    const labelKey = account.isSolo && item.soloLabelKey ? item.soloLabelKey : item.labelKey;
     const isActive = item.path === '/' ? currentPath === '/' : currentPath.startsWith(item.path);
     const Icon = item.icon;
 
-    if (!allowed || !hasModule) return null;
+    if (!allowed || !hasModule || !hasClinicModule) return null;
 
     return (
         <Link to={item.path} onClick={onClick} className={navLink({active: isActive})}>
             <Icon aria-hidden className={icon} />
-            {t(item.labelKey)}
+            {t(labelKey)}
         </Link>
     );
 }
@@ -156,6 +176,7 @@ function SidebarContent({onNavigate}: {onNavigate?: () => void}) {
     const setAuth = useAppStore((s) => s.setAuth);
     const colorMode = useAppStore((s) => s.colorMode);
     const setColorMode = useAppStore((s) => s.setColorMode);
+    const {isSolo} = useAccount();
 
     const handleLogout = () => {
         setAuth(false, null);
@@ -174,7 +195,9 @@ function SidebarContent({onNavigate}: {onNavigate?: () => void}) {
                 </div>
                 <div className={styles.logoTextGroup}>
                     <span className={styles.logoName}>Agenda Saúde</span>
-                    <span className={styles.logoTagline}>Gestão Clínica</span>
+                    <span className={styles.logoTagline}>
+                        {isSolo ? t('account.tagline.SOLO') : t('account.tagline.CLINIC')}
+                    </span>
                 </div>
             </div>
 

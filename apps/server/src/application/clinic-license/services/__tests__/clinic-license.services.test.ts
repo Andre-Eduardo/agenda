@@ -9,12 +9,13 @@ import type {Actor} from '@domain/@shared/actor';
 import {AccessDeniedException, InvalidInputException, ResourceNotFoundException} from '@domain/@shared/exceptions';
 import type {ClinicLicenseRepository} from '@domain/clinic-license/clinic-license.repository';
 import {ClinicLicense} from '@domain/clinic-license/entities';
-import {ModuleType} from '@domain/clinic-license/models';
+import {ModuleType, OperationalModuleType} from '@domain/clinic-license/models';
 import type {ModuleAccess} from '@domain/clinic-license/services';
 import type {ClinicMemberRepository} from '@domain/clinic-member/clinic-member.repository';
 import {ClinicMember, ClinicMemberId, ClinicMemberRole} from '@domain/clinic-member/entities';
 import type {ClinicRepository} from '@domain/clinic/clinic.repository';
-import {Clinic, ClinicId} from '@domain/clinic/entities';
+import {Clinic, ClinicAccountType, ClinicId} from '@domain/clinic/entities';
+import {fakeClinic} from '@domain/clinic/entities/__tests__/fake-clinic';
 import type {EventDispatcher} from '@domain/event';
 import {UserId} from '@domain/user/entities';
 
@@ -211,10 +212,18 @@ describe('Clinic license services', () => {
         const {actor} = setup();
         const moduleAccess = mock<ModuleAccess>();
 
-        moduleAccess.getMemberModules.mockResolvedValue(new Set([ModuleType.AI_FORMS]));
+        const clinicRepository = mock<ClinicRepository>();
 
-        await expect(new GetMyModulesService(moduleAccess).execute({actor, payload: undefined})).resolves.toEqual({
+        moduleAccess.getMemberModules.mockResolvedValue(new Set([ModuleType.AI_FORMS]));
+        moduleAccess.getOperationalModulesOfMember.mockResolvedValue(new Set([OperationalModuleType.RECEPTION]));
+        clinicRepository.findById.mockResolvedValue(fakeClinic({accountType: ClinicAccountType.SOLO}));
+
+        await expect(
+            new GetMyModulesService(moduleAccess, clinicRepository).execute({actor, payload: undefined})
+        ).resolves.toEqual({
             modules: [ModuleType.AI_FORMS],
+            operationalModules: [OperationalModuleType.RECEPTION],
+            accountType: ClinicAccountType.SOLO,
         });
         expect(moduleAccess.getMemberModules).toHaveBeenCalledWith(actor.clinicMemberId);
     });

@@ -1,6 +1,6 @@
 import {ApiProperty, ApiSchema} from '@nestjs/swagger';
 import {EntityDto} from '@application/@shared/dto';
-import type {Clinic} from '@domain/clinic/entities';
+import {type Clinic, ClinicAccountType} from '@domain/clinic/entities';
 import {AiSpecialtyGroup} from '@domain/form-template/entities';
 
 @ApiSchema({name: 'Clinic'})
@@ -17,7 +17,17 @@ export class ClinicDto extends EntityDto {
     @ApiProperty({nullable: true, description: 'Email'})
     email: string | null;
 
-    @ApiProperty({description: 'true = autônomo (sem equipe). Front esconde menus de membros.'})
+    @ApiProperty({
+        enum: ClinicAccountType,
+        enumName: 'ClinicAccountType',
+        description: 'SOLO = autônomo (conta de uma pessoa, sem equipe); CLINIC = clínica com equipe',
+    })
+    accountType: ClinicAccountType;
+
+    @ApiProperty({description: 'Reception and patient call panel module. Always available on CLINIC; optional on SOLO'})
+    receptionEnabled: boolean;
+
+    @ApiProperty({deprecated: true, description: 'Use accountType. true when accountType = SOLO.'})
     isPersonalClinic: boolean;
 
     @ApiProperty({nullable: true, description: 'Street name'})
@@ -63,7 +73,9 @@ export class ClinicDto extends EntityDto {
         this.documentId = clinic.documentId?.toString() ?? null;
         this.phone = clinic.phone?.toString() ?? null;
         this.email = clinic.email?.toString() ?? null;
-        this.isPersonalClinic = clinic.isPersonalClinic;
+        this.accountType = clinic.accountType;
+        this.receptionEnabled = clinic.receptionEnabled;
+        this.isPersonalClinic = clinic.isSolo();
         this.street = clinic.street;
         this.number = clinic.number;
         this.complement = clinic.complement;

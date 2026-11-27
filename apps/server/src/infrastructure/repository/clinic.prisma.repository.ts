@@ -38,6 +38,7 @@ export class ClinicPrismaRepository extends PrismaRepository implements ClinicRe
         const where = {
             deletedAt: null,
             name: filter.term ? {contains: filter.term, mode: 'insensitive' as const} : undefined,
+            accountType: filter.accountType,
         };
 
         const [data, totalCount] = await Promise.all([

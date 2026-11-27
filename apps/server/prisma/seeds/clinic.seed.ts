@@ -5,7 +5,7 @@ import {promisify} from 'util';
  *
  * Cria a árvore mínima para o sistema funcionar:
  *   - User          (username: admin | email: admin@agenda.dev | role: OWNER)
- *   - Clinic        (clínica padrão de desenvolvimento, isPersonalClinic=true)
+ *   - Clinic        (clínica padrão de desenvolvimento, accountType=CLINIC: o seed de equipe adiciona membros)
  *   - ClinicMember  (OWNER do User na Clinic)
  *   - Person        (dados pessoais — usado também por Patient)
  *   - Professional  (extensão 1:1 do ClinicMember com role=PROFESSIONAL)
@@ -74,7 +74,7 @@ export async function main() {
             documentId: '00.000.000/0001-00',
             phone: '(11) 99999-0000',
             email: 'contato@agenda.dev',
-            isPersonalClinic: true,
+            accountType: 'CLINIC',
             createdAt: now,
             updatedAt: now,
         },

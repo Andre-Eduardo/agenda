@@ -263,7 +263,9 @@
     "admin": "Administración",
     "clinics": "Empresas",
     "logout": "Salir",
-    "supportUsers": "Usuarios de soporte"
+    "supportUsers": "Usuarios de soporte",
+    "myFinancial": "Mis finanzas",
+    "mySettings": "Mi perfil y consultorio"
   },
   "patientCall": {
     "settings": "Configurar panel de llamadas",
@@ -412,7 +414,9 @@
         "password": "Contraseña",
         "forgotPassword": "¿Olvidaste?",
         "rememberMe": "Mantenerme conectado en este dispositivo",
-        "submit": "Entrar"
+        "submit": "Entrar",
+        "signUpPrompt": "¿Atiende por su cuenta?",
+        "signUpLink": "Cree su cuenta de profesional independiente"
       },
       "validation": {
         "username": {
@@ -466,6 +470,32 @@
         "password": "La contraseña necesita 8 caracteres, con mayúscula, minúscula, número y símbolo",
         "mismatch": "Las contraseñas no coinciden"
       }
+    },
+    "signUp": {
+      "title": "Crear cuenta de profesional independiente",
+      "subtitle": "Para profesionales que atienden solos. Su cuenta queda lista al instante; si algún día trabaja con equipo, se convierte en cuenta de clínica sin perder nada.",
+      "name": "Nombre completo",
+      "email": "Correo electrónico",
+      "username": "Usuario",
+      "password": "Contraseña",
+      "registrationNumber": "Registro profesional (opcional)",
+      "specialty": "Especialidad (opcional)",
+      "acceptTermsPrefix": "He leído y acepto los",
+      "acceptTermsAnd": "y la",
+      "submit": "Crear cuenta",
+      "back": "Ya tengo cuenta",
+      "validation": {
+        "name": "Ingrese su nombre",
+        "email": "Ingrese un correo válido",
+        "username": "Use al menos 3 caracteres: letras, números, punto, guion o guion bajo",
+        "password": "La contraseña necesita 8 caracteres, con mayúscula, minúscula, número y símbolo",
+        "terms": "Debe aceptar los términos para crear la cuenta"
+      },
+      "errors": {
+        "closed": "El registro está cerrado en este momento. Contacte con soporte.",
+        "taken": "Usuario o correo ya en uso.",
+        "generic": "No se pudo crear la cuenta. Inténtelo de nuevo."
+      }
     }
   },
   "communicationPreferences": {
@@ -508,5 +538,54 @@
   "support": {
     "banner": "Estás en {{clinic}} como soporte: solo lectura, sin datos clínicos. Esta sesión queda en el registro de auditoría de la clínica.",
     "leave": "Salir de la clínica"
+  },
+  "account": {
+    "tagline": {
+      "SOLO": "Consultorio",
+      "CLINIC": "Gestión clínica"
+    },
+    "moduleOff": {
+      "TEAM": {
+        "title": "El equipo es un recurso de clínica",
+        "message": "Su cuenta es de profesional independiente. Para trabajar con equipo, secretaria u otros profesionales, cambie la cuenta a Clínica en Configuración."
+      },
+      "RECEPTION": {
+        "title": "Recepción desactivada",
+        "message": "Active la recepción y el panel de llamada en Configuración para usar esta pantalla."
+      }
+    },
+    "reception": {
+      "title": "Recepción y panel de llamada",
+      "description": "Fila de llegada, llamada de pacientes por nombre y panel para la TV de la sala de espera.",
+      "enabled": "Recepción activada",
+      "disabled": "Recepción desactivada",
+      "error": "Error al actualizar la recepción."
+    },
+    "type": {
+      "title": {
+        "SOLO": "Cuenta de profesional independiente",
+        "CLINIC": "Cuenta de clínica"
+      },
+      "description": {
+        "SOLO": "Usa el sistema por su cuenta. Si empieza a trabajar con secretaria u otros profesionales, convierta la cuenta en clínica: nada cambia de lugar, solo se activan el equipo y la recepción.",
+        "CLINIC": "Cuenta con equipo. Si vuelve a atender solo, desactive a los demás miembros y vuelva a la cuenta independiente."
+      },
+      "action": {
+        "SOLO": "Cambiar a cuenta de clínica",
+        "CLINIC": "Volver a cuenta independiente"
+      },
+      "confirm": {
+        "SOLO": "Como clínica podrá registrar equipo y darle acceso a sus pacientes. Usted sigue decidiendo quién ve cada paciente y el cambio queda en la auditoría. ¿Confirma?",
+        "CLINIC": "La cuenta vuelve a ser solo suya: el equipo y la agenda compartida se desactivan. Solo es posible con un único miembro activo. ¿Confirma?"
+      },
+      "changed": {
+        "CLINIC": "Ahora su cuenta es de clínica.",
+        "SOLO": "Ahora su cuenta es independiente."
+      },
+      "error": {
+        "CLINIC": "No se pudo cambiar la cuenta a clínica.",
+        "SOLO": "No se pudo volver a independiente. Desactive antes a los demás miembros del equipo."
+      }
+    }
   }
 }

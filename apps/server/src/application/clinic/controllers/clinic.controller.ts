@@ -1,4 +1,4 @@
-import {Body, Controller, Get, Patch, Post} from '@nestjs/common';
+import {Body, Controller, Get, Patch, Post, Put} from '@nestjs/common';
 import {ApiTags} from '@nestjs/swagger';
 import {z} from 'zod';
 import {Authorize} from '@application/@shared/auth';
@@ -8,6 +8,7 @@ import {ApiOperation} from '@application/@shared/openapi/decorators';
 import {entityIdParam} from '@application/@shared/openapi/params';
 import {ValidatedParam} from '@application/@shared/validation';
 import {
+    ChangeClinicAccountTypeDto,
     ClinicDto,
     CreateClinicDto,
     CreateInsurancePlanDto,
@@ -15,6 +16,7 @@ import {
     UpdateClinicDto,
 } from '@application/clinic/dtos';
 import {
+    ChangeClinicAccountTypeService,
     CreateClinicService,
     CreateInsurancePlanService,
     GetClinicService,
@@ -33,8 +35,22 @@ export class ClinicController {
         private readonly getClinicService: GetClinicService,
         private readonly createInsurancePlanService: CreateInsurancePlanService,
         private readonly listInsurancePlansService: ListInsurancePlansService,
-        private readonly updateClinicService: UpdateClinicService
+        private readonly updateClinicService: UpdateClinicService,
+        private readonly changeClinicAccountTypeService: ChangeClinicAccountTypeService
     ) {}
+
+    @ApiOperation({
+        summary: 'Switches the current account between solo (autônomo) and clinic (owner only)',
+        description:
+            'SOLO → CLINIC opens the team and reception and requires confirmTeamAccess. ' +
+            'CLINIC → SOLO requires a single active member (support access does not count).',
+        responses: [{status: 200, description: 'Clinic with its new account type', type: ClinicDto}],
+    })
+    @Authorize(ClinicPermission.UPDATE)
+    @Put('me/account-type')
+    changeAccountType(@RequestActor() actor: Actor, @Body() payload: ChangeClinicAccountTypeDto): Promise<ClinicDto> {
+        return this.changeClinicAccountTypeService.execute({actor, payload});
+    }
 
     @ApiOperation({
         summary: 'Creates a new clinic',

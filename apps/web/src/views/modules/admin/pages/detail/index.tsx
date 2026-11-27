@@ -6,6 +6,7 @@ import {
     useSearchClinics,
     type Clinic,
     type ModuleType,
+    type SearchClinicsParams,
 } from '@agenda-app/client';
 import type {UseQueryResult} from '@tanstack/react-query';
 import {createFileRoute, Link} from '@tanstack/react-router';
@@ -86,7 +87,7 @@ export function AdminClinicDetailPage() {
         limit: SEARCH_LIMIT,
         cursor: null,
         sort: null,
-    }) as unknown as UseQueryResult<{data: Clinic[]; totalCount: number}>;
+    } as SearchClinicsParams) as unknown as UseQueryResult<{data: Clinic[]; totalCount: number}>;
     const clinic = clinicsQuery.data?.data.find((c) => c.id === clinicId);
 
     const licenseQuery = useGetClinicLicense(clinicId);
@@ -190,7 +191,7 @@ export function AdminClinicDetailPage() {
                         <div>
                             <div className={infoLabel}>Tipo</div>
                             <div className={infoValue}>
-                                {clinic.isPersonalClinic ? 'Consultório individual' : 'Clínica com equipe'}
+                                {clinic.accountType === 'SOLO' ? 'Autônomo (conta individual)' : 'Clínica com equipe'}
                             </div>
                         </div>
                     </div>

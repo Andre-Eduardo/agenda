@@ -263,7 +263,9 @@
     "admin": "Administration",
     "clinics": "Clinics",
     "logout": "Sign out",
-    "supportUsers": "Support users"
+    "supportUsers": "Support users",
+    "myFinancial": "My finances",
+    "mySettings": "My profile and office"
   },
   "patientCall": {
     "settings": "Call display settings",
@@ -412,7 +414,9 @@
         "password": "Password",
         "forgotPassword": "Forgot?",
         "rememberMe": "Keep me signed in on this device",
-        "submit": "Sign in"
+        "submit": "Sign in",
+        "signUpPrompt": "Working on your own?",
+        "signUpLink": "Create an independent account"
       },
       "validation": {
         "username": {
@@ -466,6 +470,32 @@
         "password": "The password needs 8 characters with upper and lower case, a number and a symbol",
         "mismatch": "Passwords do not match"
       }
+    },
+    "signUp": {
+      "title": "Create an independent account",
+      "subtitle": "For professionals who work on their own. Your account is ready right away; if you ever work with a team, it becomes a clinic account without losing anything.",
+      "name": "Full name",
+      "email": "Email",
+      "username": "Username",
+      "password": "Password",
+      "registrationNumber": "Professional registration (optional)",
+      "specialty": "Specialty (optional)",
+      "acceptTermsPrefix": "I have read and accept the",
+      "acceptTermsAnd": "and the",
+      "submit": "Create account",
+      "back": "I already have an account",
+      "validation": {
+        "name": "Enter your name",
+        "email": "Enter a valid email",
+        "username": "Use at least 3 characters: letters, numbers, dot, hyphen or underscore",
+        "password": "The password needs 8 characters, with upper and lower case, a number and a symbol",
+        "terms": "You must accept the terms to create the account"
+      },
+      "errors": {
+        "closed": "Sign-up is closed right now. Contact support.",
+        "taken": "Username or email already in use.",
+        "generic": "Could not create the account. Try again."
+      }
     }
   },
   "communicationPreferences": {
@@ -508,5 +538,54 @@
   "support": {
     "banner": "You are in {{clinic}} as support: read-only, no clinical data. This session is recorded in the clinic audit log.",
     "leave": "Leave clinic"
+  },
+  "account": {
+    "tagline": {
+      "SOLO": "Private practice",
+      "CLINIC": "Clinic management"
+    },
+    "moduleOff": {
+      "TEAM": {
+        "title": "Team is a clinic feature",
+        "message": "Your account is for an independent professional. To work with a team, a secretary or other professionals, switch the account to Clinic in Settings."
+      },
+      "RECEPTION": {
+        "title": "Reception is off",
+        "message": "Turn on reception and the patient call panel in Settings to use this screen."
+      }
+    },
+    "reception": {
+      "title": "Reception and call panel",
+      "description": "Arrival queue, calling patients by name and a TV panel for the waiting room.",
+      "enabled": "Reception turned on",
+      "disabled": "Reception turned off",
+      "error": "Could not update reception."
+    },
+    "type": {
+      "title": {
+        "SOLO": "Independent account",
+        "CLINIC": "Clinic account"
+      },
+      "description": {
+        "SOLO": "You use the system on your own. If you start working with a secretary or other professionals, turn the account into a clinic: nothing moves, only team and reception are turned on.",
+        "CLINIC": "Account with a team. If you work on your own again, deactivate the other members and switch back to an independent account."
+      },
+      "action": {
+        "SOLO": "Switch to a clinic account",
+        "CLINIC": "Switch back to an independent account"
+      },
+      "confirm": {
+        "SOLO": "As a clinic you can add a team and give it access to your patients. You still decide who sees each patient, and the change is recorded in the audit trail. Confirm?",
+        "CLINIC": "The account becomes yours alone again: team and shared agenda are turned off. Only possible with a single active member. Confirm?"
+      },
+      "changed": {
+        "CLINIC": "Your account is now a clinic account.",
+        "SOLO": "Your account is now an independent account."
+      },
+      "error": {
+        "CLINIC": "Could not switch the account to a clinic.",
+        "SOLO": "Could not switch back to independent. Deactivate the other team members first."
+      }
+    }
   }
 }

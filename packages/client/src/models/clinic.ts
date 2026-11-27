@@ -1,3 +1,4 @@
+import type {ClinicAccountType} from './clinicAccountType';
 import type {ClinicCity} from './clinicCity';
 import type {ClinicClinicSpecialtiesItem} from './clinicClinicSpecialtiesItem';
 import type {ClinicComplement} from './clinicComplement';
@@ -42,7 +43,14 @@ export type Clinic = {
      * @nullable
      */
     email: ClinicEmail;
-    /** true = autônomo (sem equipe). Front esconde menus de membros. */
+    /** SOLO = autônomo (conta de uma pessoa, sem equipe); CLINIC = clínica com equipe */
+    accountType: ClinicAccountType;
+    /** Reception and patient call panel module. Always available on CLINIC; optional on SOLO */
+    receptionEnabled: boolean;
+    /**
+     * Use accountType. true when accountType = SOLO.
+     * @deprecated
+     */
     isPersonalClinic: boolean;
     /**
      * Street name

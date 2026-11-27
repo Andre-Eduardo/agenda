@@ -8,13 +8,13 @@ import {ClinicLicense} from '@domain/clinic-license/entities';
 import {ClinicMemberRepository} from '@domain/clinic-member/clinic-member.repository';
 import {ClinicMember, ClinicMemberId, ClinicMemberRole} from '@domain/clinic-member/entities';
 import {ClinicRepository} from '@domain/clinic/clinic.repository';
-import {Clinic} from '@domain/clinic/entities';
+import {Clinic, ClinicAccountType} from '@domain/clinic/entities';
 import {EventDispatcher} from '@domain/event';
 import {UserId} from '@domain/user/entities';
 
-function setup() {
+function setup(accountType = ClinicAccountType.CLINIC) {
     const creatorId = UserId.generate();
-    const clinic = Clinic.create({name: 'Clinic', createdByUserId: creatorId});
+    const clinic = Clinic.create({name: 'Clinic', createdByUserId: creatorId, accountType});
     const actor: Actor = {
         userId: creatorId,
         clinicId: clinic.id,
@@ -176,6 +176,33 @@ describe('clinic member creation authorization', () => {
             expect(licenseRepository.save).toHaveBeenCalledWith(license);
             expect(dispatcher.dispatch).toHaveBeenCalledWith(expect.objectContaining({clinicId: clinic.id}), license);
             expect(memberRepository.save).toHaveBeenCalledTimes(1);
+        });
+    });
+
+    describe('on a solo account', () => {
+        it('lets the creator become its single member', async () => {
+            const {actor, clinic, memberRepository, service} = setup(ClinicAccountType.SOLO);
+            const payload = {
+                clinicId: clinic.id.toString(),
+                userId: actor.userId.toString(),
+                roles: [ClinicMemberRole.OWNER, ClinicMemberRole.PROFESSIONAL],
+            };
+
+            await expect(service.execute({actor, payload})).resolves.toMatchObject({clinicId: clinic.id.toString()});
+            expect(memberRepository.save).toHaveBeenCalledTimes(1);
+        });
+
+        it('refuses a second member', async () => {
+            const {actor, clinic, memberRepository, service} = setup(ClinicAccountType.SOLO);
+            const {members} = managerOf(clinic, actor);
+
+            memberRepository.findByClinicId.mockResolvedValue(members);
+            memberRepository.findById.mockResolvedValue(members[0] ?? null);
+
+            await expect(service.execute({actor, payload: professionalPayload(clinic)})).rejects.toThrow(
+                AccessDeniedException
+            );
+            expect(memberRepository.save).not.toHaveBeenCalled();
         });
     });
 });

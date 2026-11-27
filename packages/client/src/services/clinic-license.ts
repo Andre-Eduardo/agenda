@@ -27,7 +27,7 @@ import type {RequestHandlerOptions} from 'msw';
 import {apiClient} from '../api-client';
 import type {ErrorType} from '../api-client';
 import type {ConfigureClinicLicenseInputDto, SearchClinicsParams, SetModuleMembersInputDto} from '../models';
-import {ModuleType} from '../models';
+import {ClinicAccountType, ModuleType, OperationalModuleType} from '../models';
 import type {ApiProblem, ClinicLicense, MemberModules} from '../models';
 
 type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
@@ -496,7 +496,7 @@ export const useSetModuleMembers = <TError = ErrorType<void | ApiProblem>, TCont
 };
 
 /**
- * @summary Lists the AI modules the current member can use
+ * @summary Lists the AI modules, clinic modules and account type of the current member
  */
 export const getMyModules = (options?: SecondParameter<typeof apiClient>, signal?: AbortSignal) => {
     return apiClient<MemberModules>({url: `/api/v1/clinic-members/me/modules`, method: 'GET', signal}, options);
@@ -568,7 +568,7 @@ export function useGetMyModules<TData = Awaited<ReturnType<typeof getMyModules>>
     queryClient?: QueryClient
 ): UseQueryResult<TData, TError> & {queryKey: DataTag<QueryKey, TData, TError>};
 /**
- * @summary Lists the AI modules the current member can use
+ * @summary Lists the AI modules, clinic modules and account type of the current member
  */
 
 export function useGetMyModules<TData = Awaited<ReturnType<typeof getMyModules>>, TError = ErrorType<ApiProblem>>(
@@ -644,7 +644,7 @@ export function useGetMyModulesSuspense<
     queryClient?: QueryClient
 ): UseSuspenseQueryResult<TData, TError> & {queryKey: DataTag<QueryKey, TData, TError>};
 /**
- * @summary Lists the AI modules the current member can use
+ * @summary Lists the AI modules, clinic modules and account type of the current member
  */
 
 export function useGetMyModulesSuspense<
@@ -1071,11 +1071,15 @@ export const getSetModuleMembersResponseMockDefault = (overrideResponse: Partial
 
 export const getGetMyModulesResponseMock = (overrideResponse: Partial<MemberModules> = {}): MemberModules => ({
     modules: faker.helpers.arrayElements(Object.values(ModuleType)),
+    operationalModules: faker.helpers.arrayElements(Object.values(OperationalModuleType)),
+    accountType: faker.helpers.arrayElement(Object.values(ClinicAccountType)),
     ...overrideResponse,
 });
 
 export const getGetMyModulesResponseMock200 = (overrideResponse: Partial<MemberModules> = {}): MemberModules => ({
     modules: faker.helpers.arrayElements(Object.values(ModuleType)),
+    operationalModules: faker.helpers.arrayElements(Object.values(OperationalModuleType)),
+    accountType: faker.helpers.arrayElement(Object.values(ClinicAccountType)),
     ...overrideResponse,
 });
 

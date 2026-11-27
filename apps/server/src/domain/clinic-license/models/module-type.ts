@@ -7,6 +7,7 @@ import {
     KnowledgeBasePermission,
     Permission,
 } from '@domain/auth/permission';
+import {allOperationalModules, type OperationalModuleType} from '@domain/clinic-license/models/operational-module';
 
 export enum ModuleType {
     AI_CHAT = 'AI_CHAT',
@@ -21,8 +22,8 @@ export type ModuleDefinition = {
 };
 
 /**
- * Pacotes vendidos à parte. Toda permissão que não está em nenhum pacote é básica
- * (sistema base, sempre disponível). Uma permissão pode estar em mais de um pacote.
+ * Pacotes vendidos à parte. Toda permissão que não está em nenhum pacote nem em um
+ * módulo de clínica (`operational-module.ts`) é básica (sistema base, sempre disponível). Uma permissão pode estar em mais de um pacote.
  */
 export const allModules: readonly ModuleDefinition[] = [
     {
@@ -50,18 +51,23 @@ export const allModules: readonly ModuleDefinition[] = [
     },
 ];
 
-const modulePermissions: ReadonlySet<Permission> = new Set(allModules.flatMap((module) => [...module.permissions]));
+const modulePermissions: ReadonlySet<Permission> = new Set(
+    [...allModules, ...allOperationalModules].flatMap((module) => [...module.permissions])
+);
 
 export const basicPermissions: ReadonlySet<Permission> = new Set(
     [...Permission.all()].filter((permission) => !modulePermissions.has(permission))
 );
 
-/** Permissões básicas mais as dos pacotes informados. */
-export function permissionsFor(modules: Iterable<ModuleType>): Set<Permission> {
-    const enabled = new Set(modules);
+/** Permissões básicas mais as dos pacotes e dos módulos de clínica informados. */
+export function permissionsFor(
+    modules: Iterable<ModuleType>,
+    operationalModules: Iterable<OperationalModuleType> = []
+): Set<Permission> {
+    const enabled = new Set<ModuleType | OperationalModuleType>([...modules, ...operationalModules]);
     const permissions = new Set(basicPermissions);
 
-    for (const module of allModules) {
+    for (const module of [...allModules, ...allOperationalModules]) {
         if (!enabled.has(module.type)) continue;
 
         for (const permission of module.permissions) permissions.add(permission);

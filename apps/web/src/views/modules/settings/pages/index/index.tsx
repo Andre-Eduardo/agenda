@@ -84,6 +84,7 @@ import {MODULE_ICONS, MODULE_LABELS} from '@/utils/ai-modules';
 import {translateApiError} from '@/utils/translate-api-error';
 import {AgendaScheduleEditor} from '@/views/components/AgendaScheduleEditor';
 import {ConfirmDialog} from '@/views/components/ConfirmDialog';
+import {ClinicAccountSection} from '@/views/modules/settings/components/ClinicAccountSection';
 import {RemindersSection} from '@/views/modules/settings/components/RemindersSection';
 import {WhatsAppSection} from '@/views/modules/settings/components/WhatsAppSection';
 import {ProcedureCatalog} from '../../components/ProcedureCatalog';
@@ -377,21 +378,7 @@ export function SettingsPage() {
 // ─── General (placeholder) ───────────────────────────────────────────────────
 
 function GeneralSection() {
-    return (
-        <div>
-            <PageHeading>
-                <h1 className="title">Geral</h1>
-                <p className="sub">Preferências da aplicação, notificações e idioma.</p>
-            </PageHeading>
-            <FormCard className={formCardP16}>
-                <Placeholder>
-                    <Sliders size={28} className={placeholderIcon} />
-                    <div className="ph-title">Em breve</div>
-                    <div className="ph-sub">Configurações gerais serão exibidas aqui.</div>
-                </Placeholder>
-            </FormCard>
-        </div>
-    );
+    return <ClinicAccountSection />;
 }
 
 // ─── Agenda (working hours + blocks) ───────────────────────────────────────────

@@ -1,8 +1,9 @@
 import type {PaginatedList, Pagination} from '@domain/@shared/repository';
-import type {Clinic, ClinicId} from '@domain/clinic/entities';
+import type {Clinic, ClinicAccountType, ClinicId} from '@domain/clinic/entities';
 
 export type ClinicSearchFilter = {
     term?: string;
+    accountType?: ClinicAccountType;
 };
 
 export type ClinicSortOptions = ['name', 'createdAt'];

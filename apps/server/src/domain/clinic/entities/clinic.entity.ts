@@ -6,11 +6,25 @@ import {
     type EntityProps,
 } from '@domain/@shared/entity';
 import {EntityId} from '@domain/@shared/entity/id';
-import {InvalidInputException} from '@domain/@shared/exceptions';
+import {InvalidInputException, PreconditionException} from '@domain/@shared/exceptions';
 import type {DocumentId, Email, Phone} from '@domain/@shared/value-objects';
-import {ClinicCreatedEvent, ClinicChangedEvent, ClinicDeletedEvent} from '@domain/clinic/events';
+import {
+    ClinicAccountTypeChangedEvent,
+    ClinicChangedEvent,
+    ClinicCreatedEvent,
+    ClinicDeletedEvent,
+} from '@domain/clinic/events';
 import type {AiSpecialtyGroup} from '@domain/form-template/entities';
 import type {UserId} from '@domain/user/entities';
+
+/** SOLO = profissional autônomo (conta de uma pessoa); CLINIC = clínica com equipe. */
+export enum ClinicAccountType {
+    SOLO = 'SOLO',
+    CLINIC = 'CLINIC',
+}
+
+export const SOLO_ACCOUNT_REQUIRES_SINGLE_MEMBER =
+    'A solo account has a single member. Deactivate the other members before switching back to solo.';
 
 export type ClinicProps = EntityProps<Clinic>;
 export type CreateClinic = CreateEntity<Clinic>;
@@ -22,8 +36,13 @@ export class Clinic extends AggregateRoot<ClinicId> {
     documentId: DocumentId | null;
     phone: Phone | null;
     email: Email | null;
-    /** true = autônomo usando o sistema sem clínica real. Front simplifica UI. */
-    isPersonalClinic: boolean;
+    /** Decide quais módulos de clínica existem: SOLO não tem equipe. */
+    accountType: ClinicAccountType;
+    /** Recepção e painel de chamada. Ligado em CLINIC; opcional no SOLO. */
+    receptionEnabled: boolean;
+    /** Aceite dos termos de uso no cadastro self-service (LGPD). */
+    termsAcceptedAt: Date | null;
+    termsVersion: string | null;
     street: string | null;
     number: string | null;
     complement: string | null;
@@ -44,7 +63,10 @@ export class Clinic extends AggregateRoot<ClinicId> {
         this.documentId = props.documentId ?? null;
         this.phone = props.phone ?? null;
         this.email = props.email ?? null;
-        this.isPersonalClinic = props.isPersonalClinic;
+        this.accountType = props.accountType;
+        this.receptionEnabled = props.receptionEnabled;
+        this.termsAcceptedAt = props.termsAcceptedAt ?? null;
+        this.termsVersion = props.termsVersion ?? null;
         this.street = props.street ?? null;
         this.number = props.number ?? null;
         this.complement = props.complement ?? null;
@@ -61,6 +83,7 @@ export class Clinic extends AggregateRoot<ClinicId> {
 
     static create(props: CreateClinic): Clinic {
         const now = new Date();
+        const accountType = props.accountType ?? ClinicAccountType.CLINIC;
 
         const clinic = new Clinic({
             ...props,
@@ -70,7 +93,10 @@ export class Clinic extends AggregateRoot<ClinicId> {
             documentId: props.documentId ?? null,
             phone: props.phone ?? null,
             email: props.email ?? null,
-            isPersonalClinic: props.isPersonalClinic ?? false,
+            accountType,
+            receptionEnabled: props.receptionEnabled ?? accountType === ClinicAccountType.CLINIC,
+            termsAcceptedAt: props.termsAcceptedAt ?? null,
+            termsVersion: props.termsVersion ?? null,
             street: props.street ?? null,
             number: props.number ?? null,
             complement: props.complement ?? null,
@@ -125,8 +151,35 @@ export class Clinic extends AggregateRoot<ClinicId> {
 
         if (props.roomManagementEnabled !== undefined) this.roomManagementEnabled = props.roomManagementEnabled;
 
+        if (props.receptionEnabled !== undefined) this.receptionEnabled = props.receptionEnabled;
+
         this.validate();
         this.addEvent(new ClinicChangedEvent({oldState, newState: this}));
+    }
+
+    /**
+     * Passa a conta de autônomo para clínica (abre a equipe e liga a recepção) ou de volta
+     * para autônomo, o que só vale com um único membro de verdade (vínculos de suporte não contam).
+     */
+    changeAccountType(accountType: ClinicAccountType, activeMembers: number): void {
+        if (accountType === this.accountType) return;
+
+        if (accountType === ClinicAccountType.SOLO && activeMembers > 1) {
+            throw new PreconditionException(SOLO_ACCOUNT_REQUIRES_SINGLE_MEMBER);
+        }
+
+        const from = this.accountType;
+
+        this.accountType = accountType;
+
+        if (accountType === ClinicAccountType.CLINIC) this.receptionEnabled = true;
+
+        this.update();
+        this.addEvent(new ClinicAccountTypeChangedEvent({clinic: this, from, to: accountType}));
+    }
+
+    isSolo(): boolean {
+        return this.accountType === ClinicAccountType.SOLO;
     }
 
     delete(): void {
@@ -148,7 +201,10 @@ export class Clinic extends AggregateRoot<ClinicId> {
             documentId: this.documentId?.toJSON() ?? null,
             phone: this.phone?.toJSON() ?? null,
             email: this.email?.toJSON() ?? null,
-            isPersonalClinic: this.isPersonalClinic,
+            accountType: this.accountType,
+            receptionEnabled: this.receptionEnabled,
+            termsAcceptedAt: this.termsAcceptedAt?.toJSON() ?? null,
+            termsVersion: this.termsVersion,
             street: this.street,
             number: this.number,
             complement: this.complement,

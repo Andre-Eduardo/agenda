@@ -53,15 +53,24 @@ export class SignUpUserService implements ApplicationService<SignUpUserDto, User
     private assertSignUpAllowed(inviteCode: string | null): void {
         const {mode, inviteCode: expected} = this.config.signUp;
 
-        if (mode === SignUpMode.OPEN) return;
+        assertSelfSignUpAllowed(mode, expected, inviteCode);
+    }
+}
 
-        if (mode === SignUpMode.CLOSED) {
-            throw new AccessDeniedException(SIGN_UP_CLOSED, AccessDeniedReason.NOT_ALLOWED);
-        }
+/** Shared gate of every self sign-up flow (owner sign-up and solo onboarding). */
+export function assertSelfSignUpAllowed(
+    mode: SignUpMode,
+    expected: string | undefined,
+    inviteCode: string | null
+): void {
+    if (mode === SignUpMode.OPEN) return;
 
-        if (inviteCode === null || expected === undefined || !safeEqual(inviteCode, expected)) {
-            throw new AccessDeniedException(SIGN_UP_INVALID_INVITE, AccessDeniedReason.NOT_ALLOWED);
-        }
+    if (mode === SignUpMode.CLOSED) {
+        throw new AccessDeniedException(SIGN_UP_CLOSED, AccessDeniedReason.NOT_ALLOWED);
+    }
+
+    if (inviteCode === null || expected === undefined || !safeEqual(inviteCode, expected)) {
+        throw new AccessDeniedException(SIGN_UP_INVALID_INVITE, AccessDeniedReason.NOT_ALLOWED);
     }
 }
 

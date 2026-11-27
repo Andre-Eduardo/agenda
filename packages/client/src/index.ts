@@ -49,3 +49,4 @@ export * from './services/patient-call';
 export * from './services/whats-app';
 export * from './services/patient-communication-preference';
 export * from './services/support-access';
+export * from './services/onboarding';

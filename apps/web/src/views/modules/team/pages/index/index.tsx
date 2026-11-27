@@ -9,12 +9,21 @@ import {EmptyStateCard} from '@/components/ui/componentes/empty-state';
 import {Skeleton} from '@/components/ui/componentes/skeleton';
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from '@/components/ui/componentes/table';
 import {useCan} from '@/hooks/useCan';
+import {ClinicModuleGate} from '@/views/components/ClinicModuleGate';
 import {Page} from '@/views/components/Page';
 import {AddMemberDialog} from '../../components/AddMemberDialog';
 import {linkCell, memberCell, memberName, roleBadges, skeletonRow} from './styles';
 
+function GatedTeamPage() {
+    return (
+        <ClinicModuleGate module="TEAM">
+            <TeamPage />
+        </ClinicModuleGate>
+    );
+}
+
 export const Route = createFileRoute('/_stackedLayout/team')({
-    component: TeamPage,
+    component: GatedTeamPage,
 });
 
 const ROLE_LABELS: Record<ClinicMemberRolesItem, string> = {

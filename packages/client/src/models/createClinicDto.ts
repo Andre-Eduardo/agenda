@@ -4,6 +4,7 @@
  * Automo API
  * OpenAPI spec version: 0.0.0
  */
+import type {CreateClinicDtoAccountType} from './createClinicDtoAccountType';
 import type {CreateClinicDtoClinicSpecialtiesItem} from './createClinicDtoClinicSpecialtiesItem';
 
 export type CreateClinicDto = {
@@ -18,6 +19,7 @@ export type CreateClinicDto = {
     phone?: string | null;
     /** @nullable */
     email?: string | null;
+    accountType?: CreateClinicDtoAccountType;
     isPersonalClinic?: boolean;
     /** @nullable */
     street?: string | null;

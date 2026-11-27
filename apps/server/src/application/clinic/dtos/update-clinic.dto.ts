@@ -17,6 +17,8 @@ export const updateClinicSchema = z.object({
     logoUrl: z.string().url().nullish(),
     clinicSpecialties: z.array(z.nativeEnum(AiSpecialtyGroup)).optional(),
     roomManagementEnabled: z.boolean().optional(),
+    /** Liga a recepção e o painel de chamada (opcional no SOLO). */
+    receptionEnabled: z.boolean().optional(),
 });
 
 export class UpdateClinicDto extends createZodDto(updateClinicSchema) {}

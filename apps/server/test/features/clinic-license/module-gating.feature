@@ -16,7 +16,7 @@ Feature: AI module gating (GET /clinic-members/me/modules, GET /agent/metrics, P
         Then the request should succeed with a 200 status code
         And the response should match:
             """JSON
-            {"modules": []}
+            {"modules": [], "operationalModules": ["TEAM", "RECEPTION"], "accountType": "CLINIC"}
             """
         When I send a "POST" request to "/api/v1/patients" with:
             | name           | Core Patient                    |
@@ -40,7 +40,7 @@ Feature: AI module gating (GET /clinic-members/me/modules, GET /agent/metrics, P
         Then the request should succeed with a 200 status code
         And the response should match:
             """JSON
-            {"modules": []}
+            {"modules": [], "operationalModules": ["TEAM", "RECEPTION"], "accountType": "CLINIC"}
             """
         When I send a "GET" request to "/api/v1/agent/metrics"
         Then the request should fail with a 403 status code
@@ -54,7 +54,7 @@ Feature: AI module gating (GET /clinic-members/me/modules, GET /agent/metrics, P
         Then the request should succeed with a 200 status code
         And the response should match:
             """JSON
-            {"modules": ["AI_AGENT"]}
+            {"modules": ["AI_AGENT"], "operationalModules": ["TEAM", "RECEPTION"], "accountType": "CLINIC"}
             """
         When I send a "GET" request to "/api/v1/agent/metrics"
         Then the request should succeed with a 200 status code

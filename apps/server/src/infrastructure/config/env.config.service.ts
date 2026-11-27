@@ -48,6 +48,11 @@ const envConfigShape = z.object({
         /** Defaults to OPEN outside production and CLOSED in production (see envConfig below). */
         mode: z.nativeEnum(SignUpMode).optional(),
         inviteCode: z.string().min(1).optional(),
+        /**
+         * Cadastro self-service do autônomo (POST /onboarding/solo). Quando omitido, segue `mode`.
+         * Permite abrir só o autônomo em produção mantendo clínicas por convite ou venda assistida.
+         */
+        soloMode: z.nativeEnum(SignUpMode).optional(),
     }),
     passwordReset: z.object({
         /** Lifetime of the e-mailed reset link, in seconds. */
@@ -149,11 +154,13 @@ const envConfig = envConfigShape
             }
         }
 
-        if (config.signUp.mode === SignUpMode.INVITE && config.signUp.inviteCode === undefined) {
+        const soloInvite = config.signUp.soloMode === SignUpMode.INVITE;
+
+        if ((config.signUp.mode === SignUpMode.INVITE || soloInvite) && config.signUp.inviteCode === undefined) {
             ctx.addIssue({
                 code: z.ZodIssueCode.custom,
                 path: ['signUp', 'inviteCode'],
-                message: 'SIGN_UP_INVITE_CODE must be set when SIGN_UP_MODE is "invite".',
+                message: 'SIGN_UP_INVITE_CODE must be set when SIGN_UP_MODE or SIGN_UP_SOLO_MODE is "invite".',
             });
         }
     })
@@ -170,6 +177,8 @@ const envConfig = envConfigShape
             signUp: {
                 ...config.signUp,
                 mode: config.signUp.mode ?? (isProd ? SignUpMode.CLOSED : SignUpMode.OPEN),
+                soloMode:
+                    config.signUp.soloMode ?? config.signUp.mode ?? (isProd ? SignUpMode.CLOSED : SignUpMode.OPEN),
             },
             http: {
                 ...config.http,
@@ -269,6 +278,7 @@ export class EnvConfigService {
             signUp: {
                 mode: process.env.SIGN_UP_MODE,
                 inviteCode: process.env.SIGN_UP_INVITE_CODE,
+                soloMode: process.env.SIGN_UP_SOLO_MODE,
             },
             passwordReset: {
                 tokenExpiration: process.env.PASSWORD_RESET_TOKEN_EXPIRATION,

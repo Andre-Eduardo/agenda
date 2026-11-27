@@ -93,7 +93,7 @@ export class ClinicLicenseController {
     }
 
     @ApiOperation({
-        summary: 'Lists the AI modules the current member can use',
+        summary: 'Lists the AI modules, clinic modules and account type of the current member',
         responses: [{status: 200, description: 'Modules of the current member', type: MemberModulesDto}],
     })
     @Authorize(UserPermission.VIEW_PROFILE)

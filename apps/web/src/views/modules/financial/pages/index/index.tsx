@@ -19,6 +19,7 @@ import {SegmentedControl, SegmentedControlItem} from '@/components/ui/componente
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@/components/ui/componentes/select';
 import {Skeleton} from '@/components/ui/componentes/skeleton';
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from '@/components/ui/componentes/table';
+import {useAccount} from '@/hooks/useAccount';
 import {formatBRL, formatUSD} from '@/lib/utils';
 import {REVENUE_AMOUNT_FIELDS} from '@/utils/appointment-revenue';
 import {Page} from '@/views/components/Page';
@@ -177,16 +178,25 @@ function FinancialPage() {
     const memberQuery = useGetCurrentClinicMember();
     const clinicId = memberQuery.data?.clinicId ?? '';
     const [tab, setTab] = useState<'receita' | 'custos' | 'planos'>('receita');
+    // A solo account is a single professional: the page is about their own money.
+    const {isSolo} = useAccount();
 
     return (
-        <Page title="Financeiro" subtitle="Receita da clínica, custo por profissional e planos do paciente.">
+        <Page
+            title={isSolo ? 'Meu financeiro' : 'Financeiro'}
+            subtitle={
+                isSolo
+                    ? 'Seus recebimentos, custos do sistema e planos dos seus pacientes.'
+                    : 'Receita da clínica, custo por profissional e planos do paciente.'
+            }
+        >
             <SegmentedControl value={tab} onValueChange={(v) => setTab(v as 'receita' | 'custos' | 'planos')}>
                 <SegmentedControlItem value="receita">Receita</SegmentedControlItem>
                 <SegmentedControlItem value="custos">Custos</SegmentedControlItem>
                 <SegmentedControlItem value="planos">Planos e Convênios</SegmentedControlItem>
             </SegmentedControl>
 
-            {tab === 'receita' && <RevenueTab clinicId={clinicId} />}
+            {tab === 'receita' && <RevenueTab clinicId={clinicId} solo={isSolo} />}
             {tab === 'custos' && <CostsTab clinicId={clinicId} />}
             {tab === 'planos' && <PlansTab clinicId={clinicId} />}
         </Page>
@@ -195,7 +205,7 @@ function FinancialPage() {
 
 // ─── Receita ─────────────────────────────────────────────────────────────────
 
-function RevenueTab({clinicId}: {clinicId: string}) {
+function RevenueTab({clinicId, solo}: {clinicId: string; solo: boolean}) {
     const {t} = useTranslation();
     const [startDate, setStartDate] = useState(firstDayOfMonth);
     const [endDate, setEndDate] = useState(today);
@@ -204,7 +214,7 @@ function RevenueTab({clinicId}: {clinicId: string}) {
     const [status, setStatus] = useState<RegisterPaymentDtoStatus | 'ALL'>('ALL');
     const [page, setPage] = useState(1);
 
-    const professionalsQuery = useListClinicMembers({clinicId}, {query: {enabled: !!clinicId}});
+    const professionalsQuery = useListClinicMembers({clinicId}, {query: {enabled: !!clinicId && !solo}});
     const professionals = (professionalsQuery.data ?? []).filter((m) => m.roles.includes('PROFESSIONAL'));
 
     const filters: GetRevenueReportParams = {
@@ -241,22 +251,24 @@ function RevenueTab({clinicId}: {clinicId: string}) {
                     <Label className={filterLabel}>Fim</Label>
                     <LocalizedDateInput label="Fim" value={endDate} onChange={updateFilter(setEndDate)} />
                 </div>
-                <div className={filterField}>
-                    <Label className={filterLabel}>Profissional</Label>
-                    <Select value={professionalMemberId} onValueChange={updateFilter(setProfessionalMemberId)}>
-                        <SelectTrigger>
-                            <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="ALL">Todos</SelectItem>
-                            {professionals.map((p) => (
-                                <SelectItem key={p.id} value={p.id}>
-                                    {p.displayName ?? 'Sem nome'}
-                                </SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
-                </div>
+                {!solo && (
+                    <div className={filterField}>
+                        <Label className={filterLabel}>Profissional</Label>
+                        <Select value={professionalMemberId} onValueChange={updateFilter(setProfessionalMemberId)}>
+                            <SelectTrigger>
+                                <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="ALL">Todos</SelectItem>
+                                {professionals.map((p) => (
+                                    <SelectItem key={p.id} value={p.id}>
+                                        {p.displayName ?? 'Sem nome'}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    </div>
+                )}
                 <div className={filterField}>
                     <Label className={filterLabel}>Forma de pagamento</Label>
                     <Select
@@ -360,7 +372,7 @@ function RevenueTab({clinicId}: {clinicId: string}) {
                 </div>
             )}
 
-            {(reportQuery.data?.byProfessional.length ?? 0) > 0 && (
+            {!solo && (reportQuery.data?.byProfessional.length ?? 0) > 0 && (
                 <div className={sectionBlock}>
                     <span className={sectionTitleText}>Por profissional</span>
                     <Table>

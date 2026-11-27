@@ -26,6 +26,7 @@ código não define nada, o documento diz "não definida" e registra a lacuna na
 | ----------------------------- | ---------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
 | Titulares                     | Pacientes; profissionais e demais membros da clínica       |                                                                                             |
 | Controlador (dados de pacientes) | A clínica (tenant, `Clinic`)                            | O modelo é multi-tenant com banco compartilhado — ver [multi-tenant-isolation.md](multi-tenant-isolation.md). |
+| Controlador na conta autônomo   | O próprio profissional (conta `SOLO`)                   | Aceite dos termos registrado em `Clinic.termsAcceptedAt`/`termsVersion` no cadastro (`POST /onboarding/solo`); ver [account-types.md](account-types.md). |
 | Operador                      | A plataforma Agenda Saúde                                  | Trata dados de pacientes em nome da clínica.                                                |
 | Controlador (dados de assinatura) | A plataforma, em relação ao profissional que assina    | O gateway recebe dados do profissional, não do paciente (seção 4, INT-03).                  |
 | Suboperadores                 | Terceiros da seção 4                                       | Contratos/DPAs não estão no repositório e **não foram verificados**.                        |

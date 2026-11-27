@@ -14,11 +14,11 @@ export class SearchClinicsService implements ApplicationService<
     constructor(private readonly clinicRepository: ClinicRepository) {}
 
     async execute({payload}: Command<SearchClinicsDto, MaybeAuthenticatedActor>): Promise<PaginatedDto<ClinicDto>> {
-        const {term, sort, ...rest} = payload;
+        const {term, accountType, sort, ...rest} = payload;
 
         const result = await this.clinicRepository.search(
             {...rest, sort: sort ?? undefined},
-            {term: term ?? undefined}
+            {term: term ?? undefined, accountType: accountType ?? undefined}
         );
 
         return {
