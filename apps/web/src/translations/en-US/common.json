@@ -655,8 +655,6 @@
     "viewTriage": "View triage"
   },
   "agenda": {
-    "title": "Schedule",
-    "subtitle": "Appointments of the period as a list, with the same data as the calendar.",
     "openCalendar": "Open calendar",
     "new": "New appointment",
     "filters": "Schedule filters",

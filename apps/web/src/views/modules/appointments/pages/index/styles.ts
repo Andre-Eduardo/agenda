@@ -88,17 +88,13 @@ export const page = css({display: 'flex', flexDirection: 'column', p: {base: '4'
 export const header = css({
     display: 'flex',
     flexWrap: 'wrap',
-    alignItems: 'flex-start',
+    alignItems: 'center',
     justifyContent: 'space-between',
     gap: '4',
     mb: '5',
 });
 
-export const titleGroup = css({display: 'flex', flexDirection: 'column', gap: '1'});
-
 export const title = css({fontSize: '2xl', lineHeight: '[1.2]', fontWeight: 'medium', color: 'text.primary'});
-
-export const subtitle = css({fontSize: 'sm', color: 'text.secondary'});
 
 export const headerActions = css({display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '2'});
 

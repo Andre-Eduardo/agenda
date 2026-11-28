@@ -655,8 +655,6 @@
     "viewTriage": "Ver triaje"
   },
   "agenda": {
-    "title": "Agenda",
-    "subtitle": "Citas del período en lista, con los mismos datos del calendario.",
     "openCalendar": "Ver calendario",
     "new": "Nueva cita",
     "filters": "Filtros de la agenda",

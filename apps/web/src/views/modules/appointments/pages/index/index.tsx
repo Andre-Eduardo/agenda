@@ -374,10 +374,7 @@ export function AgendaTablePage() {
     return (
         <div className={styles.page}>
             <header className={styles.header}>
-                <div className={styles.titleGroup}>
-                    <h1 className={styles.title}>{t('agenda.title')}</h1>
-                    <p className={styles.subtitle}>{t('agenda.subtitle')}</p>
-                </div>
+                <h1 className={styles.title}>{t('nav.appointments')}</h1>
                 <div className={styles.headerActions}>
                     <Button asChild size="sm" variant="outline">
                         <Link to="/calendar" search={{date: from}}>
