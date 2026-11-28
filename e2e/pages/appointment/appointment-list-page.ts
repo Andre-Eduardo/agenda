@@ -33,7 +33,7 @@ export class AppointmentListPage extends BasePage {
 
     constructor(page: Page) {
         super(page);
-        this.title = page.getByRole('heading', {name: /^agenda$/i});
+        this.title = page.getByRole('heading', {name: /^calendário$/i});
         this.newAppointmentButton = page.getByRole('button', {name: /novo agendamento/i});
 
         this.dayViewButton = page.getByRole('button', {name: /^dia$/i});
@@ -67,11 +67,11 @@ export class AppointmentListPage extends BasePage {
     }
 
     async navigate() {
-        await this.page.goto('/appointments');
+        await this.page.goto('/calendar');
     }
 
     async verifyPageLoaded() {
-        await expect(this.page).toHaveURL(/\/appointments$/);
+        await expect(this.page).toHaveURL(/\/calendar$/);
         await expect(this.title).toBeVisible();
         await expect(this.newAppointmentButton).toBeVisible();
     }

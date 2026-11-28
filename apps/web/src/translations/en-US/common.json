@@ -265,7 +265,11 @@
     "logout": "Sign out",
     "supportUsers": "Support users",
     "myFinancial": "My finances",
-    "mySettings": "My profile and office"
+    "mySettings": "My profile and office",
+    "agenda": "Schedule",
+    "calendar": "Calendar",
+    "reports": "Reports",
+    "submenu": "{{label}} submenu"
   },
   "patientCall": {
     "settings": "Call panel",
@@ -649,5 +653,114 @@
     "invalidFields": "Check the values entered.",
     "close": "Close",
     "viewTriage": "View triage"
+  },
+  "agenda": {
+    "openCalendar": "Open calendar",
+    "new": "New appointment",
+    "filters": "Schedule filters",
+    "from": "From",
+    "to": "To",
+    "professional": "Professional",
+    "allProfessionals": "All professionals",
+    "professionalFallback": "Professional",
+    "search": "Search",
+    "searchPlaceholder": "Patient, procedure or note",
+    "statusFilter": "Filter by status",
+    "count_one": "appointment",
+    "count_other": "appointments",
+    "empty": "No appointments in this period",
+    "emptyDescription": "Change the period, the statuses or the search to see other appointments.",
+    "truncated": "Showing {{shown}} of {{total}} appointments. Narrow the period to see them all.",
+    "presets": {
+      "today": "Today",
+      "tomorrow": "Tomorrow",
+      "next7": "Next 7 days",
+      "week": "This week",
+      "month": "This month"
+    },
+    "columns": {
+      "time": "Time",
+      "patient": "Patient",
+      "professional": "Professional",
+      "type": "Type",
+      "procedure": "Procedure",
+      "room": "Room",
+      "status": "Status"
+    }
+  },
+  "reports": {
+    "title": "Reports",
+    "subtitle": "Clinic schedule indicators: volume, attendance, no-shows and occupancy.",
+    "filters": "Report filters",
+    "from": "From",
+    "to": "To",
+    "professional": "Professional",
+    "allProfessionals": "All professionals",
+    "accessDenied": "Reports unavailable",
+    "accessDeniedMessage": "You are not allowed to see the clinic reports.",
+    "loadError": "The report could not be loaded.",
+    "empty": "No appointments in this period",
+    "emptyMessage": "Pick another period or professional.",
+    "presets": {
+      "thisMonth": "This month",
+      "lastMonth": "Last month",
+      "last30": "Last 30 days",
+      "last90": "Last 90 days",
+      "thisYear": "This year"
+    },
+    "tabs": {
+      "overview": "Overview",
+      "professionals": "By professional",
+      "absences": "No-shows and cancellations",
+      "occupancy": "Occupancy and procedures"
+    },
+    "kpi": {
+      "total": "Appointments",
+      "completed": "Completed",
+      "attendanceRate": "Attendance rate",
+      "noShowRate": "No-show rate",
+      "cancellationRate": "Cancellation rate",
+      "uniquePatients": "Patients seen",
+      "newPatients": "New patients",
+      "avgWait": "Average wait",
+      "noShow": "No-shows",
+      "cancelled": "Cancellations",
+      "bookedHours": "Booked hours",
+      "pending": "Open",
+      "procedures": "Distinct procedures"
+    },
+    "minutes_one": "{{count}} min",
+    "minutes_other": "{{count}} min",
+    "byDay": "Appointments per day",
+    "byStatus": "By status",
+    "byType": "By appointment type",
+    "byProfessional": "Performance by professional",
+    "byWeekday": "By weekday",
+    "byHour": "By time of day",
+    "byProcedure": "By procedure",
+    "absencesByDay": "No-shows and cancellations per day",
+    "absencesByProfessional": "No-shows and cancellations by professional",
+    "noAbsences": "No no-shows or cancellations in this period.",
+    "cancelledExcluded": "Cancelled appointments are not counted here.",
+    "noProcedure": "No procedure",
+    "dayTooltip_one": "{{date}}: {{count}} appointment",
+    "dayTooltip_other": "{{date}}: {{count}} appointments",
+    "series": {
+      "completed": "Completed",
+      "pending": "Open",
+      "noShow": "No-shows",
+      "cancelled": "Cancelled"
+    },
+    "columns": {
+      "professional": "Professional",
+      "total": "Total",
+      "completed": "Completed",
+      "noShow": "No-shows",
+      "cancelled": "Cancelled",
+      "pending": "Open",
+      "attendanceRate": "Attendance",
+      "patients": "Patients",
+      "day": "Day"
+    }
   }
 }

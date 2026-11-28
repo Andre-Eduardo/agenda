@@ -57,6 +57,7 @@ verificações de clínica e paciente às ações críticas.
 | draft-evolution | approve, update, view | approve, update, view | approve, update, view | — | — |
 | document-permission | manage | manage | — | — | — |
 | financial-report | view | view | — | — | — |
+| clinic-report | view | view | — | — | — |
 | form-template | create, delete, publish, update, view | create, delete, publish, update, view | view | — | — |
 | imported-document | create, update, view | create, update, view | create, update, view | — | — |
 | insurance-claim | update, view | update, view | view | update, view | — |

@@ -24,6 +24,28 @@ export const navLink = cva({
     },
 });
 
+export const submenuItem = cva({
+    base: {
+        display: 'flex',
+        alignItems: 'center',
+        gap: '2.5',
+        rounded: '[6px]',
+        px: '2.5',
+        py: '2',
+        fontSize: 'sm-body',
+        cursor: 'pointer',
+        outline: 'none',
+        transitionProperty: 'color, background-color',
+        _focus: {bg: 'bg.surface'},
+    },
+    variants: {
+        active: {
+            true: {bg: 'primary.surface', color: 'primary.text', _focus: {bg: 'primary.surface'}},
+            false: {color: 'text.secondary', _hover: {bg: 'bg.surface', color: 'text.primary'}},
+        },
+    },
+});
+
 // ── Classes folha ───────────────────────────────────────────────────────────────
 
 export const root = css({display: 'flex', minHeight: 'screen', bg: 'bg.page'});
@@ -141,3 +163,48 @@ export const supportBanner = css({
 });
 
 export const supportBannerText = css({display: 'flex', alignItems: 'center', gap: '2'});
+
+export const chevron = css({ml: 'auto', w: '4', h: '4', color: 'text.tertiary'});
+
+export const submenu = css({minW: '[200px]'});
+
+export const submenuLabel = css({
+    px: '2.5',
+    pt: '1',
+    pb: '1.5',
+    fontSize: '2xs',
+    textTransform: 'uppercase',
+    letterSpacing: 'wider',
+    color: 'text.tertiary',
+});
+
+export const inlineGroup = css({display: 'flex', flexDirection: 'column', gap: '1'});
+
+export const inlineGroupLabel = css({
+    display: 'flex',
+    alignItems: 'center',
+    gap: '3',
+    px: '3',
+    py: '2',
+    fontSize: 'sm-body',
+    fontWeight: 'medium',
+    color: 'text.secondary',
+});
+
+export const inlineGroupItems = css({
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '1',
+    ml: '5',
+    pl: '2',
+    borderLeftWidth: '1px',
+    borderLeftStyle: 'solid',
+    borderLeftColor: 'border',
+});
+
+export const navTrigger = css({
+    w: 'full',
+    textAlign: 'left',
+    cursor: 'pointer',
+    '&[data-state=open]': {bg: 'bg.surface', color: 'text.primary'},
+});

@@ -19,6 +19,7 @@ import {ClinicLicenseModule} from '@application/clinic-license/clinic-license.mo
 import {ClinicMemberModule} from '@application/clinic-member/clinic-member.module';
 import {ClinicPatientAccessModule} from '@application/clinic-patient-access/clinic-patient-access.module';
 import {ClinicReminderConfigModule} from '@application/clinic-reminder-config/clinic-reminder-config.module';
+import {ClinicReportModule} from '@application/clinic-report/clinic-report.module';
 import {ClinicModule} from '@application/clinic/clinic.module';
 import {ClinicalChatModule} from '@application/clinical-chat/clinical-chat.module';
 import {ClinicalDocumentModule} from '@application/clinical-document/clinical-document.module';
@@ -188,6 +189,7 @@ const guards: Provider[] = [
         PatientSubscriptionPlanModule,
         PatientSubscriptionModule,
         FinancialReportModule,
+        ClinicReportModule,
         WorkingHoursModule,
         MemberBlockModule,
         RoomModule,
