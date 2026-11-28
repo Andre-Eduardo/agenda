@@ -25,6 +25,8 @@ import {DocumentPermissionRepository} from '@domain/document-permission/document
 import {DraftEvolutionRepository} from '@domain/draft-evolution/draft-evolution.repository';
 import {EventRepository} from '@domain/event/event.repository';
 import {UploadFileRepository} from '@domain/file/upload-file.repository';
+import {FinancialAccountRepository} from '@domain/financial-account/financial-account.repository';
+import {FinancialEntryRepository} from '@domain/financial-entry/financial-entry.repository';
 import {FormFieldIndexRepository} from '@domain/form-field-index/form-field-index.repository';
 import {FormTemplateVersionRepository} from '@domain/form-template-version/form-template-version.repository';
 import {FormTemplateRepository} from '@domain/form-template/form-template.repository';
@@ -75,6 +77,8 @@ import {ClinicalProfilePrismaRepository} from '@infrastructure/repository/clinic
 import {DocumentPermissionPrismaRepository} from '@infrastructure/repository/document-permission.prisma.repository';
 import {DraftEvolutionPrismaRepository} from '@infrastructure/repository/draft-evolution.prisma.repository';
 import {EventPrismaRepository} from '@infrastructure/repository/event.prisma.repository';
+import {FinancialAccountPrismaRepository} from '@infrastructure/repository/financial-account.prisma.repository';
+import {FinancialEntryPrismaRepository} from '@infrastructure/repository/financial-entry.prisma.repository';
 import {FormFieldIndexPrismaRepository} from '@infrastructure/repository/form-field-index.prisma.repository';
 import {FormTemplateVersionPrismaRepository} from '@infrastructure/repository/form-template-version.prisma.repository';
 import {FormTemplatePrismaRepository} from '@infrastructure/repository/form-template.prisma.repository';
@@ -142,6 +146,8 @@ const repositories: Provider[] = [
     {provide: AttendanceRepository, useClass: AttendancePrismaRepository},
     {provide: ProcedureRepository, useClass: ProcedurePrismaRepository},
     {provide: AppointmentPaymentRepository, useClass: AppointmentPaymentPrismaRepository},
+    {provide: FinancialAccountRepository, useClass: FinancialAccountPrismaRepository},
+    {provide: FinancialEntryRepository, useClass: FinancialEntryPrismaRepository},
     {provide: AppointmentReminderRepository, useClass: AppointmentReminderPrismaRepository},
     {provide: AppointmentReminderEventRepository, useClass: AppointmentReminderEventPrismaRepository},
     {

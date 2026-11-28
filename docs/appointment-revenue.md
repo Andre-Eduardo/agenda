@@ -8,8 +8,9 @@ antes ou depois da consulta aparece no período da consulta.
 | Situação | Previsto | Recebido | Pendente |
 | --- | --- | --- | --- |
 | Procedimento sem pagamento registrado | Preço salvo no agendamento | Zero | Preço salvo |
-| Pagamento direto pendente | Valor registrado | Zero | Valor registrado |
+| Pagamento direto pendente | Valor registrado | Entradas menos estornos no livro-caixa | Diferença |
 | Pagamento direto liquidado | Valor registrado | Valor registrado | Zero |
+| Pagamento dividido (`MIXED`) | Valor registrado | Entradas menos estornos no livro-caixa | Diferença |
 | Pacote, assinatura ou cortesia | Zero | Zero | Zero |
 | Guia de convênio em aberto | Valor enviado | Zero | Valor enviado |
 | Guia de convênio paga ou parcialmente paga | Valor aprovado | Valor aprovado | Zero |
@@ -30,6 +31,11 @@ No convênio, o registro cria uma guia vinculada ao pagamento e começa
 pendente por padrão. O financeiro usa os valores e o estado da guia quando
 ela existe. Pagamentos antigos sem guia usam o estado e o valor registrados.
 
+Dinheiro, Pix, cartões e transferência passam pelo livro-caixa da clínica
+(veja [`financial-ledger.md`](financial-ledger.md)). Para essas formas o
+recebido vem dos movimentos de conta, o que permite recebimento parcial,
+pagamento dividido entre formas e estorno com motivo.
+
 ## API e permissões
 
 - `GET /api/v1/appointments/{id}` e `GET /api/v1/appointments` incluem
@@ -42,3 +48,8 @@ ela existe. Pagamentos antigos sem guia usam o estado e o valor registrados.
   `financial-report:view`. O filtro de status usa o estado financeiro
   mostrado na agenda. O resumo agrega todas as linhas filtradas antes da
   paginação.
+- `GET /api/v1/appointments/{id}/payment/ledger` (`appointment-payment:view`),
+  `POST /api/v1/appointments/{id}/payment/receipts`
+  (`appointment-payment:register`) e
+  `POST /api/v1/appointments/{id}/payment/refund`
+  (`appointment-payment:refund`) operam o livro-caixa do pagamento.

@@ -23,4 +23,5 @@ export const AppointmentRevenuePaymentMethod = {
     COURTESY: 'COURTESY',
     PACKAGE: 'PACKAGE',
     SUBSCRIPTION: 'SUBSCRIPTION',
+    MIXED: 'MIXED',
 } as const;

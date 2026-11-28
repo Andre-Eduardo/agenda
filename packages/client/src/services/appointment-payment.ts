@@ -26,9 +26,9 @@ import {HttpResponse, http} from 'msw';
 import type {RequestHandlerOptions} from 'msw';
 import {apiClient} from '../api-client';
 import type {ErrorType} from '../api-client';
-import type {RegisterPaymentDto, UpdatePaymentStatusDto} from '../models';
-import {AppointmentPaymentStatus} from '../models';
-import type {ApiProblem, AppointmentPayment} from '../models';
+import type {ReceivePaymentDto, RefundPaymentDto, RegisterPaymentDto, UpdatePaymentStatusDto} from '../models';
+import {AccountMovementCategory, AccountMovementDirection, AppointmentPaymentStatus, PaymentMethod} from '../models';
+import type {ApiProblem, AppointmentPayment, AppointmentPaymentLedger} from '../models';
 
 type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 
@@ -404,6 +404,374 @@ export function useGetPaymentByAppointmentSuspense<
     return query;
 }
 
+/**
+ * @summary Get the receipts and refunds of an appointment payment
+ */
+export const getPaymentLedger = (id: string, options?: SecondParameter<typeof apiClient>, signal?: AbortSignal) => {
+    return apiClient<AppointmentPaymentLedger>(
+        {url: `/api/v1/appointments/${id}/payment/ledger`, method: 'GET', signal},
+        options
+    );
+};
+
+export const getGetPaymentLedgerQueryKey = (id?: string) => {
+    return [`/api/v1/appointments/${id}/payment/ledger`] as const;
+};
+
+export const getGetPaymentLedgerQueryOptions = <
+    TData = Awaited<ReturnType<typeof getPaymentLedger>>,
+    TError = ErrorType<void | ApiProblem>,
+>(
+    id: string,
+    options?: {
+        query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getPaymentLedger>>, TError, TData>>;
+        request?: SecondParameter<typeof apiClient>;
+    }
+) => {
+    const {query: queryOptions, request: requestOptions} = options ?? {};
+
+    const queryKey = queryOptions?.queryKey ?? getGetPaymentLedgerQueryKey(id);
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getPaymentLedger>>> = ({signal}) =>
+        getPaymentLedger(id, requestOptions, signal);
+
+    return {queryKey, queryFn, enabled: !!id, ...queryOptions} as UseQueryOptions<
+        Awaited<ReturnType<typeof getPaymentLedger>>,
+        TError,
+        TData
+    > & {queryKey: DataTag<QueryKey, TData, TError>};
+};
+
+export type GetPaymentLedgerQueryResult = NonNullable<Awaited<ReturnType<typeof getPaymentLedger>>>;
+export type GetPaymentLedgerQueryError = ErrorType<void | ApiProblem>;
+
+export function useGetPaymentLedger<
+    TData = Awaited<ReturnType<typeof getPaymentLedger>>,
+    TError = ErrorType<void | ApiProblem>,
+>(
+    id: string,
+    options: {
+        query: Partial<UseQueryOptions<Awaited<ReturnType<typeof getPaymentLedger>>, TError, TData>> &
+            Pick<
+                DefinedInitialDataOptions<
+                    Awaited<ReturnType<typeof getPaymentLedger>>,
+                    TError,
+                    Awaited<ReturnType<typeof getPaymentLedger>>
+                >,
+                'initialData'
+            >;
+        request?: SecondParameter<typeof apiClient>;
+    },
+    queryClient?: QueryClient
+): DefinedUseQueryResult<TData, TError> & {queryKey: DataTag<QueryKey, TData, TError>};
+export function useGetPaymentLedger<
+    TData = Awaited<ReturnType<typeof getPaymentLedger>>,
+    TError = ErrorType<void | ApiProblem>,
+>(
+    id: string,
+    options?: {
+        query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getPaymentLedger>>, TError, TData>> &
+            Pick<
+                UndefinedInitialDataOptions<
+                    Awaited<ReturnType<typeof getPaymentLedger>>,
+                    TError,
+                    Awaited<ReturnType<typeof getPaymentLedger>>
+                >,
+                'initialData'
+            >;
+        request?: SecondParameter<typeof apiClient>;
+    },
+    queryClient?: QueryClient
+): UseQueryResult<TData, TError> & {queryKey: DataTag<QueryKey, TData, TError>};
+export function useGetPaymentLedger<
+    TData = Awaited<ReturnType<typeof getPaymentLedger>>,
+    TError = ErrorType<void | ApiProblem>,
+>(
+    id: string,
+    options?: {
+        query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getPaymentLedger>>, TError, TData>>;
+        request?: SecondParameter<typeof apiClient>;
+    },
+    queryClient?: QueryClient
+): UseQueryResult<TData, TError> & {queryKey: DataTag<QueryKey, TData, TError>};
+/**
+ * @summary Get the receipts and refunds of an appointment payment
+ */
+
+export function useGetPaymentLedger<
+    TData = Awaited<ReturnType<typeof getPaymentLedger>>,
+    TError = ErrorType<void | ApiProblem>,
+>(
+    id: string,
+    options?: {
+        query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getPaymentLedger>>, TError, TData>>;
+        request?: SecondParameter<typeof apiClient>;
+    },
+    queryClient?: QueryClient
+): UseQueryResult<TData, TError> & {queryKey: DataTag<QueryKey, TData, TError>} {
+    const queryOptions = getGetPaymentLedgerQueryOptions(id, options);
+
+    const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
+        queryKey: DataTag<QueryKey, TData, TError>;
+    };
+
+    query.queryKey = queryOptions.queryKey;
+
+    return query;
+}
+
+export const getGetPaymentLedgerSuspenseQueryOptions = <
+    TData = Awaited<ReturnType<typeof getPaymentLedger>>,
+    TError = ErrorType<void | ApiProblem>,
+>(
+    id: string,
+    options?: {
+        query?: Partial<UseSuspenseQueryOptions<Awaited<ReturnType<typeof getPaymentLedger>>, TError, TData>>;
+        request?: SecondParameter<typeof apiClient>;
+    }
+) => {
+    const {query: queryOptions, request: requestOptions} = options ?? {};
+
+    const queryKey = queryOptions?.queryKey ?? getGetPaymentLedgerQueryKey(id);
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getPaymentLedger>>> = ({signal}) =>
+        getPaymentLedger(id, requestOptions, signal);
+
+    return {queryKey, queryFn, ...queryOptions} as UseSuspenseQueryOptions<
+        Awaited<ReturnType<typeof getPaymentLedger>>,
+        TError,
+        TData
+    > & {queryKey: DataTag<QueryKey, TData, TError>};
+};
+
+export type GetPaymentLedgerSuspenseQueryResult = NonNullable<Awaited<ReturnType<typeof getPaymentLedger>>>;
+export type GetPaymentLedgerSuspenseQueryError = ErrorType<void | ApiProblem>;
+
+export function useGetPaymentLedgerSuspense<
+    TData = Awaited<ReturnType<typeof getPaymentLedger>>,
+    TError = ErrorType<void | ApiProblem>,
+>(
+    id: string,
+    options: {
+        query: Partial<UseSuspenseQueryOptions<Awaited<ReturnType<typeof getPaymentLedger>>, TError, TData>>;
+        request?: SecondParameter<typeof apiClient>;
+    },
+    queryClient?: QueryClient
+): UseSuspenseQueryResult<TData, TError> & {queryKey: DataTag<QueryKey, TData, TError>};
+export function useGetPaymentLedgerSuspense<
+    TData = Awaited<ReturnType<typeof getPaymentLedger>>,
+    TError = ErrorType<void | ApiProblem>,
+>(
+    id: string,
+    options?: {
+        query?: Partial<UseSuspenseQueryOptions<Awaited<ReturnType<typeof getPaymentLedger>>, TError, TData>>;
+        request?: SecondParameter<typeof apiClient>;
+    },
+    queryClient?: QueryClient
+): UseSuspenseQueryResult<TData, TError> & {queryKey: DataTag<QueryKey, TData, TError>};
+export function useGetPaymentLedgerSuspense<
+    TData = Awaited<ReturnType<typeof getPaymentLedger>>,
+    TError = ErrorType<void | ApiProblem>,
+>(
+    id: string,
+    options?: {
+        query?: Partial<UseSuspenseQueryOptions<Awaited<ReturnType<typeof getPaymentLedger>>, TError, TData>>;
+        request?: SecondParameter<typeof apiClient>;
+    },
+    queryClient?: QueryClient
+): UseSuspenseQueryResult<TData, TError> & {queryKey: DataTag<QueryKey, TData, TError>};
+/**
+ * @summary Get the receipts and refunds of an appointment payment
+ */
+
+export function useGetPaymentLedgerSuspense<
+    TData = Awaited<ReturnType<typeof getPaymentLedger>>,
+    TError = ErrorType<void | ApiProblem>,
+>(
+    id: string,
+    options?: {
+        query?: Partial<UseSuspenseQueryOptions<Awaited<ReturnType<typeof getPaymentLedger>>, TError, TData>>;
+        request?: SecondParameter<typeof apiClient>;
+    },
+    queryClient?: QueryClient
+): UseSuspenseQueryResult<TData, TError> & {queryKey: DataTag<QueryKey, TData, TError>} {
+    const queryOptions = getGetPaymentLedgerSuspenseQueryOptions(id, options);
+
+    const query = useSuspenseQuery(queryOptions, queryClient) as UseSuspenseQueryResult<TData, TError> & {
+        queryKey: DataTag<QueryKey, TData, TError>;
+    };
+
+    query.queryKey = queryOptions.queryKey;
+
+    return query;
+}
+
+/**
+ * @summary Receive one or more parts of an open appointment payment
+ */
+export const receivePayment = (
+    id: string,
+    receivePaymentDto: ReceivePaymentDto,
+    options?: SecondParameter<typeof apiClient>,
+    signal?: AbortSignal
+) => {
+    return apiClient<AppointmentPaymentLedger>(
+        {
+            url: `/api/v1/appointments/${id}/payment/receipts`,
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            data: receivePaymentDto,
+            signal,
+        },
+        options
+    );
+};
+
+export const getReceivePaymentMutationOptions = <TError = ErrorType<void | ApiProblem>, TContext = unknown>(options?: {
+    mutation?: UseMutationOptions<
+        Awaited<ReturnType<typeof receivePayment>>,
+        TError,
+        {id: string; data: ReceivePaymentDto},
+        TContext
+    >;
+    request?: SecondParameter<typeof apiClient>;
+}): UseMutationOptions<
+    Awaited<ReturnType<typeof receivePayment>>,
+    TError,
+    {id: string; data: ReceivePaymentDto},
+    TContext
+> => {
+    const mutationKey = ['receivePayment'];
+    const {mutation: mutationOptions, request: requestOptions} = options
+        ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
+            ? options
+            : {...options, mutation: {...options.mutation, mutationKey}}
+        : {mutation: {mutationKey}, request: undefined};
+
+    const mutationFn: MutationFunction<
+        Awaited<ReturnType<typeof receivePayment>>,
+        {id: string; data: ReceivePaymentDto}
+    > = (props) => {
+        const {id, data} = props ?? {};
+
+        return receivePayment(id, data, requestOptions);
+    };
+
+    return {mutationFn, ...mutationOptions};
+};
+
+export type ReceivePaymentMutationResult = NonNullable<Awaited<ReturnType<typeof receivePayment>>>;
+export type ReceivePaymentMutationBody = ReceivePaymentDto;
+export type ReceivePaymentMutationError = ErrorType<void | ApiProblem>;
+
+/**
+ * @summary Receive one or more parts of an open appointment payment
+ */
+export const useReceivePayment = <TError = ErrorType<void | ApiProblem>, TContext = unknown>(
+    options?: {
+        mutation?: UseMutationOptions<
+            Awaited<ReturnType<typeof receivePayment>>,
+            TError,
+            {id: string; data: ReceivePaymentDto},
+            TContext
+        >;
+        request?: SecondParameter<typeof apiClient>;
+    },
+    queryClient?: QueryClient
+): UseMutationResult<
+    Awaited<ReturnType<typeof receivePayment>>,
+    TError,
+    {id: string; data: ReceivePaymentDto},
+    TContext
+> => {
+    const mutationOptions = getReceivePaymentMutationOptions(options);
+
+    return useMutation(mutationOptions, queryClient);
+};
+
+/**
+ * @summary Refund everything received for an appointment payment, with a reason
+ */
+export const refundPayment = (
+    id: string,
+    refundPaymentDto: RefundPaymentDto,
+    options?: SecondParameter<typeof apiClient>,
+    signal?: AbortSignal
+) => {
+    return apiClient<AppointmentPaymentLedger>(
+        {
+            url: `/api/v1/appointments/${id}/payment/refund`,
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            data: refundPaymentDto,
+            signal,
+        },
+        options
+    );
+};
+
+export const getRefundPaymentMutationOptions = <TError = ErrorType<void | ApiProblem>, TContext = unknown>(options?: {
+    mutation?: UseMutationOptions<
+        Awaited<ReturnType<typeof refundPayment>>,
+        TError,
+        {id: string; data: RefundPaymentDto},
+        TContext
+    >;
+    request?: SecondParameter<typeof apiClient>;
+}): UseMutationOptions<
+    Awaited<ReturnType<typeof refundPayment>>,
+    TError,
+    {id: string; data: RefundPaymentDto},
+    TContext
+> => {
+    const mutationKey = ['refundPayment'];
+    const {mutation: mutationOptions, request: requestOptions} = options
+        ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
+            ? options
+            : {...options, mutation: {...options.mutation, mutationKey}}
+        : {mutation: {mutationKey}, request: undefined};
+
+    const mutationFn: MutationFunction<
+        Awaited<ReturnType<typeof refundPayment>>,
+        {id: string; data: RefundPaymentDto}
+    > = (props) => {
+        const {id, data} = props ?? {};
+
+        return refundPayment(id, data, requestOptions);
+    };
+
+    return {mutationFn, ...mutationOptions};
+};
+
+export type RefundPaymentMutationResult = NonNullable<Awaited<ReturnType<typeof refundPayment>>>;
+export type RefundPaymentMutationBody = RefundPaymentDto;
+export type RefundPaymentMutationError = ErrorType<void | ApiProblem>;
+
+/**
+ * @summary Refund everything received for an appointment payment, with a reason
+ */
+export const useRefundPayment = <TError = ErrorType<void | ApiProblem>, TContext = unknown>(
+    options?: {
+        mutation?: UseMutationOptions<
+            Awaited<ReturnType<typeof refundPayment>>,
+            TError,
+            {id: string; data: RefundPaymentDto},
+            TContext
+        >;
+        request?: SecondParameter<typeof apiClient>;
+    },
+    queryClient?: QueryClient
+): UseMutationResult<
+    Awaited<ReturnType<typeof refundPayment>>,
+    TError,
+    {id: string; data: RefundPaymentDto},
+    TContext
+> => {
+    const mutationOptions = getRefundPaymentMutationOptions(options);
+
+    return useMutation(mutationOptions, queryClient);
+};
+
 export const getRegisterPaymentResponseMock = (
     overrideResponse: Partial<AppointmentPayment> = {}
 ): AppointmentPayment => ({
@@ -424,6 +792,7 @@ export const getRegisterPaymentResponseMock = (
         'COURTESY',
         'PACKAGE',
         'SUBSCRIPTION',
+        'MIXED',
     ] as const),
     status: faker.helpers.arrayElement(Object.values(AppointmentPaymentStatus)),
     amountBrl: faker.number.float({min: undefined, max: undefined, fractionDigits: 2}),
@@ -456,6 +825,7 @@ export const getRegisterPaymentResponseMock201 = (
         'COURTESY',
         'PACKAGE',
         'SUBSCRIPTION',
+        'MIXED',
     ] as const),
     status: faker.helpers.arrayElement(Object.values(AppointmentPaymentStatus)),
     amountBrl: faker.number.float({min: undefined, max: undefined, fractionDigits: 2}),
@@ -500,6 +870,7 @@ export const getUpdatePaymentStatusResponseMock = (
         'COURTESY',
         'PACKAGE',
         'SUBSCRIPTION',
+        'MIXED',
     ] as const),
     status: faker.helpers.arrayElement(Object.values(AppointmentPaymentStatus)),
     amountBrl: faker.number.float({min: undefined, max: undefined, fractionDigits: 2}),
@@ -532,6 +903,7 @@ export const getUpdatePaymentStatusResponseMock200 = (
         'COURTESY',
         'PACKAGE',
         'SUBSCRIPTION',
+        'MIXED',
     ] as const),
     status: faker.helpers.arrayElement(Object.values(AppointmentPaymentStatus)),
     amountBrl: faker.number.float({min: undefined, max: undefined, fractionDigits: 2}),
@@ -576,6 +948,7 @@ export const getGetPaymentByAppointmentResponseMock = (
         'COURTESY',
         'PACKAGE',
         'SUBSCRIPTION',
+        'MIXED',
     ] as const),
     status: faker.helpers.arrayElement(Object.values(AppointmentPaymentStatus)),
     amountBrl: faker.number.float({min: undefined, max: undefined, fractionDigits: 2}),
@@ -608,6 +981,7 @@ export const getGetPaymentByAppointmentResponseMock200 = (
         'COURTESY',
         'PACKAGE',
         'SUBSCRIPTION',
+        'MIXED',
     ] as const),
     status: faker.helpers.arrayElement(Object.values(AppointmentPaymentStatus)),
     amountBrl: faker.number.float({min: undefined, max: undefined, fractionDigits: 2}),
@@ -623,6 +997,360 @@ export const getGetPaymentByAppointmentResponseMock200 = (
 export const getGetPaymentByAppointmentResponseMockDefault = (
     overrideResponse: Partial<ApiProblem> = {}
 ): ApiProblem => ({
+    title: faker.string.alpha({length: {min: 10, max: 20}}),
+    type: faker.internet.url(),
+    detail: faker.string.alpha({length: {min: 10, max: 20}}),
+    status: faker.helpers.arrayElement([
+        400, 401, 402, 403, 404, 405, 406, 407, 408, 409, 410, 411, 412, 413, 414, 415, 416, 417, 418, 421, 422, 423,
+        424, 428, 429, 456, 500, 501, 502, 503, 504, 505, 507, 508,
+    ] as const),
+    instance: faker.string.alpha({length: {min: 10, max: 20}}),
+    ...overrideResponse,
+});
+
+export const getGetPaymentLedgerResponseMock = (
+    overrideResponse: Partial<AppointmentPaymentLedger> = {}
+): AppointmentPaymentLedger => ({
+    payment: {
+        id: faker.string.uuid(),
+        createdAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
+        updatedAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
+        clinicId: faker.string.uuid(),
+        appointmentId: faker.string.uuid(),
+        patientId: faker.string.uuid(),
+        registeredByMemberId: faker.string.uuid(),
+        paymentMethod: faker.helpers.arrayElement([
+            'CASH',
+            'PIX',
+            'CREDIT_CARD',
+            'DEBIT_CARD',
+            'BANK_TRANSFER',
+            'INSURANCE',
+            'COURTESY',
+            'PACKAGE',
+            'SUBSCRIPTION',
+            'MIXED',
+        ] as const),
+        status: faker.helpers.arrayElement(Object.values(AppointmentPaymentStatus)),
+        amountBrl: faker.number.float({min: undefined, max: undefined, fractionDigits: 2}),
+        paidAt: faker.helpers.arrayElement([`${faker.date.past().toISOString().split('.')[0]}Z`, null]),
+        insurancePlanId: faker.helpers.arrayElement([faker.string.uuid(), null]),
+        insuranceAuthCode: faker.helpers.arrayElement([faker.string.alpha({length: {min: 10, max: 20}}), null]),
+        patientPackageId: faker.helpers.arrayElement([faker.string.uuid(), null]),
+        patientSubscriptionId: faker.helpers.arrayElement([faker.string.uuid(), null]),
+        notes: faker.helpers.arrayElement([faker.string.alpha({length: {min: 10, max: 20}}), null]),
+    },
+    tracked: faker.datatype.boolean(),
+    amountBrl: faker.number.float({min: undefined, max: undefined, fractionDigits: 2}),
+    receivedBrl: faker.number.float({min: undefined, max: undefined, fractionDigits: 2}),
+    remainingBrl: faker.number.float({min: undefined, max: undefined, fractionDigits: 2}),
+    movements: Array.from({length: faker.number.int({min: 1, max: 10})}, (_, i) => i + 1).map(() => ({
+        id: faker.string.uuid(),
+        entryId: faker.string.uuid(),
+        accountId: faker.string.uuid(),
+        accountName: faker.helpers.arrayElement([faker.string.alpha({length: {min: 10, max: 20}}), null]),
+        direction: faker.helpers.arrayElement(Object.values(AccountMovementDirection)),
+        category: faker.helpers.arrayElement(Object.values(AccountMovementCategory)),
+        paymentMethod: faker.helpers.arrayElement(Object.values(PaymentMethod)),
+        amountBrl: faker.number.float({min: undefined, max: undefined, fractionDigits: 2}),
+        movedAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
+        reason: faker.helpers.arrayElement([faker.string.alpha({length: {min: 10, max: 20}}), null]),
+        reversesMovementId: faker.helpers.arrayElement([faker.string.uuid(), null]),
+        responsibleMemberId: faker.string.uuid(),
+    })),
+    ...overrideResponse,
+});
+
+export const getGetPaymentLedgerResponseMock200 = (
+    overrideResponse: Partial<AppointmentPaymentLedger> = {}
+): AppointmentPaymentLedger => ({
+    payment: {
+        id: faker.string.uuid(),
+        createdAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
+        updatedAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
+        clinicId: faker.string.uuid(),
+        appointmentId: faker.string.uuid(),
+        patientId: faker.string.uuid(),
+        registeredByMemberId: faker.string.uuid(),
+        paymentMethod: faker.helpers.arrayElement([
+            'CASH',
+            'PIX',
+            'CREDIT_CARD',
+            'DEBIT_CARD',
+            'BANK_TRANSFER',
+            'INSURANCE',
+            'COURTESY',
+            'PACKAGE',
+            'SUBSCRIPTION',
+            'MIXED',
+        ] as const),
+        status: faker.helpers.arrayElement(Object.values(AppointmentPaymentStatus)),
+        amountBrl: faker.number.float({min: undefined, max: undefined, fractionDigits: 2}),
+        paidAt: faker.helpers.arrayElement([`${faker.date.past().toISOString().split('.')[0]}Z`, null]),
+        insurancePlanId: faker.helpers.arrayElement([faker.string.uuid(), null]),
+        insuranceAuthCode: faker.helpers.arrayElement([faker.string.alpha({length: {min: 10, max: 20}}), null]),
+        patientPackageId: faker.helpers.arrayElement([faker.string.uuid(), null]),
+        patientSubscriptionId: faker.helpers.arrayElement([faker.string.uuid(), null]),
+        notes: faker.helpers.arrayElement([faker.string.alpha({length: {min: 10, max: 20}}), null]),
+    },
+    tracked: faker.datatype.boolean(),
+    amountBrl: faker.number.float({min: undefined, max: undefined, fractionDigits: 2}),
+    receivedBrl: faker.number.float({min: undefined, max: undefined, fractionDigits: 2}),
+    remainingBrl: faker.number.float({min: undefined, max: undefined, fractionDigits: 2}),
+    movements: Array.from({length: faker.number.int({min: 1, max: 10})}, (_, i) => i + 1).map(() => ({
+        id: faker.string.uuid(),
+        entryId: faker.string.uuid(),
+        accountId: faker.string.uuid(),
+        accountName: faker.helpers.arrayElement([faker.string.alpha({length: {min: 10, max: 20}}), null]),
+        direction: faker.helpers.arrayElement(Object.values(AccountMovementDirection)),
+        category: faker.helpers.arrayElement(Object.values(AccountMovementCategory)),
+        paymentMethod: faker.helpers.arrayElement(Object.values(PaymentMethod)),
+        amountBrl: faker.number.float({min: undefined, max: undefined, fractionDigits: 2}),
+        movedAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
+        reason: faker.helpers.arrayElement([faker.string.alpha({length: {min: 10, max: 20}}), null]),
+        reversesMovementId: faker.helpers.arrayElement([faker.string.uuid(), null]),
+        responsibleMemberId: faker.string.uuid(),
+    })),
+    ...overrideResponse,
+});
+
+export const getGetPaymentLedgerResponseMockDefault = (overrideResponse: Partial<ApiProblem> = {}): ApiProblem => ({
+    title: faker.string.alpha({length: {min: 10, max: 20}}),
+    type: faker.internet.url(),
+    detail: faker.string.alpha({length: {min: 10, max: 20}}),
+    status: faker.helpers.arrayElement([
+        400, 401, 402, 403, 404, 405, 406, 407, 408, 409, 410, 411, 412, 413, 414, 415, 416, 417, 418, 421, 422, 423,
+        424, 428, 429, 456, 500, 501, 502, 503, 504, 505, 507, 508,
+    ] as const),
+    instance: faker.string.alpha({length: {min: 10, max: 20}}),
+    ...overrideResponse,
+});
+
+export const getReceivePaymentResponseMock = (
+    overrideResponse: Partial<AppointmentPaymentLedger> = {}
+): AppointmentPaymentLedger => ({
+    payment: {
+        id: faker.string.uuid(),
+        createdAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
+        updatedAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
+        clinicId: faker.string.uuid(),
+        appointmentId: faker.string.uuid(),
+        patientId: faker.string.uuid(),
+        registeredByMemberId: faker.string.uuid(),
+        paymentMethod: faker.helpers.arrayElement([
+            'CASH',
+            'PIX',
+            'CREDIT_CARD',
+            'DEBIT_CARD',
+            'BANK_TRANSFER',
+            'INSURANCE',
+            'COURTESY',
+            'PACKAGE',
+            'SUBSCRIPTION',
+            'MIXED',
+        ] as const),
+        status: faker.helpers.arrayElement(Object.values(AppointmentPaymentStatus)),
+        amountBrl: faker.number.float({min: undefined, max: undefined, fractionDigits: 2}),
+        paidAt: faker.helpers.arrayElement([`${faker.date.past().toISOString().split('.')[0]}Z`, null]),
+        insurancePlanId: faker.helpers.arrayElement([faker.string.uuid(), null]),
+        insuranceAuthCode: faker.helpers.arrayElement([faker.string.alpha({length: {min: 10, max: 20}}), null]),
+        patientPackageId: faker.helpers.arrayElement([faker.string.uuid(), null]),
+        patientSubscriptionId: faker.helpers.arrayElement([faker.string.uuid(), null]),
+        notes: faker.helpers.arrayElement([faker.string.alpha({length: {min: 10, max: 20}}), null]),
+    },
+    tracked: faker.datatype.boolean(),
+    amountBrl: faker.number.float({min: undefined, max: undefined, fractionDigits: 2}),
+    receivedBrl: faker.number.float({min: undefined, max: undefined, fractionDigits: 2}),
+    remainingBrl: faker.number.float({min: undefined, max: undefined, fractionDigits: 2}),
+    movements: Array.from({length: faker.number.int({min: 1, max: 10})}, (_, i) => i + 1).map(() => ({
+        id: faker.string.uuid(),
+        entryId: faker.string.uuid(),
+        accountId: faker.string.uuid(),
+        accountName: faker.helpers.arrayElement([faker.string.alpha({length: {min: 10, max: 20}}), null]),
+        direction: faker.helpers.arrayElement(Object.values(AccountMovementDirection)),
+        category: faker.helpers.arrayElement(Object.values(AccountMovementCategory)),
+        paymentMethod: faker.helpers.arrayElement(Object.values(PaymentMethod)),
+        amountBrl: faker.number.float({min: undefined, max: undefined, fractionDigits: 2}),
+        movedAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
+        reason: faker.helpers.arrayElement([faker.string.alpha({length: {min: 10, max: 20}}), null]),
+        reversesMovementId: faker.helpers.arrayElement([faker.string.uuid(), null]),
+        responsibleMemberId: faker.string.uuid(),
+    })),
+    ...overrideResponse,
+});
+
+export const getReceivePaymentResponseMock201 = (
+    overrideResponse: Partial<AppointmentPaymentLedger> = {}
+): AppointmentPaymentLedger => ({
+    payment: {
+        id: faker.string.uuid(),
+        createdAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
+        updatedAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
+        clinicId: faker.string.uuid(),
+        appointmentId: faker.string.uuid(),
+        patientId: faker.string.uuid(),
+        registeredByMemberId: faker.string.uuid(),
+        paymentMethod: faker.helpers.arrayElement([
+            'CASH',
+            'PIX',
+            'CREDIT_CARD',
+            'DEBIT_CARD',
+            'BANK_TRANSFER',
+            'INSURANCE',
+            'COURTESY',
+            'PACKAGE',
+            'SUBSCRIPTION',
+            'MIXED',
+        ] as const),
+        status: faker.helpers.arrayElement(Object.values(AppointmentPaymentStatus)),
+        amountBrl: faker.number.float({min: undefined, max: undefined, fractionDigits: 2}),
+        paidAt: faker.helpers.arrayElement([`${faker.date.past().toISOString().split('.')[0]}Z`, null]),
+        insurancePlanId: faker.helpers.arrayElement([faker.string.uuid(), null]),
+        insuranceAuthCode: faker.helpers.arrayElement([faker.string.alpha({length: {min: 10, max: 20}}), null]),
+        patientPackageId: faker.helpers.arrayElement([faker.string.uuid(), null]),
+        patientSubscriptionId: faker.helpers.arrayElement([faker.string.uuid(), null]),
+        notes: faker.helpers.arrayElement([faker.string.alpha({length: {min: 10, max: 20}}), null]),
+    },
+    tracked: faker.datatype.boolean(),
+    amountBrl: faker.number.float({min: undefined, max: undefined, fractionDigits: 2}),
+    receivedBrl: faker.number.float({min: undefined, max: undefined, fractionDigits: 2}),
+    remainingBrl: faker.number.float({min: undefined, max: undefined, fractionDigits: 2}),
+    movements: Array.from({length: faker.number.int({min: 1, max: 10})}, (_, i) => i + 1).map(() => ({
+        id: faker.string.uuid(),
+        entryId: faker.string.uuid(),
+        accountId: faker.string.uuid(),
+        accountName: faker.helpers.arrayElement([faker.string.alpha({length: {min: 10, max: 20}}), null]),
+        direction: faker.helpers.arrayElement(Object.values(AccountMovementDirection)),
+        category: faker.helpers.arrayElement(Object.values(AccountMovementCategory)),
+        paymentMethod: faker.helpers.arrayElement(Object.values(PaymentMethod)),
+        amountBrl: faker.number.float({min: undefined, max: undefined, fractionDigits: 2}),
+        movedAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
+        reason: faker.helpers.arrayElement([faker.string.alpha({length: {min: 10, max: 20}}), null]),
+        reversesMovementId: faker.helpers.arrayElement([faker.string.uuid(), null]),
+        responsibleMemberId: faker.string.uuid(),
+    })),
+    ...overrideResponse,
+});
+
+export const getReceivePaymentResponseMockDefault = (overrideResponse: Partial<ApiProblem> = {}): ApiProblem => ({
+    title: faker.string.alpha({length: {min: 10, max: 20}}),
+    type: faker.internet.url(),
+    detail: faker.string.alpha({length: {min: 10, max: 20}}),
+    status: faker.helpers.arrayElement([
+        400, 401, 402, 403, 404, 405, 406, 407, 408, 409, 410, 411, 412, 413, 414, 415, 416, 417, 418, 421, 422, 423,
+        424, 428, 429, 456, 500, 501, 502, 503, 504, 505, 507, 508,
+    ] as const),
+    instance: faker.string.alpha({length: {min: 10, max: 20}}),
+    ...overrideResponse,
+});
+
+export const getRefundPaymentResponseMock = (
+    overrideResponse: Partial<AppointmentPaymentLedger> = {}
+): AppointmentPaymentLedger => ({
+    payment: {
+        id: faker.string.uuid(),
+        createdAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
+        updatedAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
+        clinicId: faker.string.uuid(),
+        appointmentId: faker.string.uuid(),
+        patientId: faker.string.uuid(),
+        registeredByMemberId: faker.string.uuid(),
+        paymentMethod: faker.helpers.arrayElement([
+            'CASH',
+            'PIX',
+            'CREDIT_CARD',
+            'DEBIT_CARD',
+            'BANK_TRANSFER',
+            'INSURANCE',
+            'COURTESY',
+            'PACKAGE',
+            'SUBSCRIPTION',
+            'MIXED',
+        ] as const),
+        status: faker.helpers.arrayElement(Object.values(AppointmentPaymentStatus)),
+        amountBrl: faker.number.float({min: undefined, max: undefined, fractionDigits: 2}),
+        paidAt: faker.helpers.arrayElement([`${faker.date.past().toISOString().split('.')[0]}Z`, null]),
+        insurancePlanId: faker.helpers.arrayElement([faker.string.uuid(), null]),
+        insuranceAuthCode: faker.helpers.arrayElement([faker.string.alpha({length: {min: 10, max: 20}}), null]),
+        patientPackageId: faker.helpers.arrayElement([faker.string.uuid(), null]),
+        patientSubscriptionId: faker.helpers.arrayElement([faker.string.uuid(), null]),
+        notes: faker.helpers.arrayElement([faker.string.alpha({length: {min: 10, max: 20}}), null]),
+    },
+    tracked: faker.datatype.boolean(),
+    amountBrl: faker.number.float({min: undefined, max: undefined, fractionDigits: 2}),
+    receivedBrl: faker.number.float({min: undefined, max: undefined, fractionDigits: 2}),
+    remainingBrl: faker.number.float({min: undefined, max: undefined, fractionDigits: 2}),
+    movements: Array.from({length: faker.number.int({min: 1, max: 10})}, (_, i) => i + 1).map(() => ({
+        id: faker.string.uuid(),
+        entryId: faker.string.uuid(),
+        accountId: faker.string.uuid(),
+        accountName: faker.helpers.arrayElement([faker.string.alpha({length: {min: 10, max: 20}}), null]),
+        direction: faker.helpers.arrayElement(Object.values(AccountMovementDirection)),
+        category: faker.helpers.arrayElement(Object.values(AccountMovementCategory)),
+        paymentMethod: faker.helpers.arrayElement(Object.values(PaymentMethod)),
+        amountBrl: faker.number.float({min: undefined, max: undefined, fractionDigits: 2}),
+        movedAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
+        reason: faker.helpers.arrayElement([faker.string.alpha({length: {min: 10, max: 20}}), null]),
+        reversesMovementId: faker.helpers.arrayElement([faker.string.uuid(), null]),
+        responsibleMemberId: faker.string.uuid(),
+    })),
+    ...overrideResponse,
+});
+
+export const getRefundPaymentResponseMock201 = (
+    overrideResponse: Partial<AppointmentPaymentLedger> = {}
+): AppointmentPaymentLedger => ({
+    payment: {
+        id: faker.string.uuid(),
+        createdAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
+        updatedAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
+        clinicId: faker.string.uuid(),
+        appointmentId: faker.string.uuid(),
+        patientId: faker.string.uuid(),
+        registeredByMemberId: faker.string.uuid(),
+        paymentMethod: faker.helpers.arrayElement([
+            'CASH',
+            'PIX',
+            'CREDIT_CARD',
+            'DEBIT_CARD',
+            'BANK_TRANSFER',
+            'INSURANCE',
+            'COURTESY',
+            'PACKAGE',
+            'SUBSCRIPTION',
+            'MIXED',
+        ] as const),
+        status: faker.helpers.arrayElement(Object.values(AppointmentPaymentStatus)),
+        amountBrl: faker.number.float({min: undefined, max: undefined, fractionDigits: 2}),
+        paidAt: faker.helpers.arrayElement([`${faker.date.past().toISOString().split('.')[0]}Z`, null]),
+        insurancePlanId: faker.helpers.arrayElement([faker.string.uuid(), null]),
+        insuranceAuthCode: faker.helpers.arrayElement([faker.string.alpha({length: {min: 10, max: 20}}), null]),
+        patientPackageId: faker.helpers.arrayElement([faker.string.uuid(), null]),
+        patientSubscriptionId: faker.helpers.arrayElement([faker.string.uuid(), null]),
+        notes: faker.helpers.arrayElement([faker.string.alpha({length: {min: 10, max: 20}}), null]),
+    },
+    tracked: faker.datatype.boolean(),
+    amountBrl: faker.number.float({min: undefined, max: undefined, fractionDigits: 2}),
+    receivedBrl: faker.number.float({min: undefined, max: undefined, fractionDigits: 2}),
+    remainingBrl: faker.number.float({min: undefined, max: undefined, fractionDigits: 2}),
+    movements: Array.from({length: faker.number.int({min: 1, max: 10})}, (_, i) => i + 1).map(() => ({
+        id: faker.string.uuid(),
+        entryId: faker.string.uuid(),
+        accountId: faker.string.uuid(),
+        accountName: faker.helpers.arrayElement([faker.string.alpha({length: {min: 10, max: 20}}), null]),
+        direction: faker.helpers.arrayElement(Object.values(AccountMovementDirection)),
+        category: faker.helpers.arrayElement(Object.values(AccountMovementCategory)),
+        paymentMethod: faker.helpers.arrayElement(Object.values(PaymentMethod)),
+        amountBrl: faker.number.float({min: undefined, max: undefined, fractionDigits: 2}),
+        movedAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
+        reason: faker.helpers.arrayElement([faker.string.alpha({length: {min: 10, max: 20}}), null]),
+        reversesMovementId: faker.helpers.arrayElement([faker.string.uuid(), null]),
+        responsibleMemberId: faker.string.uuid(),
+    })),
+    ...overrideResponse,
+});
+
+export const getRefundPaymentResponseMockDefault = (overrideResponse: Partial<ApiProblem> = {}): ApiProblem => ({
     title: faker.string.alpha({length: {min: 10, max: 20}}),
     type: faker.internet.url(),
     detail: faker.string.alpha({length: {min: 10, max: 20}}),
@@ -918,8 +1646,290 @@ export const getGetPaymentByAppointmentMockHandlerDefault = (
     );
 };
 
+export const getGetPaymentLedgerMockHandler = (
+    overrideResponse?:
+        | AppointmentPaymentLedger
+        | ((
+              info: Parameters<Parameters<typeof http.get>[1]>[0]
+          ) => Promise<AppointmentPaymentLedger> | AppointmentPaymentLedger),
+    options?: RequestHandlerOptions
+) => {
+    return http.get(
+        '*/api/v1/appointments/:id/payment/ledger',
+        async (info) => {
+            return new HttpResponse(
+                JSON.stringify(
+                    overrideResponse !== undefined
+                        ? typeof overrideResponse === 'function'
+                            ? await overrideResponse(info)
+                            : overrideResponse
+                        : getGetPaymentLedgerResponseMock()
+                ),
+                {status: 200, headers: {'Content-Type': 'application/json'}}
+            );
+        },
+        options
+    );
+};
+
+export const getGetPaymentLedgerMockHandler200 = (
+    overrideResponse?:
+        | AppointmentPaymentLedger
+        | ((
+              info: Parameters<Parameters<typeof http.get>[1]>[0]
+          ) => Promise<AppointmentPaymentLedger> | AppointmentPaymentLedger),
+    options?: RequestHandlerOptions
+) => {
+    return http.get(
+        '*/api/v1/appointments/:id/payment/ledger',
+        async (info) => {
+            return new HttpResponse(
+                JSON.stringify(
+                    overrideResponse !== undefined
+                        ? typeof overrideResponse === 'function'
+                            ? await overrideResponse(info)
+                            : overrideResponse
+                        : getGetPaymentLedgerResponseMock200()
+                ),
+                {status: 200, headers: {'Content-Type': 'application/json'}}
+            );
+        },
+        options
+    );
+};
+
+export const getGetPaymentLedgerMockHandler404 = (
+    overrideResponse?: void | ((info: Parameters<Parameters<typeof http.get>[1]>[0]) => Promise<void> | void),
+    options?: RequestHandlerOptions
+) => {
+    return http.get(
+        '*/api/v1/appointments/:id/payment/ledger',
+        async (info) => {
+            if (typeof overrideResponse === 'function') {
+                await overrideResponse(info);
+            }
+
+            return new HttpResponse(null, {status: 404});
+        },
+        options
+    );
+};
+
+export const getGetPaymentLedgerMockHandlerDefault = (
+    overrideResponse?:
+        | ApiProblem
+        | ((info: Parameters<Parameters<typeof http.get>[1]>[0]) => Promise<ApiProblem> | ApiProblem),
+    options?: RequestHandlerOptions
+) => {
+    return http.get(
+        '*/api/v1/appointments/:id/payment/ledger',
+        async (info) => {
+            return new HttpResponse(
+                JSON.stringify(
+                    overrideResponse !== undefined
+                        ? typeof overrideResponse === 'function'
+                            ? await overrideResponse(info)
+                            : overrideResponse
+                        : getGetPaymentLedgerResponseMockDefault()
+                ),
+                {status: 200, headers: {'Content-Type': 'application/json'}}
+            );
+        },
+        options
+    );
+};
+
+export const getReceivePaymentMockHandler = (
+    overrideResponse?:
+        | AppointmentPaymentLedger
+        | ((
+              info: Parameters<Parameters<typeof http.post>[1]>[0]
+          ) => Promise<AppointmentPaymentLedger> | AppointmentPaymentLedger),
+    options?: RequestHandlerOptions
+) => {
+    return http.post(
+        '*/api/v1/appointments/:id/payment/receipts',
+        async (info) => {
+            return new HttpResponse(
+                JSON.stringify(
+                    overrideResponse !== undefined
+                        ? typeof overrideResponse === 'function'
+                            ? await overrideResponse(info)
+                            : overrideResponse
+                        : getReceivePaymentResponseMock()
+                ),
+                {status: 201, headers: {'Content-Type': 'application/json'}}
+            );
+        },
+        options
+    );
+};
+
+export const getReceivePaymentMockHandler201 = (
+    overrideResponse?:
+        | AppointmentPaymentLedger
+        | ((
+              info: Parameters<Parameters<typeof http.post>[1]>[0]
+          ) => Promise<AppointmentPaymentLedger> | AppointmentPaymentLedger),
+    options?: RequestHandlerOptions
+) => {
+    return http.post(
+        '*/api/v1/appointments/:id/payment/receipts',
+        async (info) => {
+            return new HttpResponse(
+                JSON.stringify(
+                    overrideResponse !== undefined
+                        ? typeof overrideResponse === 'function'
+                            ? await overrideResponse(info)
+                            : overrideResponse
+                        : getReceivePaymentResponseMock201()
+                ),
+                {status: 201, headers: {'Content-Type': 'application/json'}}
+            );
+        },
+        options
+    );
+};
+
+export const getReceivePaymentMockHandler409 = (
+    overrideResponse?: void | ((info: Parameters<Parameters<typeof http.post>[1]>[0]) => Promise<void> | void),
+    options?: RequestHandlerOptions
+) => {
+    return http.post(
+        '*/api/v1/appointments/:id/payment/receipts',
+        async (info) => {
+            if (typeof overrideResponse === 'function') {
+                await overrideResponse(info);
+            }
+
+            return new HttpResponse(null, {status: 409});
+        },
+        options
+    );
+};
+
+export const getReceivePaymentMockHandlerDefault = (
+    overrideResponse?:
+        | ApiProblem
+        | ((info: Parameters<Parameters<typeof http.post>[1]>[0]) => Promise<ApiProblem> | ApiProblem),
+    options?: RequestHandlerOptions
+) => {
+    return http.post(
+        '*/api/v1/appointments/:id/payment/receipts',
+        async (info) => {
+            return new HttpResponse(
+                JSON.stringify(
+                    overrideResponse !== undefined
+                        ? typeof overrideResponse === 'function'
+                            ? await overrideResponse(info)
+                            : overrideResponse
+                        : getReceivePaymentResponseMockDefault()
+                ),
+                {status: 200, headers: {'Content-Type': 'application/json'}}
+            );
+        },
+        options
+    );
+};
+
+export const getRefundPaymentMockHandler = (
+    overrideResponse?:
+        | AppointmentPaymentLedger
+        | ((
+              info: Parameters<Parameters<typeof http.post>[1]>[0]
+          ) => Promise<AppointmentPaymentLedger> | AppointmentPaymentLedger),
+    options?: RequestHandlerOptions
+) => {
+    return http.post(
+        '*/api/v1/appointments/:id/payment/refund',
+        async (info) => {
+            return new HttpResponse(
+                JSON.stringify(
+                    overrideResponse !== undefined
+                        ? typeof overrideResponse === 'function'
+                            ? await overrideResponse(info)
+                            : overrideResponse
+                        : getRefundPaymentResponseMock()
+                ),
+                {status: 201, headers: {'Content-Type': 'application/json'}}
+            );
+        },
+        options
+    );
+};
+
+export const getRefundPaymentMockHandler201 = (
+    overrideResponse?:
+        | AppointmentPaymentLedger
+        | ((
+              info: Parameters<Parameters<typeof http.post>[1]>[0]
+          ) => Promise<AppointmentPaymentLedger> | AppointmentPaymentLedger),
+    options?: RequestHandlerOptions
+) => {
+    return http.post(
+        '*/api/v1/appointments/:id/payment/refund',
+        async (info) => {
+            return new HttpResponse(
+                JSON.stringify(
+                    overrideResponse !== undefined
+                        ? typeof overrideResponse === 'function'
+                            ? await overrideResponse(info)
+                            : overrideResponse
+                        : getRefundPaymentResponseMock201()
+                ),
+                {status: 201, headers: {'Content-Type': 'application/json'}}
+            );
+        },
+        options
+    );
+};
+
+export const getRefundPaymentMockHandler409 = (
+    overrideResponse?: void | ((info: Parameters<Parameters<typeof http.post>[1]>[0]) => Promise<void> | void),
+    options?: RequestHandlerOptions
+) => {
+    return http.post(
+        '*/api/v1/appointments/:id/payment/refund',
+        async (info) => {
+            if (typeof overrideResponse === 'function') {
+                await overrideResponse(info);
+            }
+
+            return new HttpResponse(null, {status: 409});
+        },
+        options
+    );
+};
+
+export const getRefundPaymentMockHandlerDefault = (
+    overrideResponse?:
+        | ApiProblem
+        | ((info: Parameters<Parameters<typeof http.post>[1]>[0]) => Promise<ApiProblem> | ApiProblem),
+    options?: RequestHandlerOptions
+) => {
+    return http.post(
+        '*/api/v1/appointments/:id/payment/refund',
+        async (info) => {
+            return new HttpResponse(
+                JSON.stringify(
+                    overrideResponse !== undefined
+                        ? typeof overrideResponse === 'function'
+                            ? await overrideResponse(info)
+                            : overrideResponse
+                        : getRefundPaymentResponseMockDefault()
+                ),
+                {status: 200, headers: {'Content-Type': 'application/json'}}
+            );
+        },
+        options
+    );
+};
+
 export const getAppointmentPaymentMock = () => [
     getRegisterPaymentMockHandler(),
     getUpdatePaymentStatusMockHandler(),
     getGetPaymentByAppointmentMockHandler(),
+    getGetPaymentLedgerMockHandler(),
+    getReceivePaymentMockHandler(),
+    getRefundPaymentMockHandler(),
 ];

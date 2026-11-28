@@ -7,9 +7,19 @@ import {ApiOperation} from '@application/@shared/openapi/decorators';
 import {entityIdParam} from '@application/@shared/openapi/params';
 import {ValidatedParam} from '@application/@shared/validation';
 import {entityId} from '@application/@shared/validation/schemas';
-import {AppointmentPaymentDto, RegisterPaymentDto, UpdatePaymentStatusDto} from '@application/appointment-payment/dtos';
+import {
+    AppointmentPaymentDto,
+    AppointmentPaymentLedgerDto,
+    ReceivePaymentDto,
+    RefundPaymentDto,
+    RegisterPaymentDto,
+    UpdatePaymentStatusDto,
+} from '@application/appointment-payment/dtos';
 import {
     GetPaymentByAppointmentService,
+    GetPaymentLedgerService,
+    ReceivePaymentService,
+    RefundPaymentService,
     RegisterPaymentService,
     UpdatePaymentStatusService,
 } from '@application/appointment-payment/services';
@@ -25,7 +35,10 @@ export class AppointmentPaymentController {
     constructor(
         private readonly registerPaymentService: RegisterPaymentService,
         private readonly updatePaymentStatusService: UpdatePaymentStatusService,
-        private readonly getPaymentByAppointmentService: GetPaymentByAppointmentService
+        private readonly getPaymentByAppointmentService: GetPaymentByAppointmentService,
+        private readonly getPaymentLedgerService: GetPaymentLedgerService,
+        private readonly receivePaymentService: ReceivePaymentService,
+        private readonly refundPaymentService: RefundPaymentService
     ) {}
 
     @ApiOperation({
@@ -86,5 +99,58 @@ export class AppointmentPaymentController {
         @ValidatedParam('id', appointmentIdSchema.shape.id) id: AppointmentId
     ): Promise<AppointmentPaymentDto> {
         return this.getPaymentByAppointmentService.execute({actor, payload: {appointmentId: id}});
+    }
+
+    @ApiOperation({
+        summary: 'Get the receipts and refunds of an appointment payment',
+        parameters: [entityIdParam('Appointment ID')],
+        responses: [
+            {status: 200, description: 'Payment ledger', type: AppointmentPaymentLedgerDto},
+            {status: 404, description: 'Appointment or payment not found'},
+        ],
+    })
+    @Authorize(AppointmentPaymentPermission.VIEW)
+    @Get('ledger')
+    getPaymentLedger(
+        @RequestActor() actor: Actor,
+        @ValidatedParam('id', appointmentIdSchema.shape.id) id: AppointmentId
+    ): Promise<AppointmentPaymentLedgerDto> {
+        return this.getPaymentLedgerService.execute({actor, payload: {appointmentId: id}});
+    }
+
+    @ApiOperation({
+        summary: 'Receive one or more parts of an open appointment payment',
+        parameters: [entityIdParam('Appointment ID')],
+        responses: [
+            {status: 201, description: 'Receipts registered', type: AppointmentPaymentLedgerDto},
+            {status: 409, description: 'Payment already settled, or parts exceed what is left to receive'},
+        ],
+    })
+    @Authorize(AppointmentPaymentPermission.REGISTER)
+    @Post('receipts')
+    receivePayment(
+        @RequestActor() actor: Actor,
+        @ValidatedParam('id', appointmentIdSchema.shape.id) id: AppointmentId,
+        @Body() payload: ReceivePaymentDto
+    ): Promise<AppointmentPaymentLedgerDto> {
+        return this.receivePaymentService.execute({actor, payload: {...payload, appointmentId: id}});
+    }
+
+    @ApiOperation({
+        summary: 'Refund everything received for an appointment payment, with a reason',
+        parameters: [entityIdParam('Appointment ID')],
+        responses: [
+            {status: 201, description: 'Payment refunded', type: AppointmentPaymentLedgerDto},
+            {status: 409, description: 'Nothing to refund'},
+        ],
+    })
+    @Authorize(AppointmentPaymentPermission.REFUND)
+    @Post('refund')
+    refundPayment(
+        @RequestActor() actor: Actor,
+        @ValidatedParam('id', appointmentIdSchema.shape.id) id: AppointmentId,
+        @Body() payload: RefundPaymentDto
+    ): Promise<AppointmentPaymentLedgerDto> {
+        return this.refundPaymentService.execute({actor, payload: {...payload, appointmentId: id}});
     }
 }

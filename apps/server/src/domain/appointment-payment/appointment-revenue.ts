@@ -14,6 +14,11 @@ export type RevenuePayment = {
         approvedAmountBrl: number | null;
         resolvedAt: Date | null;
     } | null;
+    /** Obrigação no livro-caixa (formas que movem dinheiro). Ver docs/financial-ledger.md. */
+    ledger?: {
+        amountCents: number;
+        receivedCents: number;
+    } | null;
 };
 
 export type AppointmentRevenue = {
@@ -69,6 +74,16 @@ export function projectAppointmentRevenue(
             ...projectInsuranceClaimRevenue(payment.insuranceClaim),
             insuranceClaimStatus: payment.insuranceClaim.status,
         };
+    }
+
+    if (payment.ledger) {
+        return revenue(
+            brlFromCents(payment.ledger.amountCents),
+            brlFromCents(Math.max(payment.ledger.receivedCents, 0)),
+            paymentMethod,
+            status,
+            status === AppointmentPaymentStatus.PAID ? paidAt : null
+        );
     }
 
     return revenue(

@@ -23,12 +23,19 @@ export const revenuePaymentSelect = {
             resolvedAt: true,
         },
     },
+    financialEntry: {
+        select: {
+            clinicId: true,
+            amountCents: true,
+            movements: {select: {direction: true, amountCents: true}},
+        },
+    },
 } satisfies Prisma.AppointmentPaymentSelect;
 
 export type RevenuePaymentModel = Prisma.AppointmentPaymentGetPayload<{select: typeof revenuePaymentSelect}>;
 
 export function toRevenuePayment(row: RevenuePaymentModel): RevenuePayment {
-    const {insuranceClaim: claim} = row;
+    const {insuranceClaim: claim, financialEntry: entry} = row;
 
     return {
         status: toEnum(AppointmentPaymentStatus, row.status),
@@ -42,6 +49,17 @@ export function toRevenuePayment(row: RevenuePaymentModel): RevenuePayment {
                       submittedAmountBrl: claim.submittedAmountBrl,
                       approvedAmountBrl: claim.approvedAmountBrl,
                       resolvedAt: claim.resolvedAt,
+                  }
+                : null,
+        ledger:
+            entry?.clinicId === row.clinicId
+                ? {
+                      amountCents: entry.amountCents,
+                      receivedCents: entry.movements.reduce(
+                          (total, movement) =>
+                              total + (movement.direction === 'IN' ? movement.amountCents : -movement.amountCents),
+                          0
+                      ),
                   }
                 : null,
     };

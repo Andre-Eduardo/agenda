@@ -20,9 +20,11 @@ import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@/c
 import {Skeleton} from '@/components/ui/componentes/skeleton';
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from '@/components/ui/componentes/table';
 import {useAccount} from '@/hooks/useAccount';
+import {useCan} from '@/hooks/useCan';
 import {formatBRL, formatUSD} from '@/lib/utils';
 import {REVENUE_AMOUNT_FIELDS} from '@/utils/appointment-revenue';
 import {Page} from '@/views/components/Page';
+import {AccountsTab} from '@/views/modules/financial/components/AccountsTab';
 import {PlansTab} from '@/views/modules/financial/components/PlansTab';
 import {
     dateInputWrap,
@@ -174,10 +176,20 @@ function LocalizedDateInput({
 
 // ─── Page ────────────────────────────────────────────────────────────────────
 
+const FINANCIAL_TABS = ['receita', 'contas', 'custos', 'planos'] as const;
+
+type FinancialTab = (typeof FINANCIAL_TABS)[number];
+
+function isFinancialTab(value: string): value is FinancialTab {
+    return FINANCIAL_TABS.some((tab) => tab === value);
+}
+
 function FinancialPage() {
     const memberQuery = useGetCurrentClinicMember();
     const clinicId = memberQuery.data?.clinicId ?? '';
-    const [tab, setTab] = useState<'receita' | 'custos' | 'planos'>('receita');
+    const {t} = useTranslation();
+    const [tab, setTab] = useState<FinancialTab>('receita');
+    const canViewAccounts = useCan({has: 'financial-account:view'});
     // A solo account is a single professional: the page is about their own money.
     const {isSolo} = useAccount();
 
@@ -190,13 +202,17 @@ function FinancialPage() {
                     : 'Receita da clínica, custo por profissional e planos do paciente.'
             }
         >
-            <SegmentedControl value={tab} onValueChange={(v) => setTab(v as 'receita' | 'custos' | 'planos')}>
+            <SegmentedControl value={tab} onValueChange={(value) => isFinancialTab(value) && setTab(value)}>
                 <SegmentedControlItem value="receita">Receita</SegmentedControlItem>
+                {canViewAccounts && (
+                    <SegmentedControlItem value="contas">{t('appointmentRevenue.accounts.tab')}</SegmentedControlItem>
+                )}
                 <SegmentedControlItem value="custos">Custos</SegmentedControlItem>
                 <SegmentedControlItem value="planos">Planos e Convênios</SegmentedControlItem>
             </SegmentedControl>
 
             {tab === 'receita' && <RevenueTab clinicId={clinicId} solo={isSolo} />}
+            {tab === 'contas' && canViewAccounts && <AccountsTab />}
             {tab === 'custos' && <CostsTab clinicId={clinicId} />}
             {tab === 'planos' && <PlansTab clinicId={clinicId} />}
         </Page>

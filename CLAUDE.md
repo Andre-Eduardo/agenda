@@ -79,6 +79,7 @@ Sempre que a API do servidor mudar:
 - `docs/deploy-producao.md` — Dockerfiles, docker compose de produção, health check, uploads persistentes, backup agendado
 - `docs/observability.md` — OpenTelemetry, métricas de notificação, Grafana (`infra/grafana`)
 - `docs/notification-providers.md` — providers de lembrete, webhooks de entrega/resposta (L2-04)
+- `docs/financial-ledger.md` — livro-caixa da clínica: contas, lançamentos, movimentos, estorno, pagamento dividido
 - `docs/frontend/` — arquitetura, roteamento, auth, state, forms, i18n
 
 ## Type safety (resumo)

@@ -149,13 +149,79 @@
       "INSURANCE": "Seguro",
       "COURTESY": "Cortesía",
       "PACKAGE": "Paquete de sesiones",
-      "SUBSCRIPTION": "Suscripción recurrente"
+      "SUBSCRIPTION": "Suscripción recurrente",
+      "MIXED": "Pago dividido"
     },
     "statuses": {
       "PENDING": "Pendiente",
       "PAID": "Pagado",
       "EXEMPT": "Sin cargo",
       "REFUNDED": "Reembolsado"
+    },
+    "ledger": {
+      "movements": "Movimientos",
+      "noMovements": "Aún no se recibió ningún valor.",
+      "remaining": "Falta recibir",
+      "split": "Dividir en más de una forma",
+      "addPart": "Añadir forma",
+      "removePart": "Quitar forma",
+      "account": "Cuenta",
+      "defaultAccount": "Cuenta predeterminada de la forma",
+      "receiveRest": "Recibir el resto",
+      "receive": "Confirmar cobro",
+      "received": "Cobro registrado.",
+      "refund": "Reembolsar",
+      "refundTitle": "Reembolsar pago",
+      "refundDescription": "El valor recibido sale de las cuentas y el pago queda como reembolsado. Esta acción no se puede deshacer.",
+      "refundReason": "Motivo del reembolso",
+      "refundReasonRequired": "Indique el motivo del reembolso.",
+      "refunded": "Reembolso registrado.",
+      "partsTotal": "Total de las formas: {{total}} de {{expected}}",
+      "directions": {
+        "IN": "Entrada",
+        "OUT": "Salida"
+      },
+      "categories": {
+        "PAYMENT": "Cobro",
+        "REFUND": "Reembolso",
+        "ADJUSTMENT": "Ajuste"
+      }
+    },
+    "accounts": {
+      "tab": "Cuentas",
+      "title": "Cuentas financieras",
+      "subtitle": "A dónde va el dinero recibido: caja, banco, datáfono.",
+      "balance": "Saldo",
+      "default": "Predeterminada",
+      "inactive": "Inactiva",
+      "newAccount": "Nueva cuenta",
+      "name": "Nombre",
+      "type": "Tipo",
+      "create": "Crear cuenta",
+      "created": "Cuenta creada.",
+      "save": "Guardar",
+      "saved": "Cuenta actualizada.",
+      "rename": "Renombrar",
+      "deactivate": "Desactivar",
+      "activate": "Reactivar",
+      "statement": "Extracto",
+      "statementTitle": "Extracto · {{name}}",
+      "emptyStatement": "No hay movimientos en esta cuenta.",
+      "loadError": "No se pudieron cargar las cuentas.",
+      "fromDate": "Desde",
+      "toDate": "Hasta",
+      "date": "Fecha",
+      "description": "Descripción",
+      "amount": "Valor",
+      "pagination": "Página {{page}} de {{totalPages}}",
+      "previous": "Anterior",
+      "next": "Siguiente",
+      "types": {
+        "CASH_DRAWER": "Caja",
+        "BANK": "Banco",
+        "CARD_MACHINE": "Datáfono",
+        "DIGITAL_WALLET": "Billetera digital"
+      }
     }
   },
   "recordLifecycle": {
@@ -241,6 +307,24 @@
       "delete_failed": "No fue posible eliminar el WhatsApp.",
       "fetch_failed": "WhatsApp no está disponible en este momento. Inténtalo de nuevo en breve.",
       "logout_failed": "No fue posible desconectar WhatsApp."
+    },
+    "financial_entry": {
+      "not_found": "Asiento financiero no encontrado.",
+      "invalid_amount": "Indique un valor mayor que cero.",
+      "receipt_exceeds_remaining": "El valor supera lo que falta recibir.",
+      "already_settled": "Este pago ya se recibió por completo.",
+      "nothing_to_refund": "No hay valor recibido para reembolsar.",
+      "refund_reason_required": "Indique el motivo del reembolso.",
+      "amount_below_received": "El nuevo valor no puede ser menor que lo ya recibido.",
+      "has_receipts": "Ya hay valores recibidos. Reembólselos antes de cambiar el estado.",
+      "method_not_allowed": "Esta forma de pago no mueve dinero en una cuenta.",
+      "parts_required": "Pago dividido: registre el resto indicando las formas."
+    },
+    "financial_account": {
+      "not_found": "Cuenta financiera no encontrada.",
+      "inactive": "Esta cuenta está inactiva.",
+      "cannot_deactivate_default": "La cuenta predeterminada no se puede desactivar.",
+      "name_required": "Indique el nombre de la cuenta."
     }
   },
   "confirm": {
