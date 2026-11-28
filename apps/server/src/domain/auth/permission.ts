@@ -171,6 +171,14 @@ export enum AppointmentPaymentPermission {
     REGISTER = 'appointment-payment:register',
     UPDATE = 'appointment-payment:update',
     VIEW = 'appointment-payment:view',
+    /** Estornar o que foi recebido, com motivo. */
+    REFUND = 'appointment-payment:refund',
+}
+
+/** Contas da clínica (caixa, banco, maquininha) e extrato. Ver docs/financial-ledger.md. */
+export enum FinancialAccountPermission {
+    VIEW = 'financial-account:view',
+    MANAGE = 'financial-account:manage',
 }
 
 export enum PatientInsuranceEnrollmentPermission {
@@ -319,6 +327,7 @@ const PERMISSIONS = [
     ...Object.values(BillingPermission),
     ...Object.values(PaymentPermission),
     ...Object.values(AppointmentPaymentPermission),
+    ...Object.values(FinancialAccountPermission),
     ...Object.values(PatientInsuranceEnrollmentPermission),
     ...Object.values(InsuranceClaimPermission),
     ...Object.values(PackagePlanPermission),

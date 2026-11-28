@@ -165,6 +165,9 @@ model Clinic {
   usageRecords              UsageRecord[]
   subscriptionAddons        SubscriptionAddon[]
   appointmentPayments       AppointmentPayment[]
+  financialAccounts         FinancialAccount[]
+  financialEntries          FinancialEntry[]
+  accountMovements          AccountMovement[]
   paymentEvents             PaymentEvent[]
   chatMessages              PatientChatMessage[]
   workingHoursEntries       WorkingHours[]
@@ -280,6 +283,8 @@ model ClinicMember {
   approvedDraftEvolutions  DraftEvolution[]         @relation("DraftApprovedBy")
   createdClinicalDocuments ClinicalDocument[]
   registeredPayments       AppointmentPayment[]     @relation("AppointmentPaymentRegisteredBy")
+  createdFinancialEntries  FinancialEntry[]         @relation("FinancialEntryCreatedBy")
+  accountMovements         AccountMovement[]        @relation("AccountMovementResponsible")
   subscriptionAddons       SubscriptionAddon[]      @relation("AddonMember")
   grantedAddons            SubscriptionAddon[]      @relation("AddonGrantedBy")
   paymentEvents            PaymentEvent[]           @relation("PaymentEventMember")
@@ -686,6 +691,8 @@ enum PaymentMethod {
   PACKAGE
   /// Sessão coberta pela cota mensal de uma assinatura recorrente (PatientSubscription).
   SUBSCRIPTION
+  /// Pago com mais de uma forma; as partes ficam nos movimentos do livro-caixa.
+  MIXED
 
   @@map("payment_method")
 }
@@ -957,6 +964,7 @@ model AppointmentPayment {
 
   packageCreditEvent PatientPackageCredit?
   insuranceClaim     InsuranceClaim?
+  financialEntry     FinancialEntry?
 
   @@index([clinicId], name: "appointment_payment_clinic_idx")
   @@index([patientId], name: "appointment_payment_patient_idx")
@@ -2554,4 +2562,116 @@ model ClinicModuleAssignment {
   @@unique([clinicMemberId, moduleType], map: "clinic_module_assignment_unique")
   @@index([licenseId], map: "clinic_module_assignment_license_idx")
   @@map("clinic_module_assignment")
+}
+
+// ── Livro-caixa da clínica ──────────────────────────────────────────────────
+// Ver docs/financial-ledger.md. Valores em centavos (Int). AccountMovement é
+// append-only: correção é um movimento novo de estorno ou ajuste.
+
+enum FinancialAccountType {
+  /// Caixa físico (dinheiro) da recepção.
+  CASH_DRAWER
+  BANK
+  /// Maquininha / adquirente de cartão.
+  CARD_MACHINE
+  /// Carteira digital (ex.: Asaas).
+  DIGITAL_WALLET
+
+  @@map("financial_account_type")
+}
+
+model FinancialAccount {
+  id        String               @id @db.Uuid
+  clinicId  String               @map("clinic_id") @db.Uuid
+  clinic    Clinic               @relation(fields: [clinicId], references: [id])
+  name      String               @db.VarChar(120)
+  type      FinancialAccountType
+  active    Boolean              @default(true)
+  /// Conta padrão do tipo: recebe as baixas sem conta escolhida. Uma por tipo e clínica.
+  isDefault Boolean              @default(false) @map("is_default")
+  createdAt DateTime             @map("created_at")
+  updatedAt DateTime             @map("updated_at")
+  deletedAt DateTime?            @map("deleted_at")
+
+  movements AccountMovement[]
+
+  @@index([clinicId, type], name: "financial_account_clinic_type_idx")
+  @@map("financial_account")
+}
+
+enum FinancialEntryDirection {
+  RECEIVABLE
+  PAYABLE
+
+  @@map("financial_entry_direction")
+}
+
+enum FinancialEntryOriginType {
+  APPOINTMENT
+
+  @@map("financial_entry_origin_type")
+}
+
+/// Obrigação a receber ou a pagar. Hoje nasce do pagamento de uma consulta.
+model FinancialEntry {
+  id                   String                   @id @db.Uuid
+  clinicId             String                   @map("clinic_id") @db.Uuid
+  clinic               Clinic                   @relation(fields: [clinicId], references: [id])
+  direction            FinancialEntryDirection
+  originType           FinancialEntryOriginType @map("origin_type")
+  appointmentPaymentId String?                  @unique @map("appointment_payment_id") @db.Uuid
+  appointmentPayment   AppointmentPayment?      @relation(fields: [appointmentPaymentId], references: [id])
+  description          String                   @db.VarChar(255)
+  amountCents          Int                      @map("amount_cents")
+  competencyDate       DateTime                 @map("competency_date")
+  createdByMemberId    String                   @map("created_by_member_id") @db.Uuid
+  createdBy            ClinicMember             @relation("FinancialEntryCreatedBy", fields: [createdByMemberId], references: [id])
+  createdAt            DateTime                 @map("created_at")
+  updatedAt            DateTime                 @map("updated_at")
+
+  movements AccountMovement[]
+
+  @@index([clinicId, competencyDate], name: "financial_entry_clinic_competency_idx")
+  @@map("financial_entry")
+}
+
+enum AccountMovementDirection {
+  IN
+  OUT
+
+  @@map("account_movement_direction")
+}
+
+enum AccountMovementCategory {
+  PAYMENT
+  REFUND
+  ADJUSTMENT
+
+  @@map("account_movement_category")
+}
+
+model AccountMovement {
+  id                  String                   @id @db.Uuid
+  clinicId            String                   @map("clinic_id") @db.Uuid
+  clinic              Clinic                   @relation(fields: [clinicId], references: [id])
+  entryId             String                   @map("entry_id") @db.Uuid
+  entry               FinancialEntry           @relation(fields: [entryId], references: [id])
+  accountId           String                   @map("account_id") @db.Uuid
+  account             FinancialAccount         @relation(fields: [accountId], references: [id])
+  direction           AccountMovementDirection
+  category            AccountMovementCategory
+  paymentMethod       PaymentMethod            @map("payment_method")
+  amountCents         Int                      @map("amount_cents")
+  movedAt             DateTime                 @map("moved_at")
+  reason              String?                  @db.VarChar(500)
+  /// Movimento que este estorno ou ajuste compensa.
+  reversesMovementId  String?                  @map("reverses_movement_id") @db.Uuid
+  responsibleMemberId String                   @map("responsible_member_id") @db.Uuid
+  responsible         ClinicMember             @relation("AccountMovementResponsible", fields: [responsibleMemberId], references: [id])
+  createdAt           DateTime                 @map("created_at")
+
+  @@index([entryId], name: "account_movement_entry_idx")
+  @@index([accountId, movedAt], name: "account_movement_account_moved_at_idx")
+  @@index([clinicId, movedAt], name: "account_movement_clinic_moved_at_idx")
+  @@map("account_movement")
 }

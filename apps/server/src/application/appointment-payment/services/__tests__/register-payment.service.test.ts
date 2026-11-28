@@ -1,6 +1,7 @@
 import {mock} from 'jest-mock-extended';
 import {RegisterPaymentService} from '@application/appointment-payment/services/register-payment.service';
 import type {Actor} from '@domain/@shared/actor';
+import {InvalidInputException} from '@domain/@shared/exceptions';
 import {AtomicExecutor} from '@domain/@shared/repository';
 import {AppointmentPaymentRepository} from '@domain/appointment-payment/appointment-payment.repository';
 import {AppointmentPaymentStatus, PaymentMethod} from '@domain/appointment-payment/entities';
@@ -9,6 +10,11 @@ import {Appointment, AppointmentStatus, AppointmentType} from '@domain/appointme
 import {ClinicMemberId} from '@domain/clinic-member/entities';
 import {ClinicId} from '@domain/clinic/entities';
 import {EventDispatcher} from '@domain/event';
+import {FinancialAccountType} from '@domain/financial-account/entities';
+import {FinancialAccountRepository} from '@domain/financial-account/financial-account.repository';
+import {FinancialEntry, FinancialEntryExceptions} from '@domain/financial-entry/entities';
+import {FinancialEntryRepository} from '@domain/financial-entry/financial-entry.repository';
+import {AppointmentLedger} from '@domain/financial-entry/services';
 import {InsuranceClaimRepository} from '@domain/insurance-claim/insurance-claim.repository';
 import {InsurancePlanId} from '@domain/insurance-plan/entities';
 import {PackagePlan, PackagePlanId} from '@domain/package-plan/entities';
@@ -46,6 +52,8 @@ describe('RegisterPaymentService', () => {
     let patientSubscriptionRepository: ReturnType<typeof mock<PatientSubscriptionRepository>>;
     let patientSubscriptionUsageRepository: ReturnType<typeof mock<PatientSubscriptionUsageRepository>>;
     let eventDispatcher: ReturnType<typeof mock<EventDispatcher>>;
+    let financialAccountRepository: ReturnType<typeof mock<FinancialAccountRepository>>;
+    let financialEntryRepository: ReturnType<typeof mock<FinancialEntryRepository>>;
     let atomicExecutor: ReturnType<typeof mock<AtomicExecutor>>;
     let service: RegisterPaymentService;
 
@@ -75,6 +83,10 @@ describe('RegisterPaymentService', () => {
         patientSubscriptionRepository = mock<PatientSubscriptionRepository>();
         patientSubscriptionUsageRepository = mock<PatientSubscriptionUsageRepository>();
         eventDispatcher = mock<EventDispatcher>();
+        financialAccountRepository = mock<FinancialAccountRepository>();
+        financialEntryRepository = mock<FinancialEntryRepository>();
+        financialEntryRepository.findByAppointmentPaymentId.mockResolvedValue(null);
+        financialAccountRepository.findDefault.mockResolvedValue(null);
         atomicExecutor = mock<AtomicExecutor>();
         atomicExecutor.runAtomically.mockImplementation((callback) => callback());
 
@@ -91,6 +103,7 @@ describe('RegisterPaymentService', () => {
             patientPackageCreditRepository,
             patientSubscriptionRepository,
             patientSubscriptionUsageRepository,
+            new AppointmentLedger(financialAccountRepository, financialEntryRepository),
             eventDispatcher
         );
         (service as unknown as {atomicExecutor: AtomicExecutor}).atomicExecutor = atomicExecutor;
@@ -441,5 +454,128 @@ describe('RegisterPaymentService', () => {
         ).rejects.toThrow();
 
         expect(patientSubscriptionUsageRepository.consumeAppointment).not.toHaveBeenCalled();
+    });
+
+    describe('ledger', () => {
+        function savedEntries(): FinancialEntry[] {
+            return financialEntryRepository.save.mock.calls.map(([entry]) => entry);
+        }
+
+        it('opens a receivable and records the cash received in the default cash drawer', async () => {
+            const appointment = createAppointment();
+
+            appointmentRepository.findById.mockResolvedValue(appointment);
+
+            const result = await service.execute({
+                actor,
+                payload: {appointmentId: appointment.id, paymentMethod: PaymentMethod.CASH, amountBrl: 150.5},
+            });
+
+            const [account] = financialAccountRepository.save.mock.calls.map(([saved]) => saved);
+            const entry = savedEntries().at(-1);
+
+            expect(account.type).toBe(FinancialAccountType.CASH_DRAWER);
+            expect(account.isDefault).toBe(true);
+            expect(entry?.amountCents).toBe(15050);
+            expect(entry?.movements).toHaveLength(1);
+            expect(entry?.movements[0].accountId).toEqual(account.id);
+            expect(entry?.competencyDate).toEqual(appointment.startAt);
+            expect(result.status).toBe(AppointmentPaymentStatus.PAID);
+        });
+
+        it('splits the payment across methods and marks it MIXED once fully received', async () => {
+            const appointment = createAppointment();
+
+            appointmentRepository.findById.mockResolvedValue(appointment);
+
+            const result = await service.execute({
+                actor,
+                payload: {
+                    appointmentId: appointment.id,
+                    paymentMethod: PaymentMethod.PIX,
+                    amountBrl: 200,
+                    parts: [
+                        {paymentMethod: PaymentMethod.PIX, amountBrl: 120},
+                        {paymentMethod: PaymentMethod.CREDIT_CARD, amountBrl: 80},
+                    ],
+                },
+            });
+
+            expect(result.paymentMethod).toBe(PaymentMethod.MIXED);
+            expect(result.status).toBe(AppointmentPaymentStatus.PAID);
+            expect(
+                savedEntries()
+                    .at(-1)
+                    ?.movements.map((movement) => movement.amountCents)
+            ).toEqual([12000, 8000]);
+        });
+
+        it('keeps the payment pending when the parts do not reach the amount', async () => {
+            const appointment = createAppointment();
+
+            appointmentRepository.findById.mockResolvedValue(appointment);
+
+            const result = await service.execute({
+                actor,
+                payload: {
+                    appointmentId: appointment.id,
+                    paymentMethod: PaymentMethod.PIX,
+                    amountBrl: 200,
+                    parts: [{paymentMethod: PaymentMethod.PIX, amountBrl: 50}],
+                },
+            });
+
+            expect(result.status).toBe(AppointmentPaymentStatus.PENDING);
+            expect(result.paymentMethod).toBe(PaymentMethod.PIX);
+            expect(result.paidAt).toBeNull();
+        });
+
+        it('opens a receivable without movements for a pending payment', async () => {
+            const appointment = createAppointment();
+
+            appointmentRepository.findById.mockResolvedValue(appointment);
+
+            await service.execute({
+                actor,
+                payload: {
+                    appointmentId: appointment.id,
+                    paymentMethod: PaymentMethod.PIX,
+                    amountBrl: 90,
+                    status: AppointmentPaymentStatus.PENDING,
+                },
+            });
+
+            expect(savedEntries().at(-1)?.movements).toEqual([]);
+        });
+
+        it('rejects parts for methods that do not move money', async () => {
+            const appointment = createAppointment();
+
+            appointmentRepository.findById.mockResolvedValue(appointment);
+
+            await expect(
+                service.execute({
+                    actor,
+                    payload: {
+                        appointmentId: appointment.id,
+                        paymentMethod: PaymentMethod.COURTESY,
+                        parts: [{paymentMethod: PaymentMethod.PIX, amountBrl: 10}],
+                    },
+                })
+            ).rejects.toThrowWithMessage(InvalidInputException, FinancialEntryExceptions.method_not_allowed);
+        });
+
+        it('keeps courtesy payments out of the ledger', async () => {
+            const appointment = createAppointment();
+
+            appointmentRepository.findById.mockResolvedValue(appointment);
+
+            await service.execute({
+                actor,
+                payload: {appointmentId: appointment.id, paymentMethod: PaymentMethod.COURTESY},
+            });
+
+            expect(financialEntryRepository.save).not.toHaveBeenCalled();
+        });
     });
 });

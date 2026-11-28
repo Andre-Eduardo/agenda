@@ -149,13 +149,79 @@
       "INSURANCE": "Convênio",
       "COURTESY": "Cortesia",
       "PACKAGE": "Pacote de sessões",
-      "SUBSCRIPTION": "Assinatura recorrente"
+      "SUBSCRIPTION": "Assinatura recorrente",
+      "MIXED": "Pagamento dividido"
     },
     "statuses": {
       "PENDING": "Pendente",
       "PAID": "Pago",
       "EXEMPT": "Sem cobrança",
       "REFUNDED": "Reembolsado"
+    },
+    "ledger": {
+      "movements": "Movimentos",
+      "noMovements": "Nenhum valor recebido ainda.",
+      "remaining": "Falta receber",
+      "split": "Dividir em mais de uma forma",
+      "addPart": "Adicionar forma",
+      "removePart": "Remover forma",
+      "account": "Conta",
+      "defaultAccount": "Conta padrão da forma",
+      "receiveRest": "Receber restante",
+      "receive": "Confirmar recebimento",
+      "received": "Recebimento registrado.",
+      "refund": "Estornar",
+      "refundTitle": "Estornar pagamento",
+      "refundDescription": "O valor recebido sai das contas e o pagamento fica como reembolsado. Essa ação não pode ser desfeita.",
+      "refundReason": "Motivo do estorno",
+      "refundReasonRequired": "Informe o motivo do estorno.",
+      "refunded": "Estorno registrado.",
+      "partsTotal": "Total das formas: {{total}} de {{expected}}",
+      "directions": {
+        "IN": "Entrada",
+        "OUT": "Saída"
+      },
+      "categories": {
+        "PAYMENT": "Recebimento",
+        "REFUND": "Estorno",
+        "ADJUSTMENT": "Ajuste"
+      }
+    },
+    "accounts": {
+      "tab": "Contas",
+      "title": "Contas financeiras",
+      "subtitle": "Para onde vai o dinheiro recebido: caixa, banco, maquininha.",
+      "balance": "Saldo",
+      "default": "Padrão",
+      "inactive": "Inativa",
+      "newAccount": "Nova conta",
+      "name": "Nome",
+      "type": "Tipo",
+      "create": "Criar conta",
+      "created": "Conta criada.",
+      "save": "Salvar",
+      "saved": "Conta atualizada.",
+      "rename": "Renomear",
+      "deactivate": "Desativar",
+      "activate": "Reativar",
+      "statement": "Extrato",
+      "statementTitle": "Extrato · {{name}}",
+      "emptyStatement": "Nenhum movimento nesta conta.",
+      "loadError": "Não foi possível carregar as contas.",
+      "fromDate": "De",
+      "toDate": "Até",
+      "date": "Data",
+      "description": "Descrição",
+      "amount": "Valor",
+      "pagination": "Página {{page}} de {{totalPages}}",
+      "previous": "Anterior",
+      "next": "Próxima",
+      "types": {
+        "CASH_DRAWER": "Caixa",
+        "BANK": "Banco",
+        "CARD_MACHINE": "Maquininha",
+        "DIGITAL_WALLET": "Carteira digital"
+      }
     }
   },
   "recordLifecycle": {
@@ -241,6 +307,24 @@
       "delete_failed": "Não foi possível remover o WhatsApp.",
       "fetch_failed": "WhatsApp indisponível no momento. Tente novamente em instantes.",
       "logout_failed": "Não foi possível desconectar o WhatsApp."
+    },
+    "financial_entry": {
+      "not_found": "Lançamento financeiro não encontrado.",
+      "invalid_amount": "Informe um valor maior que zero.",
+      "receipt_exceeds_remaining": "O valor informado passa do que falta receber.",
+      "already_settled": "Este pagamento já foi recebido por completo.",
+      "nothing_to_refund": "Não há valor recebido para estornar.",
+      "refund_reason_required": "Informe o motivo do estorno.",
+      "amount_below_received": "O novo valor não pode ser menor que o já recebido.",
+      "has_receipts": "Já existem valores recebidos. Estorne antes de mudar o status.",
+      "method_not_allowed": "Essa forma de pagamento não movimenta dinheiro na conta.",
+      "parts_required": "Pagamento dividido: registre o restante informando as formas."
+    },
+    "financial_account": {
+      "not_found": "Conta financeira não encontrada.",
+      "inactive": "Esta conta está inativa.",
+      "cannot_deactivate_default": "A conta padrão não pode ser desativada.",
+      "name_required": "Informe o nome da conta."
     }
   },
   "confirm": {

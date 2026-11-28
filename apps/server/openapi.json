@@ -8419,6 +8419,164 @@
         ]
       }
     },
+    "/api/v1/appointments/{id}/payment/ledger": {
+      "get": {
+        "operationId": "getPaymentLedger",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Appointment ID",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Payment ledger",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AppointmentPaymentLedger"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Appointment or payment not found"
+          },
+          "default": {
+            "description": "Request failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Get the receipts and refunds of an appointment payment",
+        "tags": [
+          "Appointment Payment"
+        ]
+      }
+    },
+    "/api/v1/appointments/{id}/payment/receipts": {
+      "post": {
+        "operationId": "receivePayment",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Appointment ID",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReceivePaymentDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Receipts registered",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AppointmentPaymentLedger"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Payment already settled, or parts exceed what is left to receive"
+          },
+          "default": {
+            "description": "Request failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Receive one or more parts of an open appointment payment",
+        "tags": [
+          "Appointment Payment"
+        ]
+      }
+    },
+    "/api/v1/appointments/{id}/payment/refund": {
+      "post": {
+        "operationId": "refundPayment",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Appointment ID",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RefundPaymentDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Payment refunded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AppointmentPaymentLedger"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Nothing to refund"
+          },
+          "default": {
+            "description": "Request failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Refund everything received for an appointment payment, with a reason",
+        "tags": [
+          "Appointment Payment"
+        ]
+      }
+    },
     "/api/v1/patients/{patientId}/insurance-enrollments": {
       "get": {
         "operationId": "listEnrollments",
@@ -9622,7 +9780,8 @@
                 "INSURANCE",
                 "COURTESY",
                 "PACKAGE",
-                "SUBSCRIPTION"
+                "SUBSCRIPTION",
+                "MIXED"
               ]
             }
           },
@@ -9754,7 +9913,8 @@
                 "INSURANCE",
                 "COURTESY",
                 "PACKAGE",
-                "SUBSCRIPTION"
+                "SUBSCRIPTION",
+                "MIXED"
               ]
             }
           },
@@ -10347,6 +10507,221 @@
         "summary": "Deletes a room",
         "tags": [
           "Room"
+        ]
+      }
+    },
+    "/api/v1/financial-accounts": {
+      "get": {
+        "operationId": "listFinancialAccounts",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Accounts",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/FinancialAccount"
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Request failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Lists the clinic accounts (cash drawer, bank, card machine) with their balance",
+        "tags": [
+          "Financial Account"
+        ]
+      },
+      "post": {
+        "operationId": "createFinancialAccount",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateFinancialAccountDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Account created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FinancialAccount"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Request failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Creates an account for the current clinic",
+        "tags": [
+          "Financial Account"
+        ]
+      }
+    },
+    "/api/v1/financial-accounts/{accountId}": {
+      "patch": {
+        "operationId": "updateFinancialAccount",
+        "parameters": [
+          {
+            "name": "accountId",
+            "required": true,
+            "in": "path",
+            "description": "Account ID",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateFinancialAccountDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Account updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FinancialAccount"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "A default account cannot be deactivated"
+          },
+          "default": {
+            "description": "Request failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Renames or deactivates an account",
+        "tags": [
+          "Financial Account"
+        ]
+      }
+    },
+    "/api/v1/financial-accounts/{accountId}/statement": {
+      "get": {
+        "operationId": "getAccountStatement",
+        "parameters": [
+          {
+            "name": "accountId",
+            "required": true,
+            "in": "path",
+            "description": "Account ID",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "from",
+            "required": true,
+            "in": "query",
+            "description": "Movements from this moment (ISO 8601)",
+            "schema": {
+              "format": "date-time",
+              "type": "string"
+            }
+          },
+          {
+            "name": "to",
+            "required": true,
+            "in": "query",
+            "description": "Movements up to this moment (ISO 8601)",
+            "schema": {
+              "format": "date-time",
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "name": "pageSize",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Account statement",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AccountStatement"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Request failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Gets the statement of an account (newest first)",
+        "tags": [
+          "Financial Account"
         ]
       }
     },
@@ -13774,7 +14149,8 @@
               "INSURANCE",
               "COURTESY",
               "PACKAGE",
-              "SUBSCRIPTION"
+              "SUBSCRIPTION",
+              "MIXED"
             ],
             "nullable": true
           },
@@ -18634,6 +19010,41 @@
             "type": "string",
             "nullable": true,
             "maxLength": 1000
+          },
+          "parts": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "paymentMethod": {
+                  "type": "string",
+                  "enum": [
+                    "CASH",
+                    "PIX",
+                    "CREDIT_CARD",
+                    "DEBIT_CARD",
+                    "BANK_TRANSFER"
+                  ]
+                },
+                "amountBrl": {
+                  "type": "number",
+                  "minimum": 0,
+                  "exclusiveMinimum": true
+                },
+                "accountId": {
+                  "type": "string",
+                  "nullable": true,
+                  "format": "uuid",
+                  "example": "dc5782d4-ce8e-4f95-bb0b-d1a4e130aee8"
+                }
+              },
+              "required": [
+                "paymentMethod",
+                "amountBrl"
+              ]
+            },
+            "minItems": 1,
+            "maxItems": 10
           }
         },
         "required": [
@@ -18685,7 +19096,8 @@
               "INSURANCE",
               "COURTESY",
               "PACKAGE",
-              "SUBSCRIPTION"
+              "SUBSCRIPTION",
+              "MIXED"
             ]
           },
           "status": {
@@ -18777,6 +19189,206 @@
         },
         "required": [
           "status"
+        ]
+      },
+      "AccountMovementDirection": {
+        "type": "string",
+        "enum": [
+          "IN",
+          "OUT"
+        ]
+      },
+      "AccountMovementCategory": {
+        "type": "string",
+        "enum": [
+          "PAYMENT",
+          "REFUND",
+          "ADJUSTMENT"
+        ]
+      },
+      "PaymentMethod": {
+        "type": "string",
+        "enum": [
+          "CASH",
+          "PIX",
+          "CREDIT_CARD",
+          "DEBIT_CARD",
+          "BANK_TRANSFER",
+          "INSURANCE",
+          "COURTESY",
+          "PACKAGE",
+          "SUBSCRIPTION",
+          "MIXED"
+        ]
+      },
+      "AccountMovement": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "entryId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "accountId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "accountName": {
+            "type": "string",
+            "nullable": true,
+            "description": "Account name, when the account is known"
+          },
+          "direction": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AccountMovementDirection"
+              }
+            ]
+          },
+          "category": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AccountMovementCategory"
+              }
+            ]
+          },
+          "paymentMethod": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PaymentMethod"
+              }
+            ]
+          },
+          "amountBrl": {
+            "type": "number",
+            "description": "Always positive; direction says whether it came in or went out"
+          },
+          "movedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "reason": {
+            "type": "string",
+            "nullable": true
+          },
+          "reversesMovementId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "responsibleMemberId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "required": [
+          "id",
+          "entryId",
+          "accountId",
+          "accountName",
+          "direction",
+          "category",
+          "paymentMethod",
+          "amountBrl",
+          "movedAt",
+          "reason",
+          "reversesMovementId",
+          "responsibleMemberId"
+        ]
+      },
+      "AppointmentPaymentLedger": {
+        "type": "object",
+        "properties": {
+          "payment": {
+            "$ref": "#/components/schemas/AppointmentPayment"
+          },
+          "tracked": {
+            "type": "boolean",
+            "description": "Whether the payment uses the ledger (methods that move money)"
+          },
+          "amountBrl": {
+            "type": "number"
+          },
+          "receivedBrl": {
+            "type": "number",
+            "description": "Received, net of refunds"
+          },
+          "remainingBrl": {
+            "type": "number"
+          },
+          "movements": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AccountMovement"
+            }
+          }
+        },
+        "required": [
+          "payment",
+          "tracked",
+          "amountBrl",
+          "receivedBrl",
+          "remainingBrl",
+          "movements"
+        ]
+      },
+      "ReceivePaymentDto": {
+        "type": "object",
+        "properties": {
+          "parts": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "paymentMethod": {
+                  "type": "string",
+                  "enum": [
+                    "CASH",
+                    "PIX",
+                    "CREDIT_CARD",
+                    "DEBIT_CARD",
+                    "BANK_TRANSFER"
+                  ]
+                },
+                "amountBrl": {
+                  "type": "number",
+                  "minimum": 0,
+                  "exclusiveMinimum": true
+                },
+                "accountId": {
+                  "type": "string",
+                  "nullable": true,
+                  "format": "uuid",
+                  "example": "dc5782d4-ce8e-4f95-bb0b-d1a4e130aee8"
+                }
+              },
+              "required": [
+                "paymentMethod",
+                "amountBrl"
+              ]
+            },
+            "minItems": 1,
+            "maxItems": 10
+          }
+        },
+        "required": [
+          "parts"
+        ]
+      },
+      "RefundPaymentDto": {
+        "type": "object",
+        "properties": {
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          }
+        },
+        "required": [
+          "reason"
         ]
       },
       "PatientInsuranceEnrollment": {
@@ -19304,7 +19916,8 @@
               "INSURANCE",
               "COURTESY",
               "PACKAGE",
-              "SUBSCRIPTION"
+              "SUBSCRIPTION",
+              "MIXED"
             ]
           },
           "paidAt": {
@@ -19713,7 +20326,8 @@
               "INSURANCE",
               "COURTESY",
               "PACKAGE",
-              "SUBSCRIPTION"
+              "SUBSCRIPTION",
+              "MIXED"
             ]
           },
           "count": {
@@ -19776,7 +20390,8 @@
               "INSURANCE",
               "COURTESY",
               "PACKAGE",
-              "SUBSCRIPTION"
+              "SUBSCRIPTION",
+              "MIXED"
             ],
             "nullable": true
           },
@@ -20522,6 +21137,142 @@
         "required": [
           "name",
           "active"
+        ]
+      },
+      "FinancialAccountType": {
+        "type": "string",
+        "enum": [
+          "CASH_DRAWER",
+          "BANK",
+          "CARD_MACHINE",
+          "DIGITAL_WALLET"
+        ]
+      },
+      "FinancialAccount": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "The unique identifier of the entity"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "The date and time the entity was created"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "The date and time the entity was last updated"
+          },
+          "clinicId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string",
+            "example": "Caixa"
+          },
+          "type": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/FinancialAccountType"
+              }
+            ]
+          },
+          "active": {
+            "type": "boolean"
+          },
+          "isDefault": {
+            "type": "boolean",
+            "description": "Default account of its type: receives payments made without a chosen account"
+          },
+          "balanceBrl": {
+            "type": "number",
+            "description": "Balance in BRL: everything that came in minus everything that went out"
+          }
+        },
+        "required": [
+          "id",
+          "createdAt",
+          "updatedAt",
+          "clinicId",
+          "name",
+          "type",
+          "active",
+          "isDefault",
+          "balanceBrl"
+        ]
+      },
+      "CreateFinancialAccountDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "CASH_DRAWER",
+              "BANK",
+              "CARD_MACHINE",
+              "DIGITAL_WALLET"
+            ]
+          }
+        },
+        "required": [
+          "name",
+          "type"
+        ]
+      },
+      "UpdateFinancialAccountDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120
+          },
+          "active": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "name",
+          "active"
+        ]
+      },
+      "AccountStatement": {
+        "type": "object",
+        "properties": {
+          "account": {
+            "$ref": "#/components/schemas/FinancialAccount"
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AccountMovement"
+            }
+          },
+          "totalCount": {
+            "type": "number"
+          },
+          "page": {
+            "type": "number"
+          },
+          "pageSize": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "account",
+          "data",
+          "totalCount",
+          "page",
+          "pageSize"
         ]
       },
       "WhatsAppConnectionStatus": {

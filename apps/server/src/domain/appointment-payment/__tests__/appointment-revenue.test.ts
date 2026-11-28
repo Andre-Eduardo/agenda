@@ -146,4 +146,22 @@ describe('appointment revenue', () => {
             paidAt: null,
         });
     });
+
+    it('uses what the ledger received for a partially paid appointment', () => {
+        expect(
+            projectAppointmentRevenue(AppointmentStatus.COMPLETED, 20000, {
+                ...pendingPayment,
+                paymentMethod: PaymentMethod.MIXED,
+                amountBrl: 200,
+                ledger: {amountCents: 20000, receivedCents: 7550},
+            })
+        ).toMatchObject({
+            expectedBrl: 200,
+            receivedBrl: 75.5,
+            pendingBrl: 124.5,
+            paymentMethod: PaymentMethod.MIXED,
+            status: AppointmentPaymentStatus.PENDING,
+            paidAt: null,
+        });
+    });
 });

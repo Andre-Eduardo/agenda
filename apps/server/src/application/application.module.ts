@@ -26,6 +26,7 @@ import {ClinicalDocumentModule} from '@application/clinical-document/clinical-do
 import {ClinicalProfileModule} from '@application/clinical-profile/clinical-profile.module';
 import {DocumentPermissionModule} from '@application/document-permission/document-permission.module';
 import {EventModule} from '@application/event/event.module';
+import {FinancialAccountModule} from '@application/financial-account/financial-account.module';
 import {FinancialReportModule} from '@application/financial-report/financial-report.module';
 import {FormTemplateModule} from '@application/form-template/form-template.module';
 import {HealthModule} from '@application/health/health.module';
@@ -193,6 +194,7 @@ const guards: Provider[] = [
         WorkingHoursModule,
         MemberBlockModule,
         RoomModule,
+        FinancialAccountModule,
         WhatsAppConfigModule,
     ],
     providers: [...exceptionFilters, ...pipes, ...interceptors, ...guards],

@@ -17,6 +17,8 @@ import {ClinicalProfileMapper} from '@infrastructure/mappers/clinical-profile.ma
 import {DocumentPermissionMapper} from '@infrastructure/mappers/document-permission.mapper';
 import {DraftEvolutionMapper} from '@infrastructure/mappers/draft-evolution.mapper';
 import {EventMapper} from '@infrastructure/mappers/event.mapper';
+import {FinancialAccountMapper} from '@infrastructure/mappers/financial-account.mapper';
+import {FinancialEntryMapper} from '@infrastructure/mappers/financial-entry.mapper';
 import {FormFieldIndexMapper} from '@infrastructure/mappers/form-field-index.mapper';
 import {FormTemplateVersionMapper} from '@infrastructure/mappers/form-template-version.mapper';
 import {FormTemplateMapper} from '@infrastructure/mappers/form-template.mapper';
@@ -71,6 +73,8 @@ const mappers = [
     // Schedule
     AppointmentMapper,
     AppointmentPaymentMapper,
+    FinancialAccountMapper,
+    FinancialEntryMapper,
     AppointmentReminderMapper,
     AppointmentReminderEventMapper,
     PatientCommunicationPreferenceChangeMapper,

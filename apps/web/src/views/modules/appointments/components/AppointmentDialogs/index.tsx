@@ -87,6 +87,15 @@ import {
     statusDot,
     truncate,
 } from '../../styles';
+import {
+    isLedgerMethod,
+    newReceiptPart,
+    PaymentLedgerPanel,
+    ReceiptPartsEditor,
+    toReceiptParts,
+    useReceivingAccounts,
+    type ReceiptPartDraft,
+} from '../PaymentLedger';
 import {ProcedureColorDot} from '../ProcedureFields';
 import {useAppointmentProcedure} from '../ProcedureFields/useAppointmentProcedure';
 
@@ -421,9 +430,12 @@ function AppointmentPaymentSection({appointment, onChanged}: {appointment: Appoi
     const [patientPackageId, setPatientPackageId] = useState('');
     const [patientSubscriptionId, setPatientSubscriptionId] = useState('');
     const [notes, setNotes] = useState('');
+    const [splitParts, setSplitParts] = useState<ReceiptPartDraft[] | null>(null);
 
     const {revenue, patientId, clinicId, id} = appointment;
     const hasPayment = revenue?.paymentMethod != null;
+    const isTracked =
+        revenue?.paymentMethod != null && (revenue.paymentMethod === 'MIXED' || isLedgerMethod(revenue.paymentMethod));
     const mayRegister = canRegister && !hasPayment && appointment.status !== 'CANCELLED';
     const isCompleted = appointment.status === 'COMPLETED';
     const isInsurance = method === 'INSURANCE';
@@ -443,6 +455,21 @@ function AppointmentPaymentSection({appointment, onChanged}: {appointment: Appoi
     const activePlans = (plans.data ?? []).filter((plan) =>
         enrollments.data?.some((enrollment) => enrollment.status === 'ACTIVE' && enrollment.insurancePlanId === plan.id)
     );
+    const canSplit = isLedgerMethod(method) && status === 'PAID';
+    const isSplit = canSplit && splitParts !== null;
+    const accounts = useReceivingAccounts(isSplit);
+
+    function toggleSplit() {
+        if (splitParts !== null) {
+            setSplitParts(null);
+
+            return;
+        }
+
+        const first = isLedgerMethod(method) ? method : 'PIX';
+
+        setSplitParts([newReceiptPart(first, amount), newReceiptPart(first === 'CASH' ? 'PIX' : 'CASH', '')]);
+    }
 
     function handleRegister() {
         const amountBrl = isCovered || amount.trim() === '' ? undefined : Number(amount.replace(',', '.'));
@@ -455,8 +482,16 @@ function AppointmentPaymentSection({appointment, onChanged}: {appointment: Appoi
             (method === 'PACKAGE' && !patientPackageId) ||
             (method === 'SUBSCRIPTION' && !patientSubscriptionId);
 
-        if (invalidAmount || missingCoverage) {
-            toast.error(t(invalidAmount ? 'appointmentRevenue.invalidAmount' : 'appointmentRevenue.selectCoverage'));
+        const parts = isSplit ? toReceiptParts(splitParts) : undefined;
+
+        if (invalidAmount || missingCoverage || parts === null) {
+            toast.error(
+                t(
+                    missingCoverage && !invalidAmount
+                        ? 'appointmentRevenue.selectCoverage'
+                        : 'appointmentRevenue.invalidAmount'
+                )
+            );
 
             return;
         }
@@ -473,12 +508,14 @@ function AppointmentPaymentSection({appointment, onChanged}: {appointment: Appoi
                     patientPackageId: method === 'PACKAGE' ? patientPackageId : undefined,
                     patientSubscriptionId: method === 'SUBSCRIPTION' ? patientSubscriptionId : undefined,
                     notes: notes.trim() || undefined,
+                    parts,
                 },
             },
             {
                 onSuccess: () => {
                     toast.success(t('appointmentRevenue.registered'));
                     setShowForm(false);
+                    setSplitParts(null);
                     onChanged();
                 },
                 onError: (error) => toast.error(getApiErrorDetail(error) ?? t('appointmentRevenue.saveError')),
@@ -533,17 +570,23 @@ function AppointmentPaymentSection({appointment, onChanged}: {appointment: Appoi
                 </div>
             )}
 
-            {canUpdate && revenue?.status === 'PENDING' && hasPayment && revenue.insuranceClaimStatus === null && (
-                <Button
-                    size="sm"
-                    variant="outline"
-                    className={mt2}
-                    disabled={updatePaymentStatus.isPending}
-                    onClick={markAsPaid}
-                >
-                    {t('appointmentRevenue.markPaid')}
-                </Button>
-            )}
+            {isTracked && <PaymentLedgerPanel appointmentId={id} onChanged={onChanged} />}
+
+            {canUpdate &&
+                !isTracked &&
+                revenue?.status === 'PENDING' &&
+                hasPayment &&
+                revenue.insuranceClaimStatus === null && (
+                    <Button
+                        size="sm"
+                        variant="outline"
+                        className={mt2}
+                        disabled={updatePaymentStatus.isPending}
+                        onClick={markAsPaid}
+                    >
+                        {t('appointmentRevenue.markPaid')}
+                    </Button>
+                )}
 
             {mayRegister && showForm && (
                 <div className={styles.sheetKvGrid}>
@@ -599,6 +642,21 @@ function AppointmentPaymentSection({appointment, onChanged}: {appointment: Appoi
                                 </SelectContent>
                             </Select>
                         </div>
+                    )}
+                    {canSplit && (
+                        <div className={styles.sheetKv}>
+                            <Button size="sm" variant="ghost" aria-pressed={isSplit} onClick={toggleSplit}>
+                                {t('appointmentRevenue.ledger.split')}
+                            </Button>
+                        </div>
+                    )}
+                    {isSplit && (
+                        <ReceiptPartsEditor
+                            parts={splitParts}
+                            onChange={setSplitParts}
+                            accounts={accounts}
+                            expectedBrl={amount.trim() === '' ? null : Number(amount.replace(',', '.'))}
+                        />
                     )}
                     {isInsurance && (
                         <>

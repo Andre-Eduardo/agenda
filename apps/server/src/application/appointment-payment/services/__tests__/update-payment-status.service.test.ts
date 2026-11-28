@@ -1,6 +1,7 @@
 import {mock} from 'jest-mock-extended';
 import {UpdatePaymentStatusService} from '@application/appointment-payment/services/update-payment-status.service';
 import type {Actor} from '@domain/@shared/actor';
+import {InvalidInputException, PreconditionException} from '@domain/@shared/exceptions';
 import {AtomicExecutor} from '@domain/@shared/repository';
 import {AppointmentPaymentRepository} from '@domain/appointment-payment/appointment-payment.repository';
 import {AppointmentPayment, AppointmentPaymentStatus, PaymentMethod} from '@domain/appointment-payment/entities';
@@ -9,6 +10,11 @@ import {Appointment, AppointmentStatus, AppointmentType} from '@domain/appointme
 import {ClinicMemberId} from '@domain/clinic-member/entities';
 import {ClinicId} from '@domain/clinic/entities';
 import {EventDispatcher} from '@domain/event';
+import {FinancialAccountId} from '@domain/financial-account/entities';
+import {FinancialAccountRepository} from '@domain/financial-account/financial-account.repository';
+import {FinancialEntry, FinancialEntryExceptions} from '@domain/financial-entry/entities';
+import {FinancialEntryRepository} from '@domain/financial-entry/financial-entry.repository';
+import {AppointmentLedger} from '@domain/financial-entry/services';
 import {InsuranceClaim, InsuranceClaimStatus} from '@domain/insurance-claim/entities';
 import {InsuranceClaimRepository} from '@domain/insurance-claim/insurance-claim.repository';
 import {InsurancePlanId} from '@domain/insurance-plan/entities';
@@ -19,6 +25,10 @@ import {PatientPackageRepository} from '@domain/patient-package/patient-package.
 import {PatientSubscriptionId} from '@domain/patient-subscription/entities';
 import {PatientSubscriptionUsageRepository} from '@domain/patient-subscription/patient-subscription-usage.repository';
 import {PatientId} from '@domain/patient/entities';
+
+function payload(appointmentId: Appointment['id'], status: AppointmentPaymentStatus, notes?: string) {
+    return {appointmentId, status, paidAt: null, amountBrl: undefined, notes};
+}
 
 describe('UpdatePaymentStatusService', () => {
     const clinicId = ClinicId.generate();
@@ -37,6 +47,8 @@ describe('UpdatePaymentStatusService', () => {
     let patientPackageCreditRepository: ReturnType<typeof mock<PatientPackageCreditRepository>>;
     let patientSubscriptionUsageRepository: ReturnType<typeof mock<PatientSubscriptionUsageRepository>>;
     let eventDispatcher: ReturnType<typeof mock<EventDispatcher>>;
+    let financialAccountRepository: ReturnType<typeof mock<FinancialAccountRepository>>;
+    let financialEntryRepository: ReturnType<typeof mock<FinancialEntryRepository>>;
     let atomicExecutor: ReturnType<typeof mock<AtomicExecutor>>;
     let service: UpdatePaymentStatusService;
 
@@ -62,6 +74,10 @@ describe('UpdatePaymentStatusService', () => {
         patientPackageCreditRepository = mock<PatientPackageCreditRepository>();
         patientSubscriptionUsageRepository = mock<PatientSubscriptionUsageRepository>();
         eventDispatcher = mock<EventDispatcher>();
+        financialAccountRepository = mock<FinancialAccountRepository>();
+        financialEntryRepository = mock<FinancialEntryRepository>();
+        financialEntryRepository.findByAppointmentPaymentId.mockResolvedValue(null);
+        financialAccountRepository.findDefault.mockResolvedValue(null);
         atomicExecutor = mock<AtomicExecutor>();
         atomicExecutor.runAtomically.mockImplementation((callback) => callback());
 
@@ -72,6 +88,7 @@ describe('UpdatePaymentStatusService', () => {
             patientPackageRepository,
             patientPackageCreditRepository,
             patientSubscriptionUsageRepository,
+            new AppointmentLedger(financialAccountRepository, financialEntryRepository),
             eventDispatcher
         );
         (service as unknown as {atomicExecutor: AtomicExecutor}).atomicExecutor = atomicExecutor;
@@ -221,5 +238,109 @@ describe('UpdatePaymentStatusService', () => {
             payment.createdAt.getMonth() + 1
         );
         expect(patientSubscriptionUsageRepository.refundAppointment).toHaveBeenCalledWith(usage?.id);
+    });
+
+    describe('ledger', () => {
+        function pixPayment(appointmentId: Appointment['id'], status: AppointmentPaymentStatus): AppointmentPayment {
+            return AppointmentPayment.create({
+                clinicId,
+                appointmentId,
+                patientId,
+                registeredByMemberId: actor.clinicMemberId,
+                paymentMethod: PaymentMethod.PIX,
+                status,
+                amountBrl: 100,
+            });
+        }
+
+        function openEntry(payment: AppointmentPayment, receivedCents: number): FinancialEntry {
+            const entry = FinancialEntry.openAppointmentReceivable({
+                clinicId,
+                appointmentPaymentId: payment.id,
+                amountCents: 10000,
+                competencyDate: new Date(),
+                createdByMemberId: actor.clinicMemberId,
+            });
+
+            if (receivedCents > 0) {
+                entry.receive(
+                    [
+                        {
+                            accountId: FinancialAccountId.generate(),
+                            paymentMethod: PaymentMethod.PIX,
+                            amountCents: receivedCents,
+                        },
+                    ],
+                    actor.clinicMemberId
+                );
+                entry.takePendingMovements();
+            }
+
+            return entry;
+        }
+
+        it('receives what is left when a pending payment is marked as paid', async () => {
+            const appointment = createAppointment();
+            const payment = pixPayment(appointment.id, AppointmentPaymentStatus.PENDING);
+            const entry = openEntry(payment, 4000);
+
+            appointmentRepository.findById.mockResolvedValue(appointment);
+            appointmentPaymentRepository.findByAppointmentId.mockResolvedValue(payment);
+            financialEntryRepository.findByAppointmentPaymentId.mockResolvedValue(entry);
+
+            const result = await service.execute({
+                actor,
+                payload: payload(appointment.id, AppointmentPaymentStatus.PAID),
+            });
+
+            expect(entry.movements.at(-1)?.amountCents).toBe(6000);
+            expect(entry.isSettled()).toBe(true);
+            expect(result.status).toBe(AppointmentPaymentStatus.PAID);
+        });
+
+        it('asks for a reason before refunding money that was received', async () => {
+            const appointment = createAppointment();
+            const payment = pixPayment(appointment.id, AppointmentPaymentStatus.PAID);
+
+            appointmentRepository.findById.mockResolvedValue(appointment);
+            appointmentPaymentRepository.findByAppointmentId.mockResolvedValue(payment);
+            financialEntryRepository.findByAppointmentPaymentId.mockResolvedValue(openEntry(payment, 10000));
+
+            await expect(
+                service.execute({actor, payload: payload(appointment.id, AppointmentPaymentStatus.REFUNDED)})
+            ).rejects.toThrowWithMessage(InvalidInputException, FinancialEntryExceptions.refund_reason_required);
+        });
+
+        it('records the refund as an outgoing movement', async () => {
+            const appointment = createAppointment();
+            const payment = pixPayment(appointment.id, AppointmentPaymentStatus.PAID);
+            const entry = openEntry(payment, 10000);
+
+            appointmentRepository.findById.mockResolvedValue(appointment);
+            appointmentPaymentRepository.findByAppointmentId.mockResolvedValue(payment);
+            financialEntryRepository.findByAppointmentPaymentId.mockResolvedValue(entry);
+
+            const result = await service.execute({
+                actor,
+                payload: payload(appointment.id, AppointmentPaymentStatus.REFUNDED, 'Cobrança em duplicidade'),
+            });
+
+            expect(entry.receivedCents()).toBe(0);
+            expect(entry.movements.at(-1)?.reason).toBe('Cobrança em duplicidade');
+            expect(result.status).toBe(AppointmentPaymentStatus.REFUNDED);
+        });
+
+        it('does not move a payment back to pending after money was received', async () => {
+            const appointment = createAppointment();
+            const payment = pixPayment(appointment.id, AppointmentPaymentStatus.PAID);
+
+            appointmentRepository.findById.mockResolvedValue(appointment);
+            appointmentPaymentRepository.findByAppointmentId.mockResolvedValue(payment);
+            financialEntryRepository.findByAppointmentPaymentId.mockResolvedValue(openEntry(payment, 10000));
+
+            await expect(
+                service.execute({actor, payload: payload(appointment.id, AppointmentPaymentStatus.PENDING)})
+            ).rejects.toThrowWithMessage(PreconditionException, FinancialEntryExceptions.has_receipts);
+        });
     });
 });

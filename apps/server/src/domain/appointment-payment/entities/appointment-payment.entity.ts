@@ -27,6 +27,8 @@ export enum PaymentMethod {
     PACKAGE = 'PACKAGE',
     /** Sessão coberta pela cota mensal de uma assinatura recorrente (PatientSubscription). */
     SUBSCRIPTION = 'SUBSCRIPTION',
+    /** Pago com mais de uma forma (ex.: Pix + cartão). As partes ficam nos movimentos do livro-caixa. */
+    MIXED = 'MIXED',
 }
 
 export enum AppointmentPaymentStatus {
@@ -97,6 +99,30 @@ export class AppointmentPayment extends AggregateRoot<AppointmentPaymentId> {
     updateStatus(status: AppointmentPaymentStatus, paidAt: Date | null): void {
         this.status = status;
         this.paidAt = paidAt;
+        this.updatedAt = new Date();
+    }
+
+    /**
+     * Reflete o estado do livro-caixa: forma (uma só ou MIXED), status e data do pagamento.
+     * Ver docs/financial-ledger.md.
+     */
+    reflectLedger(ledger: {
+        amountBrl: number;
+        isSettled: boolean;
+        lastReceivedAt: Date | null;
+        receivedMethods: PaymentMethod[];
+    }): void {
+        const [onlyMethod, ...otherMethods] = ledger.receivedMethods;
+
+        if (otherMethods.length > 0) {
+            this.paymentMethod = PaymentMethod.MIXED;
+        } else if (onlyMethod !== undefined) {
+            this.paymentMethod = onlyMethod;
+        }
+
+        this.amountBrl = ledger.amountBrl;
+        this.status = ledger.isSettled ? AppointmentPaymentStatus.PAID : AppointmentPaymentStatus.PENDING;
+        this.paidAt = ledger.isSettled ? (ledger.lastReceivedAt ?? new Date()) : null;
         this.updatedAt = new Date();
     }
 

@@ -149,13 +149,79 @@
       "INSURANCE": "Insurance",
       "COURTESY": "Courtesy",
       "PACKAGE": "Session package",
-      "SUBSCRIPTION": "Recurring subscription"
+      "SUBSCRIPTION": "Recurring subscription",
+      "MIXED": "Split payment"
     },
     "statuses": {
       "PENDING": "Pending",
       "PAID": "Paid",
       "EXEMPT": "No charge",
       "REFUNDED": "Refunded"
+    },
+    "ledger": {
+      "movements": "Movements",
+      "noMovements": "Nothing received yet.",
+      "remaining": "Left to receive",
+      "split": "Split across payment methods",
+      "addPart": "Add method",
+      "removePart": "Remove method",
+      "account": "Account",
+      "defaultAccount": "Method's default account",
+      "receiveRest": "Receive the rest",
+      "receive": "Confirm receipt",
+      "received": "Receipt recorded.",
+      "refund": "Refund",
+      "refundTitle": "Refund payment",
+      "refundDescription": "The received amount leaves the accounts and the payment is marked as refunded. This cannot be undone.",
+      "refundReason": "Refund reason",
+      "refundReasonRequired": "Enter the refund reason.",
+      "refunded": "Refund recorded.",
+      "partsTotal": "Methods total: {{total}} of {{expected}}",
+      "directions": {
+        "IN": "In",
+        "OUT": "Out"
+      },
+      "categories": {
+        "PAYMENT": "Receipt",
+        "REFUND": "Refund",
+        "ADJUSTMENT": "Adjustment"
+      }
+    },
+    "accounts": {
+      "tab": "Accounts",
+      "title": "Financial accounts",
+      "subtitle": "Where received money goes: cash drawer, bank, card machine.",
+      "balance": "Balance",
+      "default": "Default",
+      "inactive": "Inactive",
+      "newAccount": "New account",
+      "name": "Name",
+      "type": "Type",
+      "create": "Create account",
+      "created": "Account created.",
+      "save": "Save",
+      "saved": "Account updated.",
+      "rename": "Rename",
+      "deactivate": "Deactivate",
+      "activate": "Reactivate",
+      "statement": "Statement",
+      "statementTitle": "Statement · {{name}}",
+      "emptyStatement": "No movements in this account.",
+      "loadError": "Could not load the accounts.",
+      "fromDate": "From",
+      "toDate": "To",
+      "date": "Date",
+      "description": "Description",
+      "amount": "Amount",
+      "pagination": "Page {{page}} of {{totalPages}}",
+      "previous": "Previous",
+      "next": "Next",
+      "types": {
+        "CASH_DRAWER": "Cash drawer",
+        "BANK": "Bank",
+        "CARD_MACHINE": "Card machine",
+        "DIGITAL_WALLET": "Digital wallet"
+      }
     }
   },
   "recordLifecycle": {
@@ -241,6 +307,24 @@
       "delete_failed": "Could not remove the WhatsApp number.",
       "fetch_failed": "WhatsApp is unavailable right now. Try again shortly.",
       "logout_failed": "Could not disconnect WhatsApp."
+    },
+    "financial_entry": {
+      "not_found": "Financial entry not found.",
+      "invalid_amount": "Enter an amount greater than zero.",
+      "receipt_exceeds_remaining": "The amount is more than what is left to receive.",
+      "already_settled": "This payment has already been fully received.",
+      "nothing_to_refund": "There is no received amount to refund.",
+      "refund_reason_required": "Enter the refund reason.",
+      "amount_below_received": "The new amount cannot be lower than what was already received.",
+      "has_receipts": "Money has already been received. Refund it before changing the status.",
+      "method_not_allowed": "This payment method does not move money into an account.",
+      "parts_required": "Split payment: receive the rest by entering the methods."
+    },
+    "financial_account": {
+      "not_found": "Financial account not found.",
+      "inactive": "This account is inactive.",
+      "cannot_deactivate_default": "The default account cannot be deactivated.",
+      "name_required": "Enter the account name."
     }
   },
   "confirm": {

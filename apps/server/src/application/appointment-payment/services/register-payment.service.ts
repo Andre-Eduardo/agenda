@@ -6,11 +6,13 @@ import {InvalidInputException, PreconditionException, ResourceNotFoundException}
 import {Transactional} from '@domain/@shared/repository';
 import {AppointmentPaymentRepository} from '@domain/appointment-payment/appointment-payment.repository';
 import {isPrepaidAppointmentMethod} from '@domain/appointment-payment/appointment-revenue';
-import {brlFromCents} from '@domain/appointment-payment/brl';
+import {brlFromCents, centsFromBrl} from '@domain/appointment-payment/brl';
 import {AppointmentPayment, AppointmentPaymentStatus, PaymentMethod} from '@domain/appointment-payment/entities';
 import {AppointmentRepository} from '@domain/appointment/appointment.repository';
 import {AppointmentId, AppointmentStatus} from '@domain/appointment/entities';
 import {EventDispatcher} from '@domain/event';
+import {FinancialEntryExceptions, isLedgerPaymentMethod} from '@domain/financial-entry/entities';
+import {AppointmentLedger} from '@domain/financial-entry/services';
 import {InsuranceClaim} from '@domain/insurance-claim/entities';
 import {InsuranceClaimRepository} from '@domain/insurance-claim/insurance-claim.repository';
 import {PackagePlanRepository} from '@domain/package-plan/package-plan.repository';
@@ -42,6 +44,7 @@ export class RegisterPaymentService implements ApplicationService<RegisterPaymen
         private readonly patientPackageCreditRepository: PatientPackageCreditRepository,
         private readonly patientSubscriptionRepository: PatientSubscriptionRepository,
         private readonly patientSubscriptionUsageRepository: PatientSubscriptionUsageRepository,
+        private readonly appointmentLedger: AppointmentLedger,
         private readonly eventDispatcher: EventDispatcher
     ) {}
 
@@ -57,6 +60,7 @@ export class RegisterPaymentService implements ApplicationService<RegisterPaymen
             patientPackageId,
             patientSubscriptionId,
             notes,
+            parts,
         } = payload;
 
         const appointment = await this.appointmentRepository.findById(appointmentId);
@@ -75,6 +79,12 @@ export class RegisterPaymentService implements ApplicationService<RegisterPaymen
 
         if (existing !== null) {
             throw new PreconditionException('Payment already registered for this appointment.');
+        }
+
+        if (parts !== undefined && !isLedgerPaymentMethod(paymentMethod)) {
+            throw new InvalidInputException(FinancialEntryExceptions.method_not_allowed, [
+                {field: 'parts', reason: 'Parts are only accepted for methods that move money'},
+            ]);
         }
 
         if (paymentMethod === PaymentMethod.INSURANCE && !insurancePlanId) {
@@ -200,6 +210,33 @@ export class RegisterPaymentService implements ApplicationService<RegisterPaymen
         });
 
         await this.appointmentPaymentRepository.save(payment);
+
+        if (isLedgerPaymentMethod(paymentMethod) && resolvedStatus !== AppointmentPaymentStatus.EXEMPT) {
+            // Livro-caixa: a obrigação nasce com o valor da consulta; o que entrou vira movimento.
+            const entry = await this.appointmentLedger.open(
+                payment,
+                centsFromBrl(resolvedAmount),
+                appointment.startAt,
+                actor.clinicMemberId
+            );
+            const receipts =
+                parts?.map((part) => ({
+                    paymentMethod: part.paymentMethod,
+                    amountCents: centsFromBrl(part.amountBrl),
+                    accountId: part.accountId ?? null,
+                })) ??
+                (resolvedStatus === AppointmentPaymentStatus.PAID && entry.amountCents > 0
+                    ? [{paymentMethod, amountCents: entry.amountCents, accountId: null}]
+                    : []);
+
+            if (receipts.length > 0) {
+                await this.appointmentLedger.receive(payment, entry, receipts, actor.clinicMemberId);
+            } else {
+                this.appointmentLedger.reflect(payment, entry);
+            }
+
+            await this.appointmentPaymentRepository.save(payment);
+        }
 
         if (enrollment !== null && insurancePlanId) {
             const claim = InsuranceClaim.create({

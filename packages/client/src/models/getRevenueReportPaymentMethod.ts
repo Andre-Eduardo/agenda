@@ -19,4 +19,5 @@ export const GetRevenueReportPaymentMethod = {
     COURTESY: 'COURTESY',
     PACKAGE: 'PACKAGE',
     SUBSCRIPTION: 'SUBSCRIPTION',
+    MIXED: 'MIXED',
 } as const;

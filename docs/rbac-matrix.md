@@ -41,7 +41,7 @@ verificações de clínica e paciente às ações críticas.
 | agent | ask, view-metrics | ask, view-metrics | ask, view-metrics | — | — |
 | ai-form | view-context | view-context | view-context | — | — |
 | audit-log | view | view | — | — | — |
-| appointment-payment | register, update, view | register, update, view | view | register, update, view | — |
+| appointment-payment | refund, register, update, view | refund, register, update, view | view | refund, register, update, view | — |
 | appointment-reminder | dispatch, view | dispatch, view | — | — | — |
 | appointment | call, cancel, checkin, create, delete, start, triage, update, view | call, cancel, checkin, create, delete, start, triage, update, view | call, cancel, checkin, create, start, update, view | call, cancel, checkin, create, start, triage, update, view | view |
 | billing | view-clinic, view-member | view-clinic, view-member | — | — | — |
@@ -56,6 +56,7 @@ verificações de clínica e paciente às ações críticas.
 | clinical-profile | update, view | update, view | update, view | view | view |
 | draft-evolution | approve, update, view | approve, update, view | approve, update, view | — | — |
 | document-permission | manage | manage | — | — | — |
+| financial-account | manage, view | manage, view | — | view | — |
 | financial-report | view | view | — | — | — |
 | clinic-report | view | view | — | — | — |
 | form-template | create, delete, publish, update, view | create, delete, publish, update, view | view | — | — |

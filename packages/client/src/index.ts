@@ -52,3 +52,4 @@ export * from './services/support-access';
 export * from './services/onboarding';
 export * from './services/attendance';
 export * from './services/clinic-report';
+export * from './services/financial-account';
