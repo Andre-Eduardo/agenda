@@ -1,2828 +1,192 @@
-import {useCallback, useEffect, useId, useMemo, useState} from 'react';
-import type {
-    ApiProblem,
-    Appointment,
-    AppointmentStatus,
-    AppointmentType,
-    ClinicMember,
-    CreateAppointmentDtoType,
-    MemberBlock,
-    Patient,
-    Room,
-    UpdateAppointmentInputDtoType,
-    WorkingHours,
-} from '@agenda-app/client';
+import {useCallback, useEffect, useMemo, useState, type ReactNode} from 'react';
+import type {Appointment, AppointmentStatus, Patient} from '@agenda-app/client';
 import {
-    AxiosError,
-    getListAppointmentFollowUpsQueryKey,
-    useCallAppointment,
-    useCancelAppointment,
-    useCheckinAppointment,
-    useCompleteAppointment,
-    useConfirmAppointment,
-    useCreateAppointment,
     useGetClinic,
     useGetCurrentClinicMember,
-    RegisterPaymentDtoPaymentMethod,
-    RegisterPaymentDtoStatus,
-    useListEnrollments,
-    useListInsurancePlans,
-    useGetPatient,
-    useGetProfessional,
-    useGetRecord,
-    getListMemberBlocksQueryOptions,
-    getListWorkingHoursQueryOptions,
     useListManageableProfessionals,
-    useListPackages,
     useListRooms,
-    useListSubscriptions,
-    useMarkNoShowAppointment,
-    useRegisterPayment,
     useSearchAppointments,
     useSearchPatients,
-    useUpdateAppointment,
-    useUpdatePaymentStatus,
 } from '@agenda-app/client';
-import {useQueries, useQueryClient, type UseQueryResult} from '@tanstack/react-query';
+import {useQueryClient, type UseQueryResult} from '@tanstack/react-query';
 import {createFileRoute, Link, useNavigate} from '@tanstack/react-router';
-import {
-    CalendarDays,
-    CalendarX2,
-    ChevronLeft,
-    ChevronRight,
-    Plus,
-    X,
-    ArrowUpRight,
-    Pencil,
-    Trash2,
-    CircleCheck,
-    CheckCheck,
-    DoorOpen,
-    PhoneCall,
-    UserX,
-} from 'lucide-react';
+import {CalendarDays, CalendarX2, Plus} from 'lucide-react';
 import {useTranslation} from 'react-i18next';
-import {toast} from 'sonner';
 import {Badge} from '@/components/ui/componentes/badge';
 import {Button} from '@/components/ui/componentes/button';
-import {Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle} from '@/components/ui/componentes/dialog';
+import {EmptyStateCard} from '@/components/ui/componentes/empty-state';
 import {Input} from '@/components/ui/componentes/input';
-import {Label} from '@/components/ui/componentes/label';
-import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@/components/ui/componentes/select';
-import {Sheet, SheetContent, SheetHeader, SheetTitle} from '@/components/ui/componentes/sheet';
-import {Textarea} from '@/components/ui/componentes/textarea';
-import {useCan, useCanState} from '@/hooks/useCan';
-import {formatBRL} from '@/lib/utils';
-import {css, cx} from '@/styled-system/css';
-import {invalidateAppointmentRevenue, REVENUE_AMOUNT_FIELDS} from '@/utils/appointment-revenue';
-import {translateApiError} from '@/utils/translate-api-error';
-import {ConfirmDialog} from '@/views/components/ConfirmDialog';
+import {NativeSelect} from '@/components/ui/componentes/native-select';
+import {Skeleton} from '@/components/ui/componentes/skeleton';
+import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from '@/components/ui/componentes/table';
+import {invalidateAppointmentRevenue} from '@/utils/appointment-revenue';
 import {
-    PatientClinicalPreviewContent,
-    usePatientClinicalPreview,
-} from '@/views/modules/patients/components/ClinicalData/PatientClinicalPreview';
+    AppointmentDetailSheet,
+    CancelDialog,
+    EditAppointmentDialog,
+    NewAppointmentDialog,
+    RecordFollowUpDialog,
+} from '../../components/AppointmentDialogs';
 import {ProcedureColorDot} from '../../components/ProcedureFields';
-import {useAppointmentProcedure} from '../../components/ProcedureFields/useAppointmentProcedure';
-import * as styles from './styles';
 import {
-    apptBar,
-    apptBlock,
-    blockOverlay,
-    blockOverlayLabel,
-    gap1_5,
-    gridDayCol,
-    gridDayHead,
-    gridDayHeadNum,
-    highlightRing,
-    icon3,
-    icon35,
-    icon4,
-    miniCell,
-    miniCellTextPrimary,
-    miniCellTextTertiary,
-    miniCellTextWhite,
-    monthGridCell,
-    monthGridCellNum,
-    monthGridEvt,
-    mt2,
-    mt6,
-    noRoomColHead,
-    offHoursOverlay,
-    relative,
-    roomColHead,
-    roomDotColorClass,
-    roomDotOnBlock,
-    roomLegend,
-    roomLegendDot,
-    roomLegendItem,
-    roomsHeaderMin,
-    segmentBtn,
-    sheetDotBase,
-    sheetStatusBadge,
-    srOnly,
-    statusChip,
-    statusDot,
-    truncate,
-} from './styles';
+    addDays,
+    ALL_STATUSES,
+    fmtDate,
+    type NewAppointmentPrefill,
+    type PaginatedPage,
+    parseCalendarDate,
+    startOfWeek,
+    toApptView,
+} from '../../shared/appointment-helpers';
+import {statusChip, statusDot} from '../../styles';
+import * as styles from './styles';
 
 // ── Route ─────────────────────────────────────────────────────────
+interface AgendaSearch {
+    from?: string;
+    to?: string;
+    date?: string;
+    appointmentId?: string;
+    followUpFromRecordId?: string;
+}
+
+const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
+
+function dateParam(value: unknown): string | undefined {
+    return typeof value === 'string' && DATE_PATTERN.test(value) ? value : undefined;
+}
+
 export const Route = createFileRoute('/_stackedLayout/appointments')({
-    validateSearch: (
-        search: Record<string, unknown>
-    ): {date?: string; appointmentId?: string; followUpFromRecordId?: string} => ({
-        date: typeof search.date === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(search.date) ? search.date : undefined,
+    validateSearch: (search: Record<string, unknown>): AgendaSearch => ({
+        from: dateParam(search.from),
+        to: dateParam(search.to),
+        date: dateParam(search.date),
         appointmentId: typeof search.appointmentId === 'string' ? search.appointmentId : undefined,
         followUpFromRecordId: typeof search.followUpFromRecordId === 'string' ? search.followUpFromRecordId : undefined,
     }),
-    component: AppointmentsPage,
+    component: AgendaTablePage,
 });
 
-// ── i18n constants ────────────────────────────────────────────────
-const MONTH_NAMES = [
-    'janeiro',
-    'fevereiro',
-    'março',
-    'abril',
-    'maio',
-    'junho',
-    'julho',
-    'agosto',
-    'setembro',
-    'outubro',
-    'novembro',
-    'dezembro',
-];
-const WEEKDAYS_LONG = [
-    'domingo',
-    'segunda-feira',
-    'terça-feira',
-    'quarta-feira',
-    'quinta-feira',
-    'sexta-feira',
-    'sábado',
-];
-const WEEKDAYS_SHORT = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sáb'];
+/** The list endpoint also returns the patient and professional names next to each appointment. */
+type AgendaListItem = Appointment & {patientName?: string | null; attendedByName?: string | null};
 
-// ── Grid constants ────────────────────────────────────────────────
-const HOUR_H_WEEK = 56;
-const HOUR_H_DAY = 64;
-const GRID_START = 7;
-const GRID_END = 20;
-const SLOT_MINUTES = 15;
-const HOURS = Array.from({length: GRID_END - GRID_START}, (_, i) => i + GRID_START);
+/** Upper bound of appointments loaded for one period; the server caps the page anyway. */
+const PAGE_LIMIT = 500;
 
-// ── Labels ────────────────────────────────────────────────────────
-const STATUS_LABELS: Record<AppointmentStatus, string> = {
-    SCHEDULED: 'Agendado',
-    CONFIRMED: 'Confirmado',
-    COMPLETED: 'Concluído',
-    CANCELLED: 'Cancelado',
-    NO_SHOW: 'Faltou',
-    ARRIVED: 'Chegou',
-    IN_PROGRESS: 'Em atendimento',
-};
+type Preset = 'today' | 'tomorrow' | 'week' | 'month' | 'next7';
 
-const TYPE_LABELS: Record<AppointmentType, string> = {
-    FIRST_VISIT: 'Primeira consulta',
-    RETURN: 'Retorno',
-    WALK_IN: 'Urgência',
-    TELEMEDICINE: 'Teleconsulta',
-    PROCEDURE: 'Procedimento',
-};
+const PRESETS: Preset[] = ['today', 'tomorrow', 'next7', 'week', 'month'];
 
-const ALL_STATUSES = Object.keys(STATUS_LABELS) as AppointmentStatus[];
-const DURATIONS = [15, 30, 45, 60, 90, 120];
+function todayDate(): Date {
+    const d = new Date();
 
-const AVAILABILITY_WARNING_MESSAGES: Record<string, string> = {
-    'appointment.outside_working_hours':
-        'Este horário está fora do expediente cadastrado do profissional. Deseja agendar mesmo assim?',
-    'appointment.member_block':
-        'O profissional tem um bloqueio de agenda cadastrado nesse período. Deseja agendar mesmo assim?',
-};
+    d.setHours(0, 0, 0, 0);
 
-/** Detecta o aviso confirmável de disponibilidade (409) vindo do backend, sem tratá-lo como erro fatal. */
-function getAvailabilityWarning(error: unknown): string | null {
-    if (!(error instanceof AxiosError)) return null;
-
-    const detail = (error.response?.data as ApiProblem | undefined)?.detail;
-
-    return detail ? (AVAILABILITY_WARNING_MESSAGES[detail] ?? null) : null;
+    return d;
 }
 
-function getApiErrorDetail(error: unknown): string | null {
-    if (!(error instanceof AxiosError)) return null;
+function presetRange(preset: Preset, today: Date): {from: string; to: string} {
+    switch (preset) {
+        case 'today':
+            return {from: fmtDate(today), to: fmtDate(today)};
+        case 'tomorrow':
+            return {from: fmtDate(addDays(today, 1)), to: fmtDate(addDays(today, 1))};
+        case 'next7':
+            return {from: fmtDate(today), to: fmtDate(addDays(today, 6))};
+        case 'week': {
+            const start = startOfWeek(today);
 
-    const detail = (error.response?.data as ApiProblem | undefined)?.detail;
-
-    return detail ? translateApiError(detail, detail) : null;
-}
-
-type ViewMode = 'day' | 'week' | 'month' | 'professionals' | 'rooms';
-
-const VIEW_MODE_LABELS: Record<ViewMode, string> = {
-    day: 'Dia',
-    week: 'Semana',
-    month: 'Mês',
-    professionals: 'Profissionais',
-    rooms: 'Salas',
-};
-
-// ── Internal view model ───────────────────────────────────────────
-interface ApptView {
-    id: string;
-    patientId: string;
-    attendedByMemberId: string;
-    clinicId: string;
-    date: string; // YYYY-MM-DD
-    start: string; // HH:mm
-    end: string; // HH:mm
-    type: AppointmentType;
-    status: AppointmentStatus;
-    note: string | null;
-    roomId: string | null;
-    raw: Appointment;
-}
-
-// ── Paginated response shape ───────────────────────────────────────
-interface PaginatedPage<T> {
-    data: T[];
-    totalCount: number;
-}
-
-interface NewAppointmentPrefill {
-    date: string;
-    start: string;
-    roomId?: string | null;
-    attendedByMemberId?: string;
-}
-
-interface ProfessionalAvailability {
-    workingHoursByDay: Map<number, WorkingHours>;
-    blocks: MemberBlock[];
-}
-
-interface AppointmentPlacement {
-    apt: ApptView;
-    attendedByMemberId: string;
-    start: string;
-    end: string;
-}
-
-// ── Date helpers ──────────────────────────────────────────────────
-function startOfWeek(d: Date): Date {
-    const day = d.getDay();
-    const diff = day === 0 ? -6 : 1 - day;
-    const r = new Date(d);
-
-    r.setDate(d.getDate() + diff);
-    r.setHours(0, 0, 0, 0);
-
-    return r;
-}
-
-function addDays(d: Date, n: number): Date {
-    const r = new Date(d);
-
-    r.setDate(d.getDate() + n);
-
-    return r;
-}
-
-function endOfDay(d: Date): Date {
-    const result = new Date(d);
-
-    result.setHours(23, 59, 59, 999);
-
-    return result;
-}
-
-function fmtDate(d: Date): string {
-    return [d.getFullYear(), String(d.getMonth() + 1).padStart(2, '0'), String(d.getDate()).padStart(2, '0')].join('-');
-}
-
-function parseCalendarDate(value: string | undefined): Date | null {
-    if (!value) return null;
-
-    const [year, month, day] = value.split('-').map(Number);
-    const date = new Date(year, month - 1, day);
-
-    return fmtDate(date) === value ? date : null;
-}
-
-function sameDay(a: Date, b: Date): boolean {
-    return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
-}
-
-function timeToMin(t: string): number {
-    const [h, m] = t.split(':').map(Number);
-
-    return h * 60 + m;
-}
-
-function minToTime(min: number): string {
-    return `${String(Math.floor(min / 60)).padStart(2, '0')}:${String(min % 60).padStart(2, '0')}`;
-}
-
-function snapToSlot(minutes: number): number {
-    return Math.round(minutes / SLOT_MINUTES) * SLOT_MINUTES;
-}
-
-/** Extract YYYY-MM-DD from an ISO datetime string, adjusting to local time */
-function isoToLocalDate(iso: string): string {
-    const d = new Date(iso);
-
-    return fmtDate(d);
-}
-
-/** Extract HH:mm from an ISO datetime string in local time */
-function isoToLocalTime(iso: string): string {
-    const d = new Date(iso);
-
-    return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
-}
-
-/** Build ISO datetime from local date (YYYY-MM-DD) + time (HH:mm) */
-function localDateTimeToISO(date: string, time: string): string {
-    return new Date(`${date}T${time}:00`).toISOString();
-}
-
-/**
- * Orval generates nullable string fields from Prisma as `{ [key: string]: unknown } | null`.
- * At runtime they are plain strings. This helper extracts the string value safely.
- */
-function asStr(val: unknown): string | null {
-    if (val == null) return null;
-
-    if (typeof val === 'string') return val || null;
-
-    return null;
-}
-
-/** AppointmentNote is typed as JSON by Orval, but is actually a string value */
-function noteToString(note: Appointment['note']): string | null {
-    return asStr(note);
-}
-
-function toApptView(a: Appointment): ApptView {
-    return {
-        id: a.id,
-        patientId: a.patientId,
-        attendedByMemberId: a.attendedByMemberId,
-        clinicId: a.clinicId,
-        date: isoToLocalDate(a.startAt),
-        start: isoToLocalTime(a.startAt),
-        end: isoToLocalTime(a.endAt),
-        type: a.type,
-        status: a.status,
-        note: noteToString(a.note),
-        roomId: a.roomId,
-        raw: a,
-    };
-}
-
-// ── Patient helper ────────────────────────────────────────────────
-function getInitials(name: string): string {
-    return name
-        .split(' ')
-        .filter(Boolean)
-        .slice(0, 2)
-        .map((w) => w[0])
-        .join('')
-        .toUpperCase();
-}
-
-function getPatientName(patients: Patient[], id: string): string {
-    return patients.find((p) => p.id === id)?.name ?? '—';
-}
-
-// ── Overlap layout ─────────────────────────────────────────────────
-interface PositionedAppt {
-    apt: ApptView;
-    lane: number;
-    lanes: number;
-}
-
-function layoutOverlaps(appts: ApptView[]): PositionedAppt[] {
-    const sorted = [...appts].sort((a, b) => timeToMin(a.start) - timeToMin(b.start));
-    const items: Array<PositionedAppt & {s: number; e: number}> = sorted.map((apt) => ({
-        apt,
-        s: timeToMin(apt.start),
-        e: timeToMin(apt.end),
-        lane: 0,
-        lanes: 1,
-    }));
-    const groups: Array<typeof items> = [];
-    let cur: typeof items = [];
-    let curEnd = -1;
-
-    for (const it of items) {
-        if (it.s >= curEnd) {
-            if (cur.length) groups.push(cur);
-            cur = [it];
-            curEnd = it.e;
-        } else {
-            cur.push(it);
-            curEnd = Math.max(curEnd, it.e);
+            return {from: fmtDate(start), to: fmtDate(addDays(start, 6))};
         }
-    }
-
-    if (cur.length) groups.push(cur);
-
-    for (const g of groups) {
-        const ends: number[] = [];
-
-        for (const it of g) {
-            let placed = false;
-
-            for (let li = 0; li < ends.length; li++) {
-                if (ends[li] <= it.s) {
-                    it.lane = li;
-                    ends[li] = it.e;
-                    placed = true;
-
-                    break;
-                }
-            }
-
-            if (!placed) {
-                it.lane = ends.length;
-                ends.push(it.e);
-            }
-        }
-
-        const total = ends.length;
-
-        for (const it of g) it.lanes = total;
-    }
-
-    return items;
-}
-
-// ─────────────────────────────────────────────────────────────────
-//   ApptBlock
-// ─────────────────────────────────────────────────────────────────
-interface ApptBlockProps {
-    apt: ApptView;
-    patients: Patient[];
-    style: React.CSSProperties;
-    compact?: boolean;
-    highlight?: boolean;
-    roomLabel?: string | null;
-    roomColorIndex?: number;
-    onClick: () => void;
-    draggable?: boolean;
-    onDragStart?: (event: React.DragEvent<HTMLButtonElement>) => void;
-    onResizeStart?: (event: React.PointerEvent<HTMLSpanElement>) => void;
-}
-
-function ApptBlock({
-    apt,
-    patients,
-    style,
-    compact,
-    highlight,
-    roomLabel,
-    roomColorIndex,
-    onClick,
-    draggable = false,
-    onDragStart,
-    onResizeStart,
-}: ApptBlockProps) {
-    return (
-        <button
-            type="button"
-            className={apptBlock({status: apt.status, highlight: highlight ?? false})}
-            style={style}
-            onClick={onClick}
-            draggable={draggable}
-            onDragStart={onDragStart}
-        >
-            <span className={apptBar({status: apt.status})} />
-            {roomLabel && (
-                <span
-                    className={cx(roomDotOnBlock, roomDotColorClass(roomColorIndex ?? 0))}
-                    title={`Sala: ${roomLabel}`}
-                />
-            )}
-            <div className={styles.apptContent}>
-                <div className={styles.apptTime}>
-                    {apt.start} – {apt.end}
-                </div>
-                <div className={styles.apptName}>
-                    {apt.raw.procedure && (
-                        <>
-                            <ProcedureColorDot color={apt.raw.procedure.color} />{' '}
-                        </>
-                    )}
-                    {getPatientName(patients, apt.patientId)}
-                </div>
-                {!compact && <div className={styles.apptType}>{apt.raw.procedure?.name ?? TYPE_LABELS[apt.type]}</div>}
-            </div>
-            {onResizeStart && (
-                <span
-                    aria-label="Redimensionar duração"
-                    className={styles.apptResizeHandle}
-                    onPointerDown={onResizeStart}
-                />
-            )}
-        </button>
-    );
-}
-
-// ─────────────────────────────────────────────────────────────────
-//   Availability overlay (expediente + bloqueios) — Fase 4
-// ─────────────────────────────────────────────────────────────────
-
-/** Minutos desde 00:00 até o início/fim visível da grade. */
-const GRID_START_MIN = GRID_START * 60;
-const GRID_END_MIN = GRID_END * 60;
-
-interface AvailabilityOverlayProps {
-    day: Date;
-    workingHoursByDay: Map<number, WorkingHours>;
-    blocks: MemberBlock[];
-    hourHeight: number;
-}
-
-function AvailabilityOverlay({day, workingHoursByDay, blocks, hourHeight}: AvailabilityOverlayProps) {
-    const toPx = (minutesFromGridStart: number) => (minutesFromGridStart / 60) * hourHeight;
-    const gridHeight = toPx(GRID_END_MIN - GRID_START_MIN);
-
-    const hours = workingHoursByDay.get(day.getDay());
-    const rects: Array<{top: number; height: number}> = [];
-
-    if (hours && !hours.active) {
-        rects.push({top: 0, height: gridHeight});
-    } else if (hours) {
-        const startMin = Math.max(timeToMin(hours.startTime), GRID_START_MIN);
-        const endMin = Math.min(timeToMin(hours.endTime), GRID_END_MIN);
-
-        if (startMin > GRID_START_MIN) {
-            rects.push({top: 0, height: toPx(startMin - GRID_START_MIN)});
-        }
-
-        if (endMin < GRID_END_MIN) {
-            rects.push({top: toPx(endMin - GRID_START_MIN), height: toPx(GRID_END_MIN - endMin)});
-        }
-    }
-
-    const dayStart = new Date(day);
-
-    dayStart.setHours(0, 0, 0, 0);
-
-    const dayEnd = addDays(dayStart, 1);
-
-    const dayBlocks = blocks
-        .map((block) => {
-            const blockStart = new Date(block.startAt);
-            const blockEnd = new Date(block.endAt);
-
-            if (blockEnd <= dayStart || blockStart >= dayEnd) return null;
-
-            const clippedStart = blockStart < dayStart ? dayStart : blockStart;
-            const clippedEnd = blockEnd > dayEnd ? dayEnd : blockEnd;
-            const startMin = Math.max(clippedStart.getHours() * 60 + clippedStart.getMinutes(), GRID_START_MIN);
-            const endMinRaw =
-                clippedEnd.getTime() === dayEnd.getTime()
-                    ? 24 * 60
-                    : clippedEnd.getHours() * 60 + clippedEnd.getMinutes();
-            const endMin = Math.min(endMinRaw, GRID_END_MIN);
-
-            if (endMin <= startMin) return null;
-
+        case 'month':
+        default:
             return {
-                id: block.id,
-                reason: block.reason,
-                top: toPx(startMin - GRID_START_MIN),
-                height: toPx(endMin - startMin),
+                from: fmtDate(new Date(today.getFullYear(), today.getMonth(), 1)),
+                to: fmtDate(new Date(today.getFullYear(), today.getMonth() + 1, 0)),
             };
-        })
-        .filter((b) => b !== null);
-
-    return (
-        <>
-            {rects.map((rect, index) => (
-                <div
-                    key={`off-${index}`}
-                    role="note"
-                    aria-label="Fora do expediente cadastrado"
-                    className={offHoursOverlay}
-                    style={{top: rect.top, height: rect.height}}
-                >
-                    {rect.height >= 24 && <span className={blockOverlayLabel}>Fora do expediente</span>}
-                </div>
-            ))}
-            {dayBlocks.map((block) => {
-                const label = block.reason ? `Bloqueado: ${block.reason}` : 'Bloqueio de agenda';
-
-                return (
-                    <div
-                        key={block.id}
-                        role="note"
-                        aria-label={label}
-                        className={blockOverlay}
-                        style={{top: block.top, height: block.height}}
-                    >
-                        <span className={blockOverlayLabel}>{label}</span>
-                    </div>
-                );
-            })}
-        </>
-    );
-}
-
-// ─────────────────────────────────────────────────────────────────
-//   Week View
-// ─────────────────────────────────────────────────────────────────
-interface CalViewProps {
-    appts: ApptView[];
-    workingHoursByDay: Map<number, WorkingHours>;
-    blocks: MemberBlock[];
-    roomsById: Map<string, Room>;
-    roomIndexById: Map<string, number>;
-    patients: Patient[];
-    cursor: Date;
-    today: Date;
-    now: {h: number; m: number};
-    highlightId: string | null;
-    onSlotClick: (d: Date, time: string, roomId?: string | null) => void;
-    onApptClick: (id: string) => void;
-}
-
-/** Resolve o rótulo e a cor estável de uma sala pra desenhar o selo no bloco de consulta. */
-function makeRoomBadgeResolver(roomsById: Map<string, Room>, roomIndexById: Map<string, number>) {
-    return (apt: ApptView) => {
-        if (!apt.roomId) return {roomLabel: null, roomColorIndex: undefined};
-
-        return {
-            roomLabel: roomsById.get(apt.roomId)?.name ?? null,
-            roomColorIndex: roomIndexById.get(apt.roomId),
-        };
-    };
-}
-
-function WeekView({
-    appts,
-    patients,
-    cursor,
-    today,
-    now,
-    highlightId,
-    onSlotClick,
-    onApptClick,
-    workingHoursByDay,
-    blocks,
-    roomsById,
-    roomIndexById,
-}: CalViewProps) {
-    const ws = startOfWeek(cursor);
-    const days = Array.from({length: 7}, (_, i) => addDays(ws, i));
-    const resolveRoomBadge = makeRoomBadgeResolver(roomsById, roomIndexById);
-
-    return (
-        <div className={styles.weekHeaderMin}>
-            {/* Header row */}
-            <div className={styles.gridWeekHead}>
-                <div className={styles.gridTimeColHead} />
-                {days.map((d, i) => {
-                    const isToday = sameDay(d, today);
-
-                    return (
-                        <div key={i} className={gridDayHead({isToday})}>
-                            <div className={styles.dayOfWeekText}>{WEEKDAYS_SHORT[d.getDay()]}</div>
-                            <div className={gridDayHeadNum({isToday})}>{d.getDate()}</div>
-                        </div>
-                    );
-                })}
-            </div>
-
-            {/* Body */}
-            <div className={styles.gridBody}>
-                <div className={styles.gridTimeCol}>
-                    {HOURS.map((h) => (
-                        <div key={h} className={styles.gridTimeRow} style={{height: HOUR_H_WEEK}}>
-                            <span className={styles.gridTimeLabel}>{String(h).padStart(2, '0')}:00</span>
-                        </div>
-                    ))}
-                </div>
-                {days.map((d, di) => {
-                    const dayAppts = appts.filter((a) => a.date === fmtDate(d));
-                    const isToday = sameDay(d, today);
-                    const nowTop = isToday ? (now.h + now.m / 60 - GRID_START) * HOUR_H_WEEK : null;
-                    const positioned = layoutOverlaps(dayAppts);
-
-                    return (
-                        <div key={di} className={gridDayCol({isToday})} style={{height: HOUR_H_WEEK * HOURS.length}}>
-                            <AvailabilityOverlay
-                                day={d}
-                                workingHoursByDay={workingHoursByDay}
-                                blocks={blocks}
-                                hourHeight={HOUR_H_WEEK}
-                            />
-                            {HOURS.map((h, hi) => (
-                                <div
-                                    key={h}
-                                    className={styles.gridSlot}
-                                    style={{top: hi * HOUR_H_WEEK, height: HOUR_H_WEEK}}
-                                    onClick={() => onSlotClick(d, `${String(h).padStart(2, '0')}:00`)}
-                                />
-                            ))}
-                            {nowTop != null && nowTop >= 0 && (
-                                <div className={styles.gridNowLine} style={{top: nowTop}}>
-                                    <span className={styles.gridNowDot} />
-                                </div>
-                            )}
-                            {positioned.map(({apt, lane, lanes}) => {
-                                const s = timeToMin(apt.start) - GRID_START * 60;
-                                const e = timeToMin(apt.end) - GRID_START * 60;
-                                const top = (s / 60) * HOUR_H_WEEK;
-                                const h = Math.max(((e - s) / 60) * HOUR_H_WEEK - 2, 22);
-                                const wPct = 100 / lanes;
-                                const lPct = lane * wPct;
-
-                                const {roomLabel, roomColorIndex} = resolveRoomBadge(apt);
-
-                                return (
-                                    <ApptBlock
-                                        key={apt.id}
-                                        apt={apt}
-                                        patients={patients}
-                                        style={{
-                                            top,
-                                            height: h,
-                                            left: `calc(${lPct}% + 2px)`,
-                                            width: `calc(${wPct}% - 4px)`,
-                                        }}
-                                        compact={lanes > 1}
-                                        highlight={apt.id === highlightId}
-                                        roomLabel={roomLabel}
-                                        roomColorIndex={roomColorIndex}
-                                        onClick={() => onApptClick(apt.id)}
-                                    />
-                                );
-                            })}
-                        </div>
-                    );
-                })}
-            </div>
-        </div>
-    );
-}
-
-// ─────────────────────────────────────────────────────────────────
-//   Day View
-// ─────────────────────────────────────────────────────────────────
-function DayView({
-    appts,
-    patients,
-    cursor,
-    today,
-    now,
-    highlightId,
-    onSlotClick,
-    onApptClick,
-    workingHoursByDay,
-    blocks,
-    roomsById,
-    roomIndexById,
-}: CalViewProps) {
-    const isToday = sameDay(cursor, today);
-    const nowTop = isToday ? (now.h + now.m / 60 - GRID_START) * HOUR_H_DAY : null;
-    const dayAppts = appts.filter((a) => a.date === fmtDate(cursor));
-    const positioned = layoutOverlaps(dayAppts);
-    const resolveRoomBadge = makeRoomBadgeResolver(roomsById, roomIndexById);
-
-    return (
-        <div className={styles.dayHeaderMin}>
-            <div className={styles.dayColHead}>
-                <div className={styles.dayHeaderText}>{WEEKDAYS_LONG[cursor.getDay()]}</div>
-                <div className={styles.dayHeadBaseline}>
-                    <span className={styles.dayDateNum}>{cursor.getDate()}</span>
-                    <span className={styles.dayHeaderText}>
-                        {MONTH_NAMES[cursor.getMonth()]} · {cursor.getFullYear()}
-                    </span>
-                    {dayAppts.length > 0 && (
-                        <span className={styles.apptCountText}>
-                            {dayAppts.length} {dayAppts.length === 1 ? 'consulta' : 'consultas'}
-                        </span>
-                    )}
-                </div>
-            </div>
-            <div className={styles.gridBody}>
-                <div className={styles.gridTimeCol}>
-                    {HOURS.map((h) => (
-                        <div key={h} className={styles.gridTimeRow} style={{height: HOUR_H_DAY}}>
-                            <span className={styles.gridTimeLabel}>{String(h).padStart(2, '0')}:00</span>
-                        </div>
-                    ))}
-                </div>
-                <div className={styles.dayBodyCol} style={{height: HOUR_H_DAY * HOURS.length}}>
-                    <AvailabilityOverlay
-                        day={cursor}
-                        workingHoursByDay={workingHoursByDay}
-                        blocks={blocks}
-                        hourHeight={HOUR_H_DAY}
-                    />
-                    {HOURS.map((h, hi) => (
-                        <div
-                            key={h}
-                            className={styles.gridSlot}
-                            style={{top: hi * HOUR_H_DAY, height: HOUR_H_DAY}}
-                            onClick={() => onSlotClick(cursor, `${String(h).padStart(2, '0')}:00`)}
-                        />
-                    ))}
-                    {nowTop != null && nowTop >= 0 && (
-                        <div className={styles.gridNowLine} style={{top: nowTop}}>
-                            <span className={styles.gridNowDot} />
-                            <span className={styles.nowTimeLabel}>
-                                {String(now.h).padStart(2, '0')}:{String(now.m).padStart(2, '0')}
-                            </span>
-                        </div>
-                    )}
-                    {positioned.map(({apt, lane, lanes}) => {
-                        const s = timeToMin(apt.start) - GRID_START * 60;
-                        const e = timeToMin(apt.end) - GRID_START * 60;
-                        const top = (s / 60) * HOUR_H_DAY;
-                        const h = Math.max(((e - s) / 60) * HOUR_H_DAY - 4, 36);
-                        const wPct = 100 / lanes;
-                        const lPct = lane * wPct;
-                        const isShort = e - s < 40;
-                        const {roomLabel, roomColorIndex} = resolveRoomBadge(apt);
-
-                        return (
-                            <ApptBlock
-                                key={apt.id}
-                                apt={apt}
-                                patients={patients}
-                                style={{top, height: h, left: `calc(${lPct}% + 4px)`, width: `calc(${wPct}% - 8px)`}}
-                                roomLabel={roomLabel}
-                                roomColorIndex={roomColorIndex}
-                                compact={isShort}
-                                highlight={apt.id === highlightId}
-                                onClick={() => onApptClick(apt.id)}
-                            />
-                        );
-                    })}
-                    {dayAppts.length === 0 && (
-                        <div className={styles.gridEmptyDay}>
-                            <CalendarX2 className={styles.emptyDayCalIcon} />
-                            <div className={styles.gridEmptyDayTitle}>Sem consultas neste dia</div>
-                            <div className={styles.gridEmptyDaySub}>
-                                Clique em qualquer horário ou use &quot;Novo agendamento&quot;.
-                            </div>
-                        </div>
-                    )}
-                </div>
-            </div>
-        </div>
-    );
-}
-
-// ─────────────────────────────────────────────────────────────────
-//   Professionals View — agenda diária por profissional
-// ─────────────────────────────────────────────────────────────────
-interface ProfessionalsViewProps {
-    appts: ApptView[];
-    patients: Patient[];
-    cursor: Date;
-    now: {h: number; m: number};
-    highlightId: string | null;
-    professionals: ClinicMember[];
-    availabilityByMember: Map<string, ProfessionalAvailability>;
-    roomsById: Map<string, Room>;
-    roomIndexById: Map<string, number>;
-    onSlotClick: (date: Date, time: string, memberId: string) => void;
-    onApptClick: (id: string) => void;
-    onApptMove: (apt: ApptView, memberId: string, start: string) => void;
-    onApptResize: (apt: ApptView, end: string) => void;
-}
-
-function ProfessionalsView({
-    appts,
-    patients,
-    cursor,
-    now,
-    highlightId,
-    professionals,
-    availabilityByMember,
-    roomsById,
-    roomIndexById,
-    onSlotClick,
-    onApptClick,
-    onApptMove,
-    onApptResize,
-}: ProfessionalsViewProps) {
-    const canOverrideProcedure = useCan({has: 'procedure:override'});
-    const [resizePreview, setResizePreview] = useState<{id: string; endMin: number} | null>(null);
-    const dayAppts = appts.filter((apt) => apt.date === fmtDate(cursor));
-    const nowTop = (now.h + now.m / 60 - GRID_START) * HOUR_H_DAY;
-    const resolveRoomBadge = makeRoomBadgeResolver(roomsById, roomIndexById);
-
-    const canMove = (apt: ApptView) => !['COMPLETED', 'CANCELLED'].includes(apt.status);
-
-    const handleDrop = (event: React.DragEvent<HTMLDivElement>, memberId: string) => {
-        event.preventDefault();
-
-        const appointmentId = event.dataTransfer.getData('application/x-agenda-appointment');
-        const apt = dayAppts.find((item) => item.id === appointmentId);
-
-        if (!apt || !canMove(apt)) return;
-
-        const rect = event.currentTarget.getBoundingClientRect();
-        const duration = apt.raw.durationMinutes;
-        const minuteAtPointer = GRID_START_MIN + ((event.clientY - rect.top) / HOUR_H_DAY) * 60;
-        const startMin = Math.max(GRID_START_MIN, Math.min(snapToSlot(minuteAtPointer), GRID_END_MIN - duration));
-
-        onApptMove(apt, memberId, minToTime(startMin));
-    };
-
-    const handleResizeStart = (event: React.PointerEvent<HTMLSpanElement>, apt: ApptView) => {
-        event.preventDefault();
-        event.stopPropagation();
-
-        const column = event.currentTarget.closest<HTMLElement>('[data-professional-column]');
-
-        if (!column) return;
-
-        const startMin = timeToMin(apt.start);
-        const rect = column.getBoundingClientRect();
-        let currentEnd = timeToMin(apt.end);
-
-        const getEndAtPointer = (clientY: number) => {
-            const minuteAtPointer = GRID_START_MIN + ((clientY - rect.top) / HOUR_H_DAY) * 60;
-
-            return Math.max(startMin + SLOT_MINUTES, Math.min(snapToSlot(minuteAtPointer), GRID_END_MIN));
-        };
-
-        const handlePointerMove = (moveEvent: PointerEvent) => {
-            currentEnd = getEndAtPointer(moveEvent.clientY);
-            setResizePreview({id: apt.id, endMin: currentEnd});
-        };
-
-        const handlePointerUp = () => {
-            setResizePreview(null);
-            window.removeEventListener('pointermove', handlePointerMove);
-            window.removeEventListener('pointerup', handlePointerUp);
-
-            if (currentEnd !== timeToMin(apt.end)) {
-                onApptResize(apt, minToTime(currentEnd));
-            }
-        };
-
-        setResizePreview({id: apt.id, endMin: currentEnd});
-        window.addEventListener('pointermove', handlePointerMove);
-        window.addEventListener('pointerup', handlePointerUp, {once: true});
-    };
-
-    if (professionals.length === 0) {
-        return (
-            <div className={styles.professionalsEmpty}>Nenhum profissional com agenda disponível para este acesso.</div>
-        );
     }
-
-    return (
-        <div className={styles.professionalsGridMin}>
-            <div className={styles.gridWeekHead}>
-                <div className={styles.gridTimeColHead} />
-                {professionals.map((professional) => {
-                    const count = dayAppts.filter((apt) => apt.attendedByMemberId === professional.id).length;
-
-                    return (
-                        <div key={professional.id} className={styles.professionalHead}>
-                            <span
-                                className={styles.professionalColorDot}
-                                style={{backgroundColor: professional.color ?? undefined}}
-                            />
-                            <span className={styles.professionalHeadName}>
-                                {professional.displayName ?? 'Profissional'}
-                            </span>
-                            <span className={styles.professionalHeadCount}>{count}</span>
-                        </div>
-                    );
-                })}
-            </div>
-            <div className={styles.gridBody}>
-                <div className={styles.gridTimeCol}>
-                    {HOURS.map((hour) => (
-                        <div key={hour} className={styles.gridTimeRow} style={{height: HOUR_H_DAY}}>
-                            <span className={styles.gridTimeLabel}>{String(hour).padStart(2, '0')}:00</span>
-                        </div>
-                    ))}
-                </div>
-                {professionals.map((professional) => {
-                    const professionalAppts = dayAppts.filter((apt) => apt.attendedByMemberId === professional.id);
-                    const positioned = layoutOverlaps(professionalAppts);
-                    const availability = availabilityByMember.get(professional.id);
-
-                    return (
-                        <div
-                            key={professional.id}
-                            data-professional-column
-                            className={styles.professionalColumn}
-                            style={{height: HOUR_H_DAY * HOURS.length}}
-                            onDragOver={(event) => event.preventDefault()}
-                            onDrop={(event) => handleDrop(event, professional.id)}
-                        >
-                            <AvailabilityOverlay
-                                day={cursor}
-                                workingHoursByDay={availability?.workingHoursByDay ?? new Map()}
-                                blocks={availability?.blocks ?? []}
-                                hourHeight={HOUR_H_DAY}
-                            />
-                            {HOURS.map((hour, index) => (
-                                <div
-                                    key={hour}
-                                    className={styles.gridSlot}
-                                    style={{top: index * HOUR_H_DAY, height: HOUR_H_DAY}}
-                                    onClick={() =>
-                                        onSlotClick(cursor, `${String(hour).padStart(2, '0')}:00`, professional.id)
-                                    }
-                                />
-                            ))}
-                            {nowTop >= 0 && (
-                                <div className={styles.gridNowLine} style={{top: nowTop}}>
-                                    <span className={styles.gridNowDot} />
-                                </div>
-                            )}
-                            {positioned.map(({apt, lane, lanes}) => {
-                                const start = timeToMin(apt.start) - GRID_START_MIN;
-                                const previewEnd =
-                                    resizePreview?.id === apt.id ? resizePreview.endMin : timeToMin(apt.end);
-                                const end = previewEnd - GRID_START_MIN;
-                                const top = (start / 60) * HOUR_H_DAY;
-                                const height = Math.max(((end - start) / 60) * HOUR_H_DAY - 2, 22);
-                                const width = 100 / lanes;
-                                const left = lane * width;
-                                const displayApt =
-                                    previewEnd === timeToMin(apt.end) ? apt : {...apt, end: minToTime(previewEnd)};
-                                const {roomLabel, roomColorIndex} = resolveRoomBadge(apt);
-
-                                return (
-                                    <ApptBlock
-                                        key={apt.id}
-                                        apt={displayApt}
-                                        patients={patients}
-                                        style={{
-                                            top,
-                                            height,
-                                            left: `calc(${left}% + 2px)`,
-                                            width: `calc(${width}% - 4px)`,
-                                        }}
-                                        compact={lanes > 1 || end - start < 40}
-                                        highlight={apt.id === highlightId}
-                                        roomLabel={roomLabel}
-                                        roomColorIndex={roomColorIndex}
-                                        draggable={canMove(apt)}
-                                        onDragStart={(event) => {
-                                            event.dataTransfer.setData('application/x-agenda-appointment', apt.id);
-                                        }}
-                                        onResizeStart={
-                                            canMove(apt) && (!apt.raw.procedure || canOverrideProcedure)
-                                                ? (event) => handleResizeStart(event, apt)
-                                                : undefined
-                                        }
-                                        onClick={() => onApptClick(apt.id)}
-                                    />
-                                );
-                            })}
-                        </div>
-                    );
-                })}
-            </div>
-        </div>
-    );
 }
 
-// ─────────────────────────────────────────────────────────────────
-//   Rooms View — mostra ocupação de sala num único dia (Fase 5)
-// ─────────────────────────────────────────────────────────────────
-interface RoomsViewProps extends CalViewProps {
-    rooms: Room[];
+function normalizeText(value: string): string {
+    return value
+        .normalize('NFD')
+        .replace(/[̀-ͯ]/g, '')
+        .toLowerCase();
 }
 
-interface RoomColumn {
-    id: string | null;
-    label: string;
-    appts: ApptView[];
-}
-
-function RoomsView({
-    appts,
-    patients,
-    cursor,
-    now,
-    highlightId,
-    onSlotClick,
-    onApptClick,
-    rooms,
-    roomsById,
-    roomIndexById,
-}: RoomsViewProps) {
-    const nowTop = (now.h + now.m / 60 - GRID_START) * HOUR_H_DAY;
-    const dayAppts = appts.filter((a) => a.date === fmtDate(cursor));
-    const noRoomAppts = dayAppts.filter((a) => !a.roomId || !roomsById.has(a.roomId));
-
-    const columns: RoomColumn[] = [
-        ...rooms.map((room) => ({
-            id: room.id,
-            label: room.name,
-            appts: dayAppts.filter((a) => a.roomId === room.id),
-        })),
-        ...(noRoomAppts.length > 0 ? [{id: null, label: 'Sem sala', appts: noRoomAppts}] : []),
-    ];
-
-    return (
-        <div className={roomsHeaderMin}>
-            <div className={styles.gridWeekHead}>
-                <div className={styles.gridTimeColHead} />
-                {columns.map((col, i) => (
-                    <div key={col.id ?? '__no_room__'} className={cx(roomColHead, col.id === null && noRoomColHead)}>
-                        {col.id !== null && (
-                            <span className={cx(roomLegendDot, roomDotColorClass(roomIndexById.get(col.id) ?? i))} />
-                        )}
-                        {col.label}
-                    </div>
-                ))}
-            </div>
-            <div className={styles.gridBody}>
-                <div className={styles.gridTimeCol}>
-                    {HOURS.map((h) => (
-                        <div key={h} className={styles.gridTimeRow} style={{height: HOUR_H_DAY}}>
-                            <span className={styles.gridTimeLabel}>{String(h).padStart(2, '0')}:00</span>
-                        </div>
-                    ))}
-                </div>
-                {columns.map((col) => {
-                    const positioned = layoutOverlaps(col.appts);
-
-                    return (
-                        <div
-                            key={col.id ?? '__no_room__'}
-                            className={gridDayCol({isToday: false})}
-                            style={{height: HOUR_H_DAY * HOURS.length}}
-                        >
-                            {HOURS.map((h, hi) => (
-                                <div
-                                    key={h}
-                                    className={styles.gridSlot}
-                                    style={{top: hi * HOUR_H_DAY, height: HOUR_H_DAY}}
-                                    onClick={() => onSlotClick(cursor, `${String(h).padStart(2, '0')}:00`, col.id)}
-                                />
-                            ))}
-                            {nowTop >= 0 && (
-                                <div className={styles.gridNowLine} style={{top: nowTop}}>
-                                    <span className={styles.gridNowDot} />
-                                </div>
-                            )}
-                            {positioned.map(({apt, lane, lanes}) => {
-                                const s = timeToMin(apt.start) - GRID_START * 60;
-                                const e = timeToMin(apt.end) - GRID_START * 60;
-                                const top = (s / 60) * HOUR_H_DAY;
-                                const h = Math.max(((e - s) / 60) * HOUR_H_DAY - 2, 22);
-                                const wPct = 100 / lanes;
-                                const lPct = lane * wPct;
-
-                                return (
-                                    <ApptBlock
-                                        key={apt.id}
-                                        apt={apt}
-                                        patients={patients}
-                                        style={{
-                                            top,
-                                            height: h,
-                                            left: `calc(${lPct}% + 2px)`,
-                                            width: `calc(${wPct}% - 4px)`,
-                                        }}
-                                        compact={lanes > 1}
-                                        highlight={apt.id === highlightId}
-                                        onClick={() => onApptClick(apt.id)}
-                                    />
-                                );
-                            })}
-                        </div>
-                    );
-                })}
-            </div>
-        </div>
-    );
-}
-
-// ─────────────────────────────────────────────────────────────────
-//   Month View
-// ─────────────────────────────────────────────────────────────────
-interface MonthViewProps extends CalViewProps {
-    onGotoDay: (d: Date) => void;
-}
-
-function MonthView({appts, patients, cursor, today, highlightId, onSlotClick, onApptClick, onGotoDay}: MonthViewProps) {
-    const monthStart = new Date(cursor.getFullYear(), cursor.getMonth(), 1);
-    const gridStart = startOfWeek(monthStart);
-    const cells = Array.from({length: 42}, (_, i) => addDays(gridStart, i));
-
-    return (
-        <div>
-            <div className={styles.monthGridHead}>
-                {WEEKDAYS_SHORT.map((w, i) => (
-                    <div key={i} className={styles.monthGridHeadCell}>
-                        {w.charAt(0).toUpperCase() + w.slice(1, 3)}
-                    </div>
-                ))}
-            </div>
-            <div className={styles.monthGridGrid}>
-                {cells.map((d, i) => {
-                    const inMonth = d.getMonth() === cursor.getMonth();
-                    const isToday = sameDay(d, today);
-                    const dayAppts = appts
-                        .filter((a) => a.date === fmtDate(d))
-                        .sort((a, b) => timeToMin(a.start) - timeToMin(b.start));
-                    const visible = dayAppts.slice(0, 3);
-                    const more = dayAppts.length - visible.length;
-
-                    return (
-                        <div
-                            key={i}
-                            className={monthGridCell({inMonth, isToday})}
-                            onClick={() => onSlotClick(d, '09:00')}
-                        >
-                            <div className={styles.monthGridCellHead}>
-                                <button
-                                    type="button"
-                                    className={monthGridCellNum({isToday, inMonth})}
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        onGotoDay(d);
-                                    }}
-                                >
-                                    {d.getDate()}
-                                </button>
-                            </div>
-                            {visible.map((a) => (
-                                <button
-                                    key={a.id}
-                                    type="button"
-                                    className={cx(
-                                        monthGridEvt({status: a.status}),
-                                        a.id === highlightId && highlightRing
-                                    )}
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        onApptClick(a.id);
-                                    }}
-                                >
-                                    {a.raw.procedure && <ProcedureColorDot color={a.raw.procedure.color} />}
-                                    <span className={styles.apptTimeMono}>{a.start}</span>
-                                    {getPatientName(patients, a.patientId).split(' ').slice(0, 2).join(' ')}
-                                </button>
-                            ))}
-                            {more > 0 && <div className={styles.monthGridMoreBtn}>+{more} mais</div>}
-                        </div>
-                    );
-                })}
-            </div>
-        </div>
-    );
-}
-
-// ─────────────────────────────────────────────────────────────────
-//   Mini Calendar
-// ─────────────────────────────────────────────────────────────────
-interface MiniCalProps {
-    cursor: Date;
-    view: ViewMode;
-    appts: ApptView[];
-    today: Date;
-    onPickDay: (d: Date) => void;
-}
-
-function MiniCalendar({cursor, view, appts, today, onPickDay}: MiniCalProps) {
-    const [mc, setMc] = useState(new Date(cursor.getFullYear(), cursor.getMonth(), 1));
-
-    useEffect(() => {
-        setMc((prev) => {
-            if (cursor.getMonth() !== prev.getMonth() || cursor.getFullYear() !== prev.getFullYear()) {
-                return new Date(cursor.getFullYear(), cursor.getMonth(), 1);
-            }
-
-            return prev;
-        });
-    }, [cursor]);
-
-    const monthStart = new Date(mc.getFullYear(), mc.getMonth(), 1);
-    const gridStart = startOfWeek(monthStart);
-    const cells = Array.from({length: 42}, (_, i) => addDays(gridStart, i));
-    const ws = view === 'week' ? startOfWeek(cursor) : null;
-    const we = ws ? addDays(ws, 6) : null;
-
-    const apptDates = useMemo(() => {
-        const m = new Map<string, number>();
-
-        appts.forEach((a) => m.set(a.date, (m.get(a.date) ?? 0) + 1));
-
-        return m;
-    }, [appts]);
-
-    const label = `${MONTH_NAMES[mc.getMonth()].slice(0, 3)} ${mc.getFullYear()}`;
-
-    return (
-        <div className={styles.miniRoot}>
-            <div className={styles.miniHead}>
-                <span className={styles.miniMonthLabel}>{label}</span>
-                <div className={styles.miniArrows}>
-                    <button
-                        type="button"
-                        className={styles.miniArrowBtn}
-                        onClick={() => setMc(new Date(mc.getFullYear(), mc.getMonth() - 1, 1))}
-                    >
-                        <ChevronLeft className={icon3} />
-                    </button>
-                    <button
-                        type="button"
-                        className={styles.miniArrowBtn}
-                        onClick={() => setMc(new Date(mc.getFullYear(), mc.getMonth() + 1, 1))}
-                    >
-                        <ChevronRight className={icon3} />
-                    </button>
-                </div>
-            </div>
-            <div className={styles.miniDowRow}>
-                {WEEKDAYS_SHORT.map((w, i) => (
-                    <div key={i} className={styles.miniDowCell}>
-                        {w.charAt(0).toUpperCase()}
-                    </div>
-                ))}
-            </div>
-            <div className={styles.miniGrid}>
-                {cells.map((d, i) => {
-                    const inMonth = d.getMonth() === mc.getMonth();
-                    const isToday = sameDay(d, today);
-                    const isSelected =
-                        (view === 'day' || view === 'professionals' || view === 'rooms') && sameDay(d, cursor);
-                    const inWeek = view === 'week' && ws != null && we != null && d >= ws && d <= we;
-                    const has = (apptDates.get(fmtDate(d)) ?? 0) > 0;
-
-                    return (
-                        <button
-                            key={i}
-                            type="button"
-                            className={miniCell({
-                                inMonth,
-                                isToday: isToday && !isSelected,
-                                isSelected,
-                                inWeek,
-                                hasAppts: has,
-                            })}
-                            onClick={() => onPickDay(d)}
-                        >
-                            {isToday && !isSelected ? (
-                                <span className={styles.miniTodayNum}>{d.getDate()}</span>
-                            ) : (
-                                <span
-                                    className={cx(
-                                        styles.miniCellNum,
-                                        // eslint-disable-next-line no-nested-ternary -- conditional class chain is clearest as nested
-                                        isSelected
-                                            ? miniCellTextWhite
-                                            : inMonth
-                                              ? miniCellTextPrimary
-                                              : miniCellTextTertiary
-                                    )}
-                                >
-                                    {d.getDate()}
-                                </span>
-                            )}
-                            {has && !isSelected && <span className={styles.miniDot} />}
-                        </button>
-                    );
-                })}
-            </div>
-            <button type="button" className={styles.miniTodayBtn} onClick={() => onPickDay(today)}>
-                Voltar para hoje
-            </button>
-        </div>
-    );
-}
-
-// ─────────────────────────────────────────────────────────────────
-//   Appointment Detail Sheet
-// ─────────────────────────────────────────────────────────────────
-interface DetailSheetProps {
-    apt: ApptView;
-    patients: Patient[];
-    onClose: () => void;
-    onEdit: () => void;
-    onCancel: () => void;
-    onOpenPatient: (id: string) => void;
-    onStatusChanged: () => void;
-}
-
-function AppointmentDetailSheet({
-    apt,
-    patients,
-    onClose,
-    onEdit,
-    onCancel,
-    onOpenPatient,
-    onStatusChanged,
-}: DetailSheetProps) {
-    const {t} = useTranslation();
-    const {procedure} = apt.raw;
-    const canViewPayment = useCan({has: 'appointment-payment:view'});
-    const patient = patients.find((p) => p.id === apt.patientId);
-    const durMin = apt.raw.durationMinutes;
-    const durLabel =
-        durMin >= 60 ? `${Math.floor(durMin / 60)}h${durMin % 60 ? ` ${durMin % 60}min` : ''}` : `${durMin} min`;
-    const [y, mo, da] = apt.date.split('-').map(Number);
-    const date = new Date(y, mo - 1, da);
-    const isDone = ['COMPLETED', 'CANCELLED', 'NO_SHOW'].includes(apt.status);
-    const mayViewClinical = useCan({hasAny: ['clinical-profile:view', 'patient-alert:view']});
-    const mayCreateRecord = useCan({has: 'record:create'});
-    const canCompleteAppointment = useCan({has: 'appointment:update'});
-    const canStartRecord = mayCreateRecord && (apt.status === 'IN_PROGRESS' || apt.status === 'COMPLETED');
-    const patientAccess = useGetPatient(apt.patientId, {
-        query: {enabled: (!isDone && mayViewClinical) || canStartRecord},
-    });
-    const [clinicalPage, setClinicalPage] = useState(1);
-    const clinical = usePatientClinicalPreview(
-        apt.patientId,
-        !isDone && !patientAccess.isError && patientAccess.data?.canReadClinicalData === true,
-        clinicalPage
-    );
-
-    const confirm = useConfirmAppointment();
-    const checkin = useCheckinAppointment();
-    const call = useCallAppointment();
-    const complete = useCompleteAppointment();
-    const noShow = useMarkNoShowAppointment();
-
-    function runTransition(mutation: {mutate: (vars: {id: string}, opts: object) => void}, successMessage: string) {
-        mutation.mutate(
-            {id: apt.id},
-            {
-                onSuccess: () => {
-                    toast.success(successMessage);
-                    onStatusChanged();
-                },
-                onError: () => toast.error('Não foi possível atualizar o status da consulta.'),
-            }
-        );
-    }
-
-    const transitionPending =
-        confirm.isPending || checkin.isPending || call.isPending || complete.isPending || noShow.isPending;
-
-    return (
-        <Sheet open onOpenChange={(o) => !o && onClose()}>
-            <SheetContent className={styles.detailSheetPanel}>
-                <SheetHeader>
-                    <SheetTitle className={srOnly}>Detalhes do agendamento</SheetTitle>
-                    <div className={styles.sheetInfoRow}>
-                        <span className={styles.sheetEyebrow}>Agendamento</span>
-                        <span className={sheetStatusBadge({status: apt.status})}>
-                            <span className={cx(sheetDotBase, statusDot({status: apt.status}))} />
-                            {STATUS_LABELS[apt.status]}
-                        </span>
-                    </div>
-                </SheetHeader>
-
-                <div className={mt6}>
-                    {/* Patient card */}
-                    <div className={styles.sheetPatientCard}>
-                        <div className={styles.patAvatarLg}>{patient ? getInitials(patient.name) : '?'}</div>
-                        <div className={styles.sheetPatientBody}>
-                            <div className={styles.sheetPatientName}>{patient?.name ?? '—'}</div>
-                            {asStr(patient?.email) && (
-                                <div className={styles.sheetPatientMeta}>{asStr(patient?.email)}</div>
-                            )}
-                        </div>
-                        <button
-                            type="button"
-                            className={styles.patProfileLink}
-                            onClick={() => onOpenPatient(apt.patientId)}
-                        >
-                            Ver perfil <ArrowUpRight className={icon3} />
-                        </button>
-                    </div>
-
-                    {!isDone && (
-                        <PatientClinicalPreviewContent
-                            clinical={clinical}
-                            page={clinicalPage}
-                            onPage={setClinicalPage}
-                        />
-                    )}
-
-                    {/* Schedule */}
-                    <div className={styles.sheetSection}>
-                        <div className={styles.sheetSectionTitle}>Horário</div>
-                        <div className={styles.sheetKvGrid}>
-                            <div className={styles.sheetKv}>
-                                <span className={styles.sheetKvKey}>Data</span>
-                                <span className={styles.sheetKvText}>
-                                    {WEEKDAYS_LONG[date.getDay()]}, {da} de {MONTH_NAMES[mo - 1]} de {y}
-                                </span>
-                            </div>
-                            <div className={styles.sheetKv}>
-                                <span className={styles.sheetKvKey}>Horário</span>
-                                <span className={styles.sheetKvVal}>
-                                    {apt.start} – {apt.end}
-                                </span>
-                            </div>
-                            <div className={styles.sheetKv}>
-                                <span className={styles.sheetKvKey}>Duração</span>
-                                <span className={styles.sheetKvVal}>{durLabel}</span>
-                            </div>
-                            <div className={styles.sheetKv}>
-                                <span className={styles.sheetKvKey}>Tipo</span>
-                                <span className={styles.sheetKvText}>{TYPE_LABELS[apt.type]}</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    {procedure && (
-                        <div className={styles.sheetSection} role="group" aria-label={t('procedure.selection')}>
-                            <div className={styles.sheetSectionTitle}>{t('procedure.selection')}</div>
-                            <div className={styles.sheetKvGrid}>
-                                <div className={styles.sheetKv}>
-                                    <span className={styles.sheetKvKey}>{t('procedure.name')}</span>
-                                    <span className={styles.sheetKvText}>
-                                        <ProcedureColorDot color={procedure.color} /> {procedure.name}
-                                    </span>
-                                </div>
-                                <div className={styles.sheetKv}>
-                                    <span className={styles.sheetKvKey}>{t('procedure.modality')}</span>
-                                    <span className={styles.sheetKvText}>
-                                        {t(`procedure.modalities.${procedure.modality}`)}
-                                    </span>
-                                </div>
-                                <div className={styles.sheetKv}>
-                                    <span className={styles.sheetKvKey}>{t('procedure.price')}</span>
-                                    <span className={styles.sheetKvVal}>{formatBRL(procedure.priceInCents / 100)}</span>
-                                </div>
-                            </div>
-                        </div>
-                    )}
-
-                    {/* Notes */}
-                    <div className={styles.sheetSection}>
-                        <div className={styles.sheetSectionTitle}>Observações</div>
-                        {apt.note ? (
-                            <p className={styles.sheetNotes}>{apt.note}</p>
-                        ) : (
-                            <p className={styles.sheetNotesEmpty}>Sem observações registradas.</p>
-                        )}
-                    </div>
-
-                    {canStartRecord && !patientAccess.isError && patientAccess.data?.canWriteClinicalData && (
-                        <div className={styles.sheetSection}>
-                            <Button asChild size="sm">
-                                <Link
-                                    to="/patients/$patientId/records/new"
-                                    params={{patientId: apt.patientId}}
-                                    search={{appointmentId: apt.id}}
-                                >
-                                    {t('recordLifecycle.createFromAppointment')}
-                                </Link>
-                            </Button>
-                        </div>
-                    )}
-
-                    {/* Payment */}
-                    {canViewPayment && <AppointmentPaymentSection appointment={apt.raw} onChanged={onStatusChanged} />}
-
-                    {/* Actions */}
-                    {!isDone && (
-                        <div className={styles.sheetActions}>
-                            {apt.status === 'SCHEDULED' && (
-                                <Button
-                                    size="sm"
-                                    variant="outline"
-                                    className={gap1_5}
-                                    disabled={transitionPending}
-                                    onClick={() => runTransition(confirm, 'Consulta confirmada')}
-                                >
-                                    <CircleCheck className={icon35} /> Confirmar
-                                </Button>
-                            )}
-                            {(apt.status === 'SCHEDULED' || apt.status === 'CONFIRMED') && (
-                                <Button
-                                    size="sm"
-                                    variant="outline"
-                                    className={gap1_5}
-                                    disabled={transitionPending}
-                                    onClick={() => runTransition(checkin, 'Chegada registrada')}
-                                >
-                                    <DoorOpen className={icon35} /> Check-in
-                                </Button>
-                            )}
-                            {apt.status === 'ARRIVED' && (
-                                <Button
-                                    size="sm"
-                                    variant="outline"
-                                    className={gap1_5}
-                                    disabled={
-                                        transitionPending ||
-                                        (mayViewClinical && patientAccess.isLoading) ||
-                                        clinical.isLoading
-                                    }
-                                    onClick={() => runTransition(call, 'Paciente chamado')}
-                                >
-                                    <PhoneCall className={icon35} /> Chamar
-                                </Button>
-                            )}
-                            {apt.status === 'IN_PROGRESS' && canCompleteAppointment && (
-                                <Button
-                                    size="sm"
-                                    variant="outline"
-                                    className={gap1_5}
-                                    disabled={transitionPending}
-                                    onClick={() => runTransition(complete, t('reception.success.complete'))}
-                                >
-                                    <CheckCheck className={icon35} /> {t('reception.complete')}
-                                </Button>
-                            )}
-                            {(apt.status === 'SCHEDULED' || apt.status === 'CONFIRMED') && (
-                                <Button
-                                    size="sm"
-                                    variant="outline"
-                                    className={gap1_5}
-                                    disabled={transitionPending}
-                                    onClick={() => runTransition(noShow, 'Falta registrada')}
-                                >
-                                    <UserX className={icon35} /> Não compareceu
-                                </Button>
-                            )}
-                            {apt.status !== 'IN_PROGRESS' && (
-                                <Button size="sm" variant="outline" className={gap1_5} onClick={onEdit}>
-                                    <Pencil className={icon35} /> Editar
-                                </Button>
-                            )}
-                            {(apt.status === 'SCHEDULED' || apt.status === 'CONFIRMED' || apt.status === 'ARRIVED') && (
-                                <Button size="sm" variant="outline" className={styles.cancelBtn} onClick={onCancel}>
-                                    <Trash2 className={icon35} /> Cancelar consulta
-                                </Button>
-                            )}
-                        </div>
-                    )}
-                </div>
-            </SheetContent>
-        </Sheet>
-    );
-}
-
-// ── Payment (register / view / update) ───────────────────────────────
-
-const PAYMENT_STATUS_BADGE_VARIANT: Record<string, 'warning' | 'success' | 'secondary' | 'destructive'> = {
-    PENDING: 'warning',
-    PAID: 'success',
-    EXEMPT: 'secondary',
-    REFUNDED: 'destructive',
-};
-
-function PaymentCoverageSelect({
-    label,
-    value,
-    onChange,
-    options,
-    loading,
-}: {
-    label: string;
-    value: string;
-    onChange: (value: string) => void;
-    options: Array<{id: string; name: string}>;
-    loading: boolean;
-}) {
-    const id = useId();
-    const {t} = useTranslation();
-
-    return (
-        <div className={styles.sheetKv}>
-            <Label htmlFor={id}>{label}</Label>
-            <Select value={value} onValueChange={onChange} disabled={loading || options.length === 0}>
-                <SelectTrigger id={id}>
-                    <SelectValue placeholder={t('appointmentRevenue.selectCoverage')} />
-                </SelectTrigger>
-                <SelectContent>
-                    {options.map((option) => (
-                        <SelectItem key={option.id} value={option.id}>
-                            {option.name}
-                        </SelectItem>
-                    ))}
-                </SelectContent>
-            </Select>
-            {loading && <p role="status">{t('states.loading')}</p>}
-            {!loading && options.length === 0 && (
-                <p className={styles.sheetNotesEmpty}>{t('appointmentRevenue.noCoverage')}</p>
-            )}
-        </div>
-    );
-}
-
-function AppointmentPaymentSection({appointment, onChanged}: {appointment: Appointment; onChanged: () => void}) {
-    const {t} = useTranslation();
-    const registerPayment = useRegisterPayment();
-    const updatePaymentStatus = useUpdatePaymentStatus();
-    const canRegister = useCan({has: 'appointment-payment:register'});
-    const canUpdate = useCan({has: 'appointment-payment:update'});
-
-    const [showForm, setShowForm] = useState(false);
-    const [method, setMethod] = useState<RegisterPaymentDtoPaymentMethod>('PIX');
-    const [amount, setAmount] = useState('');
-    const [status, setStatus] = useState<RegisterPaymentDtoStatus>('PAID');
-    const [insurancePlanId, setInsurancePlanId] = useState('');
-    const [insuranceAuthCode, setInsuranceAuthCode] = useState('');
-    const [patientPackageId, setPatientPackageId] = useState('');
-    const [patientSubscriptionId, setPatientSubscriptionId] = useState('');
-    const [notes, setNotes] = useState('');
-
-    const {revenue, patientId, clinicId, id} = appointment;
-    const hasPayment = revenue?.paymentMethod != null;
-    const mayRegister = canRegister && !hasPayment && appointment.status !== 'CANCELLED';
-    const isCompleted = appointment.status === 'COMPLETED';
-    const isInsurance = method === 'INSURANCE';
-    const registeredStatusByMethod: Partial<Record<RegisterPaymentDtoPaymentMethod, RegisterPaymentDtoStatus>> = {
-        INSURANCE: 'PENDING',
-        COURTESY: 'EXEMPT',
-        PACKAGE: 'PAID',
-        SUBSCRIPTION: 'PAID',
-    };
-    const isCovered = method === 'PACKAGE' || method === 'SUBSCRIPTION' || method === 'COURTESY';
-    const packages = useListPackages(patientId, {query: {enabled: showForm && method === 'PACKAGE'}});
-    const subscriptions = useListSubscriptions(patientId, {query: {enabled: showForm && method === 'SUBSCRIPTION'}});
-    const enrollments = useListEnrollments(patientId, {query: {enabled: showForm && isInsurance}});
-    const plans = useListInsurancePlans(clinicId, {query: {enabled: showForm && isInsurance}});
-    const activePackages = (packages.data ?? []).filter((pkg) => pkg.status === 'ACTIVE' && pkg.remainingCredits > 0);
-    const activeSubscriptions = (subscriptions.data ?? []).filter((subscription) => subscription.status === 'ACTIVE');
-    const activePlans = (plans.data ?? []).filter((plan) =>
-        enrollments.data?.some((enrollment) => enrollment.status === 'ACTIVE' && enrollment.insurancePlanId === plan.id)
-    );
-
-    function handleRegister() {
-        const amountBrl = isCovered || amount.trim() === '' ? undefined : Number(amount.replace(',', '.'));
-        const invalidAmount =
-            !isCovered &&
-            ((amountBrl === undefined && !appointment.procedure) ||
-                (amountBrl !== undefined && !/^\d+(?:[.,]\d{1,2})?$/.test(amount.trim())));
-        const missingCoverage =
-            (isInsurance && !insurancePlanId) ||
-            (method === 'PACKAGE' && !patientPackageId) ||
-            (method === 'SUBSCRIPTION' && !patientSubscriptionId);
-
-        if (invalidAmount || missingCoverage) {
-            toast.error(t(invalidAmount ? 'appointmentRevenue.invalidAmount' : 'appointmentRevenue.selectCoverage'));
-
-            return;
-        }
-
-        registerPayment.mutate(
-            {
-                id,
-                data: {
-                    paymentMethod: method,
-                    amountBrl,
-                    status: registeredStatusByMethod[method] ?? status,
-                    insurancePlanId: isInsurance ? insurancePlanId : undefined,
-                    insuranceAuthCode: isInsurance ? insuranceAuthCode.trim() || undefined : undefined,
-                    patientPackageId: method === 'PACKAGE' ? patientPackageId : undefined,
-                    patientSubscriptionId: method === 'SUBSCRIPTION' ? patientSubscriptionId : undefined,
-                    notes: notes.trim() || undefined,
-                },
-            },
-            {
-                onSuccess: () => {
-                    toast.success(t('appointmentRevenue.registered'));
-                    setShowForm(false);
-                    onChanged();
-                },
-                onError: (error) => toast.error(getApiErrorDetail(error) ?? t('appointmentRevenue.saveError')),
-            }
-        );
-    }
-
-    function markAsPaid() {
-        updatePaymentStatus.mutate(
-            {id, data: {status: 'PAID'}},
-            {
-                onSuccess: () => {
-                    toast.success(t('appointmentRevenue.updated'));
-                    onChanged();
-                },
-                onError: (error) => toast.error(getApiErrorDetail(error) ?? t('appointmentRevenue.saveError')),
-            }
-        );
-    }
-
-    return (
-        <div className={styles.sheetSection} role="group" aria-label={t('appointmentRevenue.title')}>
-            <div className={styles.sheetSectionTitle}>{t('appointmentRevenue.title')}</div>
-            {revenue && (
-                <div className={styles.sheetKvGrid}>
-                    {REVENUE_AMOUNT_FIELDS.map((field) => (
-                        <div key={field} className={styles.sheetKv}>
-                            <span className={styles.sheetKvKey}>{t(`appointmentRevenue.${field}`)}</span>
-                            <span className={styles.sheetKvVal}>{formatBRL(revenue[field])}</span>
-                        </div>
-                    ))}
-                    <div className={styles.sheetKv}>
-                        <span className={styles.sheetKvKey}>{t('appointmentRevenue.method')}</span>
-                        <span className={styles.sheetKvText}>
-                            {revenue.paymentMethod
-                                ? t(`appointmentRevenue.methods.${revenue.paymentMethod}`)
-                                : t('appointmentRevenue.noMethod')}
-                        </span>
-                    </div>
-                    <div className={styles.sheetKv}>
-                        <span className={styles.sheetKvKey}>Status</span>
-                        <Badge variant={PAYMENT_STATUS_BADGE_VARIANT[revenue.status]}>
-                            {t(`appointmentRevenue.statuses.${revenue.status}`)}
-                        </Badge>
-                    </div>
-                    {revenue.paidAt && (
-                        <div className={styles.sheetKv}>
-                            <span className={styles.sheetKvKey}>{t('appointmentRevenue.paidAt')}</span>
-                            <span className={styles.sheetKvText}>{new Date(revenue.paidAt).toLocaleDateString()}</span>
-                        </div>
-                    )}
-                </div>
-            )}
-
-            {canUpdate && revenue?.status === 'PENDING' && hasPayment && revenue.insuranceClaimStatus === null && (
-                <Button
-                    size="sm"
-                    variant="outline"
-                    className={mt2}
-                    disabled={updatePaymentStatus.isPending}
-                    onClick={markAsPaid}
-                >
-                    {t('appointmentRevenue.markPaid')}
-                </Button>
-            )}
-
-            {mayRegister && showForm && (
-                <div className={styles.sheetKvGrid}>
-                    <div className={styles.sheetKv}>
-                        <Label htmlFor="appointment-payment-method">{t('appointmentRevenue.method')}</Label>
-                        <Select
-                            value={method}
-                            onValueChange={(value: RegisterPaymentDtoPaymentMethod) => setMethod(value)}
-                        >
-                            <SelectTrigger id="appointment-payment-method">
-                                <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {Object.values(RegisterPaymentDtoPaymentMethod).map((code) => (
-                                    <SelectItem
-                                        key={code}
-                                        value={code}
-                                        disabled={!isCompleted && (code === 'PACKAGE' || code === 'SUBSCRIPTION')}
-                                    >
-                                        {t(`appointmentRevenue.methods.${code}`)}
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                    </div>
-                    {!isCovered && (
-                        <div className={styles.sheetKv}>
-                            <Label htmlFor="appointment-payment-amount">{t('appointmentRevenue.amount')}</Label>
-                            <Input
-                                id="appointment-payment-amount"
-                                inputMode="decimal"
-                                value={amount}
-                                onChange={(event) => setAmount(event.target.value)}
-                            />
-                        </div>
-                    )}
-                    {!isCovered && !isInsurance && (
-                        <div className={styles.sheetKv}>
-                            <Label htmlFor="appointment-payment-status">Status</Label>
-                            <Select
-                                value={status}
-                                onValueChange={(value: RegisterPaymentDtoStatus) => setStatus(value)}
-                            >
-                                <SelectTrigger id="appointment-payment-status">
-                                    <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {Object.values(RegisterPaymentDtoStatus).map((code) => (
-                                        <SelectItem key={code} value={code}>
-                                            {t(`appointmentRevenue.statuses.${code}`)}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                        </div>
-                    )}
-                    {isInsurance && (
-                        <>
-                            <PaymentCoverageSelect
-                                label={t('appointmentRevenue.methods.INSURANCE')}
-                                value={insurancePlanId}
-                                onChange={setInsurancePlanId}
-                                options={activePlans.map((plan) => ({id: plan.id, name: plan.name}))}
-                                loading={plans.isPending || enrollments.isPending}
-                            />
-                            <div className={styles.sheetKv}>
-                                <Label htmlFor="appointment-payment-auth">
-                                    {t('appointmentRevenue.authorization')}
-                                </Label>
-                                <Input
-                                    id="appointment-payment-auth"
-                                    value={insuranceAuthCode}
-                                    onChange={(event) => setInsuranceAuthCode(event.target.value)}
-                                />
-                            </div>
-                        </>
-                    )}
-                    {method === 'PACKAGE' && (
-                        <PaymentCoverageSelect
-                            label={t('appointmentRevenue.methods.PACKAGE')}
-                            value={patientPackageId}
-                            onChange={setPatientPackageId}
-                            loading={packages.isPending}
-                            options={activePackages.map((pkg) => ({id: pkg.id, name: pkg.planNameSnapshot}))}
-                        />
-                    )}
-                    {method === 'SUBSCRIPTION' && (
-                        <PaymentCoverageSelect
-                            label={t('appointmentRevenue.methods.SUBSCRIPTION')}
-                            value={patientSubscriptionId}
-                            onChange={setPatientSubscriptionId}
-                            loading={subscriptions.isPending}
-                            options={activeSubscriptions.map((subscription) => ({
-                                id: subscription.id,
-                                name: subscription.planNameSnapshot,
-                            }))}
-                        />
-                    )}
-                    <div className={styles.sheetKv}>
-                        <Label htmlFor="appointment-payment-notes">{t('appointmentRevenue.notes')}</Label>
-                        <Input
-                            id="appointment-payment-notes"
-                            value={notes}
-                            onChange={(event) => setNotes(event.target.value)}
-                        />
-                    </div>
-                    <div className={gap1_5}>
-                        <Button size="sm" disabled={registerPayment.isPending} onClick={handleRegister}>
-                            {t('appointmentRevenue.register')}
-                        </Button>
-                        <Button size="sm" variant="outline" onClick={() => setShowForm(false)}>
-                            {t('actions.cancel')}
-                        </Button>
-                    </div>
-                </div>
-            )}
-
-            {mayRegister && !showForm && (
-                <Button
-                    size="sm"
-                    variant="outline"
-                    className={mt2}
-                    onClick={() => {
-                        setAmount(appointment.procedure ? (appointment.procedure.priceInCents / 100).toFixed(2) : '');
-                        setShowForm(true);
-                    }}
-                >
-                    {t('appointmentRevenue.register')}
-                </Button>
-            )}
-        </div>
-    );
-}
-
-// ─────────────────────────────────────────────────────────────────
-//   Edit Dialog
-// ─────────────────────────────────────────────────────────────────
-interface EditDialogProps {
-    apt: ApptView;
-    onClose: () => void;
-    onSaved: () => void;
-}
-
-function EditAppointmentDialog({apt, onClose, onSaved}: EditDialogProps) {
-    const [date, setDate] = useState(apt.date);
-    const [startTime, setStartTime] = useState(apt.start);
-    const [durMin, setDurMin] = useState(apt.raw.durationMinutes);
-    const [type, setType] = useState<AppointmentType>(apt.type);
-    const procedure = useAppointmentProcedure(
-        apt.raw.procedure ? {...apt.raw.procedure, durationMinutes: apt.raw.durationMinutes} : undefined
-    );
-    const requiresProcedure = type === 'PROCEDURE' && apt.type !== 'PROCEDURE';
-    const [note, setNote] = useState(apt.note ?? '');
-    const [roomId, setRoomId] = useState(apt.roomId ?? '');
-    const [availabilityWarning, setAvailabilityWarning] = useState<string | null>(null);
-    const update = useUpdateAppointment();
-
-    const meQuery = useGetCurrentClinicMember();
-    const clinicQuery = useGetClinic(meQuery.data?.clinicId ?? '', {query: {enabled: !!meQuery.data?.clinicId}});
-    const roomManagementEnabled = clinicQuery.data?.roomManagementEnabled ?? false;
-    const roomsQuery = useListRooms({query: {enabled: roomManagementEnabled}});
-
-    const submit = (confirmOutsideAvailability: boolean) => {
-        if (!date || !startTime || !procedure.valid || (requiresProcedure && !procedure.hasProcedure)) return;
-
-        const startAt = localDateTimeToISO(date, startTime);
-
-        update.mutate(
-            {
-                id: apt.id,
-                data: {
-                    startAt,
-                    ...procedure.buildFields(startAt, durMin),
-                    type: type as unknown as UpdateAppointmentInputDtoType,
-                    note: note || null,
-                    attendedByMemberId: apt.attendedByMemberId,
-                    roomId: roomManagementEnabled && roomId ? roomId : null,
-                    confirmOutsideAvailability,
-                },
-            },
-            {
-                onSuccess: () => {
-                    toast.success('Consulta atualizada');
-                    onSaved();
-                    onClose();
-                },
-                onError: (error) => {
-                    const warning = getAvailabilityWarning(error);
-
-                    if (warning && !confirmOutsideAvailability) {
-                        setAvailabilityWarning(warning);
-
-                        return;
-                    }
-
-                    toast.error(getApiErrorDetail(error) ?? 'Erro ao atualizar consulta');
-                },
-            }
-        );
-    };
-
-    const handleSave = () => submit(false);
-
-    return (
-        <>
-            <Dialog open onOpenChange={(o) => !o && onClose()}>
-                <DialogContent className={styles.editDialogWidth}>
-                    <DialogHeader>
-                        <DialogTitle>Editar agendamento</DialogTitle>
-                    </DialogHeader>
-                    <div className={styles.formBody}>
-                        <div className={styles.formRow}>
-                            <div className={styles.formField}>
-                                <Label>Data</Label>
-                                <Input
-                                    type="date"
-                                    aria-label="Data"
-                                    value={date}
-                                    onChange={(e) => setDate(e.target.value)}
-                                />
-                            </div>
-                            <div className={styles.formField}>
-                                <Label>Horário</Label>
-                                <Input
-                                    type="time"
-                                    aria-label="Horário"
-                                    value={startTime}
-                                    onChange={(e) => setStartTime(e.target.value)}
-                                />
-                            </div>
-                        </div>
-                        {procedure.renderFields(requiresProcedure)}
-                        <div className={styles.formRow}>
-                            {!procedure.hasProcedure && (
-                                <div className={styles.formField}>
-                                    <Label>Duração</Label>
-                                    <Select value={String(durMin)} onValueChange={(v) => setDurMin(Number(v))}>
-                                        <SelectTrigger aria-label="Duração">
-                                            <SelectValue />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            {[...new Set([...DURATIONS, durMin])]
-                                                .sort((a, b) => a - b)
-                                                .map((d) => (
-                                                    <SelectItem key={d} value={String(d)}>
-                                                        {d >= 60
-                                                            ? `${Math.floor(d / 60)}h${d % 60 ? ` ${d % 60}min` : ''}`
-                                                            : `${d} min`}
-                                                    </SelectItem>
-                                                ))}
-                                        </SelectContent>
-                                    </Select>
-                                </div>
-                            )}
-                            <div className={styles.formField}>
-                                <Label>Tipo</Label>
-                                <Select value={type} onValueChange={(v) => setType(v as AppointmentType)}>
-                                    <SelectTrigger>
-                                        <SelectValue />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {Object.entries(TYPE_LABELS).map(([k, v]) => (
-                                            <SelectItem key={k} value={k}>
-                                                {v}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                        </div>
-                        {roomManagementEnabled && (
-                            <div className={styles.formField}>
-                                <Label>
-                                    Sala <span className={styles.optionalLabel}>opcional</span>
-                                </Label>
-                                <Select value={roomId} onValueChange={setRoomId}>
-                                    <SelectTrigger aria-label="Sala">
-                                        <SelectValue placeholder="Sala padrão do profissional" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {(roomsQuery.data ?? []).map((room) => (
-                                            <SelectItem key={room.id} value={room.id}>
-                                                {room.name}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                        )}
-                        <div className={styles.formField}>
-                            <Label>
-                                Observações <span className={styles.optionalLabel}>opcional</span>
-                            </Label>
-                            <Textarea
-                                rows={3}
-                                placeholder="Informações adicionais..."
-                                value={note}
-                                onChange={(e) => setNote(e.target.value)}
-                            />
-                        </div>
-                    </div>
-                    <div className={styles.formFooter}>
-                        <Button variant="outline" onClick={onClose}>
-                            Cancelar
-                        </Button>
-                        <Button
-                            onClick={handleSave}
-                            disabled={
-                                update.isPending ||
-                                !date ||
-                                !startTime ||
-                                !procedure.valid ||
-                                (requiresProcedure && !procedure.hasProcedure)
-                            }
-                        >
-                            {update.isPending ? 'Salvando…' : 'Salvar alterações'}
-                        </Button>
-                    </div>
-                </DialogContent>
-            </Dialog>
-            <ConfirmDialog
-                opened={!!availabilityWarning}
-                title="Fora da disponibilidade do profissional"
-                message={availabilityWarning ?? undefined}
-                confirmLabel="Agendar mesmo assim"
-                isLoading={update.isPending}
-                onConfirm={() => {
-                    setAvailabilityWarning(null);
-                    submit(true);
-                }}
-                onCancel={() => setAvailabilityWarning(null)}
-            />
-        </>
-    );
-}
-
-// ─────────────────────────────────────────────────────────────────
-//   New Appointment Dialog
-// ─────────────────────────────────────────────────────────────────
-const followUpPlan = css({whiteSpace: 'pre-wrap', overflowWrap: 'anywhere', fontSize: 'sm', mt: '1'});
-
-interface AppointmentFollowUpContext {
-    recordId: string;
-    patient: Patient;
-    professional: ClinicMember;
-    plan: string | null;
-}
-
-interface NewApptDialogProps {
-    prefill: NewAppointmentPrefill | null;
-    defaultMemberId: string;
-    followUp?: AppointmentFollowUpContext;
-    onClose: () => void;
-    onSaved: () => void;
-}
-
-function NewAppointmentDialog({prefill, defaultMemberId, followUp, onClose, onSaved}: NewApptDialogProps) {
-    const {t} = useTranslation();
-    const today = fmtDate(new Date());
-    const [patientSearch, setPatientSearch] = useState('');
-    const [selectedPatient, setSelectedPatient] = useState<Patient | null>(followUp?.patient ?? null);
-    const [date, setDate] = useState(prefill?.date ?? today);
-    const [startTime, setStartTime] = useState(prefill?.start ?? '09:00');
-    const [durMin, setDurMin] = useState(60);
-    const [type, setType] = useState<CreateAppointmentDtoType>('RETURN');
-    const procedure = useAppointmentProcedure();
-    const requiresProcedure = type === 'PROCEDURE';
-    const [note, setNote] = useState('');
-    const [showDrop, setShowDrop] = useState(false);
-
-    const patientsQ = useSearchPatients(
-        {
-            term: patientSearch,
-            limit: 20,
-            cursor: null,
-            sort: null,
-        },
-        {query: {enabled: !followUp}}
-    ) as unknown as UseQueryResult<PaginatedPage<Patient>>;
-    const patientsList = patientsQ.data?.data ?? [];
-
-    const [roomId, setRoomId] = useState(prefill?.roomId ?? '');
-    const [availabilityWarning, setAvailabilityWarning] = useState<string | null>(null);
-
-    const create = useCreateAppointment();
-
-    const meQuery = useGetCurrentClinicMember();
-    const clinicQuery = useGetClinic(meQuery.data?.clinicId ?? '', {query: {enabled: !!meQuery.data?.clinicId}});
-    const roomManagementEnabled = clinicQuery.data?.roomManagementEnabled ?? false;
-    const roomsQuery = useListRooms({query: {enabled: roomManagementEnabled}});
-
-    // Which professional the appointment is for. Only surfaced as a field when the
-    // actor manages more than one agenda (owner/admin, or a grantee with multiple
-    // grants) — a plain professional only ever manages their own, so it's implicit.
-    const manageableData = useListManageableProfessionals({query: {enabled: !followUp}}).data;
-    const manageableProfessionals = manageableData ?? [];
-    const showProfessionalField = !followUp && manageableProfessionals.length > 1;
-
-    const [attendedByMemberId, setAttendedByMemberId] = useState(
-        followUp?.professional.id ?? prefill?.attendedByMemberId ?? defaultMemberId
-    );
-
-    useEffect(() => {
-        if (followUp || !manageableData || manageableData.length === 0) return;
-
-        setAttendedByMemberId((prev) =>
-            manageableData.some((m) => m.id === prev) ? prev : (manageableData[0]?.id ?? prev)
-        );
-    }, [followUp, manageableData]);
-
-    const submit = (confirmOutsideAvailability: boolean) => {
-        if (!selectedPatient) {
-            toast.error('Selecione um paciente');
-
-            return;
-        }
-
-        if (!date || !startTime || !procedure.valid || (requiresProcedure && !procedure.hasProcedure)) return;
-
-        const startAt = localDateTimeToISO(date, startTime);
-
-        if (followUp && new Date(startAt).getTime() <= Date.now()) {
-            toast.error(t('followUp.futureDate'));
-
-            return;
-        }
-
-        create.mutate(
-            {
-                data: {
-                    patientId: selectedPatient.id,
-                    attendedByMemberId,
-                    startAt,
-                    ...procedure.buildFields(startAt, durMin),
-                    type,
-                    note: note || null,
-                    retroactive: !followUp,
-                    followUpFromRecordId: followUp?.recordId,
-                    roomId: roomManagementEnabled && roomId ? roomId : undefined,
-                    confirmOutsideAvailability,
-                },
-            },
-            {
-                onSuccess: () => {
-                    toast.success(followUp ? t('followUp.saved') : 'Consulta agendada');
-                    onSaved();
-                },
-                onError: (error) => {
-                    const warning = getAvailabilityWarning(error);
-
-                    if (warning && !confirmOutsideAvailability) {
-                        setAvailabilityWarning(warning);
-
-                        return;
-                    }
-
-                    toast.error(
-                        getApiErrorDetail(error) ?? (followUp ? t('followUp.saveError') : 'Erro ao criar consulta')
-                    );
-                },
-            }
-        );
-    };
-
-    const handleSave = () => submit(false);
-    const submitLabel = followUp ? t('followUp.schedule') : 'Agendar consulta';
-
-    return (
-        <>
-            <Dialog open onOpenChange={(o) => !o && !create.isPending && onClose()}>
-                <DialogContent className={styles.newApptDialogWidth}>
-                    <DialogHeader>
-                        <DialogTitle>{followUp ? t('followUp.schedule') : 'Novo agendamento'}</DialogTitle>
-                        {followUp && <DialogDescription>{t('followUp.linkedToRecord')}</DialogDescription>}
-                    </DialogHeader>
-                    <div className={styles.formBody}>
-                        {/* Patient */}
-                        <div className={cx(styles.formField, relative)}>
-                            <Label>Paciente</Label>
-                            {selectedPatient ? (
-                                <div className={styles.patSearchPill}>
-                                    <div className={styles.patAvatarSm}>{getInitials(selectedPatient.name)}</div>
-                                    <span className={styles.patSearchName}>{selectedPatient.name}</span>
-                                    {!followUp && (
-                                        <button
-                                            type="button"
-                                            className={styles.patClearBtn}
-                                            onClick={() => setSelectedPatient(null)}
-                                        >
-                                            <X className={icon35} />
-                                        </button>
-                                    )}
-                                </div>
-                            ) : (
-                                <div className={styles.patSearchWrap}>
-                                    <Input
-                                        placeholder="Buscar paciente..."
-                                        value={patientSearch}
-                                        onChange={(e) => {
-                                            setPatientSearch(e.target.value);
-                                            setShowDrop(true);
-                                        }}
-                                        onFocus={() => setShowDrop(true)}
-                                        onBlur={() => setTimeout(() => setShowDrop(false), 200)}
-                                    />
-                                    {showDrop && patientsList.length > 0 && (
-                                        <div className={styles.patSearchDrop}>
-                                            {patientsList.map((p) => (
-                                                <button
-                                                    key={p.id}
-                                                    type="button"
-                                                    className={styles.patSearchRow}
-                                                    onMouseDown={() => {
-                                                        setSelectedPatient(p);
-                                                        setPatientSearch('');
-                                                        setShowDrop(false);
-                                                    }}
-                                                >
-                                                    <div className={styles.patAvatarSm}>{getInitials(p.name)}</div>
-                                                    <span className={truncate}>{p.name}</span>
-                                                </button>
-                                            ))}
-                                        </div>
-                                    )}
-                                </div>
-                            )}
-                        </div>
-
-                        {followUp && (
-                            <div className={styles.formField}>
-                                <Label>{t('followUp.professional')}</Label>
-                                <span>{followUp.professional.displayName ?? t('followUp.professional')}</span>
-                                {followUp.plan && (
-                                    <details>
-                                        <summary>{t('followUp.sourcePlan')}</summary>
-                                        <p className={followUpPlan}>{followUp.plan}</p>
-                                    </details>
-                                )}
-                            </div>
-                        )}
-
-                        {showProfessionalField && (
-                            <div className={styles.formField}>
-                                <Label>Profissional</Label>
-                                <Select value={attendedByMemberId} onValueChange={setAttendedByMemberId}>
-                                    <SelectTrigger aria-label="Profissional">
-                                        <SelectValue placeholder="Selecione o profissional" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {manageableProfessionals.map((member) => (
-                                            <SelectItem key={member.id} value={member.id}>
-                                                {member.displayName ?? 'Profissional'}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                        )}
-
-                        <div className={styles.formRow}>
-                            <div className={styles.formField}>
-                                <Label>Data</Label>
-                                <Input
-                                    type="date"
-                                    aria-label="Data"
-                                    min={followUp ? today : undefined}
-                                    value={date}
-                                    onChange={(e) => setDate(e.target.value)}
-                                />
-                            </div>
-                            <div className={styles.formField}>
-                                <Label>Horário</Label>
-                                <Input
-                                    type="time"
-                                    aria-label="Horário"
-                                    value={startTime}
-                                    onChange={(e) => setStartTime(e.target.value)}
-                                />
-                            </div>
-                        </div>
-
-                        {procedure.renderFields(requiresProcedure)}
-                        <div className={styles.formRow}>
-                            {!procedure.hasProcedure && (
-                                <div className={styles.formField}>
-                                    <Label>Duração</Label>
-                                    <Select value={String(durMin)} onValueChange={(v) => setDurMin(Number(v))}>
-                                        <SelectTrigger aria-label="Duração">
-                                            <SelectValue />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            {[...new Set([...DURATIONS, durMin])]
-                                                .sort((a, b) => a - b)
-                                                .map((d) => (
-                                                    <SelectItem key={d} value={String(d)}>
-                                                        {d >= 60
-                                                            ? `${Math.floor(d / 60)}h${d % 60 ? ` ${d % 60}min` : ''}`
-                                                            : `${d} min`}
-                                                    </SelectItem>
-                                                ))}
-                                        </SelectContent>
-                                    </Select>
-                                </div>
-                            )}
-                            <div className={styles.formField}>
-                                <Label>Tipo</Label>
-                                <Select
-                                    value={type}
-                                    disabled={!!followUp}
-                                    onValueChange={(v) => setType(v as CreateAppointmentDtoType)}
-                                >
-                                    <SelectTrigger>
-                                        <SelectValue />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {Object.entries(TYPE_LABELS).map(([k, v]) => (
-                                            <SelectItem key={k} value={k}>
-                                                {v}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                        </div>
-
-                        {roomManagementEnabled && (
-                            <div className={styles.formField}>
-                                <Label>
-                                    Sala <span className={styles.optionalLabel}>opcional</span>
-                                </Label>
-                                <Select value={roomId} onValueChange={setRoomId}>
-                                    <SelectTrigger aria-label="Sala">
-                                        <SelectValue placeholder="Sala padrão do profissional" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {(roomsQuery.data ?? []).map((room) => (
-                                            <SelectItem key={room.id} value={room.id}>
-                                                {room.name}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                        )}
-
-                        <div className={styles.formField}>
-                            <Label>
-                                Observações <span className={styles.optionalLabel}>opcional</span>
-                            </Label>
-                            <Textarea
-                                rows={2}
-                                placeholder="Informações adicionais..."
-                                value={note}
-                                onChange={(e) => setNote(e.target.value)}
-                            />
-                        </div>
-                    </div>
-                    <div className={styles.formFooter}>
-                        <Button variant="outline" onClick={onClose} disabled={create.isPending}>
-                            Cancelar
-                        </Button>
-                        <Button
-                            onClick={handleSave}
-                            disabled={
-                                create.isPending ||
-                                !selectedPatient ||
-                                !attendedByMemberId ||
-                                !date ||
-                                !startTime ||
-                                !procedure.valid ||
-                                (requiresProcedure && !procedure.hasProcedure)
-                            }
-                        >
-                            {create.isPending ? t('states.saving') : submitLabel}
-                        </Button>
-                    </div>
-                </DialogContent>
-            </Dialog>
-            <ConfirmDialog
-                opened={!!availabilityWarning}
-                title="Fora da disponibilidade do profissional"
-                message={availabilityWarning ?? undefined}
-                confirmLabel="Agendar mesmo assim"
-                isLoading={create.isPending}
-                onConfirm={() => {
-                    setAvailabilityWarning(null);
-                    submit(true);
-                }}
-                onCancel={() => setAvailabilityWarning(null)}
-            />
-        </>
-    );
-}
-
-function RecordFollowUpDialog({recordId, onDismiss}: {recordId: string; onDismiss: () => void}) {
-    const {t} = useTranslation();
-    const navigate = useNavigate();
-    const queryClient = useQueryClient();
-    const access = useCanState({hasAll: ['appointment:create', 'record:view', 'professional:view']});
-    const recordQuery = useGetRecord(recordId, {query: {enabled: access.allowed}});
-    const record = recordQuery.data;
-    const patientQuery = useGetPatient(record?.patientId ?? '', {query: {enabled: !!record && access.allowed}});
-    const professionalQuery = useGetProfessional(record?.responsibleProfessionalId ?? '', {
-        query: {enabled: !!record && access.allowed},
-    });
-    const agendasQuery = useListManageableProfessionals({query: {enabled: access.allowed}});
-    const professional = agendasQuery.data?.find((member) => member.id === professionalQuery.data?.clinicMemberId);
-    const loading =
-        access.isLoading ||
-        recordQuery.isLoading ||
-        patientQuery.isLoading ||
-        professionalQuery.isLoading ||
-        agendasQuery.isLoading;
-    const error =
-        access.isError ||
-        recordQuery.isError ||
-        patientQuery.isError ||
-        professionalQuery.isError ||
-        agendasQuery.isError;
-
-    const returnToRecord = () => {
-        if (record && access.allowed && !recordQuery.isError) {
-            void navigate({
-                to: '/patients/$patientId/records/$recordId',
-                params: {patientId: record.patientId, recordId},
-                replace: true,
-            });
-        } else {
-            onDismiss();
-        }
-    };
-
-    if (!access.allowed || error || !record || !patientQuery.data || !professional) {
-        return (
-            <Dialog open onOpenChange={(open) => !open && returnToRecord()}>
-                <DialogContent>
-                    <DialogHeader>
-                        <DialogTitle>{t('followUp.schedule')}</DialogTitle>
-                        <DialogDescription role="status">
-                            {loading ? t('states.loading') : t('followUp.unavailable')}
-                        </DialogDescription>
-                    </DialogHeader>
-                    <Button variant="outline" onClick={returnToRecord}>
-                        {t('actions.close')}
-                    </Button>
-                </DialogContent>
-            </Dialog>
-        );
-    }
-
-    return (
-        <NewAppointmentDialog
-            prefill={{date: fmtDate(addDays(new Date(), 1)), start: '09:00'}}
-            defaultMemberId={professional.id}
-            followUp={{recordId, patient: patientQuery.data, professional, plan: asStr(record.plan)}}
-            onClose={returnToRecord}
-            onSaved={() => {
-                invalidateAppointmentRevenue(queryClient, record.clinicId);
-                void queryClient.invalidateQueries({queryKey: getListAppointmentFollowUpsQueryKey(recordId)});
-                returnToRecord();
-            }}
-        />
-    );
-}
-
-// ─────────────────────────────────────────────────────────────────
-//   Cancel Confirm Dialog
-// ─────────────────────────────────────────────────────────────────
-interface CancelDialogProps {
-    apt: ApptView;
-    onClose: () => void;
-    onCancelled: () => void;
-}
-
-function CancelDialog({apt, onClose, onCancelled}: CancelDialogProps) {
-    const [reason, setReason] = useState('');
-    const cancel = useCancelAppointment();
-
-    const handleConfirm = () => {
-        cancel.mutate(
-            {id: apt.id, data: {reason: reason || 'Cancelado pelo profissional'}},
-            {
-                onSuccess: () => {
-                    toast.success('Consulta cancelada');
-                    onCancelled();
-                    onClose();
-                },
-                onError: () => toast.error('Erro ao cancelar consulta'),
-            }
-        );
-    };
-
-    return (
-        <Dialog open onOpenChange={(o) => !o && onClose()}>
-            <DialogContent className={styles.cancelDialogWidth}>
-                <DialogHeader>
-                    <DialogTitle>Cancelar consulta</DialogTitle>
-                </DialogHeader>
-                <p className={styles.cancelDialogText}>Tem certeza que deseja cancelar esta consulta?</p>
-                <div className={cx(styles.formField, mt2)}>
-                    <Label>
-                        Motivo <span className={styles.optionalLabel}>opcional</span>
-                    </Label>
-                    <Textarea
-                        rows={2}
-                        placeholder="Informe o motivo do cancelamento..."
-                        value={reason}
-                        onChange={(e) => setReason(e.target.value)}
-                    />
-                </div>
-                <div className={styles.formFooter}>
-                    <Button variant="outline" onClick={onClose}>
-                        Voltar
-                    </Button>
-                    <Button variant="destructive" onClick={handleConfirm} disabled={cancel.isPending}>
-                        {cancel.isPending ? 'Cancelando…' : 'Confirmar cancelamento'}
-                    </Button>
-                </div>
-            </DialogContent>
-        </Dialog>
-    );
-}
-
-// ─────────────────────────────────────────────────────────────────
-//   Main Page
-// ─────────────────────────────────────────────────────────────────
-export function AppointmentsPage() {
+export function AgendaTablePage() {
+    const {t, i18n} = useTranslation();
     const navigate = useNavigate();
     const queryClient = useQueryClient();
     const search = Route.useSearch();
+    const today = useMemo(todayDate, []);
 
-    const today = useMemo(() => {
-        const d = new Date();
+    // ── Filters ──────────────────────────────────────────────────
+    const defaultRange = presetRange('next7', today);
+    const from = search.from ?? search.date ?? defaultRange.from;
+    const to = search.to ?? search.date ?? (search.from ? search.from : defaultRange.to);
+    const rangeStart = parseCalendarDate(from) ?? today;
+    const rangeEndDay = parseCalendarDate(to) ?? rangeStart;
+    const rangeEnd = useMemo(() => {
+        const end = new Date(rangeEndDay < rangeStart ? rangeStart : rangeEndDay);
 
-        d.setHours(0, 0, 0, 0);
+        end.setHours(23, 59, 59, 999);
 
-        return d;
-    }, []);
-    const [now, setNow] = useState({h: new Date().getHours(), m: new Date().getMinutes()});
+        return end;
+    }, [rangeEndDay, rangeStart]);
 
-    useEffect(() => {
-        const iv = setInterval(() => {
-            const d = new Date();
-
-            setNow({h: d.getHours(), m: d.getMinutes()});
-        }, 60_000);
-
-        return () => clearInterval(iv);
-    }, []);
-
-    const [view, setView] = useState<ViewMode>('week');
-    const [cursor, setCursor] = useState(() => parseCalendarDate(search.date) ?? today);
     const [statusFilters, setStatusFilters] = useState<Set<AppointmentStatus>>(new Set(ALL_STATUSES));
-    const [detailId, setDetailId] = useState<string | null>(search.appointmentId ?? null);
-    const [editId, setEditId] = useState<string | null>(null);
-    const [cancelId, setCancelId] = useState<string | null>(null);
-    const [newAppt, setNewAppt] = useState<NewAppointmentPrefill | true | null>(null);
-    const [highlightId, setHighlightId] = useState<string | null>(null);
-    const [pendingPlacement, setPendingPlacement] = useState<AppointmentPlacement | null>(null);
-    const [placementWarning, setPlacementWarning] = useState<string | null>(null);
+    const [professionalId, setProfessionalId] = useState('');
+    const [term, setTerm] = useState('');
 
-    useEffect(() => {
-        setDetailId(search.appointmentId ?? null);
+    const setRange = (next: {from: string; to: string}) =>
+        void navigate({to: '/appointments', search: {from: next.from, to: next.to}, replace: true});
 
-        const targetDate = parseCalendarDate(search.date);
+    const toggleStatus = useCallback((status: AppointmentStatus) => {
+        setStatusFilters((prev) => {
+            const next = new Set(prev);
 
-        if (targetDate) setCursor(targetDate);
-    }, [search.appointmentId, search.date]);
+            if (next.has(status)) next.delete(status);
+            else next.add(status);
 
-    const closeDetail = () => {
-        setDetailId(null);
+            return next;
+        });
+    }, []);
 
-        if (search.appointmentId) {
-            void navigate({to: '/appointments', search: {date: search.date}, replace: true});
-        }
-    };
-
-    const visibleRange = useMemo(() => {
-        if (view === 'month') {
-            const monthStart = new Date(cursor.getFullYear(), cursor.getMonth(), 1);
-            const rangeStart = startOfWeek(monthStart);
-
-            return {start: rangeStart, end: endOfDay(addDays(rangeStart, 41))};
-        }
-
-        if (view === 'week') {
-            const rangeStart = startOfWeek(cursor);
-
-            return {start: rangeStart, end: endOfDay(addDays(rangeStart, 6))};
-        }
-
-        return {start: cursor, end: endOfDay(cursor)};
-    }, [cursor, view]);
-
-    // Load only the visible interval. The grid is now usable with long-running clinic schedules.
+    // ── Data ─────────────────────────────────────────────────────
     const apptQ = useSearchAppointments({
         term: '',
-        limit: 300,
+        limit: PAGE_LIMIT,
         cursor: null,
         sort: {startAt: 'asc'},
-        dateFrom: visibleRange.start.toISOString(),
-        dateTo: visibleRange.end.toISOString(),
-    }) as unknown as UseQueryResult<PaginatedPage<Appointment>>;
+        dateFrom: rangeStart.toISOString(),
+        dateTo: rangeEnd.toISOString(),
+    }) as unknown as UseQueryResult<PaginatedPage<AgendaListItem>>;
     const rawAppts = useMemo(() => apptQ.data?.data ?? [], [apptQ.data]);
+    const totalCount = apptQ.data?.totalCount ?? 0;
 
-    // Load patients
     const patQ = useSearchPatients({term: '', limit: 300, cursor: null, sort: null}) as unknown as UseQueryResult<
         PaginatedPage<Patient>
     >;
-    const patients = patQ.data?.data ?? [];
+    const patients = useMemo(() => patQ.data?.data ?? [], [patQ.data]);
+    const patientNames = useMemo(() => new Map(patients.map((p) => [p.id, p.name])), [patients]);
 
-    // Every visible professional gets their own availability overlay. These calls are
-    // advisory for the user; the server remains the source of truth on every change.
-    const manageableProfessionalsQuery = useListManageableProfessionals();
-    const manageableProfessionals = useMemo(
-        () => (manageableProfessionalsQuery.data ?? []).filter((member) => member.isActive),
-        [manageableProfessionalsQuery.data]
+    const professionalsQ = useListManageableProfessionals();
+    const professionals = useMemo(
+        () => (professionalsQ.data ?? []).filter((member) => member.isActive),
+        [professionalsQ.data]
     );
-    const professionalIds = useMemo(
-        () => manageableProfessionals.map((member) => member.id),
-        [manageableProfessionals]
+    const professionalNames = useMemo(
+        () => new Map(professionals.map((member) => [member.id, member.displayName ?? null])),
+        [professionals]
     );
-    const availabilityWindow = useMemo(
-        () => ({
-            startAt: addDays(visibleRange.start, -1).toISOString(),
-            endAt: addDays(visibleRange.end, 1).toISOString(),
-        }),
-        [visibleRange]
-    );
-    const workingHoursQueries = useQueries({
-        queries: professionalIds.map((memberId) => getListWorkingHoursQueryOptions(memberId)),
-    });
-    const memberBlockQueries = useQueries({
-        queries: professionalIds.map((memberId) => getListMemberBlocksQueryOptions(memberId, availabilityWindow)),
-    });
-    const availabilityByMember = useMemo(() => {
-        const availability = new Map<string, ProfessionalAvailability>();
 
-        professionalIds.forEach((memberId, index) => {
-            const workingHoursByDay = new Map<number, WorkingHours>();
-
-            for (const hours of workingHoursQueries[index]?.data ?? []) {
-                workingHoursByDay.set(hours.dayOfWeek, hours);
-            }
-
-            availability.set(memberId, {
-                workingHoursByDay,
-                blocks: memberBlockQueries[index]?.data ?? [],
-            });
-        });
-
-        return availability;
-    }, [memberBlockQueries, professionalIds, workingHoursQueries]);
-    const defaultMemberId = manageableProfessionals[0]?.id ?? '';
-    const defaultAvailability = availabilityByMember.get(defaultMemberId);
-    const workingHoursByDay = defaultAvailability?.workingHoursByDay ?? new Map<number, WorkingHours>();
-    const blocks = defaultAvailability?.blocks ?? [];
-
-    // Salas da clínica, para o selo de sala nas consultas e a visão "Salas" (Fase 5).
     const meQuery = useGetCurrentClinicMember();
     const clinicQuery = useGetClinic(meQuery.data?.clinicId ?? '', {query: {enabled: !!meQuery.data?.clinicId}});
     const roomManagementEnabled = clinicQuery.data?.roomManagementEnabled ?? false;
     const roomsQuery = useListRooms({query: {enabled: roomManagementEnabled}});
-    const rooms = useMemo(() => roomsQuery.data ?? [], [roomsQuery.data]);
-
-    const roomsById = useMemo(() => new Map(rooms.map((r) => [r.id, r])), [rooms]);
-    const roomIndexById = useMemo(() => new Map(rooms.map((r, i) => [r.id, i])), [rooms]);
+    const roomsById = useMemo(() => new Map((roomsQuery.data ?? []).map((r) => [r.id, r.name])), [roomsQuery.data]);
+    const showRooms = roomManagementEnabled && roomsById.size > 0;
 
     const clinicId = meQuery.data?.clinicId;
     const refreshAppointments = useCallback(
@@ -2831,279 +195,300 @@ export function AppointmentsPage() {
     );
 
     const allAppts = useMemo(() => rawAppts.map(toApptView), [rawAppts]);
-    const filteredAppts = useMemo(() => allAppts.filter((a) => statusFilters.has(a.status)), [allAppts, statusFilters]);
+    const listItemsById = useMemo(() => new Map(rawAppts.map((item) => [item.id, item])), [rawAppts]);
 
-    const toggleStatus = useCallback((s: AppointmentStatus) => {
-        setStatusFilters((prev) => {
-            const n = new Set(prev);
+    const patientNameOf = useCallback(
+        (appointment: Appointment) =>
+            listItemsById.get(appointment.id)?.patientName ?? patientNames.get(appointment.patientId) ?? '—',
+        [listItemsById, patientNames]
+    );
 
-            if (n.has(s)) n.delete(s);
-            else n.add(s);
+    const rows = useMemo(() => {
+        const needle = normalizeText(term.trim());
 
-            return n;
+        return allAppts.filter((apt) => {
+            if (!statusFilters.has(apt.status)) return false;
+
+            if (professionalId && apt.attendedByMemberId !== professionalId) return false;
+
+            if (!needle) return true;
+
+            const haystack = normalizeText(
+                [patientNameOf(apt.raw), apt.raw.procedure?.name ?? '', apt.note ?? ''].join(' ')
+            );
+
+            return haystack.includes(needle);
         });
-    }, []);
+    }, [allAppts, patientNameOf, professionalId, statusFilters, term]);
 
-    const goToday = () => setCursor(today);
+    const groupedRows = useMemo(() => {
+        const groups: Array<{date: string; items: typeof rows}> = [];
 
-    const goPrev = () => {
-        if (view === 'day' || view === 'professionals' || view === 'rooms') setCursor(addDays(cursor, -1));
-        else if (view === 'week') setCursor(addDays(cursor, -7));
-        else setCursor(new Date(cursor.getFullYear(), cursor.getMonth() - 1, 1));
-    };
+        for (const apt of rows) {
+            const last = groups[groups.length - 1];
 
-    const goNext = () => {
-        if (view === 'day' || view === 'professionals' || view === 'rooms') setCursor(addDays(cursor, 1));
-        else if (view === 'week') setCursor(addDays(cursor, 7));
-        else setCursor(new Date(cursor.getFullYear(), cursor.getMonth() + 1, 1));
-    };
-
-    const periodLabel = useMemo(() => {
-        if (view === 'day' || view === 'professionals' || view === 'rooms')
-            return `${cursor.getDate()} de ${MONTH_NAMES[cursor.getMonth()]} de ${cursor.getFullYear()}, ${WEEKDAYS_LONG[cursor.getDay()]}`;
-
-        if (view === 'week') {
-            const ws = startOfWeek(cursor);
-            const we = addDays(ws, 6);
-
-            if (ws.getMonth() === we.getMonth())
-                return `${ws.getDate()} – ${we.getDate()} de ${MONTH_NAMES[ws.getMonth()]} de ${ws.getFullYear()}`;
-
-            return `${ws.getDate()} ${MONTH_NAMES[ws.getMonth()].slice(0, 3)} – ${we.getDate()} ${MONTH_NAMES[we.getMonth()].slice(0, 3)} de ${we.getFullYear()}`;
+            if (last?.date === apt.date) last.items.push(apt);
+            else groups.push({date: apt.date, items: [apt]});
         }
 
-        const m = MONTH_NAMES[cursor.getMonth()];
+        return groups;
+    }, [rows]);
 
-        return `${m.charAt(0).toUpperCase() + m.slice(1)} ${cursor.getFullYear()}`;
-    }, [view, cursor]);
+    // ── Dialog state (same flows as the calendar) ────────────────
+    const [detailId, setDetailId] = useState<string | null>(search.appointmentId ?? null);
+    const [editId, setEditId] = useState<string | null>(null);
+    const [cancelId, setCancelId] = useState<string | null>(null);
+    const [newAppt, setNewAppt] = useState<NewAppointmentPrefill | true | null>(null);
 
-    const highlightFor = (id: string) => {
-        setHighlightId(id);
-        setTimeout(() => setHighlightId(null), 2400);
+    useEffect(() => {
+        setDetailId(search.appointmentId ?? null);
+    }, [search.appointmentId]);
+
+    const keepFilters = {from: search.from, to: search.to, date: search.date};
+
+    const closeDetail = () => {
+        setDetailId(null);
+
+        if (search.appointmentId) {
+            void navigate({to: '/appointments', search: keepFilters, replace: true});
+        }
     };
-
-    const updateAppointment = useUpdateAppointment();
-    const submitPlacement = useCallback(
-        (placement: AppointmentPlacement, confirmOutsideAvailability: boolean) => {
-            updateAppointment.mutate(
-                {
-                    id: placement.apt.id,
-                    data: {
-                        startAt: localDateTimeToISO(placement.apt.date, placement.start),
-                        endAt:
-                            !placement.apt.raw.procedure ||
-                            (placement.start === placement.apt.start && placement.end !== placement.apt.end)
-                                ? localDateTimeToISO(placement.apt.date, placement.end)
-                                : undefined,
-                        type: placement.apt.type as unknown as UpdateAppointmentInputDtoType,
-                        note: placement.apt.note,
-                        attendedByMemberId: placement.attendedByMemberId,
-                        roomId: placement.apt.roomId,
-                        confirmOutsideAvailability,
-                    },
-                },
-                {
-                    onSuccess: () => {
-                        setPendingPlacement(null);
-                        setPlacementWarning(null);
-                        toast.success('Agendamento atualizado');
-                        refreshAppointments();
-                    },
-                    onError: (error) => {
-                        const warning = getAvailabilityWarning(error);
-
-                        if (warning && !confirmOutsideAvailability) {
-                            setPendingPlacement(placement);
-                            setPlacementWarning(warning);
-
-                            return;
-                        }
-
-                        setPendingPlacement(null);
-                        setPlacementWarning(null);
-                        toast.error(getApiErrorDetail(error) ?? 'Não foi possível atualizar o agendamento.');
-                    },
-                }
-            );
-        },
-        [refreshAppointments, updateAppointment]
-    );
-
-    const moveAppointment = useCallback(
-        (apt: ApptView, attendedByMemberId: string, start: string) => {
-            const duration = apt.raw.durationMinutes;
-            const end = minToTime(timeToMin(start) + duration);
-
-            if (apt.attendedByMemberId === attendedByMemberId && apt.start === start) return;
-
-            submitPlacement({apt, attendedByMemberId, start, end}, false);
-        },
-        [submitPlacement]
-    );
-
-    const resizeAppointment = useCallback(
-        (apt: ApptView, end: string) => {
-            if (apt.end === end) return;
-
-            submitPlacement({apt, attendedByMemberId: apt.attendedByMemberId, start: apt.start, end}, false);
-        },
-        [submitPlacement]
-    );
 
     const detailApt = allAppts.find((a) => a.id === detailId) ?? null;
     const editApt = allAppts.find((a) => a.id === editId) ?? null;
     const cancelApt = allAppts.find((a) => a.id === cancelId) ?? null;
 
-    const sharedProps = {
-        appts: filteredAppts,
-        patients,
-        cursor,
-        today,
-        now,
-        highlightId,
-        workingHoursByDay,
-        blocks,
-        roomsById,
-        roomIndexById,
-        onSlotClick: (d: Date, time: string, roomId?: string | null) =>
-            setNewAppt({date: fmtDate(d), start: time, roomId}),
-        onApptClick: setDetailId,
+    const dayFormatter = useMemo(
+        () => new Intl.DateTimeFormat(i18n.language, {weekday: 'long', day: '2-digit', month: 'long'}),
+        [i18n.language]
+    );
+
+    const formatDay = (date: string) => {
+        const parsed = parseCalendarDate(date);
+
+        return parsed ? dayFormatter.format(parsed) : date;
+    };
+
+    const columnCount = showRooms ? 7 : 6;
+    const isLoading = apptQ.isPending;
+
+    const renderBody = () => {
+        if (isLoading) {
+            return (
+                <div className={styles.skeletonStack}>
+                    {Array.from({length: 6}, (_, i) => (
+                        <Skeleton key={i} className={styles.skeletonRow} />
+                    ))}
+                </div>
+            );
+        }
+
+        if (rows.length === 0) {
+            return (
+                <EmptyStateCard
+                    icon={<CalendarX2 aria-hidden />}
+                    title={t('agenda.empty')}
+                    description={t('agenda.emptyDescription')}
+                />
+            );
+        }
+
+        return (
+            <div className={styles.tableCard}>
+                <Table>
+                    <TableHeader>
+                        <TableRow>
+                            <TableHead>{t('agenda.columns.time')}</TableHead>
+                            <TableHead>{t('agenda.columns.patient')}</TableHead>
+                            <TableHead>{t('agenda.columns.professional')}</TableHead>
+                            <TableHead>{t('agenda.columns.type')}</TableHead>
+                            <TableHead>{t('agenda.columns.procedure')}</TableHead>
+                            {showRooms && <TableHead>{t('agenda.columns.room')}</TableHead>}
+                            <TableHead>{t('agenda.columns.status')}</TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        {groupedRows.map((group) => (
+                            <GroupRows key={group.date} label={formatDay(group.date)} columnCount={columnCount}>
+                                {group.items.map((apt) => {
+                                    const professionalName =
+                                        listItemsById.get(apt.id)?.attendedByName ??
+                                        professionalNames.get(apt.attendedByMemberId) ??
+                                        t('agenda.professionalFallback');
+
+                                    return (
+                                        <TableRow
+                                            key={apt.id}
+                                            className={styles.row}
+                                            onClick={() => setDetailId(apt.id)}
+                                        >
+                                            <TableCell className={styles.mono}>
+                                                {apt.start} – {apt.end}
+                                            </TableCell>
+                                            <TableCell>
+                                                <button
+                                                    type="button"
+                                                    className={styles.rowButton}
+                                                    onClick={(event) => {
+                                                        event.stopPropagation();
+                                                        setDetailId(apt.id);
+                                                    }}
+                                                >
+                                                    {patientNameOf(apt.raw)}
+                                                </button>
+                                                {apt.note && <div className={styles.truncatedNote}>{apt.note}</div>}
+                                            </TableCell>
+                                            <TableCell>{professionalName}</TableCell>
+                                            <TableCell>{t(`reception.types.${apt.type}`)}</TableCell>
+                                            <TableCell>
+                                                {apt.raw.procedure ? (
+                                                    <span className={styles.procedureCell}>
+                                                        <ProcedureColorDot color={apt.raw.procedure.color} decorative />
+                                                        {apt.raw.procedure.name}
+                                                    </span>
+                                                ) : (
+                                                    <span className={styles.muted}>—</span>
+                                                )}
+                                            </TableCell>
+                                            {showRooms && (
+                                                <TableCell>
+                                                    {(apt.roomId && roomsById.get(apt.roomId)) ?? (
+                                                        <span className={styles.muted}>—</span>
+                                                    )}
+                                                </TableCell>
+                                            )}
+                                            <TableCell>
+                                                <Badge status={apt.status}>{t(`reception.status.${apt.status}`)}</Badge>
+                                            </TableCell>
+                                        </TableRow>
+                                    );
+                                })}
+                            </GroupRows>
+                        ))}
+                    </TableBody>
+                </Table>
+            </div>
+        );
     };
 
     return (
         <div className={styles.page}>
-            {/* Header */}
-            <div className={styles.header}>
-                <div className={styles.headerLeft}>
-                    <CalendarDays className={styles.headerCalIcon} />
-                    <h1 className={styles.pageTitle}>Agenda</h1>
+            <header className={styles.header}>
+                <div className={styles.titleGroup}>
+                    <h1 className={styles.title}>{t('agenda.title')}</h1>
+                    <p className={styles.subtitle}>{t('agenda.subtitle')}</p>
                 </div>
-                <div className={styles.headerRight}>
-                    <div className={styles.segmented}>
-                        {(
-                            [
-                                'day',
-                                'week',
-                                'month',
-                                ...(manageableProfessionals.length > 1 ? (['professionals'] as const) : []),
-                                ...(roomManagementEnabled && rooms.length > 0 ? (['rooms'] as const) : []),
-                            ] as ViewMode[]
-                        ).map((v) => (
-                            <button
-                                key={v}
-                                type="button"
-                                className={segmentBtn({active: view === v})}
-                                onClick={() => setView(v)}
-                            >
-                                {VIEW_MODE_LABELS[v]}
-                            </button>
-                        ))}
-                    </div>
-                    <Button size="sm" className={gap1_5} onClick={() => setNewAppt(true)}>
-                        <Plus className={icon4} /> Novo agendamento
+                <div className={styles.headerActions}>
+                    <Button asChild size="sm" variant="outline">
+                        <Link to="/calendar" search={{date: from}}>
+                            <CalendarDays aria-hidden className={styles.icon4} />
+                            {t('agenda.openCalendar')}
+                        </Link>
+                    </Button>
+                    <Button size="sm" onClick={() => setNewAppt(true)}>
+                        <Plus aria-hidden className={styles.icon4} />
+                        {t('agenda.new')}
                     </Button>
                 </div>
-            </div>
+            </header>
 
-            {/* Period nav + status filters */}
-            <div className={styles.periodBar}>
-                <div className={styles.periodLeft}>
-                    <Button size="sm" variant="outline" onClick={goToday}>
-                        Hoje
-                    </Button>
-                    <div className={styles.arrowsGroup}>
-                        <button type="button" className={styles.arrowBtn} onClick={goPrev}>
-                            <ChevronLeft className={icon4} />
-                        </button>
-                        <button type="button" className={styles.arrowBtn} onClick={goNext}>
-                            <ChevronRight className={icon4} />
-                        </button>
-                    </div>
-                    <span className={styles.periodLabel}>{periodLabel}</span>
+            <section className={styles.filters} aria-label={t('agenda.filters')}>
+                <div className={styles.presetRow}>
+                    {PRESETS.map((preset) => {
+                        const range = presetRange(preset, today);
+                        const active = range.from === from && range.to === to;
+
+                        return (
+                            <Button
+                                key={preset}
+                                type="button"
+                                size="sm"
+                                variant={active ? 'default' : 'outline'}
+                                aria-pressed={active}
+                                onClick={() => setRange(range)}
+                            >
+                                {t(`agenda.presets.${preset}`)}
+                            </Button>
+                        );
+                    })}
                 </div>
-                <div className={styles.statusFilterRow}>
-                    {ALL_STATUSES.map((s) => (
+                <div className={styles.filterRow}>
+                    <label className={styles.field}>
+                        <span className={styles.fieldLabel}>{t('agenda.from')}</span>
+                        <Input
+                            type="date"
+                            value={from}
+                            onChange={(e) => {
+                                if (DATE_PATTERN.test(e.target.value)) {
+                                    setRange({from: e.target.value, to: e.target.value > to ? e.target.value : to});
+                                }
+                            }}
+                        />
+                    </label>
+                    <label className={styles.field}>
+                        <span className={styles.fieldLabel}>{t('agenda.to')}</span>
+                        <Input
+                            type="date"
+                            value={to}
+                            min={from}
+                            onChange={(e) => {
+                                if (DATE_PATTERN.test(e.target.value)) {
+                                    setRange({from: e.target.value < from ? e.target.value : from, to: e.target.value});
+                                }
+                            }}
+                        />
+                    </label>
+                    {professionals.length > 1 && (
+                        <label className={styles.field}>
+                            <span className={styles.fieldLabel}>{t('agenda.professional')}</span>
+                            <NativeSelect value={professionalId} onChange={(e) => setProfessionalId(e.target.value)}>
+                                <option value="">{t('agenda.allProfessionals')}</option>
+                                {professionals.map((member) => (
+                                    <option key={member.id} value={member.id}>
+                                        {member.displayName ?? t('agenda.professionalFallback')}
+                                    </option>
+                                ))}
+                            </NativeSelect>
+                        </label>
+                    )}
+                    <label className={styles.fieldGrow}>
+                        <span className={styles.fieldLabel}>{t('agenda.search')}</span>
+                        <Input
+                            type="search"
+                            value={term}
+                            placeholder={t('agenda.searchPlaceholder')}
+                            onChange={(e) => setTerm(e.target.value)}
+                        />
+                    </label>
+                </div>
+                <div className={styles.statusRow} role="group" aria-label={t('agenda.statusFilter')}>
+                    {ALL_STATUSES.map((status) => (
                         <button
-                            key={s}
+                            key={status}
                             type="button"
-                            className={statusChip({status: s, active: statusFilters.has(s)})}
-                            onClick={() => toggleStatus(s)}
+                            aria-pressed={statusFilters.has(status)}
+                            className={statusChip({status, active: statusFilters.has(status)})}
+                            onClick={() => toggleStatus(status)}
                         >
-                            <span className={statusDot({status: s})} />
-                            {STATUS_LABELS[s]}
+                            <span className={statusDot({status})} />
+                            {t(`reception.status.${status}`)}
                         </button>
                     ))}
                 </div>
+            </section>
+
+            <div className={styles.summary}>
+                <span>
+                    <span className={styles.count}>{rows.length}</span> {t('agenda.count', {count: rows.length})}
+                </span>
             </div>
 
-            {/* Main layout */}
-            <div className={styles.mainLayout}>
-                <aside className={styles.sidebar}>
-                    <MiniCalendar
-                        cursor={cursor}
-                        view={view}
-                        appts={filteredAppts}
-                        today={today}
-                        onPickDay={(d) => {
-                            setCursor(d);
+            {renderBody()}
 
-                            if (view === 'month') setView('day');
-                        }}
-                    />
-                </aside>
-                <div className={styles.calBody}>
-                    {roomManagementEnabled &&
-                        rooms.length > 0 &&
-                        (view === 'day' || view === 'week' || view === 'professionals') && (
-                            <div className={roomLegend}>
-                                {rooms.map((room, i) => (
-                                    <span key={room.id} className={roomLegendItem}>
-                                        <span className={cx(roomLegendDot, roomDotColorClass(i))} />
-                                        {room.name}
-                                    </span>
-                                ))}
-                            </div>
-                        )}
-                    {view === 'day' && <DayView {...sharedProps} />}
-                    {view === 'week' && (
-                        <>
-                            <div className={styles.weekScrollHint}>Deslize para ver os outros dias</div>
-                            <WeekView {...sharedProps} />
-                        </>
-                    )}
-                    {view === 'professionals' && (
-                        <ProfessionalsView
-                            appts={filteredAppts}
-                            patients={patients}
-                            cursor={cursor}
-                            now={now}
-                            highlightId={highlightId}
-                            professionals={manageableProfessionals}
-                            availabilityByMember={availabilityByMember}
-                            roomsById={roomsById}
-                            roomIndexById={roomIndexById}
-                            onSlotClick={(date, time, attendedByMemberId) =>
-                                setNewAppt({date: fmtDate(date), start: time, attendedByMemberId})
-                            }
-                            onApptClick={setDetailId}
-                            onApptMove={moveAppointment}
-                            onApptResize={resizeAppointment}
-                        />
-                    )}
-                    {view === 'rooms' && <RoomsView {...sharedProps} rooms={rooms} />}
-                    {view === 'month' && (
-                        <MonthView
-                            {...sharedProps}
-                            onGotoDay={(d) => {
-                                setCursor(d);
-                                setView('day');
-                            }}
-                        />
-                    )}
-                </div>
-            </div>
+            {totalCount > rawAppts.length && (
+                <p className={styles.warning}>{t('agenda.truncated', {shown: rawAppts.length, total: totalCount})}</p>
+            )}
 
-            {/* Detail Sheet */}
             {detailApt && (
                 <AppointmentDetailSheet
                     key={detailApt.patientId}
@@ -3123,35 +508,25 @@ export function AppointmentsPage() {
                 />
             )}
 
-            {/* Edit Dialog */}
             {editApt && (
-                <EditAppointmentDialog
-                    apt={editApt}
-                    onClose={() => setEditId(null)}
-                    onSaved={() => {
-                        highlightFor(editApt.id);
-                        refreshAppointments();
-                    }}
-                />
+                <EditAppointmentDialog apt={editApt} onClose={() => setEditId(null)} onSaved={refreshAppointments} />
             )}
 
-            {/* Cancel Dialog */}
             {cancelApt && (
                 <CancelDialog apt={cancelApt} onClose={() => setCancelId(null)} onCancelled={refreshAppointments} />
             )}
 
-            {/* New Appointment Dialog */}
             {search.followUpFromRecordId && (
                 <RecordFollowUpDialog
                     key={search.followUpFromRecordId}
                     recordId={search.followUpFromRecordId}
-                    onDismiss={() => void navigate({to: '/appointments', search: {date: search.date}, replace: true})}
+                    onDismiss={() => void navigate({to: '/appointments', search: keepFilters, replace: true})}
                 />
             )}
             {newAppt && !search.followUpFromRecordId && (
                 <NewAppointmentDialog
                     prefill={typeof newAppt === 'object' ? newAppt : null}
-                    defaultMemberId={defaultMemberId}
+                    defaultMemberId={professionalId || (professionals[0]?.id ?? '')}
                     onClose={() => setNewAppt(null)}
                     onSaved={() => {
                         setNewAppt(null);
@@ -3159,20 +534,19 @@ export function AppointmentsPage() {
                     }}
                 />
             )}
-            <ConfirmDialog
-                opened={!!pendingPlacement && !!placementWarning}
-                title="Fora da disponibilidade do profissional"
-                message={placementWarning ?? undefined}
-                confirmLabel="Atualizar mesmo assim"
-                isLoading={updateAppointment.isPending}
-                onConfirm={() => {
-                    if (pendingPlacement) submitPlacement(pendingPlacement, true);
-                }}
-                onCancel={() => {
-                    setPendingPlacement(null);
-                    setPlacementWarning(null);
-                }}
-            />
         </div>
+    );
+}
+
+function GroupRows({label, columnCount, children}: {label: string; columnCount: number; children: ReactNode}) {
+    return (
+        <>
+            <TableRow className={styles.dayRow}>
+                <TableCell colSpan={columnCount} className={styles.dayCell}>
+                    {label}
+                </TableCell>
+            </TableRow>
+            {children}
+        </>
     );
 }

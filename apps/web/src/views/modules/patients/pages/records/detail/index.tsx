@@ -348,7 +348,7 @@ function RecordFollowUps({recordId}: {recordId: string}) {
                             <li key={appointment.id}>
                                 <Button asChild variant="outline" size="sm">
                                     <Link
-                                        to="/appointments"
+                                        to="/calendar"
                                         search={{date: format(date, 'yyyy-MM-dd'), appointmentId: appointment.id}}
                                     >
                                         {t('followUp.open', {date: dateTime.format(date)})}
@@ -363,7 +363,7 @@ function RecordFollowUps({recordId}: {recordId: string}) {
             )}
             {canSchedule && (
                 <Button asChild size="sm">
-                    <Link to="/appointments" search={{followUpFromRecordId: recordId}}>
+                    <Link to="/calendar" search={{followUpFromRecordId: recordId}}>
                         <CalendarPlus size={16} aria-hidden />
                         {t('followUp.schedule')}
                     </Link>

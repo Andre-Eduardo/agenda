@@ -24,10 +24,24 @@ export class SidebarComponent {
         }
     }
 
-    async navigateTo(name: string | RegExp) {
+    /** Parent entry of a floating submenu on the desktop sidebar (e.g. "Agenda", "Relatórios"). */
+    group(name: string | RegExp): Locator {
+        return this.page.getByRole('button', {name, exact: true});
+    }
+
+    /**
+     * Opens a destination. Entries inside a submenu name their `group`: on the desktop the group
+     * opens a floating menu (its entries are menu items); in the mobile sheet they are plain links.
+     */
+    async navigateTo(name: string | RegExp, {group}: {group?: string | RegExp} = {}) {
         await this.open();
 
-        await this.link(name).click();
+        if (group !== undefined && (await this.group(group).isVisible())) {
+            await this.group(group).click();
+            await this.page.getByRole('menuitem', {name, exact: true}).click();
+        } else {
+            await this.link(name).click();
+        }
 
         // The sheet closes with an exit animation. Until it is gone the hamburger button is
         // aria-hidden, so a following open() would skip it and click a link that is detaching.

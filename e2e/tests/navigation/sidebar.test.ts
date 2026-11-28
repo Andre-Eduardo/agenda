@@ -1,13 +1,14 @@
 import {expect, test} from '@fixtures/test';
 
-const destinations = [
+const destinations: ReadonlyArray<{name: string; path: string; group?: string}> = [
     {name: 'Dashboard', path: '/dashboard'},
-    {name: 'Consultas', path: '/appointments'},
+    {name: 'Consultas', path: '/appointments', group: 'Agenda'},
+    {name: 'Calendário', path: '/calendar', group: 'Agenda'},
     {name: 'Pacientes', path: '/patients'},
     {name: 'Profissionais', path: '/professionals'},
     {name: 'Equipe', path: '/team'},
     {name: 'Configurações', path: '/settings'},
-] as const;
+];
 
 test.describe('Sidebar navigation', () => {
     test.beforeEach(async ({createAuthenticatedProfessional}) => {
@@ -19,7 +20,7 @@ test.describe('Sidebar navigation', () => {
 
         for (const destination of destinations) {
             await test.step(destination.name, async () => {
-                await sidebar.navigateTo(destination.name);
+                await sidebar.navigateTo(destination.name, {group: destination.group});
 
                 await expect(page).toHaveURL(new RegExp(`${destination.path}$`));
                 await expect(page.getByText('Página não encontrada', {exact: true})).toHaveCount(0);
@@ -42,5 +43,6 @@ test.describe('Sidebar navigation', () => {
 
         await expect(sidebar.link('Configurações')).toBeVisible();
         await expect(sidebar.link('Financeiro')).toHaveCount(0);
+        await expect(sidebar.group('Relatórios')).toHaveCount(0);
     });
 });

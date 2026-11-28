@@ -211,6 +211,11 @@ export enum FinancialReportPermission {
     VIEW = 'financial-report:view',
 }
 
+/** Relatórios operacionais da clínica (agenda, comparecimento, faltas). OWNER/ADMIN por padrão. */
+export enum ClinicReportPermission {
+    VIEW = 'clinic-report:view',
+}
+
 export enum WorkingHoursPermission {
     MANAGE = 'working-hours:manage',
 }
@@ -321,6 +326,7 @@ const PERMISSIONS = [
     ...Object.values(PatientSubscriptionPlanPermission),
     ...Object.values(PatientSubscriptionPermission),
     ...Object.values(FinancialReportPermission),
+    ...Object.values(ClinicReportPermission),
     ...Object.values(WorkingHoursPermission),
     ...Object.values(MemberBlockPermission),
     ...Object.values(ProfessionalAgendaAccessPermission),

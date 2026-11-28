@@ -265,7 +265,11 @@
     "logout": "Salir",
     "supportUsers": "Usuarios de soporte",
     "myFinancial": "Mis finanzas",
-    "mySettings": "Mi perfil y consultorio"
+    "mySettings": "Mi perfil y consultorio",
+    "agenda": "Agenda",
+    "calendar": "Calendario",
+    "reports": "Informes",
+    "submenu": "Submenú {{label}}"
   },
   "patientCall": {
     "settings": "Panel de llamada",
@@ -649,5 +653,116 @@
     "invalidFields": "Revisa los valores informados.",
     "close": "Cerrar",
     "viewTriage": "Ver triaje"
+  },
+  "agenda": {
+    "title": "Agenda",
+    "subtitle": "Citas del período en lista, con los mismos datos del calendario.",
+    "openCalendar": "Ver calendario",
+    "new": "Nueva cita",
+    "filters": "Filtros de la agenda",
+    "from": "Desde",
+    "to": "Hasta",
+    "professional": "Profesional",
+    "allProfessionals": "Todos los profesionales",
+    "professionalFallback": "Profesional",
+    "search": "Buscar",
+    "searchPlaceholder": "Paciente, procedimiento u observación",
+    "statusFilter": "Filtrar por estado",
+    "count_one": "cita",
+    "count_other": "citas",
+    "empty": "Ninguna cita en el período",
+    "emptyDescription": "Ajuste el período, los estados o la búsqueda para ver otras citas.",
+    "truncated": "Mostrando {{shown}} de {{total}} citas. Reduzca el período para verlas todas.",
+    "presets": {
+      "today": "Hoy",
+      "tomorrow": "Mañana",
+      "next7": "Próximos 7 días",
+      "week": "Esta semana",
+      "month": "Este mes"
+    },
+    "columns": {
+      "time": "Horario",
+      "patient": "Paciente",
+      "professional": "Profesional",
+      "type": "Tipo",
+      "procedure": "Procedimiento",
+      "room": "Sala",
+      "status": "Estado"
+    }
+  },
+  "reports": {
+    "title": "Informes",
+    "subtitle": "Indicadores de la agenda de la clínica: volumen, asistencia, ausencias y ocupación.",
+    "filters": "Filtros de los informes",
+    "from": "Desde",
+    "to": "Hasta",
+    "professional": "Profesional",
+    "allProfessionals": "Todos los profesionales",
+    "accessDenied": "Informes no disponibles",
+    "accessDeniedMessage": "No tiene permiso para ver los informes de la clínica.",
+    "loadError": "No fue posible cargar el informe.",
+    "empty": "Ninguna cita en el período",
+    "emptyMessage": "Elija otro período o profesional.",
+    "presets": {
+      "thisMonth": "Este mes",
+      "lastMonth": "Mes pasado",
+      "last30": "Últimos 30 días",
+      "last90": "Últimos 90 días",
+      "thisYear": "Este año"
+    },
+    "tabs": {
+      "overview": "Visión general",
+      "professionals": "Por profesional",
+      "absences": "Ausencias y cancelaciones",
+      "occupancy": "Ocupación y procedimientos"
+    },
+    "kpi": {
+      "total": "Citas",
+      "completed": "Concluidas",
+      "attendanceRate": "Tasa de asistencia",
+      "noShowRate": "Tasa de ausencias",
+      "cancellationRate": "Tasa de cancelación",
+      "uniquePatients": "Pacientes atendidos",
+      "newPatients": "Pacientes nuevos",
+      "avgWait": "Espera media",
+      "noShow": "Ausencias",
+      "cancelled": "Cancelaciones",
+      "bookedHours": "Horas agendadas",
+      "pending": "Abiertas",
+      "procedures": "Procedimientos distintos"
+    },
+    "minutes_one": "{{count}} min",
+    "minutes_other": "{{count}} min",
+    "byDay": "Citas por día",
+    "byStatus": "Por estado",
+    "byType": "Por tipo de cita",
+    "byProfessional": "Desempeño por profesional",
+    "byWeekday": "Por día de la semana",
+    "byHour": "Por horario",
+    "byProcedure": "Por procedimiento",
+    "absencesByDay": "Ausencias y cancelaciones por día",
+    "absencesByProfessional": "Ausencias y cancelaciones por profesional",
+    "noAbsences": "Ninguna ausencia o cancelación en el período.",
+    "cancelledExcluded": "Las citas canceladas no entran en este conteo.",
+    "noProcedure": "Sin procedimiento",
+    "dayTooltip_one": "{{date}}: {{count}} cita",
+    "dayTooltip_other": "{{date}}: {{count}} citas",
+    "series": {
+      "completed": "Concluidas",
+      "pending": "Abiertas",
+      "noShow": "Ausencias",
+      "cancelled": "Canceladas"
+    },
+    "columns": {
+      "professional": "Profesional",
+      "total": "Total",
+      "completed": "Concluidas",
+      "noShow": "Ausencias",
+      "cancelled": "Canceladas",
+      "pending": "Abiertas",
+      "attendanceRate": "Asistencia",
+      "patients": "Pacientes",
+      "day": "Día"
+    }
   }
 }

@@ -9808,6 +9808,82 @@
         ]
       }
     },
+    "/api/v1/reports/appointments": {
+      "get": {
+        "operationId": "getAppointmentReport",
+        "parameters": [
+          {
+            "name": "startDate",
+            "required": true,
+            "in": "query",
+            "description": "Start of the period (inclusive), ISO 8601",
+            "schema": {
+              "nullable": true,
+              "type": "string"
+            }
+          },
+          {
+            "name": "endDate",
+            "required": true,
+            "in": "query",
+            "description": "End of the period (inclusive), ISO 8601",
+            "schema": {
+              "nullable": true,
+              "type": "string"
+            }
+          },
+          {
+            "name": "professionalMemberId",
+            "required": false,
+            "in": "query",
+            "description": "Only appointments attended by this clinic member",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "timeZone",
+            "required": false,
+            "in": "query",
+            "description": "IANA time zone used to group by day, weekday and hour (default UTC)",
+            "schema": {
+              "maxLength": 64,
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Appointment report",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AppointmentReport"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid period or time zone"
+          },
+          "default": {
+            "description": "Request failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Gets the operational appointment report of the actor's clinic",
+        "tags": [
+          "Clinic Report"
+        ]
+      }
+    },
     "/api/v1/members/{memberId}/working-hours": {
       "post": {
         "operationId": "upsertWorkingHours",
@@ -19872,6 +19948,346 @@
           "summary",
           "byPaymentMethod",
           "byProfessional"
+        ]
+      },
+      "AppointmentReportPeriodDto": {
+        "type": "object",
+        "properties": {
+          "startDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "endDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "timeZone": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "startDate",
+          "endDate",
+          "timeZone"
+        ]
+      },
+      "AppointmentReportFiltersDto": {
+        "type": "object",
+        "properties": {
+          "professionalMemberId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      },
+      "AppointmentReportSummary": {
+        "type": "object",
+        "properties": {
+          "total": {
+            "type": "number"
+          },
+          "completed": {
+            "type": "number"
+          },
+          "cancelled": {
+            "type": "number"
+          },
+          "noShow": {
+            "type": "number"
+          },
+          "pending": {
+            "type": "number",
+            "description": "Scheduled, confirmed, arrived or in progress"
+          },
+          "attendanceRate": {
+            "type": "number",
+            "nullable": true,
+            "description": "completed / (completed + no-show)"
+          },
+          "noShowRate": {
+            "type": "number",
+            "nullable": true,
+            "description": "no-show / (completed + no-show)"
+          },
+          "cancellationRate": {
+            "type": "number",
+            "nullable": true,
+            "description": "cancelled / total"
+          },
+          "uniquePatients": {
+            "type": "number"
+          },
+          "newPatients": {
+            "type": "number",
+            "description": "Patients whose first appointment in the clinic falls in the period"
+          },
+          "avgWaitMinutes": {
+            "type": "number",
+            "nullable": true,
+            "description": "Average minutes between check-in and call"
+          },
+          "bookedMinutes": {
+            "type": "number",
+            "description": "Booked minutes, cancelled appointments excluded"
+          }
+        },
+        "required": [
+          "total",
+          "completed",
+          "cancelled",
+          "noShow",
+          "pending",
+          "attendanceRate",
+          "noShowRate",
+          "cancellationRate",
+          "uniquePatients",
+          "newPatients",
+          "avgWaitMinutes",
+          "bookedMinutes"
+        ]
+      },
+      "AppointmentReportStatusCountDto": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "SCHEDULED",
+              "CONFIRMED",
+              "CANCELLED",
+              "COMPLETED",
+              "NO_SHOW",
+              "ARRIVED",
+              "IN_PROGRESS"
+            ]
+          },
+          "count": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "status",
+          "count"
+        ]
+      },
+      "AppointmentReportTypeCountDto": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "FIRST_VISIT",
+              "RETURN",
+              "WALK_IN",
+              "TELEMEDICINE",
+              "PROCEDURE"
+            ]
+          },
+          "count": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "type",
+          "count"
+        ]
+      },
+      "AppointmentReportByProfessional": {
+        "type": "object",
+        "properties": {
+          "memberId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "displayName": {
+            "type": "string"
+          },
+          "total": {
+            "type": "number"
+          },
+          "completed": {
+            "type": "number"
+          },
+          "cancelled": {
+            "type": "number"
+          },
+          "noShow": {
+            "type": "number"
+          },
+          "pending": {
+            "type": "number"
+          },
+          "attendanceRate": {
+            "type": "number",
+            "nullable": true
+          },
+          "uniquePatients": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "memberId",
+          "displayName",
+          "total",
+          "completed",
+          "cancelled",
+          "noShow",
+          "pending",
+          "attendanceRate",
+          "uniquePatients"
+        ]
+      },
+      "AppointmentReportProcedureCountDto": {
+        "type": "object",
+        "properties": {
+          "procedureName": {
+            "type": "string",
+            "nullable": true,
+            "description": "Null for appointments without a procedure"
+          },
+          "count": {
+            "type": "number"
+          },
+          "completed": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "procedureName",
+          "count",
+          "completed"
+        ]
+      },
+      "AppointmentReportByDay": {
+        "type": "object",
+        "properties": {
+          "date": {
+            "type": "string",
+            "description": "Day in the report time zone (YYYY-MM-DD)"
+          },
+          "total": {
+            "type": "number"
+          },
+          "completed": {
+            "type": "number"
+          },
+          "cancelled": {
+            "type": "number"
+          },
+          "noShow": {
+            "type": "number"
+          },
+          "pending": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "date",
+          "total",
+          "completed",
+          "cancelled",
+          "noShow",
+          "pending"
+        ]
+      },
+      "AppointmentReportWeekdayCountDto": {
+        "type": "object",
+        "properties": {
+          "weekday": {
+            "type": "number",
+            "description": "0 = Sunday … 6 = Saturday"
+          },
+          "count": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "weekday",
+          "count"
+        ]
+      },
+      "AppointmentReportHourCountDto": {
+        "type": "object",
+        "properties": {
+          "hour": {
+            "type": "number",
+            "description": "0 … 23"
+          },
+          "count": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "hour",
+          "count"
+        ]
+      },
+      "AppointmentReport": {
+        "type": "object",
+        "properties": {
+          "period": {
+            "$ref": "#/components/schemas/AppointmentReportPeriodDto"
+          },
+          "filters": {
+            "$ref": "#/components/schemas/AppointmentReportFiltersDto"
+          },
+          "summary": {
+            "$ref": "#/components/schemas/AppointmentReportSummary"
+          },
+          "byStatus": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AppointmentReportStatusCountDto"
+            }
+          },
+          "byType": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AppointmentReportTypeCountDto"
+            }
+          },
+          "byProfessional": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AppointmentReportByProfessional"
+            }
+          },
+          "byProcedure": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AppointmentReportProcedureCountDto"
+            }
+          },
+          "byDay": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AppointmentReportByDay"
+            }
+          },
+          "byWeekday": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AppointmentReportWeekdayCountDto"
+            }
+          },
+          "byHour": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AppointmentReportHourCountDto"
+            }
+          }
+        },
+        "required": [
+          "period",
+          "filters",
+          "summary",
+          "byStatus",
+          "byType",
+          "byProfessional",
+          "byProcedure",
+          "byDay",
+          "byWeekday",
+          "byHour"
         ]
       },
       "UpsertWorkingHoursDto": {
